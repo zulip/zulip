@@ -7,7 +7,7 @@
     .message_reaction {
         float: left;
         margin: 0.15em;
-        padding: 0 2px 0 0;
+        padding: 0 0.125rem 0 0;
         height: 19px;
         cursor: pointer;
         background-color: hsl(0, 0%, 100%);
@@ -26,7 +26,7 @@
             visibility: hidden;
             pointer-events: none;
             margin: 2px 0.1em 3px 0.1em;
-            padding: 3px;
+            padding: 0.1875rem;
             height: 14px;
             border-radius: 4px;
             padding-left: 0.3em;
@@ -150,7 +150,7 @@
         .emoji-popover-top {
             position: relative;
 
-            padding: 8px 10px;
+            padding: 0.5rem 0.625rem;
             margin-bottom: 0;
 
             background-color: hsl(0, 0%, 93%);
@@ -214,7 +214,7 @@
 
             .emoji-popover-results-heading {
                 font-weight: 600;
-                padding: 5px 3px 3px 5px;
+                padding: 0.3125rem 0.1875rem 0.1875rem 0.3125rem;
                 font-size: 1.0625rem;
             }
         }
@@ -224,14 +224,14 @@
 
             .emoji-popover-subheading {
                 font-weight: 600;
-                padding: 5px 3px;
+                padding: 0.3125rem 0.1875rem;
             }
         }
 
         .emoji-popover-emoji {
             display: inline-block;
             margin: 0;
-            padding: 6px;
+            padding: 0.375rem;
             cursor: pointer;
             border-radius: 0.5em;
             height: 25px;

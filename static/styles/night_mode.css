@@ -518,7 +518,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .draft-row .message_header_private_message .message_label_clickable {
-        padding: 4px 6px 3px 6px;
+        padding: 0.25rem 0.375rem 0.1875rem 0.375rem;
         color: inherit;
     }
 

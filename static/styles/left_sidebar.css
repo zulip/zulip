@@ -85,7 +85,7 @@ li.show-more-topics {
 
     li {
         a {
-            padding: 1px 0;
+            padding: 0.0625rem 0;
         }
 
         ul {
@@ -302,7 +302,7 @@ li.top_left_recent_topics {
 .topic-unread-count,
 .private_message_count {
     float: right;
-    padding: 0 4px;
+    padding: 0 0.25rem;
     height: 16px;
     line-height: 16px;
     font-size: 0.75rem;
@@ -317,7 +317,7 @@ li.top_left_recent_topics {
 .top_left_starred_messages .count {
     background-color: transparent;
     color: inherit;
-    padding: 2px 1px 0 3px;
+    padding: 0.125rem 0.0625rem 0 0.1875rem;
     border-color: hsl(105, 2%, 50%);
 }
 
@@ -392,7 +392,7 @@ li.top_left_recent_topics {
     right: 0;
     font-size: 1em;
     text-align: center;
-    padding: 0 6px 0 6px;
+    padding: 0 0.375rem 0 0.375rem;
 }
 
 /*
@@ -405,7 +405,7 @@ li.top_left_recent_topics {
     right: 0;
     font-size: 0.9em;
     text-align: center;
-    padding: 1px 6px 0 6px;
+    padding: 0.0625rem 0.375rem 0 0.375rem;
 }
 
 /*

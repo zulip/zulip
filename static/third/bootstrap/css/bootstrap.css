@@ -226,7 +226,7 @@ a:focus {
   border-radius: 6px;
 }
 .img-polaroid {
-  padding: 4px;
+  padding: 0.25rem;
   background-color: #fff;
   border: 1px solid #ccc;
   border: 1px solid rgba(0, 0, 0, 0.2);
@@ -760,7 +760,7 @@ abbr.initialism {
   text-transform: uppercase;
 }
 blockquote {
-  padding: 0 0 0 15px;
+  padding: 0 0 0 0.9375rem;
   margin: 0 0 20px;
   border-left: 5px solid #eeeeee;
 }
@@ -809,7 +809,7 @@ address {
 }
 code,
 pre {
-  padding: 0 3px 2px;
+  padding: 0 0.1875rem 0.125rem;
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
   font-size: 0.75rem;
   color: #333333;
@@ -818,7 +818,7 @@ pre {
   border-radius: 3px;
 }
 code {
-  padding: 2px 4px;
+  padding: 0.125rem 0.25rem;
   color: #d14;
   background-color: #f7f7f9;
   border: 1px solid #e1e1e8;
@@ -826,7 +826,7 @@ code {
 }
 pre {
   display: block;
-  padding: 9.5px;
+  padding: 9.0.3125rem;
   margin: 0 0 10px;
   font-size: 0.8125rem;
   line-height: 20px;
@@ -859,7 +859,7 @@ pre code {
 .label,
 .badge {
   display: inline-block;
-  padding: 2px 4px;
+  padding: 0.125rem 0.25rem;
   font-size: 0.6875rem;
   font-weight: bold;
   line-height: 14px;
@@ -954,7 +954,7 @@ table {
 }
 .table th,
 .table td {
-  padding: 8px;
+  padding: 0.5rem;
   line-height: 20px;
   text-align: left;
   vertical-align: top;
@@ -982,7 +982,7 @@ table {
 }
 .table-condensed th,
 .table-condensed td {
-  padding: 4px 5px;
+  padding: 0.25rem 0.3125rem;
 }
 .table-bordered {
   border: 1px solid #dddddd;
@@ -1239,7 +1239,7 @@ input[type="color"],
 .uneditable-input {
   display: inline-block;
   height: 20px;
-  padding: 4px 6px;
+  padding: 0.25rem 0.375rem;
   margin-bottom: 10px;
   font-size: 0.875rem;
   line-height: 20px;
@@ -1705,7 +1705,7 @@ select:focus:invalid:focus {
   box-shadow: 0 0 6px #f8b9b7;
 }
 .form-actions {
-  padding: 19px 20px 20px;
+  padding: 1.1875rem 1.25rem 1.25rem;
   margin-top: 20px;
   margin-bottom: 20px;
   background-color: #f5f5f5;
@@ -1786,7 +1786,7 @@ select:focus:invalid:focus {
   width: auto;
   height: 20px;
   min-width: 16px;
-  padding: 4px 5px;
+  padding: 0.25rem 0.3125rem;
   font-size: 0.875rem;
   font-weight: normal;
   line-height: 20px;
@@ -2507,7 +2507,7 @@ legend + .control-group {
 }
 .nav-header {
   display: block;
-  padding: 3px 15px;
+  padding: 0.1875rem 0.9375rem;
   font-size: 0.6875rem;
   font-weight: bold;
   line-height: 20px;
@@ -2530,7 +2530,7 @@ legend + .control-group {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 .nav-list > li > a {
-  padding: 3px 15px;
+  padding: 0.1875rem 0.9375rem;
 }
 .nav-list > .active > a,
 .nav-list > .active > a:hover,
@@ -2878,7 +2878,7 @@ legend + .control-group {
 .navbar .brand {
   float: left;
   display: block;
-  padding: 10px 20px 10px;
+  padding: 0.625rem 1.25rem 0.625rem;
   margin-left: -20px;
   font-size: 1.25rem;
   font-weight: 200;
@@ -2965,7 +2965,7 @@ legend + .control-group {
 }
 .navbar-search .search-query {
   margin-bottom: 0;
-  padding: 4px 14px;
+  padding: 0.25rem 0.875rem;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 0.8125rem;
   font-weight: normal;
@@ -3044,7 +3044,7 @@ legend + .control-group {
 }
 .navbar .nav > li > a {
   float: none;
-  padding: 10px 15px 10px;
+  padding: 0.625rem 0.9375rem 0.625rem;
   color: #777777;
   text-decoration: none;
   text-shadow: 0 1px 0 #ffffff;
@@ -3071,7 +3071,7 @@ legend + .control-group {
 .navbar .btn-navbar {
   display: none;
   float: right;
-  padding: 7px 10px;
+  padding: 0.4375rem 0.625rem;
   margin-left: 5px;
   margin-right: 5px;
   color: #ffffff;
@@ -3297,7 +3297,7 @@ legend + .control-group {
 }
 .navbar-inverse .navbar-search .search-query:focus,
 .navbar-inverse .navbar-search .search-query.focused {
-  padding: 5px 15px;
+  padding: 0.3125rem 0.9375rem;
   color: #333333;
   text-shadow: 0 1px 0 #ffffff;
   background-color: #ffffff;
@@ -3340,7 +3340,7 @@ legend + .control-group {
   background-color: #000000 \9;
 }
 .breadcrumb {
-  padding: 8px 15px;
+  padding: 0.5rem 0.9375rem;
   margin: 0 0 20px;
   list-style: none;
   background-color: #f5f5f5;
@@ -3357,7 +3357,7 @@ legend + .control-group {
   text-shadow: 0 1px 0 #ffffff;
 }
 .breadcrumb > li > .divider {
-  padding: 0 5px;
+  padding: 0 0.3125rem;
   color: #ccc;
 }
 .breadcrumb > .active {
@@ -3387,7 +3387,7 @@ legend + .control-group {
 .pagination ul > li > a,
 .pagination ul > li > span {
   float: left;
-  padding: 4px 12px;
+  padding: 0.25rem 0.75rem;
   line-height: 20px;
   text-decoration: none;
   background-color: #ffffff;
@@ -3440,7 +3440,7 @@ legend + .control-group {
 }
 .pagination-large ul > li > a,
 .pagination-large ul > li > span {
-  padding: 11px 19px;
+  padding: 0.6875rem 1.1875rem;
   font-size: 1.0625rem;
 }
 .pagination-large ul > li:first-child > a,
@@ -3485,12 +3485,12 @@ legend + .control-group {
 }
 .pagination-small ul > li > a,
 .pagination-small ul > li > span {
-  padding: 2px 10px;
+  padding: 0.125rem 0.625rem;
   font-size: 0.6875rem;
 }
 .pagination-mini ul > li > a,
 .pagination-mini ul > li > span {
-  padding: 0 6px;
+  padding: 0 0.375rem;
   font-size: 0.625rem;
 }
 .pager {
@@ -3514,7 +3514,7 @@ legend + .control-group {
 .pager li > a,
 .pager li > span {
   display: inline-block;
-  padding: 5px 14px;
+  padding: 0.3125rem 0.875rem;
   background-color: #fff;
   border: 1px solid #ddd;
   -webkit-border-radius: 15px;
@@ -3566,7 +3566,7 @@ legend + .control-group {
 }
 .thumbnail {
   display: block;
-  padding: 4px;
+  padding: 0.25rem;
   line-height: 20px;
   border: 1px solid #ddd;
   -webkit-border-radius: 4px;
@@ -3594,11 +3594,11 @@ a.thumbnail:focus {
   margin-right: auto;
 }
 .thumbnail .caption {
-  padding: 9px;
+  padding: 0.5625rem;
   color: #555555;
 }
 .alert {
-  padding: 8px 35px 8px 14px;
+  padding: 0.5rem 2.1875rem 0.5rem 0.875rem;
   margin-bottom: 20px;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
   background-color: #fcf8e3;
@@ -3848,7 +3848,7 @@ a.thumbnail:focus {
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .hero-unit {
-  padding: 60px;
+  padding: 3.75rem;
   margin-bottom: 30px;
   font-size: 1.125rem;
   font-weight: 200;
@@ -3914,23 +3914,23 @@ a.thumbnail:focus {
 }
 .tooltip.top {
   margin-top: -3px;
-  padding: 5px 0;
+  padding: 0.3125rem 0;
 }
 .tooltip.right {
   margin-left: 3px;
-  padding: 0 5px;
+  padding: 0 0.3125rem;
 }
 .tooltip.bottom {
   margin-top: 3px;
-  padding: 5px 0;
+  padding: 0.3125rem 0;
 }
 .tooltip.left {
   margin-left: -3px;
-  padding: 0 5px;
+  padding: 0 0.3125rem;
 }
 .tooltip-inner {
   max-width: 200px;
-  padding: 8px;
+  padding: 0.5rem;
   color: #ffffff;
   text-align: center;
   text-decoration: none;
@@ -3981,7 +3981,7 @@ a.thumbnail:focus {
   z-index: 1010;
   display: none;
   max-width: 276px;
-  padding: 1px;
+  padding: 0.0625rem;
   text-align: left;
   background-color: #ffffff;
   -webkit-background-clip: padding-box;
@@ -4011,7 +4011,7 @@ a.thumbnail:focus {
 }
 .popover-title {
   margin: 0;
-  padding: 8px 14px;
+  padding: 0.5rem 0.875rem;
   font-size: 0.875rem;
   font-weight: normal;
   line-height: 18px;
@@ -4025,7 +4025,7 @@ a.thumbnail:focus {
   display: none;
 }
 .popover-content {
-  padding: 9px 14px;
+  padding: 0.5625rem 0.875rem;
 }
 .popover .arrow,
 .popover .arrow:after {
@@ -4151,7 +4151,7 @@ a.thumbnail:focus {
   top: 10%;
 }
 .modal-header {
-  padding: 9px 15px;
+  padding: 0.5625rem 0.9375rem;
   border-bottom: 1px solid #eee;
 }
 .modal-header .close {
@@ -4165,13 +4165,13 @@ a.thumbnail:focus {
   position: relative;
   overflow-y: auto;
   max-height: 400px;
-  padding: 15px;
+  padding: 0.9375rem;
 }
 .modal-form {
   margin-bottom: 0;
 }
 .modal-footer {
-  padding: 14px 15px 15px;
+  padding: 0.875rem 0.9375rem 0.9375rem;
   margin-bottom: 0;
   text-align: right;
   background-color: #f5f5f5;
@@ -4236,7 +4236,7 @@ a.thumbnail:focus {
   display: none;
   float: left;
   min-width: 160px;
-  padding: 5px 0;
+  padding: 0.3125rem 0;
   margin: 2px 0 0;
   list-style: none;
   background-color: #ffffff;
@@ -4269,7 +4269,7 @@ a.thumbnail:focus {
 }
 .dropdown-menu > li > a {
   display: block;
-  padding: 3px 20px;
+  padding: 0.1875rem 1.25rem;
   clear: both;
   font-weight: normal;
   line-height: 20px;
@@ -4425,13 +4425,13 @@ a.thumbnail:focus {
 }
 .accordion-heading .accordion-toggle {
   display: block;
-  padding: 8px 15px;
+  padding: 0.5rem 0.9375rem;
 }
 .accordion-toggle {
   cursor: pointer;
 }
 .accordion-inner {
-  padding: 9px 15px;
+  padding: 0.5625rem 0.9375rem;
   border-top: 1px solid #e5e5e5;
 }
 .carousel {
@@ -4545,7 +4545,7 @@ a.thumbnail:focus {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 15px;
+  padding: 0.9375rem;
   background: #333333;
   background: rgba(0, 0, 0, 0.75);
 }
@@ -4562,7 +4562,7 @@ a.thumbnail:focus {
 }
 .well {
   min-height: 20px;
-  padding: 19px;
+  padding: 1.1875rem;
   margin-bottom: 20px;
   background-color: #f5f5f5;
   border: 1px solid #e3e3e3;
@@ -4578,13 +4578,13 @@ a.thumbnail:focus {
   border-color: rgba(0, 0, 0, 0.15);
 }
 .well-large {
-  padding: 24px;
+  padding: 1.5rem;
   -webkit-border-radius: 6px;
   -moz-border-radius: 6px;
   border-radius: 6px;
 }
 .well-small {
-  padding: 9px;
+  padding: 0.5625rem;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
@@ -4851,7 +4851,7 @@ button.close {
     right: 10px;
   }
   .modal-header .close {
-    padding: 10px;
+    padding: 0.625rem;
     margin: -10px;
   }
   .carousel-caption {
@@ -5595,7 +5595,7 @@ button.close {
   }
   .nav-collapse .nav > li > a,
   .nav-collapse .dropdown-menu a {
-    padding: 9px 15px;
+    padding: 0.5625rem 0.9375rem;
     font-weight: bold;
     color: #777777;
     -webkit-border-radius: 3px;
@@ -5603,7 +5603,7 @@ button.close {
     border-radius: 3px;
   }
   .nav-collapse .btn {
-    padding: 4px 10px 4px;
+    padding: 0.25rem 0.625rem 0.25rem;
     font-weight: normal;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
@@ -5667,7 +5667,7 @@ button.close {
   .nav-collapse .navbar-form,
   .nav-collapse .navbar-search {
     float: none;
-    padding: 10px 15px;
+    padding: 0.625rem 0.9375rem;
     margin: 10px 0;
     border-top: 1px solid #f2f2f2;
     border-bottom: 1px solid #f2f2f2;

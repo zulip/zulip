@@ -100,7 +100,7 @@
 
 .stream-email {
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-    padding: 5px;
+    padding: 0.3125rem;
     font-size: 0.9em;
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 87%);
@@ -111,7 +111,7 @@
     display: inline-block;
     vertical-align: middle;
     line-height: 18px;
-    padding: 5px;
+    padding: 0.3125rem;
 }
 
 .sp-preview {
@@ -165,7 +165,7 @@
 .preview-stream {
     display: none;
     float: right;
-    padding: 3px 10px;
+    padding: 0.1875rem 0.625rem;
     border: 1px solid hsl(0, 0%, 80%);
     margin: 9px 10px 0 0;
     color: hsl(0, 0%, 20%);
@@ -258,7 +258,7 @@ form#add_new_subscription {
                 }
 
                 td {
-                    padding: 4px 0;
+                    padding: 0.25rem 0;
 
                     &:first-of-type {
                         padding-left: 10px;
@@ -289,7 +289,7 @@ form#add_new_subscription {
 
             &:empty {
                 display: block;
-                padding: 5px;
+                padding: 0.3125rem;
             }
         }
     }
@@ -297,14 +297,14 @@ form#add_new_subscription {
 
 .hide-subscriber-list {
     display: block;
-    padding: 5px;
+    padding: 0.3125rem;
     text-align: center;
     color: hsl(0, 0%, 67%);
 }
 
 .subscriber-name,
 .subscriber-email {
-    padding: 5px;
+    padding: 0.3125rem;
 }
 
 .subscriber-email {
@@ -394,7 +394,7 @@ form#add_new_subscription {
     color: hsl(0, 0%, 67%);
 
     float: left;
-    padding: 2px 10px;
+    padding: 0.125rem 0.625rem;
 
     cursor: pointer;
 
@@ -424,7 +424,7 @@ form#add_new_subscription {
     }
 
     .subscriptions-header {
-        padding: 12px;
+        padding: 0.75rem;
         text-align: center;
         text-transform: uppercase;
         font-weight: 700;
@@ -473,7 +473,7 @@ form#add_new_subscription {
         border-right: 1px solid hsl(0, 0%, 87%);
 
         .search-container {
-            padding: 6px 8px;
+            padding: 0.375rem 0.5rem;
             border-bottom: 1px solid hsl(0, 0%, 87%);
             display: flex;
             justify-content: space-between;
@@ -494,14 +494,14 @@ form#add_new_subscription {
             }
 
             button {
-                padding: 6px 10px 8px 10px;
+                padding: 0.375rem 0.625rem 0.5rem 0.625rem;
                 display: block;
                 margin: 0 auto 10px auto;
             }
         }
 
         .display-type {
-            padding: 6px;
+            padding: 0.375rem;
             text-align: center;
             font-weight: 600;
             border-bottom: 1px solid hsl(0, 0%, 87%);
@@ -539,7 +539,7 @@ form#add_new_subscription {
     input[type="text"].small {
         border: 1px solid hsl(0, 0%, 80%);
         border-radius: 4px;
-        padding: 3px;
+        padding: 0.1875rem;
         outline: none;
         color: hsl(0, 0%, 27%);
         text-align: center;
@@ -556,7 +556,7 @@ form#add_new_subscription {
 
 #search_stream_name {
     width: 100%;
-    padding: 3px 5px;
+    padding: 0.1875rem 0.3125rem;
     margin: 8px 0;
     margin-left: 10px;
     margin-right: -15px !important;
@@ -623,7 +623,7 @@ form#add_new_subscription {
 }
 
 .stream-row {
-    padding: 15px 10px 11px 10px;
+    padding: 0.9375rem 0.625rem 0.6875rem 0.625rem;
     border-bottom: 1px solid hsl(0, 0%, 93%);
     cursor: pointer;
 
@@ -804,7 +804,7 @@ form#add_new_subscription {
         }
 
         .stream-creation-body {
-            padding: 15px;
+            padding: 0.9375rem;
         }
 
         .add-user-label {
@@ -1036,7 +1036,7 @@ ul.grey-box {
         #stream_privacy_modal &,
         #subscription_overlay & {
             border-bottom: 1px solid hsl(0, 0%, 87%);
-            padding: 5px 0;
+            padding: 0.3125rem 0;
         }
 
         input[type="checkbox"] {

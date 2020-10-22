@@ -2,7 +2,7 @@
     display: inline-flex;
     flex-wrap: wrap;
 
-    padding: 2px;
+    padding: 0.125rem;
     border: 1px solid hsla(0, 0%, 0%, 0.15);
     border-radius: 4px;
 
@@ -76,7 +76,7 @@
 
     .input {
         display: inline-block;
-        padding: 2px 4px;
+        padding: 0.125rem 0.25rem;
 
         min-width: 2px;
         word-break: break-all;
@@ -93,7 +93,7 @@
 }
 
 .pm_recipient .pill-container {
-    padding: 0 2px;
+    padding: 0 0.125rem;
     border: none;
     flex-grow: 1;
     align-content: center;

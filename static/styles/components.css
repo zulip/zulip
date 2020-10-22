@@ -18,7 +18,7 @@
                 position: relative;
                 top: -2px;
 
-                padding: 2px;
+                padding: 0.125rem;
                 margin: 0 5px 0 0;
                 height: 10px;
                 width: 10px;
@@ -109,5 +109,5 @@ a.no-underline:hover {
 i.zulip-icon.bot {
     color: hsl(180, 5%, 74%);
     vertical-align: top;
-    padding: 0 2px;
+    padding: 0 0.125rem;
 }

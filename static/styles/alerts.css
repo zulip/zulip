@@ -199,7 +199,7 @@ $alert-error-red: hsl(0, 80%, 40%);
             cursor: pointer;
 
             &::after {
-                padding: 10px;
+                padding: 0.625rem;
                 content: "\d7";
             }
         }

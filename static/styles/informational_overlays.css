@@ -13,7 +13,7 @@
     }
 
     .overlay-tabs {
-        padding: 10px 0;
+        padding: 0.625rem 0;
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 
         .tab-switcher {

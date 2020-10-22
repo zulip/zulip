@@ -10,12 +10,12 @@
     .author_details {
         display: block;
         font-size: 0.75rem;
-        padding: 1px;
+        padding: 0.0625rem;
         text-align: right;
     }
 
     .messagebox-content {
-        padding: 0 10px;
+        padding: 0 0.625rem;
     }
 
     .message_edit_history_content {

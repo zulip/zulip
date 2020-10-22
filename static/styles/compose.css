@@ -6,7 +6,7 @@
 
         .button.small {
             font-size: 1em;
-            padding: 3px 10px;
+            padding: 0.1875rem 0.625rem;
         }
 
         .compose_mobile_button {
@@ -28,7 +28,7 @@
         .alert-draft {
             font-size: 0.875rem;
             color: hsl(170, 48%, 54%);
-            padding: 3px 12px;
+            padding: 0.1875rem 0.75rem;
             font-weight: 400;
             display: none;
         }
@@ -46,7 +46,7 @@
     border-top: 1px solid hsla(0, 0%, 0%, 0.07);
     transition: background-color 200ms linear;
 
-    padding: 8px 10px 8px 10px;
+    padding: 0.5rem 0.625rem 0.5rem 0.625rem;
     margin-left: 250px;
     margin-right: 250px;
     position: relative;
@@ -61,7 +61,7 @@
 
 .message_comp {
     display: none;
-    padding: 10px 10px 8px 5px;
+    padding: 0.625rem 0.625rem 0.5rem 0.3125rem;
 }
 
 .autocomplete_secondary {
@@ -189,7 +189,7 @@
 .compose-all-everyone,
 .compose-announce,
 .compose_not_subscribed {
-    padding: 4px 0 4px 0;
+    padding: 0.25rem 0 0.25rem 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -230,7 +230,7 @@
 /* Like .nav-tabs > li > a */
 div[id^="message-edit-send-status"],
 #compose-send-status {
-    padding: 8px 14px 8px 14px;
+    padding: 0.5rem 0.875rem 0.5rem 0.875rem;
     margin-bottom: 8px;
     line-height: 20px;
     display: none;
@@ -242,7 +242,7 @@ div[id^="message-edit-send-status"],
 }
 
 #nonexistent_stream_reply_error {
-    padding: 8px 14px 8px 14px;
+    padding: 0.5rem 0.875rem 0.5rem 0.875rem;
     margin-bottom: 8px;
     line-height: 20px;
     display: none;
@@ -286,7 +286,7 @@ div[id^="message-edit-send-status"],
 }
 
 .compose-notifications-content {
-    padding: 4px 22px 4px 22px;
+    padding: 0.25rem 1.375rem 0.25rem 1.375rem;
     text-align: center;
 }
 
@@ -297,7 +297,7 @@ div[id^="message-edit-send-status"],
 textarea.new_message_textarea {
     display: table-cell;
     width: calc(100% - 12px);
-    padding: 5px;
+    padding: 0.3125rem;
     height: 1.5em;
     max-height: 22em;
     margin-bottom: 0;
@@ -437,7 +437,7 @@ a.message-control-button {
 .preview_message_area {
     /* minus 5px padding. */
     width: calc(100% - 12px);
-    padding: 5px;
+    padding: 0.3125rem;
     /* the maximum height the textarea gets to. */
     max-height: 308px;
     /* the minimum height the textarea collapses to. */
@@ -514,7 +514,7 @@ a#undo_markdown_preview {
     .compose_stream_button,
     .compose_private_button,
     .compose_reply_button {
-        padding: 5px 10px 5px 10px;
+        padding: 0.3125rem 0.625rem 0.3125rem 0.625rem;
     }
 
     textarea.new_message_textarea {

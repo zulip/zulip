@@ -16,7 +16,7 @@
 }
 
 .popover-content {
-    padding: 5px 0;
+    padding: 0.3125rem 0;
 }
 
 .popover-title {
@@ -89,7 +89,7 @@
                 border-radius: 4px;
                 color: hsl(0, 0%, 25%);
                 font-size: 0.75rem;
-                padding: 6px;
+                padding: 0.375rem;
                 text-transform: capitalize;
                 text-align: center;
                 text-shadow: none;
@@ -418,7 +418,7 @@ ul {
 
 .user_info_status_text {
     opacity: 0.8;
-    padding: 2px 0 3px 0;
+    padding: 0.125rem 0 0.1875rem 0;
 }
 
 #topic_stream_edit_form_error {

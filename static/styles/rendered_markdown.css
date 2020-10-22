@@ -100,13 +100,13 @@
 
     tr th {
         border: 1px solid hsl(0, 0%, 80%);
-        padding: 4px;
+        padding: 0.25rem;
         text-align: left;
     }
 
     tr td {
         border: 1px solid hsl(0, 0%, 80%);
-        padding: 4px;
+        padding: 0.25rem;
     }
 
     /* Emoji; sized to be easily understood while not overwhelming text. */
@@ -166,7 +166,7 @@
     /* Spoiler styling */
     .spoiler-block {
         border: hsl(0, 0%, 50%) 1px solid;
-        padding: 2px 8px 2px 10px;
+        padding: 0.125rem 0.5rem 0.125rem 0.625rem;
         border-radius: 10px;
         position: relative;
         top: 1px;
@@ -174,7 +174,7 @@
         margin: 5px 0 15px 0;
 
         .spoiler-header {
-            padding: 5px;
+            padding: 0.3125rem;
             font-weight: bold;
         }
 
@@ -190,7 +190,7 @@
                 border-top: hsl(0, 0%, 50%) 1px solid;
                 transition: height 0.4s ease-in-out, border-top 0.4s step-start,
                     padding 0.4s step-start;
-                padding: 5px;
+                padding: 0.3125rem;
                 height: auto;
             }
         }
@@ -256,7 +256,7 @@
     td.tictactoe {
         width: 15px;
         border: none;
-        padding: 2px;
+        padding: 0.125rem;
     }
 
     button.tictactoe-square {
@@ -361,7 +361,7 @@
     .embed-video .fa-play::before {
         position: absolute;
         margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
-        padding: 5px 8px 5px 10px;
+        padding: 0.3125rem 0.5rem 0.3125rem 0.625rem;
         font-size: 0.75rem;
         border-radius: 4px;
         background-color: hsl(0, 0%, 0%);
@@ -378,7 +378,7 @@
         border: none;
         border-left: 3px solid hsl(0, 0%, 93%);
         height: 80px;
-        padding: 5px;
+        padding: 0.3125rem;
         z-index: 1;
         text-shadow: hsla(0, 0%, 0%, 0.01) 0 0 1px;
 
@@ -410,7 +410,7 @@
 
         .data-container {
             position: relative;
-            padding: 0 5px;
+            padding: 0 0.3125rem;
             display: inline-block;
             vertical-align: top;
             max-width: calc(100% - 115px);
@@ -445,7 +445,7 @@
 
     .message_embed > * {
         display: inherit;
-        padding: 5px;
+        padding: 0.3125rem;
         border: none;
     }
 
@@ -529,7 +529,7 @@ code {
 
 .rendered_markdown code {
     white-space: pre-wrap;
-    padding: 0 4px;
+    padding: 0 0.25rem;
     background-color: hsl(0, 0%, 100%);
 }
 

@@ -58,7 +58,7 @@ h3 .fa-question-circle-o {
             display: inline-block;
             vertical-align: top;
             width: 150px;
-            padding: 5px 10px;
+            padding: 0.3125rem 0.625rem;
             text-align: left;
         }
     }
@@ -126,11 +126,11 @@ h3 .fa-question-circle-o {
 }
 
 .padded-container {
-    padding: 20px;
+    padding: 1.25rem;
 }
 
 .side-padded-container {
-    padding: 0 20px;
+    padding: 0 1.25rem;
 }
 
 #notification_sound,
@@ -240,7 +240,7 @@ td .button {
 
         .table-title {
             display: inline-block;
-            padding: 6px 0;
+            padding: 0.375rem 0;
             margin-left: 5px;
 
             i {
@@ -303,7 +303,7 @@ td .button {
     input[type="text"].search {
         float: right;
         margin: 2px 5px 2px 0;
-        padding: 2px 5px;
+        padding: 0.125rem 0.3125rem;
         font-size: 0.9em;
     }
 
@@ -361,7 +361,7 @@ td .button {
 
 .dynamic-input {
     display: inline-block;
-    padding: 5px;
+    padding: 0.3125rem;
     background-color: hsl(0, 0%, 100%);
     border: 1px solid hsl(0, 0%, 80%);
     border-radius: 3px;
@@ -488,7 +488,7 @@ input[type="checkbox"] {
 
 .alert-word-information-box {
     position: relative;
-    padding: 7px;
+    padding: 0.4375rem;
     margin: 2px;
     width: 50%;
 }
@@ -512,7 +512,7 @@ input[type="checkbox"] {
     margin-top: 14px;
     margin-left: 10px;
     color: hsl(156, 30%, 50%);
-    padding: 3px 10px;
+    padding: 0.1875rem 0.625rem;
     font-size: 0.9375rem;
 
     &:not(:empty) {
@@ -642,7 +642,7 @@ input[type="checkbox"] {
 .add-new-user-group-box,
 .add-new-default-stream-box {
     input[type="text"] {
-        padding: 6px;
+        padding: 0.375rem;
     }
 }
 
@@ -744,7 +744,7 @@ input[type="checkbox"] {
         }
 
         .btn {
-            padding: 4px;
+            padding: 0.25rem;
         }
 
         .sea-green {
@@ -812,7 +812,7 @@ input[type="checkbox"] {
     }
 
     .bot_info {
-        padding: 10px;
+        padding: 0.625rem;
     }
 
     .field {
@@ -841,7 +841,7 @@ input[type="checkbox"] {
 }
 
 .edit_bot_form_container {
-    padding: 15px;
+    padding: 0.9375rem;
 }
 
 .edit_bot_form {
@@ -901,7 +901,7 @@ input[type="checkbox"] {
     background-color: hsl(0, 0%, 100%);
 
     &:empty {
-        padding: 10px;
+        padding: 0.625rem;
     }
 }
 
@@ -936,7 +936,7 @@ input[type="checkbox"] {
 
 .emojiset_choices {
     width: 250px;
-    padding: 0 10px;
+    padding: 0 0.625rem;
 
     .emoji {
         height: 22px;
@@ -945,7 +945,7 @@ input[type="checkbox"] {
 
     label {
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
-        padding: 8px 0 10px 0;
+        padding: 0.5rem 0 0.625rem 0;
 
         &:last-of-type {
             border-bottom: none;
@@ -991,7 +991,7 @@ input[type="checkbox"] {
 #user-groups {
     .user-group {
         margin-bottom: 20px;
-        padding: 10px;
+        padding: 0.625rem;
         border-radius: 5px;
 
         h4 {
@@ -1056,7 +1056,7 @@ input[type="checkbox"] {
 
     .save-status {
         background-color: transparent;
-        padding: 2px 5px;
+        padding: 0.125rem 0.3125rem;
         border-radius: 4px;
         margin-left: 10px;
         border-style: solid;
@@ -1094,7 +1094,7 @@ input[type="checkbox"] {
         border-radius: 5px;
         border: 1px solid hsl(0, 0%, 80%);
         font-size: 0.875rem;
-        padding: 3px 14px 4px 11px;
+        padding: 0.1875rem 0.875rem 0.25rem 0.6875rem;
         text-decoration: none;
         color: hsl(0, 0%, 47%);
         min-width: 80px;
@@ -1231,11 +1231,11 @@ input[type="checkbox"] {
 
         .title,
         .content {
-            padding: 20px;
+            padding: 1.25rem;
         }
 
         .title {
-            padding: 10px 20px;
+            padding: 0.625rem 1.25rem;
             background-color: hsl(0, 0%, 98%);
             border-bottom: 1px solid hsl(0, 0%, 87%);
 
@@ -1268,7 +1268,7 @@ input[type="checkbox"] {
             height: auto;
             position: relative;
             width: calc(100% - 20px);
-            padding: 10px;
+            padding: 0.625rem;
             text-align: center;
             text-transform: uppercase;
 
@@ -1283,7 +1283,7 @@ input[type="checkbox"] {
         }
 
         li {
-            padding: 5px 0;
+            padding: 0.3125rem 0;
             outline: none;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -1312,7 +1312,7 @@ input[type="checkbox"] {
 
             .text {
                 width: calc(100% - 90px);
-                padding: 10px 12px 10px 0;
+                padding: 0.625rem 0.75rem 0.625rem 0;
             }
 
             .icon {
@@ -1352,7 +1352,7 @@ input[type="checkbox"] {
         }
 
         .tab-container {
-            padding: 6px;
+            padding: 0.375rem;
             border-bottom: 1px solid hsl(0, 0%, 87%);
         }
 
@@ -1611,7 +1611,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         from bootstrap to here. */
         li a {
             display: block;
-            padding: 3px 20px;
+            padding: 0.1875rem 1.25rem;
             clear: both;
             font-weight: normal;
             line-height: 20px;
@@ -1636,7 +1636,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
 .subsection-failed-status p {
     background-color: hsl(0, 43%, 91%);
-    padding: 2px 6px;
+    padding: 0.125rem 0.375rem;
     border-radius: 4px;
     margin: 0 0 0 5px;
 }
@@ -1719,7 +1719,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 .custom_user_field .pill-container {
-    padding: 2px 6px;
+    padding: 0.125rem 0.375rem;
     min-height: 24px;
     max-width: 206px;
     background-color: hsl(0, 0%, 100%);

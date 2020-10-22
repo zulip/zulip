@@ -1,9 +1,8 @@
-
 .tooltip {
     position: absolute;
     z-index: 1030;
     display: block;
-    padding: 5px;
+    padding: 0.3125rem;
     font-size: 0.6875rem;
     opacity: 0;
     filter: alpha(opacity=0);
@@ -27,7 +26,7 @@
 }
 .tooltip-inner {
   max-width: 200px;
-  padding: 3px 8px;
+  padding: 0.1875rem 0.5rem;
   color: #ffffff;
   text-align: center;
   text-decoration: none;
@@ -78,7 +77,7 @@
   z-index: 1010;
   display: none;
   width: 236px;
-  padding: 1px;
+  padding: 0.0625rem;
   background-color: #ffffff;
   border: 1px solid #ccc;
   border: 1px solid rgba(0, 0, 0, 0.2);
@@ -105,7 +104,7 @@
   margin-right: 10px;
 }
 .popover-title {
-  padding: 8px 14px;
+  padding: 0.5rem 0.875rem;
   margin: 0;
   font-size: 0.875rem;
   font-weight: normal;
@@ -117,7 +116,7 @@
           border-radius: 5px 5px 0 0;
 }
 .popover-content {
-  padding: 9px 14px;
+  padding: 0.5625rem 0.875rem;
 }
 .popover-content p,
 .popover-content ul,

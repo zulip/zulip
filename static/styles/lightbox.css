@@ -80,7 +80,7 @@
 
             margin: 0;
             margin-right: 5px;
-            padding: 0 5px;
+            padding: 0 0.3125rem;
 
             border-radius: 4px;
 
@@ -123,7 +123,7 @@
         .button {
             font-size: 0.9rem;
             min-width: inherit;
-            padding: 4px 10px;
+            padding: 0.25rem 0.625rem;
             border: 1px solid hsla(0, 0%, 100%, 0.6);
             background-color: transparent;
             color: hsl(0, 0%, 100%);
@@ -203,7 +203,7 @@
             display: inline-block;
             vertical-align: top;
             margin-top: 25px;
-            padding: 5px 10px;
+            padding: 0.3125rem 0.625rem;
 
             color: hsl(0, 0%, 100%);
             font-size: 1.8em;
@@ -223,7 +223,7 @@
         .image-list {
             position: relative;
             display: inline-block;
-            padding: 15px 0 12px 0;
+            padding: 0.9375rem 0 0.75rem 0;
             height: 50px;
             font-size: 0;
 

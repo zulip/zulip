@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 .btn {
   display: inline-block;
-  padding: 6px 12px;
+  padding: 0.375rem 0.75rem;
   margin-bottom: 0;
   font-size: 0.875rem;
   font-weight: normal;
@@ -360,21 +360,21 @@ fieldset[disabled] .btn-link:focus {
 }
 .btn-large,
 .btn-group-large > .btn {
-  padding: 10px 16px;
+  padding: 0.625rem 1.0rem;
   font-size: 1.125rem;
   line-height: 1.33;
   border-radius: 0px;
 }
 .btn-small,
 .btn-group-small > .btn {
-  padding: 5px 10px;
+  padding: 0.3125rem 0.625rem;
   font-size: 0.75rem;
   line-height: 1.5;
   border-radius: 0px;
 }
 .btn-mini,
 .btn-group-mini > .btn {
-  padding: 1px 5px;
+  padding: 0.0625rem 0.3125rem;
   font-size: 0.75rem;
   line-height: 1.5;
   border-radius: 0px;

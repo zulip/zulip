@@ -177,7 +177,7 @@
     }
 
     .hotspot-popover-top {
-        padding: 0 15px;
+        padding: 0 0.9375rem;
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;
         background-color: hsl(164, 44%, 47%);
@@ -192,7 +192,7 @@
 
     .hotspot-popover-content {
         background-color: hsl(0, 0%, 100%);
-        padding: 15px;
+        padding: 0.9375rem;
     }
 
     .hotspot-popover-bottom {
@@ -229,7 +229,7 @@
     background-color: hsl(164, 44%, 47%);
     border-radius: 4px;
     white-space: normal;
-    padding: 7px 20px;
+    padding: 0.4375rem 1.25rem;
     outline: none;
 
     &:hover {
@@ -267,7 +267,7 @@
         color: hsl(0, 0%, 100%);
         font-weight: 600;
         line-height: 24px;
-        padding: 5px 13px;
+        padding: 0.3125rem 0.8125rem;
         font-size: 1.15em;
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;

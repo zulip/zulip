@@ -1,10 +1,10 @@
 .widget-choices {
     ul {
-        padding: 3px;
+        padding: 0.1875rem;
     }
 
     li {
-        padding: 2px;
+        padding: 0.125rem;
         list-style: none;
     }
 
@@ -102,7 +102,7 @@ button {
     &.add-desc,
     &.poll-option,
     &.poll-question {
-        padding: 4px 6px;
+        padding: 0.25rem 0.375rem;
         margin: 2px 0 2px 0;
     }
 }

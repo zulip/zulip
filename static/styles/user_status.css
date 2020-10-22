@@ -46,7 +46,7 @@
     }
 
     .user-status-options {
-        padding: 0 20px 3px;
+        padding: 0 1.25rem 0.1875rem;
 
         button.user-status-value:hover {
             color: hsl(200, 100%, 40%);

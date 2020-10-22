@@ -54,14 +54,14 @@
 
     .recent_topics_table {
         margin: 0;
-        padding: 15px;
+        padding: 0.9375rem;
         overflow: hidden !important;
         display: flex;
         flex-direction: column;
 
         td {
             vertical-align: middle;
-            padding: 3px 8px 3px 8px;
+            padding: 0.1875rem 0.5rem 0.1875rem 0.5rem;
         }
 
         .recent_topics_focusable {
@@ -94,7 +94,7 @@
 
         .fa-check-square-o,
         .fa-square-o {
-            padding: 0 2px 0 2px;
+            padding: 0 0.125rem 0 0.125rem;
         }
 
         .fa-lock {
@@ -102,7 +102,7 @@
         }
 
         .table_fix_head {
-            padding: 10px;
+            padding: 0.625rem;
             padding-top: 0 !important;
             overflow-y: auto;
             max-height: 89%;
@@ -158,7 +158,7 @@
             font-weight: 400;
             letter-spacing: 0.6px;
             border-radius: 4px;
-            padding: 0 4px;
+            padding: 0 0.25rem;
             margin-right: 10px;
             align-self: center;
         }
@@ -187,7 +187,7 @@
             list-style-type: none;
             margin: auto; /* Centers vertically / horizontally in flex container. */
             height: 24px;
-            padding: 4px;
+            padding: 0.25rem;
             border-radius: 6px;
             overflow: hidden;
 
@@ -204,7 +204,7 @@
         .recent_avatars_item {
             height: 24px;
             margin: 0;
-            padding: 0 1.5px 0 1.5px;
+            padding: 0 1.0.3125rem 0 1.0.3125rem;
             position: relative;
             min-width: 24px;
         }

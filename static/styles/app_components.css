@@ -51,7 +51,7 @@
 .new-style {
     /* -- base button styling -- */
     .button {
-        padding: 7px 14px;
+        padding: 0.4375rem 0.875rem;
         margin: 0;
         min-width: 130px;
 
@@ -100,7 +100,7 @@
         &.small {
             font-size: 0.8rem;
             min-width: inherit;
-            padding: 6px 10px;
+            padding: 0.375rem 0.625rem;
         }
 
         &.small-flex {
@@ -207,7 +207,7 @@
             white-space: nowrap;
             overflow: hidden;
             vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
-            padding: 3px 10px;
+            padding: 0.1875rem 0.625rem;
             background-color: hsl(0, 0%, 100%);
             cursor: pointer;
             justify-content: center;
@@ -361,7 +361,7 @@
 
 .grey-box {
     margin: 0;
-    padding: 5px 10px;
+    padding: 0.3125rem 0.625rem;
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
@@ -463,7 +463,7 @@
     background-color: hsl(46, 63%, 95%);
     border: 1px solid hsl(49, 20%, 84%);
     border-radius: 4px;
-    padding: 10px;
+    padding: 0.625rem;
     margin: 10px 0;
     font-size: 1rem;
     line-height: 1.5;
