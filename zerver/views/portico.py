@@ -6,9 +6,9 @@ from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
-from version import LATEST_DESKTOP_VERSION
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics
+from zerver.lib.github import InvalidPlatform, get_latest_github_release_download_link_for_platform
 from zerver.models import Realm
 
 
@@ -18,13 +18,15 @@ def apps_view(request: HttpRequest, platform: Optional[str] = None) -> HttpRespo
         return TemplateResponse(
             request,
             'zerver/apps.html',
-            context={
-                "page_params": {
-                    'electron_app_version': LATEST_DESKTOP_VERSION,
-                },
-            },
         )
     return HttpResponseRedirect('https://zulip.com/apps/', status=301)
+
+def app_download_link_redirect(request: HttpRequest, platform: str) -> HttpResponse:
+    try:
+        download_link = get_latest_github_release_download_link_for_platform(platform)
+        return HttpResponseRedirect(download_link, status=302)
+    except InvalidPlatform:
+        return TemplateResponse(request, "404.html", status=404)
 
 @add_google_analytics
 def plans_view(request: HttpRequest) -> HttpResponse:

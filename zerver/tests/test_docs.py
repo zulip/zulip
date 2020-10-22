@@ -471,6 +471,17 @@ class AppsPageTest(ZulipTestCase):
         html = result.content.decode('utf-8')
         self.assertIn('Apps for every platform.', html)
 
+    def test_app_download_link_view(self) -> None:
+        return_value = "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-Web-Setup-5.4.3.exe"
+        with mock.patch("zerver.views.portico.get_latest_github_release_download_link_for_platform", return_value=return_value) as m:
+            result = self.client_get("/apps/download/windows")
+            m.assert_called_once_with("windows")
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result['Location'] == return_value)
+
+        result = self.client_get("/apps/download/plan9")
+        self.assertEqual(result.status_code, 404)
+
 class PrivacyTermsTest(ZulipTestCase):
     def test_custom_tos_template(self) -> None:
         response = self.client_get("/terms/")
