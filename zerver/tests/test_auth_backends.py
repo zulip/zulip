@@ -2064,7 +2064,7 @@ class AppleAuthMixin:
     CONFIG_ERROR_URL = "/config-error/apple"
 
     def generate_id_token(self, account_data_dict: Dict[str, str], audience: Optional[str]=None) -> str:
-        payload = account_data_dict
+        payload = dict(email=account_data_dict['email'])
 
         # This setup is important because python-social-auth decodes `id_token`
         # with `SOCIAL_AUTH_APPLE_CLIENT` as the `audience`
@@ -2107,9 +2107,10 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
                                 **extra_data: Any) -> HttpResponse:
         parsed_url = urllib.parse.urlparse(result.url)
         state = urllib.parse.parse_qs(parsed_url.query)['state']
+        user_param = json.dumps(account_data_dict)
         self.client.session.flush()
         result = self.client_post(self.AUTH_FINISH_URL,
-                                  dict(state=state), **headers)
+                                  dict(state=state, user=user_param), **headers)
         return result
 
     def register_extra_endpoints(self, requests_mock: responses.RequestsMock,
@@ -2205,6 +2206,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         multiuse_object_key: str='',
         alternative_start_url: Optional[str]=None,
         id_token: Optional[str]=None,
+        account_data_dict: Dict[str, str]={},
         *,
         user_agent: Optional[str]=None,
     ) -> Tuple[str, Dict[str, Any]]:
@@ -2224,6 +2226,8 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
 
         if subdomain:
             params['subdomain'] = subdomain
+
+        params['user'] = json.dumps(account_data_dict)
 
         url += f"&{urllib.parse.urlencode(params)}"
         return url, headers
@@ -2259,7 +2263,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         url, headers = self.prepare_login_url_and_headers(
             subdomain, mobile_flow_otp, desktop_flow_otp, is_signup, next,
             multiuse_object_key, alternative_start_url=self.AUTH_FINISH_URL,
-            user_agent=user_agent, id_token=id_token,
+            user_agent=user_agent, id_token=id_token, account_data_dict=account_data_dict,
         )
 
         with self.apple_jwk_url_mock():
@@ -2291,11 +2295,13 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
 
     def test_social_auth_session_fields_cleared_correctly(self) -> None:
         mobile_flow_otp = '1234abcd' * 8
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
 
         def initiate_auth(mobile_flow_otp: Optional[str]=None) -> None:
             url, headers = self.prepare_login_url_and_headers(subdomain='zulip',
                                                               id_token='invalid',
-                                                              mobile_flow_otp=mobile_flow_otp)
+                                                              mobile_flow_otp=mobile_flow_otp,
+                                                              account_data_dict=account_data_dict)
             result = self.client_get(url, **headers)
             self.assertEqual(result.status_code, 302)
 
@@ -2324,6 +2330,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         url, headers = self.prepare_login_url_and_headers(
             subdomain='zulip', alternative_start_url=self.AUTH_FINISH_URL,
             id_token=self.generate_id_token(account_data_dict, audience='com.different.app'),
+            account_data_dict=account_data_dict,
         )
 
         with self.apple_jwk_url_mock(),  self.assertLogs(self.logger_string, level='INFO') as m:
