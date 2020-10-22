@@ -1643,6 +1643,33 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
                 self.strategy.session_set(param, value)
         return request_state
 
+    def get_user_details(self, response: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Overriden to correctly grab the user's name from the request params,
+        as current upstream code expects it in the id_token and Apple changed
+        the API.
+        Taken from https://github.com/python-social-auth/social-core/pull/483
+        TODO: Remove this when the PR is merged.
+        """
+        name = response.get('name') or {}
+        name = json.loads(self.data.get('user', '{}')).get('name', {})
+        fullname, first_name, last_name = self.get_user_names(
+            fullname='',
+            first_name=name.get('firstName', ''),
+            last_name=name.get('lastName', '')
+        )
+        email = response.get('email', '')
+        # prevent updating User with empty strings
+        user_details = {
+            'fullname': fullname or None,
+            'first_name': first_name or None,
+            'last_name': last_name or None,
+            'email': email,
+        }
+        user_details['username'] = email
+
+        return user_details
+
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         if not self.is_native_flow():
             # The default implementation in python-social-auth is the browser flow.
