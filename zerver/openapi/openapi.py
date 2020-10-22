@@ -9,6 +9,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional, Set
 
+from jsonschema.exceptions import ValidationError as JsonSchemaValidationError
 from openapi_core import create_spec
 from openapi_core.testing import MockRequest
 from openapi_core.validation.request.validators import RequestValidator
@@ -247,7 +248,7 @@ def fix_events(content: Dict[str, Any]) -> None:
         event.pop('user', None)
 
 def validate_against_openapi_schema(content: Dict[str, Any], path: str,
-                                    method: str, status_code: str) -> bool:
+                                    method: str, status_code: str, display_brief_error: bool = False) -> bool:
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint. Return true if validated and false if skipped.
     """
@@ -290,8 +291,47 @@ def validate_against_openapi_schema(content: Dict[str, Any], path: str,
         # as all events haven't been documented yet.
         # TODO: Remove this after all events have been documented.
         fix_events(content)
+
     validator = OAS30Validator(schema)
-    validator.validate(content)
+    try:
+        validator.validate(content)
+    except JsonSchemaValidationError as error:
+        if not display_brief_error:
+            raise error
+
+        # display_brief_error is designed to avoid printing 1000 lines
+        # of output when the schema to validate is extremely large
+        # (E.g. the several dozen format variants for individual
+        # events returned by GET /events) and instead just display the
+        # specific variant we expect to match the response.
+        brief_error_display_schema = {
+            "nullable": False,
+            "oneOf": list()
+        }
+        brief_error_display_schema_oneOf = []
+        brief_error_validator_value = []
+
+        for validator_value in error.validator_value:
+            if validator_value["example"]["type"] == error.instance["type"]:
+                brief_error_validator_value.append(validator_value)
+
+        for i_schema in error.schema['oneOf']:
+            if i_schema["example"]["type"] == error.instance["type"]:
+                brief_error_display_schema_oneOf.append(i_schema)
+        brief_error_display_schema['oneOf'] = brief_error_display_schema_oneOf
+
+        # Field list from https://python-jsonschema.readthedocs.io/en/stable/errors/
+        raise JsonSchemaValidationError(
+            message=error.message,
+            validator=error.validator,
+            path=error.path,
+            instance=error.instance,
+            schema_path=error.schema_path,
+            schema=brief_error_display_schema,
+            validator_value=brief_error_validator_value,
+            cause=error.cause,
+        )
+
     return True
 
 def validate_schema(schema: Dict[str, Any]) -> None:

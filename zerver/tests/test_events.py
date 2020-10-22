@@ -255,7 +255,7 @@ class BaseAction(ZulipTestCase):
             'msg': '',
             'result': 'success'
         }
-        validate_against_openapi_schema(content, '/events', 'get', '200')
+        validate_against_openapi_schema(content, '/events', 'get', '200', display_brief_error=True)
         self.assertEqual(len(events), num_events)
         initial_state = copy.deepcopy(hybrid_state)
         post_process_state(self.user_profile, initial_state, notification_settings_null)
