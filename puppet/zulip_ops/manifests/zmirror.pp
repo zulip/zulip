@@ -23,15 +23,6 @@ class zulip_ops::zmirror {
     require => Exec['setup_apt_repo_debathena'],
   }
 
-  apt::source {'debathena':
-    location    => 'http://debathena.mit.edu/apt',
-    release     => $zulip::base::release_name,
-    repos       => 'debathena debathena-config',
-    key         => 'D1CD49BDD30B677273A75C66E4EE62700D8A9E8F',
-    key_source  => 'https://debathena.mit.edu/apt/debathena-archive.asc',
-    include_src => true,
-  }
-
   file { '/etc/supervisor/conf.d/zmirror.conf':
     ensure  => file,
     require => Package[supervisor],
