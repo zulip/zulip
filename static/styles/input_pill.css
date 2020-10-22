@@ -59,7 +59,7 @@
         padding: 0;
 
         .pill {
-            padding-right: 4px;
+            padding-right: 0.25rem;
             cursor: not-allowed;
 
             &:focus {

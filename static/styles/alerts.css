@@ -99,7 +99,7 @@ $alert-error-red: hsl(0, 80%, 40%);
             margin-top: 1rem;
 
             .stackframe {
-                padding-left: calc(3.3rem - 14px);
+                padding-left: calc(3.3rem - 0.875rem);
                 padding-right: 1rem;
             }
         }
@@ -156,9 +156,9 @@ $alert-error-red: hsl(0, 80%, 40%);
         position: relative;
 
         /* gives room for the error icon. */
-        padding-left: 50px;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        padding-left: 3.125rem;
+        padding-top: 0.625rem;
+        padding-bottom: 0.625rem;
 
         text-shadow: none;
 

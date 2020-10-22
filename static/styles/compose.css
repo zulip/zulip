@@ -334,7 +334,7 @@ input.recipient_box {
     }
 
     &.lock-padding {
-        padding-left: 18px;
+        padding-left: 1.125rem;
     }
 }
 
@@ -354,8 +354,8 @@ input.recipient_box {
        to float right, so that tabbing from the compose box goes here and then
        to the message controls to its left, to ensure "Tab then Enter" sends messages. */
     border-radius: 4px;
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding-top: 0.1875rem;
+    padding-bottom: 0.1875rem;
     margin-bottom: 0;
     font-weight: 600;
     border: 1px solid hsl(170, 68%, 41%);
@@ -406,7 +406,7 @@ a.message-control-button {
     width: 14px;
     height: 14px;
     margin-right: 8px;
-    padding-top: 5px;
+    padding-top: 0.3125rem;
     text-align: center;
     float: left;
 
@@ -474,9 +474,9 @@ a#undo_markdown_preview {
 
     .typeahead-header {
         margin: 0;
-        padding-left: 20px;
-        padding-right: 20px;
-        padding-top: 4px;
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        padding-top: 0.25rem;
         border-top: 1px solid hsla(0, 0%, 0%, 0.2);
         display: flex;
         align-items: center;

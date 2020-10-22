@@ -252,8 +252,8 @@ p.n-margin {
 
     .alert {
         margin: 0;
-        padding-top: 12px;
-        padding-bottom: 12px;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
 
         border: none;
         border-radius: 0;
@@ -364,7 +364,7 @@ p.n-margin {
     }
 
     .column-right .right-sidebar {
-        padding-left: 10px;
+        padding-left: 0.625rem;
         width: 240px;
     }
 
@@ -649,7 +649,7 @@ li.actual-dropdown-menu i {
 
 td.pointer {
     vertical-align: top;
-    padding-top: 10px;
+    padding-top: 0.625rem;
     background-color: hsl(0, 0%, 100%);
 }
 
@@ -702,7 +702,7 @@ td.pointer {
     display: inline-block;
     margin: 8px 0 8px -3px;
     /* this normalizes the margin of the emoji reactions with normal messages. */
-    padding-bottom: 5px;
+    padding-bottom: 0.3125rem;
     vertical-align: middle;
     line-height: 18px;
     font-size: 0.875rem;
@@ -749,8 +749,8 @@ td.pointer {
     color: hsl(170, 48%, 54%);
     background-color: hsl(0, 0%, 100%);
     z-index: 999;
-    padding-left: 20px;
-    padding-right: 40px;
+    padding-left: 1.25rem;
+    padding-right: 2.5rem;
     font-weight: 400;
     display: none;
 }
@@ -995,8 +995,8 @@ td.pointer {
 }
 
 .recipient_bar_icon {
-    padding-left: 2px;
-    padding-right: 2px;
+    padding-left: 0.125rem;
+    padding-right: 0.125rem;
 }
 
 .summary_row {
@@ -1156,7 +1156,7 @@ td.pointer {
     }
 
     .messagebox-content {
-        padding-bottom: 1px;
+        padding-bottom: 0.0625rem;
     }
 }
 
@@ -1603,7 +1603,7 @@ div.focused_table {
         color: inherit;
         text-decoration: none;
         /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
-        padding-right: calc(3px + 10px);
+        padding-right: calc(0.1875rem + 0.625rem);
     }
 
     .sub_count,
@@ -1616,9 +1616,9 @@ div.focused_table {
     }
 
     .sub_count {
-        padding-left: 10px;
+        padding-left: 0.625rem;
         margin-left: 1px;
-        padding-right: 10px;
+        padding-right: 0.625rem;
         margin-right: 1px;
         .fa.fa-user-o {
             margin-left: 0;
@@ -1663,11 +1663,11 @@ div.focused_table {
         white-space: nowrap;
         margin: 0;
         padding: 0.75rem 0;
-        padding-left: 10px;
+        padding-left: 0.625rem;
 
         @media (max-width: 500px) {
             padding: 0.4375rem 0;
-            padding-left: 10px;
+            padding-left: 0.625rem;
         }
 
         & > a {
@@ -1759,8 +1759,8 @@ div.focused_table {
         font-size: 1rem;
         height: $header_height;
         padding: 0;
-        padding-left: 5px;
-        padding-right: 20px;
+        padding-left: 0.3125rem;
+        padding-right: 1.25rem;
         border: none;
         border-radius: 0;
         font-family: "Source Sans Pro";
@@ -1816,7 +1816,7 @@ div.focused_table {
     }
 
     #search_arrows {
-        padding-left: 35px;
+        padding-left: 2.1875rem;
         font-size: 90%;
         letter-spacing: normal;
     }
@@ -1851,7 +1851,7 @@ div.focused_table {
         padding-left: 0;
     }
     #search_query {
-        padding-left: 35px;
+        padding-left: 2.1875rem;
     }
     .search_button {
         right: 0;
@@ -1932,8 +1932,8 @@ div.focused_table {
     background-color: hsl(0, 0%, 89%);
     width: 40px;
     height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
+    padding-top: 0.75rem;
+    padding-bottom: 0.5625rem;
 }
 
 #streamlist-toggle-unreadcount,
@@ -2210,7 +2210,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .message_edit_spinner {
     margin-right: 8px;
-    padding-top: 5px;
+    padding-top: 0.3125rem;
 }
 
 .message_edit_spinner .loading_indicator_spinner {
@@ -2305,7 +2305,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #invite-stream-checkboxes {
-    padding-bottom: 26px;
+    padding-bottom: 1.625rem;
 }
 
 #invite-method-choice {
@@ -2335,8 +2335,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .notifications-gravatar img {
     max-width: 25px;
     max-height: 25px;
-    padding-left: 4px;
-    padding-top: 4px;
+    padding-left: 0.25rem;
+    padding-top: 0.25rem;
 }
 
 .empty_feed_notice {
@@ -2382,15 +2382,15 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .sub-unsub-message,
 .date_row {
     text-align: center;
-    padding-bottom: 10px;
+    padding-bottom: 0.625rem;
 }
 
 .date_row {
-    padding-left: 2px;
+    padding-left: 0.125rem;
 
     .date-direction {
         display: inline-block;
-        padding-right: 5px;
+        padding-right: 0.3125rem;
     }
 
     .date-line {
@@ -2483,8 +2483,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
     display: inline-block;
     margin: 0 0 0 0;
     height: 22px;
-    padding-left: 20px;
-    padding-right: 3px;
+    padding-left: 1.25rem;
+    padding-right: 0.1875rem;
     line-height: 22px;
     margin-left: -15px;
 }
@@ -2630,8 +2630,8 @@ select.inline_select_topic_edit {
                 padding-top: $header_padding_bottom;
 
                 padding-bottom: 0;
-                padding-left: 15px;
-                padding-right: 15px;
+                padding-left: 0.9375rem;
+                padding-right: 0.9375rem;
                 height: 100%;
                 right: 0;
             }
@@ -2709,7 +2709,7 @@ select.inline_select_topic_edit {
                 padding-top: $header_padding_bottom;
 
                 height: 100%;
-                padding-left: 10px;
+                padding-left: 0.625rem;
                 width: 250px;
             }
         }
@@ -2791,7 +2791,7 @@ select.inline_select_topic_edit {
             padding: 0;
 
             #streams_header {
-                padding-right: 10px;
+                padding-right: 0.625rem;
             }
         }
 
@@ -2849,7 +2849,7 @@ select.inline_select_topic_edit {
     }
 
     .messagebox-content {
-        padding-right: 15px;
+        padding-right: 0.9375rem;
     }
 
     /* In mobile views we place it just to the right of the time element */
@@ -2881,7 +2881,7 @@ select.inline_select_topic_edit {
     }
 
     .message_content {
-        padding-right: 50px;
+        padding-right: 3.125rem;
     }
 }
 

@@ -22,8 +22,8 @@
     }
 
     .recent_topics_header {
-        padding-top: 4px;
-        padding-bottom: 8px;
+        padding-top: 0.25rem;
+        padding-bottom: 0.5rem;
         text-align: center;
         border-bottom: 1px solid hsl(0, 0%, 87%);
 
@@ -98,7 +98,7 @@
         }
 
         .fa-lock {
-            padding-right: 3px;
+            padding-right: 0.1875rem;
         }
 
         .table_fix_head {
@@ -132,7 +132,7 @@
 
         .clear_search_button {
             /* Overrides app_components.css property. */
-            padding-top: 6px !important;
+            padding-top: 0.375rem !important;
         }
 
         .btn-recent-filters {
@@ -253,7 +253,7 @@
                 white-space: pre;
                 display: inline-block;
                 position: absolute;
-                padding-top: 3px;
+                padding-top: 0.1875rem;
                 font: normal normal normal 12px/1 FontAwesome;
                 font-size: inherit;
             }

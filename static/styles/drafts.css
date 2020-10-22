@@ -22,8 +22,8 @@
     }
 
     .drafts-header {
-        padding-top: 4px;
-        padding-bottom: 8px;
+        padding-top: 0.25rem;
+        padding-bottom: 0.5rem;
         text-align: center;
         border-bottom: 1px solid hsl(0, 0%, 87%);
 
@@ -103,8 +103,8 @@
 
         .message_content {
             line-height: 1;
-            padding-top: 10px;
-            padding-bottom: 10px;
+            padding-top: 0.625rem;
+            padding-bottom: 0.625rem;
             margin-left: 0;
         }
 

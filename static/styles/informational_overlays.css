@@ -30,7 +30,7 @@
     }
 
     .overlay-modal {
-        padding-bottom: 10px;
+        padding-bottom: 0.625rem;
 
         .modal-header h3 {
             font-weight: 300;

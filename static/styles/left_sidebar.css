@@ -10,7 +10,7 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
 #left-sidebar {
     #user-list {
-        padding-left: 10px;
+        padding-left: 0.625rem;
     }
 }
 
@@ -35,7 +35,7 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 /* Ideally we'd handle hashtags using an <i> and just have a single rule here. */
 .stream-privacy span.hashtag,
 #left-sidebar .filter-icon i {
-    padding-right: 3px;
+    padding-right: 0.1875rem;
 }
 
 .pm_left_col {
@@ -92,9 +92,9 @@ li.show-more-topics {
             margin-left: 0;
 
             &.topic-list li {
-                padding-top: 2px;
+                padding-top: 0.125rem;
                 padding-right: 0;
-                padding-bottom: 2px;
+                padding-bottom: 0.125rem;
                 padding-left: $topic_indent;
             }
         }
@@ -127,7 +127,7 @@ li.show-more-topics {
             text-overflow: ellipsis;
             position: relative;
             width: 100%;
-            padding-right: 2px;
+            padding-right: 0.125rem;
         }
 
         &.stream-with-count {
@@ -180,7 +180,7 @@ li.show-more-topics {
         min-width: 19px;
         text-align: center;
         &::before {
-            padding-right: 3px;
+            padding-right: 0.1875rem;
         }
     }
 }
@@ -251,8 +251,8 @@ li.top_left_mentions,
 li.top_left_starred_messages,
 li.top_left_recent_topics {
     position: relative;
-    padding-top: 1px;
-    padding-bottom: 1px;
+    padding-top: 0.0625rem;
+    padding-bottom: 0.0625rem;
 
     a {
         display: block;
@@ -261,7 +261,7 @@ li.top_left_recent_topics {
 
 .top_left_row {
     padding-left: $far_left_gutter_size;
-    padding-right: 10px;
+    padding-right: 0.625rem;
 }
 
 .top_left_row,
@@ -333,7 +333,7 @@ li.top_left_recent_topics {
 }
 
 .topic-box {
-    padding-left: 5px;
+    padding-left: 0.3125rem;
     margin-right: 30px;
 }
 
@@ -344,7 +344,7 @@ li.top_left_recent_topics {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding-right: 2px;
+    padding-right: 0.125rem;
 }
 
 .topic-name {
@@ -431,19 +431,19 @@ ul.expanded_private_messages {
     font-size: 0.8125rem;
     font-weight: 400;
     margin-left: 0;
-    padding-bottom: 2px;
+    padding-bottom: 0.125rem;
     margin-top: 3px;
 }
 
 li.topic-list-item {
     position: relative;
-    padding-right: 5px;
+    padding-right: 0.3125rem;
 }
 
 li.expanded_private_message {
     position: relative;
-    padding-top: 1px;
-    padding-bottom: 1px;
+    padding-top: 0.0625rem;
+    padding-bottom: 0.0625rem;
 
     a {
         margin: 1px 0;
@@ -464,7 +464,7 @@ li.expanded_private_message {
 .topic-box {
     display: flex;
     justify-content: center;
-    padding-top: 1px;
+    padding-top: 0.0625rem;
     cursor: pointer;
 }
 

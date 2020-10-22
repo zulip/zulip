@@ -8,8 +8,8 @@
     }
 
     .sub_disable_btn_hint {
-        padding-left: 5px;
-        padding-right: 5px;
+        padding-left: 0.3125rem;
+        padding-right: 0.3125rem;
         font-size: small;
         text-align: justify;
     }
@@ -214,7 +214,7 @@ ul {
             color: hsl(180, 5%, 74%);
             vertical-align: top;
             width: 20px;
-            padding-top: 3.5px;
+            padding-top: 3.0.3125rem;
             text-align: center;
         }
     }
@@ -346,8 +346,8 @@ ul {
 
     &:not(.no-fields) {
         #body {
-            padding-bottom: 10px;
-            padding-top: 4px;
+            padding-bottom: 0.625rem;
+            padding-top: 0.25rem;
             margin: 10px 0;
         }
     }

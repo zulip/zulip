@@ -532,8 +532,8 @@ a:focus {
   clear: both;
 }
 .container-fluid {
-  padding-right: 20px;
-  padding-left: 20px;
+  padding-right: 1.25rem;
+  padding-left: 1.25rem;
   *zoom: 1;
 }
 .container-fluid:before,
@@ -669,7 +669,7 @@ h4 small {
   font-size: 0.875rem;
 }
 .page-header {
-  padding-bottom: 9px;
+  padding-bottom: 0.5625rem;
   margin: 20px 0 30px;
   border-bottom: 1px solid #eeeeee;
 }
@@ -704,8 +704,8 @@ ol.inline > li {
   /* IE7 inline-block hack */
 
   *zoom: 1;
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 0.3125rem;
+  padding-right: 0.3125rem;
 }
 dl {
   margin-bottom: 20px;
@@ -780,7 +780,7 @@ blockquote small:before {
 }
 blockquote.pull-right {
   float: right;
-  padding-right: 15px;
+  padding-right: 0.9375rem;
   padding-left: 0;
   border-right: 5px solid #eeeeee;
   border-left: 0;
@@ -875,8 +875,8 @@ pre code {
   border-radius: 3px;
 }
 .badge {
-  padding-left: 9px;
-  padding-right: 9px;
+  padding-left: 0.5625rem;
+  padding-right: 0.5625rem;
   -webkit-border-radius: 9px;
   -moz-border-radius: 9px;
   border-radius: 9px;
@@ -1388,7 +1388,7 @@ textarea::-webkit-input-placeholder {
 .radio,
 .checkbox {
   min-height: 20px;
-  padding-left: 20px;
+  padding-left: 1.25rem;
 }
 .radio input[type="radio"],
 .checkbox input[type="checkbox"] {
@@ -1397,12 +1397,12 @@ textarea::-webkit-input-placeholder {
 }
 .controls > .radio:first-child,
 .controls > .checkbox:first-child {
-  padding-top: 5px;
+  padding-top: 0.3125rem;
 }
 .radio.inline,
 .checkbox.inline {
   display: inline-block;
-  padding-top: 5px;
+  padding-top: 0.3125rem;
   margin-bottom: 0;
   vertical-align: middle;
 }
@@ -1537,7 +1537,7 @@ textarea.span1,
 }
 .controls-row .checkbox[class*="span"],
 .controls-row .radio[class*="span"] {
-  padding-top: 5px;
+  padding-top: 0.3125rem;
 }
 input[disabled],
 select[disabled],
@@ -1736,7 +1736,7 @@ select:focus:invalid:focus {
 
   *zoom: 1;
   vertical-align: middle;
-  padding-left: 5px;
+  padding-left: 0.3125rem;
 }
 .input-append,
 .input-prepend {
@@ -1879,10 +1879,10 @@ select:focus:invalid:focus {
   margin-left: 0;
 }
 input.search-query {
-  padding-right: 14px;
-  padding-right: 4px \9;
-  padding-left: 14px;
-  padding-left: 4px \9;
+  padding-right: 0.875rem;
+  padding-right: 0.25rem \9;
+  padding-left: 0.875rem;
+  padding-left: 0.25rem \9;
   /* IE7-8 doesn't have border-radius, so don't indent the padding */
 
   margin-bottom: 0;
@@ -2002,17 +2002,17 @@ legend + .control-group {
 .form-horizontal .control-label {
   float: left;
   width: 160px;
-  padding-top: 5px;
+  padding-top: 0.3125rem;
   text-align: right;
 }
 .form-horizontal .controls {
   *display: inline-block;
-  *padding-left: 20px;
+  *padding-left: 1.25rem;
   margin-left: 180px;
   *margin-left: 0;
 }
 .form-horizontal .controls:first-child {
-  *padding-left: 180px;
+  *padding-left: 11.25rem;
 }
 .form-horizontal .help-block {
   margin-bottom: 0;
@@ -2026,7 +2026,7 @@ legend + .control-group {
   margin-top: 10px;
 }
 .form-horizontal .form-actions {
-  padding-left: 180px;
+  padding-left: 11.25rem;
 }
 /* Removed .btn related code */
 [class^="icon-"],
@@ -2519,8 +2519,8 @@ legend + .control-group {
   margin-top: 9px;
 }
 .nav-list {
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: 0.9375rem;
+  padding-right: 0.9375rem;
   margin-bottom: 0;
 }
 .nav-list > li > a,
@@ -2574,8 +2574,8 @@ legend + .control-group {
 }
 .nav-tabs > li > a,
 .nav-pills > li > a {
-  padding-right: 12px;
-  padding-left: 12px;
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
   margin-right: 2px;
   line-height: 14px;
 }
@@ -2586,8 +2586,8 @@ legend + .control-group {
   margin-bottom: -1px;
 }
 .nav-tabs > li > a {
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
   line-height: 20px;
   border: 1px solid transparent;
   -webkit-border-radius: 4px 4px 0 0;
@@ -2608,8 +2608,8 @@ legend + .control-group {
   cursor: default;
 }
 .nav-pills > li > a {
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
   margin-top: 2px;
   margin-bottom: 2px;
   -webkit-border-radius: 5px;
@@ -2840,8 +2840,8 @@ legend + .control-group {
 }
 .navbar-inner {
   min-height: 40px;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
   background-color: #fafafa;
   background-image: -moz-linear-gradient(top, #ffffff, #f2f2f2);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#f2f2f2));
@@ -3647,8 +3647,8 @@ a.thumbnail:focus {
   color: #3a87ad;
 }
 .alert-block {
-  padding-top: 14px;
-  padding-bottom: 14px;
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
 }
 .alert-block > p,
 .alert-block > ul {
@@ -4400,8 +4400,8 @@ a.thumbnail:focus {
   border-radius: 6px 0 6px 6px;
 }
 .dropdown .dropdown-menu .nav-header {
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
 }
 .typeahead {
   z-index: 1051;
@@ -4714,8 +4714,8 @@ button.close {
 }
 @media (max-width: 767px) {
   body {
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
   }
   .navbar-fixed-top,
   .navbar-fixed-bottom,
@@ -4832,8 +4832,8 @@ button.close {
     padding-top: 0;
   }
   .form-horizontal .form-actions {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
   }
   .media .pull-left,
   .media .pull-right {
@@ -5569,8 +5569,8 @@ button.close {
     padding: 0;
   }
   .navbar .brand {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
     margin: 0 0 0 -5px;
   }
   .nav-collapse {
@@ -5693,8 +5693,8 @@ button.close {
     display: block;
   }
   .navbar-static .navbar-inner {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
   }
 }
 @media (min-width: 980px) {

@@ -198,7 +198,7 @@ td .button {
 }
 
 .settings-info-icon {
-    padding-left: 3px;
+    padding-left: 0.1875rem;
     opacity: 0.9;
 }
 
@@ -268,7 +268,7 @@ td .button {
                 white-space: pre;
                 display: inline-block;
                 position: absolute;
-                padding-top: 3px;
+                padding-top: 0.1875rem;
                 font: normal normal normal 12px/1 FontAwesome;
                 font-size: inherit;
             }
@@ -343,7 +343,7 @@ td .button {
         }
 
         td {
-            padding-left: 80px;
+            padding-left: 5.0rem;
         }
     }
 
@@ -737,7 +737,7 @@ input[type="checkbox"] {
     }
 
     .edit-bot-buttons {
-        padding-top: 5px;
+        padding-top: 0.3125rem;
 
         button {
             background-color: transparent;
@@ -1363,7 +1363,7 @@ input[type="checkbox"] {
     }
 
     .settings-header {
-        padding-top: 1px;
+        padding-top: 0.0625rem;
 
         &.mobile {
             display: none;
@@ -1410,7 +1410,7 @@ input[type="checkbox"] {
     }
 
     .custom_user_field {
-        padding-bottom: 20px;
+        padding-bottom: 1.25rem;
 
         textarea {
             width: 320px;
@@ -1523,7 +1523,7 @@ input[type="checkbox"] {
     }
 
     #show_my_user_profile_modal i {
-        padding-left: 2px;
+        padding-left: 0.125rem;
         vertical-align: middle;
     }
 }
@@ -1689,7 +1689,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         appearance: none;
         background: hsl(0, 0%, 100%) url(../images/dropdown.png) right / 20px
             no-repeat;
-        padding-right: 20px;
+        padding-right: 1.25rem;
     }
 }
 

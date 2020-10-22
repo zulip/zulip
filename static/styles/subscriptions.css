@@ -261,11 +261,11 @@ form#add_new_subscription {
                     padding: 0.25rem 0;
 
                     &:first-of-type {
-                        padding-left: 10px;
+                        padding-left: 0.625rem;
                     }
 
                     &:last-of-type {
-                        padding-right: 10px;
+                        padding-right: 0.625rem;
                     }
 
                     &.unsubscribe {
@@ -309,7 +309,7 @@ form#add_new_subscription {
 
 .subscriber-email {
     margin-left: 20px;
-    padding-right: 8px;
+    padding-right: 0.5rem;
 }
 
 .subscriber_list_add {
@@ -337,7 +337,7 @@ form#add_new_subscription {
     align-items: center;
 
     .add_subscriber_btn_wrapper {
-        padding-left: 5px;
+        padding-left: 0.3125rem;
     }
 }
 
@@ -358,7 +358,7 @@ form#add_new_subscription {
 #subscriptions h1 {
     font-size: 1.5625rem;
     font-weight: 300;
-    padding-top: 40px;
+    padding-top: 2.5rem;
 }
 
 #subscriptions .streams-icon {
@@ -851,7 +851,7 @@ form#add_new_subscription {
             font-size: 1.5em;
             font-weight: 600;
             margin-left: -3px;
-            padding-bottom: 5px;
+            padding-bottom: 0.3125rem;
             white-space: nowrap;
             max-width: 260px;
 

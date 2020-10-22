@@ -57,7 +57,7 @@
 
     /* Formatting for blockquotes */
     blockquote {
-        padding-left: 5px;
+        padding-left: 0.3125rem;
         margin-left: 10px;
         margin-top: 5px;
         margin-bottom: 6px;
@@ -71,7 +71,7 @@
 
     &.rtl blockquote {
         padding-left: unset;
-        padding-right: 5px;
+        padding-right: 0.3125rem;
         margin-left: unset;
         margin-right: 10px;
         border-left: unset;
@@ -80,7 +80,7 @@
 
     /* Formatting for Markdown tables */
     table {
-        padding-right: 10px;
+        padding-right: 0.625rem;
         margin: 5px 5px 5px 5px;
         width: 99%;
         display: block;
@@ -551,10 +551,10 @@ pre {
     margin-top: 5px;
     margin-bottom: 5px;
     /* Bootstrap's default here is 9.5 on all sides */
-    padding-top: 5px;
-    padding-bottom: 3px;
-    padding-left: 7px;
-    padding-right: 7px;
+    padding-top: 0.3125rem;
+    padding-bottom: 0.1875rem;
+    padding-left: 0.4375rem;
+    padding-right: 0.4375rem;
 }
 
 .rendered_markdown pre code {

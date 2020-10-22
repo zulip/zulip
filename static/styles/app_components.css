@@ -343,8 +343,8 @@
         background: none;
         border: none;
         text-align: center;
-        padding-top: 8px;
-        padding-left: 4px;
+        padding-top: 0.5rem;
+        padding-left: 0.25rem;
         color: hsl(0, 0%, 80%);
         text-shadow: none;
         outline: none !important;
@@ -354,7 +354,7 @@
         .user_status_overlay & {
             margin-left: -26px;
             right: 0;
-            padding-top: 6px;
+            padding-top: 0.375rem;
         }
     }
 }

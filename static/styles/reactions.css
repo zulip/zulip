@@ -1,5 +1,5 @@
 .message_reactions {
-    padding-left: 46px;
+    padding-left: 2.875rem;
     overflow: hidden;
 
     user-select: none;
@@ -167,7 +167,7 @@
 
             .emoji-popover-filter {
                 margin: auto;
-                padding-left: 22px;
+                padding-left: 1.375rem;
                 width: calc(100% - 22px - 8px);
                 font-size: 90%;
             }
@@ -183,7 +183,7 @@
 
             .emoji-popover-tab-item {
                 display: inline-block;
-                padding-top: 8px;
+                padding-top: 0.5rem;
                 width: 25px;
                 height: 25px;
                 text-align: center;
@@ -206,7 +206,7 @@
             overflow-y: auto;
             display: block;
             width: 247px;
-            padding-left: 3px;
+            padding-left: 0.1875rem;
         }
 
         .emoji-search-results-container {
