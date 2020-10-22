@@ -193,7 +193,7 @@ strength allowed is controlled by two settings in
 
     API super user bots cannot be created by Zulip users, including
     organization owners. They can only be created on the command
-    line (via `manage.py knight --permission=api_super_user`).
+    line (via `manage.py change_user_role api_super_user`).
 
 ## User-uploaded content
 

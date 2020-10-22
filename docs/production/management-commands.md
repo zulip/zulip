@@ -117,11 +117,10 @@ There are dozens of useful management commands under
 * `./manage.py send_password_reset_email`: Sends password reset email(s)
   to one or more users.
 * `./manage.py change_user_email`: Change a user's email address.
-* `./manage.py knight`: Can toggle whether a user is an administrator
+* `./manage.py change_user_role`: Can change are user's role
   (easier done [via the
   UI](https://zulip.com/help/change-a-users-role)) or create an
-  API super user bot (with `--permission=api_super_user`), which are
-  needed for some content mirroring integrations.
+  `api_super_user`, which are needed for certain special API features.
 * `./manage.py export_single_user` does a limited version of the [main
   export tools](../production/export-and-import.md) containing just
   the messages accessible by a single user.
