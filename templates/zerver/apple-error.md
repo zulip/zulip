@@ -8,7 +8,7 @@ properly configured. Please check the following:
 
 * You have set `SOCIAL_AUTH_APPLE_SERVICES_ID`,
   `SOCIAL_AUTH_APPLE_APP_ID`, `SOCIAL_AUTH_APPLE_TEAM`,
-  `SOCIAL_AUTH_APPLE_KEY` and `SOCIAL_AUTH_APPLE_TEAM` in `{{
+  and `SOCIAL_AUTH_APPLE_KEY` in `{{
   settings_path }}` and stored the private key provided by Apple at
   `/etc/zulip/apple-auth-key.p8` on the Zulip server, with
   proper permissions set.
