@@ -2032,13 +2032,9 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(
             english_message[MATCH_TOPIC],
             'english')
-        self.assertIn(
+        self.assertEqual(
             english_message['match_content'],
-            # NOTE: The whitespace here is off due to a pgroonga bug.
-            # This bug is a pgroonga regression and according to one of
-            # the author, this should be fixed in its next release.
-            ['<p>I want to go to <span class="highlight">日本</span>!</p>',  # This is correct.
-             '<p>I want to go to<span class="highlight"> 日本</span>!</p>'])
+            '<p>I want to go to <span class="highlight">日本</span>!</p>')
 
         # Should not crash when multiple search operands are present
         multi_search_narrow = [
