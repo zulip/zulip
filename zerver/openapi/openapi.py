@@ -9,7 +9,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional, Set
 
-from jsonschema.exceptions import ValidationError
+from jsonschema.exceptions import ValidationError as JsonSchemaValidationError
 from openapi_core import create_spec
 from openapi_core.testing import MockRequest
 from openapi_core.validation.request.validators import RequestValidator
@@ -248,7 +248,7 @@ def fix_events(content: Dict[str, Any]) -> None:
         event.pop('user', None)
 
 def validate_against_openapi_schema(content: Dict[str, Any], path: str,
-                                    method: str, status_code: str) -> bool:
+                                    method: str, status_code: str, display_brief_error: bool = False) -> bool:
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint. Return true if validated and false if skipped.
     """
@@ -294,32 +294,30 @@ def validate_against_openapi_schema(content: Dict[str, Any], path: str,
     validator = OAS30Validator(schema)
     try:
         validator.validate(content)
-    except ValidationError as error:
-        to_be_display_schema = {
+    except JsonSchemaValidationError as error:
+        brief_error_display_schema = {
             "nullable": False,
             "oneOf": []
         }
 
-        to_be_display_validator_value = []
-        try:
+        brief_error_validator_value = []
+        if display_brief_error:
             for validator_value in error.validator_value:
-                if validator_value.get("example").get("type") == error.instance.get("type"):
-                    to_be_display_validator_value.append(validator_value)
-        except Exception:
-            pass
+                if validator_value["example"]["type"] == error.instance["type"]:
+                    brief_error_validator_value.append(validator_value)
 
-        try:
-            for i_schema in error.schema.get('oneOf'):
-                if i_schema.get("example").get("type") == error.instance.get("type"):
-                    to_be_display_schema.get('oneOf').append(i_schema)
-        except Exception:
-            pass
-        raise ValidationError(
-            message=error.message, validator=error.validator, path=error.path, instance=error.instance,
-            schema_path=error.schema_path, schema=to_be_display_schema,
-            validator_value=to_be_display_validator_value,
-            cause=error.cause
-        )
+            for i_schema in error.schema['oneOf']:
+                if i_schema["example"]["type"] == error.instance["type"]:
+                    brief_error_display_schema['oneOf'].append(i_schema)
+
+            raise JsonSchemaValidationError(
+                message=error.message, validator=error.validator, path=error.path, instance=error.instance,
+                schema_path=error.schema_path, schema=brief_error_display_schema,
+                validator_value=brief_error_validator_value,
+                cause=error.cause
+            )
+        else:
+            raise error
 
     return True
 
