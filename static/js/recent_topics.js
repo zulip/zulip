@@ -313,6 +313,12 @@ exports.inplace_rerender = function (topic_key) {
     if (exports.filters_should_hide_topic(topic_data)) {
         topic_row.hide();
     } else {
+        // If the topic hasn't been rendered as part of the recent topics
+        // during initial render, it will not be present in the DOM and hence,
+        // we cannot show it. So, we have to rerender all the topics here.
+        if (topic_row.length === 0) {
+            topics_widget.hard_redraw();
+        }
         topic_row.show();
     }
     revive_current_focus();
