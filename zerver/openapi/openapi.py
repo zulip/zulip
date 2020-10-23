@@ -297,9 +297,9 @@ def validate_against_openapi_schema(content: Dict[str, Any], path: str,
     except JsonSchemaValidationError as error:
         brief_error_display_schema = {
             "nullable": False,
-            "oneOf": []
+            "oneOf": list()
         }
-
+        brief_error_display_schema_oneOf = []
         brief_error_validator_value = []
         if display_brief_error:
             for validator_value in error.validator_value:
@@ -308,7 +308,8 @@ def validate_against_openapi_schema(content: Dict[str, Any], path: str,
 
             for i_schema in error.schema['oneOf']:
                 if i_schema["example"]["type"] == error.instance["type"]:
-                    brief_error_display_schema['oneOf'].append(i_schema)
+                    brief_error_display_schema_oneOf.append(i_schema)
+            brief_error_display_schema['oneOf'] = brief_error_display_schema_oneOf
 
             raise JsonSchemaValidationError(
                 message=error.message, validator=error.validator, path=error.path, instance=error.instance,
