@@ -1,0 +1,7 @@
+{% macro email_tag(email, text) -%}
+    <a href="mailto:{{ email }}">{{ text | default(email) }}</a>
+{%- endmacro %}
+
+{% macro referrer_email_tag(referrer_email, referrer_name) -%}
+    <a href="mailto:{{ referrer_email }}">{{ referrer_name }} ({{ referrer_email }})</a>
+{%- endmacro %}
