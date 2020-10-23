@@ -19,20 +19,20 @@
     h3[id],
     h4[id] {
         &::before {
-            margin-top: -10px;
-            height: 10px;
+            margin-top: -0.625rem;
+            height: 0.625rem;
         }
     }
 
     h1 {
         border-bottom: 1px solid hsl(0, 0%, 93%);
         padding-bottom: 10px;
-        margin-bottom: 15px;
+        margin-bottom: 0.9375rem;
 
         &[id] {
             &::before {
-                margin-top: -30px;
-                height: 30px;
+                margin-top: -1.875rem;
+                height: 1.875rem;
             }
         }
         &#using-zulip,
@@ -47,14 +47,14 @@
     h2 {
         font-size: 1.5em;
         line-height: 1.25;
-        margin: 20px 0 5px 0;
+        margin: 1.25rem 0 0.3125rem 0;
     }
 
     h3 {
         font-size: 1.25em;
         line-height: 1.25;
         opacity: 1;
-        margin-bottom: 7px;
+        margin-bottom: 0.4375rem;
     }
 
     h1,
@@ -72,7 +72,7 @@
 
                 cursor: pointer;
                 content: "\f0c1";
-                margin-left: 5px;
+                margin-left: 0.3125rem;
                 vertical-align: middle;
             }
         }
@@ -80,7 +80,7 @@
 
     ul,
     ol {
-        margin-left: 30px;
+        margin-left: 1.875rem;
     }
 
     li {
@@ -93,14 +93,14 @@
 
         & > li {
             counter-increment: item;
-            margin-bottom: 5px;
+            margin-bottom: 0.3125rem;
 
             &::before {
                 content: counter(item);
                 display: inline-block;
                 vertical-align: top;
                 padding: 3px 6.5px 3px 7.5px;
-                margin-right: 5px;
+                margin-right: 0.3125rem;
                 background-color: hsl(170, 48%, 54%);
                 color: hsl(0, 0%, 100%);
                 border-radius: 100%;
@@ -112,7 +112,7 @@
             & > p {
                 display: inline-block;
                 vertical-align: top;
-                max-width: calc(100% - 32px);
+                max-width: calc(100% - 2.0rem);
                 position: relative;
                 top: -2px;
             }
@@ -120,7 +120,7 @@
             & > .codehilite,
             & > p:not(:first-child) {
                 padding-left: 24px;
-                margin-left: 5px;
+                margin-left: 0.3125rem;
             }
 
             .codehilite {
@@ -134,12 +134,12 @@
             .warn,
             .tip,
             .keyboard_tip {
-                margin: 5px 25px 5px;
+                margin: 0.3125rem 1.5625rem 0.3125rem;
             }
         }
 
         p {
-            margin: 0 0 2px;
+            margin: 0 0 0.125rem;
         }
 
         @media (max-width: 500px) {
@@ -148,10 +148,10 @@
     }
 
     ul {
-        margin: 0 10px 15px 25px;
+        margin: 0 0.625rem 0.9375rem 1.5625rem;
 
         & > li {
-            margin: 5px 0;
+            margin: 0.3125rem 0;
 
             ::before {
                 content: none;
@@ -161,7 +161,7 @@
 
     .content {
         padding: 30px;
-        max-width: 768px;
+        max-width: 48.0rem;
         background-color: hsl(0, 0%, 100%);
 
         ol li p:not(:first-child) {
@@ -169,7 +169,7 @@
         }
 
         i.zulip-icon {
-            margin: 0 2px 2px 2px;
+            margin: 0 0.125rem 0.125rem 0.125rem;
             vertical-align: middle;
         }
 
@@ -199,14 +199,14 @@
         }
 
         &.emoji-small {
-            width: 20px;
+            width: 1.25rem;
             box-shadow: none;
             border: none;
             vertical-align: sub;
         }
 
         &.emoji-big {
-            width: 25px;
+            width: 1.5625rem;
             box-shadow: none;
             border: none;
         }
@@ -221,7 +221,7 @@
         border: 1px solid hsl(210, 22%, 90%);
         border-radius: 4px;
         padding: 10px;
-        margin: 5px 0;
+        margin: 0.3125rem 0;
 
         p {
             margin-bottom: 0;
@@ -270,10 +270,10 @@
             &::after {
                 content: "";
                 background: hsl(0, 0%, 80%);
-                height: 1.5px;
-                width: 6px;
+                height: 1.0.3125rem;
+                width: 0.375rem;
                 display: block;
-                margin: 0.5px -2px;
+                margin: 0.0.3125rem -0.125rem;
             }
         }
 
@@ -308,7 +308,7 @@
     }
 
     pre {
-        line-height: 15px;
+        line-height: 0.9375rem;
         code {
             white-space: pre-wrap;
         }
@@ -316,8 +316,8 @@
 
     .code-section {
         ol {
-            margin-left: 15px;
-            margin-top: 10px;
+            margin-left: 0.9375rem;
+            margin-top: 0.625rem;
         }
         ul.nav {
             margin: 0;
@@ -331,7 +331,7 @@
 
                 &.active {
                     color: hsl(176, 46%, 41%);
-                    margin-bottom: -1px;
+                    margin-bottom: -0.0625rem;
 
                     border: 1px solid hsl(0, 0%, 87%);
                     border-bottom: 1px solid hsl(0, 0%, 100%);
@@ -346,7 +346,7 @@
 
         .blocks {
             padding: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 0.625rem;
             border: 1px solid hsl(0, 0%, 87%);
 
             & > div {

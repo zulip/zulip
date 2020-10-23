@@ -5,7 +5,7 @@ button {
 
 #custom_http_headers {
     width: 100%;
-    height: 60px;
+    height: 3.75rem;
     resize: vertical;
 }
 
@@ -23,13 +23,13 @@ button {
 
 #fixture_body {
     width: 90%;
-    height: 500px;
+    height: 31.25rem;
     resize: vertical;
 }
 
 #idp-results {
     width: 100%;
-    height: 500px;
+    height: 31.25rem;
     resize: vertical;
     background-color: hsl(0, 0%, 100%);
 }
@@ -67,7 +67,7 @@ button {
 }
 
 .pad-small {
-    height: 100px;
+    height: 6.25rem;
     width: 100%;
 }
 

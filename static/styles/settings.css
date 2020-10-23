@@ -42,22 +42,22 @@ h3 .fa-question-circle-o {
         width: 70%;
     }
     .w-200 {
-        width: 200px;
+        width: 12.5rem;
     }
     .m-t-20 {
-        margin-top: 20px;
+        margin-top: 1.25rem;
     }
     .m-t-10 {
-        margin-top: 10px;
+        margin-top: 0.625rem;
     }
     .grid {
         label {
-            min-width: 200px;
+            min-width: 12.5rem;
         }
         .warning {
             display: inline-block;
             vertical-align: top;
-            width: 150px;
+            width: 9.375rem;
             padding: 0.3125rem 0.625rem;
             text-align: left;
         }
@@ -65,20 +65,20 @@ h3 .fa-question-circle-o {
     #account-settings {
         .grid {
             label {
-                min-width: 120px;
+                min-width: 7.5rem;
             }
             .warning {
                 display: block;
-                width: calc(100% - 20px - 5px);
+                width: calc(100% - 1.25rem - 0.3125rem);
                 text-align: right;
             }
         }
     }
     .warning {
         #pw_strength {
-            width: 140px;
-            height: 8px;
-            margin: 6px 0 0 0;
+            width: 8.75rem;
+            height: 0.5rem;
+            margin: 0.375rem 0 0 0;
         }
     }
     .button {
@@ -86,14 +86,14 @@ h3 .fa-question-circle-o {
             text-align: left;
         }
         &.button i.fa.fa-pencil {
-            margin-left: 3px;
+            margin-left: 0.1875rem;
         }
     }
     /* this is because the input[type=text] is also 200px wide but has
     12px of padding and 2px worth of borders. These don't apply to
     buttons however. */
     .input-size {
-        width: 214px;
+        width: 13.375rem;
     }
 }
 
@@ -101,7 +101,7 @@ h3 .fa-question-circle-o {
     float: right;
 
     .avatar-controls {
-        margin-top: 20px;
+        margin-top: 1.25rem;
         box-shadow: none;
     }
 
@@ -111,17 +111,17 @@ h3 .fa-question-circle-o {
 }
 
 #change_email_modal {
-    max-width: 460px;
+    max-width: 28.75rem;
 }
 
 #change_full_name_modal {
-    max-width: 480px;
+    max-width: 30.0rem;
 }
 
 .admin-realm-description {
     height: 16em;
     width: 100%;
-    max-width: 500px;
+    max-width: 31.25rem;
     box-sizing: border-box;
 }
 
@@ -136,7 +136,7 @@ h3 .fa-question-circle-o {
 #notification_sound,
 #play_notification_sound {
     display: inline;
-    margin-right: 4px;
+    margin-right: 0.25rem;
 
     i {
         font-size: 1.375rem;
@@ -145,7 +145,7 @@ h3 .fa-question-circle-o {
 }
 
 .attributions_title {
-    margin-top: 24px;
+    margin-top: 1.5rem;
 }
 
 .table {
@@ -193,7 +193,7 @@ h3 .fa-question-circle-o {
 }
 
 td .button {
-    margin: 2px 0;
+    margin: 0.125rem 0;
     box-shadow: none;
 }
 
@@ -213,8 +213,8 @@ td .button {
 
 .settings-section {
     display: none;
-    width: calc(100% - 40px);
-    margin: 20px;
+    width: calc(100% - 2.5rem);
+    margin: 1.25rem;
 
     &.show {
         display: block;
@@ -231,7 +231,7 @@ td .button {
     .settings-section-title {
         font-size: 1.4em;
         font-weight: 500;
-        margin: 10px 0 10px 0;
+        margin: 0.625rem 0 0.625rem 0;
 
         &.transparent {
             background-color: transparent;
@@ -241,10 +241,10 @@ td .button {
         .table-title {
             display: inline-block;
             padding: 0.375rem 0;
-            margin-left: 5px;
+            margin-left: 0.3125rem;
 
             i {
-                margin-right: 5px;
+                margin-right: 0.3125rem;
             }
         }
     }
@@ -302,7 +302,7 @@ td .button {
 
     input[type="text"].search {
         float: right;
-        margin: 2px 5px 2px 0;
+        margin: 0.125rem 0.3125rem 0.125rem 0;
         padding: 0.125rem 0.3125rem;
         font-size: 0.9em;
     }
@@ -318,16 +318,16 @@ td .button {
         font-size: 0.75rem;
         font-weight: 400;
         vertical-align: middle;
-        line-height: 20px;
+        line-height: 1.25rem;
         display: inline-block;
         float: none;
-        margin-top: 9px;
+        margin-top: 0.5625rem;
     }
 
     .loading_indicator_spinner {
         width: 30%;
-        height: 30px;
-        margin-top: 7px;
+        height: 1.875rem;
+        margin-top: 0.4375rem;
         vertical-align: middle;
         display: inline-block;
     }
@@ -339,7 +339,7 @@ td .button {
     #default_language_modal {
         table {
             width: 90%;
-            margin-top: 20px;
+            margin-top: 1.25rem;
         }
 
         td {
@@ -366,7 +366,7 @@ td .button {
     border: 1px solid hsl(0, 0%, 80%);
     border-radius: 3px;
     transition: box-shadow 0.3s ease;
-    min-width: 208px;
+    min-width: 13.0rem;
 
     &:hover {
         outline: none;
@@ -380,7 +380,7 @@ td .button {
     }
 
     div {
-        margin-right: -2px;
+        margin-right: -0.125rem;
 
         &:empty::after {
             content: "username";
@@ -400,12 +400,12 @@ td .button {
 
 .button,
 .input-group {
-    margin: 0 0 20px 0;
+    margin: 0 0 1.25rem 0;
 }
 
 .input-group {
     .thinner {
-        margin: 10px 0;
+        margin: 0.625rem 0;
     }
 
     label.checkbox + label {
@@ -414,12 +414,12 @@ td .button {
 }
 
 .dependent-block {
-    margin: -5px 0 15px 35px;
+    margin: -0.3125rem 0 0.9375rem 2.1875rem;
 }
 
 .dependent-inline-block {
     display: inline-block;
-    margin: 0 0 0 10px !important;
+    margin: 0 0 0 0.625rem !important;
 }
 
 .no-margin {
@@ -428,11 +428,11 @@ td .button {
 
 input[type="checkbox"] {
     + .inline-block {
-        margin-left: 10px;
+        margin-left: 0.625rem;
     }
 
     .inline-block {
-        margin: -2px 0 0 0;
+        margin: -0.125rem 0 0 0;
     }
 }
 
@@ -447,7 +447,7 @@ input[type="checkbox"] {
 
 .admin-realm-form {
     h3 {
-        margin-bottom: 10px;
+        margin-bottom: 0.625rem;
     }
 
     .subsection-header h3 {
@@ -456,7 +456,7 @@ input[type="checkbox"] {
 }
 
 .organization-settings-parent > div:first-of-type {
-    margin-top: 10px;
+    margin-top: 0.625rem;
 }
 
 .org-settings-form .organization-submission {
@@ -464,19 +464,19 @@ input[type="checkbox"] {
 }
 
 #id_org_profile_preview {
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
 }
 
 .inline-block.organization-permissions-parent div:first-of-type {
-    margin-top: 10px;
+    margin-top: 0.625rem;
 }
 
 #default_language {
-    margin-left: 20px;
+    margin-left: 1.25rem;
 }
 
 .remove-attachment {
-    margin-right: 5px !important;
+    margin-right: 0.3125rem !important;
     font-size: 1.1em !important;
     padding-left: 0 !important;
 }
@@ -489,7 +489,7 @@ input[type="checkbox"] {
 .alert-word-information-box {
     position: relative;
     padding: 0.4375rem;
-    margin: 2px;
+    margin: 0.125rem;
     width: 50%;
 }
 
@@ -498,7 +498,7 @@ input[type="checkbox"] {
 }
 
 .remove-alert-word {
-    margin-top: 1px;
+    margin-top: 0.0625rem;
 }
 
 .alert-notification {
@@ -509,8 +509,8 @@ input[type="checkbox"] {
 
     background-color: transparent;
     border-radius: 4px;
-    margin-top: 14px;
-    margin-left: 10px;
+    margin-top: 0.875rem;
+    margin-left: 0.625rem;
     color: hsl(156, 30%, 50%);
     padding: 0.1875rem 0.625rem;
     font-size: 0.9375rem;
@@ -525,8 +525,8 @@ input[type="checkbox"] {
     }
 
     .loading_indicator_spinner {
-        width: 13px;
-        height: 20px;
+        width: 0.8125rem;
+        height: 1.25rem;
         margin: 0;
     }
 
@@ -542,14 +542,14 @@ input[type="checkbox"] {
     }
 
     img {
-        margin-right: 6px;
+        margin-right: 0.375rem;
         vertical-align: middle;
-        margin-top: -2px;
+        margin-top: -0.125rem;
     }
 }
 
 #profile-field-settings #admin-add-profile-field-status {
-    margin-top: 4px;
+    margin-top: 0.25rem;
 }
 
 #notification-settings {
@@ -589,7 +589,7 @@ input[type="checkbox"] {
         margin-top: 0;
         font-size: 0.875rem;
         padding-left: 0;
-        margin-left: 5px;
+        margin-left: 0.3125rem;
         border: none;
     }
 }
@@ -603,8 +603,8 @@ input[type="checkbox"] {
 }
 
 .disableable {
-    margin-left: 22px;
-    margin-top: -10px;
+    margin-left: 1.375rem;
+    margin-top: -0.625rem;
 }
 
 .admin-realm-message-content-delete-limit-minutes {
@@ -621,21 +621,21 @@ input[type="checkbox"] {
     text-align: center;
     width: 50%;
     margin: auto;
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
 }
 
 .add-new-emoji-box,
 .add-new-user-group-box,
 .add-new-alert-word-box,
 .add-new-export-box {
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
 }
 
 .add-new-emoji-box .new-emoji-form,
 .add-new-user-group-box .new-user-group-form,
 .add-new-alert-word-box .new-alert-word-form,
 .add-new-export-box {
-    margin: 10px 0;
+    margin: 0.625rem 0;
 }
 
 .add-new-emoji-box,
@@ -666,12 +666,12 @@ input[type="checkbox"] {
 .add-new-profile-field-box,
 .add-new-filter-box {
     button {
-        margin-left: calc(10em + 20px) !important;
+        margin-left: calc(10em + 1.25rem) !important;
     }
 }
 
 .grey-box .wrapper {
-    margin: 10px 0;
+    margin: 0.625rem 0;
 }
 
 .admin_profile_fields_table,
@@ -683,7 +683,7 @@ input[type="checkbox"] {
             position: relative;
             top: 1px;
             + i {
-                margin-right: 5px;
+                margin-right: 0.3125rem;
             }
         }
     }
@@ -691,18 +691,18 @@ input[type="checkbox"] {
 
 #admin-filter-pattern-status,
 #admin-filter-format-status {
-    margin: 20px 0 0 0;
+    margin: 1.25rem 0 0 0;
 }
 
 .progressive-table-wrapper {
     position: relative;
-    max-height: calc(95vh - 220px);
+    max-height: calc(95vh - 13.75rem);
     overflow: auto;
     width: 100%;
 }
 
 #admin-default-streams-list .progressive-table-wrapper {
-    max-height: calc(95vh - 280px);
+    max-height: calc(95vh - 17.5rem);
 }
 
 .bots_list {
@@ -717,7 +717,7 @@ input[type="checkbox"] {
     .name {
         font-weight: 600;
         font-size: 1.1rem;
-        margin: 7px 5px;
+        margin: 0.4375rem 0.3125rem;
 
         overflow: hidden;
         line-height: 1.3em;
@@ -727,7 +727,7 @@ input[type="checkbox"] {
 
     .regenerate_bot_api_key {
         position: relative;
-        margin-left: 5px;
+        margin-left: 0.3125rem;
         color: hsl(0, 0%, 67%);
         transition: all 0.3s ease;
 
@@ -767,9 +767,9 @@ input[type="checkbox"] {
     .bot-information-box {
         position: relative;
         display: inline-block;
-        width: calc(50% - 10px);
-        max-height: 220px;
-        margin: 5px;
+        width: calc(50% - 0.625rem);
+        max-height: 13.75rem;
+        margin: 0.3125rem;
 
         border-radius: 4px;
         box-sizing: border-box;
@@ -778,14 +778,14 @@ input[type="checkbox"] {
 
         .details {
             display: inline-block;
-            width: calc(100% - 75px);
+            width: calc(100% - 4.6875rem);
         }
     }
 
     img.avatar {
-        margin: 10px 5px 0 10px;
-        height: 50px;
-        width: 50px;
+        margin: 0.625rem 0.3125rem 0 0.625rem;
+        height: 3.125rem;
+        width: 3.125rem;
         border-radius: 4px;
         vertical-align: top;
         box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
@@ -793,7 +793,7 @@ input[type="checkbox"] {
 
     .email,
     .type {
-        margin-bottom: 5px;
+        margin-bottom: 0.3125rem;
     }
 
     .email .value,
@@ -823,7 +823,7 @@ input[type="checkbox"] {
 }
 
 .bot_error {
-    margin-top: 10px;
+    margin-top: 0.625rem;
     margin-bottom: 0 !important;
 }
 
@@ -837,7 +837,7 @@ input[type="checkbox"] {
 }
 
 #inactive_bots_list .bot_info .reactivate_bot {
-    margin-top: 5px;
+    margin-top: 0.3125rem;
 }
 
 .edit_bot_form_container {
@@ -853,11 +853,11 @@ input[type="checkbox"] {
         text-transform: uppercase;
         font-weight: 600;
         color: hsl(0, 0%, 67%);
-        margin-top: 5px;
+        margin-top: 0.3125rem;
     }
 
     .buttons {
-        margin: 10px 0 5px 0;
+        margin: 0.625rem 0 0.3125rem 0;
     }
 }
 
@@ -866,7 +866,7 @@ input[type="checkbox"] {
     font-size: 1.125rem;
     text-align: left;
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 0.625rem;
 
     overflow: hidden;
     max-height: 1.1em;
@@ -883,7 +883,7 @@ input[type="checkbox"] {
     .control-label {
         width: 10em;
         text-align: right;
-        margin-right: 20px;
+        margin-right: 1.25rem;
     }
 }
 
@@ -913,7 +913,7 @@ input[type="checkbox"] {
 
         &.alert-word-item:first-child {
             background: none;
-            margin-top: 8px;
+            margin-top: 0.5rem;
         }
     }
 
@@ -935,12 +935,12 @@ input[type="checkbox"] {
 }
 
 .emojiset_choices {
-    width: 250px;
+    width: 15.625rem;
     padding: 0 0.625rem;
 
     .emoji {
-        height: 22px;
-        width: 22px;
+        height: 1.375rem;
+        width: 1.375rem;
     }
 
     label {
@@ -954,7 +954,7 @@ input[type="checkbox"] {
         input[type="radio"] {
             position: relative;
             top: -2px;
-            margin: 0 5px 0 0;
+            margin: 0 0.3125rem 0 0;
 
             &:checked + span {
                 font-weight: 600;
@@ -975,7 +975,7 @@ input[type="checkbox"] {
     display: inline-flex;
 
     .regenerate_api_key {
-        margin-right: 5px;
+        margin-right: 0.3125rem;
     }
 }
 
@@ -985,12 +985,12 @@ input[type="checkbox"] {
 
 .invite-user-link i {
     text-decoration: none;
-    margin-right: 5px;
+    margin-right: 0.3125rem;
 }
 
 #user-groups {
     .user-group {
-        margin-bottom: 20px;
+        margin-bottom: 1.25rem;
         padding: 0.625rem;
         border-radius: 5px;
 
@@ -1015,7 +1015,7 @@ input[type="checkbox"] {
         span[contenteditable]:focus,
         span[contenteditable="true"]:hover {
             border-bottom: 1px solid hsl(0, 0%, 80%);
-            margin-bottom: -1px;
+            margin-bottom: -0.0625rem;
             outline: none;
         }
 
@@ -1026,7 +1026,7 @@ input[type="checkbox"] {
     }
 
     .user-group-status {
-        margin-bottom: 10px;
+        margin-bottom: 0.625rem;
     }
 
     p {
@@ -1035,7 +1035,7 @@ input[type="checkbox"] {
     }
 
     .spacer {
-        margin: 0 2px;
+        margin: 0 0.125rem;
     }
 
     .subscribers,
@@ -1058,15 +1058,15 @@ input[type="checkbox"] {
         background-color: transparent;
         padding: 0.125rem 0.3125rem;
         border-radius: 4px;
-        margin-left: 10px;
+        margin-left: 0.625rem;
         border-style: solid;
-        border-width: 1px;
+        border-width: 0.0625rem;
         display: none;
         opacity: 0;
     }
 
     .checkmark {
-        height: 12px;
+        height: 0.75rem;
     }
 
     .delete {
@@ -1085,7 +1085,7 @@ input[type="checkbox"] {
 #settings_page {
     height: 95vh;
     width: 97vw;
-    max-width: 1024px;
+    max-width: 64.0rem;
     margin: 2.5vh auto;
     overflow: hidden;
     border-radius: 4px;
@@ -1097,8 +1097,8 @@ input[type="checkbox"] {
         padding: 0.1875rem 0.875rem 0.25rem 0.6875rem;
         text-decoration: none;
         color: hsl(0, 0%, 47%);
-        min-width: 80px;
-        line-height: 16px;
+        min-width: 5.0rem;
+        line-height: 1.0rem;
 
         &:hover {
             background-color: hsl(0, 0%, 100%);
@@ -1133,8 +1133,8 @@ input[type="checkbox"] {
 
         .save-discard-widget-button-icon {
             vertical-align: bottom;
-            margin-right: 3px;
-            margin-bottom: 1px;
+            margin-right: 0.1875rem;
+            margin-bottom: 0.0625rem;
             font-size: 0.9375rem;
             font-weight: 500;
         }
@@ -1142,7 +1142,7 @@ input[type="checkbox"] {
 
     .save-button-controls {
         display: inline;
-        margin-left: 15px;
+        margin-left: 0.9375rem;
 
         &.hide {
             display: none;
@@ -1150,7 +1150,7 @@ input[type="checkbox"] {
     }
 
     .save-button {
-        margin-right: 5px;
+        margin-right: 0.3125rem;
 
         .save-discard-widget-button-loading {
             display: none;
@@ -1163,7 +1163,7 @@ input[type="checkbox"] {
 
             .save-discard-widget-button-loading {
                 display: inline-block;
-                margin-right: 2px;
+                margin-right: 0.125rem;
             }
         }
     }
@@ -1191,7 +1191,7 @@ input[type="checkbox"] {
 
     input.search {
         font-size: 0.9rem;
-        margin: 10px 0 20px 0;
+        margin: 0.625rem 0 1.25rem 0;
     }
 
     .form-sidebar {
@@ -1199,8 +1199,8 @@ input[type="checkbox"] {
         top: 45px;
         right: 0;
         transform: translateX(303px);
-        width: 300px;
-        height: calc(100% - 45px);
+        width: 18.75rem;
+        height: calc(100% - 2.8125rem);
 
         background-color: hsl(0, 0%, 100%);
         border-left: 1px solid hsl(0, 0%, 87%);
@@ -1216,7 +1216,7 @@ input[type="checkbox"] {
         }
 
         input[type="text"] {
-            width: calc(100% - 10px - 4px);
+            width: calc(100% - 0.625rem - 0.25rem);
         }
 
         input[type="submit"],
@@ -1249,7 +1249,7 @@ input[type="checkbox"] {
                 float: right;
                 font-size: 2rem;
                 font-weight: 300;
-                margin-top: 11px;
+                margin-top: 0.6875rem;
                 cursor: pointer;
             }
         }
@@ -1258,7 +1258,7 @@ input[type="checkbox"] {
     .sidebar {
         float: left;
         position: relative;
-        width: 250px;
+        width: 15.625rem;
         height: 100%;
         overflow-y: auto;
         border-top-left-radius: 4px;
@@ -1267,7 +1267,7 @@ input[type="checkbox"] {
         .header {
             height: auto;
             position: relative;
-            width: calc(100% - 20px);
+            width: calc(100% - 1.25rem);
             padding: 0.625rem;
             text-align: center;
             text-transform: uppercase;
@@ -1311,15 +1311,15 @@ input[type="checkbox"] {
             }
 
             .text {
-                width: calc(100% - 90px);
+                width: calc(100% - 5.625rem);
                 padding: 0.625rem 0.75rem 0.625rem 0;
                 white-space: nowrap;
             }
 
             .icon {
-                width: 18px;
-                height: 18px;
-                margin: 10px 10px;
+                width: 1.125rem;
+                height: 1.125rem;
+                margin: 0.625rem 0.625rem;
                 text-align: center;
 
                 font-size: 1.4em;
@@ -1330,9 +1330,9 @@ input[type="checkbox"] {
             }
 
             .locked {
-                width: 18px;
-                height: 18px;
-                margin: 14px 8px 6px;
+                width: 1.125rem;
+                height: 1.125rem;
+                margin: 0.875rem 0.5rem 0.375rem;
 
                 font-size: 1em;
                 color: hsl(0, 0%, 62%);
@@ -1382,7 +1382,7 @@ input[type="checkbox"] {
             text-align: center;
             font-size: 1.1em;
             line-height: 1;
-            margin: 15px;
+            margin: 0.9375rem;
             text-transform: uppercase;
         }
 
@@ -1399,7 +1399,7 @@ input[type="checkbox"] {
             float: right;
             position: relative;
             top: 3px;
-            margin-left: 3px;
+            margin-left: 0.1875rem;
             font-size: 1.5rem;
             font-weight: 600;
             cursor: pointer;
@@ -1414,8 +1414,8 @@ input[type="checkbox"] {
         padding-bottom: 1.25rem;
 
         textarea {
-            width: 320px;
-            height: 80px;
+            width: 20.0rem;
+            height: 5.0rem;
         }
 
         &:hover .remove_date {
@@ -1440,7 +1440,7 @@ input[type="checkbox"] {
         }
 
         .person_picker {
-            min-width: 206px;
+            min-width: 12.875rem;
         }
     }
 
@@ -1448,13 +1448,13 @@ input[type="checkbox"] {
         position: absolute;
         left: 251px;
         /* the width of the settings sidbar this is right of is 250px + 1px border. */
-        width: calc(100% - 250px - 1px);
+        width: calc(100% - 15.625rem - 0.0625rem);
         height: 100%;
         overflow: hidden;
 
         .settings-header {
             width: 100%;
-            height: 43px;
+            height: 2.6875rem;
             border-bottom: 1px solid hsl(0, 0%, 87%);
 
             h1 .section {
@@ -1467,7 +1467,7 @@ input[type="checkbox"] {
         #settings_content {
             position: relative;
             width: 100%;
-            height: calc(100% - 45px);
+            height: calc(100% - 2.8125rem);
 
             float: left;
             overflow-y: auto;
@@ -1478,14 +1478,14 @@ input[type="checkbox"] {
     }
 
     .display-settings-form select {
-        width: 245px;
+        width: 15.3125rem;
     }
 
     #change_full_name_modal .change_full_name_info,
     #change_email_modal .change_email_info,
     #change_password_modal .change_password_info,
     #api_key_modal #api_key_status {
-        margin-top: 3px;
+        margin-top: 0.1875rem;
     }
 }
 
@@ -1519,8 +1519,8 @@ input[type="checkbox"] {
     }
 
     #show_my_user_profile_modal {
-        width: 150px;
-        margin-top: 20px;
+        width: 9.375rem;
+        margin-top: 1.25rem;
     }
 
     #show_my_user_profile_modal i {
@@ -1550,21 +1550,21 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 .m-t-10 {
-    margin-top: 10px;
+    margin-top: 0.625rem;
 }
 
 #do_deactivate_self_button .loader {
     display: none;
     vertical-align: top;
     position: relative;
-    height: 30px;
-    margin-top: -10px;
+    height: 1.875rem;
+    margin-top: -0.625rem;
     top: 5px;
 }
 
 .dropdown-list-widget {
     button {
-        margin: 0 5px;
+        margin: 0 0.3125rem;
 
         &.dropdown_list_reset_button {
             /* Prevent night mode from overriding background. */
@@ -1581,7 +1581,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 
     .dropdown-search > input[type="text"] {
-        margin: 9px;
+        margin: 0.5625rem;
     }
 
     .dropdown-menu {
@@ -1592,7 +1592,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     .dropdown-list-wrapper {
         position: relative;
         height: auto;
-        max-height: 200px;
+        max-height: 12.5rem;
         overflow-y: auto;
         margin-top: 0;
         display: block;
@@ -1615,7 +1615,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
             padding: 0.1875rem 1.25rem;
             clear: both;
             font-weight: normal;
-            line-height: 20px;
+            line-height: 1.25rem;
             color: hsl(0, 0%, 20%);
             white-space: nowrap;
 
@@ -1639,7 +1639,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     background-color: hsl(0, 43%, 91%);
     padding: 0.125rem 0.375rem;
     border-radius: 4px;
-    margin: 0 0 0 5px;
+    margin: 0 0 0 0.3125rem;
 }
 
 #muted_topics_table {
@@ -1652,7 +1652,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 #admin-user-list .last_active {
-    width: 100px;
+    width: 6.25rem;
 }
 
 .required-text {
@@ -1672,17 +1672,17 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 #payload_url_inputbox,
 #service_name_list {
     input[type="text"] {
-        width: 340px;
+        width: 21.25rem;
     }
 }
 
 .dropdown-title {
-    margin-bottom: 3px;
+    margin-bottom: 0.1875rem;
 }
 
 .invited-as-admin {
     opacity: 0.5;
-    margin-left: 2px;
+    margin-left: 0.125rem;
 }
 
 @supports (-moz-appearance: none) {
@@ -1699,14 +1699,14 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
     hr {
         margin-top: 0;
-        margin-bottom: 5px;
+        margin-bottom: 0.3125rem;
     }
 
     .choice-row {
-        margin-top: 5px;
+        margin-top: 0.3125rem;
 
         input {
-            width: 190px;
+            width: 11.875rem;
         }
 
         button {
@@ -1721,8 +1721,8 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
 .custom_user_field .pill-container {
     padding: 0.125rem 0.375rem;
-    min-height: 24px;
-    max-width: 206px;
+    min-height: 1.5rem;
+    max-width: 12.875rem;
     background-color: hsl(0, 0%, 100%);
 
     &:focus-within {
@@ -1741,7 +1741,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
 #attachment-stats-holder {
     position: relative;
-    margin-top: 13px;
+    margin-top: 0.8125rem;
     display: inline-block;
 }
 
@@ -1750,7 +1750,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 .collapse-settings-btn {
-    margin: 10px 0 0 10px;
+    margin: 0.625rem 0 0 0.625rem;
     color: hsl(200, 100%, 40%);
 
     &:hover {
@@ -1760,12 +1760,12 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 #toggle_collapse {
-    margin-left: 2px;
+    margin-left: 0.125rem;
     display: inline-block;
 }
 
 .admin_exports_table {
-    margin: 20px;
+    margin: 1.25rem;
 }
 
 @media (max-width: 953px) {
@@ -1777,7 +1777,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
     .user-avatar-section .avatar-controls {
         display: inline-block;
-        margin-top: 10px;
+        margin-top: 0.625rem;
     }
 
     #settings_content .warning {
@@ -1785,7 +1785,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 
     .subsection-failed-status p {
-        margin: 5px 0 0 0;
+        margin: 0.3125rem 0 0 0;
     }
 }
 
@@ -1824,7 +1824,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         .sidebar {
             float: left;
             position: relative;
-            width: 250px;
+            width: 15.625rem;
             height: 100%;
 
             li.active {
@@ -1859,7 +1859,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     #filter-settings .new-filter-form .control-label,
     #profile-field-settings .new-profile-field-form .control-label {
         display: block;
-        width: 120px;
+        width: 7.5rem;
         padding: 0;
         padding-top: 0;
         text-align: center;
@@ -1875,7 +1875,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
     #settings_page .save-button-controls {
         display: block;
-        margin: 10px 0 0 0;
+        margin: 0.625rem 0 0 0;
     }
 }
 
@@ -1883,7 +1883,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     #api_key_buttons,
     #download_zuliprc {
         flex-direction: column;
-        margin-top: 5px;
+        margin-top: 0.3125rem;
     }
 }
 
@@ -1891,20 +1891,20 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     /* selects the label (inline-block)
        immediately following the checkbox */
     .settings-box .checkbox + .inline-block {
-        width: calc(100% - 25px);
+        width: calc(100% - 1.5625rem);
     }
 }
 
 @media only screen and (min-width: 700px) and (max-width: 875px) {
     .bots_list .bot-information-box {
-        width: calc(100% - 10px);
+        width: calc(100% - 0.625rem);
         max-height: unset;
     }
 }
 
 @media only screen and (max-width: 625px) {
     .bots_list .bot-information-box {
-        width: calc(100% - 10px);
+        width: calc(100% - 0.625rem);
         max-height: unset;
     }
 }

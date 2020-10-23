@@ -4,7 +4,7 @@ body {
 }
 
 hr {
-    border-width: 2px;
+    border-width: 0.125rem;
 }
 
 p {
@@ -18,12 +18,12 @@ p {
 }
 
 .svg-container {
-    margin: 20px;
+    margin: 1.25rem;
 }
 
 .center-charts {
-    margin: 30px auto;
-    width: 790px; /* chart = 750px + 20px padding */
+    margin: 1.875rem auto;
+    width: 49.375rem; /* chart = 750px + 20px padding */
 }
 
 .stats-page .alert {
@@ -33,7 +33,7 @@ p {
 .chart-container {
     display: inline-block;
     vertical-align: top;
-    margin: 10px 0;
+    margin: 0.625rem 0;
     padding: 20px;
     border: 2px solid hsl(0, 0%, 93%);
     background-color: hsl(0, 0%, 100%);
@@ -54,7 +54,7 @@ p {
     }
 
     &.pie-chart hr {
-        margin-bottom: 8px;
+        margin-bottom: 0.5rem;
     }
 
     .button-container {
@@ -62,7 +62,7 @@ p {
         z-index: 1;
 
         label {
-            margin: 3px;
+            margin: 0.1875rem;
         }
 
         > * {
@@ -73,7 +73,7 @@ p {
 }
 
 .analytics-page-header {
-    margin-left: 10px;
+    margin-left: 0.625rem;
 }
 
 .rangeslider-container {
@@ -123,7 +123,7 @@ p {
     }
 
     &[data-user="everyone"] {
-        margin-right: 10px;
+        margin-right: 0.625rem;
     }
 }
 
@@ -135,7 +135,7 @@ p {
 
 .tooltip-inner {
     padding: 10px;
-    max-width: 350px;
+    max-width: 21.875rem;
 
     font-size: 0.75rem;
     font-weight: 400;
@@ -144,7 +144,7 @@ p {
 }
 
 .last-update {
-    margin: 0 0 30px 0;
+    margin: 0 0 1.875rem 0;
 
     font-size: 0.8em;
     font-weight: 400;
@@ -155,25 +155,25 @@ p {
 #users_hover_humans,
 #read_hover_everyone,
 #hover_human {
-    margin-left: 10px;
+    margin-left: 0.625rem;
 }
 
 #id_messages_sent_by_client {
-    min-height: 100px;
-    width: 750px;
+    min-height: 6.25rem;
+    width: 46.875rem;
     position: relative;
 }
 
 #id_messages_sent_by_message_type {
-    height: 300px;
-    width: 750px;
+    height: 18.75rem;
+    width: 46.875rem;
     position: relative;
 }
 
 #id_messages_sent_over_time,
 #id_messages_read_over_time {
-    height: 400px;
-    width: 750px;
+    height: 25.0rem;
+    width: 46.875rem;
     position: relative;
 
     &[last_value_is_partial="true"] .points path:last-of-type {
@@ -182,8 +182,8 @@ p {
 }
 
 #id_number_of_users {
-    height: 370px;
-    width: 750px;
+    height: 23.125rem;
+    width: 46.875rem;
     position: relative;
 }
 
@@ -209,10 +209,10 @@ p {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 30px;
-    height: 30px;
-    margin-top: -15px;
-    margin-left: -15px;
+    width: 1.875rem;
+    height: 1.875rem;
+    margin-top: -0.9375rem;
+    margin-left: -0.9375rem;
     border-radius: 50%;
     border: 1px solid hsl(0, 0%, 80%);
     border-top-color: hsl(155, 93%, 42%);
@@ -235,8 +235,8 @@ p {
         .right {
             display: inline-block;
             vertical-align: top;
-            margin: 0 10px;
-            width: 790px;
+            margin: 0 0.625rem;
+            width: 49.375rem;
         }
     }
 }

@@ -6,36 +6,36 @@ body {
 
 .header {
     padding: 5px 0 5px 15px;
-    line-height: 10px;
+    line-height: 0.625rem;
 }
 
 .header-main .logo {
-    margin-top: 5px;
+    margin-top: 0.3125rem;
     .brand-logo {
-        margin-top: 4px;
+        margin-top: 0.25rem;
     }
 }
 
 .message_area_padder {
-    margin-top: 60px;
+    margin-top: 3.75rem;
 }
 
 .top-links {
     position: relative;
     right: 20px;
-    margin-top: 12px;
+    margin-top: 0.75rem;
 }
 
 @media (max-width: 500px) {
     .header {
-        height: 40px;
-        line-height: 10px;
+        height: 2.5rem;
+        line-height: 0.625rem;
     }
 
     .header-main .logo {
-        margin-top: 5px;
+        margin-top: 0.3125rem;
         .brand-logo {
-            margin-top: 4px;
+            margin-top: 0.25rem;
         }
     }
 

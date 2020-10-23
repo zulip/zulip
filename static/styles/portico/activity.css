@@ -64,7 +64,7 @@ tr.admin td:first-child {
 }
 
 .support-realm-icon {
-    max-width: 25px;
+    max-width: 1.5625rem;
     position: relative;
     top: -2px;
 }

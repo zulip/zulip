@@ -386,7 +386,7 @@ fieldset[disabled] .btn-link:focus {
   padding-left: 0;
 }
 .btn-block + .btn-block {
-  margin-top: 5px;
+  margin-top: 0.3125rem;
 }
 input[type="submit"].btn-block,
 input[type="reset"].btn-block,

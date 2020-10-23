@@ -6,8 +6,8 @@
     padding: 0;
     width: 58%;
     overflow: hidden;
-    max-width: 1200px;
-    max-height: 1000px;
+    max-width: 75.0rem;
+    max-height: 62.5rem;
     display: flex;
     flex-direction: column;
 
@@ -44,7 +44,7 @@
             .exit-sign {
                 position: relative;
                 top: 3px;
-                margin-left: 3px;
+                margin-left: 0.1875rem;
                 font-size: 1.5rem;
                 font-weight: 600;
                 cursor: pointer;
@@ -58,7 +58,7 @@
 
         .no-drafts {
             display: block;
-            margin-top: calc(45vh - 30px - 1.5em);
+            margin-top: calc(45vh - 1.875rem - 1.5em);
             text-align: center;
             font-size: 1.5em;
             color: hsl(0, 0%, 67%);
@@ -86,7 +86,7 @@
     .draft-info-box {
         width: 100%;
         border: 1px solid hsl(0, 0%, 88%);
-        margin-bottom: 10px;
+        margin-bottom: 0.625rem;
 
         &.active {
             outline: 2px solid hsl(215, 47%, 50%);
@@ -121,7 +121,7 @@
 
             .restore-draft {
                 cursor: pointer;
-                margin-right: 5px;
+                margin-right: 0.3125rem;
                 color: hsl(170, 48%, 54%);
                 opacity: 0.7;
 
@@ -132,7 +132,7 @@
 
             .delete-draft {
                 cursor: pointer;
-                margin-left: 5px;
+                margin-left: 0.3125rem;
                 color: hsl(357, 52%, 57%);
                 opacity: 0.7;
 

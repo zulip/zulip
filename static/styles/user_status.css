@@ -1,6 +1,6 @@
 .user_status_overlay {
     .overlay-content {
-        width: 384px;
+        width: 24.0rem;
         margin: 0 auto;
         position: relative;
         top: calc((30vh - 50px) / 2);
@@ -10,7 +10,7 @@
     }
 
     input.user_status {
-        width: 336px;
+        width: 21.0rem;
     }
 
     .user-status-header {
@@ -39,7 +39,7 @@
     .user-status-header .exit-sign {
         position: relative;
         top: 3px;
-        margin-left: 3px;
+        margin-left: 0.1875rem;
         font-size: 1.5rem;
         font-weight: 600;
         cursor: pointer;
@@ -55,7 +55,7 @@
         .user-status-value {
             width: 100%;
             text-align: left;
-            margin-bottom: 10px;
+            margin-bottom: 0.625rem;
             line-height: 1.1em;
         }
     }

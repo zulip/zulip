@@ -17,7 +17,7 @@ body {
 h1,
 h2,
 h3 {
-    margin: 10px 0;
+    margin: 0.625rem 0;
 
     font-weight: 300;
     line-height: 1.2;
@@ -32,7 +32,7 @@ h2 {
 }
 
 p {
-    margin: 10px 0;
+    margin: 0.625rem 0;
     font-weight: normal;
     line-height: 1.5;
 }
@@ -60,12 +60,12 @@ a {
             content: " ";
             display: inline-block;
             position: relative;
-            height: 17px;
-            width: 17px;
+            height: 1.0625rem;
+            width: 1.0625rem;
             top: 3px;
             background-image: url(../../images/landing-page/arrow.png);
             background-size: 100%;
-            margin-left: 5px;
+            margin-left: 0.3125rem;
         }
     }
 
@@ -149,7 +149,7 @@ button {
     background-color: hsl(0, 0%, 100%);
     color: hsl(0, 0%, 27%);
 
-    line-height: 20px;
+    line-height: 1.25rem;
     border-radius: 4px;
     border: 1px solid hsl(0, 0%, 80%);
     outline: none;
@@ -196,7 +196,7 @@ button {
 /* -- navbar styling -- */
 
 nav {
-    width: calc(100% - 80px);
+    width: calc(100% - 5.0rem);
     position: absolute;
     color: hsl(0, 0%, 100%);
 
@@ -244,11 +244,11 @@ nav {
         display: none;
         fill: hsl(0, 0%, 100%);
         cursor: pointer;
-        margin-top: 3px;
+        margin-top: 0.1875rem;
     }
 
     .content {
-        margin: 0 5px 0 10px;
+        margin: 0 0.3125rem 0 0.625rem;
         position: relative;
         z-index: 2;
     }
@@ -290,7 +290,7 @@ nav {
         li {
             position: relative;
             display: inline-block;
-            margin: 10px;
+            margin: 0.625rem;
 
             color: hsl(0, 0%, 100%);
 
@@ -327,7 +327,7 @@ nav {
 
 /* -- main panel styling -- */
 .main {
-    width: calc(100% - 200px - 20px);
+    width: calc(100% - 12.5rem - 1.25rem);
     margin: 0 auto;
 }
 
@@ -364,12 +364,12 @@ nav {
     z-index: 2;
 
     section {
-        max-width: 1440px;
+        max-width: 90.0rem;
         display: flex;
         flex: 1 1 auto;
         flex-flow: row wrap;
         justify-content: space-around;
-        margin: 40px auto;
+        margin: 2.5rem auto;
         padding: 0 30px;
         color: hsl(219, 21%, 21%);
 
@@ -378,7 +378,7 @@ nav {
             align-items: center;
             justify-content: center;
 
-            height: 400px;
+            height: 25.0rem;
             padding: 100px 100px 50px 100px;
 
             margin: 0;
@@ -390,7 +390,7 @@ nav {
             background-color: hsla(0, 0%, 0%, 0.1);
 
             .copy {
-                max-width: 800px;
+                max-width: 50.0rem;
                 margin: 0 auto;
 
                 text-align: center;
@@ -403,14 +403,14 @@ nav {
 
             h2 {
                 font-size: 1.8em;
-                margin: 30px auto 0 auto;
+                margin: 1.875rem auto 0 auto;
 
-                max-width: 600px;
+                max-width: 37.5rem;
                 line-height: 1.3;
             }
 
             .image {
-                height: 400px;
+                height: 25.0rem;
                 width: 40%;
                 background-color: hsla(0, 0%, 0%, 0.05);
             }
@@ -430,15 +430,15 @@ nav {
 
             img {
                 &.overflow-wave {
-                    width: 685px;
+                    width: 42.8125rem;
                     right: 0;
                     top: -168px;
                     position: absolute;
                 }
 
                 &.image {
-                    width: 600px;
-                    margin-left: 100px;
+                    width: 37.5rem;
+                    margin-left: 6.25rem;
                 }
             }
 
@@ -465,17 +465,17 @@ nav {
             justify-content: center;
             align-items: center;
 
-            margin: 50px auto;
+            margin: 3.125rem auto;
             padding: 0 50px;
 
             .image {
-                width: calc(100% - 500px - 100px);
-                margin: 50px 0 50px 50px;
-                max-width: 500px;
+                width: calc(100% - 31.25rem - 6.25rem);
+                margin: 3.125rem 0 3.125rem 3.125rem;
+                max-width: 31.25rem;
             }
 
             .features {
-                max-width: 500px;
+                max-width: 31.25rem;
 
                 h2 {
                     margin: 0;
@@ -483,7 +483,7 @@ nav {
 
                 .feature-block {
                     display: block;
-                    margin: 30px 0;
+                    margin: 1.875rem 0;
                 }
             }
         }
@@ -492,13 +492,13 @@ nav {
             position: relative;
 
             padding: 50px 100px;
-            max-width: calc(1000px);
+            max-width: calc(62.5rem);
 
             background-color: hsl(0, 0%, 100%);
             border-radius: 10px;
 
             box-shadow: 10px 20px 80px hsla(0, 0%, 0%, 0.15);
-            margin: 100px auto 150px auto;
+            margin: 6.25rem auto 9.375rem auto;
             text-align: center;
 
             .envelope {
@@ -512,7 +512,7 @@ nav {
             h2 {
                 position: relative;
 
-                margin-bottom: 120px;
+                margin-bottom: 7.5rem;
                 top: 0;
             }
 
@@ -523,14 +523,14 @@ nav {
                 vertical-align: top;
                 text-align: left;
 
-                margin: 35px 0 0 20px;
+                margin: 2.1875rem 0 0 1.25rem;
 
                 z-index: 1;
 
                 h3 {
                     position: relative;
 
-                    margin: 15px 0 15px 50px;
+                    margin: 0.9375rem 0 0.9375rem 3.125rem;
 
                     font-size: 1.2em;
                     font-weight: 400;
@@ -544,8 +544,8 @@ nav {
 
                         left: -35px;
                         top: 0;
-                        width: 20px;
-                        height: 20px;
+                        width: 1.25rem;
+                        height: 1.25rem;
 
                         border-radius: 4px;
 
@@ -558,8 +558,8 @@ nav {
             }
 
             .image-block {
-                width: 400px;
-                height: 280px;
+                width: 25.0rem;
+                height: 17.5rem;
 
                 background: linear-gradient(
                     135deg,
@@ -584,15 +584,15 @@ nav {
 
         .headliner {
             .feature-block {
-                margin: 0 10px;
-                width: calc(100% - 250px - 20px);
+                margin: 0 0.625rem;
+                width: calc(100% - 15.625rem - 1.25rem);
             }
         }
 
         h2 {
             font-size: 2.5em;
             text-align: center;
-            margin: 0 10px;
+            margin: 0 0.625rem;
             line-height: 1.6;
             flex: 1 0 100%;
         }
@@ -620,7 +620,7 @@ nav {
         &::after {
             content: "\2192";
 
-            margin-left: 5px;
+            margin-left: 0.3125rem;
             transform: scaleX(2);
 
             transition: all 0.3s ease;
@@ -628,7 +628,7 @@ nav {
 
         &:hover {
             &::after {
-                margin-left: 10px;
+                margin-left: 0.625rem;
             }
         }
     }
@@ -719,7 +719,7 @@ nav {
     }
 
     header {
-        width: 850px;
+        width: 53.125rem;
         display: inline-block;
         text-align: left;
 
@@ -731,7 +731,7 @@ nav {
         }
 
         p {
-            margin: 30px 0;
+            margin: 1.875rem 0;
 
             font-size: 1.5em;
             font-weight: 300;
@@ -742,7 +742,7 @@ nav {
 
         a {
             display: block;
-            margin: 20px auto 0 auto;
+            margin: 1.25rem auto 0 auto;
             text-align: center;
         }
 
@@ -771,12 +771,12 @@ nav {
         }
 
         .download-button {
-            margin-top: 10px;
+            margin-top: 0.625rem;
         }
 
         #see_all_apps {
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 0.625rem;
 
             font-weight: normal;
         }
@@ -787,7 +787,7 @@ nav {
     position: absolute;
     left: 0;
     width: 100%;
-    height: 1100px;
+    height: 68.75rem;
 
     &.dark-blue {
         background: linear-gradient(
@@ -861,7 +861,7 @@ nav {
 .portico-landing.hello .col-3-5,
 .portico-landing.hello .col-2,
 .portico-landing.hello .col-4 {
-    margin-right: -4px;
+    margin-right: -0.25rem;
     display: inline-block;
     vertical-align: top;
 }
@@ -892,7 +892,7 @@ nav {
     }
 
     .padded-content {
-        width: 900px;
+        width: 56.25rem;
         margin: 0 auto;
     }
 
@@ -907,7 +907,7 @@ nav {
 
         thead th {
             &:last-of-type {
-                width: 120px;
+                width: 7.5rem;
             }
 
             &.uniform {
@@ -951,8 +951,8 @@ nav {
                 content: " ";
                 display: inline-block;
 
-                width: 27px;
-                height: 27px;
+                width: 1.6875rem;
+                height: 1.6875rem;
                 background-image: url(../../images/landing-page/checkmark.png);
                 background-size: 100% auto;
             }
@@ -985,7 +985,7 @@ nav {
     }
 
     .terms {
-        margin-top: 30px;
+        margin-top: 1.875rem;
         font-weight: 400;
         font-size: 0.7em;
 
@@ -1010,7 +1010,7 @@ nav {
     }
 
     header {
-        max-width: 700px;
+        max-width: 43.75rem;
         margin: 0 auto;
 
         h1 span {
@@ -1019,8 +1019,8 @@ nav {
     }
 
     .faq {
-        margin: 50px auto;
-        max-width: 700px;
+        margin: 3.125rem auto;
+        max-width: 43.75rem;
         font-size: 1.2em;
         color: hsl(223, 6%, 25%);
 
@@ -1031,22 +1031,22 @@ nav {
         }
 
         .answer {
-            margin: 20px 0 0 0;
+            margin: 1.25rem 0 0 0;
             font-weight: 400;
         }
     }
 
     /* the last faq in the box shouldn't have an extra 50px of margin. */
     .faq-box div:last-of-type {
-        margin-bottom: 10px;
+        margin-bottom: 0.625rem;
     }
 }
 
 .screen {
     .line {
         width: 100%;
-        height: 6px;
-        margin: 8px 0;
+        height: 0.375rem;
+        margin: 0.5rem 0;
 
         background-color: hsl(0, 0%, 93%);
         border-radius: 3px;
@@ -1095,10 +1095,10 @@ nav {
     }
 
     .col-4 .action-block {
-        margin: 20px;
+        margin: 1.25rem;
 
         .sub-block {
-            margin: 0 10px;
+            margin: 0 0.625rem;
         }
     }
 
@@ -1107,8 +1107,8 @@ nav {
             display: inline-block;
             vertical-align: top;
 
-            width: 20px;
-            height: 20px;
+            width: 1.25rem;
+            height: 1.25rem;
             background-color: hsl(0, 0%, 73%);
             border-radius: 4px;
         }
@@ -1117,7 +1117,7 @@ nav {
             display: inline-block;
             vertical-align: top;
 
-            width: 50px;
+            width: 3.125rem;
             margin-top: 0;
 
             background-color: hsl(0, 0%, 73%);
@@ -1136,8 +1136,8 @@ nav {
         overflow: hidden;
 
         .message-feed {
-            height: calc(100% - 20px);
-            margin-top: 20px;
+            height: calc(100% - 1.25rem);
+            margin-top: 1.25rem;
 
             transition: all 0.1s ease;
         }
@@ -1145,14 +1145,14 @@ nav {
 
     .message-feed {
         .message .content {
-            margin-left: 24px;
+            margin-left: 1.5rem;
             position: relative;
             top: -15px;
         }
 
         .stream {
             padding: 3px 5px 0 5px;
-            margin: 0 5px;
+            margin: 0 0.3125rem;
 
             background-color: hsl(0, 0%, 100%);
             border-radius: 4px;
@@ -1164,10 +1164,10 @@ nav {
 
 .portico-landing.hello .screen {
     position: relative;
-    margin: -300px auto 0 auto;
+    margin: -18.75rem auto 0 auto;
 
-    width: 600px;
-    height: 350px;
+    width: 37.5rem;
+    height: 21.875rem;
 
     padding: 10px 30px 10px 30px;
 
@@ -1180,7 +1180,7 @@ nav {
 
     &.hero-screen {
         padding: 95px 170px;
-        height: 385px;
+        height: 24.0625rem;
 
         background-image: url(../../images/landing-page/macbook-empty.png);
         background-size: 100% auto;
@@ -1206,8 +1206,8 @@ nav {
         top: calc(50% - 5px);
         left: 20px;
 
-        width: 10px;
-        height: 10px;
+        width: 0.625rem;
+        height: 0.625rem;
 
         border-radius: 5px;
         background-color: hsl(0, 0%, 13%);
@@ -1219,8 +1219,8 @@ nav {
         top: calc(50% - 12.5px);
         right: 8px;
 
-        width: 25px;
-        height: 25px;
+        width: 1.5625rem;
+        height: 1.5625rem;
 
         border-radius: 13px;
         background-color: hsl(0, 0%, 73%);
@@ -1229,9 +1229,9 @@ nav {
     .main-page {
         display: inline-block;
 
-        height: calc(100% - 30px);
-        width: calc(100% - 30px);
-        margin: 10px;
+        height: calc(100% - 1.875rem);
+        width: calc(100% - 1.875rem);
+        margin: 0.625rem;
 
         border: 5px solid hsl(0, 0%, 13%);
         border-radius: 4px;
@@ -1252,9 +1252,9 @@ nav {
         z-index: 1;
 
         img {
-            margin-bottom: 20px;
+            margin-bottom: 1.25rem;
             width: 100%;
-            max-width: 300px;
+            max-width: 18.75rem;
         }
 
         .il-block {
@@ -1285,7 +1285,7 @@ nav {
     img {
         margin: 0 2%;
         width: 28%;
-        max-width: 500px;
+        max-width: 31.25rem;
         display: inline-block;
     }
 
@@ -1293,7 +1293,7 @@ nav {
         display: inline-block;
         vertical-align: top;
         width: 50%;
-        max-width: 700px;
+        max-width: 43.75rem;
         text-align: left;
     }
 
@@ -1342,15 +1342,15 @@ nav {
 
 .portico-landing .tour {
     color: hsl(0, 0%, 0%);
-    width: 1200px;
+    width: 75.0rem;
     max-width: 100%;
     margin: 0 auto;
 }
 
 .tour .carousel-inner .item-container {
     width: 80%;
-    height: 520px;
-    margin: 20px auto;
+    height: 32.5rem;
+    margin: 1.25rem auto;
     padding: 30px 20px;
     background: linear-gradient(
         hsla(220, 20%, 97%, 0.4),
@@ -1371,11 +1371,11 @@ nav {
     border: 0;
     position: absolute;
     left: 50%;
-    margin-left: -100px;
+    margin-left: -6.25rem;
     top: 50%;
-    margin-top: -25px;
-    width: 200px;
-    height: 50px;
+    margin-top: -1.5625rem;
+    width: 12.5rem;
+    height: 3.125rem;
     z-index: 10;
 
     &:hover {
@@ -1395,14 +1395,14 @@ nav {
 }
 
 .tour .carousel-inner .tour-item-header {
-    margin: 0 0 30px 54px;
-    max-width: 700px;
+    margin: 0 0 1.875rem 3.375rem;
+    max-width: 43.75rem;
     font-size: 1.3em;
     text-align: left;
 }
 
 .tour .carousel-inner .tour-item-header-top-push {
-    margin-top: 40px;
+    margin-top: 2.5rem;
 }
 
 .tour .carousel-inner .tour-item-header-centered {
@@ -1414,45 +1414,45 @@ nav {
 .tour .carousel-inner .zulip-slack-comparison {
     display: flex;
     text-align: left;
-    width: 850px;
+    width: 53.125rem;
     max-width: 100%;
-    margin: 20px auto 0;
+    margin: 1.25rem auto 0;
     position: relative;
 
     .comparison-zulip {
-        width: 500px;
+        width: 31.25rem;
     }
 
     .comparison-slack {
-        width: 300px;
+        width: 18.75rem;
     }
 
     img {
         max-width: 100%;
 
         &.zulip-streams-selected {
-            width: 320px;
+            width: 20.0rem;
             border: 0;
         }
 
         &.slack-streams-selected {
-            width: 200px;
+            width: 12.5rem;
         }
 
         &.zulip-unreads-arrows {
-            width: 406px;
+            width: 25.375rem;
             border: 0;
         }
 
         &.slack-stream-unreads {
-            width: 200px;
+            width: 12.5rem;
         }
     }
 
     .caption {
         text-align: left;
         font-weight: bold;
-        margin-bottom: 10px;
+        margin-bottom: 0.625rem;
     }
 }
 
@@ -1465,28 +1465,28 @@ nav {
     }
 
     &.zulip-streams {
-        width: 200px;
+        width: 12.5rem;
     }
 
     &.slack-streams {
-        width: 200px;
+        width: 12.5rem;
     }
 
     &.zulip-topic {
-        margin: -10px 0 0 50px;
-        width: 800px;
+        margin: -0.625rem 0 0 3.125rem;
+        width: 50.0rem;
     }
 
     &.slack-overwhelming {
         border: none;
-        width: 750px;
-        margin: -30px 0 0 50px;
+        width: 46.875rem;
+        margin: -1.875rem 0 0 3.125rem;
     }
 
     &.zulip-easy {
         border: none;
-        width: 700px;
-        margin-left: 50px;
+        width: 43.75rem;
+        margin-left: 3.125rem;
     }
 }
 
@@ -1506,15 +1506,15 @@ nav {
     margin: 0;
 
     &.slack-unreads {
-        width: 250px;
-        margin: 15px 0 0 -10px;
+        width: 15.625rem;
+        margin: 0.9375rem 0 0 -0.625rem;
     }
 }
 
 .tour .carousel-inner .other-resources {
     text-align: left;
-    margin: 30px auto;
-    max-width: 600px;
+    margin: 1.875rem auto;
+    max-width: 37.5rem;
 
     .other-resources-section {
         display: inline-block;
@@ -1532,11 +1532,11 @@ nav {
 
 .tour .carousel-inner .call-to-action {
     display: inline-block;
-    margin: 40px auto;
+    margin: 2.5rem auto;
     padding: 11px 25px 11px 25px;
 
     font-size: 1.2rem;
-    line-height: 20px;
+    line-height: 1.25rem;
     font-weight: 400;
     color: hsl(0, 0%, 100%);
 
@@ -1574,7 +1574,7 @@ nav {
 }
 
 .carousel-indicators {
-    margin: 20px 0 0 0;
+    margin: 1.25rem 0 0 0;
     display: flex;
     justify-content: center;
     padding-left: 0;
@@ -1586,11 +1586,11 @@ nav {
     li {
         position: relative;
         flex: 0 1 auto;
-        width: 10px;
-        height: 10px;
+        width: 0.625rem;
+        height: 0.625rem;
         border-radius: 10px;
-        margin-right: 10px;
-        margin-left: 10px;
+        margin-right: 0.625rem;
+        margin-left: 0.625rem;
         text-indent: -999px;
         cursor: pointer;
         background-color: hsl(222, 12%, 66%);
@@ -1602,7 +1602,7 @@ nav {
             left: 0;
             display: inline-block;
             width: 100%;
-            height: 10px;
+            height: 0.625rem;
             content: "";
         }
 
@@ -1612,7 +1612,7 @@ nav {
             left: 0;
             display: inline-block;
             width: 100%;
-            height: 10px;
+            height: 0.625rem;
             content: "";
         }
 
@@ -1633,19 +1633,19 @@ nav {
 
 .portico-landing .testimonials .text-header .action-content {
     float: right;
-    margin-top: 18px;
+    margin-top: 1.125rem;
 }
 
 .portico-landing .testimonials .quote-container {
     width: 98%;
-    margin: 30px auto 20px auto;
+    margin: 1.875rem auto 1.25rem auto;
     padding-left: 2%;
 
     font-size: 1.2rem;
 }
 
 .portico-landing .testimonials .carousel {
-    min-height: 250px;
+    min-height: 15.625rem;
 }
 
 .portico-landing .testimonials .carousel-quotes {
@@ -1682,8 +1682,8 @@ nav {
 
 .portico-landing .testimonials blockquote::before {
     content: "“";
-    margin-left: -10px;
-    margin-right: -3px;
+    margin-left: -0.625rem;
+    margin-right: -0.1875rem;
 }
 
 .portico-landing .testimonials blockquote::after {
@@ -1692,8 +1692,8 @@ nav {
 
 .portico-landing .testimonials blockquote + cite {
     display: block;
-    margin-top: 5px;
-    margin-bottom: 30px;
+    margin-top: 0.3125rem;
+    margin-bottom: 1.875rem;
 
     color: hsl(0, 0%, 100%);
     opacity: 0.7;
@@ -1720,12 +1720,12 @@ nav {
 
 .portico-landing .testimonials .company-container {
     width: 60%;
-    margin: 30px auto;
+    margin: 1.875rem auto;
     text-align: left;
 }
 
 .portico-landing .testimonials .company-box {
-    margin-top: 20px;
+    margin-top: 1.25rem;
 }
 
 .portico-landing .testimonials .company-container header h2 {
@@ -1734,16 +1734,16 @@ nav {
 }
 
 .portico-landing .testimonials .company-container header .arrow {
-    margin-top: 12px;
+    margin-top: 0.75rem;
     font-weight: normal;
 }
 
 .portico-landing .testimonials .company-box .company {
     display: inline-block;
-    margin: 10px 20px;
+    margin: 0.625rem 1.25rem;
 
-    height: 60px;
-    width: calc(25% - 44px);
+    height: 3.75rem;
+    width: calc(25% - 2.75rem);
 
     background-color: hsl(0, 0%, 67%);
     background-size: contain;
@@ -1810,7 +1810,7 @@ nav {
 .portico-landing .testimonials .company-box .company.infinispan {
     background-image: url(../../images/landing-page/logos/infinispan.png);
     background-color: transparent;
-    height: 50px;
+    height: 3.125rem;
 }
 
 .portico-landing .testimonials .company-box .company.hail {
@@ -1841,13 +1841,13 @@ nav {
 .portico-landing .testimonials .company-box .company.mixxx {
     background-image: url(../../images/landing-page/logos/mixxx.png);
     background-color: transparent;
-    height: 45px;
+    height: 2.8125rem;
 }
 
 .portico-landing.hello .apps {
     position: relative;
     padding: 200px 80px 100px 80px;
-    margin-top: -50px;
+    margin-top: -3.125rem;
 
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
 
@@ -1861,7 +1861,7 @@ nav {
     width: 0;
     height: 0;
     border-style: solid;
-    border-width: 150px 100vw 0 0;
+    border-width: 9.375rem 100vw 0 0;
     border-color: hsl(0, 0%, 98%) transparent transparent transparent;
 }
 
@@ -1881,17 +1881,17 @@ nav {
 }
 
 .portico-landing.hello .apps .left-side {
-    width: calc(60% - 4px);
+    width: calc(60% - 0.25rem);
 }
 
 .portico-landing.hello .apps .right-side {
-    width: calc(40% - 4px);
+    width: calc(40% - 0.25rem);
     text-align: center;
 }
 
 .portico-landing.hello .apps .left-side .content {
-    width: 650px;
-    margin: 50px auto;
+    width: 40.625rem;
+    margin: 3.125rem auto;
 }
 
 .portico-landing.hello .apps .left-side .platform-icons {
@@ -1905,7 +1905,7 @@ nav {
 .portico-landing.hello .apps .left-side .platform-icons .group {
     display: inline-block;
     vertical-align: top;
-    margin: 0 30px;
+    margin: 0 1.875rem;
 
     text-align: center;
 }
@@ -1916,7 +1916,7 @@ nav {
 
 .portico-landing.hello .apps .left-side .platform-icons .group i {
     display: inline-block;
-    width: 80px;
+    width: 5.0rem;
 
     font-size: 3.5em;
     opacity: 0.8;
@@ -1935,23 +1935,23 @@ nav {
 }
 
 .portico-landing.hello .integrations .content {
-    margin-left: 50px;
+    margin-left: 3.125rem;
 }
 
 .portico-landing.hello .integrations .integration-icons {
     width: 100%;
-    margin: 20px 0;
+    margin: 1.25rem 0;
     text-align: center;
 }
 
 .portico-landing.hello .integrations .integration-icons .group {
     display: inline-block;
     vertical-align: top;
-    width: 155px;
-    height: 220px;
+    width: 9.6875rem;
+    height: 13.75rem;
     padding: 0 5px;
     transition: all 0.3s ease;
-    margin: 10px 5px;
+    margin: 0.625rem 0.3125rem;
     color: hsl(219, 23%, 33%);
     border-radius: 5px;
     border: 1px solid hsl(206, 44%, 93%);
@@ -1962,19 +1962,19 @@ nav {
 }
 
 .portico-landing.hello .integrations .integration-logo {
-    margin-top: 20px;
-    width: 80px;
+    margin-top: 1.25rem;
+    width: 5.0rem;
 }
 
 .portico-landing.hello .integrations .integration-name {
-    margin-top: 20px;
+    margin-top: 1.25rem;
     font-size: 1.375rem;
     font-weight: 400;
 }
 
 .portico-landing.hello .integrations .integration-description {
-    width: 120px;
-    margin: 0 auto 20px;
+    width: 7.5rem;
+    margin: 0 auto 1.25rem;
     font-weight: 400;
     font-size: 0.875rem;
 }
@@ -1987,7 +1987,7 @@ nav {
 
 .portico-landing.hello .call-to-action-bottom .button {
     display: table;
-    margin: 20px auto 0 auto;
+    margin: 1.25rem auto 0 auto;
     padding: 10px 20px;
     font-size: 1em;
     font-weight: 600;
@@ -1995,20 +1995,20 @@ nav {
 
 .portico-landing.hello .call-to-action-bottom h1 {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 1.25rem;
 }
 
 .portico-landing.hello .call-to-action-bottom .atlassian-migration {
-    margin-top: 60px;
+    margin-top: 3.75rem;
     text-align: center;
     font-size: 1.3rem;
     font-weight: 300;
 }
 
 .portico-landing.hello .call-to-action-bottom .zulip-octopus {
-    margin: 130px auto 0 auto;
-    width: 32px;
-    height: 30px;
+    margin: 8.125rem auto 0 auto;
+    width: 2.0rem;
+    height: 1.875rem;
     background-image: url(../../images/landing-page/zulip-octopus.png);
     background-size: cover;
 
@@ -2042,7 +2042,7 @@ nav {
 
     padding: 100px 50px 50px 50px;
     background: linear-gradient(35deg, hsl(197, 100%, 16%), hsl(166, 45%, 49%));
-    height: 600px;
+    height: 37.5rem;
 
     color: hsl(0, 0%, 100%);
 
@@ -2050,7 +2050,7 @@ nav {
 }
 
 .portico-landing.apps .hero .inner-content {
-    max-width: 1600px;
+    max-width: 100.0rem;
     margin: 0 auto;
 }
 
@@ -2089,7 +2089,7 @@ nav {
 
 .portico-landing.apps .hero .info .cta {
     text-shadow: 0 0 60px hsla(0, 0%, 0%, 0.3);
-    max-width: 600px;
+    max-width: 37.5rem;
 }
 
 .portico-landing.apps
@@ -2112,7 +2112,7 @@ nav {
 
 .portico-landing.apps .hero .info .flex,
 .portico-landing.apps .hero .image .flex {
-    height: 500px;
+    height: 31.25rem;
     min-height: 0;
 }
 
@@ -2136,7 +2136,7 @@ nav {
 }
 
 .portico-landing.apps .other-apps h2 {
-    width: 600px;
+    width: 37.5rem;
     margin: 0 auto;
 
     text-align: center;
@@ -2144,13 +2144,13 @@ nav {
 
 .portico-landing.apps .other-apps .apps {
     display: inline-block;
-    margin: 50px 0 0 0;
+    margin: 3.125rem 0 0 0;
 }
 
 .portico-landing.apps .other-apps .apps .icon {
     vertical-align: top;
 
-    width: 50px;
+    width: 3.125rem;
     padding: 20px 30px;
     border-radius: 70px;
 
@@ -2173,7 +2173,7 @@ nav {
 }
 
 .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone::after {
-    margin-top: 1px;
+    margin-top: 0.0625rem;
 }
 
 .portico-landing.apps .other-apps .apps .icon::after {
@@ -2183,16 +2183,16 @@ nav {
     font-size: 0.8rem;
     font-weight: 600;
     font-family: "Source Sans Pro", sans-serif;
-    margin-top: 10px;
+    margin-top: 0.625rem;
 }
 
 .download-from-google-play-store img {
-    height: 42px;
+    height: 2.625rem;
     padding: 15px 0 15px 0;
 }
 
 .download-from-apple-app-store img {
-    height: 42px;
+    height: 2.625rem;
     padding: 15px 0 15px 0;
 }
 
@@ -2203,7 +2203,7 @@ nav {
 }
 
 .portico-landing.why-page .main {
-    max-width: 800px;
+    max-width: 50.0rem;
 }
 
 .portico-landing.why-page .hero {
@@ -2218,7 +2218,7 @@ nav {
 }
 
 .portico-landing.why-page .hero h1 {
-    margin: 0 0 20px 0;
+    margin: 0 0 1.25rem 0;
 
     font-size: 3.5em;
     font-weight: 300;
@@ -2241,7 +2241,7 @@ nav {
     background-color: hsl(0, 0%, 100%);
     border-color: hsl(168, 24%, 51%);
     padding: 20px 30px;
-    margin-top: 20px;
+    margin-top: 1.25rem;
     font-size: 1.05em;
     p {
         line-height: 1.5;
@@ -2250,7 +2250,7 @@ nav {
         color: hsl(220, 23%, 33%);
     }
     p:last-child {
-        margin-top: 10px;
+        margin-top: 0.625rem;
     }
 }
 
@@ -2263,15 +2263,15 @@ nav {
 }
 
 .portico-landing.why-page .main .slack-image {
-    width: 500px;
+    width: 31.25rem;
 }
 
 .portico-landing.why-page .main .zulip-topics-image {
-    width: 300px;
+    width: 18.75rem;
 }
 
 .portico-landing.why-page .main .zulip-reply-later-image {
-    width: 600px;
+    width: 37.5rem;
 }
 
 .portico-landing.why-page .photo-description {
@@ -2286,7 +2286,7 @@ nav {
 }
 
 .portico-landing.why-page .team h2 {
-    margin-top: 20px;
+    margin-top: 1.25rem;
 }
 
 .portico-landing.why-page .bg-pycon {
@@ -2339,12 +2339,12 @@ nav {
 .portico-landing.why-page .testimonials {
     background-color: hsl(168, 43%, 24%);
     color: hsl(0, 0%, 100%);
-    margin-bottom: 40px;
+    margin-bottom: 2.5rem;
 }
 
 .portico-landing.why-page .testimonials .quote-container {
     width: 98%;
-    margin: 30px auto 20px auto;
+    margin: 1.875rem auto 1.25rem auto;
     padding-left: 2%;
 
     font-size: 1.2rem;
@@ -2362,8 +2362,8 @@ nav {
 
 .portico-landing.why-page .testimonials blockquote::before {
     content: "“";
-    margin-left: -10px;
-    margin-right: -3px;
+    margin-left: -0.625rem;
+    margin-right: -0.1875rem;
 }
 
 .portico-landing.why-page .testimonials blockquote::after {
@@ -2372,8 +2372,8 @@ nav {
 
 .portico-landing.why-page .testimonials blockquote + cite {
     display: block;
-    margin-top: 5px;
-    margin-bottom: 30px;
+    margin-top: 0.3125rem;
+    margin-bottom: 1.875rem;
 
     color: hsl(0, 0%, 100%);
     opacity: 0.7;
@@ -2395,13 +2395,13 @@ nav {
 /* -- hello page styling -- */
 .portico-landing.hello .apps .screen {
     display: inline-block;
-    margin: 0 10px;
+    margin: 0 0.625rem;
     text-align: left;
 }
 
 .portico-landing.hello .apps .screen.ios {
-    width: 200px;
-    height: 350px;
+    width: 12.5rem;
+    height: 21.875rem;
     padding: 30px 0;
     border-radius: 20px;
 
@@ -2411,8 +2411,8 @@ nav {
 }
 
 .portico-landing.hello .apps .screen.android {
-    width: 200px;
-    height: 370px;
+    width: 12.5rem;
+    height: 23.125rem;
     padding: 10px 0 30px 0;
     border-radius: 20px;
 
@@ -2428,19 +2428,19 @@ nav {
 }
 
 .portico-landing.hello .apps .screen .center-page {
-    height: calc(100% - 20px);
+    height: calc(100% - 1.25rem);
 }
 
 .portico-landing.hello .apps .screen .center-page .message-feed {
-    margin-top: 10px;
+    margin-top: 0.625rem;
 }
 
 .portico-landing.hello .apps .screen.ios::before {
     top: 17px;
     left: calc(50% - 20px);
 
-    width: 40px;
-    height: 5px;
+    width: 2.5rem;
+    height: 0.3125rem;
     background-color: hsl(0, 0%, 80%);
 }
 
@@ -2462,8 +2462,8 @@ nav {
 
     border-radius: 8px;
     background-color: hsl(0, 0%, 13%);
-    width: 35px;
-    height: 20px;
+    width: 2.1875rem;
+    height: 1.25rem;
 }
 
 .portico-landing.hello .apps .screen.ios .main-page {
@@ -2486,7 +2486,7 @@ nav {
     position: absolute;
     left: 0;
     width: 100%;
-    height: 1100px;
+    height: 68.75rem;
 }
 
 .gradients .gradient.dark-blue {
@@ -2547,7 +2547,7 @@ nav {
 
     font-size: 1.5em;
 
-    margin-bottom: 50px;
+    margin-bottom: 3.125rem;
 
     color: hsl(0, 0%, 100%);
 }
@@ -2558,12 +2558,12 @@ nav {
 
 .pricing-model .pricing-container .block {
     display: inline-block;
-    margin: 40px 20px 20px 20px;
+    margin: 2.5rem 1.25rem 1.25rem 1.25rem;
 }
 
 .pricing-model .pricing-container .block .plan-title {
     padding: 10px;
-    margin-bottom: 3px;
+    margin-bottom: 0.1875rem;
 
     color: hsl(0, 0%, 100%);
 
@@ -2576,8 +2576,8 @@ nav {
     display: inline-block;
     vertical-align: bottom;
     margin: 0;
-    width: 300px;
-    height: 500px;
+    width: 18.75rem;
+    height: 31.25rem;
 
     box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 
@@ -2590,7 +2590,7 @@ nav {
 }
 
 .pricing-model .pricing-container .text-content {
-    margin: 20px;
+    margin: 1.25rem;
 }
 
 .pricing-model .padded-content .text-header .text-content h1 {
@@ -2608,7 +2608,7 @@ nav {
 .pricing-model .pricing-container hr {
     border: none;
     border-bottom: 2px solid hsl(170, 47%, 53%);
-    margin: 15px 0 15px 0;
+    margin: 0.9375rem 0 0.9375rem 0;
 }
 
 .pricing-model .pricing-container .text-content .description {
@@ -2636,8 +2636,8 @@ nav {
     position: absolute;
     top: 10px;
     left: 0;
-    width: 20px;
-    height: 18px;
+    width: 1.25rem;
+    height: 1.125rem;
 
     background-image: url(../../images/checkbox-green.svg);
     background-size: contain;
@@ -2651,7 +2651,7 @@ nav {
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: 150px;
+    height: 9.375rem;
 
     background-color: hsl(0, 0%, 93%);
 }
@@ -2670,7 +2670,7 @@ nav {
 
 .pricing-model .pricing-container .text-content .price {
     display: inline-block;
-    margin-right: 2px;
+    margin-right: 0.125rem;
 
     font-size: 3.5em;
     font-weight: 600;
@@ -2680,8 +2680,8 @@ nav {
 .pricing-model .pricing-container .bottom .details {
     display: inline-block;
     vertical-align: top;
-    margin-left: 15px;
-    margin-top: 4px;
+    margin-left: 0.9375rem;
+    margin-top: 0.25rem;
 
     font-size: 0.9em;
     font-weight: 400;
@@ -2691,7 +2691,7 @@ nav {
 }
 
 .pricing-model .pricing-container .bottom .button {
-    margin-top: 20px;
+    margin-top: 1.25rem;
     display: block;
     text-align: center;
 
@@ -2711,7 +2711,7 @@ nav {
 
 .pricing-model .pricing-container .text-content .standard-price-box {
     display: flex;
-    height: 55px;
+    height: 3.4375rem;
 }
 
 .pricing-model .pricing-container .text-content .price .price-cents {
@@ -2761,9 +2761,9 @@ nav {
     position: relative;
     display: inline-block;
     vertical-align: top;
-    margin-left: 50px;
-    margin-top: -2px;
-    width: calc(100% - 300px - 50px);
+    margin-left: 3.125rem;
+    margin-top: -0.125rem;
+    width: calc(100% - 18.75rem - 3.125rem);
 
     background-color: hsl(0, 0%, 100%);
     opacity: 0;
@@ -2780,8 +2780,8 @@ nav {
 .pricing-overlay.pricing-model .info-box .text-content {
     position: relative;
     display: inline-block;
-    height: calc(100% - 40px);
-    width: calc(100% - 300px - 40px);
+    height: calc(100% - 2.5rem);
+    width: calc(100% - 18.75rem - 2.5rem);
 }
 
 .pricing-overlay.pricing-model .info-box .text-content h1 {
@@ -2805,15 +2805,15 @@ nav {
     .feature-detail-box
     .feature {
     display: inline-block;
-    width: calc(33% - 21px);
-    height: 200px;
+    width: calc(33% - 1.3125rem);
+    height: 12.5rem;
     background-color: hsl(0, 0%, 93%);
-    margin: 10px;
+    margin: 0.625rem;
 }
 
 .text-content .pricing-details {
     padding: 15px 0 15px 0;
-    height: 25px;
+    height: 1.5625rem;
 
     font-weight: 400;
     color: hsl(0, 0%, 53%);
@@ -2822,7 +2822,7 @@ nav {
 }
 
 .pricing-overlay.pricing-model .info-box .image {
-    width: 300px;
+    width: 18.75rem;
     height: 100%;
 
     float: right;
@@ -2832,12 +2832,12 @@ nav {
 
 .portico-landing.jobs h2 {
     line-height: 1.4;
-    margin: 20px 0 5px 0;
+    margin: 1.25rem 0 0.3125rem 0;
 }
 
 .portico-landing.jobs h3 {
     line-height: 1.4;
-    margin: 20px 0 7px 0;
+    margin: 1.25rem 0 0.4375rem 0;
 }
 
 .portico-landing.jobs .open-positions-top .padded-content {
@@ -2877,7 +2877,7 @@ nav {
     }
 
     .portico-landing.integrations .integration-lozenge {
-        width: 135px;
+        width: 8.4375rem;
     }
 }
 
@@ -2892,7 +2892,7 @@ nav {
 
 @media (max-width: 1376px) {
     .portico-landing.plans .price-box {
-        margin: 20px;
+        margin: 1.25rem;
     }
 
     .portico-landing.apps .main .details-container {
@@ -2926,7 +2926,7 @@ nav {
         .platform,
     .portico-landing.apps .main .details-box[data-name="linux"] .instructions {
         text-align: center;
-        width: calc(100% - 40px);
+        width: calc(100% - 2.5rem);
     }
 }
 
@@ -2947,21 +2947,21 @@ nav {
     }
 
     .portico-landing.hello .integrations .content {
-        max-width: 750px;
+        max-width: 46.875rem;
         margin: 0 auto;
     }
 
     .portico-landing.hello .integrations .integration-icons {
-        max-width: 600px;
+        max-width: 37.5rem;
         margin: 0 auto;
     }
 
     .portico-landing.hello .apps .left-side .content {
-        margin: 0 auto 50px;
+        margin: 0 auto 3.125rem;
     }
 
     .portico-landing .testimonials .company-box .company {
-        width: calc(33% - 44px);
+        width: calc(33% - 2.75rem);
     }
 }
 
@@ -2978,7 +2978,7 @@ nav {
     }
 
     .tour .carousel-inner .tour-item-header {
-        margin: 0 0 30px 0;
+        margin: 0 0 1.875rem 0;
     }
 
     .tour .carousel-control {
@@ -2992,22 +2992,22 @@ nav {
     }
 
     .tour .carousel-inner .zulip-slack-comparison {
-        width: 650px;
+        width: 40.625rem;
         max-width: 100%;
 
         .comparison-zulip {
-            width: 450px;
+            width: 28.125rem;
         }
 
         .comparison-slack {
-            width: 200px;
+            width: 12.5rem;
         }
     }
 }
 
 @media (max-width: 1024px) {
     .portico-landing.hello .gradients .gradient {
-        height: 1400px;
+        height: 87.5rem;
     }
 
     .portico-landing {
@@ -3032,7 +3032,7 @@ nav {
 
         ul {
             display: block;
-            margin: 20px auto 0 auto;
+            margin: 1.25rem auto 0 auto;
             float: none;
             text-align: center;
         }
@@ -3042,12 +3042,12 @@ nav {
         section {
             .headliner {
                 .image {
-                    width: 200px;
-                    height: 200px;
+                    width: 12.5rem;
+                    height: 12.5rem;
                 }
 
                 .feature-box {
-                    width: calc(100% - 200px - 20px);
+                    width: calc(100% - 12.5rem - 1.25rem);
                 }
             }
 
@@ -3077,7 +3077,7 @@ nav {
     .features .feature-box .text-content {
         width: 100%;
         height: auto;
-        margin-bottom: 20px;
+        margin-bottom: 1.25rem;
     }
 
     .features .feature-box .image {
@@ -3096,8 +3096,8 @@ nav {
     }
 
     .portico-landing.hello .screen.hero-screen {
-        width: 420px;
-        height: 282px;
+        width: 26.25rem;
+        height: 17.625rem;
         padding: 65px 117px;
 
         .main-page {
@@ -3107,7 +3107,7 @@ nav {
     }
 
     .screen.hero-screen .col-4 .action-block {
-        margin: 10px;
+        margin: 0.625rem;
     }
 
     .portico-landing .testimonials .carousel-quotes {
@@ -3123,8 +3123,8 @@ nav {
     }
 
     .screen.hero-screen .line {
-        height: 4px;
-        margin: 4px 0;
+        height: 0.25rem;
+        margin: 0.25rem 0;
     }
 
     .screen .message-feed .message .content {
@@ -3156,7 +3156,7 @@ nav {
     }
 
     .portico-landing .testimonials .company-box .company {
-        width: calc(25% - 44px);
+        width: calc(25% - 2.75rem);
     }
 
     .tour .carousel-inner img {
@@ -3169,7 +3169,7 @@ nav {
 
     .portico-landing.hello .hero {
         header {
-            width: calc(100% - 50px);
+            width: calc(100% - 3.125rem);
         }
     }
 }
@@ -3208,9 +3208,9 @@ nav {
                 display: inline-flex;
 
                 width: auto;
-                height: 250px;
+                height: 15.625rem;
 
-                margin: 50px;
+                margin: 3.125rem;
 
                 justify-content: center;
                 align-items: center;
@@ -3219,7 +3219,7 @@ nav {
     }
 
     .portico-landing.hello .apps .left-side .platform-icons .group {
-        margin: 50px 30px;
+        margin: 3.125rem 1.875rem;
         display: block;
     }
 
@@ -3264,7 +3264,7 @@ nav {
     nav {
         padding-left: 50px;
         padding-right: 50px;
-        width: calc(100% - 100px);
+        width: calc(100% - 6.25rem);
 
         .hamburger {
             position: relative;
@@ -3279,7 +3279,7 @@ nav {
 
         img {
             display: block;
-            width: 300px;
+            width: 18.75rem;
             margin: 0 auto;
         }
 
@@ -3335,7 +3335,7 @@ nav {
 
     .portico-landing.hello .hero {
         header {
-            width: 600px;
+            width: 37.5rem;
         }
     }
 
@@ -3344,8 +3344,8 @@ nav {
     }
 
     .portico-landing.hello .screen.hero-screen {
-        width: 300px;
-        height: 201px;
+        width: 18.75rem;
+        height: 12.5625rem;
         padding: 43px 73px;
     }
 
@@ -3381,7 +3381,7 @@ nav {
     }
 
     .portico-landing.apps .hero {
-        height: 350px;
+        height: 21.875rem;
     }
 
     .portico-landing.apps .hero h1 {
@@ -3391,7 +3391,7 @@ nav {
 
     .portico-landing.apps .hero .info .flex,
     .portico-landing.apps .hero .image .flex {
-        height: 200px;
+        height: 12.5rem;
         min-height: 0;
         width: 100%;
     }
@@ -3407,7 +3407,7 @@ nav {
 
     .portico-landing.apps .other-apps .apps .icon {
         padding: 0 14px;
-        width: 30px;
+        width: 1.875rem;
         padding-top: 8px;
         padding-bottom: 0;
         font-size: 2.3em;
@@ -3415,7 +3415,7 @@ nav {
 
     .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
         padding: 7px 10px 5px 10px;
-        width: 35px;
+        width: 2.1875rem;
         font-size: 2.5em;
     }
 
@@ -3437,7 +3437,7 @@ nav {
     }
 
     .main {
-        width: calc(100% - 50px);
+        width: calc(100% - 3.125rem);
         margin: 0 auto;
     }
 
@@ -3445,7 +3445,7 @@ nav {
         padding-bottom: 100px;
 
         .waves {
-            height: 450px;
+            height: 28.125rem;
         }
 
         header {
@@ -3481,7 +3481,7 @@ nav {
             top: 0;
             left: 0;
             height: 100vh;
-            width: 300px;
+            width: 18.75rem;
             padding-left: 30px;
 
             background-color: hsl(0, 0%, 100%);
@@ -3513,7 +3513,7 @@ nav {
                 line-height: 1.5;
 
                 &:first-of-type {
-                    margin-top: 20px;
+                    margin-top: 1.25rem;
                 }
 
                 &.active {
@@ -3534,15 +3534,15 @@ nav {
     .portico-header .content > ul::before {
         content: "Zulip";
         display: block;
-        margin-top: 20px;
+        margin-top: 1.25rem;
         padding-top: 5px;
-        margin-left: 10px;
+        margin-left: 0.625rem;
 
-        width: 100px;
-        height: 40px;
+        width: 6.25rem;
+        height: 2.5rem;
 
         font-size: 1.5rem;
-        line-height: 30px;
+        line-height: 1.875rem;
         text-align: right;
         color: hsl(0, 0%, 27%);
 
@@ -3554,7 +3554,7 @@ nav {
     .portico-header .dropdown ul {
         width: 100%;
         height: auto;
-        margin: 42px 0 0 0;
+        margin: 2.625rem 0 0 0;
         font-size: 0.8em;
     }
 
@@ -3567,13 +3567,13 @@ nav {
     .portico-landing.apps .main ul.sidebar {
         display: block;
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 0.625rem;
     }
 
     .portico-landing.apps .main ul.sidebar li {
         display: inline-block;
         padding: 10px;
-        width: 80px;
+        width: 5.0rem;
         text-align: center;
         border-radius: 4px;
     }
@@ -3583,8 +3583,8 @@ nav {
     }
 
     .portico-landing .testimonials .company-box .company {
-        margin: 10px;
-        width: calc(33% - 24px);
+        margin: 0.625rem;
+        width: calc(33% - 1.5rem);
     }
 
     .tour .carousel-control {
@@ -3604,17 +3604,17 @@ nav {
     }
 
     .portico-landing.hello .tour .carousel-inner .item-container {
-        height: 450px;
+        height: 28.125rem;
     }
 
     .tour .carousel-inner .call-to-action {
-        margin: 10px auto;
+        margin: 0.625rem auto;
     }
 }
 
 @media (max-width: 640px) {
     .portico-landing.hello .integrations .integration-icons .group {
-        margin: 10px 16px 0 16px;
+        margin: 0.625rem 1.0rem 0 1.0rem;
     }
 
     .portico-landing.features-app {
@@ -3646,7 +3646,7 @@ nav {
 
                 .features {
                     .feature-block {
-                        margin: 20px 0;
+                        margin: 1.25rem 0;
                     }
                 }
             }
@@ -3658,7 +3658,7 @@ nav {
     }
 
     .portico-landing.hello .tour .carousel-inner .item-container {
-        height: 400px;
+        height: 25.0rem;
     }
 
     .tour .carousel-control {
@@ -3682,7 +3682,7 @@ nav {
             max-width: 100%;
 
             &.zulip-streams {
-                max-width: 140px;
+                max-width: 8.75rem;
             }
 
             &.zulip-streams-selected {
@@ -3700,8 +3700,8 @@ nav {
     .billing-upgrade-page {
         .payment-schedule {
             .box {
-                width: 100px;
-                height: 80px;
+                width: 6.25rem;
+                height: 5.0rem;
             }
         }
     }
@@ -3711,11 +3711,11 @@ nav {
     .portico-landing.plans .price-box {
         display: inline-flex;
         flex-direction: column;
-        min-height: 500px;
+        min-height: 31.25rem;
         height: auto;
-        max-width: 300px;
+        max-width: 18.75rem;
         width: auto;
-        margin: 10px 0;
+        margin: 0.625rem 0;
     }
 
     .pricing-model .pricing-container .text-content {
@@ -3740,7 +3740,7 @@ nav {
     }
 
     .portico-landing.hello .integrations .integration-icons .group {
-        margin: 4px 2px;
+        margin: 0.25rem 0.125rem;
     }
 
     .main {
@@ -3805,16 +3805,16 @@ nav {
 
 @media (max-width: 375px) {
     .portico-landing.hello .integrations .integration-icons .group {
-        width: 130px;
-        height: 215px;
+        width: 8.125rem;
+        height: 13.4375rem;
     }
 
     .portico-landing.hello .integrations .integration-icons .integration-logo {
-        width: 60px;
+        width: 3.75rem;
     }
 
     .portico-landing.integrations .integration-categories-dropdown {
-        width: 323px;
+        width: 20.1875rem;
     }
 
     .portico-landing.features-app {

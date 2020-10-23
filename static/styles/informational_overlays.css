@@ -2,7 +2,7 @@
     .overlay-content {
         /* because zoom breaks at 525px perhaps due to rounding errors, so add a
            trivial amount of width so it doesn't break. */
-        width: 550px;
+        width: 34.375rem;
         margin: 0 auto;
         position: relative;
         top: calc((30vh - 50px) / 2);
@@ -17,7 +17,7 @@
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 
         .tab-switcher {
-            margin-left: 15px;
+            margin-left: 0.9375rem;
         }
 
         .exit {
@@ -25,7 +25,7 @@
             font-size: 1.5rem;
             color: hsl(0, 0%, 67%);
             font-weight: 600;
-            margin: 1px 15px;
+            margin: 0.0625rem 0.9375rem;
         }
     }
 
@@ -64,7 +64,7 @@
 
     td.definition {
         /* keeps dividing line at same width for all tables in model. */
-        width: calc(50% - 11px);
+        width: calc(50% - 0.6875rem);
         text-align: right;
     }
 
@@ -74,7 +74,7 @@
 
     .small_hotkey {
         font-size: 0.9em !important;
-        line-height: 12px;
+        line-height: 0.75rem;
 
         kbd {
             font-size: 0.9em;
@@ -102,7 +102,7 @@
     }
 
     th {
-        width: 245px;
+        width: 15.3125rem;
         text-align: center;
         /* aligns table name with dividing line */
     }
@@ -119,13 +119,13 @@
 }
 
 #keyboard-shortcuts table {
-    margin-bottom: 10px !important;
+    margin-bottom: 0.625rem !important;
 }
 
 @media only screen and (max-width: 768px) {
     .informational-overlays {
         .overlay-content {
-            width: calc(100% - 20px);
+            width: calc(100% - 1.25rem);
         }
 
         .tab-switcher {

@@ -5,9 +5,9 @@
     z-index: 100;
 
     .dot {
-        width: 25px;
-        height: 25px;
-        margin: -12.5px 0 0 -12.5px;
+        width: 1.5625rem;
+        height: 1.5625rem;
+        margin: -12.0.3125rem 0 0 -12.0.3125rem;
         border-radius: 50%;
         position: absolute;
         background-color: hsla(196, 100%, 82%, 0.3);
@@ -17,9 +17,9 @@
     }
 
     .pulse {
-        width: 25px;
-        height: 25px;
-        margin: -11.5px 0 0 -11.5px;
+        width: 1.5625rem;
+        height: 1.5625rem;
+        margin: -11.0.3125rem 0 0 -11.0.3125rem;
         position: absolute;
         top: 50%;
         left: 50%;
@@ -78,7 +78,7 @@
 
     .hotspot-popover {
         position: fixed;
-        width: 250px;
+        width: 15.625rem;
         text-align: left;
         box-shadow: 0 5px 10px hsla(223, 4%, 54%, 0.2);
         border: 1px solid hsl(0, 0%, 80%);
@@ -96,11 +96,11 @@
         }
 
         &::after {
-            border-width: 12px;
+            border-width: 0.75rem;
         }
 
         &::before {
-            border-width: 13px;
+            border-width: 0.8125rem;
         }
 
         &.arrow-top {
@@ -112,12 +112,12 @@
 
             &::after {
                 border-bottom-color: hsl(164, 44%, 47%);
-                margin-right: -12px;
+                margin-right: -0.75rem;
             }
 
             &::before {
                 border-bottom-color: hsl(0, 0%, 80%);
-                margin-right: -13px;
+                margin-right: -0.8125rem;
             }
         }
 
@@ -130,12 +130,12 @@
 
             &::after {
                 border-right-color: hsl(0, 0%, 100%);
-                margin-top: -12px;
+                margin-top: -0.75rem;
             }
 
             &::before {
                 border-right-color: hsl(0, 0%, 80%);
-                margin-top: -13px;
+                margin-top: -0.8125rem;
             }
         }
 
@@ -148,12 +148,12 @@
 
             &::after {
                 border-top-color: hsl(0, 0%, 100%);
-                margin-right: -12px;
+                margin-right: -0.75rem;
             }
 
             &::before {
                 border-top-color: hsl(0, 0%, 80%);
-                margin-right: -13px;
+                margin-right: -0.8125rem;
             }
         }
 
@@ -166,12 +166,12 @@
 
             &::after {
                 border-left-color: hsl(0, 0%, 100%);
-                margin-top: -12px;
+                margin-top: -0.75rem;
             }
 
             &::before {
                 border-left-color: hsl(0, 0%, 80%);
-                margin-top: -13px;
+                margin-top: -0.8125rem;
             }
         }
     }
@@ -197,7 +197,7 @@
 
     .hotspot-popover-bottom {
         background-color: hsl(0, 0%, 100%);
-        height: 90px;
+        height: 5.625rem;
         border-bottom-left-radius: 4px;
         border-bottom-right-radius: 4px;
     }
@@ -216,12 +216,12 @@
 }
 
 .hotspot-img {
-    height: 83px;
+    height: 5.1875rem;
 }
 
 .hotspot-confirm {
-    max-width: 125px;
-    max-height: 70px;
+    max-width: 7.8125rem;
+    max-height: 4.375rem;
     border: none;
     font-size: 1.15em;
     font-weight: 600;
@@ -245,7 +245,7 @@
 }
 
 .hotspot-inline {
-    width: 350px;
+    width: 21.875rem;
     max-width: 95%;
     box-shadow: 0 5px 10px hsla(220, 4%, 54%, 0.1);
     border-radius: 4px;
@@ -254,7 +254,7 @@
     position: relative;
 
     .hotspot-img {
-        margin-left: 5px;
+        margin-left: 0.3125rem;
     }
 
     .hotspot-confirm {
@@ -266,7 +266,7 @@
         margin: 0;
         color: hsl(0, 0%, 100%);
         font-weight: 600;
-        line-height: 24px;
+        line-height: 1.5rem;
         padding: 0.3125rem 0.8125rem;
         font-size: 1.15em;
         border-top-left-radius: 4px;
@@ -275,13 +275,13 @@
 
     .hotspot-inline-left {
         display: inline-block;
-        width: 90px;
+        width: 5.625rem;
     }
 
     .hotspot-inline-right {
         display: inline-block;
         width: auto;
-        margin-left: 10px;
+        margin-left: 0.625rem;
         vertical-align: middle;
     }
 }

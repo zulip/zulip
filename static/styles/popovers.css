@@ -3,8 +3,8 @@
     max-width: 100%;
 
     hr {
-        margin-top: 5px;
-        margin-bottom: 5px;
+        margin-top: 0.3125rem;
+        margin-bottom: 0.3125rem;
     }
 
     .sub_disable_btn_hint {
@@ -38,7 +38,7 @@
 
 .popover-left,
 .popover-right {
-    max-width: 200px;
+    max-width: 12.5rem;
 }
 
 .sp-container {
@@ -51,20 +51,20 @@
     right: 8px;
     bottom: 48px;
     left: auto !important;
-    width: 175px;
-    height: 65px;
+    width: 10.9375rem;
+    height: 4.0625rem;
 }
 
 .streams_popover {
     .topic-name {
         text-align: center;
-        margin-top: 5px;
-        margin-bottom: 5px;
+        margin-top: 0.3125rem;
+        margin-bottom: 0.3125rem;
     }
 
     .colorpicker-container {
         display: none;
-        margin-right: 10px;
+        margin-right: 0.625rem;
 
         .sp-container {
             background-color: hsl(0, 0%, 100%);
@@ -79,7 +79,7 @@
                 box-sizing: inherit; /* IE */
                 box-sizing: initial;
 
-                width: calc(100% - 13px);
+                width: calc(100% - 0.8125rem);
             }
 
             button {
@@ -113,16 +113,16 @@ ul {
     &.streams_popover i,
     &.topics_popover i {
         display: inline-block;
-        width: 14px;
+        width: 0.875rem;
         text-align: center;
-        margin-right: 3px;
+        margin-right: 0.1875rem;
     }
 
     &.topics_popover {
         .topic-name {
             text-align: center;
-            margin-top: 5px;
-            margin-bottom: 5px;
+            margin-top: 0.3125rem;
+            margin-bottom: 0.3125rem;
 
             .fa-chevron-right {
                 font-size: 0.75rem;
@@ -144,11 +144,11 @@ ul {
             }
 
             &::before {
-                margin-right: 8px;
+                margin-right: 0.5rem;
             }
 
             &::after {
-                margin-left: 8px;
+                margin-left: 0.5rem;
             }
         }
     }
@@ -158,15 +158,15 @@ ul {
     }
 
     &.topic-move_popover {
-        max-height: 200px;
+        max-height: 12.5rem;
         overflow-y: auto;
     }
 }
 
 .user_popover {
-    width: 240px;
+    width: 15.0rem;
 
-    margin: -14px;
+    margin: -0.875rem;
     padding: 0;
 
     .popover-title {
@@ -181,7 +181,7 @@ ul {
 
 .message-info-popover,
 .user-info-popover {
-    width: 240px;
+    width: 15.0rem;
     padding: 0;
 
     .popover-title {
@@ -205,7 +205,7 @@ ul {
 
     .member-list {
         position: relative;
-        max-height: 300px;
+        max-height: 18.75rem;
         overflow-y: auto;
         list-style: none;
         margin-left: 0;
@@ -213,7 +213,7 @@ ul {
         .bot {
             color: hsl(180, 5%, 74%);
             vertical-align: top;
-            width: 20px;
+            width: 1.25rem;
             padding-top: 3.0.3125rem;
             text-align: center;
         }
@@ -221,9 +221,9 @@ ul {
 }
 
 .popover_user_presence {
-    width: 8px;
-    height: 8px;
-    margin: 0 5px;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin: 0 0.3125rem;
     display: inline-block;
     float: initial;
     position: relative;
@@ -240,8 +240,8 @@ ul {
 }
 
 .popover-avatar {
-    height: 240px;
-    width: 240px;
+    height: 15.0rem;
+    width: 15.0rem;
     background-size: cover;
     background-position: center;
     position: relative;
@@ -251,7 +251,7 @@ ul {
     }
 
     .popover-inner {
-        width: 240px;
+        width: 15.0rem;
     }
 }
 
@@ -264,12 +264,12 @@ ul {
 
     #avatar {
         display: inline-block;
-        height: 180px;
-        width: 180px;
+        height: 11.25rem;
+        width: 11.25rem;
         background-size: cover;
         background-position: center;
         border-radius: 5px;
-        margin-right: 10px;
+        margin-right: 0.625rem;
         border: 1px solid hsla(0, 0%, 0%, 0.2);
 
         &.guest-avatar::after {
@@ -283,44 +283,44 @@ ul {
         vertical-align: top;
 
         .default-field {
-            margin-bottom: 5px;
+            margin-bottom: 0.3125rem;
 
             .name {
                 color: hsl(0, 0%, 20%);
                 display: inline-block;
-                min-width: 120px;
+                min-width: 7.5rem;
                 font-weight: 600;
             }
         }
 
         #user-type {
-            margin-bottom: 15px;
+            margin-bottom: 0.9375rem;
         }
 
         #name {
             font-size: 1.625rem;
             font-weight: 700;
-            margin-bottom: 5px;
-            max-width: 300px;
-            line-height: 30px;
+            margin-bottom: 0.3125rem;
+            max-width: 18.75rem;
+            line-height: 1.875rem;
 
             #edit-button {
                 font-size: 1.125rem;
-                margin-left: 10px;
+                margin-left: 0.625rem;
             }
         }
     }
 
     hr {
         border: 1px solid hsl(0, 0%, 93%);
-        margin: 5px 0;
+        margin: 0.3125rem 0;
     }
 
     #content {
-        margin-top: 10px;
+        margin-top: 0.625rem;
 
         .field-section {
-            margin-top: 8px;
+            margin-top: 0.5rem;
 
             .name {
                 color: hsl(0, 0%, 20%);
@@ -348,7 +348,7 @@ ul {
         #body {
             padding-bottom: 0.625rem;
             padding-top: 0.25rem;
-            margin: 10px 0;
+            margin: 0.625rem 0;
         }
     }
 }
@@ -435,10 +435,10 @@ ul {
         border-left: 0;
         padding-left: 0;
         border-radius: 3px;
-        margin: 0 5px 5px -10px;
+        margin: 0 0.3125rem 0.3125rem -0.625rem;
         text-indent: 10px;
     }
     .inline_topic_edit {
-        margin-left: 5px !important;
+        margin-left: 0.3125rem !important;
     }
 }

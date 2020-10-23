@@ -39,9 +39,9 @@
     &::after {
         content: "";
         background: hsl(0, 0%, 50%);
-        height: 1.5px; /* 1px is too thin, 2px is too thick */
-        width: 6px;
+        height: 1.0.3125rem; /* 1px is too thin, 2px is too thick */
+        width: 0.375rem;
         display: block;
-        margin: 3.25px auto 0 auto; /* (total height - line height) / 2 = 3.25px */
+        margin: 3.1.5625rem auto 0 auto; /* (total height - line height) / 2 = 3.25px */
     }
 }

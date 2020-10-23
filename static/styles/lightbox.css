@@ -7,7 +7,7 @@
         justify-content: center;
         position: relative;
         width: 100%;
-        height: calc(100% - 65px - 95px);
+        height: calc(100% - 4.0625rem - 5.9375rem);
         margin: 0;
 
         background-size: contain;
@@ -43,7 +43,7 @@
 
         color: hsla(0, 0%, 100%, 0.8);
         font-size: 2rem;
-        margin: 24px 20px 0 0;
+        margin: 1.5rem 1.25rem 0 0;
 
         transform: scaleY(0.75);
         font-weight: 300;
@@ -66,7 +66,7 @@
     .image-description,
     .image-actions {
         float: left;
-        margin: 20px 20px;
+        margin: 1.25rem 1.25rem;
     }
 
     .image-actions {
@@ -76,10 +76,10 @@
             display: inline-block;
             vertical-align: top;
 
-            min-width: 75px;
+            min-width: 4.6875rem;
 
             margin: 0;
-            margin-right: 5px;
+            margin-right: 0.3125rem;
             padding: 0 0.3125rem;
 
             border-radius: 4px;
@@ -101,7 +101,7 @@
             }
 
             .status {
-                margin-top: -7px;
+                margin-top: -0.4375rem;
 
                 &::after {
                     content: attr(data-disabled);
@@ -130,7 +130,7 @@
             border-radius: 4px;
             text-decoration: none;
             display: inline-block;
-            margin: 0 5px;
+            margin: 0 0.3125rem;
 
             &:hover {
                 background-color: hsl(0, 0%, 100%);
@@ -143,11 +143,11 @@
     .image-description {
         width: 100%;
         /* approx width of screen minus action buttons on the side. */
-        max-width: calc(100% - 450px);
+        max-width: calc(100% - 28.125rem);
         /* add some extra margin top and remove some bottom to keep the
         height the same. and vertically center the text with the buttons. */
-        margin-top: 25px;
-        margin-bottom: 15px;
+        margin-top: 1.5625rem;
+        margin-bottom: 0.9375rem;
 
         font-size: 1.3rem;
         color: hsl(0, 0%, 100%);
@@ -158,7 +158,7 @@
 
             font-weight: 400;
             line-height: normal;
-            max-width: calc(100% - 110px);
+            max-width: calc(100% - 6.875rem);
 
             /* Required for text-overflow */
             white-space: nowrap;
@@ -167,7 +167,7 @@
         }
 
         .user {
-            max-width: 200px;
+            max-width: 12.5rem;
             display: inline-block;
             vertical-align: top;
             font-weight: 300;
@@ -177,14 +177,14 @@
             white-space: pre;
 
             &::before {
-                margin-right: 5px;
+                margin-right: 0.3125rem;
                 content: "\2014";
             }
         }
     }
 
     .player-container {
-        height: calc(100% - 65px - 95px);
+        height: calc(100% - 4.0625rem - 5.9375rem);
         display: flex;
         text-align: center;
         justify-content: center;
@@ -192,7 +192,7 @@
 
         iframe {
             /* maintain 16:9 ratio. */
-            width: calc((100vh - 65px - 95px) * 16 / 9);
+            width: calc((100vh - 4.0625rem - 5.9375rem) * 16 / 9);
             height: 100%;
             margin: auto;
         }
@@ -202,7 +202,7 @@
         .arrow {
             display: inline-block;
             vertical-align: top;
-            margin-top: 25px;
+            margin-top: 1.5625rem;
             padding: 0.3125rem 0.625rem;
 
             color: hsl(0, 0%, 100%);
@@ -224,7 +224,7 @@
             position: relative;
             display: inline-block;
             padding: 0.9375rem 0 0.75rem 0;
-            height: 50px;
+            height: 3.125rem;
             font-size: 0;
 
             max-width: 40vw;
@@ -234,9 +234,9 @@
             .image {
                 display: inline-block;
                 vertical-align: top;
-                width: 50px;
-                height: 50px;
-                margin: 0 2px;
+                width: 3.125rem;
+                height: 3.125rem;
+                margin: 0 0.125rem;
 
                 background-color: hsla(0, 0%, 94%, 0.2);
                 opacity: 0.5;
@@ -261,14 +261,14 @@
         }
 
         .image-description {
-            max-width: calc(100% - 100px);
+            max-width: calc(100% - 6.25rem);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-bottom: 5px;
+            margin-bottom: 0.3125rem;
 
             .title {
-                max-width: calc(100% - 70px);
+                max-width: calc(100% - 4.375rem);
             }
         }
 
@@ -284,7 +284,7 @@
         }
 
         .image-preview {
-            height: calc(100% - 101px - 95px);
+            height: calc(100% - 6.3125rem - 5.9375rem);
         }
     }
 }

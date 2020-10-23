@@ -21,8 +21,8 @@ $category-text: hsl(219, 23%, 33%);
     }
 
     .main {
-        width: calc(100% - 100px);
-        max-width: 1170px;
+        width: calc(100% - 6.25rem);
+        max-width: 73.125rem;
         margin: 0 auto;
 
         background-color: hsl(0, 0%, 100%);
@@ -40,7 +40,7 @@ $category-text: hsl(219, 23%, 33%);
         }
 
         @media (max-width: 686px) {
-            width: calc(100% - 50px);
+            width: calc(100% - 3.125rem);
             margin: 0 auto;
         }
 
@@ -53,7 +53,7 @@ $category-text: hsl(219, 23%, 33%);
         padding: 50px 0;
 
         .inner-content {
-            min-height: 870px;
+            min-height: 54.375rem;
 
             .show {
                 opacity: 1;
@@ -113,13 +113,13 @@ $category-text: hsl(219, 23%, 33%);
     }
 
     #integration-search {
-        margin-bottom: 30px;
+        margin-bottom: 1.875rem;
 
         .searchbar {
-            width: calc(100% - 40px);
+            width: calc(100% - 2.5rem);
             display: flex;
             justify-content: center;
-            margin: 30px auto 0;
+            margin: 1.875rem auto 0;
 
             .searchbar-reset {
                 position: relative;
@@ -130,8 +130,8 @@ $category-text: hsl(219, 23%, 33%);
                     font-size: 1em;
                     font-family: inherit;
 
-                    width: 500px;
-                    height: 45px;
+                    width: 31.25rem;
+                    height: 2.8125rem;
                     padding: 0 20px 0 50px;
                     border-radius: 40px;
                     border: 1px solid $light-blue-border;
@@ -142,12 +142,12 @@ $category-text: hsl(219, 23%, 33%);
                     }
 
                     @media (max-width: 768px) {
-                        width: 375px;
+                        width: 23.4375rem;
                         margin: 0 auto;
                     }
 
                     @media (max-width: 550px) {
-                        width: calc(100% - 80px);
+                        width: calc(100% - 5.0rem);
                     }
                 }
 
@@ -160,7 +160,7 @@ $category-text: hsl(219, 23%, 33%);
                 }
 
                 @media (max-width: 768px) {
-                    width: 445px;
+                    width: 27.8125rem;
                 }
 
                 @media (max-width: 550px) {
@@ -171,13 +171,13 @@ $category-text: hsl(219, 23%, 33%);
     }
 
     .catalog {
-        margin-top: 20px;
+        margin-top: 1.25rem;
         padding: 0 30px;
-        min-height: 500px;
+        min-height: 31.25rem;
 
         .integration-categories-sidebar {
             float: left;
-            width: 200px;
+            width: 12.5rem;
             padding: 0 30px 0 0;
             margin: 0;
 
@@ -185,7 +185,7 @@ $category-text: hsl(219, 23%, 33%);
                 position: sticky;
                 top: 40px;
                 margin: auto;
-                height: 490px;
+                height: 30.625rem;
                 z-index: 10;
             }
 
@@ -199,7 +199,7 @@ $category-text: hsl(219, 23%, 33%);
                 font-weight: 400;
                 font-size: 0.95em;
                 padding: 6px 10px 3px;
-                margin: 3px 0;
+                margin: 0.1875rem 0;
                 border-radius: 5px;
                 transition: all 0.3s ease;
                 color: $category-text;
@@ -219,7 +219,7 @@ $category-text: hsl(219, 23%, 33%);
     }
 
     .integration-categories-dropdown {
-        margin: 30px auto;
+        margin: 1.875rem auto;
         display: none;
 
         .heading {
@@ -228,7 +228,7 @@ $category-text: hsl(219, 23%, 33%);
 
         @media (max-width: 906px) {
             display: block;
-            width: 670px;
+            width: 41.875rem;
 
             h3,
             h4 {
@@ -244,13 +244,13 @@ $category-text: hsl(219, 23%, 33%);
                 padding: 0;
                 align-items: center;
                 justify-content: space-between;
-                margin-left: 25px;
-                margin-right: 25px;
+                margin-left: 1.5625rem;
+                margin-right: 1.5625rem;
                 border: 1px solid $light-blue-border;
             }
 
             i {
-                margin-right: 10px;
+                margin-right: 0.625rem;
                 font-size: 1.5rem;
             }
 
@@ -258,8 +258,8 @@ $category-text: hsl(219, 23%, 33%);
                 display: none;
                 cursor: pointer;
                 padding: 0;
-                margin-left: 25px;
-                margin-right: 25px;
+                margin-left: 1.5625rem;
+                margin-right: 1.5625rem;
             }
 
             h3 {
@@ -283,27 +283,27 @@ $category-text: hsl(219, 23%, 33%);
         }
 
         @media (max-width: 830px) {
-            width: 666px;
+            width: 41.625rem;
         }
 
         @media (max-width: 786px) {
-            width: 509px;
+            width: 31.8125rem;
         }
 
         @media (max-width: 768px) {
-            width: 666px;
+            width: 41.625rem;
         }
 
         @media (max-width: 686px) {
-            width: 509px;
+            width: 31.8125rem;
         }
 
         @media (max-width: 578px) {
-            width: 351px;
+            width: 21.9375rem;
         }
 
         @media (max-width: 357px) {
-            width: 299px;
+            width: 18.6875rem;
         }
     }
 
@@ -319,10 +319,10 @@ $category-text: hsl(219, 23%, 33%);
     .integration-lozenge {
         display: inline-block;
         vertical-align: top;
-        width: 153px;
-        height: 200px;
+        width: 9.5625rem;
+        height: 12.5rem;
         padding: 0 4px;
-        margin: 7px 5px;
+        margin: 0.4375rem 0.3125rem;
         border-radius: 5px;
         border: 1px solid $light-blue-border;
         color: $category-text;
@@ -339,25 +339,25 @@ $category-text: hsl(219, 23%, 33%);
 
         .integration-secondary-line-text {
             margin: 0;
-            line-height: 10px;
+            line-height: 0.625rem;
             font-size: 0.65em;
             font-weight: 400;
         }
 
         .integration-category {
             font-size: 0.85em;
-            margin-top: 5px;
+            margin-top: 0.3125rem;
             font-weight: 400;
             color: hsla(216, 23%, 13%, 0.5);
         }
 
         &.without-category {
-            height: 180px;
+            height: 11.25rem;
         }
 
         .integration-logo {
-            margin: 34px auto 20px;
-            height: 60px;
+            margin: 2.125rem auto 1.25rem;
+            height: 3.75rem;
         }
 
         .fa-plus {
@@ -367,26 +367,26 @@ $category-text: hsl(219, 23%, 33%);
         .integration-name {
             font-size: 1.2em;
             font-weight: 400;
-            margin: 10px 4px 0 4px;
+            margin: 0.625rem 0.25rem 0 0.25rem;
 
             &.create-your-own {
-                margin-top: 27px;
+                margin-top: 1.6875rem;
                 font-size: 1.1em !important;
             }
 
             &.with-secondary {
                 font-size: 1.1em;
-                margin-top: 4px;
+                margin-top: 0.25rem;
             }
         }
 
         @media (max-width: 830px) {
-            width: 134px;
-            height: 180px;
+            width: 8.375rem;
+            height: 11.25rem;
 
             .integration-logo {
-                margin: 34px auto 15px;
-                height: 45px;
+                margin: 2.125rem auto 0.9375rem;
+                height: 2.8125rem;
             }
 
             .fa-plus {
@@ -407,20 +407,20 @@ $category-text: hsl(219, 23%, 33%);
         }
 
         @media (max-width: 375px) {
-            width: 120px;
+            width: 7.5rem;
         }
 
         @media (max-width: 357px) {
-            width: 108px;
-            height: 160px;
+            width: 6.75rem;
+            height: 10.0rem;
 
             &.without-category {
-                height: 140px;
+                height: 8.75rem;
             }
 
             .integration-logo {
-                margin: 28px auto 10px;
-                height: 45px;
+                margin: 1.75rem auto 0.625rem;
+                height: 2.8125rem;
             }
 
             .integration-name {
@@ -443,9 +443,9 @@ $category-text: hsl(219, 23%, 33%);
             flex-direction: column;
 
             .integration-lozenge {
-                width: 125px;
-                height: 170px;
-                margin: 0 21px 20px;
+                width: 7.8125rem;
+                height: 10.625rem;
+                margin: 0 1.3125rem 1.25rem;
                 order: 1;
 
                 .integration-category {
@@ -468,7 +468,7 @@ $category-text: hsl(219, 23%, 33%);
 
                     .integration-name {
                         font-size: 1.2em !important;
-                        margin-left: 20px;
+                        margin-left: 1.25rem;
                     }
                 }
             }
@@ -487,8 +487,8 @@ $category-text: hsl(219, 23%, 33%);
                     font-size: 0.9em;
                     font-weight: 400;
                     padding: 6px 3px;
-                    margin: 7px 0;
-                    width: 165px;
+                    margin: 0.4375rem 0;
+                    width: 10.3125rem;
                     text-align: center;
                     border-radius: 5px;
                     transition: all 0.3s ease;
@@ -503,15 +503,15 @@ $category-text: hsl(219, 23%, 33%);
             }
 
             #integration-list-link {
-                margin-left: 30px;
+                margin-left: 1.875rem;
                 order: 3;
 
                 span {
                     display: inline-block;
-                    margin-left: 5px;
+                    margin-left: 0.3125rem;
 
                     @media (min-width: 768px) {
-                        margin-top: 15px;
+                        margin-top: 0.9375rem;
                     }
 
                     @media (max-width: 768px) {
@@ -528,7 +528,7 @@ $category-text: hsl(219, 23%, 33%);
                 flex-direction: row;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 20px;
+                margin-bottom: 1.25rem;
                 padding-bottom: 20px;
                 border-bottom: 1px solid $light-blue-border;
             }
@@ -546,11 +546,11 @@ $category-text: hsl(219, 23%, 33%);
 
         .integration-instructions {
             .help-content h3 {
-                margin: 20px 0;
+                margin: 1.25rem 0;
             }
 
             @media (min-width: 768px) {
-                width: calc(100% - 200px);
+                width: calc(100% - 12.5rem);
             }
 
             @media (max-width: 768px) {

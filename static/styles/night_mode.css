@@ -171,7 +171,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     .pill-container {
         border-style: solid;
-        border-width: 1px;
+        border-width: 0.0625rem;
     }
 
     #search_arrows .pill,

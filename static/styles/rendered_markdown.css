@@ -2,42 +2,42 @@
     /* The default top/bottom margins for paragraphs are small, to make sure
        they look nice next to blockquotes, lists, etc. */
     p {
-        margin: 3px 0 3px 0;
+        margin: 0.1875rem 0 0.1875rem 0;
     }
 
     /* The spacing between two paragraphs is significantly larger.  We
        arrange things so that this spacing matches the spacing between
        paragraphs in two consecutive 1-line messages. */
     p + p {
-        margin-top: 10px;
+        margin-top: 0.625rem;
     }
 
     /* Ensure bulleted lists are nicely centered in 1-line messages */
     ul {
-        margin: 2px 0 5px 20px;
+        margin: 0.125rem 0 0.3125rem 1.25rem;
     }
 
     /* Swap the left and right margins of bullets for Right-To-Left languages */
     &.rtl ul {
-        margin-right: 20px;
+        margin-right: 1.25rem;
         margin-left: 0;
     }
 
     /* Ensure ordered lists are nicely centered in 1-line messages */
     ol {
-        margin: 2px 0 5px 20px;
+        margin: 0.125rem 0 0.3125rem 1.25rem;
     }
 
     /* Swap the left and right margins of ordered list for Right-To-Left languages */
     &.rtl ol {
-        margin-right: 8px;
+        margin-right: 0.5rem;
         margin-left: 0;
     }
 
     /* Reduce top-margin when a paragraph is followed by an ordered or bulleted list */
     p + ul,
     p + ol {
-        margin-top: -3px;
+        margin-top: -0.1875rem;
     }
 
     /* Headings: We need to make sure our headings are less prominent than our sender names styling. */
@@ -51,16 +51,16 @@
         font-weight: 600;
         line-height: 1.4;
         margin-top: 0;
-        margin-bottom: 5px;
+        margin-bottom: 0.3125rem;
         text-decoration: underline;
     }
 
     /* Formatting for blockquotes */
     blockquote {
         padding-left: 0.3125rem;
-        margin-left: 10px;
-        margin-top: 5px;
-        margin-bottom: 6px;
+        margin-left: 0.625rem;
+        margin-top: 0.3125rem;
+        margin-bottom: 0.375rem;
         border-left-color: hsl(0, 0%, 87%);
 
         p {
@@ -73,7 +73,7 @@
         padding-left: unset;
         padding-right: 0.3125rem;
         margin-left: unset;
-        margin-right: 10px;
+        margin-right: 0.625rem;
         border-left: unset;
         border-right: 5px solid hsl(0, 0%, 87%);
     }
@@ -81,7 +81,7 @@
     /* Formatting for Markdown tables */
     table {
         padding-right: 0.625rem;
-        margin: 5px 5px 5px 5px;
+        margin: 0.3125rem 0.3125rem 0.3125rem 0.3125rem;
         width: 99%;
         display: block;
         max-width: fit-content;
@@ -111,8 +111,8 @@
 
     /* Emoji; sized to be easily understood while not overwhelming text. */
     .emoji {
-        height: 20px;
-        width: 20px;
+        height: 1.25rem;
+        width: 1.25rem;
     }
 
     /* Mentions and alert words */
@@ -125,8 +125,8 @@
         border-radius: 3px;
         padding: 0 0.2em;
         box-shadow: 0 0 0 1px hsl(0, 0%, 80%);
-        margin-right: 2px;
-        margin-left: 2px;
+        margin-right: 0.125rem;
+        margin-left: 0.125rem;
         white-space: nowrap;
         background: linear-gradient(
             to bottom,
@@ -134,7 +134,7 @@
             hsla(0, 0%, 0%, 0) 100%
         );
         display: inline-block;
-        margin-bottom: 1px;
+        margin-bottom: 0.0625rem;
     }
 
     .alert-word {
@@ -148,10 +148,10 @@
         padding: 0 0.2em;
         box-shadow: 0 0 0 1px hsl(0, 0%, 80%);
         white-space: nowrap;
-        margin-left: 2px;
-        margin-right: 2px;
+        margin-left: 0.125rem;
+        margin-right: 0.125rem;
         display: inline-block;
-        margin-bottom: 1px;
+        margin-bottom: 0.0625rem;
     }
 
     /* LaTeX styling */
@@ -171,7 +171,7 @@
         position: relative;
         top: 1px;
         display: block;
-        margin: 5px 0 15px 0;
+        margin: 0.3125rem 0 0.9375rem 0;
 
         .spoiler-header {
             padding: 0.3125rem;
@@ -197,8 +197,8 @@
 
         .spoiler-button {
             float: right;
-            width: 25px;
-            height: 25px;
+            width: 1.5625rem;
+            height: 1.5625rem;
             &:hover .spoiler-arrow {
                 &::before,
                 &::after {
@@ -209,14 +209,14 @@
 
         .spoiler-arrow {
             float: right;
-            width: 13px;
-            height: 13px;
+            width: 0.8125rem;
+            height: 0.8125rem;
             position: relative;
             bottom: -5px;
             left: -10px;
             cursor: pointer;
             transition: 0.4s ease;
-            margin-top: 2px;
+            margin-top: 0.125rem;
             text-align: left;
             transform: rotate(45deg);
             &::before,
@@ -224,8 +224,8 @@
                 position: absolute;
                 content: "";
                 display: inline-block;
-                width: 12px;
-                height: 3px;
+                width: 0.75rem;
+                height: 0.1875rem;
                 background-color: hsl(0, 0%, 83%);
                 transition: 0.4s ease;
             }
@@ -249,20 +249,20 @@
 
     /* CSS for message content widgets */
     table.tictactoe {
-        width: 80px;
+        width: 5.0rem;
         margin-left: 0;
     }
 
     td.tictactoe {
-        width: 15px;
+        width: 0.9375rem;
         border: none;
         padding: 0.125rem;
     }
 
     button.tictactoe-square {
         background-color: hsl(156, 30%, 62%);
-        width: 40px;
-        height: 40px;
+        width: 2.5rem;
+        height: 2.5rem;
         border: none;
         border-radius: 3px;
         font-size: 1.5625rem;
@@ -285,9 +285,9 @@
     .twitter-image,
     .message_inline_image {
         position: relative;
-        margin-bottom: 5px;
-        margin-left: 5px;
-        height: 100px;
+        margin-bottom: 0.3125rem;
+        margin-left: 0.3125rem;
+        height: 6.25rem;
         display: block !important;
         border: none !important;
     }
@@ -295,7 +295,7 @@
     &.rtl .twitter-image,
     &.rtl .message_inline_image {
         margin-left: unset;
-        margin-right: 5px;
+        margin-right: 0.3125rem;
     }
 
     .twitter-tweet {
@@ -303,27 +303,27 @@
         padding: 0.5em 0.75em;
         margin-bottom: 0.25em;
         word-break: break-word;
-        min-height: 48px;
+        min-height: 3.0rem;
     }
 
     .twitter-avatar {
         float: left;
-        width: 48px;
-        height: 48px;
+        width: 3.0rem;
+        height: 3.0rem;
         margin-right: 0.75em;
     }
 
     .message_inline_ref {
-        margin-bottom: 5px;
-        margin-left: 5px;
-        height: 50px;
+        margin-bottom: 0.3125rem;
+        margin-left: 0.3125rem;
+        height: 3.125rem;
         display: block !important;
         border: none !important;
     }
 
     &.rtl .message_inline_ref {
         margin-left: unset;
-        margin-right: 5px;
+        margin-right: 0.3125rem;
     }
 
     .twitter-image img,
@@ -332,7 +332,7 @@
         height: auto;
         max-height: 100%;
         float: left;
-        margin-right: 10px;
+        margin-right: 0.625rem;
     }
 
     .message_inline_image img {
@@ -350,7 +350,7 @@
     &.rtl .message_inline_ref img {
         float: right;
         margin-right: unset;
-        margin-left: 10px;
+        margin-left: 0.625rem;
     }
 
     li .message_inline_image img {
@@ -360,7 +360,7 @@
     .youtube-video .fa-play::before,
     .embed-video .fa-play::before {
         position: absolute;
-        margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
+        margin: var(--margin-top, 2.0rem) 0 0 var(--margin-left, 2.8125rem);
         padding: 0.3125rem 0.5rem 0.3125rem 0.625rem;
         font-size: 0.75rem;
         border-radius: 4px;
@@ -374,10 +374,10 @@
     .message_embed {
         display: block;
         position: relative;
-        margin: 5px 0;
+        margin: 0.3125rem 0;
         border: none;
         border-left: 3px solid hsl(0, 0%, 93%);
-        height: 80px;
+        height: 5.0rem;
         padding: 0.3125rem;
         z-index: 1;
         text-shadow: hsla(0, 0%, 0%, 0.01) 0 0 1px;
@@ -385,7 +385,7 @@
         .message_embed_title {
             padding-top: 0;
             /* to remove the spacing that the font has from the top of the container. */
-            margin-top: -5px;
+            margin-top: -0.3125rem;
 
             font-size: 1.2em;
             line-height: normal;
@@ -393,8 +393,8 @@
 
         .message_embed_description {
             position: relative;
-            max-width: 500px;
-            margin-top: 3px;
+            max-width: 31.25rem;
+            margin-top: 0.1875rem;
 
             /* to put it below the container gradient. */
             z-index: -1;
@@ -402,8 +402,8 @@
 
         .message_embed_image {
             display: inline-block;
-            width: 70px;
-            height: 70px;
+            width: 4.375rem;
+            height: 4.375rem;
             background-size: cover;
             background-position: center;
         }
@@ -413,8 +413,8 @@
             padding: 0 0.3125rem;
             display: inline-block;
             vertical-align: top;
-            max-width: calc(100% - 115px);
-            max-height: 80px;
+            max-width: calc(100% - 7.1875rem);
+            max-height: 5.0rem;
             overflow: hidden;
         }
 
@@ -463,14 +463,14 @@
         doesn't scroll along with the code div in narrow windows */
         position: absolute;
         right: 2px;
-        margin-top: -6px;
+        margin-top: -0.375rem;
     }
 
     .code_external_link {
         visibility: hidden;
         position: absolute;
         right: 23px;
-        margin-top: -2px;
+        margin-top: -0.125rem;
         font-size: 1.4em;
         /* The default icon and on-hover colors are inherited from <a> tag.
         so we set our own to match the copy-to-clipbord icon */
@@ -500,13 +500,13 @@
 
         .message_embed_image {
             width: 100%;
-            height: 100px;
+            height: 6.25rem;
         }
 
         .data-container {
             display: block;
             max-width: 100%;
-            margin-top: 10px;
+            margin-top: 0.625rem;
         }
     }
 }
@@ -548,8 +548,8 @@ pre {
     overflow-x: auto;
     word-wrap: normal;
     /* Bootstrap's default here is top: 0px, bottom: 10px */
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin-top: 0.3125rem;
+    margin-bottom: 0.3125rem;
     /* Bootstrap's default here is 9.5 on all sides */
     padding-top: 0.3125rem;
     padding-bottom: 0.1875rem;
@@ -569,8 +569,8 @@ pre {
 pre {
     /* Ensure the horizontal scrollbar is visible on Mac */
     &::-webkit-scrollbar {
-        height: 8px;
-        width: 10px;
+        height: 0.5rem;
+        width: 0.625rem;
         background-color: hsla(0, 0%, 0%, 0.05);
     }
 

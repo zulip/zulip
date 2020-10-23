@@ -39,7 +39,7 @@
             i {
                 padding-right: 0.25em;
                 display: inline-block;
-                width: 13px;
+                width: 0.8125rem;
                 vertical-align: middle;
             }
 
@@ -65,12 +65,12 @@
     }
 
     .user_circle {
-        width: 8px;
-        height: 8px;
+        width: 0.5rem;
+        height: 0.5rem;
         margin-top: 0;
         margin-bottom: 0;
-        margin-left: 5px;
-        margin-right: 5px;
+        margin-left: 0.3125rem;
+        margin-right: 0.3125rem;
         display: block;
     }
 
@@ -82,8 +82,8 @@
 
 #invite-user-link i {
     text-decoration: none;
-    margin-right: 3px;
-    margin-left: 5px;
+    margin-right: 0.1875rem;
+    margin-left: 0.3125rem;
 }
 
 .user-presence-link,
@@ -93,13 +93,13 @@
 }
 
 .user_sidebar_entry .selectable_sidebar_block {
-    width: calc(100% - 16px);
+    width: calc(100% - 1.0rem);
     display: flex;
     flex-direction: row;
 }
 
 .user-presence-link {
-    width: calc(100% - 24px);
+    width: calc(100% - 1.5rem);
 }
 
 .my_user_status {
@@ -121,14 +121,14 @@
         background-color: hsl(105, 2%, 50%);
         color: hsl(0, 0%, 100%);
         font-size: 0.75rem;
-        line-height: 14px;
-        height: 15px;
+        line-height: 0.875rem;
+        height: 0.9375rem;
         font-weight: normal;
         letter-spacing: 0.6px;
         position: relative;
         top: 3px;
         border-radius: 4px;
-        margin-left: 5px;
+        margin-left: 0.3125rem;
         display: none;
     }
 
@@ -151,8 +151,8 @@
     text-decoration: none;
     color: hsl(0, 0%, 60%);
     display: block;
-    width: 45px;
-    height: 19px;
+    width: 2.8125rem;
+    height: 1.1875rem;
     padding-top: 0.75rem;
     padding-bottom: 0.5625rem;
 
@@ -171,7 +171,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-right: 10px;
+    margin-right: 0.625rem;
 
     #userlist-title {
         margin: 0;
@@ -180,7 +180,7 @@
     #user_filter_icon {
         font-size: 0.8125rem;
         opacity: 0.5;
-        margin-right: 5px;
+        margin-right: 0.3125rem;
     }
 }
 
@@ -213,18 +213,18 @@
 @media (max-width: 775px) {
     #user_search_section .user-list-filter {
         /* input should be 100% - 6px padding x2 - 1px border x2. */
-        width: calc(100% - 12px - 2px);
+        width: calc(100% - 0.75rem - 0.125rem);
     }
 }
 
 @media (max-width: 500px) {
     #userlist-toggle {
-        height: 30px;
-        line-height: 30px;
+        height: 1.875rem;
+        line-height: 1.875rem;
     }
 
     #userlist-toggle-button {
-        height: 30px;
+        height: 1.875rem;
         padding-top: 0;
         padding-bottom: 0;
     }

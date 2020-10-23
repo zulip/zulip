@@ -17,7 +17,7 @@ html {
 }
 
 .digest-address-link {
-    margin-top: 10px;
+    margin-top: 0.625rem;
     color: hsl(0, 0%, 60%);
     font-size: 0.75rem;
     text-align: center;
@@ -36,7 +36,7 @@ html {
     height: auto !important;
     height: 100%;
 
-    margin: 0 auto -56px;
+    margin: 0 auto -3.5rem;
 }
 
 .normal {
@@ -55,7 +55,7 @@ html {
     position: relative;
 
     padding: 15px 0;
-    height: 29px;
+    height: 1.8125rem;
 
     background-color: hsl(0, 0%, 100%);
     box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
@@ -65,7 +65,7 @@ html {
 
 .navbar.footer .nav {
     > li {
-        line-height: 56px;
+        line-height: 3.5rem;
 
         > a {
             padding-top: 0;
@@ -75,7 +75,7 @@ html {
 }
 
 .push {
-    height: 56px;
+    height: 3.5rem;
 }
 
 .breakpoint {
@@ -100,7 +100,7 @@ html {
 /* The Help Center tabbed content tends to be a lot short sentences.
    We also want the Help Center tabbed content to pop more. */
 .help-center .code-section .blocks {
-    max-width: 500px;
+    max-width: 31.25rem;
 }
 
 .digest-container {
@@ -110,7 +110,7 @@ html {
 .digest-email-container {
     display: block;
     margin: 0 auto !important;
-    max-width: 700px;
+    max-width: 43.75rem;
     padding-bottom: 30px;
 }
 
@@ -136,7 +136,7 @@ html {
 .help {
     .app-main {
         padding: 0;
-        margin-top: 59px;
+        margin-top: 3.6875rem;
     }
 
     /* Markdown processor generates lots of spurious <p></p> */
@@ -145,10 +145,10 @@ html {
     }
 
     .sidebar {
-        width: 300px;
+        width: 18.75rem;
         z-index: 1;
         /* 100vh - navbar - paddingTop - paddingBottom - bottomNav */
-        height: calc(100vh - 59px);
+        height: calc(100vh - 3.6875rem);
 
         border-right: 1px solid hsl(219, 10%, 97%);
         overflow: auto;
@@ -170,7 +170,7 @@ html {
             border-bottom: 1px solid hsla(0, 0, 100%, 0.6);
 
             &:not(:first-of-type) {
-                margin-top: 20px;
+                margin-top: 1.25rem;
             }
 
             &:first-of-type,
@@ -180,7 +180,7 @@ html {
 
             &.home-link {
                 font-size: 1em;
-                margin-bottom: 17px;
+                margin-bottom: 1.0625rem;
 
                 a::before {
                     display: inline-block;
@@ -188,7 +188,7 @@ html {
                     font-size: inherit;
 
                     content: "\f0d9";
-                    margin-right: 10px;
+                    margin-right: 0.625rem;
                 }
             }
 
@@ -202,7 +202,7 @@ html {
             font-weight: 400;
             font-size: 1.2em;
             line-height: 1.05;
-            margin-bottom: 5px;
+            margin-bottom: 0.3125rem;
         }
 
         &.slide h2 {
@@ -214,7 +214,7 @@ html {
                 font-size: inherit;
 
                 content: "\f107";
-                margin-right: 5px;
+                margin-right: 0.3125rem;
                 float: right;
 
                 opacity: 0.5;
@@ -222,11 +222,11 @@ html {
         }
 
         ul {
-            margin: 5px 0 10px 12px;
+            margin: 0.3125rem 0 0.625rem 0.75rem;
         }
 
         &.slide ul {
-            margin-left: 19px;
+            margin-left: 1.1875rem;
             display: none;
         }
 
@@ -251,8 +251,8 @@ html {
                 /* Extend highlight to entire width of sidebar, not just link area */
                 /* This has been changed from "+" to "- -" because of issue #8403.
                    If the issue has been fixed, please change this back to "+" again. */
-                width: calc(100% + 20px);
-                margin-left: -40px;
+                width: calc(100% + 1.25rem);
+                margin-left: -2.5rem;
                 padding-left: 40px;
 
                 /* Don't show the focus outline for the highlighted page. */
@@ -264,8 +264,8 @@ html {
 
 .help .markdown {
     background-color: hsl(0, 0%, 100%);
-    width: calc(100vw - 300px);
-    height: calc(100vh - 59px);
+    width: calc(100vw - 18.75rem);
+    height: calc(100vh - 3.6875rem);
 }
 
 .help-center ol,
@@ -277,8 +277,8 @@ html {
     font-family: Helvetica;
     font-size: 6.25rem;
     font-weight: bold;
-    margin-top: 50px;
-    margin-bottom: 60px;
+    margin-top: 3.125rem;
+    margin-bottom: 3.75rem;
 }
 
 #digest-page-title {
@@ -290,15 +290,15 @@ html {
 }
 
 .pitch {
-    width: 600px;
+    width: 37.5rem;
     max-width: 100%;
 }
 
 .help-box {
-    max-width: 500px;
+    max-width: 31.25rem;
 
     padding: 10px;
-    margin: 10px 0;
+    margin: 0.625rem 0;
 
     font-size: 0.9rem;
     font-weight: 400;
@@ -345,13 +345,13 @@ img.screenshot {
 }
 
 .android-screenshot {
-    margin-top: -30px;
-    width: 221px;
+    margin-top: -1.875rem;
+    width: 13.8125rem;
 }
 
 .iphone-screenshot {
-    width: 184px;
-    margin: 0 32px;
+    width: 11.5rem;
+    margin: 0 2.0rem;
 }
 
 .full-width-screenshot {
@@ -387,13 +387,13 @@ img.screenshot {
 
 #pw_strength {
     /* Same width as a Bootstrap default text <input> with padding */
-    width: 220px;
-    height: 8px;
+    width: 13.75rem;
+    height: 0.5rem;
 }
 
 #registration #pw_strength {
-    width: 325px;
-    margin: 7px auto 0;
+    width: 20.3125rem;
+    margin: 0.4375rem auto 0;
 }
 
 .def::before {
@@ -444,8 +444,8 @@ img.screenshot {
 }
 
 .laptop-image {
-    width: 787px;
-    height: 414px;
+    width: 49.1875rem;
+    height: 25.875rem;
     background-image: url(../../images/landing-page/laptop.png);
     background-size: contain;
 }
@@ -453,7 +453,7 @@ img.screenshot {
 .laptop-screen {
     position: relative;
     top: 32px;
-    width: 507px;
+    width: 31.6875rem;
 }
 
 .platform-icon {
@@ -503,9 +503,9 @@ input.text-error {
 
 /* -- new footer -- */
 .footer {
-    margin: 20px;
+    margin: 1.25rem;
     z-index: 100;
-    width: calc(100% - 40px);
+    width: calc(100% - 2.5rem);
     text-align: center;
     font-size: 0.9em;
 
@@ -519,9 +519,9 @@ input.text-error {
     }
 
     section {
-        width: calc(25% - 40px);
-        margin: 0 20px;
-        max-width: 150px;
+        width: calc(25% - 2.5rem);
+        margin: 0 1.25rem;
+        max-width: 9.375rem;
         display: inline-block;
         vertical-align: top;
         text-align: left;
@@ -531,7 +531,7 @@ input.text-error {
             font-size: 1em;
             font-weight: 600;
             line-height: 1.2;
-            margin-bottom: 5px;
+            margin-bottom: 0.3125rem;
         }
 
         ul {
@@ -565,7 +565,7 @@ input.text-error {
     }
 
     .portico-logo {
-        height: 28px;
+        height: 1.75rem;
         width: auto;
         padding: 6px 0 6px 0;
     }
@@ -580,9 +580,9 @@ input.text-error {
             display: none;
             position: absolute;
             right: 0;
-            margin: 10px 0 0 0;
+            margin: 0.625rem 0 0 0;
             list-style-type: none;
-            width: 200px;
+            width: 12.5rem;
             background-color: hsl(0, 0%, 100%);
             padding: 5px 0;
             border-radius: 4px;
@@ -614,7 +614,7 @@ input.text-error {
 
                 a {
                     display: block;
-                    margin: 2px 0;
+                    margin: 0.125rem 0;
                     padding: 0;
                     transition: none;
                     font-size: 0.9em;
@@ -627,7 +627,7 @@ input.text-error {
                 }
 
                 a i {
-                    margin-right: 5px;
+                    margin-right: 0.3125rem;
                 }
             }
         }
@@ -640,14 +640,14 @@ input.text-error {
     .dropdown-pill {
         border: 1px solid hsla(0, 0%, 0%, 0.2);
         border-radius: 4px;
-        margin-left: 10px;
+        margin-left: 0.625rem;
         font-weight: 400;
         cursor: pointer;
 
         .realm-name {
             display: inline-block;
             vertical-align: top;
-            margin: 0 5px 0 -4px;
+            margin: 0 0.3125rem 0 -0.25rem;
             padding: 1px 0 1px 5px;
             font-size: 0.9em;
             font-weight: 600;
@@ -658,7 +658,7 @@ input.text-error {
             position: relative;
             top: -2px;
             font-size: 0.6em;
-            margin-left: 5px;
+            margin-left: 0.3125rem;
             opacity: 0.5;
             transition: all 0.2s ease;
         }
@@ -668,8 +668,8 @@ input.text-error {
         }
 
         .header-realm-icon {
-            width: 26px;
-            height: 26px;
+            width: 1.625rem;
+            height: 1.625rem;
             vertical-align: top;
             border-radius: 4px;
         }
@@ -677,7 +677,7 @@ input.text-error {
 }
 
 .portico-page-container .portico-header .dropdown-pill .realm-name {
-    margin-left: -3px;
+    margin-left: -0.1875rem;
 }
 
 .app {
@@ -696,19 +696,19 @@ a.bottom-signup-button {
     text-decoration: none !important;
     font-size: 1.25rem;
     padding: 20px;
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin-top: 1.875rem;
+    margin-bottom: 1.875rem;
     font-weight: 300;
 }
 
 .signup-signature {
-    margin-top: 20px;
+    margin-top: 1.25rem;
     padding-bottom: 50px;
 }
 
 .devlogin_subheader {
-    margin-top: 10px;
-    margin-bottom: 20px;
+    margin-top: 0.625rem;
+    margin-bottom: 1.25rem;
     padding-top: 0;
     text-align: center;
     font-size: 1rem;
@@ -716,7 +716,7 @@ a.bottom-signup-button {
 
 .portico-large-text {
     font-size: 1rem;
-    line-height: 20px;
+    line-height: 1.25rem;
 }
 
 .portico-secondary-header {
@@ -731,8 +731,8 @@ a.bottom-signup-button {
 
 .team-profiles {
     /* Compensate for gutter width */
-    margin: -10px;
-    margin-bottom: 3px;
+    margin: -0.625rem;
+    margin-bottom: 0.1875rem;
 }
 
 .team {
@@ -756,8 +756,8 @@ a.bottom-signup-button {
 
         .profile-picture {
             flex: 0 auto;
-            width: 200px;
-            margin: 10px;
+            width: 12.5rem;
+            margin: 0.625rem;
 
             > img {
                 height: auto;
@@ -768,13 +768,13 @@ a.bottom-signup-button {
         .profile-information {
             flex: 1;
             /* Wrap when screen is small to prevent very short line */
-            min-width: 300px;
+            min-width: 18.75rem;
             font-size: 1.4em;
-            margin: 10px 10px 0 10px;
+            margin: 0.625rem 0.625rem 0 0.625rem;
         }
 
         .profile-description {
-            margin-top: 5px;
+            margin-top: 0.3125rem;
             font-weight: 400;
             font-size: 0.8em;
             opacity: 0.8;
@@ -800,7 +800,7 @@ a.bottom-signup-button {
         display: inline-block;
         padding: 10px;
         border: 1px solid transparent;
-        margin: 0 0 -1px 0;
+        margin: 0 0 -0.0625rem 0;
 
         &:hover {
             cursor: pointer;
@@ -809,8 +809,8 @@ a.bottom-signup-button {
 }
 
 .contributors-list {
-    margin-left: -40px;
-    width: calc(100% + 80px);
+    margin-left: -2.5rem;
+    width: calc(100% + 5.0rem);
 }
 
 .contributors {
@@ -832,7 +832,7 @@ a.bottom-signup-button {
         }
 
         .avatar {
-            width: 60px;
+            width: 3.75rem;
             text-align: center;
             display: inline-block;
             vertical-align: top;
@@ -843,7 +843,7 @@ a.bottom-signup-button {
             text-align: left;
             display: inline-block;
             vertical-align: top;
-            margin-left: 10px;
+            margin-left: 0.625rem;
         }
     }
 }
@@ -886,8 +886,8 @@ input#terminal:checked ~ #tab-terminal {
     justify-content: center;
 
     .sponsor-picture img {
-        height: 170px;
-        margin: 0 20px 0 20px;
+        height: 10.625rem;
+        margin: 0 1.25rem 0 1.25rem;
         pointer-events: none;
     }
 }
@@ -901,10 +901,10 @@ input#terminal:checked ~ #tab-terminal {
     font-size: 1.5rem;
     display: block;
     margin: auto;
-    width: 300px;
+    width: 18.75rem;
     text-align: center;
-    margin-top: -30px;
-    margin-bottom: 50px;
+    margin-top: -1.875rem;
+    margin-bottom: 3.125rem;
 }
 
 .apps-muted {
@@ -913,7 +913,7 @@ input#terminal:checked ~ #tab-terminal {
     display: block;
     margin: auto;
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 1.875rem;
 }
 
 .apps-instructions-header {
@@ -923,8 +923,8 @@ input#terminal:checked ~ #tab-terminal {
 
 .btn-app-download {
     font-size: 1.5625rem;
-    margin-top: 15px;
-    margin-bottom: 15px;
+    margin-top: 0.9375rem;
+    margin-bottom: 0.9375rem;
 }
 
 .btn-direct {
@@ -933,7 +933,7 @@ input#terminal:checked ~ #tab-terminal {
     padding: 8px;
     font-size: 1.125rem;
     border-radius: 0;
-    min-width: 300px;
+    min-width: 18.75rem;
 }
 
 .btn-user {
@@ -954,10 +954,10 @@ input#terminal:checked ~ #tab-terminal {
     text-align: center;
 
     .alert {
-        width: 320px;
+        width: 20.0rem;
         margin: auto;
-        margin-top: -30px;
-        margin-bottom: 15px;
+        margin-top: -1.875rem;
+        margin-bottom: 0.9375rem;
         text-align: center;
     }
 }
@@ -968,11 +968,11 @@ input#terminal:checked ~ #tab-terminal {
 }
 
 .register-button {
-    margin-left: 10px;
+    margin-left: 0.625rem;
 }
 
 .new-organization-button {
-    margin-top: 10px;
+    margin-top: 0.625rem;
 }
 
 input.new-organization-button {
@@ -984,29 +984,29 @@ input.new-organization-button {
 .login-form {
     margin: auto;
     /* plus input padding. */
-    width: calc(300px - -28px);
-    margin-bottom: 10px;
+    width: calc(18.75rem - -1.75rem);
+    margin-bottom: 0.625rem;
 
     .direct-label {
-        margin-top: 50px;
-        margin-bottom: 6px;
+        margin-top: 3.125rem;
+        margin-bottom: 0.375rem;
     }
 }
 
 .login-form,
 .register-form {
     .control-label {
-        margin-bottom: 2px;
+        margin-bottom: 0.125rem;
     }
 
     .control-group {
-        margin-right: 10px;
+        margin-right: 0.625rem;
     }
 }
 
 .login-forgot-password {
     float: right;
-    line-height: 40px;
+    line-height: 2.5rem;
     position: relative;
     right: -15px;
     font-weight: 300;
@@ -1014,10 +1014,10 @@ input.new-organization-button {
 
 .login-social {
     max-width: 100%;
-    min-width: 300px;
+    min-width: 18.75rem;
     margin: auto;
     text-align: center;
-    margin-top: 10px;
+    margin-top: 0.625rem;
 }
 
 .main-headline-container {
@@ -1028,17 +1028,17 @@ input.new-organization-button {
 
 .main-headline-logo {
     display: block;
-    width: 200px;
+    width: 12.5rem;
     height: auto;
     margin: auto;
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
 }
 
 .main-image {
     display: block;
     margin: auto;
     width: 100%;
-    max-width: 900px;
+    max-width: 56.25rem;
     height: auto;
     position: relative;
     bottom: -10px;
@@ -1052,27 +1052,27 @@ input.new-organization-button {
 
     .tagline {
         font-size: 2.5rem;
-        line-height: 42px;
+        line-height: 2.625rem;
     }
 
     .footnote {
         display: block;
         font-size: 1.125rem;
         color: hsl(0, 0%, 0%);
-        margin-top: 15px;
+        margin-top: 0.9375rem;
     }
 }
 
 .main-signup-button {
-    margin-top: 15px;
-    margin-bottom: 15px;
+    margin-top: 0.9375rem;
+    margin-bottom: 0.9375rem;
     font-size: 1.375rem;
 }
 
 .app-main,
 .header-main,
 .footer-main {
-    min-width: 350px;
+    min-width: 21.875rem;
     margin: 0 auto;
     padding: 0 20px 0 20px;
     position: relative;
@@ -1110,8 +1110,8 @@ input.new-organization-button {
 
 .little-bullet {
     display: inline-block;
-    margin-left: 5px;
-    margin-right: 5px;
+    margin-left: 0.3125rem;
+    margin-right: 0.3125rem;
 }
 
 .top-links {
@@ -1148,15 +1148,15 @@ input.new-organization-button {
 .password-reset {
     display: inline-block;
     text-align: left;
-    width: 328px;
+    width: 20.5rem;
 
     form {
         margin: 0;
     }
 
     #pw_strength {
-        width: 328px;
-        margin-top: 20px;
+        width: 20.5rem;
+        margin-top: 1.25rem;
     }
 
     .control-group .control-label {
@@ -1168,11 +1168,11 @@ input.new-organization-button {
     }
 
     .input-group {
-        margin: 15px 0;
+        margin: 0.9375rem 0;
 
         input[type="text"],
         input[type="password"] {
-            width: calc(100% - 14px);
+            width: calc(100% - 0.875rem);
         }
 
         #pw_strength {
@@ -1180,7 +1180,7 @@ input.new-organization-button {
         }
 
         &.m-t-30 {
-            margin-top: 30px;
+            margin-top: 1.875rem;
         }
     }
 
@@ -1200,19 +1200,19 @@ input.new-organization-button {
 
 .input-group {
     &.margin {
-        margin: 10px 0;
+        margin: 0.625rem 0;
     }
 
     .progress {
         margin: 0;
-        margin-top: 5px;
+        margin-top: 0.3125rem;
         display: inline-block;
     }
 
     /* --- new settings styling --- */
     input[type="radio"],
     input[type="checkbox"] {
-        margin: 0 10px 0 0;
+        margin: 0 0.625rem 0 0;
     }
 
     input[type="radio"] {
@@ -1226,12 +1226,12 @@ input.new-organization-button {
 
         &.inline-block {
             /* eyeballing off-centered aesth. */
-            margin-top: 1px;
+            margin-top: 0.0625rem;
         }
     }
 
     &.radio {
-        margin-left: 25px;
+        margin-left: 1.5625rem;
     }
 
     &.grid {
@@ -1239,14 +1239,14 @@ input.new-organization-button {
         border-bottom: 1px solid hsl(0, 0%, 87%);
 
         label.inline-block {
-            width: 200px;
+            width: 12.5rem;
         }
     }
 }
 
 .center-container {
-    min-height: calc(100vh - 94px);
-    min-height: 700px;
+    min-height: calc(100vh - 5.875rem);
+    min-height: 43.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1263,11 +1263,11 @@ input.new-organization-button {
 
     .pitch {
         width: 100%;
-        margin-bottom: 20px;
+        margin-bottom: 1.25rem;
     }
 
     .control-group {
-        margin-bottom: 10px;
+        margin-bottom: 0.625rem;
 
         label {
             width: 100%;
@@ -1283,11 +1283,11 @@ input.new-organization-button {
     }
 
     #send_confirm input[type="text"] {
-        margin-top: 20px;
+        margin-top: 1.25rem;
     }
 
     .button {
-        margin-top: 20px;
+        margin-top: 1.25rem;
         padding: 5px 10px;
         border-radius: 2px;
         font-size: 1rem;
@@ -1296,7 +1296,7 @@ input.new-organization-button {
 }
 
 .error_page {
-    min-height: calc(100vh - 290px);
+    min-height: calc(100vh - 18.125rem);
     height: 100%;
     background-color: hsl(163, 42%, 85%);
     font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
@@ -1307,27 +1307,27 @@ input.new-organization-button {
 }
 
 .error_page .row-fluid {
-    margin-top: 60px;
+    margin-top: 3.75rem;
 }
 
 .error_page img {
     display: block;
     clear: right;
     margin: 0 auto;
-    max-width: 500px;
+    max-width: 31.25rem;
     width: 100%;
 }
 
 .error_page .errorbox {
     margin: auto;
     border: 2px solid hsl(163, 43%, 46%);
-    max-width: 500px;
+    max-width: 31.25rem;
     background-color: hsl(0, 0%, 100%);
     box-shadow: 0 0 4px hsl(163, 43%, 46%);
     font-size: 1.125rem;
 
     &.config-error {
-        max-width: 750px;
+        max-width: 46.875rem;
     }
 }
 
@@ -1343,13 +1343,13 @@ input.new-organization-button {
 .error_page .lead {
     color: hsl(163, 49%, 44%);
     font-size: 2.1875rem;
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
     line-height: normal;
 }
 
 .hourglass-img {
     width: initial !important;
-    margin-bottom: 25px !important;
+    margin-bottom: 1.5625rem !important;
 }
 
 @media (max-width: 800px) {
@@ -1359,7 +1359,7 @@ input.new-organization-button {
 
             .content {
                 max-width: none;
-                margin-left: 50px;
+                margin-left: 3.125rem;
             }
         }
 
@@ -1380,7 +1380,7 @@ input.new-organization-button {
             right: calc(100vw - 50px);
             width: 100%;
             min-width: unset;
-            height: calc(100vh - 59px);
+            height: calc(100vh - 3.6875rem);
             pointer-events: none;
             overflow: hidden;
             transform: translateX(0);
@@ -1428,12 +1428,12 @@ input.new-organization-button {
 
 @media (max-width: 815px) {
     .footer {
-        width: 450px;
+        width: 28.125rem;
         margin-left: auto;
         margin-right: auto;
 
         section {
-            width: calc(50% - 40px);
+            width: calc(50% - 2.5rem);
         }
     }
 }
@@ -1447,13 +1447,13 @@ input.new-organization-button {
     .input-large {
         display: block !important;
         width: 100% !important;
-        min-height: 30px !important;
+        min-height: 1.875rem !important;
         margin: 0 !important;
         padding: 4px 6px !important;
-        line-height: 20px !important;
+        line-height: 1.25rem !important;
         box-sizing: border-box !important;
-        margin-top: 10px !important;
-        margin-bottom: 10px !important;
+        margin-top: 0.625rem !important;
+        margin-bottom: 0.625rem !important;
     }
 
     .postal-envelope {
@@ -1470,7 +1470,7 @@ input.new-organization-button {
 
     .signup-section {
         display: inline-block;
-        margin-top: 10px;
+        margin-top: 0.625rem;
     }
 
     .line-break-desktop {
@@ -1485,7 +1485,7 @@ input.new-organization-button {
 
 @media (max-height: 600px) {
     .password-container {
-        margin-top: 10px;
+        margin-top: 0.625rem;
     }
 }
 
@@ -1504,7 +1504,7 @@ input.new-organization-button {
     .app.help {
         .sidebar {
             top: 39px;
-            height: calc(100vh - 39px);
+            height: calc(100vh - 2.4375rem);
         }
 
         .hamburger {
@@ -1513,16 +1513,16 @@ input.new-organization-button {
     }
 
     .help .app-main {
-        margin-top: 39px;
+        margin-top: 2.4375rem;
     }
 
     .help .markdown {
-        height: calc(100vh - 39px);
+        height: calc(100vh - 2.4375rem);
     }
 
     .error_page .lead {
         font-size: 1.5em;
-        margin-bottom: 10px;
+        margin-bottom: 0.625rem;
     }
 
     .brand.logo .light {
@@ -1545,7 +1545,7 @@ input.new-organization-button {
     .main-headline-text {
         .tagline {
             font-size: 2rem;
-            line-height: 34px;
+            line-height: 2.125rem;
         }
     }
 
@@ -1560,8 +1560,8 @@ input.new-organization-button {
         width: auto;
 
         section {
-            margin: 0 3px;
-            width: calc(50% - 8px);
+            margin: 0 0.1875rem;
+            width: calc(50% - 0.5rem);
         }
     }
 }
@@ -1569,7 +1569,7 @@ input.new-organization-button {
 @media (max-width: 400px) {
     .footer {
         section {
-            width: calc(100% - 40px);
+            width: calc(100% - 2.5rem);
             max-width: none;
             text-align: center;
         }
@@ -1577,13 +1577,13 @@ input.new-organization-button {
 }
 
 .emoji {
-    height: 25px;
-    width: 25px;
+    height: 1.5625rem;
+    width: 1.5625rem;
     vertical-align: text-bottom;
 }
 
 .m-v-20 {
-    margin: 20px 0;
+    margin: 1.25rem 0;
 }
 
 label.label-title {
@@ -1598,7 +1598,7 @@ label.label-title {
 .button-new {
     padding: 8px 15px;
     margin: 0;
-    min-width: 130px;
+    min-width: 8.125rem;
 
     font-weight: 400;
 
@@ -1635,11 +1635,11 @@ label.label-title {
 }
 
 #find_account .form-control {
-    height: 30px;
+    height: 1.875rem;
 }
 
 #find_account .btn {
-    height: 40px;
+    height: 2.5rem;
     border-radius: 5px;
 }
 
@@ -1660,7 +1660,7 @@ label.label-title {
 }
 
 #devtools-page {
-    max-width: 800px;
+    max-width: 50.0rem;
     margin: 0 auto;
 }
 
@@ -1673,7 +1673,7 @@ label.label-title {
 }
 
 #third-party-apps {
-    margin-top: 20px;
+    margin-top: 1.25rem;
     padding-right: 10px;
 }
 
@@ -1733,13 +1733,13 @@ label.label-title {
 }
 
 .desktop-redirect-links {
-    margin-top: 20px;
+    margin-top: 1.25rem;
     text-decoration: underline;
     color: hsl(0, 0%, 50%);
 }
 
 .desktop-redirect-image {
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
 }
 
 .unsupported_browser_page {

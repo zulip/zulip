@@ -1,7 +1,7 @@
 /*
 This is the header, aka the navbar.
 */
-$header_height: 40px;
+$header_height: 2.5rem;
 
 /*
 We have a 10px gutter below the header,
@@ -9,7 +9,7 @@ which often needs to be respected by both
 the elements above it and below it on
 the y-axis, due to absolute positioning.
 */
-$header_padding_bottom: 10px;
+$header_padding_bottom: 0.625rem;
 
 /*
 Our sidebars (and anything that top-align
@@ -84,7 +84,7 @@ pre {
 }
 
 p.n-margin {
-    margin: 10px 0 0 0;
+    margin: 0.625rem 0 0 0;
 }
 
 .small-line-height {
@@ -130,12 +130,12 @@ p.n-margin {
 .all-messages-search-caution {
     border-radius: 4px;
     display: none;
-    height: 28px;
+    height: 1.75rem;
     font-size: 1rem;
-    margin: 0 auto 12px;
+    margin: 0 auto 0.75rem;
     padding: 0.3125rem;
     i {
-        margin: 0 3px 0 1px;
+        margin: 0 0.1875rem 0 0.0625rem;
     }
     p {
         margin: 0;
@@ -149,9 +149,9 @@ p.n-margin {
 
 .top-messages-logo,
 .bottom-messages-logo {
-    width: 24px;
-    height: 24px;
-    margin: 0 auto 12px;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0 auto 0.75rem;
 
     svg {
         circle {
@@ -169,7 +169,7 @@ p.n-margin {
 #feedback_container {
     display: none;
     position: absolute;
-    width: 400px;
+    width: 25.0rem;
     top: 0;
     left: calc(50vw - 220px);
     padding: 0.9375rem;
@@ -192,13 +192,13 @@ p.n-margin {
 
     h3 {
         font-size: 16pt;
-        margin-top: 2px;
+        margin-top: 0.125rem;
     }
 
     .exit-me {
         font-size: 30pt;
         font-weight: 200;
-        margin: 5px 0 0 10px;
+        margin: 0.3125rem 0 0 0.625rem;
         cursor: pointer;
     }
 }
@@ -271,7 +271,7 @@ p.n-margin {
         }
 
         .close {
-            line-height: 24px;
+            line-height: 1.5rem;
             position: absolute;
             right: 18px;
             top: 50%;
@@ -288,7 +288,7 @@ p.n-margin {
         }
 
         .buttons .alert-link {
-            margin: 0 5px;
+            margin: 0 0.3125rem;
         }
     }
 }
@@ -314,8 +314,8 @@ p.n-margin {
        max-width at all.  The consequence is that if you reload a
        Zulip window, there's a brief flash where the content is
        misplaced before the JS code can fix it. */
-    max-width: 1400px;
-    min-width: 950px;
+    max-width: 87.5rem;
+    min-width: 59.375rem;
     margin: 0 auto;
     padding: 0;
     position: relative;
@@ -331,8 +331,8 @@ p.n-margin {
 
 .column-left,
 .column-right {
-    width: 250px;
-    max-width: 250px;
+    width: 15.625rem;
+    max-width: 15.625rem;
 }
 
 .column-left {
@@ -359,13 +359,13 @@ p.n-margin {
     }
 
     .column-left .left-sidebar {
-        width: 242px;
+        width: 15.125rem;
         padding-left: 0;
     }
 
     .column-right .right-sidebar {
         padding-left: 0.625rem;
-        width: 240px;
+        width: 15.0rem;
     }
 
     .column-middle {
@@ -374,8 +374,8 @@ p.n-margin {
 }
 
 .column-middle {
-    margin-right: 250px;
-    margin-left: 250px;
+    margin-right: 15.625rem;
+    margin-left: 15.625rem;
     position: relative;
 }
 
@@ -433,8 +433,8 @@ li,
 /* Classes which style copy buttons */
 .copy_button_base {
     outline-color: hsl(0, 0%, 73%);
-    height: 18px;
-    width: 10px;
+    height: 1.125rem;
+    width: 0.625rem;
     padding: 0.375rem 0.375rem;
     display: block;
     /* The below two avoids the padded element from displaying
@@ -455,12 +455,12 @@ li,
     position: relative;
     top: 27px;
     left: -10px;
-    margin-top: -24px;
+    margin-top: -1.5rem;
 }
 
 #clipboard_image {
-    margin-top: -5px;
-    margin-left: -8px;
+    margin-top: -0.3125rem;
+    margin-left: -0.5rem;
 }
 
 .btn-large {
@@ -494,7 +494,7 @@ strong {
 }
 
 .sp-input {
-    width: calc(100% - 14px);
+    width: calc(100% - 0.875rem);
     box-sizing: initial !important;
 }
 
@@ -517,8 +517,8 @@ strong {
         opacity: 1;
 
         &.left {
-            margin-left: -12px;
-            margin-top: 3px;
+            margin-left: -0.75rem;
+            margin-top: 0.1875rem;
         }
     }
 
@@ -536,8 +536,8 @@ strong {
     float: right;
     color: hsl(0, 0%, 0%);
     font-size: 0.8125rem;
-    margin-top: 3px;
-    margin-left: 6px;
+    margin-top: 0.1875rem;
+    margin-left: 0.375rem;
     opacity: 0.5;
     cursor: pointer;
 
@@ -547,7 +547,7 @@ strong {
 }
 
 .message-edit-tooltip-inner {
-    width: 200px;
+    width: 12.5rem;
     position: absolute;
     right: 7px;
     top: -18px;
@@ -573,7 +573,7 @@ strong {
             padding: 0.1875rem 1.25rem;
             clear: both;
             font-weight: normal;
-            line-height: 20px;
+            line-height: 1.25rem;
             color: hsl(0, 0%, 20%);
             white-space: nowrap;
 
@@ -629,9 +629,9 @@ li.actual-dropdown-menu > a:focus {
 li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
-    width: 14px;
+    width: 0.875rem;
     text-align: center;
-    margin-right: 3px;
+    margin-right: 0.1875rem;
 }
 
 .settings-dropdown-cog {
@@ -640,7 +640,7 @@ li.actual-dropdown-menu i {
 
 .message_area_padder {
     /* The height of the header and the message_view_header plus a small gap */
-    margin-top: 57px;
+    margin-top: 3.5625rem;
     /* This is needed for the floating recipient bar
        in Firefox only, for some reason;
        otherwise it gets a scrollbar */
@@ -666,7 +666,7 @@ td.pointer {
     .message_edit_notice {
         display: inline-block;
         vertical-align: top;
-        line-height: 14px;
+        line-height: 0.875rem;
         margin-left: 0;
         position: static;
         padding: 0;
@@ -686,40 +686,40 @@ td.pointer {
     }
 
     .message_top_line {
-        margin-top: 6px;
+        margin-top: 0.375rem;
     }
 
     .message_content:not(:empty) {
-        margin-top: -18px;
+        margin-top: -1.125rem;
     }
 
     .message_edit {
-        margin-top: -14px;
+        margin-top: -0.875rem;
     }
 }
 
 .sender-status {
     display: inline-block;
-    margin: 8px 0 8px -3px;
+    margin: 0.5rem 0 0.5rem -0.1875rem;
     /* this normalizes the margin of the emoji reactions with normal messages. */
     padding-bottom: 0.3125rem;
     vertical-align: middle;
-    line-height: 18px;
+    line-height: 1.125rem;
     font-size: 0.875rem;
     position: relative;
-    max-width: calc(100% - 50px);
+    max-width: calc(100% - 3.125rem);
 
     .message_edit_notice {
-        line-height: 18px;
+        line-height: 1.125rem;
     }
 }
 
 .message_edit_notice {
     font-size: 0.625rem;
     opacity: 0.5;
-    line-height: 0px;
+    line-height: 0.0rem;
     text-align: right;
-    width: 45px;
+    width: 2.8125rem;
     position: absolute;
     left: 0;
     top: 16px;
@@ -734,7 +734,7 @@ td.pointer {
     font-weight: 400;
     position: absolute;
     right: -105px;
-    line-height: 20px;
+    line-height: 1.25rem;
     text-align: right;
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 }
@@ -764,8 +764,8 @@ td.pointer {
     position: absolute;
     top: -1px;
     right: -56px;
-    width: 54px;
-    height: 22px;
+    width: 3.375rem;
+    height: 1.375rem;
     z-index: 1;
 
     /* This is a bit tricky; we need to reserve space for the message
@@ -777,7 +777,7 @@ td.pointer {
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s ease;
-        width: 16px;
+        width: 1.0rem;
         text-align: center;
 
         > i {
@@ -803,7 +803,7 @@ td.pointer {
         display: inline-flex;
         justify-content: space-between;
         /* error icon width is 11px, gap between icons equals 28px - 2*11px = 6px */
-        width: 30px;
+        width: 1.875rem;
         cursor: pointer;
         font-weight: bold;
         color: hsl(0, 100%, 50%);
@@ -875,7 +875,7 @@ td.pointer {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 600;
-    line-height: 14px;
+    line-height: 0.875rem;
     position: relative;
     z-index: 0;
 }
@@ -883,7 +883,7 @@ td.pointer {
 .message_list {
     .recipient_row {
         border-bottom: 1px solid hsl(0, 0%, 88%);
-        margin-bottom: 10px;
+        margin-bottom: 0.625rem;
     }
 }
 
@@ -914,8 +914,8 @@ td.pointer {
     display: inline-block;
     padding: 0.25rem 0.375rem 0.1875rem 0.375rem;
     font-weight: normal;
-    height: 17px;
-    line-height: 17px;
+    height: 1.0625rem;
+    line-height: 1.0625rem;
     border-top-color: hsla(0, 0%, 0%, 0);
     border-right-color: hsla(0, 0%, 0%, 0);
     border-bottom-color: hsla(0, 0%, 0%, 0);
@@ -927,7 +927,7 @@ td.pointer {
 
     .invite-stream-icon {
         font-size: 0.75rem;
-        line-height: 17px;
+        line-height: 1.0625rem;
     }
 
     &:hover {
@@ -942,9 +942,9 @@ td.pointer {
         width: 0;
         position: absolute;
         pointer-events: none;
-        margin-top: -11px;
+        margin-top: -0.6875rem;
         border-style: solid;
-        border-width: 11px 0 11px 5px;
+        border-width: 0.6875rem 0 0.6875rem 0.3125rem;
         border-color: inherit;
         z-index: 2;
         transform: scale(0.9999);
@@ -958,9 +958,9 @@ td.pointer {
         width: 0;
         position: absolute;
         pointer-events: none;
-        margin-top: -14px;
+        margin-top: -0.875rem;
         border-style: solid;
-        border-width: 14px 0 14px 6px;
+        border-width: 0.875rem 0 0.875rem 0.375rem;
         border-color: hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0)
             transparent;
         z-index: 1;
@@ -971,8 +971,8 @@ td.pointer {
 .stream_topic {
     display: inline-block;
     padding: 0.1875rem 0.1875rem 0.125rem 0.5625rem;
-    height: 17px;
-    line-height: 17px;
+    height: 1.0625rem;
+    line-height: 1.0625rem;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -986,8 +986,8 @@ td.pointer {
     font-size: 0.75rem;
     font-weight: 600;
     padding: 0.1875rem 0.6875rem 0.125rem 0.625rem;
-    height: 17px;
-    line-height: 17px;
+    height: 1.0625rem;
+    line-height: 1.0625rem;
 
     &.hide-date {
         display: none;
@@ -1083,8 +1083,8 @@ td.pointer {
         padding: 0.1875rem 0.375rem 0.125rem 0.375rem;
         font-weight: normal;
         font-size: 0.875rem;
-        height: 17px;
-        line-height: 17px;
+        height: 1.0625rem;
+        line-height: 1.0625rem;
         border-left-color: hsl(0, 0%, 27%);
     }
 
@@ -1146,7 +1146,7 @@ td.pointer {
 
 .unread-marker-fill {
     background-color: hsl(107, 74%, 29%);
-    width: 3px;
+    width: 0.1875rem;
     height: 100%;
 }
 
@@ -1191,13 +1191,13 @@ td.pointer {
     display: inline-block;
     font-weight: 700;
     vertical-align: top;
-    line-height: 12px;
+    line-height: 0.75rem;
     font-size: 0.875rem;
-    margin-left: -3px;
+    margin-left: -0.1875rem;
 }
 
 .sender_name-in-status {
-    margin-right: 3px;
+    margin-right: 0.1875rem;
     font-weight: 700;
 }
 
@@ -1209,7 +1209,7 @@ td.pointer {
 }
 
 .popover_info i.zulip-icon.bot {
-    margin-top: 3px;
+    margin-top: 0.1875rem;
 }
 
 .actions_hover:hover {
@@ -1238,7 +1238,7 @@ td.pointer {
 }
 
 .edit_content {
-    width: 12px;
+    width: 0.75rem;
     display: inline-block;
     position: relative;
     color: hsl(0, 0%, 73%);
@@ -1325,9 +1325,9 @@ div.focused_table {
 
 .message_content {
     line-height: 1.214;
-    min-height: 17px;
+    min-height: 1.0625rem;
     font-size: 0.875rem;
-    margin-left: 46px;
+    margin-left: 2.875rem;
     display: block;
     position: relative;
     overflow: hidden;
@@ -1354,7 +1354,7 @@ div.focused_table {
 }
 
 .message_edit_content {
-    line-height: 18px;
+    line-height: 1.125rem;
     resize: vertical !important;
     max-height: 24em;
 }
@@ -1373,38 +1373,38 @@ div.focused_table {
 .message-edit-timer-control-group {
     float: right;
     display: none;
-    margin-top: 5px;
+    margin-top: 0.3125rem;
 }
 
 .message-edit-feature-group {
     display: inline-flex;
-    margin-left: 10px;
-    margin-bottom: -5px;
+    margin-left: 0.625rem;
+    margin-bottom: -0.3125rem;
     align-items: baseline;
 }
 
 .topic_edit {
     display: none;
-    line-height: 22px;
+    line-height: 1.375rem;
     .alert {
         display: inline-block;
         margin: 0;
         padding: 0 0.625rem;
-        line-height: 17px;
+        line-height: 1.0625rem;
         font-size: 0.875rem;
     }
 }
 
 #inline_topic_edit {
-    margin-bottom: 5px;
+    margin-bottom: 0.3125rem;
 
     &.header-v {
-        height: 18px;
+        height: 1.125rem;
         display: inline-block;
         padding: 0 0.1875rem;
         vertical-align: baseline;
 
-        line-height: 0px;
+        line-height: 0.0rem;
         font-size: 0.875rem;
 
         box-shadow: none;
@@ -1412,7 +1412,7 @@ div.focused_table {
 }
 
 #message_edit_topic {
-    margin: 0 5px 5px 0;
+    margin: 0 0.3125rem 0.3125rem 0;
 }
 
 .message_edit_header {
@@ -1422,11 +1422,11 @@ div.focused_table {
 }
 
 .select_edit_stream {
-    margin-bottom: 5px !important;
+    margin-bottom: 0.3125rem !important;
     border-left: 0;
     padding-left: 0;
     border-radius: 3px;
-    margin-left: -10px;
+    margin-left: -0.625rem;
     text-indent: 10px;
 }
 
@@ -1437,14 +1437,14 @@ div.focused_table {
 
 .message_edit_topic_propagate {
     display: inline-block;
-    width: 300px;
-    margin-bottom: 5px !important;
+    width: 18.75rem;
+    margin-bottom: 0.3125rem !important;
     max-width: 100%;
 }
 
 .topic_move_breadcrumb_messages,
 .message_edit_breadcrumb_messages {
-    margin: 0 5px 5px 0 !important;
+    margin: 0 0.3125rem 0.3125rem 0 !important;
     align-self: center;
     width: 100%;
     white-space: nowrap;
@@ -1460,12 +1460,12 @@ div.focused_table {
 
     label {
         display: inline-block;
-        margin-right: 10px;
+        margin-right: 0.625rem;
     }
 }
 
 .topic_move_breadcrumb_messages {
-    margin-top: 10px !important;
+    margin-top: 0.625rem !important;
 }
 
 .message_length_controller {
@@ -1474,10 +1474,10 @@ div.focused_table {
     color: hsl(200, 100%, 40%);
 
     /* to match .message_content */
-    margin-left: 5px;
-    margin-right: 35px;
+    margin-left: 0.3125rem;
+    margin-right: 2.1875rem;
     /* to make message-uncollapse easier */
-    margin-top: 10px;
+    margin-top: 0.625rem;
 
     &:hover {
         text-decoration: underline;
@@ -1489,7 +1489,7 @@ div.focused_table {
 }
 
 .bookend {
-    margin-top: 10px;
+    margin-top: 0.625rem;
     background-color: transparent;
 }
 
@@ -1500,9 +1500,9 @@ div.focused_table {
 
 .inline_profile_picture {
     display: inline-block;
-    width: 35px;
-    height: 35px;
-    margin-right: 11px;
+    width: 2.1875rem;
+    height: 2.1875rem;
+    margin-right: 0.6875rem;
     vertical-align: top;
     border-radius: 4px;
     overflow: hidden;
@@ -1513,7 +1513,7 @@ div.focused_table {
 }
 
 .home-error-bar {
-    margin-top: 5px;
+    margin-top: 0.3125rem;
     display: none;
 
     .alert {
@@ -1573,26 +1573,26 @@ div.focused_table {
         position: relative;
         font-weight: 600;
         font-size: 1rem;
-        line-height: 16px;
-        margin: 0 -4px 0 0;
+        line-height: 1.0rem;
+        margin: 0 -0.25rem 0 0;
         padding: 0.75rem 0.375rem;
 
         @media (max-width: 500px) {
             padding: 0.4375rem 3.0.3125rem; /* based on having ~41.66% decrease */
         }
         i {
-            margin-right: 3px;
+            margin-right: 0.1875rem;
         }
         .fa {
-            margin: 0 3px 0 5px;
+            margin: 0 0.1875rem 0 0.3125rem;
             .fa-envelope {
                 font-size: 0.875rem;
-                margin: 0 5px 0 5px;
+                margin: 0 0.3125rem 0 0.3125rem;
             }
             .fa-hashtag {
                 font-size: 1.2rem;
                 /* font-weight: 800; */
-                margin: 0 2px 0 5px;
+                margin: 0 0.125rem 0 0.3125rem;
             }
         }
     }
@@ -1612,14 +1612,14 @@ div.focused_table {
         font-size: 0.875rem;
         color: hsl(0, 0%, 40%);
         font-weight: 400;
-        line-height: 20px;
+        line-height: 1.25rem;
     }
 
     .sub_count {
         padding-left: 0.625rem;
-        margin-left: 1px;
+        margin-left: 0.0625rem;
         padding-right: 0.625rem;
-        margin-right: 1px;
+        margin-right: 0.0625rem;
         .fa.fa-user-o {
             margin-left: 0;
         }
@@ -1726,11 +1726,11 @@ div.focused_table {
     .navbar-search.expanded {
         overflow: hidden;
         margin-top: 0;
-        width: calc(100% - 2px);
+        width: calc(100% - 0.125rem);
         position: absolute;
         .search_button {
             display: inline;
-            margin-right: 15px;
+            margin-right: 0.9375rem;
         }
     }
 
@@ -1780,7 +1780,7 @@ div.focused_table {
         background: none;
         border-radius: 0;
         border: none;
-        height: 30px;
+        height: 1.875rem;
         text-align: center;
         padding: 0.25rem;
         color: hsl(0, 0%, 80%);
@@ -1837,7 +1837,7 @@ div.focused_table {
     }
     @media (max-width: 500px) {
         #search_arrows .pill {
-            line-height: 20px;
+            line-height: 1.25rem;
 
             .exit {
                 top: 0;
@@ -1858,7 +1858,7 @@ div.focused_table {
     }
     .navbar-search.expanded {
         .search_button {
-            margin-right: 14px;
+            margin-right: 0.875rem;
         }
     }
 }
@@ -1873,8 +1873,8 @@ div.focused_table {
 
 #navbar-buttons {
     white-space: nowrap;
-    margin-left: 15px;
-    margin-top: 7px;
+    margin-left: 0.9375rem;
+    margin-top: 0.4375rem;
     display: inline-block;
     float: right;
 
@@ -1908,8 +1908,8 @@ div.focused_table {
         }
 
         li.dropdown li.divider {
-            margin-left: 15px;
-            margin-right: 15px;
+            margin-left: 0.9375rem;
+            margin-right: 0.9375rem;
         }
     }
 }
@@ -1930,8 +1930,8 @@ div.focused_table {
     display: block;
     position: relative;
     background-color: hsl(0, 0%, 89%);
-    width: 40px;
-    height: 19px;
+    width: 2.5rem;
+    height: 1.1875rem;
     padding-top: 0.75rem;
     padding-bottom: 0.5625rem;
 }
@@ -1940,9 +1940,9 @@ div.focused_table {
 #userlist-toggle-unreadcount {
     position: absolute;
     display: none;
-    height: 12px;
-    min-width: 12px;
-    line-height: 12px;
+    height: 0.75rem;
+    min-width: 0.75rem;
+    line-height: 0.75rem;
     background-color: hsl(0, 100%, 20%);
     top: 4px;
     right: 4px;
@@ -1960,7 +1960,7 @@ div.focused_table {
     left: auto;
     right: 0;
     top: 30px;
-    min-width: 180px;
+    min-width: 11.25rem;
     box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
 
     &::after {
@@ -1990,8 +1990,8 @@ div.focused_table {
         .unsubscribed_icon {
             display: block;
             float: right;
-            margin-top: 5px;
-            margin-right: -12px;
+            margin-top: 0.3125rem;
+            margin-right: -0.75rem;
             font-size: 0.8em;
             color: hsl(96, 7%, 73%);
         }
@@ -2004,10 +2004,10 @@ div.focused_table {
 
 .typeahead-image {
     display: inline-block;
-    height: 21px;
-    width: 21px;
+    height: 1.3125rem;
+    width: 1.3125rem;
     position: relative;
-    margin-top: -7px;
+    margin-top: -0.4375rem;
     vertical-align: middle;
     top: 2px;
     right: 8px;
@@ -2025,17 +2025,17 @@ nav {
         .nav-logo {
             display: inline-block;
             vertical-align: top;
-            margin-top: 8px;
-            height: 25px;
-            max-width: 200px;
+            margin-top: 0.5rem;
+            height: 1.5625rem;
+            max-width: 12.5rem;
         }
 
         .company-name {
             display: inline-block;
             vertical-align: top;
             text-transform: uppercase;
-            margin-top: 12px;
-            margin-left: 8px;
+            margin-top: 0.75rem;
+            margin-left: 0.5rem;
             font-size: 1.2rem;
             font-weight: 600;
             color: hsl(170, 48%, 54%);
@@ -2072,7 +2072,7 @@ div.floating_recipient {
 
 #bottom_whitespace {
     display: block;
-    height: 300px;
+    height: 18.75rem;
 }
 
 .operator_value {
@@ -2086,7 +2086,7 @@ div.floating_recipient {
 
 #loading_older_messages_indicator,
 #loading_newer_messages_indicator {
-    margin: 10px;
+    margin: 0.625rem;
 }
 
 #loading_older_messages_indicator_box_container,
@@ -2105,7 +2105,7 @@ div.floating_recipient {
 }
 
 #page_loading_indicator {
-    margin: 10px auto;
+    margin: 0.625rem auto;
 }
 
 #page_loading_indicator_box_container {
@@ -2127,20 +2127,20 @@ div.floating_recipient {
 }
 
 #user-checkboxes {
-    margin-top: 10px;
+    margin-top: 0.625rem;
 
     .checkbox {
         display: block;
 
         input[type="checkbox"] {
-            margin: 5px 0;
+            margin: 0.3125rem 0;
             float: none;
         }
     }
 }
 
 #stream-checkboxes {
-    margin-top: 10px;
+    margin-top: 0.625rem;
     display: none;
 
     .checkbox {
@@ -2148,7 +2148,7 @@ div.floating_recipient {
     }
 
     input[type="checkbox"] {
-        margin: 5px 0;
+        margin: 0.3125rem 0;
         float: none;
     }
 }
@@ -2165,10 +2165,10 @@ div.floating_recipient {
     padding: 0;
     border: none;
     font-size: 0.75rem;
-    width: 18px;
-    height: 18px;
+    width: 1.125rem;
+    height: 1.125rem;
     border-radius: 4px;
-    margin-bottom: 3px;
+    margin-bottom: 0.1875rem;
 
     &:focus {
         outline: none;
@@ -2196,26 +2196,26 @@ div.floating_recipient {
 
 div.topic_edit_spinner {
     display: inline-block;
-    width: 18px;
-    height: 18px;
-    margin-top: -1px;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-top: -0.0625rem;
     padding: 0.125rem;
     vertical-align: middle;
 }
 
 div.topic_edit_spinner .loading_indicator_spinner {
-    width: 14px;
-    height: 14px;
+    width: 0.875rem;
+    height: 0.875rem;
 }
 
 .message_edit_spinner {
-    margin-right: 8px;
+    margin-right: 0.5rem;
     padding-top: 0.3125rem;
 }
 
 .message_edit_spinner .loading_indicator_spinner {
-    width: 20px;
-    height: 20px;
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
 .topic_move_spinner,
@@ -2241,8 +2241,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #invitee_emails {
-    min-height: 40px;
-    max-height: 300px;
+    min-height: 2.5rem;
+    max-height: 18.75rem;
     width: 96%;
     max-width: 96%;
 }
@@ -2266,23 +2266,23 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
     .overlay-content {
         position: relative;
-        width: 500px;
+        width: 31.25rem;
         border-radius: 4px;
     }
 
     .modal-body {
-        margin-bottom: 58px;
+        margin-bottom: 3.625rem;
         position: relative;
     }
 
     .modal-footer {
         position: absolute;
         bottom: 0;
-        width: calc(100% - 30px);
+        width: calc(100% - 1.875rem);
     }
 
     .invite-stream-controls {
-        margin-top: 5px;
+        margin-top: 0.3125rem;
     }
 }
 
@@ -2299,8 +2299,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #multiuse_invite_status {
     display: none;
-    margin-top: 7px;
-    margin-bottom: -5px;
+    margin-top: 0.4375rem;
+    margin-bottom: -0.3125rem;
     text-align: left;
 }
 
@@ -2309,12 +2309,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #invite-method-choice {
-    margin-top: 2px;
+    margin-top: 0.125rem;
 }
 
 #multiuse_radio_section {
-    margin-top: 4px;
-    margin-bottom: -2px;
+    margin-top: 0.25rem;
+    margin-bottom: -0.125rem;
     display: none;
 }
 
@@ -2328,13 +2328,13 @@ div.topic_edit_spinner .loading_indicator_spinner {
     z-index: 10;
     bottom: 0;
     right: 20px;
-    width: 200px;
+    width: 12.5rem;
     height: auto;
 }
 
 .notifications-gravatar img {
-    max-width: 25px;
-    max-height: 25px;
+    max-width: 1.5625rem;
+    max-height: 1.5625rem;
     padding-left: 0.25rem;
     padding-top: 0.25rem;
 }
@@ -2355,10 +2355,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .emoji {
-    height: 25px;
-    width: 25px;
+    height: 1.5625rem;
+    width: 1.5625rem;
     position: relative;
-    margin-top: -7px;
+    margin-top: -0.4375rem;
     vertical-align: middle;
     top: 3px;
 }
@@ -2366,7 +2366,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 /* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
     width: 100%;
-    height: 10px;
+    height: 0.625rem;
     margin-bottom: 0;
 }
 
@@ -2399,7 +2399,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         width: 33%;
         border-top: 1px solid hsl(0, 0%, 88%);
         border-bottom: 1px solid hsl(0, 0%, 100%);
-        margin: 0 5px 0 5px;
+        margin: 0 0.3125rem 0 0.3125rem;
     }
 }
 
@@ -2446,14 +2446,14 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .message_edit {
     display: none;
-    margin-top: 5px;
-    margin-left: 47px;
+    margin-top: 0.3125rem;
+    margin-left: 2.9375rem;
     position: relative;
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
 #message_edit_form {
-    margin-bottom: 10px;
+    margin-bottom: 0.625rem;
     cursor: default;
 
     .edit-controls {
@@ -2463,7 +2463,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
     textarea {
         width: 100%;
-        min-width: 206px;
+        min-width: 12.875rem;
         box-sizing: border-box;
         /* Setting resize as none hides the bottom right diagonal box
            (which even has a background color of its own!). */
@@ -2475,22 +2475,22 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 
     .action-buttons {
-        margin: 10px 0;
+        margin: 0.625rem 0;
     }
 }
 
 #topic_edit_form {
     display: inline-block;
     margin: 0 0 0 0;
-    height: 22px;
+    height: 1.375rem;
     padding-left: 1.25rem;
     padding-right: 0.1875rem;
-    line-height: 22px;
-    margin-left: -15px;
+    line-height: 1.375rem;
+    margin-left: -0.9375rem;
 }
 
 #message_feed_container {
-    margin-top: 41px;
+    margin-top: 2.5625rem;
 }
 
 .screen {
@@ -2503,19 +2503,19 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .tutorial-done-button {
     text-align: right;
-    margin-top: 9px;
-    margin-bottom: 8px;
+    margin-top: 0.5625rem;
+    margin-bottom: 0.5rem;
 }
 
 .btn-skip {
     position: relative;
     left: -10px;
-    margin-right: 25px;
+    margin-right: 1.5625rem;
 }
 
 .deactivated_user .deactivated-user-icon {
     color: inherit;
-    margin-left: 2px;
+    margin-left: 0.125rem;
     font-size: 0.9em;
 }
 
@@ -2580,8 +2580,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
         position: absolute;
         top: -47%;
         left: 50%;
-        margin-left: -5px;
-        border-width: 7px;
+        margin-left: -0.3125rem;
+        border-width: 0.4375rem;
         border-style: solid;
         border-color: transparent;
         border-bottom: hsl(0, 0%, 30%) solid 7px;
@@ -2605,7 +2605,7 @@ select.inline_select_topic_edit {
 @media (max-width: 1165px) {
     .app-main,
     .header-main {
-        min-width: 750px;
+        min-width: 46.875rem;
     }
 
     .column-right {
@@ -2640,15 +2640,15 @@ select.inline_select_topic_edit {
 
     .header-main .column-right {
         display: inline-block;
-        width: 30px;
+        width: 1.875rem;
     }
 
     #top_navbar.rightside-userlist #navbar-buttons {
-        margin-right: 41px;
+        margin-right: 2.5625rem;
     }
 
     .nav .dropdown-menu {
-        min-width: 180px;
+        min-width: 11.25rem;
         box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
 
         &::after {
@@ -2657,13 +2657,13 @@ select.inline_select_topic_edit {
     }
 
     .column-middle {
-        margin-right: 7px;
+        margin-right: 0.4375rem;
     }
 
     .top-navbar-container,
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
-        width: calc(100% - 84px);
+        width: calc(100% - 5.25rem);
     }
 
     .search_closed .fa-search {
@@ -2677,7 +2677,7 @@ select.inline_select_topic_edit {
         .top-navbar-border,
         #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
-            width: calc(100% - 50px);
+            width: calc(100% - 3.125rem);
         }
     }
 }
@@ -2710,7 +2710,7 @@ select.inline_select_topic_edit {
 
                 height: 100%;
                 padding-left: 0.625rem;
-                width: 250px;
+                width: 15.625rem;
             }
         }
     }
@@ -2719,13 +2719,13 @@ select.inline_select_topic_edit {
     html,
     .app-main,
     .header-main {
-        min-width: 350px;
+        min-width: 21.875rem;
     }
 
     .column-middle,
     .app-main .column-middle {
-        margin-left: 7px;
-        margin-right: 7px;
+        margin-left: 0.4375rem;
+        margin-right: 0.4375rem;
     }
 
     .header-main .column-middle {
@@ -2734,7 +2734,7 @@ select.inline_select_topic_edit {
 
     .column-middle-inner {
         margin-left: 0;
-        margin-right: 15px;
+        margin-right: 0.9375rem;
     }
 
     .app-main .column-middle .column-middle-inner {
@@ -2751,15 +2751,15 @@ select.inline_select_topic_edit {
     }
 
     .top-navbar-border {
-        margin-left: 40px;
-        width: calc(100% - 108px);
+        margin-left: 2.5rem;
+        width: calc(100% - 6.75rem);
     }
     /* todo: Figure out why this has to be different
        from above at this width and resolve it
        #searchbox_legacy .navbar-search.expanded, */
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
-        width: calc(100% - 123px);
+        width: calc(100% - 7.6875rem);
     }
 
     .search_closed .fa-search {
@@ -2771,11 +2771,11 @@ select.inline_select_topic_edit {
                right: 115px;
            } */
         .top-navbar-border {
-            width: calc(100% - 75px);
+            width: calc(100% - 4.6875rem);
         }
         #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
-            width: calc(100% - 90px);
+            width: calc(100% - 5.625rem);
         }
     }
 }
@@ -2783,7 +2783,7 @@ select.inline_select_topic_edit {
 @media (max-width: 500px) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
-        margin-top: 31px;
+        margin-top: 1.9375rem;
     }
 
     .column-left.expanded {
@@ -2796,7 +2796,7 @@ select.inline_select_topic_edit {
         }
 
         .narrows_panel {
-            margin-top: 10px;
+            margin-top: 0.625rem;
         }
     }
 
@@ -2811,17 +2811,17 @@ select.inline_select_topic_edit {
     #searchbox,
     #searchbox_legacy,
     .header {
-        height: 30px;
-        line-height: 30px;
+        height: 1.875rem;
+        line-height: 1.875rem;
     }
 
     #search_query {
-        height: 30px !important;
+        height: 1.875rem !important;
         vertical-align: text-bottom;
     }
 
     #streamlist-toggle-button {
-        height: 30px;
+        height: 1.875rem;
         padding-top: 0;
         padding-bottom: 0;
     }
@@ -2845,7 +2845,7 @@ select.inline_select_topic_edit {
 
     #message_view_header_underpadding {
         top: 30px;
-        height: 10px;
+        height: 0.625rem;
     }
 
     .messagebox-content {
@@ -2869,11 +2869,11 @@ select.inline_select_topic_edit {
     }
 
     .sender_name {
-        max-width: 250px;
+        max-width: 15.625rem;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        line-height: 15px;
+        line-height: 0.9375rem;
     }
 
     #floating_recipient_bar {
@@ -2894,13 +2894,13 @@ select.inline_select_topic_edit {
     html,
     .app-main,
     .header-main {
-        min-width: 320px;
+        min-width: 20.0rem;
     }
 }
 
 @media only screen and (min-width: 300px) and (max-width: 700px) {
     #feedback_container {
-        width: calc(90% - 30px);
+        width: calc(90% - 1.875rem);
         left: 5%;
         top: 5%;
     }

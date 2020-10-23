@@ -1,6 +1,6 @@
 #typing_notifications {
     display: none;
-    margin-left: 10px;
+    margin-left: 0.625rem;
     font-style: italic;
     color: hsl(0, 0%, 53%);
 }
@@ -13,13 +13,13 @@
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (max-width: 1165px) {
     #typing_notifications {
-        margin-right: 7px;
+        margin-right: 0.4375rem;
     }
 }
 
 @media (max-width: 775px) {
     #typing_notifications {
-        margin-right: 7px;
-        margin-left: 7px;
+        margin-right: 0.4375rem;
+        margin-left: 0.4375rem;
     }
 }

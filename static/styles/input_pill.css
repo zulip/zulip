@@ -14,8 +14,8 @@
         display: inline-flex;
         align-items: center;
 
-        height: 20px;
-        margin: 1px 2px;
+        height: 1.25rem;
+        margin: 0.0625rem 0.125rem;
 
         color: inherit;
         border: 1px solid hsla(0, 0%, 0%, 0.15);
@@ -32,19 +32,19 @@
         }
 
         .pill-image {
-            height: 20px;
-            width: 20px;
+            height: 1.25rem;
+            width: 1.25rem;
             border-radius: 4px 0 0 4px;
         }
 
         .pill-value {
-            margin: 0 5px;
+            margin: 0 0.3125rem;
         }
 
         .exit {
             opacity: 0.5;
             font-size: 1.3em;
-            margin-right: 3px;
+            margin-right: 0.1875rem;
         }
 
         &:hover .exit {
@@ -78,7 +78,7 @@
         display: inline-block;
         padding: 0.125rem 0.25rem;
 
-        min-width: 2px;
+        min-width: 0.125rem;
         word-break: break-all;
 
         outline: none;
@@ -99,7 +99,7 @@
     align-content: center;
 
     .input {
-        height: 20px;
+        height: 1.25rem;
 
         &:first-child:empty::before {
             content: attr(data-no-recipients-text);

@@ -1,5 +1,5 @@
 html {
-    min-height: 500px;
+    min-height: 31.25rem;
 }
 
 .flex {
@@ -8,11 +8,11 @@ html {
     align-items: center;
     justify-content: center;
 
-    min-height: calc(100vh - 402px);
+    min-height: calc(100vh - 25.125rem);
 }
 
 .m-10 {
-    margin: 10px;
+    margin: 0.625rem;
 }
 
 .white-box {
@@ -28,7 +28,7 @@ html {
 
 .bottom-text {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 1.25rem;
     font-weight: 500;
     font-size: 0.9em;
 
@@ -63,7 +63,7 @@ html {
     .login-page-container.dev-login {
         .login-page-header {
             height: auto;
-            margin-top: 20px;
+            margin-top: 1.25rem;
             transform: none;
             text-align: center;
         }
@@ -77,7 +77,7 @@ html {
             display: inline-block;
             vertical-align: top;
 
-            margin: 0 20px;
+            margin: 0 1.25rem;
         }
     }
 
@@ -86,12 +86,12 @@ html {
     }
 
     &.find-account-page-container {
-        width: 500px;
+        width: 31.25rem;
         font-weight: 400;
     }
 
     &.goto-account-page-container {
-        width: 500px;
+        width: 31.25rem;
         font-weight: 400;
 
         .realm-redirect-form {
@@ -104,11 +104,11 @@ html {
     }
 
     &.confirm-continue-page-container {
-        width: 400px;
+        width: 25.0rem;
         font-weight: 400;
 
         .white-box {
-            min-width: 365px;
+            min-width: 22.8125rem;
         }
 
         .form-inline {
@@ -134,7 +134,7 @@ html {
 
 .login-page-container {
     &.dev-login {
-        margin-top: 20px;
+        margin-top: 1.25rem;
         border: none;
 
         .login-form {
@@ -143,7 +143,7 @@ html {
     }
 
     .group {
-        margin: 0 20px;
+        margin: 0 1.25rem;
         display: inline-block;
     }
 
@@ -203,7 +203,7 @@ html {
         line-height: 1;
 
         i {
-            margin-right: 5px;
+            margin-right: 0.3125rem;
         }
     }
 }
@@ -217,7 +217,7 @@ html {
 }
 
 .forgot-password-container {
-    width: 503px;
+    width: 31.4375rem;
 
     h3,
     form {
@@ -226,7 +226,7 @@ html {
 }
 
 .deactivated-realm-container {
-    width: 503px;
+    width: 31.4375rem;
 }
 
 .header {
@@ -251,8 +251,8 @@ html {
     #errors {
         font-size: 0.8em;
         font-weight: 400;
-        margin-bottom: 20px;
-        margin-top: 10px;
+        margin-bottom: 1.25rem;
+        margin-top: 0.625rem;
 
         &:empty {
             margin-top: 0;
@@ -260,25 +260,25 @@ html {
     }
 
     button {
-        margin-top: 22px;
+        margin-top: 1.375rem;
     }
 
     .new-organization-button {
-        margin-top: 25px;
+        margin-top: 1.5625rem;
     }
 }
 
 .account-accept-terms-page .terms-of-service .input-group {
-    width: 450px;
-    margin: 0 auto 10px;
+    width: 28.125rem;
+    margin: 0 auto 0.625rem;
 }
 
 .register-account {
     .terms-of-service .input-group,
     .default-stream-groups .input-group,
     .default-stream-groups p {
-        width: 330px;
-        margin: 0 auto 10px;
+        width: 20.625rem;
+        margin: 0 auto 0.625rem;
     }
 
     .terms-of-service .text-error {
@@ -332,8 +332,8 @@ html {
         color: hsl(0, 0%, 100%);
         background-color: hsl(213, 23%, 25%);
 
-        margin: 25px 0 5px;
-        height: 50px;
+        margin: 1.5625rem 0 0.3125rem;
+        height: 3.125rem;
 
         border: none;
         border-radius: 4px;
@@ -386,11 +386,11 @@ html {
         font-size: 2.5rem;
         text-align: center;
         color: hsl(0, 0%, 40%);
-        margin-bottom: 20px;
+        margin-bottom: 1.25rem;
     }
 
     .right-side .alert {
-        max-width: 328px;
+        max-width: 20.5rem;
     }
 
     .input-box {
@@ -402,14 +402,14 @@ html {
         input[type="email"],
         input[type="password"] {
             padding: 10px 32px 10px 12px;
-            margin: 25px 0 5px;
+            margin: 1.5625rem 0 0.3125rem;
 
             font-family: "Source Sans Pro";
             font-size: 1.2rem;
             line-height: normal;
             height: auto;
 
-            width: 280px;
+            width: 17.5rem;
 
             border: 1px solid hsl(0, 0%, 87%);
             box-shadow: none;
@@ -428,7 +428,7 @@ html {
         }
 
         input[type="email"] {
-            margin-bottom: 10px;
+            margin-bottom: 0.625rem;
         }
 
         label {
@@ -436,7 +436,7 @@ html {
             top: 0;
             left: 0;
 
-            margin-top: 1px;
+            margin-top: 0.0625rem;
 
             transition: all 0.3s ease;
         }
@@ -522,8 +522,8 @@ html {
         vertical-align: top;
         position: relative;
 
-        height: 30px;
-        margin-top: -10px;
+        height: 1.875rem;
+        margin-top: -0.625rem;
         top: 5px;
     }
 }
@@ -532,7 +532,7 @@ html {
 .portico-page {
     .pitch {
         h1 {
-            margin-bottom: 5px;
+            margin-bottom: 0.3125rem;
         }
 
         p {
@@ -544,7 +544,7 @@ html {
     .or {
         width: 100%;
         display: block;
-        margin: 10px auto;
+        margin: 0.625rem auto;
         color: hsl(0, 0%, 34%);
         font-weight: 600;
         text-align: center;
@@ -556,7 +556,7 @@ html {
 
             display: inline-block;
             position: absolute;
-            width: calc(100% - 5px);
+            width: calc(100% - 0.3125rem);
             top: calc(50% - 2px);
             left: 0;
             z-index: -1;
@@ -573,7 +573,7 @@ html {
 
 .register-account .pitch,
 .account-accept-terms-page .pitch {
-    margin-bottom: 5px;
+    margin-bottom: 0.3125rem;
     text-align: center;
 }
 
@@ -584,8 +584,8 @@ html {
         .info-box {
             display: inline-block;
             position: relative;
-            margin: 20px 0 0 20px;
-            width: calc(100% - 125px);
+            margin: 1.25rem 0 0 1.25rem;
+            width: calc(100% - 7.8125rem);
 
             /* full width minus the avatar + padding + borders */
             text-align: left;
@@ -593,7 +593,7 @@ html {
     }
 
     .left-side {
-        width: 500px;
+        width: 31.25rem;
         border-right: 1px solid hsl(0, 0%, 93%);
         position: relative;
         left: -1px;
@@ -602,8 +602,8 @@ html {
             text-align: left;
             font-weight: normal;
 
-            margin-top: 20px;
-            margin-right: 10px;
+            margin-top: 1.25rem;
+            margin-right: 0.625rem;
         }
 
         + .right-side {
@@ -611,12 +611,12 @@ html {
             /* this is to make sure the borders of the left and right side overlap
                each other. */
             padding-left: 15px;
-            margin-left: -5px;
+            margin-left: -0.3125rem;
         }
     }
 
     .right-side .form-inline {
-        width: 328px;
+        width: 20.5rem;
     }
 }
 
@@ -631,8 +631,8 @@ html {
     display: inline-block;
     vertical-align: top;
 
-    width: 100px;
-    height: 100px;
+    width: 6.25rem;
+    height: 6.25rem;
 }
 
 .info-box {
@@ -653,16 +653,16 @@ html {
     .organization-path {
         font-weight: 400;
         color: hsl(0, 0%, 47%);
-        margin-top: 5px;
+        margin-top: 0.3125rem;
     }
 }
 
 .confirm-email-change-page .white-box {
-    max-width: 500px;
+    max-width: 31.25rem;
 }
 
 button.login-social-button {
-    width: 328px;
+    width: 20.5rem;
     padding-left: 35px;
 
     background-size: auto 60%;
@@ -695,7 +695,7 @@ button#register_auth_button_gitlab {
 
 .login-page-container .right-side .actions,
 .back-to-login-wrapper {
-    margin: 20px 0 0;
+    margin: 1.25rem 0 0;
     text-align: left;
 }
 
@@ -742,10 +742,10 @@ button#register_auth_button_gitlab {
 #registration {
     width: auto;
     padding: 0;
-    margin: 30px;
+    margin: 1.875rem;
 
     fieldset {
-        margin: 30px;
+        margin: 1.875rem;
 
         .input-box:last-child {
             margin-bottom: 0;
@@ -753,26 +753,26 @@ button#register_auth_button_gitlab {
     }
 
     .info-box {
-        margin: 10px 0 0 20px;
+        margin: 0.625rem 0 0 1.25rem;
 
         .organization-name {
-            max-width: 228px;
+            max-width: 14.25rem;
         }
     }
 
     .input-box {
         display: block;
         text-align: center;
-        width: 330px;
-        margin: 25px auto 10px;
+        width: 20.625rem;
+        margin: 1.5625rem auto 0.625rem;
         position: relative;
 
         &.with-top-space {
-            margin-top: 50px;
+            margin-top: 3.125rem;
         }
 
         &.full-width {
-            width: calc(100% - 20px);
+            width: calc(100% - 1.25rem);
         }
 
         label {
@@ -785,7 +785,7 @@ button#register_auth_button_gitlab {
                 width: 100%;
                 text-align: left;
                 position: static !important;
-                margin-left: 2px;
+                margin-left: 0.125rem;
             }
         }
     }
@@ -799,8 +799,8 @@ button#register_auth_button_gitlab {
     }
 
     .register-button {
-        margin: 25px auto 30px;
-        width: 330px;
+        margin: 1.5625rem auto 1.875rem;
+        width: 20.625rem;
         border-radius: 4px;
     }
 
@@ -810,11 +810,11 @@ button#register_auth_button_gitlab {
         position: relative;
         padding-right: 10px;
 
-        width: 150px;
+        width: 9.375rem;
 
         + .realm_subdomain_label {
             top: 15px;
-            margin-left: 180px;
+            margin-left: 11.25rem;
             display: inline-block;
 
             font-weight: normal;
@@ -834,7 +834,7 @@ button#register_auth_button_gitlab {
 
     #id_email {
         font-weight: normal;
-        margin: 2px;
+        margin: 0.125rem;
         padding-top: 25px;
         text-align: left;
         overflow-wrap: break-word;
@@ -843,7 +843,7 @@ button#register_auth_button_gitlab {
     .help-text {
         width: 100%;
         max-width: none;
-        margin: 2px 0;
+        margin: 0.125rem 0;
         text-align: left;
         color: hsl(0, 0%, 47%);
         font-size: 0.9rem;
@@ -859,12 +859,12 @@ button#register_auth_button_gitlab {
         margin-bottom: 0;
 
         + .input-box {
-            margin-top: 20px;
+            margin-top: 1.25rem;
         }
     }
 
     .external-host {
-        margin: 25px 0 0 -3px;
+        margin: 1.5625rem 0 0 -0.1875rem;
         padding: 11.5px 10px;
 
         font-weight: 400;
@@ -882,7 +882,7 @@ button#register_auth_button_gitlab {
             font-size: 1rem;
 
             &.inline-block {
-                margin-top: -1px;
+                margin-top: -0.0625rem;
             }
         }
 
@@ -893,7 +893,7 @@ button#register_auth_button_gitlab {
     }
 
     .org-url {
-        margin-bottom: 5px !important;
+        margin-bottom: 0.3125rem !important;
     }
 }
 
@@ -909,9 +909,9 @@ button#register_auth_button_gitlab {
     #profile_avatar {
         border: 1px solid hsl(0, 0%, 80%);
         border-radius: 8px;
-        width: 120px;
-        height: 120px;
-        margin: 0 auto 10px;
+        width: 7.5rem;
+        height: 7.5rem;
+        margin: 0 auto 0.625rem;
     }
 
     #profile_full_name {
@@ -923,14 +923,14 @@ button#register_auth_button_gitlab {
 #source_realm_select_section {
     position: relative;
     top: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
     font-size: 1.375rem;
 }
 
 #source_realm_select {
     font-size: 1.2rem;
-    height: 45px;
-    width: 325px;
+    height: 2.8125rem;
+    width: 20.3125rem;
     &:focus {
         outline: none;
     }
@@ -956,11 +956,11 @@ button#register_auth_button_gitlab {
     }
 
     #enter-realm-button {
-        margin-top: 14px;
+        margin-top: 0.875rem;
     }
 
     #find-account-section {
-        margin-top: 20px;
+        margin-top: 1.25rem;
         text-align: center;
         font-weight: 500;
         font-size: 0.9em;
@@ -975,7 +975,7 @@ button#register_auth_button_gitlab {
     flex-direction: column;
 
     .white-box {
-        min-width: 450px;
+        min-width: 28.125rem;
         padding: 30px 0 50px 0;
     }
 
@@ -995,7 +995,7 @@ button#register_auth_button_gitlab {
 
     .choose-email-box {
         padding: 13px 0;
-        margin: 0 30px;
+        margin: 0 1.875rem;
         border-bottom: 1px solid hsl(0, 0%, 95%);
         display: flex;
         align-items: center;
@@ -1016,16 +1016,16 @@ button#register_auth_button_gitlab {
 
         img,
         i {
-            width: 35px;
-            height: 35px;
-            margin-right: 10px;
+            width: 2.1875rem;
+            height: 2.1875rem;
+            margin-right: 0.625rem;
             border-radius: 3px;
         }
 
         i.fa {
             color: hsl(0, 0%, 67%);
             text-align: center;
-            line-height: 38px;
+            line-height: 2.375rem;
 
             &::before {
                 font-size: 1.875rem;
@@ -1038,19 +1038,19 @@ button#register_auth_button_gitlab {
 
 @media (max-width: 950px) {
     .split-view .left-side {
-        width: 400px;
+        width: 25.0rem;
     }
 }
 
 @media (max-width: 850px) {
     .split-view .left-side {
-        width: 350px;
+        width: 21.875rem;
     }
 }
 
 @media (max-width: 815px) {
     .flex {
-        min-height: calc(100vh - 530px);
+        min-height: calc(100vh - 33.125rem);
     }
 }
 
@@ -1061,15 +1061,15 @@ button#register_auth_button_gitlab {
 
     .register-page-container,
     .login-page-container {
-        width: 400px;
+        width: 25.0rem;
         text-align: center;
     }
 
     .split-view {
         .org-header {
             .avatar {
-                width: 50px;
-                height: 50px;
+                width: 3.125rem;
+                height: 3.125rem;
             }
 
             .info-box {
@@ -1098,11 +1098,11 @@ button#register_auth_button_gitlab {
             border: none;
             margin-right: 0;
             min-height: 0;
-            margin-bottom: 20px;
-            width: 324px;
+            margin-bottom: 1.25rem;
+            width: 20.25rem;
 
             .description {
-                margin: 20px 0;
+                margin: 1.25rem 0;
 
                 a {
                     color: hsl(200, 100%, 36%);
@@ -1111,7 +1111,7 @@ button#register_auth_button_gitlab {
         }
 
         .right-side {
-            width: 324px;
+            width: 20.25rem;
         }
     }
 }
@@ -1128,7 +1128,7 @@ button#register_auth_button_gitlab {
     .app-main.forgot-password-container {
         display: inline-block;
         padding: 20px;
-        width: calc(100% - 40px);
+        width: calc(100% - 2.5rem);
     }
 
     .forgot-password-container form {
@@ -1137,7 +1137,7 @@ button#register_auth_button_gitlab {
         }
 
         button {
-            width: 328px;
+            width: 20.5rem;
         }
     }
 
@@ -1156,12 +1156,12 @@ button#register_auth_button_gitlab {
 
     .flex {
         /* the header becomes smaller, so comp for that. */
-        min-height: calc(100vh - 505px);
+        min-height: calc(100vh - 31.5625rem);
     }
 }
 
 @media (max-width: 400px) {
     .flex {
-        min-height: calc(100vh - 560px);
+        min-height: calc(100vh - 35.0rem);
     }
 }

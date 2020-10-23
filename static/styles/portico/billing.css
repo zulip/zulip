@@ -16,13 +16,13 @@
     }
 
     .main {
-        width: 800px;
+        width: 50.0rem;
         max-width: 90%;
         margin: 0 auto;
     }
 
     h1 {
-        margin: 30px 0;
+        margin: 1.875rem 0;
         font-weight: bold;
     }
 
@@ -48,7 +48,7 @@
     }
 
     .support-link {
-        margin: 10px 20px;
+        margin: 0.625rem 1.25rem;
         a,
         a:hover,
         a:visited {
@@ -73,8 +73,8 @@
             }
         }
         .box {
-            width: 120px;
-            height: 70px;
+            width: 7.5rem;
+            height: 4.375rem;
             background-color: hsl(0, 0%, 94%);
             transition: all 0.2s ease;
             display: inline-block;
@@ -83,7 +83,7 @@
             position: relative;
             border: 1px solid hsl(0, 0%, 91%);
             border-radius: 8px;
-            margin: 0 10px 5px 0;
+            margin: 0 0.625rem 0.3125rem 0;
             padding: 30px 20px;
             vertical-align: top;
             &:hover {
@@ -93,12 +93,12 @@
             .schedule-time {
                 font-weight: bold;
                 font-size: 1.2em;
-                margin-top: 10px;
+                margin-top: 0.625rem;
             }
             .schedule-amount {
-                margin-top: 5px;
+                margin-top: 0.3125rem;
                 font-size: 1.1em;
-                height: 50px;
+                height: 3.125rem;
             }
             .schedule-amount-2 {
                 font-size: 0.9em;
@@ -106,11 +106,11 @@
             .management-type {
                 font-weight: bold;
                 font-size: 1.2em;
-                margin-top: 10px;
+                margin-top: 0.625rem;
             }
             .management-type-text {
                 font-size: 1.1em;
-                margin-top: 5px;
+                margin-top: 0.3125rem;
             }
         }
     }
@@ -126,14 +126,14 @@
         );
         box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.2);
         border: 0;
-        height: 40px;
-        margin: 5px 0 0 0;
+        height: 2.5rem;
+        margin: 0.3125rem 0 0 0;
         span {
             background: 0;
             box-shadow: none;
             font-family: "Source Sans Pro", Helvetica, Arial;
             font-size: 1.4em;
-            line-height: 20px;
+            line-height: 1.25rem;
         }
     }
 
@@ -171,11 +171,11 @@
     #mix_license_count,
     #manual_license_count,
     #invoiced_licenses {
-        width: 50px;
+        width: 3.125rem;
     }
 
     #error-message-box {
-        margin-top: 10px;
+        margin-top: 0.625rem;
         font-weight: 600;
         display: none;
     }
@@ -186,7 +186,7 @@
     #invoice-loading,
     #autopay-loading {
         display: none;
-        min-height: 55px;
+        min-height: 3.4375rem;
         text-align: center;
     }
 
@@ -210,13 +210,13 @@
 
     #update-card-button-span {
         display: block;
-        min-height: 30px;
+        min-height: 1.875rem;
     }
 
     .zulip-loading-logo {
         margin: 0 auto;
-        width: 24px;
-        height: 24px;
+        width: 1.5rem;
+        height: 1.5rem;
     }
 
     .zulip-loading-logo svg circle {
@@ -234,7 +234,7 @@
     #cardchange_loading_indicator,
     #invoice_loading_indicator,
     #autopay_loading_indicator {
-        margin: 10px auto;
+        margin: 0.625rem auto;
     }
 
     #sponsorship_loading_indicator_box_container,
@@ -263,7 +263,7 @@
     #cardchange_loading_indicator .loading_indicator_text,
     #invoice_loading_indicator .loading_indicator_text,
     #autopay_loading_indicator .loading_indicator_text {
-        margin-left: -25px;
+        margin-left: -1.5625rem;
     }
 
     #license-automatic-section,

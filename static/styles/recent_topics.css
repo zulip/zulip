@@ -2,8 +2,8 @@
     position: relative;
     height: 95%;
     width: 70%;
-    max-width: 1200px;
-    max-height: 1000px;
+    max-width: 75.0rem;
+    max-height: 62.5rem;
     padding: 0;
     border-radius: 4px;
     background-color: hsl(0, 0%, 100%);
@@ -44,7 +44,7 @@
             .exit-sign {
                 position: relative;
                 top: 3px;
-                margin-left: 3px;
+                margin-left: 0.1875rem;
                 font-size: 1.5rem;
                 font-weight: 600;
                 cursor: pointer;
@@ -114,7 +114,7 @@
         }
 
         #recent_topics_filter_buttons {
-            margin: 0 10px 0 10px;
+            margin: 0 0.625rem 0 0.625rem;
             display: flex;
             flex-wrap: wrap;
             justify-content: flex-start;
@@ -123,7 +123,7 @@
         .search_group {
             display: flex;
             flex-grow: 1;
-            margin: 0 0 10px 0;
+            margin: 0 0 0.625rem 0;
         }
 
         #recent_topics_search {
@@ -137,7 +137,7 @@
 
         .btn-recent-filters {
             border-radius: 40px;
-            margin: 0 5px 10px 0;
+            margin: 0 0.3125rem 0.625rem 0;
 
             &:focus {
                 background-color: hsl(0, 0%, 80%);
@@ -152,14 +152,14 @@
         .recent_topic_unread_count {
             background-color: hsl(105, 2%, 50%) !important;
             color: hsl(0, 0%, 100%);
-            height: 16px;
-            line-height: 16px;
+            height: 1.0rem;
+            line-height: 1.0rem;
             font-size: 0.75rem;
             font-weight: 400;
             letter-spacing: 0.6px;
             border-radius: 4px;
             padding: 0 0.25rem;
-            margin-right: 10px;
+            margin-right: 0.625rem;
             align-self: center;
         }
 
@@ -186,7 +186,7 @@
             display: inline-flex; /* Causes LI items to display in row. */
             list-style-type: none;
             margin: auto; /* Centers vertically / horizontally in flex container. */
-            height: 24px;
+            height: 1.5rem;
             padding: 0.25rem;
             border-radius: 6px;
             overflow: hidden;
@@ -202,11 +202,11 @@
         }
 
         .recent_avatars_item {
-            height: 24px;
+            height: 1.5rem;
             margin: 0;
             padding: 0 1.0.3125rem 0 1.0.3125rem;
             position: relative;
-            min-width: 24px;
+            min-width: 1.5rem;
         }
 
         .recent_avatars_img,
@@ -215,14 +215,14 @@
             border-radius: 6px;
             color: hsl(0, 0%, 100%);
             display: block;
-            height: 24px;
+            height: 1.5rem;
             text-align: center;
             background-color: hsl(0, 0%, 88%);
         }
 
         .recent_avatars_others {
             color: hsl(0, 0%, 0%);
-            line-height: 24px;
+            line-height: 1.5rem;
         }
 
         tr {
@@ -235,7 +235,7 @@
 
         .last_msg_time {
             float: left;
-            margin-right: 5px;
+            margin-right: 0.3125rem;
         }
 
         thead th {

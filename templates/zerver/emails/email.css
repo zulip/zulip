@@ -42,15 +42,15 @@ table td {
 .container {
     display: block;
     margin: 0 auto !important;
-    max-width: 500px;
+    max-width: 31.25rem;
     padding: 10px;
 }
 
 .content {
     box-sizing: border-box;
     display: block;
-    margin: 20px auto 0 auto;
-    max-width: 580px;
+    margin: 1.25rem auto 0 auto;
+    max-width: 36.25rem;
     padding: 10px;
 }
 
@@ -70,7 +70,7 @@ table td {
     padding-top: 10px;
     text-align: center;
     width: 100%;
-    margin-top: 20px;
+    margin-top: 1.25rem;
 }
 
 .footer td,
@@ -95,7 +95,7 @@ h4 {
     font-weight: 400;
     line-height: 1.4;
     margin: 0;
-    margin-bottom: 30px;
+    margin-bottom: 1.875rem;
 }
 
 h1 {
@@ -111,14 +111,14 @@ ol {
     font-family: sans-serif;
     font-size: 0.875rem;
     font-weight: normal;
-    margin: 10px 0;
+    margin: 0.625rem 0;
 }
 
 p li,
 ul li,
 ol li {
     list-style-position: inside;
-    margin-left: 5px;
+    margin-left: 0.3125rem;
 }
 
 a {
@@ -137,8 +137,8 @@ a:hover {
 .button {
     display: block;
     padding: 10px 0;
-    margin: 20px auto;
-    width: 200px;
+    margin: 1.25rem auto;
+    width: 12.5rem;
     border: 1px solid #80d1ba;
     background-color: #80d1ba;
     border-radius: 4px;
@@ -176,7 +176,7 @@ a.button:hover {
 }
 
 #private-messages {
-    width: 600px;
+    width: 37.5rem;
     font-size: 0.75rem;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -184,7 +184,7 @@ a.button:hover {
 .recipient_block {
     background-color: #f0f4f5;
     border: 1px solid #000;
-    margin-bottom: 4px;
+    margin-bottom: 0.25rem;
 }
 
 .recipient_header {
@@ -197,8 +197,8 @@ a.button:hover {
 
 .message_content {
     background-color: #eff3f4;
-    margin-left: 1px;
-    margin-right: 2px;
+    margin-left: 0.0625rem;
+    margin-right: 0.125rem;
 }
 
 .message_sender {
@@ -212,7 +212,7 @@ a.button:hover {
 }
 
 .messages {
-    width: 600px;
+    width: 37.5rem;
     font-size: 0.75rem;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     overflow-y: auto;
@@ -220,7 +220,7 @@ a.button:hover {
 
 .hot_convo_recipient_block {
     border: 1px solid #000;
-    margin-bottom: 4px;
+    margin-bottom: 0.25rem;
 }
 
 .hot_convo_recipient_header {
@@ -231,8 +231,8 @@ a.button:hover {
 }
 
 .hot_convo_message_content {
-    margin-left: 1px;
-    margin-right: 2px;
+    margin-left: 0.0625rem;
+    margin-right: 0.125rem;
 }
 
 .hot_convo_message_sender {
@@ -242,7 +242,7 @@ a.button:hover {
 
 .recipient_block_with_messages {
     border: 1px solid #000;
-    margin-bottom: 4px;
+    margin-bottom: 0.25rem;
 }
 
 .recipient_header_with_messages {
@@ -253,14 +253,14 @@ a.button:hover {
 }
 
 .message_content_with_messages {
-    margin-left: 1px;
-    margin-right: 2px;
+    margin-left: 0.0625rem;
+    margin-right: 0.125rem;
 }
 
 .recipient_block_without_messages {
     background-color: #f0f4f5;
     border: 1px solid #000;
-    margin-bottom: 4px;
+    margin-bottom: 0.25rem;
 }
 
 .recipient_header_without_messages {
@@ -273,8 +273,8 @@ a.button:hover {
 
 .message_content_without_messages {
     background-color: #f0f4f5;
-    margin-left: 1px;
-    margin-right: 2px;
+    margin-left: 0.0625rem;
+    margin-right: 0.125rem;
 }
 
 .hot_convo_message_content_block {
@@ -306,7 +306,7 @@ a.button:hover {
 @media only screen and (max-width: 620px) {
     table[class="body"] h1 {
         font-size: 28px !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 0.625rem !important;
     }
 
     table[class="body"] p,

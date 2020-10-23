@@ -32,11 +32,11 @@ $alert-error-red: hsl(0, 80%, 40%);
     @extend .alert-display;
 
     &#organization-status {
-        margin: 20px;
+        margin: 1.25rem;
     }
 
     &.stream_create_info {
-        margin: 10px 10px 0 10px;
+        margin: 0.625rem 0.625rem 0 0.625rem;
     }
 
     .bankruptcy_unread_count {
@@ -49,8 +49,8 @@ $alert-error-red: hsl(0, 80%, 40%);
     position: absolute;
     top: 0;
     left: 0;
-    width: 900px;
-    margin-left: calc(50% - 450px);
+    width: 56.25rem;
+    margin-left: calc(50% - 28.125rem);
     z-index: 220;
     max-height: 100%;
     overflow-y: auto;
@@ -62,7 +62,7 @@ $alert-error-red: hsl(0, 80%, 40%);
         font-size: 1rem;
         color: hsl(0, 80%, 40%);
 
-        margin-top: 5px;
+        margin-top: 0.3125rem;
         padding: 1rem 0;
 
         background-color: hsl(0, 100%, 98%);
