@@ -3,14 +3,16 @@ class zulip::supervisor {
 
   package { 'supervisor': ensure => 'installed' }
 
-  file { $zulip::common::supervisor_system_conf_dir:
+  $system_conf_dir = $zulip::common::supervisor_system_conf_dir
+  file { $system_conf_dir:
     ensure  => 'directory',
     require => Package['supervisor'],
     owner   => 'root',
     group   => 'root',
   }
 
-  file { $zulip::common::supervisor_conf_dir:
+  $conf_dir = $zulip::common::supervisor_conf_dir
+  file { $conf_dir:
     ensure  => 'directory',
     require => Package['supervisor'],
     owner   => 'root',
@@ -100,7 +102,7 @@ class zulip::supervisor {
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip/supervisor/supervisord.conf',
+    content => template('zulip/supervisor/supervisord.conf.erb'),
     notify  => Exec['supervisor-restart'],
   }
 }

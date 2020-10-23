@@ -27,4 +27,4 @@ serverurl=unix:///var/run/supervisor.sock ; use a unix:// URL  for a unix socket
 ; include files themselves.
 
 [include]
-files = /etc/supervisor/conf.d/*.conf /etc/supervisor/conf.d/zulip/*.conf
+files = <%= @system_conf_dir %>/*.conf <%= @conf_dir %>/*.conf
