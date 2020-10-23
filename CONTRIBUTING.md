@@ -8,7 +8,7 @@ The
 [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html)
 is the primary communication forum for the Zulip community. It is a good
 place to start whether you have a question, are a new contributor, are a new
-user, or anything else. Make sure to read the
+user, or anything else. Make sure to read these
 [community norms](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html#community-norms)
 before posting. The Zulip community is also governed by a
 [code of conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
