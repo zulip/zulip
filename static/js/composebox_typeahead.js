@@ -855,7 +855,15 @@ exports.content_typeahead_selected = function (item, event) {
         // Stream + topic mention typeahead; close the stream+topic mention syntax
         // with the topic and the final **.
         const start = -this.token.length;
-        beginning = beginning.slice(0, start) + item + "** ";
+        if (start !== 0) {
+            // This is the only case where we can set
+            // up the typeahead for an empty token.
+            // Thus, we do not perform string slicing
+            // when the token length is 0 as it returns
+            // an empty string.
+            beginning = beginning.slice(0, start);
+        }
+        beginning = beginning + item + "** ";
     } else if (this.completing === "time_jump") {
         let timestring = beginning.slice(Math.max(0, beginning.lastIndexOf("<time:")));
         if (timestring.startsWith("<time:") && timestring.endsWith(">")) {
