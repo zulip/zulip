@@ -231,7 +231,7 @@ exports.add_topic_links = function (message) {
         }
     }
 
-    // Also make raw urls navigable
+    // Also make raw URLs navigable
     const url_re = /\b(https?:\/\/[^\s<]+[^\s"'),.:;<\]])/g; // Slightly modified from third/marked.js
     const match = topic.match(url_re);
     if (match) {
@@ -268,11 +268,11 @@ function handleEmoji(emoji_name) {
     const alt_text = ":" + emoji_name + ":";
     const title = emoji_name.split("_").join(" ");
 
-    // Zulip supports both standard/unicode emoji, served by a
+    // Zulip supports both standard/Unicode emoji, served by a
     // spritesheet and custom realm-specific emoji (served by URL).
     // We first check if this is a realm emoji, and if so, render it.
     //
-    // Otherwise we'll look at unicode emoji to render with an emoji
+    // Otherwise we'll look at Unicode emoji to render with an emoji
     // span using the spritesheet; and if it isn't one of those
     // either, we pass through the plain text syntax unmodified.
     const emoji_url = emoji.get_realm_emoji_url(emoji_name);
@@ -381,7 +381,7 @@ function python_to_js_filter(pattern, url) {
         const name = match[1];
         // Replace named group with regular matching group
         pattern = pattern.replace("(?P<" + name + ">", "(");
-        // Replace named reference in url to numbered reference
+        // Replace named reference in URL to numbered reference
         url = url.replace("%(" + name + ")s", "\\" + current_group);
 
         // Reset the RegExp state

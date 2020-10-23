@@ -710,18 +710,18 @@ class StreamAdminTest(ZulipTestCase):
         self.assertNotIn(self.example_user('polonius').id,
                          notified_user_ids)
 
-        # Test case to handle unicode stream name change
-        # *NOTE: Here Encoding is needed when Unicode string is passed as an argument*
+        # Test case to handle Unicode stream name change
+        # *NOTE: Here encoding is needed when Unicode string is passed as an argument*
         with tornado_redirected_to_list(events):
             stream_id = stream_name2_exists.id
             result = self.client_patch(f'/json/streams/{stream_id}',
                                        {'new_name': orjson.dumps('नया नाम').decode()})
         self.assert_json_success(result)
-        # While querying, system can handle unicode strings.
+        # While querying, system can handle Unicode strings.
         stream_name_uni_exists = get_stream('नया नाम', realm)
         self.assertTrue(stream_name_uni_exists)
 
-        # Test case to handle changing of unicode stream name to newer name
+        # Test case to handle changing of Unicode stream name to newer name
         # NOTE: Unicode string being part of URL is handled cleanly
         # by client_patch call, encoding of URL is not needed.
         with tornado_redirected_to_list(events):
@@ -729,7 +729,7 @@ class StreamAdminTest(ZulipTestCase):
             result = self.client_patch(f'/json/streams/{stream_id}',
                                        {'new_name': orjson.dumps('नाम में क्या रक्खा हे').decode()})
         self.assert_json_success(result)
-        # While querying, system can handle unicode strings.
+        # While querying, system can handle Unicode strings.
         self.assertRaises(Stream.DoesNotExist, get_stream, 'नया नाम', realm)
 
         stream_name_new_uni_exists = get_stream('नाम में क्या रक्खा हे', realm)

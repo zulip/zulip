@@ -58,7 +58,7 @@ TAB_DISPLAY_NAMES = {
 
     'mm-default': 'Default installation',
     'mm-docker': 'Docker',
-    'mm-gitlab-omnibus': 'Gitlab Omnibus',
+    'mm-gitlab-omnibus': 'GitLab Omnibus',
 
     'send-email-invitations': 'Send email invitations',
     'share-an-invite-link': 'Share an invite link',

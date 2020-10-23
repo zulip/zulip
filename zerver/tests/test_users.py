@@ -771,7 +771,7 @@ class BulkCreateUserTest(ZulipTestCase):
         realm.save()
 
         name_list = [
-            ('Fred Flinstone', 'fred@zulip.com'),
+            ('Fred Flintstone', 'fred@zulip.com'),
             ('Lisa Simpson', 'lisa@zulip.com'),
         ]
 
@@ -1232,7 +1232,7 @@ class ActivateTest(ZulipTestCase):
     def test_api_with_nonexistent_user(self) -> None:
         self.login('iago')
 
-        # Organization Administrator cannot deactivate organization owner.
+        # Organization administrator cannot deactivate organization owner.
         result = self.client_delete(f'/json/users/{self.example_user("desdemona").id}')
         self.assert_json_error(result, 'Must be an organization owner')
 
@@ -1643,7 +1643,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertTrue(result['is_owner'])
         self.assertFalse(result['is_guest'])
 
-        # Tests the GET ../users/{id} api endpoint.
+        # Tests the GET ../users/{id} API endpoint.
         user = self.example_user('hamlet')
         result = orjson.loads(self.client_get(f'/json/users/{user.id}').content)
         self.assertEqual(result['user']['email'], user.email)

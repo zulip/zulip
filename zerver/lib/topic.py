@@ -66,7 +66,7 @@ DB_TOPIC_NAME = "subject"
 MESSAGE__TOPIC = 'message__subject'
 
 def topic_match_sa(topic_name: str) -> Any:
-    # _sa is short for Sql Alchemy, which we use mostly for
+    # _sa is short for SQLAlchemy, which we use mostly for
     # queries that search messages
     topic_cond = func.upper(column("subject")) == func.upper(literal(topic_name))
     return topic_cond

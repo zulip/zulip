@@ -10,8 +10,8 @@ from zerver.models import get_user_profile_by_id
 
 
 class Command(BaseCommand):
-    help = """Checks redis to make sure our rate limiting system hasn't grown a bug
-    and left redis with a bunch of data
+    help = """Checks Redis to make sure our rate limiting system hasn't grown a bug
+    and left Redis with a bunch of data
 
     Usage: ./manage.py [--trim] check_redis"""
 
@@ -41,7 +41,7 @@ than max_api_calls! (trying to trim) %s %s", key, count)
 
     def handle(self, *args: Any, **options: Any) -> None:
         if not settings.RATE_LIMITING:
-            raise CommandError("This machine is not using redis or rate limiting, aborting")
+            raise CommandError("This machine is not using Redis or rate limiting, aborting")
 
         # Find all keys, and make sure they're all within size constraints
         wildcard_list = "ratelimit:*:*:list"

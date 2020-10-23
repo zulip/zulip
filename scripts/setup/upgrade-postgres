@@ -24,8 +24,8 @@ if pg_lsclusters -h | grep -qE "^$UPGRADE_TO\s+main\b"; then
 fi
 
 (
-    # Two-stage application of puppet; we apply the bare-bones
-    # postgresql configuration first, so that FTS will be configured
+    # Two-stage application of Puppet; we apply the bare-bones
+    # PostgreSQL configuration first, so that FTS will be configured
     # prior to the pg_upgradecluster.
     TEMP_CONF_DIR=$(mktemp -d)
     cp /etc/zulip/zulip.conf "$TEMP_CONF_DIR"

@@ -859,10 +859,10 @@ exports.deactivate = function () {
 };
 
 exports.restore_home_state = function () {
-    // If we click on the All Messages link while already at All Messages, unnarrow.
-    // If we click on the All Messages link from another nav pane, just go
+    // If we click on the All messages link while already at All messages, unnarrow.
+    // If we click on the All messages link from another nav pane, just go
     // back to the state you were in (possibly still narrowed) before
-    // you left the All Messages pane.
+    // you left the All messages pane.
     if (!overlays.is_active()) {
         exports.deactivate();
     }

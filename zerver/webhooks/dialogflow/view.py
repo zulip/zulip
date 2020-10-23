@@ -10,7 +10,7 @@ from zerver.lib.response import json_success
 from zerver.models import UserProfile, get_user_profile_by_email
 
 
-@webhook_view("dialogflow")
+@webhook_view("Dialogflow")
 @has_request_variables
 def api_dialogflow_webhook(request: HttpRequest, user_profile: UserProfile,
                            payload: Dict[str, Any]=REQ(argument_type='body'),
@@ -22,7 +22,7 @@ def api_dialogflow_webhook(request: HttpRequest, user_profile: UserProfile,
         if not result:
             alternate_result = payload["alternateResult"]["fulfillment"]["speech"]
             if not alternate_result:
-                body = "DialogFlow couldn't process your query."
+                body = "Dialogflow couldn't process your query."
             else:
                 body = alternate_result
         else:

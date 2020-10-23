@@ -18,8 +18,8 @@ For details on each of these requirements, see below.
 #### General
 
 The installer expects Zulip to be the **only thing** running on the
-system; it will install system packages with `apt` (like nginx,
-postgresql, and redis) and configure them for its own use.  We
+system; it will install system packages with `apt` (like Nginx,
+PostgreSQL, and Redis) and configure them for its own use.  We
 strongly recommend using either a fresh machine instance in a cloud
 provider, a fresh VM, or a dedicated machine.  If you decide to
 disregard our advice and use a server that hosts other services, we
@@ -50,7 +50,7 @@ https://help.ubuntu.com/community/Repositories/Ubuntu
 
 #### Hardware specifications
 
-* CPU and Memory: For installations with 100+ users you'll need a
+* CPU and memory: For installations with 100+ users you'll need a
   minimum of **2 CPUs** and **4GB RAM**. For installations with fewer
   users, 1 CPU and 2GB RAM is sufficient. We strongly recommend against
   installing with less than 2GB of RAM, as you will likely experience
@@ -149,7 +149,7 @@ most use cases, there's little scalability benefit to doing so.  See
 installing Zulip with a dedicated database server.
 
 * **Dedicated database**.  For installations with hundreds of daily
-  active users, we recommend using a [remote postgres
+  active users, we recommend using a [remote Postgres
   database](postgres.md), but it's not required.
 
 * **RAM:**  We recommended more RAM for larger installations:

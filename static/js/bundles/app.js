@@ -1,6 +1,6 @@
 import "./common";
 
-// Import Third party libraries
+// Import third party libraries
 import "../../third/bootstrap-notify/js/bootstrap-notify";
 import "../../third/bootstrap-typeahead/typeahead";
 import "../../third/bootstrap-tooltip/tooltip";
@@ -12,7 +12,7 @@ import "jquery-validation";
 import "flatpickr";
 import "flatpickr/dist/plugins/confirmDate/confirmDate";
 
-// Import App JS
+// Import app JS
 import "../i18n";
 import "../feature_flags";
 import "../loading";
@@ -195,7 +195,7 @@ import "../search_pill_widget";
 import "../stream_ui_updates";
 import "../spoilers";
 
-// Import Styles
+// Import styles
 
 import "../../third/bootstrap-notify/css/bootstrap-notify.css";
 import "spectrum-colorpicker/spectrum.css";

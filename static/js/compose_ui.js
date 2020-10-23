@@ -104,7 +104,7 @@ exports.compute_placeholder_text = function (opts) {
         }
     }
 
-    // For Private Messages
+    // For private messages
     if (opts.private_message_recipient) {
         const recipient_list = opts.private_message_recipient.split(",");
         const recipient_names = recipient_list

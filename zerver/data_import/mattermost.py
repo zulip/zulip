@@ -249,12 +249,12 @@ def build_reactions(realm_id: int, total_reactions: List[ZerverFieldsT], reactio
     for realm_emoji in zerver_realmemoji:
         realmemoji[realm_emoji['name']] = realm_emoji['id']
 
-    # For the unicode emoji codes, we use equivalent of
+    # For the Unicode emoji codes, we use equivalent of
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
     for mattermost_reaction in reactions:
         emoji_name = mattermost_reaction['emoji_name']
         username = mattermost_reaction["user"]
-        # Check in unicode emoji
+        # Check in Unicode emoji
         if emoji_name in name_to_codepoint:
             emoji_code = name_to_codepoint[emoji_name]
             reaction_type = Reaction.UNICODE_EMOJI

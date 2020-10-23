@@ -136,7 +136,7 @@ code paths (`httplib2.Http().request`, `requests.request`, etc.) to
 throw an exception in the backend tests.  While this is enforcement is
 not complete (there a lot of other ways to use the Internet from
 Python), it is easy to do and catches most common cases of new code
-dependning on Internet access.
+depending on Internet access.
 
 This enforcement code results in the following exception:
 

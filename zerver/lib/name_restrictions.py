@@ -18,7 +18,7 @@ def is_disposable_domain(domain: str) -> bool:
     return domain.lower() in DISPOSABLE_DOMAINS
 
 ZULIP_RESERVED_SUBDOMAINS = {
-    # zulip terms
+    # Zulip terms
     'stream', 'channel', 'topic', 'thread', 'installation', 'organization', 'realm',
     'team', 'subdomain', 'activity', 'octopus', 'acme', 'push',
     # machines
@@ -29,7 +29,7 @@ ZULIP_RESERVED_SUBDOMAINS = {
     # competitor pages
     'slack', 'mattermost', 'rocketchat', 'irc', 'twitter', 'zephyr', 'flowdock', 'spark',
     'skype', 'microsoft', 'twist', 'ryver', 'matrix', 'discord', 'email', 'usenet',
-    # zulip names
+    # Zulip names
     'zulip', 'tulip', 'humbug',
     # platforms
     'plan9', 'electron', 'linux', 'mac', 'windows', 'cli', 'ubuntu', 'android', 'ios',

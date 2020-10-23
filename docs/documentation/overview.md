@@ -34,7 +34,7 @@ Zulip servers.  These docs are written in
 [Commonmark Markdown](https://commonmark.org/) with a small bit of rST.
 We've chosen Markdown because it is
 [easy to write](https://commonmark.org/help/).  The source for Zulip's
-developer documentation is at `docs/` in the Zulip git repository, and
+developer documentation is at `docs/` in the Zulip Git repository, and
 they are served in production at
 [zulip.readthedocs.io](https://zulip.readthedocs.io/en/latest/).
 
@@ -129,7 +129,7 @@ payload verification.  Note that this test does not check for broken
 links (those are checked by `test-help-documentation`).
 
 * `tools/test-help-documentation` checks `/help/`, `/api/`,
-  `/integrations/`, and the Core website ("portico") documentation for
+  `/integrations/`, and the core website ("portico") documentation for
   broken links.  Note that the "portico" documentation check has a
   manually maintained whitelist of pages, so if you add a new page to
   this site, you will need to edit `PorticoDocumentationSpider` to add it.

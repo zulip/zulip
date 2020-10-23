@@ -1614,7 +1614,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_get_messages_with_narrow_stream_mit_unicode_regex(self) -> None:
         """
-        A request for old messages for a user in the mit.edu relam with unicode
+        A request for old messages for a user in the mit.edu relam with Unicode
         stream name should be correctly escaped in the database query.
         """
         user = self.mit_user('starnine')
@@ -1648,7 +1648,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_get_messages_with_narrow_topic_mit_unicode_regex(self) -> None:
         """
-        A request for old messages for a user in the mit.edu realm with unicode
+        A request for old messages for a user in the mit.edu realm with Unicode
         topic name should be correctly escaped in the database query.
         """
         mit_user_profile = self.mit_user("starnine")
@@ -1875,7 +1875,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
 
-        # Test searching in messages with unicode characters
+        # Test searching in messages with Unicode characters
         narrow = [
             dict(operator='search', operand='日本'),
         ]
@@ -1910,7 +1910,7 @@ class GetOldMessagesTest(ZulipTestCase):
             english_message['match_content'],
             '<p>I want to go to <span class="highlight">日本</span>!</p>')
 
-        # Multiple search operands with unicode
+        # Multiple search operands with Unicode
         multi_search_narrow = [
             dict(operator='search', operand='ちは'),
             dict(operator='search', operand='今日は'),
@@ -2052,7 +2052,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(multi_search_result['messages'][0]['match_content'],
                          '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>')
 
-        # Multiple search operands with unicode
+        # Multiple search operands with Unicode
         multi_search_narrow = [
             dict(operator='search', operand='朝は'),
             dict(operator='search', operand='べました'),
@@ -2078,7 +2078,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com"><span class="highlight">https://google.com</span></a></p>')
 
-        # Search operands with HTML Special Characters
+        # Search operands with HTML special characters
         special_search_narrow = [
             dict(operator='search', operand='butter'),
         ]
@@ -2522,7 +2522,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.exercise_bad_narrow_operand_using_dict_api('search', [''], error_msg)
 
     # The exercise_bad_narrow_operand helper method uses legacy tuple format to
-    # test bad narrow, this method uses the current dict api format
+    # test bad narrow, this method uses the current dict API format
     def exercise_bad_narrow_operand_using_dict_api(self, operator: str,
                                                    operands: Sequence[Any],
                                                    error_msg: str) -> None:
@@ -3236,7 +3236,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         msg_contents = ["Link: foo.org",
                         "Image: https://www.google.com/images/srpr/logo4w.png",
                         "Image: https://www.google.com/images/srpr/logo4w.pdf",
-                        "[Google Link](https://www.google.com/images/srpr/logo4w.png)"]
+                        "[Google link](https://www.google.com/images/srpr/logo4w.png)"]
         for msg_content in msg_contents:
             msg_ids.append(self.send_stream_message(self.example_user('hamlet'),
                                                     'Denmark', content=msg_content))
@@ -3245,7 +3245,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
 
         self.update_message(msgs[0], 'https://www.google.com/images/srpr/logo4w.png')
         self.assertTrue(msgs[0].has_image)
-        self.update_message(msgs[0], 'No Image Again')
+        self.update_message(msgs[0], 'No image again')
         self.assertFalse(msgs[0].has_image)
 
     def test_has_attachment(self) -> None:
@@ -3259,7 +3259,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         msg_id = self.send_stream_message(hamlet, "Denmark", body, "test")
         msg = Message.objects.get(id=msg_id)
         self.assertTrue(msg.has_attachment)
-        self.update_message(msg, 'No Attachments')
+        self.update_message(msg, 'No attachments')
         self.assertFalse(msg.has_attachment)
         self.update_message(msg, body)
         self.assertTrue(msg.has_attachment)

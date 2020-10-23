@@ -3,7 +3,7 @@ properly configured. Please check the following:
 
 * You have registered `{{ root_domain_uri }}/complete/apple/`
   as the callback URL for your Services ID in Apple's developer console. You can
-  enable "Sign In with Apple" for an app at
+  enable "Sign in with Apple" for an app at
   [Certificates, Identifiers & Profiles](https://developer.apple.com/account/resources/).
 
 * You have set `SOCIAL_AUTH_APPLE_SERVICES_ID`,

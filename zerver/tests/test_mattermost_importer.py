@@ -670,7 +670,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(len(huddle_messages), 3)
         self.assertEqual(len(set(huddle_recipients)), 1)
         self.assertEqual(huddle_messages[0].sender.email, "ginny@zulip.com")
-        self.assertEqual(huddle_messages[0].content, "Who is going to Hogesmead this weekend?\n\n")
+        self.assertEqual(huddle_messages[0].content, "Who is going to Hogsmeade this weekend?\n\n")
 
         personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by("date_sent")
         personal_recipients = personal_messages.values_list("recipient", flat=True)

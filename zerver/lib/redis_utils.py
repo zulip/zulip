@@ -47,7 +47,7 @@ def get_dict_from_redis(redis_client: redis.StrictRedis, key_format: str, key: s
     # This function requires inputting the intended key_format to validate
     # that the key fits it, as an additionally security measure. This protects
     # against bugs where a caller requests a key based on user input and doesn't
-    # validate it - which could potentially allow users to poke around arbitrary redis keys.
+    # validate it - which could potentially allow users to poke around arbitrary Redis keys.
     if len(key) > MAX_KEY_LENGTH:
         error_msg = "Requested key too long in get_dict_from_redis: %s"
         raise ZulipRedisKeyTooLongError(error_msg % (key,))

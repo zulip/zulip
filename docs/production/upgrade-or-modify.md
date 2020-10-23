@@ -3,7 +3,7 @@
 This page explains how to upgrade, patch, or modify Zulip, including:
 
 - [Upgrading to a release](#upgrading-to-a-release)
-- [Upgrading from a git repository](#upgrading-from-a-git-repository)
+- [Upgrading from a Git repository](#upgrading-from-a-git-repository)
 - [Troubleshooting and rollback](#troubleshooting-and-rollback)
 - [Preserving local changes to configuration files](#preserving-local-changes-to-configuration-files)
 - [Upgrading the operating system](#upgrading-the-operating-system)
@@ -166,7 +166,7 @@ the version corresponding to the `restart-server` path you call.
 
 You can test whether this will happen assuming no upstream changes to
 the configuration using `scripts/zulip-puppet-apply` (without the
-`-f` option), which will do a test puppet run and output and changes
+`-f` option), which will do a test Puppet run and output and changes
 it would make. Using this list, you can save a copy of any files
 that you've modified, do the upgrade, and then restore your
 configuration.
@@ -177,7 +177,7 @@ system to Zulip Cloud.  Before making local changes to a configuration
 file, first check whether there's an option supported by
 `/etc/zulip/zulip.conf` for the customization you need.  And if you
 need to make local modifications, please report the issue so that we
-can make the Zulip puppet configuration flexible enough to handle your
+can make the Zulip Puppet configuration flexible enough to handle your
 setup.
 
 ### nginx configuration changes
@@ -195,7 +195,7 @@ some additional steps to update your Zulip installation, documented
 below.
 
 The steps are largely the same for the various OS upgrades aside from
-the versions of postgres, so you should be able to adapt these
+the versions of Postgres, so you should be able to adapt these
 instructions for other supported platforms.
 
 ### Upgrading from Ubuntu 18.04 Bionic to 20.04 Focal
@@ -226,8 +226,8 @@ instructions for other supported platforms.
     release update of Ubuntu 20.04 LTS is released.
 
     When `do-release-upgrade` asks you how to upgrade configuration
-    files for services that Zulip manages like `redis`, `postgres`,
-    `nginx`, and `memcached`, the best choice is `N` to keep the
+    files for services that Zulip manages like Redis, Postgres,
+    Nginx, and memcached, the best choice is `N` to keep the
     currently installed version.  But it's not important; the next
     step will re-install Zulip's configuration in any case.
 
@@ -357,8 +357,8 @@ instructions for other supported platforms.
    [debian-upgrade-os]: https://www.debian.org/releases/buster/amd64/release-notes/ch-upgrading.html
 
    When prompted for you how to upgrade configuration
-   files for services that Zulip manages like `redis`, `postgres`,
-   `nginx`, and `memcached`, the best choice is `N` to keep the
+   files for services that Zulip manages like Redis, Postgres,
+   Nginx, and memcached, the best choice is `N` to keep the
    currently installed version.  But it's not important; the next
    step will re-install Zulip's configuration in any case.
 

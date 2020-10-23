@@ -361,7 +361,7 @@ EVENT_FUNCTION_MAPPER = {
     'Pipeline Hook': get_pipeline_event_body,
 }
 
-@webhook_view("Gitlab")
+@webhook_view("GitLab")
 @has_request_variables
 def api_gitlab_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
@@ -441,7 +441,7 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any], use_merge_re
 def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[str]) -> Optional[str]:
     event = validate_extract_webhook_http_header(request, 'X_GITLAB_EVENT', 'GitLab')
     if event == "System Hook":
-        # Convert the event name to a Gitlab event title
+        # Convert the event name to a GitLab event title
         event_name = payload.get('event_name', payload.get('object_kind'))
         event = event_name.split("__")[0].replace("_", " ").title()
         event = f"{event} Hook"

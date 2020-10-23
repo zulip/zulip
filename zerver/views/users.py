@@ -199,7 +199,7 @@ def avatar(request: HttpRequest, user_profile: UserProfile,
         avatar_version = 1
         url = get_gravatar_url(email, avatar_version, medium)
 
-    # We can rely on the url already having query parameters. Because
+    # We can rely on the URL already having query parameters. Because
     # our templates depend on being able to use the ampersand to
     # add query parameters to our url, get_avatar_url does '?x=x'
     # hacks to prevent us from having to jump through decode/encode hoops.

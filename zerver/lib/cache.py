@@ -72,7 +72,7 @@ def get_or_create_key_prefix() -> str:
         # This sets the prefix for the benefit of the Puppeteer tests.
         #
         # Having a fixed key is OK since we don't support running
-        # multiple copies of the puppeteer tests at the same time anyway.
+        # multiple copies of the Puppeteer tests at the same time anyway.
         return 'puppeteer_tests:'
     elif settings.TEST_SUITE:
         # The Python tests overwrite KEY_PREFIX on each test, but use

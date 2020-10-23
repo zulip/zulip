@@ -390,7 +390,7 @@ class RateLimitMiddleware(MiddlewareMixin):
         # The limit on the action that was requested is the minimum of the limits that get applied:
         limit = min(result.entity.max_api_calls() for result in rate_limit_results)
         response['X-RateLimit-Limit'] = str(limit)
-        # Same principle applies to remaining api calls:
+        # Same principle applies to remaining API calls:
         remaining_api_calls = min(result.remaining for result in rate_limit_results)
         response['X-RateLimit-Remaining'] = str(remaining_api_calls)
 

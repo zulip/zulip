@@ -1,7 +1,7 @@
 # Working copies
 
 When you work on Zulip code, there are three working copies
-of the Zulip git repo that you are generally concerned with:
+of the Zulip Git repo that you are generally concerned with:
 
 - local copy: This lives on your laptop or your remote dev instance.
 - forked copy: This lives on GitHub, and it's tied to your account.

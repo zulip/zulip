@@ -35,7 +35,7 @@ All users can...
 - show up in your message stream
 - be narrowed to by clicking on recipient bars, etc.
 - be narrowed to by searches (but not suggested)
-- can show up in your "Private Messages" sidebar
+- can show up in your "Private messages" sidebar
 
 We also have the mirroring world, where we have unknown users
 that we can send PMs to, and local-echo is allowed to create

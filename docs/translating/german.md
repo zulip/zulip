@@ -137,7 +137,7 @@ Since we try to avoid concatenating words whenever possible, don't use
 "Privatnachricht" . PN is the officially used abbreviation for
 "Private Nachricht" and is used in many German chat forums.
 
-*"Private Nachricht" (Youtube, Transifex)*
+*"Private Nachricht" (YouTube, Transifex)*
 
 * Starred Message - **Markierte Nachricht**
 
@@ -260,7 +260,7 @@ works as well, but is not that common in German.
 
 This translation is unambiguous.
 
-*"Deabonnieren" (Youtube, Transifex)*
+*"Deabonnieren" (YouTube, Transifex)*
 
 * Narrow to - **Begrenzen auf**
 
@@ -293,7 +293,7 @@ preferable due to its brevity.
 
 * Search - **Suchen**
 
-*"Suchen" (Youtube, Google, Facebook, Transifex)*
+*"Suchen" (YouTube, Google, Facebook, Transifex)*
 
 * Pin/Unpin - **Anpinnen/Loslösen**
 

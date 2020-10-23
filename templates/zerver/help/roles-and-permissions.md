@@ -2,10 +2,10 @@
 
 There are several possible roles in a Zulip organization.
 
-* **Organization Owner**: Can manage users, public streams,
+* **Organization owner**: Can manage users, public streams,
   organization settings, and billing.
 
-* **Organization Administrator**: Can manage users, public streams,
+* **Organization administrator**: Can manage users, public streams,
   and organization settings.  Cannot create or demote organization
   owners.
 

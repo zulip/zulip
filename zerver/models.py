@@ -2490,7 +2490,7 @@ def is_cross_realm_bot_email(email: str) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
 
 # The Huddle class represents a group of individuals who have had a
-# Group Private Message conversation together.  The actual membership
+# group private message conversation together.  The actual membership
 # of the Huddle is stored in the Subscription table just like with
 # Streams, and a hash of that list is stored in the huddle_hash field
 # below, to support efficiently mapping from a set of users to the
@@ -3025,7 +3025,7 @@ class CustomProfileFieldValue(models.Model):
         return f"<CustomProfileFieldValue: {self.user_profile} {self.field} {self.value}>"
 
 # Interfaces for services
-# They provide additional functionality like parsing message to obtain query url, data to be sent to url,
+# They provide additional functionality like parsing message to obtain query URL, data to be sent to URL,
 # and parsing the response.
 GENERIC_INTERFACE = 'GenericService'
 SLACK_INTERFACE = 'SlackOutgoingWebhookService'

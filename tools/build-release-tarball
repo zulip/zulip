@@ -65,7 +65,7 @@ cd "$BASEDIR"
 # Check out a temporary full copy of the index to generate static files
 git checkout-index -f -a --prefix "$TMPDIR/$prefix/"
 
-# Add the git version information file
+# Add the Git version information file
 ./tools/cache-zulip-git-version
 mv zulip-git-version "$TMPDIR/$prefix/"
 

@@ -1092,7 +1092,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         with self.assertLogs(logger_string, level='INFO') as info_logs:
             do_soft_deactivate_users([self.user_profile])
         self.assertEqual(info_logs.output, [
-            f"INFO:{logger_string}:Soft Deactivated user {self.user_profile.id}",
+            f"INFO:{logger_string}:Soft deactivated user {self.user_profile.id}",
             f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process"
         ])
         sender = self.example_user('iago')

@@ -147,7 +147,7 @@ document it and update any existing documentation that might be
 relevant to the new feature. For more information on the kinds of
 documentation Zulip has, see [Documentation](../documentation/overview.md).
 
-## Example Feature
+## Example feature
 
 This example describes the process of adding a new setting to Zulip: a
 flag that allows an admin to require topics on stream messages (the default

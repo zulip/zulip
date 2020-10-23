@@ -1,4 +1,4 @@
-name: "Code Scanning"
+name: "Code scanning"
 
 on: [push, pull_request]
 

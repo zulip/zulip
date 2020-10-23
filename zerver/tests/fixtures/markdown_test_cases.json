@@ -427,10 +427,10 @@
     },
     {
       "name": "only_named_inline_image",
-      "input": "[Google Link](https://www.google.com/images/srpr/logo4w.png)",
-      "expected_output": "<p><a href=\"https://www.google.com/images/srpr/logo4w.png\">Google Link</a></p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"Google Link\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
+      "input": "[Google link](https://www.google.com/images/srpr/logo4w.png)",
+      "expected_output": "<p><a href=\"https://www.google.com/images/srpr/logo4w.png\">Google link</a></p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" title=\"Google link\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
       "backend_only_rendering": true,
-      "text_content": "Google Link\n"
+      "text_content": "Google link\n"
     },
     {
       "name": "only_non_image_link",

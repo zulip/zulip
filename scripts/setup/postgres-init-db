@@ -10,7 +10,7 @@ set -x
 # What user should we use for connecting to the database
 POSTGRES_USER="${POSTGRES_USER:-postgres}"
 
-# This psql command may fail because the zulip database doesn’t exist,
+# This psql command may fail because the Zulip database doesn’t exist,
 # hence the &&.
 if records="$(
     cd / # Make sure the current working directory is readable by postgres

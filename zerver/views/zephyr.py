@@ -55,7 +55,7 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
     except Exception:
         return json_error(_("Invalid Kerberos cache"))
 
-    # TODO: Send these data via (say) rabbitmq
+    # TODO: Send these data via (say) RabbitMQ
     try:
         api_key = get_api_key(user_profile)
         command = [

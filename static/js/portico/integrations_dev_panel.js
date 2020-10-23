@@ -1,6 +1,6 @@
 "use strict";
 
-// Main JavaScript file for the Integrations development panel at
+// Main JavaScript file for the integrations development panel at
 // /devtools/integrations.
 
 // Data Segment: We lazy load the requested fixtures from the backend
@@ -219,7 +219,7 @@ function get_fixtures(integration_name) {
     }
 
     // We don't have the fixtures for this integration; fetch them
-    // from the backend.  Relative url pattern:
+    // from the backend.  Relative URL pattern:
     // /devtools/integrations/<integration_name>/fixtures
     channel.get({
         url: "/devtools/integrations/" + integration_name + "/fixtures",

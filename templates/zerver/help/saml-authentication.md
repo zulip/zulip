@@ -1,6 +1,6 @@
 # SAML authentication
 
-Zulip supports using SAML authentication for Single Sign On, both when
+Zulip supports using SAML authentication for single sign-on, both when
 self-hosting or on the Zulip Cloud Plus plan.
 
 This page documents details on how to setup SAML authentication with
@@ -29,11 +29,11 @@ Zulip with various common SAML Identity Providers.
      * Optionally you can also send us an icon that should be shown on the button.
 1. We will take care of the server-side setup and let you know as soon as it's ready.
 
-## Configure SAML with Onelogin
+## Configure SAML with OneLogin
 
 1. Make sure you have created your organization. We'll assume its URL is
    `https://<subdomain>.zulipchat.com` in the instructions below.
-1. Navigate to the Onelogin Applications page, and click "Add App".
+1. Navigate to the OneLogin Applications page, and click "Add App".
 1. Search for the "SAML Test Connector (IdP w/ attr w/ sign response)" app and select it.
 1. Set a name and logo according to your preferences and click "Save". This doesn't affect anything in Zulip,
    but will be shown on your OneLogin Applications page.
@@ -45,7 +45,7 @@ Zulip with various common SAML Identity Providers.
 1. Go to the "Parameters" section. Ignore the pre-configured parameters that are already there
    and add custom ones to match the following screenshot:
 
-    ![Onelogin parameters](/static/images/help/onelogin_parameters.png)
+    ![OneLogin parameters](/static/images/help/onelogin_parameters.png)
 
     Make sure to set the "Include in SAML assertion" flag on them.
 

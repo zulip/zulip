@@ -19,7 +19,7 @@ Receive Zabbix notifications in Zulip!
     the exact path might differ depending on your environment. Make sure the
     script is executable by your Zabbix environment.
 
-1. Go to your Zabbix Web Interface, and click **Administration**. Click on
+1. Go to your Zabbix web interface, and click **Administration**. Click on
    **Media Types**, and click **Create Media Type**.
 
 1. Set **name** to a name of your choice, such as `Zulip`. Set **type** to **Script**,
@@ -31,7 +31,7 @@ Receive Zabbix notifications in Zulip!
 
     Check the **Enabled** option, and click **Update**.
 
-1. Go back to your Zabbix Web Interface, and click **Administration**. Click
+1. Go back to your Zabbix web interface, and click **Administration**. Click
    on **Users**, and select the alias of the user you would like
    to use to set the notification. Click **Media**, and click **Add**.
 
@@ -39,7 +39,7 @@ Receive Zabbix notifications in Zulip!
    Tweak the severity for notifications as appropriate, and check the
    **Enabled** option.
 
-1. Go back to your Zabbix Web Interface, and click **Configuration**.
+1. Go back to your Zabbix web interface, and click **Configuration**.
    Click **Actions**, and click **Create Action**.
 
 1. Set **Name** to a name of your choice, such as `Zulip`. Under

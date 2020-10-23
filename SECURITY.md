@@ -1,9 +1,9 @@
-# Security Policy
+# Security policy
 
 Security announcements are sent to zulip-announce@googlegroups.com,
 so you should subscribe if you are running Zulip in production.
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
 We love responsible reports of (potential) security issues in Zulip,
 whether in the latest release or our development branch.
@@ -18,7 +18,7 @@ Our [security
 model](https://zulip.readthedocs.io/en/latest/production/security-model.html)
 document may be a helpful resource.
 
-## Supported Versions
+## Supported versions
 
 Zulip provides security support for the latest major release, in the
 form of minor security/maintenance releases.

@@ -223,7 +223,7 @@ run_test("title_data", () => {
     };
     assert.deepEqual(buddy_data.get_title_data(bot.user_id, is_group), expected_group_data);
 
-    // Individual Users.
+    // Individual users.
     user_status.set_status_text({
         user_id: me.user_id,
         status_text: "out to lunch",

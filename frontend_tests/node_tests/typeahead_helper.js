@@ -143,7 +143,7 @@ run_test("sort_languages", () => {
 
 const a_bot = {
     email: "a_bot@zulip.com",
-    full_name: "A zulip test bot",
+    full_name: "A Zulip test bot",
     is_admin: false,
     is_bot: true,
     user_id: 1,
@@ -151,7 +151,7 @@ const a_bot = {
 
 const a_user = {
     email: "a_user@zulip.org",
-    full_name: "A zulip user",
+    full_name: "A Zulip user",
     is_admin: false,
     is_bot: false,
     user_id: 2,

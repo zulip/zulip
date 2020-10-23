@@ -36,7 +36,7 @@ announcement).
   prevent CSRF attacks.
 
 * The preferred way to log in to Zulip is using an SSO solution like
-  Google Auth, LDAP, or similar, but Zulip also supports password
+  Google auth, LDAP, or similar, but Zulip also supports password
   authentication.  See
   [the authentication methods documentation](../production/authentication-methods.md)
   for details on Zulip's available authentication methods.
@@ -134,11 +134,11 @@ strength allowed is controlled by two settings in
 
 ## Users and bots
 
-* There are several types of users in a Zulip organization: Organization
-  Owners, Organization Administrators, Members (normal users), Guests,
-  and Bots.
+* There are several types of users in a Zulip organization: organization
+  owners, organization administrators, members (normal users), guests,
+  and bots.
 
-* Owners and Administrators have the ability to deactivate and
+* Owners and administrators have the ability to deactivate and
   reactivate other human and bot users, delete streams, add/remove
   administrator privileges, as well as change configuration for the
   organization.

@@ -59,7 +59,7 @@ INLINE_MIME_TYPES = [
     # image/svg+xml, text/html, or text/xml.
 ]
 
-# Performance Note:
+# Performance note:
 #
 # For writing files to S3, the file could either be stored in RAM
 # (if it is less than 2.5MiB or so) or an actual temporary file on disk.
@@ -80,7 +80,7 @@ class RealmUploadQuotaError(JsonableError):
 def sanitize_name(value: str) -> str:
     """
     Sanitizes a value to be safe to store in a Linux filesystem, in
-    S3, and in a URL.  So unicode is allowed, but not special
+    S3, and in a URL.  So Unicode is allowed, but not special
     characters other than ".", "-", and "_".
 
     This implementation is based on django.utils.text.slugify; it is

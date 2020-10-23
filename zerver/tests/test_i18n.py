@@ -87,7 +87,7 @@ class TranslationTestCase(ZulipTestCase):
                      ]
 
         for lang, word in languages:
-            # Applying str function to LANGUAGE_COOKIE_NAME to convert unicode
+            # Applying str function to LANGUAGE_COOKIE_NAME to convert Unicode
             # into an ascii otherwise SimpleCookie will raise an exception
             self.client.cookies = SimpleCookie({str(settings.LANGUAGE_COOKIE_NAME): lang})
 

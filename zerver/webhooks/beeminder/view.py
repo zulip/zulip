@@ -19,7 +19,7 @@ def get_time(payload: Dict[str, Any]) -> Any:
     time_remaining = (losedate - time.time())/3600
     return time_remaining
 
-@webhook_view("beeminder")
+@webhook_view("Beeminder")
 @has_request_variables
 def api_beeminder_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:

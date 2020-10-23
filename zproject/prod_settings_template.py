@@ -434,7 +434,7 @@ ENABLE_GRAVATAR = True
 # and uncomment the following line.
 #DEFAULT_AVATAR_URI = '/local-static/default-avatar.png'
 
-# To access an external postgres database you should define the host name in
+# To access an external Postgres database you should define the host name in
 # REMOTE_POSTGRES_HOST, port in REMOTE_POSTGRES_PORT, password in the secrets file in the
 # property postgres_password, and the SSL connection mode in REMOTE_POSTGRES_SSLMODE
 # Valid values for REMOTE_POSTGRES_SSLMODE are documented in the
@@ -471,7 +471,7 @@ ENABLE_GRAVATAR = True
 ################
 # Email gateway integration.
 #
-# The Email gateway integration supports sending messages into Zulip
+# The email gateway integration supports sending messages into Zulip
 # by sending an email.
 # For details, see the documentation:
 #   https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
@@ -599,11 +599,11 @@ CAMO_URI = '/external_content/'
 
 # RabbitMQ configuration
 #
-# By default, Zulip connects to rabbitmq running locally on the machine,
+# By default, Zulip connects to RabbitMQ running locally on the machine,
 # but Zulip also supports connecting to RabbitMQ over the network;
 # to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
 # RABBITMQ_HOST = "127.0.0.1"
-# To use another rabbitmq user than the default 'zulip', set RABBITMQ_USERNAME here.
+# To use another RabbitMQ user than the default 'zulip', set RABBITMQ_USERNAME here.
 # RABBITMQ_USERNAME = 'zulip'
 
 # Memcached configuration
@@ -619,14 +619,14 @@ CAMO_URI = '/external_content/'
 
 # Redis configuration
 #
-# By default, Zulip connects to redis running locally on the machine,
-# but Zulip also supports connecting to redis over the network;
+# By default, Zulip connects to Redis running locally on the machine,
+# but Zulip also supports connecting to Redis over the network;
 # to use a remote Redis instance, set REDIS_HOST here.
 # REDIS_HOST = '127.0.0.1'
-# For a different redis port set the REDIS_PORT here.
+# For a different Redis port set the REDIS_PORT here.
 # REDIS_PORT = 6379
 # If you set redis_password in zulip-secrets.conf, Zulip will use that password
-# to connect to the redis server.
+# to connect to the Redis server.
 
 # Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True

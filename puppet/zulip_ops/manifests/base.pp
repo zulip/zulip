@@ -190,8 +190,8 @@ class zulip_ops::base {
     ensure     => running,
 
     # Because there is no running process for this service, the normal status
-    # checks fail.  Because puppet then thinks the service has been manually
-    # stopped, it won't restart it.  This fake status command will trick puppet
+    # checks fail.  Because Puppet then thinks the service has been manually
+    # stopped, it won't restart it.  This fake status command will trick Puppet
     # into thinking the service is *always* running (which in a way it is, as
     # iptables is part of the kernel.)
     hasstatus  => true,

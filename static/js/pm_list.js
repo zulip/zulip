@@ -6,7 +6,7 @@ const pm_conversations = require("./pm_conversations");
 let prior_dom;
 let private_messages_open = false;
 
-// This module manages the "Private Messages" section in the upper
+// This module manages the "Private messages" section in the upper
 // left corner of the app.  This was split out from stream_list.js.
 
 function get_filter_li() {

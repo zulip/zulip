@@ -60,7 +60,7 @@ class ThumbnailTest(ZulipTestCase):
         expected_part_url = get_file_path_urlpart(uri, '0x300')
         self.assertIn(expected_part_url, result.url)
 
-        # Test custom emoji urls in Zulip messages.
+        # Test custom emoji URLs in Zulip messages.
         user_profile = self.example_user("hamlet")
         image_file = get_test_image_file("img.png")
         file_name = "emoji.png"
@@ -77,7 +77,7 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302, result)
         self.assertIn(custom_emoji_url, result.url)
 
-        # Tests the /api/v1/thumbnail api endpoint with standard API auth
+        # Tests the /api/v1/thumbnail API endpoint with standard API auth
         self.logout()
         result = self.api_get(
             hamlet,
@@ -109,7 +109,7 @@ class ThumbnailTest(ZulipTestCase):
             expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
-            # Test api endpoint with standard API authentication.
+            # Test API endpoint with standard API authentication.
             self.logout()
             user_profile = self.example_user("hamlet")
             result = self.api_get(user_profile,
@@ -118,7 +118,7 @@ class ThumbnailTest(ZulipTestCase):
             expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
-            # Test api endpoint with legacy API authentication.
+            # Test API endpoint with legacy API authentication.
             user_profile = self.example_user("hamlet")
             result = self.client_get(f"/thumbnail?url={quoted_url}&size=thumbnail&api_key={get_api_key(user_profile)}")
             self.assertEqual(result.status_code, 302, result)
@@ -186,7 +186,7 @@ class ThumbnailTest(ZulipTestCase):
         expected_part_url = get_file_path_urlpart(uri, '0x300')
         self.assertIn(expected_part_url, result.url)
 
-        # Test with a unicode filename.
+        # Test with a Unicode filename.
         fp = StringIO("zulip!")
         fp.name = "μένει.jpg"
 
@@ -221,7 +221,7 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302, result)
         self.assertIn(custom_emoji_url, result.url)
 
-        # Tests the /api/v1/thumbnail api endpoint with HTTP basic auth.
+        # Tests the /api/v1/thumbnail API endpoint with HTTP basic auth.
         self.logout()
         user_profile = self.example_user("hamlet")
         result = self.api_get(
@@ -231,7 +231,7 @@ class ThumbnailTest(ZulipTestCase):
         expected_part_url = get_file_path_urlpart(uri)
         self.assertIn(expected_part_url, result.url)
 
-        # Tests the /api/v1/thumbnail api endpoint with ?api_key
+        # Tests the /api/v1/thumbnail API endpoint with ?api_key
         # auth.
         user_profile = self.example_user("hamlet")
         result = self.client_get(

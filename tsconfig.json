@@ -6,7 +6,7 @@
         },
         "types": [],
 
-        /* Typescript 3.4 added the --incremental flag but its API is not
+        /* TypeScript 3.4 added the --incremental flag but its API is not
          * currently public so ts-loader cannot use it yet.
          * Tracking issue: https://github.com/microsoft/TypeScript/issues/29978
          */

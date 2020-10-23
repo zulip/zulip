@@ -184,8 +184,8 @@ class AlertWordTests(ZulipTestCase):
         self.assertTrue(self.message_does_alert(user, "Case of ONE, won't stop me"))
 
         # We don't cause alerts for matches in URLs.
-        self.assertFalse(self.message_does_alert(user, "Don't alert on http://t.co/one/ urls"))
-        self.assertFalse(self.message_does_alert(user, "Don't alert on http://t.co/one urls"))
+        self.assertFalse(self.message_does_alert(user, "Don't alert on http://t.co/one/ URLs"))
+        self.assertFalse(self.message_does_alert(user, "Don't alert on http://t.co/one URLs"))
 
     def test_update_alert_words(self) -> None:
         user = self.get_user()

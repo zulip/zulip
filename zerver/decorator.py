@@ -66,7 +66,7 @@ def cachify(method: FuncT) -> FuncT:
 
 def update_user_activity(request: HttpRequest, user_profile: UserProfile,
                          query: Optional[str]) -> None:
-    # update_active_status also pushes to rabbitmq, and it seems
+    # update_active_status also pushes to RabbitMQ, and it seems
     # redundant to log that here as well.
     if request.META["PATH_INFO"] == '/json/users/me/presence':
         return
@@ -350,7 +350,7 @@ def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optio
                 return view_func(request, *args, **kwargs)
             path = request.build_absolute_uri()
             resolved_login_url = resolve_url(login_url or settings.LOGIN_URL)
-            # If the login url is the same scheme and net location then just
+            # If the login URL is the same scheme and net location then just
             # use the path as the "next" url.
             login_scheme, login_netloc = urllib.parse.urlparse(resolved_login_url)[:2]
             current_scheme, current_netloc = urllib.parse.urlparse(path)[:2]
@@ -504,7 +504,7 @@ def authenticated_uploads_api_view(
         return _wrapped_func_arguments
     return _wrapped_view_func
 
-# A more REST-y authentication decorator, using, in particular, HTTP Basic
+# A more REST-y authentication decorator, using, in particular, HTTP basic
 # authentication.
 #
 # If webhook_client_name is specific, the request is a webhook view

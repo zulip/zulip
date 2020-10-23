@@ -242,7 +242,7 @@ the areas mentioned above are not your main strength.
 
 As a data point, in Summer 2017, we had 4 students working on the
 React Native mobile app (1 focused primarily on visual design), 1 on
-the Electron Desktop app, 2 on bots/integrations, 1 on webapp visual
+the Electron desktop app, 2 on bots/integrations, 1 on webapp visual
 design, 2 on our development tooling and automated testing
 infrastructure, and the remaining 4 on various other parts of the
 backend and core webapp.
@@ -348,7 +348,7 @@ CSS](https://github.com/zulip/zulip/).
   (likely part 1) is
   [here](../subsystems/custom-apps.md).
   **Skills recommended**: Python and JavaScript/CSS, plus devops
-  skills (Linux deployment, Docker, puppet etc.) are all useful here.
+  skills (Linux deployment, Docker, Puppet etc.) are all useful here.
   Experience writing tools using various popular APIs is helpful for
   being able to make good choices.  Experts: Steve Howell.
 
@@ -454,7 +454,7 @@ Expert: Tommy Ip, Tim Abbott.
   adding [mypy](../testing/mypy.md) stubs
   for Django in mypy to make our type checking more powerful.  Read
   [our mypy blog post](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/)
-  for details on how mypy works and is integrated into zulip.  This
+  for details on how mypy works and is integrated into Zulip.  This
   specific project is ideal for a strong contributor interested in
   type systems.
 

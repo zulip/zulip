@@ -1,7 +1,7 @@
 # Important Git terms
 
 When you install Git, it adds a manual entry for `gitglossary`. You can view
-this glossary by running `man gitglossary`. Below we've included the git terms
+this glossary by running `man gitglossary`. Below we've included the Git terms
 you'll encounter most often along with their definitions from *gitglossary*.
 
 ## branch

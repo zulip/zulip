@@ -8,7 +8,7 @@ from zerver.worker.queue_processors import BatchNoopWorker, NoopWorker, QueuePro
 
 
 class Command(BaseCommand):
-    help = """Times the overhead of enqueuing and dequeuing messages from rabbitmq."""
+    help = """Times the overhead of enqueuing and dequeuing messages from RabbitMQ."""
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
@@ -22,7 +22,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--prefetch",
-            help="Limits the prefetch size; rabbitmq defaults to unbounded (0)",
+            help="Limits the prefetch size; RabbitMQ defaults to unbounded (0)",
             default=0,
             type=int,
         )

@@ -598,7 +598,7 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
     ## CountStat declarations ##
 
     count_stats_ = [
-        # Messages Sent stats
+        # Messages sent stats
         # Stats that count the number of messages sent in various ways.
         # These are also the set of stats that read from the Message table.
 
@@ -617,7 +617,7 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
                   sql_data_collector(StreamCount, count_message_by_stream_query(realm),
                                      (UserProfile, 'is_bot')), CountStat.DAY),
 
-        # Number of Users stats
+        # Number of users stats
         # Stats that count the number of active users in the UserProfile.is_active sense.
 
         # 'active_users_audit:is_bot:day' is the canonical record of which users were
@@ -658,7 +658,7 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
         LoggingCountStat('messages_read::hour', UserCount, CountStat.HOUR),
         LoggingCountStat('messages_read_interactions::hour', UserCount, CountStat.HOUR),
 
-        # User Activity stats
+        # User activity stats
         # Stats that measure user activity in the UserActivityInterval sense.
 
         CountStat('1day_actives::day',

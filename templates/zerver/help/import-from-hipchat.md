@@ -37,7 +37,7 @@ admin console.
 1. Upgrade to the latest version to ensure you have the latest updates to
    the HipChat export dashboard.
 
-1. Log in at the domain name configured for your Hipchat Server.
+1. Log in at the domain name configured for your HipChat Server.
 
 1. Click on **Server Admin > Export**.
 
@@ -51,7 +51,7 @@ Once the export has completed, you will receive an **email** with a link to
 download the file.
 
 !!! tip ""
-    If you are not on the latest version of Hipchat Server / Data Center,
+    If you are not on the latest version of HipChat Server / Data Center,
     you can do a command line export with `hipchat export --export`.  See
     HipChat's [command line export docs][cli-export] for more information.
 

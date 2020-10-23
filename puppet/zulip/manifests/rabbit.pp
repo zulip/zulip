@@ -3,7 +3,7 @@ class zulip::rabbit {
     'debian' => 'erlang-base',
     'redhat' => 'erlang',
   }
-  $rabbit_packages = [# Needed to run rabbitmq
+  $rabbit_packages = [# Needed to run RabbitMQ
                       $erlang,
                       'rabbitmq-server',
                       ]

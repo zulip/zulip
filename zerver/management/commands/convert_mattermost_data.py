@@ -56,7 +56,7 @@ class Command(BaseCommand):
             raise CommandError(f"Directory not found: '{data_dir}'")
         data_dir = os.path.realpath(data_dir)
 
-        print("Converting Data ...")
+        print("Converting data ...")
         do_convert_data(
             mattermost_data_dir=data_dir,
             output_dir=output_dir,

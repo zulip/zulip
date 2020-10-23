@@ -17,10 +17,10 @@ prevent common coding errors.
 We borrow some open source tools for much of our linting, and the links
 below will direct you to the official documentation for these projects.
 
-- [eslint](https://eslint.org)
+- [ESLint](https://eslint.org)
 - [mypy](http://mypy-lang.org/)
 - [Prettier](https://prettier.io/)
-- [puppet](https://puppet.com/) (puppet provides its own mechanism for
+- [Puppet](https://puppet.com/) (puppet provides its own mechanism for
   validating manifests)
 - [pyflakes](https://pypi.python.org/pypi/pyflakes)
 - [stylelint](https://github.com/stylelint/stylelint)
@@ -100,11 +100,11 @@ Most of our lint checks get performed by `./tools/lint`.  These include the
 following checks:
 
 - Check Python code with pyflakes.
-- Check JavaScript and TypeScript code with eslint.
+- Check JavaScript and TypeScript code with ESLint.
 - Check CSS, JavaScript, TypeScript, and YAML formatting with Prettier.
 - Check Python code for custom Zulip rules.
 - Check non-Python code for custom Zulip rules.
-- Check puppet manifests with the puppet validator.
+- Check Puppet manifests with the Puppet validator.
 - Check HTML templates for matching tags and indentations.
 - Check CSS for parsability and formatting.
 - Check JavaScript code for addClass calls.
@@ -136,7 +136,7 @@ types of checks mostly lives [here](https://github.com/zulip/zulip/blob/master/t
 
 You can use the `-h` option for `lint` to see its usage.  One particular
 flag to take note of is the `--modified` flag, which enables you to only run
-lint checks against files that are modified in your git repo.  Most of the
+lint checks against files that are modified in your Git repo.  Most of the
 "sub-linters" respect this flag, but some will continue to process all the files.
 Generally, a good workflow is to run with `--modified` when you are iterating on
 the code, and then run without that option right before committing new code.
@@ -190,8 +190,8 @@ We check our JavaScript code in a few different ways:
 #### Puppet manifests
 
 We use Puppet as our tool to manage configuration files, using
-puppet "manifests."  To lint puppet manifests, we use the "parser validate"
-option of puppet.
+Puppet "manifests."  To lint Puppet manifests, we use the "parser validate"
+option of Puppet.
 
 #### HTML templates
 

@@ -1,4 +1,4 @@
-name: Zulip Production Suite
+name: Zulip production suite
 
 on:
   push:
@@ -30,7 +30,7 @@ defaults:
 
 jobs:
   production_build:
-    name: Bionic Production Build
+    name: Bionic production build
     runs-on: ubuntu-latest
 
     # This docker image was created by a generated Dockerfile at:
@@ -104,12 +104,12 @@ jobs:
       matrix:
         include:
           - docker_image: mepriyank/actions:bionic
-            name: Bionic Production Install
+            name: Bionic production install
             is_bionic: true
             os: bionic
 
           - docker_image: mepriyank/actions:focal
-            name: Focal Production Install
+            name: Focal production install
             is_focal: true
             os: focal
 

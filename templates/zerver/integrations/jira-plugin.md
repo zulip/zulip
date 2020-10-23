@@ -9,7 +9,7 @@ versions of JIRA.*
 
 {!download-python-bindings.md!}
 
-#### Plugin Installation
+#### Plugin installation
 
 The JIRA integration plugin requires two JIRA plugins. Please install
 the following plugins using the **Universal Plugin Manager** in your
@@ -21,7 +21,7 @@ JIRA installation:
 [script-runner]: https://marketplace.atlassian.com/plugins/com.onresolve.jira.groovy.groovyrunner
 [ssl-plugin]: https://marketplace.atlassian.com/plugins/com.atlassian.jira.plugin.jirasslplugin
 
-#### SSL Setup
+#### SSL setup
 
 As Zulip is using a StartCOM SSL certificate that is not recognized by
 default in the Java installation shipped with JIRA, you will need to
@@ -34,7 +34,7 @@ tell JIRA about the certificate.
    instructions and restart JIRA for it to recognize the proper
    certificates.
 
-#### Zulip Integration
+#### Zulip integration
 
 1. Copy the folder `integrations/jira/org/` (from the tarball you
    downloaded above) to your JIRA `classes` folder.  For self-contained

@@ -1,6 +1,6 @@
-# Outgoing Webhooks
+# Outgoing webhooks
 
-Outgoing Webhooks allow you to build or set up Zulip integrations
+Outgoing webhooks allow you to build or set up Zulip integrations
 which are notified when certain types of messages are sent in
 Zulip. When one of those events is triggered, we'll send a HTTP POST
 payload to the webhook's configured URL.  Webhooks can be used to

@@ -8,10 +8,10 @@
 # Requires python-digitalocean library:
 # https://github.com/koalalorenzo/python-digitalocean
 #
-# Also requires DigitalOcean team membership for Zulip and api token:
+# Also requires DigitalOcean team membership for Zulip and API token:
 # https://cloud.digitalocean.com/settings/api/tokens
 #
-# Copy conf.ini-template to conf.ini and populate with your api token.
+# Copy conf.ini-template to conf.ini and populate with your API token.
 #
 # usage: python3 create.py <username>
 import argparse
@@ -28,7 +28,7 @@ import digitalocean
 
 # initiation argument parser
 parser = argparse.ArgumentParser(description='Create a Zulip devopment VM DigitalOcean droplet.')
-parser.add_argument("username", help="Github username for whom you want to create a Zulip dev droplet")
+parser.add_argument("username", help="GitHub username for whom you want to create a Zulip dev droplet")
 parser.add_argument('--tags', nargs='+', default=[])
 parser.add_argument('-f', '--recreate', action="store_true")
 
@@ -47,7 +47,7 @@ def user_exists(username: str) -> bool:
         return True
     except urllib.error.HTTPError as err:
         print(err)
-        print(f"Does the github user {username} exist?")
+        print(f"Does the GitHub user {username} exist?")
         sys.exit(1)
 
 def get_keys(username: str) -> List[Dict[str, Any]]:
@@ -57,13 +57,13 @@ def get_keys(username: str) -> List[Dict[str, Any]]:
         response = urllib.request.urlopen(apiurl_keys)
         userkeys = json.load(response)
         if not userkeys:
-            print(f"No keys found. Has user {username} added ssh keys to their github account?")
+            print(f"No keys found. Has user {username} added SSH keys to their GitHub account?")
             sys.exit(1)
         print("...public keys found!")
         return userkeys
     except urllib.error.HTTPError as err:
         print(err)
-        print(f"Has user {username} added ssh keys to their github account?")
+        print(f"Has user {username} added SSH keys to their GitHub account?")
         sys.exit(1)
 
 def fork_exists(username: str) -> bool:
@@ -199,7 +199,7 @@ Your remote Zulip dev server has been created!
 - Connect to your server by running
   `ssh zulipdev@{0}.zulipdev.org` on the command line
   (Terminal for macOS and Linux, Bash for Git on Windows).
-- There is no password; your account is configured to use your ssh keys.
+- There is no password; your account is configured to use your SSH keys.
 - Once you log in, you should see `(zulip-py3-venv) ~$`.
 - To start the dev server, `cd zulip` and then run `./tools/run-dev.py`.
 - While the dev server is running, you can see the Zulip server in your browser at

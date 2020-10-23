@@ -1,4 +1,4 @@
-Get Zulip notifications from AlertManager!
+Get Zulip notifications from Alertmanager!
 
 1. {!create-stream.md!}
 
@@ -10,12 +10,12 @@ Get Zulip notifications from AlertManager!
 
         {{ api_url }}{{ integration_url }}?api_key=abcdefgh&stream=stream%20name&name=host&desc=alertname
 
-1. In your AlertManager config, set up a new webhook receiver, like so:
+1. In your Alertmanager config, set up a new webhook receiver, like so:
 
 ```
 - name: ops-zulip
   webhook_configs:
-    - url: "<the url constructed above>"
+    - url: "<the URL constructed above>"
 ```
 
 {!congrats.md!}

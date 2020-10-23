@@ -99,7 +99,7 @@ There are a few ways to see your translations in the Zulip UI:
   out the language the user requests in a browser using the following
   prioritization (mostly copied from the Django docs):
 
-  1. It looks for the language code as a url prefix (e.g. `/de/login/`).
+  1. It looks for the language code as a URL prefix (e.g. `/de/login/`).
   2. It looks for the `LANGUAGE_SESSION_KEY` key in the current user's
      session (the Zulip language UI option ends up setting this).
   3. It looks for the cookie named 'django_language'. You can set a

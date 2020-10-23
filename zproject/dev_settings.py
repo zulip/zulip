@@ -167,7 +167,7 @@ SEARCH_PILLS_ENABLED = bool(os.getenv('SEARCH_PILLS_ENABLED', False))
 BILLING_ENABLED = True
 LANDING_PAGE_NAVBAR_MESSAGE = None
 
-# Test Custom TOS template rendering
+# Test custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'
 
 # Our run-dev.py proxy uses X-Forwarded-Port to communicate to Django

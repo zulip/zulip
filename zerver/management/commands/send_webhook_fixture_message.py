@@ -36,7 +36,7 @@ approach shown above.
                                  'into Zulip')
 
         parser.add_argument('-u', '--url',
-                            help='The url on your Zulip server that you want '
+                            help='The URL on your Zulip server that you want '
                                  'to post the fixture to')
 
         parser.add_argument('-H', '--custom-headers',

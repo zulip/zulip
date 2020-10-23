@@ -31,7 +31,7 @@ records in DNS.
 
 ## Local delivery setup
 
-Zulip's puppet configuration provides everything needed to run this
+Zulip's Puppet configuration provides everything needed to run this
 integration; you just need to enable and configure it as follows.
 
 The main decision you need to make is what email domain you want to

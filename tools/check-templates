@@ -108,7 +108,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         # indentation errors are often harmless, even stylistically
         # harmless, but they tend to be in files that might be old
         # and might eventually require more scrutiny for things like
-        # localization.  See github #1236.
+        # localization.  See GitHub #1236.
         bad_files = [
             # These use various whitespace-dependent formatting that
             # prevent cleaning them.

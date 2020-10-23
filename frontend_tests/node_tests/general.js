@@ -369,7 +369,7 @@ run_test("update_user_event", (override) => {
    that happen during an event.  This concept is called "mocking",
    and you can find libraries to help do mocking.  Here we will
    just build our own lightweight mocking system, which is almost
-   trivially easy to do in a language like Javascript.
+   trivially easy to do in a language like JavaScript.
 
 */
 

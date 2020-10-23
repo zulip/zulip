@@ -49,7 +49,7 @@ def delete_icon_backend(request: HttpRequest, user_profile: UserProfile) -> Http
 def get_icon_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     url = realm_icon_url(user_profile.realm)
 
-    # We can rely on the url already having query parameters. Because
+    # We can rely on the URL already having query parameters. Because
     # our templates depend on being able to use the ampersand to
     # add query parameters to our url, get_icon_url does '?version=version_number'
     # hacks to prevent us from having to jump through decode/encode hoops.

@@ -46,5 +46,5 @@ def main(args: argparse.Namespace) -> None:
         NODE_MODULES_CACHE_PATH, caches_in_use, "node modules cache", args)
 
 if __name__ == "__main__":
-    args = parse_cache_script_args("This script cleans unused zulip npm caches.")
+    args = parse_cache_script_args("This script cleans unused Zulip npm caches.")
     main(args)

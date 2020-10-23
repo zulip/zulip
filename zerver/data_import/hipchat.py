@@ -107,12 +107,12 @@ def convert_user_data(user_handler: UserHandler,
 
         if not email:
             if role == UserProfile.ROLE_GUEST:
-                # Hipchat guest users don't have emails, so
+                # HipChat guest users don't have emails, so
                 # we just fake them.
                 email = f'guest-{id}@example.com'
                 delivery_email = email
             else:
-                # Hipchat sometimes doesn't export an email for deactivated users.
+                # HipChat sometimes doesn't export an email for deactivated users.
                 assert not is_active
                 email = delivery_email = f"deactivated-{id}@example.com"
 
@@ -151,7 +151,7 @@ def convert_avatar_data(avatar_folder: str,
                         user_id_mapper: IdMapper,
                         realm_id: int) -> List[ZerverFieldsT]:
     '''
-    This code is pretty specific to how Hipchat sends us data.
+    This code is pretty specific to how HipChat sends us data.
     They give us the avatar payloads in base64 in users.json.
 
     We process avatars in our own pass of that data, rather
@@ -507,7 +507,7 @@ def get_hipchat_sender_id(realm_id: int,
     if isinstance(message_dict['sender'], str):
         if slim_mode:
             return None
-        # Some Hipchat instances just give us a person's
+        # Some HipChat instances just give us a person's
         # name in the sender field for NotificationMessage.
         # We turn them into a mirror user.
         mirror_user = user_handler.get_mirror_user(
@@ -539,7 +539,7 @@ def get_hipchat_sender_id(realm_id: int,
         sender_id = mirror_user['id']
         return sender_id
 
-    # HAPPY PATH: Hipchat just gave us an ordinary
+    # HAPPY PATH: HipChat just gave us an ordinary
     # sender_id.
     sender_id = user_id_mapper.get(raw_sender_id)
     return sender_id
@@ -587,7 +587,7 @@ def process_message_file(realm_id: int,
                 # In Stride, user IDs are strings, but in HipChat,
                 # they are integers, and fn_id is always a string.
                 if str(sender_id) != str(fn_id):
-                    # PMs are in multiple places in the Hipchat export,
+                    # PMs are in multiple places in the HipChat export,
                     # and we only use the copy from the sender
                     return None
 
@@ -702,7 +702,7 @@ def process_raw_message_batch(realm_id: int,
         if is_pm_data:
             topic_name = ''
         else:
-            topic_name = 'imported from hipchat'
+            topic_name = 'imported from HipChat'
         user_id = raw_message['sender_id']
 
         # Another side effect:

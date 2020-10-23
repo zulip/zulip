@@ -237,7 +237,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             'subtype': 'custom',
         }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, 'Custom external account must define url pattern')
+        self.assert_json_error(result, 'Custom external account must define URL pattern')
 
         data["field_data"] = orjson.dumps({
             'subtype': 'custom',

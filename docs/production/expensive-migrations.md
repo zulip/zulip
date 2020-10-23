@@ -17,7 +17,7 @@ can run them manually before starting the upgrade:
   /home/zulip/deployments/current`
 2. Run `./manage.py dbshell`.  This will open a shell connected to the
   Postgres database.
-3. In the postgres shell, run the following commands:
+3. In the Postgres shell, run the following commands:
 
         CREATE INDEX CONCURRENTLY
         zerver_usermessage_is_private_message_id

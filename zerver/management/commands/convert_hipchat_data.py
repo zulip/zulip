@@ -27,12 +27,12 @@ from zerver.data_import.hipchat import do_convert_data
 
 
 class Command(BaseCommand):
-    help = """Convert the Hipchat data into Zulip data format."""
+    help = """Convert the HipChat data into Zulip data format."""
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('hipchat_tar', nargs='+',
                             metavar='<hipchat data tarfile>',
-                            help="tar of Hipchat data")
+                            help="tar of HipChat data")
 
         parser.add_argument('--output', dest='output_dir',
                             help='Directory to write exported data to.')
@@ -71,7 +71,7 @@ class Command(BaseCommand):
             if not os.path.exists(path):
                 raise CommandError(f"Tar file not found: '{path}'")
 
-            print("Converting Data ...")
+            print("Converting data ...")
             do_convert_data(
                 input_tar_file=path,
                 output_dir=output_dir,

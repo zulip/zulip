@@ -394,7 +394,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         list_key, set_key, _ = cls.get_keys(entity_key)
         now = time.time()
 
-        # Start redis transaction
+        # Start Redis transaction
         with client.pipeline() as pipe:
             count = 0
             while True:

@@ -38,5 +38,5 @@ class DialogflowHookTests(WebhookTestCase):
             username="aaron",
             user_ip="127.0.0.1",
         )
-        expected_message = "DialogFlow couldn't process your query."
+        expected_message = "Dialogflow couldn't process your query."
         self.send_and_test_private_message("exception", expected_message)

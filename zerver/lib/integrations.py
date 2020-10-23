@@ -271,7 +271,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration(
         'alertmanager',
         ['monitoring'],
-        display_name='Prometheus AlertManager',
+        display_name='Prometheus Alertmanager',
         logo='images/integrations/logos/prometheus.svg',
     ),
     WebhookIntegration('ansibletower', ['deployment'], display_name='Ansible Tower'),

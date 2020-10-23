@@ -124,7 +124,7 @@ def generate_secrets(development: bool = False) -> None:
             if settings.MEMCACHED_LOCATION == "127.0.0.1:11211":
                 add_secret("memcached_password", random_token())
 
-        # Password for authentication to redis.
+        # Password for authentication to Redis.
         if need_secret("redis_password"):
             # We defer importing settings unless we need it, because
             # importing settings is expensive (mostly because of

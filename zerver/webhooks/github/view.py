@@ -330,7 +330,7 @@ def get_page_build_body(helper: Helper) -> str:
         CONTENT_MESSAGE_TEMPLATE.format(message=build['error']['message']),
     )
 
-    return "Github Pages build, triggered by {}, {}.".format(
+    return "GitHub Pages build, triggered by {}, {}.".format(
         payload['build']['pusher']['login'],
         action,
     )
@@ -605,7 +605,7 @@ def api_github_webhook(
         branches: Optional[str]=REQ(default=None),
         user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
     """
-    Github sends the event as an HTTP header.  We have our
+    GitHub sends the event as an HTTP header.  We have our
     own Zulip-specific concept of an event that often maps
     directly to the X_GITHUB_EVENT header's event, but we sometimes
     refine it based on the payload.

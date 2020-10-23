@@ -355,8 +355,8 @@ def idseq(model_class: Any) -> str:
 def allocate_ids(model_class: Any, count: int) -> List[int]:
     """
     Increases the sequence number for a given table by the amount of objects being
-    imported into that table. Hence, this gives a reserved range of ids to import the
-    converted slack objects into the tables.
+    imported into that table. Hence, this gives a reserved range of IDs to import the
+    converted Slack objects into the tables.
     """
     conn = connection.cursor()
     sequence = idseq(model_class)
@@ -1030,7 +1030,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     import_uploads(realm, os.path.join(import_dir, "uploads"), processes)
 
     # We need to have this check as the emoji files are only present in the data
-    # importer from slack
+    # importer from Slack
     # For Zulip export, this doesn't exist
     if os.path.exists(os.path.join(import_dir, "emoji")):
         import_uploads(realm, os.path.join(import_dir, "emoji"), processes, processing_emojis=True)
@@ -1198,7 +1198,7 @@ def import_message_data(realm: Realm,
         re_map_foreign_keys(data, 'zerver_message', 'recipient', related_table="recipient")
         re_map_foreign_keys(data, 'zerver_message', 'sending_client', related_table='client')
         fix_datetime_fields(data, 'zerver_message')
-        # Parser to update message content with the updated attachment urls
+        # Parser to update message content with the updated attachment URLs
         fix_upload_links(data, 'zerver_message')
 
         # We already create mappings for zerver_message ids

@@ -516,7 +516,7 @@ class MarkdownTest(ZulipTestCase):
             converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
 
-        # Any url which is not an external link and doesn't start with
+        # Any URL which is not an external link and doesn't start with
         # /user_uploads/ is not thumbnailed
         msg = '[foobar](/static/images/cute/turtle.png)'
         thumbnail_img = '<div class="message_inline_image"><a href="/static/images/cute/turtle.png" title="foobar"><img src="/static/images/cute/turtle.png"></a></div>'
@@ -603,7 +603,7 @@ class MarkdownTest(ZulipTestCase):
 
     @override_settings(INLINE_IMAGE_PREVIEW=True)
     def test_corrected_image_source(self) -> None:
-        # testing only wikipedia because linx.li urls can be expected to expire
+        # testing only Wikipedia because linx.li URLs can be expected to expire
         content = 'https://en.wikipedia.org/wiki/File:Wright_of_Derby,_The_Orrery.jpg'
         expected = '<div class="message_inline_image"><a href="https://en.wikipedia.org/wiki/Special:FilePath/File:Wright_of_Derby,_The_Orrery.jpg"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FSpecial%3AFilePath%2FFile%3AWright_of_Derby%2C_The_Orrery.jpg&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FSpecial%3AFilePath%2FFile%3AWright_of_Derby%2C_The_Orrery.jpg&amp;size=thumbnail"></a></div>'
 
@@ -721,17 +721,17 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(converted, '<p>Test: <a href="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=thumbnail"></a></div>')
 
     def test_inline_youtube_preview(self) -> None:
-        # Test youtube urls in spoilers
-        msg = """\n```spoiler Check out this Pycon Video\nhttps://www.youtube.com/watch?v=0c46YHS3RY8\n```"""
+        # Test YouTube URLs in spoilers
+        msg = """\n```spoiler Check out this PyCon video\nhttps://www.youtube.com/watch?v=0c46YHS3RY8\n```"""
         converted = markdown_convert_wrapper(msg)
 
-        self.assertEqual(converted, '<div class="spoiler-block"><div class="spoiler-header">\n<p>Check out this Pycon Video</p>\n</div><div class="spoiler-content" aria-hidden="true">\n<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div></div></div>')
+        self.assertEqual(converted, '<div class="spoiler-block"><div class="spoiler-header">\n<p>Check out this PyCon video</p>\n</div><div class="spoiler-content" aria-hidden="true">\n<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div></div></div>')
 
-        # Test youtube urls in normal messages.
-        msg = '[Youtube link](https://www.youtube.com/watch?v=0c46YHS3RY8)'
+        # Test YouTube URLs in normal messages.
+        msg = '[YouTube link](https://www.youtube.com/watch?v=0c46YHS3RY8)'
         converted = markdown_convert_wrapper(msg)
 
-        self.assertEqual(converted, '<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">Youtube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div>')
+        self.assertEqual(converted, '<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">YouTube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div>')
 
         msg = 'https://www.youtube.com/watch?v=0c46YHS3RY8\n\nSample text\n\nhttps://www.youtube.com/watch?v=lXFO2ULktEI'
         converted = markdown_convert_wrapper(msg)
@@ -892,7 +892,7 @@ class MarkdownTest(ZulipTestCase):
             make_link('http://twitter.com/wdaher/status/287977969287315460'),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315460', emoji_in_tweet_html)))
 
-        # Test twitter previews in spoiler tags.
+        # Test Twitter previews in spoiler tags.
         msg = '```spoiler secret tweet\nTweet: http://twitter.com/wdaher/status/287977969287315456\n```'
         converted = markdown_convert_wrapper(msg)
 

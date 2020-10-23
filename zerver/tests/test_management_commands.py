@@ -421,7 +421,7 @@ class TestConvertMattermostData(ZulipTestCase):
             output_dir=os.path.realpath(output_dir),
         )
         self.assertEqual(mock_print.mock_calls, [
-            call('Converting Data ...')
+            call('Converting data ...')
         ])
 
 @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")

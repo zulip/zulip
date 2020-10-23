@@ -44,7 +44,7 @@ class SemaphoreHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
-    # Tests For Semaphore 2.0
+    # Tests for Semaphore 2.0
 
     def test_semaphore2_push(self) -> None:
         expected_topic = "notifications/rw/webhook_impl"  # repo/branch

@@ -173,7 +173,7 @@ RATE_LIMITING_AUTHENTICATE = True
 SEND_LOGIN_EMAILS = True
 EMBEDDED_BOTS_ENABLED = False
 
-# Two Factor Authentication is not yet implementation-complete
+# Two factor authentication is not yet implementation-complete
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 
 # This is used to send all hotspots for convenient manual testing
@@ -252,7 +252,7 @@ REALM_HOSTS: Dict[str, str] = {}
 # mean that a different hostname must be used for mobile access.
 REALM_MOBILE_REMAP_URIS: Dict[str, str] = {}
 
-# Whether the server is using the Pgroonga full-text search
+# Whether the server is using the PGroonga full-text search
 # backend.  Plan is to turn this on for everyone after further
 # testing.
 USING_PGROONGA = False

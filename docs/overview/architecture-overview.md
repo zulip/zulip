@@ -135,7 +135,7 @@ from outside.
     and the production build process (`tools/build-release-tarball`)
     compiles, minifies, and installs the static assets into the
     `prod-static/` tree form. In development, files are served directly
-    from `/static/` in the git repository.
+    from `/static/` in the Git repository.
 -   Requests to `/json/events` and `/api/v1/events`, i.e. the
     real-time push system, are sent to the Tornado server.
 -   Requests to all other paths are sent to the Django app running via
@@ -184,25 +184,25 @@ persistence:
     # Zulip-specific configuration: disable saving to disk.
     save ""
 
-People often wonder if we could replace memcached with redis (or
-replace RabbitMQ with redis, with some loss of functionality).
+People often wonder if we could replace memcached with Redis (or
+replace RabbitMQ with Redis, with some loss of functionality).
 
 The answer is likely yes, but it wouldn't improve Zulip.
 Operationally, our current setup is likely easier to develop and run
-in production than a pure redis system would be.  Meanwhile, the
-perceived benefit for using redis is usually to reduce memory
+in production than a pure Redis system would be.  Meanwhile, the
+perceived benefit for using Redis is usually to reduce memory
 consumption by running fewer services, and no such benefit would
 materialize:
 
 * Our cache uses significant memory, but that memory usage would be
-  essentially the same with redis as it is with memcached.
+  essentially the same with Redis as it is with memcached.
 * All of these services have low minimum memory requirements, and in
-  fact our applications for redis and RabbitMQ do not use significant
+  fact our applications for Redis and RabbitMQ do not use significant
   memory even at scale.
-* We would likely need to run multiple redis services (with different
+* We would likely need to run multiple Redis services (with different
   configurations) in order to ensure the pure LRU use case (memcached)
   doesn't push out data that we want to persist until expiry
-  (redis-based rate limiting) or until consumed (RabbitMQ-based
+  (Redis-based rate limiting) or until consumed (RabbitMQ-based
   queuing of deferred work).
 
 ### RabbitMQ
@@ -237,12 +237,12 @@ with the operating system.
 In production, Postgres is installed with a default configuration. The
 directory that would contain configuration files
 (`puppet/zulip/files/postgresql`) has only a utility script and a custom
-list of stopwords used by a Postgresql extension.
+list of stopwords used by a PostgreSQL extension.
 
-In a development environment, configuration of that postgresql
+In a development environment, configuration of that PostgreSQL
 extension is handled by `tools/postgres-init-dev-db` (invoked by
 `tools/provision`).  That file also manages setting up the
-development postgresql user.
+development PostgreSQL user.
 
 `tools/provision` also invokes `tools/rebuild-dev-database`
 to create the actual database with its schema.
@@ -287,11 +287,11 @@ self-explanatory names.
     topic]", or "Link to this conversation". To avoid visual clutter,
     the chevron only appears in the web UI upon hover.
 
-* **ellipsis**: A small vertical three dot icon(technically called
+* **ellipsis**: A small vertical three dot icon (technically called
     as ellipsis-v), present in sidebars as a menu icon.
-    It offers contextual options for Global Filters(All messages
-    and Starred messages), Stream Filters and Topics in left
-    sidebar and User in right sidebar. To avoid visual clutter
+    It offers contextual options for global filters (All messages
+    and Starred messages), stream filters and topics in left
+    sidebar and users in right sidebar. To avoid visual clutter
     ellipsis only appears in the web UI upon hover.
 
 * **huddle**: What the codebase calls a "group private message".

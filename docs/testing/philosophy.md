@@ -66,9 +66,9 @@ these goals, but a few techniques are worth highlighting:
   outgoing HTTP requests are required to test something, we mock the
   responses with libraries like `responses`.
 * We carefully avoid the potential for contamination of data inside
-  services like postgres, redis, and memcached from different tests.
+  services like Postgres, Redis, and memcached from different tests.
     * Every test case prepends a unique random prefix to all keys it
-      uses when accessing redis and memcached.
+      uses when accessing Redis and memcached.
     * Every test case runs inside a database transaction, which is
       aborted after the test completes.  Each test process interacts
       only with a fresh copy of a special template database used for
