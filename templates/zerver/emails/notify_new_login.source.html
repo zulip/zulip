@@ -13,7 +13,7 @@
 <p>
     <ul>
         <li>
-            {% trans %}Organization: <a href="{{ realm_uri }}">{{ realm_uri }}</a>{% endtrans %}
+            {% trans organization_link=macros.link_tag(realm_uri) %}Organization: {{ organization_link }}{% endtrans %}
         </li>
         <li>
             {% trans user_email=macros.email_tag(user_email) %}Email: {{ user_email }}{% endtrans %}
