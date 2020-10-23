@@ -87,7 +87,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
 
     def test_check_send_webhook_fixture_message_for_success_with_headers_and_non_json_fixtures(self) -> None:
         bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
-        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=Wordpress Notifications"
+        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=WordPress Notifications"
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
         with open("zerver/webhooks/wordpress/fixtures/publish_post_no_data_provided.txt") as f:
             body = f.read()
@@ -106,7 +106,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         expected_message = "New post published:\n* [New WordPress Post](WordPress Post URL)"
         self.assertEqual(latest_msg.content, expected_message)
         self.assertEqual(Stream.objects.get(id=latest_msg.recipient.type_id).name, "Denmark")
-        self.assertEqual(latest_msg.topic_name(), "Wordpress Notifications")
+        self.assertEqual(latest_msg.topic_name(), "WordPress Notifications")
 
     def test_get_fixtures_for_nonexistant_integration(self) -> None:
         target_url = "/devtools/integrations/somerandomnonexistantintegration/fixtures"
@@ -182,7 +182,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
 
     def test_send_all_webhook_fixture_messages_for_success_with_non_json_fixtures(self) -> None:
         bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
-        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=Wordpress Bulk Notifications"
+        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=WordPress Bulk Notifications"
         target_url = "/devtools/integrations/send_all_webhook_fixture_messages"
 
         data = {

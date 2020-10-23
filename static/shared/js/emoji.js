@@ -90,13 +90,13 @@ export function get_emoji_codepoint(emoji_name) {
 
 export function get_realm_emoji_url(emoji_name) {
     // If the emoji name is a realm emoji, returns the URL for it.
-    // Returns undefined for unicode emoji.
+    // Returns undefined for Unicode emoji.
     // get_realm_emoji_url('shrug') === '/user_avatars/2/emoji/images/31.png'
 
     const data = active_realm_emojis.get(emoji_name);
 
     if (!data) {
-        // Not all emojis have urls, plus the user
+        // Not all emojis have URLs, plus the user
         // may have hand-typed an invalid emoji.
         // The caller can check the result for falsiness
         // and then try alternate ways of parsing the

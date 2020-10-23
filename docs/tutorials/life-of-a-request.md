@@ -16,7 +16,7 @@ application will serve the request (or deciding to serve the request
 itself for static content).
 
 In development, `tools/run-dev.py` fills the role of nginx. Static files
-are in your git checkout under `static`, and are served unminified.
+are in your Git checkout under `static`, and are served unminified.
 
 ## Static files are [served directly][served-directly] by Nginx
 
@@ -167,7 +167,7 @@ its url patterns (see
 [zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py))
 so that the action called is `rest_dispatch`. This method will
 authenticate the user, either through a session token from a cookie,
-or from an `email:api-key` string given via HTTP Basic Auth for API
+or from an `email:api-key` string given via HTTP basic auth for API
 clients.
 
 It will then look up what HTTP verb was used (GET, POST, etc) to make

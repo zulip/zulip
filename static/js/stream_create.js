@@ -350,7 +350,7 @@ exports.create_handlers_for_users = function (container) {
         e.preventDefault();
     });
 
-    // Search People or Streams
+    // Search people or streams
     container.on("input", ".add-user-list-filter", (e) => {
         const user_list = $(".add-user-list-filter");
         if (user_list === 0) {

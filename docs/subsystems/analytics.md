@@ -10,7 +10,7 @@ designed around the following goals:
 - Efficient to query so that we can display data in-app (e.g. on the streams
   page) with minimum impact on the overall performance of those pages.
 - Storage size smaller than the size of the main Message/UserMessage
-  database tables, so that we can store the data in the main postgres
+  database tables, so that we can store the data in the main Postgres
   database rather than using a specialized database platform.
 
 There are a few important things you need to understand in order to
@@ -64,7 +64,7 @@ summed to rows in InstallationCount with totals for pairs of (end_time,
 client).
 
 Note: In most cases, we do not store rows with value 0. See
-[Performance Strategy](#performance-strategy) below.
+[Performance strategy](#performance-strategy) below.
 
 ## CountStats
 

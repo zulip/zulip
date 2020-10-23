@@ -103,7 +103,7 @@ on specific versions of these packages wherever possible.
 
 The exact lists of `apt` packages needed by Zulip are maintained in a
 few places:
-* For production, in our puppet configuration, `puppet/zulip/`, using
+* For production, in our Puppet configuration, `puppet/zulip/`, using
   the `Package` and `SafePackage` directives.
 * For development, in `SYSTEM_DEPENDENCIES` in `tools/lib/provision.py`.
 * The packages needed to build a Zulip virtualenv, in
@@ -113,7 +113,7 @@ few places:
   install other dependencies, and (2) because that list is shared
   between development and production.
 
-We also rely on the `pgroonga` PPA for the `pgroonga` postgres
+We also rely on the PGroonga PPA for the PGroonga Postgres
 extension, used by our [full-text search](full-text-search.md).
 
 ## Python packages

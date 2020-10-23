@@ -2,7 +2,7 @@
 
 """Nagios plugin to check the difference between the primary and
 replica Postgres servers' xlog location.  Requires that the user this
-connects to postgres as has been granted the `pg_monitor` role.
+connects to Postgres as has been granted the `pg_monitor` role.
 
 """
 import re

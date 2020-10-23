@@ -82,7 +82,7 @@ if settings.ZILENCER_ENABLED:
 class UploadSerializeMixin(SerializeMixin):
     """
     We cannot use override_settings to change upload directory because
-    because settings.LOCAL_UPLOADS_DIR is used in url pattern and urls
+    because settings.LOCAL_UPLOADS_DIR is used in URL pattern and URLs
     are compiled only once. Otherwise using a different upload directory
     for conflicting test cases would have provided better performance
     while providing the required isolation.
@@ -117,7 +117,7 @@ class ZulipTestCase(TestCase):
         flush_per_request_caches()
         translation.activate(settings.LANGUAGE_CODE)
 
-        # Clean up after using fakeldap in ldap tests:
+        # Clean up after using fakeldap in LDAP tests:
         if hasattr(self, 'mock_ldap') and hasattr(self, 'mock_initialize'):
             if self.mock_ldap is not None:
                 self.mock_ldap.reset()
@@ -192,8 +192,8 @@ Output:
 
     def extract_api_suffix_url(self, url: str) -> Tuple[str, Dict[str, Any]]:
         """
-        Function that extracts the url after `/api/v1` or `/json` and also
-        returns the query data in the url, if there is any.
+        Function that extracts the URL after `/api/v1` or `/json` and also
+        returns the query data in the URL, if there is any.
         """
         url_split = url.split('?')
         data: Dict[str, Any] = {}
@@ -229,7 +229,7 @@ Output:
             json_url = True
         url, query_data = self.extract_api_suffix_url(url)
         if len(query_data) != 0:
-            # In some cases the query parameters are defined in the url itself. In such cases
+            # In some cases the query parameters are defined in the URL itself. In such cases
             # The `data` argument of our function is not used. Hence get `data` argument
             # from url.
             data = query_data
@@ -1016,13 +1016,13 @@ Output:
 
         for dn, attrs in directory.items():
             if 'uid' in attrs:
-                # Generate a password for the ldap account:
+                # Generate a password for the LDAP account:
                 attrs['userPassword'] = [self.ldap_password(attrs['uid'][0])]
 
             # Load binary attributes. If in "directory", an attribute as its value
             # has a string starting with "file:", the rest of the string is assumed
             # to be a path to the file from which binary data should be loaded,
-            # as the actual value of the attribute in ldap.
+            # as the actual value of the attribute in LDAP.
             for attr, value in attrs.items():
                 if isinstance(value, str) and value.startswith("file:"):
                     with open(value[5:], 'rb') as f:
@@ -1054,9 +1054,9 @@ Output:
 
     def ldap_username(self, username: str) -> str:
         """
-        Maps zulip username to the name of the corresponding ldap user
+        Maps Zulip username to the name of the corresponding LDAP user
         in our test directory at zerver/tests/fixtures/ldap/directory.json,
-        if the ldap user exists.
+        if the LDAP user exists.
         """
         return self.example_user_ldap_username_map[username]
 
@@ -1068,7 +1068,7 @@ class WebhookTestCase(ZulipTestCase):
     Common for all webhooks tests
 
     Override below class attributes and run send_and_test_message
-    If you create your url in uncommon way you can override build_webhook_url method
+    If you create your URL in uncommon way you can override build_webhook_url method
     In case that you need modify body or create it without using fixture you can also override get_body method
     """
     STREAM_NAME: Optional[str] = None

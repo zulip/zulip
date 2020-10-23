@@ -292,7 +292,7 @@ paths:
                                         avatar_url:
                                           type: string
                                           description: |
-                                            The url of the new avatar URL for the user.
+                                            The URL of the new avatar for the user.
                                         avatar_source:
                                           type: string
                                           description: |
@@ -2311,7 +2311,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the
-                                set of configured [Linkifiers](/help/add-a-custom-linkification-filter)
+                                set of configured [linkifiers](/help/add-a-custom-linkification-filter)
                                 for the organization has changed.
 
                                 Processing this event is important to doing Markdown local echo
@@ -2335,7 +2335,7 @@ paths:
                                     An array of tuples, where each tuple describes a linkifier.
                                     The first element of the tuple is a
                                     string regex pattern which represents the pattern that should
-                                    be linkified on matching. The second element is the url with which the
+                                    be linkified on matching. The second element is the URL with which the
                                     pattern matching string should be linkified with and the third element
                                     is the ID of the realm filter.
                               example:
@@ -3076,7 +3076,7 @@ paths:
         supported by Zulip's powerful full-text search backend.
 
         When a narrow is not specified, it can be used to fetch a user's
-        message history (We recommend paginating to 1000 messages at a time).
+        message history. (We recommend paginating to 1000 messages at a time.)
 
         In either case, you specify an `anchor` message (or ask the server to
         calculate the first unread message for you and use that as the
@@ -4675,7 +4675,7 @@ paths:
                 type: array
                 items:
                   type: object
-              example: [{"name": "Verona", "description": "Italian City"}]
+              example: [{"name": "Verona", "description": "Italian city"}]
           required: true
         - $ref: "#/components/parameters/Principals"
         - name: authorization_errors_fatal
@@ -5416,7 +5416,7 @@ paths:
                                     *`email_notifications`: Whether to trigger an email notification for all
                                     messages sent to the stream.
 
-                                    *`in_home_view`: Whether to mute the stream (Legacy property)
+                                    *`in_home_view`: Whether to mute the stream (legacy property)
 
                                     *`wildcard_mentions_notify`: whether wildcard mentions trigger notifications
                                     as though they were personal mentions in this stream.
@@ -6040,11 +6040,11 @@ paths:
                           Present if `realm_filters` is present in `fetch_event_types`.
 
                           An array of tuples (fixed-length arrays) where each tuple describes
-                          a single realm filter ([Linkifier](/help/add-a-custom-linkification-filter).
+                          a single realm filter ([linkifier](/help/add-a-custom-linkification-filter).
                           The first element of the tuple is a string regex pattern which represents
                           the pattern that should be linkified on matching.
 
-                          The second element is the url with which the
+                          The second element is the URL with which the
                           pattern matching string should be linkified with and the third element
                           is the id of the realm filter.
                       realm_user_groups:
@@ -6875,7 +6875,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Members whose accounts have been created at least this many days ago
-                          will be treated as [Full Members](/help/restrict-permissions-of-new-members)
+                          will be treated as [full members](/help/restrict-permissions-of-new-members)
                           for the purpose of settings that restrict access to new members.
                       realm_digest_weekday:
                         type: integer
@@ -6971,7 +6971,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The url of the organization's [profile icon](/help/create-your-organization-profile).
+                          The URL of the organization's [profile icon](/help/create-your-organization-profile).
                       realm_icon_source:
                         type: string
                         description: |
@@ -6995,7 +6995,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The url of the organization's wide logo configured in the
+                          The URL of the organization's wide logo configured in the
                           [organization profile](/help/create-your-organization-profile).
                       realm_logo_source:
                         type: string
@@ -7014,7 +7014,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The url of the organization's night theme wide-format logo configured in the
+                          The URL of the organization's night theme wide-format logo configured in the
                           [organization profile](/help/create-your-organization-profile).
                       realm_night_logo_source:
                         type: string
@@ -7195,7 +7195,7 @@ paths:
                             url_pattern:
                               type: string
                               description: |
-                                The regex pattern of  the url of a profile page
+                                The regex pattern of the URL of a profile page
                                 on the external site.
                       jitsi_server_url:
                         type: string
@@ -7348,7 +7348,7 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          The url of the avatar URL for the current user at 100x100
+                          The URL of the avatar for the current user at 100x100
                           resolution.  See also `avatar_url_medium`.
                       can_create_streams:
                         type: boolean
@@ -7517,7 +7517,7 @@ paths:
                             type: boolean
                           dev:
                             description: |
-                              Whether the user can authenticate using development api key.
+                              Whether the user can authenticate using development API key.
                             type: boolean
                           email:
                             description: |
@@ -7525,35 +7525,35 @@ paths:
                             type: boolean
                           ldap:
                             description: |
-                              Whether the user can authenticate using ldap.
+                              Whether the user can authenticate using LDAP.
                             type: boolean
                           remoteuser:
                             description: |
-                              Whether the user can authenticate using remoteuser.
+                              Whether the user can authenticate using REMOTE_USER.
                             type: boolean
                           github:
                             description: |
-                              Whether the user can authenticate using their github account.
+                              Whether the user can authenticate using their GitHub account.
                             type: boolean
                           azuread:
                             description: |
-                              Whether the user can authenticate using their azuread account.
+                              Whether the user can authenticate using their Azure Active Directory account.
                             type: boolean
                           gitlab:
                             description: |
-                              Whether the user can authenticate using their gitlab account.
+                              Whether the user can authenticate using their GitLab account.
                             type: boolean
                           apple:
                             description: |
-                              Whether the user can authenticate using their apple account.
+                              Whether the user can authenticate using their Apple account.
                             type: boolean
                           google:
                             description: |
-                              Whether the user can authenticate using their google account.
+                              Whether the user can authenticate using their Google account.
                             type: boolean
                           saml:
                             description: |
-                              Whether the user can authenticate using saml.
+                              Whether the user can authenticate using SAML.
                             type: boolean
                       external_authentication_methods:
                         type: array
@@ -8249,7 +8249,7 @@ paths:
             The user_ids of the recipients of the message being typed. Typing
             notifications are only supported for private messages. Send a
             JSON-encoded list of user_ids. (Use a list even if there is only one
-            recipient.).
+            recipient.)
 
             **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
             list of email addresses.  Support for the email address-based format was
@@ -8480,7 +8480,7 @@ paths:
                             members:
                               type: array
                               description: |
-                                The integer User IDs of the user group members.
+                                The integer user IDs of the user group members.
                               items:
                                 type: integer
                             name:
@@ -8548,7 +8548,7 @@ paths:
       operationId: zulip_outgoing_webhooks
       tags: ["webhooks"]
       description: |
-        Outgoing Webhooks allows to build or set up Zulip integrations which are
+        Outgoing webhooks allows to build or set up Zulip integrations which are
         notified when certain types of messages are sent in Zulip.
       responses:
         "200":
@@ -8612,7 +8612,7 @@ paths:
                               The content/body of the message rendered in HTML.
                 example:
                   {
-                    "data": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
+                    "data": "@**Outgoing webhook test** Zulip is the world\u2019s most productive group chat!",
                     "trigger": "mention",
                     "token": "xvOzfurIutdRRVLzpXrIIHXJvNfaJLJ0",
                     "message":
@@ -8626,10 +8626,10 @@ paths:
                         "topic_links": [],
                         "sender_full_name": "Iago",
                         "avatar_url": "https://secure.gravatar.com/avatar/1f4f1575bf002ae562fea8fc4b861b09?d=identicon&version=1",
-                        "rendered_content": "<p><span class=\"user-mention\" data-user-id=\"25\">@Outgoing Webhook Test</span> Zulip is the world\u2019s most productive group chat!</p>",
+                        "rendered_content": "<p><span class=\"user-mention\" data-user-id=\"25\">@Outgoing webhook test</span> Zulip is the world\u2019s most productive group chat!</p>",
                         "sender_id": 5,
                         "stream_id": 5,
-                        "content": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
+                        "content": "@**Outgoing webhook test** Zulip is the world\u2019s most productive group chat!",
                         "display_recipient": "Verona",
                         "type": "stream",
                         "id": 112,
@@ -8645,7 +8645,7 @@ paths:
       tags: ["streams"]
       operationId: create_big_blue_button_video_call
       description: |
-        Create a video call url for a Big Blue Button video call.
+        Create a video call URL for a Big Blue Button video call.
         Requires Big Blue Button to be configured on the Zulip server.
       responses:
         "200":
@@ -8661,7 +8661,7 @@ paths:
                       msg: {}
                       url:
                         description: |
-                          The url for the Big Blue Button video call.
+                          The URL for the Big Blue Button video call.
                         type: string
                         example: "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22"
                     example:
@@ -8936,7 +8936,7 @@ components:
                   base_url:
                     type: string
                     description: |
-                      The url the outgoing webhook is configured to post to.
+                      The URL the outgoing webhook is configured to post to.
                   token:
                     type: string
                     description: |
@@ -9160,7 +9160,7 @@ components:
           type: string
           nullable: true
           description: |
-            The url of the export. Null if there's no url.
+            The URL of the export. `null` if there's no URL.
         pending:
           type: boolean
           description: |
@@ -9450,7 +9450,7 @@ components:
             within the namespace of the `reaction_type`.
 
             For example, for `unicode_emoji`, this will be an encoding of the
-            unicode codepoint.
+            Unicode codepoint.
         emoji_name:
           type: string
           description: |
@@ -9460,7 +9460,7 @@ components:
           description: |
             One of the following values:
 
-            * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode
+            * `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
               codepoint).
             * `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
               (`emoji_code` will be its ID).
@@ -10324,7 +10324,7 @@ components:
         from the streams specified in the `subscriptions` parameter. If
         not provided, then the requesting user/bot is subscribed.
 
-        **Changes**: The integer format is new in Zulip 3.0 (Feature level 9).
+        **Changes**: The integer format is new in Zulip 3.0 (feature level 9).
       content:
         application/json:
           schema:
@@ -10342,7 +10342,7 @@ components:
         it should pass this parameter using the value the server provided
         for the existing reaction for specificity.  Supported values:
 
-        * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode codepoint).
+        * `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode codepoint).
         * `realm_emoji`: Custom emoji. (`emoji_code` will be its ID).
         * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
            namespace the `zulip` emoji.

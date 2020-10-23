@@ -72,7 +72,7 @@ Error verifying the success of the API documentation curl example.
 
 File: {file_name}
 Line: {line}
-Curl Command:
+Curl command:
 {curl_command}
 Response:
 {response}

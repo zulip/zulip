@@ -48,7 +48,7 @@ class RateLimitTests(ZulipTestCase):
 
         # Some tests here can be somewhat timing-sensitive in a way
         # that can't be eliminated, e.g. due to testing things that rely
-        # on redis' internal timing mechanism which we can't mock.
+        # on Redis' internal timing mechanism which we can't mock.
         # The first API request when running a suite of tests is slow
         # and can take multiple seconds. This is not a problem when running
         # multiple tests, but if an individual, time-sensitive test from this class

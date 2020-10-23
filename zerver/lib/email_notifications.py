@@ -343,7 +343,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     Send a reminder email to a user if she's missed some PMs by being offline.
 
     The email will have its reply to address set to a limited used email
-    address that will send a zulip message to the correct recipient. This
+    address that will send a Zulip message to the correct recipient. This
     allows the user to respond to missed PMs, huddles, and @-mentions directly
     from the email.
 

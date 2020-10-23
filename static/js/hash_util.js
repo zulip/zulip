@@ -59,12 +59,12 @@ exports.encode_stream_name = function (operand) {
 
 exports.decodeHashComponent = function (str) {
     try {
-        // This fails for URLS containing
+        // This fails for URLs containing
         // foo.foo or foo%foo due to our fault in special handling
         // of such characters when encoding. This can also,
         // fail independent of our fault, so just tell the user
-        // that the url is invalid.
-        // TODO: Show possible valid urls to the user.
+        // that the URL is invalid.
+        // TODO: Show possible valid URLs to the user.
         return decodeURIComponent(str.replace(/\./g, "%"));
     } catch {
         ui_report.error(i18n.t("Invalid URL"), undefined, $("#home-error"), 2000);

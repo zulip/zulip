@@ -543,7 +543,7 @@ exports.setup_page = function (callback) {
     // so it's too risky a change for now.
     //
     // The history behind setting up the page from scratch every
-    // time we go into "Manage Streams" is that we used to have
+    // time we go into "Manage streams" is that we used to have
     // some live-update issues, so being able to re-launch the
     // streams page is kind of a workaround for those bugs, since
     // we will re-populate the widget.

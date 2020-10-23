@@ -205,12 +205,12 @@ class ReactionEmojiTest(ZulipTestCase):
         self.assertEqual(emoji_code, 'zulip')
         self.assertEqual(reaction_type, 'zulip_extra_emoji')
 
-        # Test unicode emoji.
+        # Test Unicode emoji.
         emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'astonished')
         self.assertEqual(emoji_code, '1f632')
         self.assertEqual(reaction_type, 'unicode_emoji')
 
-        # Test override unicode emoji.
+        # Test override Unicode emoji.
         overriding_emoji = RealmEmoji.objects.create(
             name='astonished', realm=realm, file_name='astonished')
         emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'astonished')

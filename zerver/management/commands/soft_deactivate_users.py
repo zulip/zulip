@@ -82,7 +82,7 @@ class Command(ZulipBaseCommand):
             else:
                 users_deactivated = do_auto_soft_deactivate_users(int(options['inactive_for']),
                                                                   realm)
-            logger.info('Soft Deactivated %d user(s)', len(users_deactivated))
+            logger.info('Soft deactivated %d user(s)', len(users_deactivated))
 
         else:
             self.print_help("./manage.py", "soft_deactivate_users")

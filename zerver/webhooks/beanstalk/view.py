@@ -40,7 +40,7 @@ def _transform_commits_list_to_common_format(commits: List[Dict[str, Any]]) -> L
         })
     return new_commits_list
 
-# Beanstalk's web hook UI rejects url with a @ in the username section of a url
+# Beanstalk's web hook UI rejects URL with a @ in the username section
 # So we ask the user to replace them with %40
 # We manually fix the username here before passing it along to @authenticated_rest_api_view
 def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
@@ -66,9 +66,9 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
 def api_beanstalk_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Dict[str, Any]=REQ(validator=check_dict([])),
                           branches: Optional[str]=REQ(default=None)) -> HttpResponse:
-    # Beanstalk supports both SVN and git repositories
+    # Beanstalk supports both SVN and Git repositories
     # We distinguish between the two by checking for a
-    # 'uri' key that is only present for git repos
+    # 'uri' key that is only present for Git repos
     git_repo = 'uri' in payload
     if git_repo:
         if branches is not None and branches.find(payload['branch']) == -1:

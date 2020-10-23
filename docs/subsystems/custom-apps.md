@@ -53,17 +53,17 @@ can be the source of the stimulus, or the target of the response,
 or both.  Along those lines, we divide custom apps into
 these three types:
 
-- A **Zulip Reader** uses activity on Zulip to stimulate an external
+- A **Zulip reader** uses activity on Zulip to stimulate an external
 response.  An example here would be a follow-up bot that sees
 messages with the alert word "@todo" on a stream and then
 adds a task to a third party todo-list tool.
 
-- A **Zulip Writer** reacts to external stimuli and generates
+- A **Zulip writer** reacts to external stimuli and generates
 Zulip responses.  An example here might be a build bot that
 gets triggered by an automated code build finishing and then
 writes "build finished" to a Zulip stream.
 
-- A **Zulip Read/Writer** reacts to a stimulus from Zulip by
+- A **Zulip reader/writer** reacts to a stimulus from Zulip by
 responding to Zulip.  An example here would be a math bot
 that sees a message saying "compute 2+2" and responds with
 "2+2=4" on the same stream or back to the user in a PM.
@@ -72,16 +72,16 @@ The above three classifications represent kind of a Zulip-centric
 view of the universe, but we should put ourselves in the shoes
 of somebody "out in the world."
 
-- A **World Reader** is an app that gets some stimulus from
+- A **world reader** is an app that gets some stimulus from
 the outside world and produces a response in Zulip.  (So, a world
 reader is a Zulip writer.)
 
-- A **World Writer** is an app that gets some stimulus from
+- A **world writer** is an app that gets some stimulus from
 Zulip and produces a response in the outside world.  (So, a world
 writer is a Zulip reader.)
 
 Some things are a little outside of the scope of this document.
-We could plausibly extend Zulip some day to host **World Reader/Writer**
+We could plausibly extend Zulip some day to host **world reader/Writer**
 apps that don't even write Zulip messages but simply use
 Zulip as a kind of middleware platform.
 
@@ -93,14 +93,14 @@ the scope of this document, we won't spend a lot of time talking
 about how to build these types of apps, but we are aware that
 any solution needs to accommodate multiple sources and targets.
 
-### World Reader/Zulip Reader
+### World reader/Zulip reader
 
 Finally, we set the stage for how we talk about custom apps in
 terms of these two broad categories:
 
-- A **World Reader** responds to stimuli from the outside world (and
+- A **world reader** responds to stimuli from the outside world (and
 typically produces a response in Zulip).
-- A **Zulip Reader** responds to stimuli from Zulip conversations (and
+- A **Zulip reader** responds to stimuli from Zulip conversations (and
 typically produces a response in the outside world).
 
 Again, we recognize that there can be overlap between those two
@@ -152,9 +152,9 @@ party corporate system based on Zulip events, I may want to deploy code
 to a public webserver or try to get my code to be part of the
 Zulip project itself.
 
-## World Reader
+## World reader
 
-A **World Reader** custom app is an app that responds to stimuli
+A **world reader** custom app is an app that responds to stimuli
 from the world outside of Zulip.  It typically functions as a **Zulip
 Writer** and posts some kind of message to a Zulip stream or user to
 alert people of world events.  Here are some example stimuli:
@@ -175,11 +175,11 @@ you basically have to solve these problems:
 ### Zulip integrations
 
 Zulip actually supports a bunch of integrations out-of-the-box that
-perform as **World Readers**.
+perform as **world readers**.
 
 The [three different integration models](https://zulip.com/api/integrations-overview#sending-content-into-zulip)
 basically differ in where they perform the main functions of a
-**World Reader**.
+**world reader**.
 
 #### Incoming webhook integrations
 
@@ -240,21 +240,21 @@ Ruby.  There are probably still some scenarios, however, where a lot of the
 logic for translation could be moved to a Zulip-side integration, and then we
 supply very thin client code for the plugin.
 
-## Zulip Reader
+## Zulip reader
 
-A **Zulip Reader** custom app gets stimuli from Zerver itself. Most
-**Zulip Reader** apps are packaged/advertised more as what people commonly call
+A **Zulip reader** custom app gets stimuli from Zerver itself. Most
+**Zulip reader** apps are packaged/advertised more as what people commonly call
 "bots" than as "integrations." (But sometimes what is currently a "bot" should really
 be deployed more like an "integration" in an ideal Zulip universe.)
 
-Example custom **Zulip Reader** apps can be serious or whimsical.
+Example custom **Zulip reader** apps can be serious or whimsical.
 
 **Serious**
 
 - A user tags a message with an alert word like `@followup` or `@ticket`.
 - A user needs help computing something, like a simple math expression
 or a timezone conversion.
-- A **World Reader** custom app posts something to a Zulip stream that we
+- A **world reader** custom app posts something to a Zulip stream that we
 want to cross-post to another external system.
 - A user wants the custom app to query the outside world, like look up the
 weather or search Wikipedia.
@@ -267,7 +267,7 @@ weather or search Wikipedia.
 - A user wants to tell the office telepresence robot to "turn left."
 
 Setting aside whether a custom app is performing a serious or whimsical
-function, there are a few different types of **Zulip Readers**:
+function, there are a few different types of **Zulip readers**:
 
 - Some readers will do simple local computations and post right back to Zulip.
 - Some readers will do more expensive/web-related computations like searching
@@ -303,7 +303,7 @@ code to your friends and have them be able to deploy it.
 - If you've written a general-use bot, it may be difficult to persuade your
 admin to give you a superuser account.
 
-We want to make it easier to deploy **Zulip Readers** on
+We want to make it easier to deploy **Zulip readers** on
 Zulip hardware.  The following document talks about how we want to enable this
 from a code structuring standpoint:
 
@@ -326,7 +326,7 @@ apps, where an app author might use the following development process:
 
 To give a concrete example, let's say that I work for a company that is
 building an issue tracker, and we want to offer Zulip support.  I would
-start by writing a **Zulip Reader** that scans for the alert word `@ticket`
+start by writing a **Zulip reader** that scans for the alert word `@ticket`
 on certain public Zulip streams, and part of that app would have logic
 to post to my company's issue-tracking API.
 
@@ -360,7 +360,7 @@ the "world" as it sees fit.
 ### Zulip-side support for reader apps
 
 Even for app authors that have access to dedicated hardware,
-there would be several advantages to running **Zulip Readers** under
+there would be several advantages to running **Zulip readers** under
 the same umbrella as the core Zulip system.
 
 - Your app will automatically inherit the uptime of the Zulip server itself (in
@@ -382,7 +382,7 @@ the problems below.  (One assumption is that we don't run apps truly
 in-process.)
 
 - **Contributions**: We need a process for users to contribute code.
-- **Configuration/Discovery**: We need Zulip to be able to find which
+- **Configuration/discovery**: We need Zulip to be able to find which
 apps are allowed to run for a particular
 deployment.  (The admin may choose to run only a subset of contributed
 apps.)

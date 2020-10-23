@@ -65,7 +65,7 @@ to GitHub working on your machine.
 
 Follow our [Git guide][set-up-git] in order to install Git, set up a
 GitHub account, create an SSH key to access code on GitHub
-efficiently, etc.  Be sure to create an ssh key and add it to your
+efficiently, etc.  Be sure to create an SSH key and add it to your
 GitHub account using
 [these instructions](https://help.github.com/en/articles/generating-an-ssh-key).
 
@@ -83,8 +83,8 @@ Jump to:
 1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [VirtualBox][vbox-dl] (latest).
 
-(For a non-free option, but better performance, you can also use [VMWare
-Fusion][vmware-fusion-dl] with the [VMWare Fusion Vagrant
+(For a non-free option, but better performance, you can also use [VMware
+Fusion][vmware-fusion-dl] with the [VMware Fusion Vagrant
 plugin][vagrant-vmware-fusion-dl] or [Parallels Desktop][parallels-desktop-dl] as
 a provider for Vagrant.)
 
@@ -252,7 +252,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 
 This will create a 'zulip' directory and download the Zulip code into it.
 
-Don't forget to replace YOURUSERNAME with your git username. You will see
+Don't forget to replace YOURUSERNAME with your Git username. You will see
 something like:
 
 ```
@@ -534,7 +534,7 @@ $ ./tools/run-dev.py
 Next, read the following to learn more about developing for Zulip:
 
 * [Git & GitHub Guide][rtd-git-guide]
-* [Using the Development Environment][rtd-using-dev-env]
+* [Using the development environment][rtd-using-dev-env]
 * [Testing][rtd-testing] (and [Configuring CI][ci] to
 run the full test suite against any branches you push to your fork,
 which can help you optimize your development workflow).
@@ -803,7 +803,7 @@ that failed.  Once you've resolved the problem, you can rerun
 `tools/provision` to proceed; the provisioning system is designed
 to recover well from failures.
 
-The zulip provisioning system is generally highly reliable; the most common
+The Zulip provisioning system is generally highly reliable; the most common
 cause of issues here is a poor network connection (or one where you need a
 proxy to access the Internet and haven't [configured the development
 environment to use it](#specifying-a-proxy).
@@ -985,7 +985,7 @@ connect to your development server.
 ### Customizing CPU and RAM allocation
 
 When running Vagrant using a VM-based provider such as VirtualBox or
-VMWare Fusion, CPU and RAM resources must be explicitly allocated to
+VMware Fusion, CPU and RAM resources must be explicitly allocated to
 the guest system (with Docker and other container-based Vagrant
 providers, explicit allocation is unnecessary and the settings
 described here are ignored).

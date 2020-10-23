@@ -115,10 +115,10 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
                 "--production",
             ])
 
-            # If there is a local rabbitmq, we need to reconfigure it
-            # to ensure the rabbitmq password matches the value in the
+            # If there is a local RabbitMQ, we need to reconfigure it
+            # to ensure the RabbitMQ password matches the value in the
             # restored zulip-secrets.conf.  We need to be careful to
-            # only do this if rabbitmq is configured to run locally on
+            # only do this if RabbitMQ is configured to run locally on
             # the system.
             rabbitmq_host = subprocess.check_output(
                 [os.path.join(settings.DEPLOY_ROOT,

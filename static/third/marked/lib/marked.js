@@ -645,7 +645,7 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
-    // realm_filters (zulip)
+    // realm_filters (Zulip)
     var self = this;
     this.rules.realm_filters.forEach(function (realm_filter) {
       var ret = self.inlineReplacement(realm_filter, src, function(regex, groups, match) {
@@ -740,28 +740,28 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
-    // usermention (zulip)
+    // usermention (Zulip)
     if (cap = this.rules.usermention.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.usermention(unescape(cap[3] || cap[4]), cap[1], cap[2]);
       continue;
     }
 
-    // groupmention (zulip)
+    // groupmention (Zulip)
     if (cap = this.rules.groupmention.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.groupmention(unescape(cap[1]), cap[0]);
       continue;
     }
 
-    // stream_topic (zulip)
+    // stream_topic (Zulip)
     if (cap = this.rules.stream_topic.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.stream_topic(unescape(cap[1]), unescape(cap[2]), cap[0]);
       continue;
     }
 
-    // stream (zulip)
+    // stream (Zulip)
     if (cap = this.rules.stream.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.stream(unescape(cap[1]), cap[0]);
@@ -810,7 +810,7 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
-    // unicode emoji
+    // Unicode emoji
     if (cap = this.rules.unicodeemoji.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.unicodeEmoji(cap[1]);

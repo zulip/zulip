@@ -510,7 +510,7 @@ class PasswordResetTest(ZulipTestCase):
                                                 'zproject.backends.EmailAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_ldap_and_email_auth(self) -> None:
-        """If both email and ldap auth backends are enabled, limit password
+        """If both email and LDAP auth backends are enabled, limit password
            reset to users outside the LDAP domain"""
         # If the domain matches, we don't generate an email
         with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
@@ -1524,7 +1524,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(ScheduledEmail.objects.filter(type=ScheduledEmail.INVITATION_REMINDER).count(), 1)
 
     # make sure users can't take a valid confirmation key from another
-    # pathway and use it with the invitation url route
+    # pathway and use it with the invitation URL route
     def test_confirmation_key_of_wrong_type(self) -> None:
         email = self.nonreg_email("alice")
         realm = get_realm('zulip')
@@ -3613,15 +3613,15 @@ class UserSignUpTest(InviteUserBase):
                                                    HTTP_HOST=subdomain + ".testserver")
             self.assertEqual(result.status_code, 302)
             # We get redirected back to the login page because emails matching LDAP_APPEND_DOMAIN,
-            # aren't allowed to create non-ldap accounts.
+            # aren't allowed to create non-LDAP accounts.
             self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
             self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
             self.assertEqual(debug_log.output, [
-                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: newuser. Input username: newuser@zulip.com'
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: newuser. Input username: newuser@zulip.com'
             ])
 
-        # If the email is outside of LDAP_APPEND_DOMAIN, we successfully create a non-ldap account,
-        # with the password managed in the zulip database.
+        # If the email is outside of LDAP_APPEND_DOMAIN, we successfully create a non-LDAP account,
+        # with the password managed in the Zulip database.
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='example.com',
@@ -3739,7 +3739,7 @@ class UserSignUpTest(InviteUserBase):
                                                        # Pass HTTP_HOST for the target subdomain
                                                        HTTP_HOST=subdomain + ".testserver")
             self.assertEqual(debug_log.output, [
-                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: nonexistent@zulip.com. Input username: nonexistent@zulip.com'
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: nonexistent@zulip.com. Input username: nonexistent@zulip.com'
             ])
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "http://zulip.testserver/")
@@ -3764,7 +3764,7 @@ class UserSignUpTest(InviteUserBase):
                 # Invite user.
                 self.login('iago')
             self.assertEqual(debug_log.output, [
-                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: iago. Input username: iago@zulip.com'
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: iago. Input username: iago@zulip.com'
             ])
             response = self.invite(invitee_emails='newuser@zulip.com',
                                    stream_names=streams,

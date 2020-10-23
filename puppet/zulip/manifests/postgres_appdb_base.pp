@@ -1,4 +1,4 @@
-# Minimal shared configuration needed to run a Zulip postgres database.
+# Minimal shared configuration needed to run a Zulip Postgres database.
 class zulip::postgres_appdb_base {
   include zulip::postgres_common
   include zulip::process_fts_updates
@@ -33,7 +33,7 @@ class zulip::postgres_appdb_base {
       $pgroonga_setup_sql_path = "${postgres_sharedir}/pgroonga_setup.sql"
       $setup_system_deps = 'setup_yum_repo'
       $postgres_restart = "systemctl restart postgresql-${zulip::postgres_common::version}"
-      # TODO Since we can't find the postgres dicts directory on CentOS yet, we
+      # TODO Since we can't find the Postgres dicts directory on CentOS yet, we
       # link directly to the hunspell directory.
       $postgres_dict_dict = '/usr/share/myspell/en_US.dic'
       $postgres_dict_affix = '/usr/share/myspell/en_US.aff'

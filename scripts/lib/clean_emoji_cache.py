@@ -43,5 +43,5 @@ def main(args: argparse.Namespace) -> None:
         EMOJI_CACHE_PATH, caches_in_use, "emoji cache", args)
 
 if __name__ == "__main__":
-    args = parse_cache_script_args("This script cleans unused zulip emoji caches.")
+    args = parse_cache_script_args("This script cleans unused Zulip emoji caches.")
     main(args)

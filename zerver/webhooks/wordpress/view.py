@@ -19,7 +19,7 @@ New blog user registered:
 """.strip()
 WP_LOGIN_TEMPLATE = 'User {name} logged in.'
 
-@webhook_view("Wordpress", notify_bot_owner_on_invalid_json=False)
+@webhook_view("WordPress", notify_bot_owner_on_invalid_json=False)
 @has_request_variables
 def api_wordpress_webhook(request: HttpRequest, user_profile: UserProfile,
                           hook: str=REQ(default="WordPress Action"),

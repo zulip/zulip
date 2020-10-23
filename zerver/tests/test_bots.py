@@ -341,7 +341,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         list of subscriptions and confirm the right number of events
         are generated.
         When 'principals' has a bot, no notification message event or invitation email
-        is sent when add_subscriptions_backend is called in the above api call.
+        is sent when add_subscriptions_backend is called in the above API call.
         """
         hamlet = self.example_user('hamlet')
         iago = self.example_user('iago')

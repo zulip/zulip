@@ -37,7 +37,7 @@ jobs:
       # GitHub Actions sets HOME to /github/home which causes
       # problem later in provison and frontend test that runs
       # tools/setup/postgres-init-dev-db because of the .pgpass
-      # location. Postgresql (psql) expects .pgpass to be at
+      # location. PostgreSQL (psql) expects .pgpass to be at
       # /home/github/.pgpass and setting home to `/home/github/`
       # ensures it written there because we write it to ~/.pgpass.
       HOME: /home/github/
@@ -142,7 +142,7 @@ jobs:
           # see https://community.codecov.io/t/http-400-while-uploading-to-s3-with-python-codecov-from-travis/1428/7
           pip install codecov && codecov || echo "Error in uploading coverage reports to codecov.io."
 
-      - name: Store puppeteer artifacts
+      - name: Store Puppeteer artifacts
         if: ${{ matrix.include_frontend_tests }}
         uses: actions/upload-artifact@v2
         with:
@@ -153,6 +153,6 @@ jobs:
         if: ${{ matrix.is_focal }}
         run: mispipe "tools/ci/setup-backend" ts
       # TODO: We need to port the notify_failure step from CircleCI
-      # config, however, it might be the case that GitHub Notifications
-      # make this unnesscary. More details on settings to configure it:
+      # config, however, it might be the case that GitHub notifications
+      # make this unnecessary. More details on settings to configure it:
       # https://help.github.com/en/github/managing-subscriptions-and-notifications-on-github/configuring-notifications#github-actions-notification-options

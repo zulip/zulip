@@ -6,13 +6,13 @@ forwarding emails into Zulip.
 https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
 
 The email gateway supports two major modes of operation: An email
-server (using postfix) where the email address configured in
+server (using Postfix) where the email address configured in
 EMAIL_GATEWAY_PATTERN delivers emails directly to Zulip (this) or a
 cron job that connects to an IMAP inbox (which receives the emails)
 periodically.
 
-Zulip's puppet configuration takes care of configuring postfix to
-execute this script when emails are received by postfix, piping the
+Zulip's Puppet configuration takes care of configuring Postfix to
+execute this script when emails are received by Postfix, piping the
 email content via standard input (and the destination email address in
 the ORIGINAL_RECIPIENT environment variable).
 
@@ -65,7 +65,7 @@ parser.add_argument('-d', '--dst-host', dest="host", default='https://127.0.0.1'
                          "Address must contain a HTTP protocol.")
 
 parser.add_argument('-u', '--dst-url', dest="url", default='/email_mirror_message',
-                    help="Destination relative url for uploading email from email mirror.")
+                    help="Destination relative URL for uploading email from email mirror.")
 
 parser.add_argument('-n', '--not-verify-ssl', dest="verify_ssl", action='store_false',
                     help="Disable ssl certificate verifying for self-signed certificates")

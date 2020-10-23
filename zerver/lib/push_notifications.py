@@ -504,7 +504,7 @@ def get_gcm_alert(message: Message) -> str:
 
 def get_mobile_push_content(rendered_content: str) -> str:
     def get_text(elem: lxml.html.HtmlElement) -> str:
-        # Convert default emojis to their unicode equivalent.
+        # Convert default emojis to their Unicode equivalent.
         classes = elem.get("class", "")
         if "emoji" in classes:
             match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
@@ -571,9 +571,9 @@ def get_mobile_push_content(rendered_content: str) -> str:
     return plain_text
 
 def truncate_content(content: str) -> Tuple[str, bool]:
-    # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
+    # We use Unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
     # of three dots as this saves two extra characters for textual
-    # content. This function will need to be updated to handle unicode
+    # content. This function will need to be updated to handle Unicode
     # combining characters and tags when we start supporting themself.
     if len(content) <= 200:
         return content, False

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fetch contributors data from Github using their API, convert it to structured
+Fetch contributors data from GitHub using their API, convert it to structured
 JSON data for the /team page contributors section.
 """
 import os
@@ -37,7 +37,7 @@ duplicate_commits_file = os.path.join(os.path.dirname(__file__), 'duplicate_comm
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--max-retries', type=int, default=10,
-                    help='Number of times to retry fetching data from Github')
+                    help='Number of times to retry fetching data from GitHub')
 args = parser.parse_args()
 
 class ContributorsJSON(TypedDict):
@@ -78,7 +78,7 @@ def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
         else:
             retry_attempts += 1
             if retry_attempts > args.max_retries:
-                logger.warning("Failed retries fetching contributors data from Github.")
+                logger.warning("Failed retries fetching contributors data from GitHub.")
                 sys.exit(1)
 
             sleep_time = randrange(0, min(64, 2**retry_attempts))

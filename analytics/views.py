@@ -172,14 +172,14 @@ def get_chart_data_for_remote_realm(
 
 @require_server_admin
 def stats_for_installation(request: HttpRequest) -> HttpResponse:
-    return render_stats(request, '/installation', 'Installation', True)
+    return render_stats(request, '/installation', 'installation', True)
 
 @require_server_admin
 def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -> HttpResponse:
     assert settings.ZILENCER_ENABLED
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return render_stats(request, f'/remote/{server.id}/installation',
-                        f'remote Installation {server.hostname}', True, True)
+                        f'remote installation {server.hostname}', True, True)
 
 @require_server_admin_api
 @has_request_variables
@@ -787,9 +787,9 @@ def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
 
         realm_minutes[string_id] = realm_duration.total_seconds() / 60
 
-    output += f"\nTotal Duration:                      {total_duration}\n"
-    output += f"\nTotal Duration in minutes:           {total_duration.total_seconds() / 60.}\n"
-    output += f"Total Duration amortized to a month: {total_duration.total_seconds() * 30. / 60.}"
+    output += f"\nTotal duration:                      {total_duration}\n"
+    output += f"\nTotal duration in minutes:           {total_duration.total_seconds() / 60.}\n"
+    output += f"Total duration amortized to a month: {total_duration.total_seconds() * 30. / 60.}"
     content = mark_safe('<pre>' + output + '</pre>')
     return content, realm_minutes
 
@@ -1328,7 +1328,7 @@ def raw_user_activity_table(records: List[QuerySet]) -> str:
         ]
 
     rows = list(map(row, records))
-    title = 'Raw Data'
+    title = 'Raw data'
     return make_table(title, cols, rows)
 
 def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, Any]]:
@@ -1473,7 +1473,7 @@ def user_activity_summary_table(user_summary: Dict[str, Dict[str, Any]]) -> str:
         'count',
     ]
 
-    title = 'User Activity'
+    title = 'User activity'
     return make_table(title, cols, rows)
 
 def realm_user_summary_table(all_records: List[QuerySet],

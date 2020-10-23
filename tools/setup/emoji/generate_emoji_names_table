@@ -3,7 +3,7 @@
 # This is a debugging tool that takes as input a bunch of different
 # emoji data sources, and outputs a convenient HTML table that can be
 # used to sanity-check the differences between these different data
-# sources' decisions about what names to provide to each unicode
+# sources' decisions about what names to provide to each Unicode
 # codepoint.
 import os
 from typing import Any, Dict, List

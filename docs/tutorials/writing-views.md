@@ -112,7 +112,7 @@ which is documented in detail at
 [zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py).
 This method will authenticate the user either through a session token
 from a cookie on the browser, or from a base64 encoded `email:api-key`
-string given via HTTP Basic Auth for API clients.
+string given via HTTP basic auth for API clients.
 
 ``` py
 >>> import requests

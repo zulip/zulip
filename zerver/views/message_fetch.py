@@ -227,15 +227,15 @@ class NarrowBuilder:
         """
         Escape user input to place in a regex
 
-        Python's re.escape escapes unicode characters in a way which postgres
+        Python's re.escape escapes Unicode characters in a way which Postgres
         fails on, '\u03bb' to '\\\u03bb'. This function will correctly escape
-        them for postgres, '\u03bb' to '\\u03bb'.
+        them for Postgres, '\u03bb' to '\\u03bb'.
         """
         s = list(pattern)
         for i, c in enumerate(s):
             if c not in self._alphanum:
                 if ord(c) >= 128:
-                    # convert the character to hex postgres regex will take
+                    # convert the character to hex Postgres regex will take
                     # \uXXXX
                     s[i] = f'\\u{ord(c):0>4x}'
                 else:
@@ -325,7 +325,7 @@ class NarrowBuilder:
                     topic_match_sa('(instance "").d.d.d.d'),
                 )
             else:
-                # We limit `.d` counts, since postgres has much better
+                # We limit `.d` counts, since Postgres has much better
                 # query planning for this than they do for a regular
                 # expression (which would sometimes table scan).
                 cond = or_(

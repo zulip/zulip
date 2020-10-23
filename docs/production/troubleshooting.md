@@ -36,7 +36,7 @@ and restart various services.
 
 ### Checking status with `supervisorctl status`
 
-You can check if the zulip application is running using:
+You can check if the Zulip application is running using:
 ```
 supervisorctl status
 ```
@@ -93,10 +93,10 @@ The Zulip application uses several major open source services to store
 and cache data, queue messages, and otherwise support the Zulip
 application:
 
-* postgresql
-* rabbitmq-server
-* nginx
-* redis
+* PostgreSQL
+* RabbitMQ
+* Nginx
+* Redis
 * memcached
 
 If one of these services is not installed or functioning correctly,
@@ -140,11 +140,11 @@ problems and how to resolve them:
     <https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/>`_
     and instead install apt upgrades manually.  With unattended upgrades
     enabled, the moment a new Postgres release is published, your Zulip
-    server will have its postgres server upgraded (and thus restarted).
+    server will have its Postgres server upgraded (and thus restarted).
 ```
 
-Restarting one of the system services that Zulip uses (`postgres`,
-`memcached`, `redis`, or `rabbitmq`) will drop the connections that
+Restarting one of the system services that Zulip uses (Postgres,
+memcached, Redis, or Rabbitmq) will drop the connections that
 Zulip processes have to the service, resulting in future operations on
 those connections throwing errors.
 
@@ -165,8 +165,8 @@ workers are commonly idle for periods of hours or days at a time.
 You can prevent this trickle when doing a planned upgrade by
 restarting the Zulip server with
 `/home/zulip/deployments/current/scripts/restart-server` after
-installing system package updates to `postgres`, `memcached`,
-`rabbitmq`, or `redis`.
+installing system package updates to Postgres, memcached,
+RabbitMQ, or Redis.
 
 Few system administrators enjoy outages at random times (even if only
 brief) or the resulting distribution of error emails, which is why we
@@ -189,8 +189,8 @@ standard stuff:
   especially for the database and where uploads are stored.
 * Service uptime and standard monitoring for the [services Zulip
   depends on](#troubleshooting-services).  Most monitoring software
-  has standard plugins for `nginx`, `postgres`, `redis`, `rabbitmq`,
-  and `memcached`, and those will work well with Zulip.
+  has standard plugins for Nginx, Postgres, Redis, RabbitMQ,
+  and memcached, and those will work well with Zulip.
 * `supervisorctl status` showing all services `RUNNING`.
 * Checking for processes being OOM killed.
 
@@ -230,8 +230,8 @@ Database monitoring:
 * `check_fts_update_log`: Checks whether full-text search updates are
   being processed properly or getting backlogged.
 * `check_postgres`: General checks for database health.
-* `check_postgres_backup`: Checks status of postgres backups.
-* `check_postgres_replication_lag`: Checks whether postgres streaming
+* `check_postgres_backup`: Checks status of Postgres backups.
+* `check_postgres_replication_lag`: Checks whether Postgres streaming
   replication is up to date.
 
 Standard server monitoring:

@@ -54,5 +54,5 @@ def main(args: argparse.Namespace) -> None:
         VENV_CACHE_DIR, caches_in_use, "venv cache", args)
 
 if __name__ == "__main__":
-    args = parse_cache_script_args("This script cleans unused zulip venv caches.")
+    args = parse_cache_script_args("This script cleans unused Zulip venv caches.")
     main(args)

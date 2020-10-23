@@ -49,7 +49,7 @@ def get_commit_range_info(payload: Dict[str, Any]) -> str:
         commit_range_url = f"{vcs_url}/compare/{first_commit_id}...{last_commit_id}"
         return f"- **Commits ({num_commits}):** [{shortened_first_commit_id} ... {shortened_last_commit_id}]({commit_range_url})"
     else:
-        # BitBucket doesn't have a good commit range url feature like GitHub does.
+        # Bitbucket doesn't have a good commit range URL feature like GitHub does.
         # So let's just show the two separately.
         # https://community.atlassian.com/t5/Bitbucket-questions/BitBucket-4-14-diff-between-any-two-commits/qaq-p/632974
         first_commit_url = commits[0]["commit_url"]

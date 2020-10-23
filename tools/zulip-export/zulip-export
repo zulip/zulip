@@ -26,7 +26,7 @@ import sys
 
 usage = """Export all messages on a given stream to a JSON dump.
 
-zulip-export --user=<your email address> --api-key=<your api key> --stream=<stream name>
+zulip-export --user=<your email address> --api-key=<your API key> --stream=<stream name>
 
 (You can find your API key on your Settings page.)
 

@@ -31,7 +31,7 @@ def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> T
     description = payload.find('description').text
     project_id = payload.find('project_id').text
     story_id = get_text(['stories', 'story', 'id'])
-    # Ugh, the URL in the XML data is not a clickable url that works for the user
+    # Ugh, the URL in the XML data is not a clickable URL that works for the user
     # so we try to build one that the user can actually click on
     url = f"https://www.pivotaltracker.com/s/projects/{project_id}/stories/{story_id}"
 

@@ -34,7 +34,7 @@ class zulip::base {
         # Used in scripts including install-yarn.sh
         'curl',
         'wget',
-        # Used to read /etc/zulip/zulip.conf for `zulipconf` puppet function
+        # Used to read /etc/zulip/zulip.conf for `zulipconf` Puppet function
         'crudini',
         # Used for tools like sponge
         'moreutils',
@@ -42,7 +42,7 @@ class zulip::base {
         $zulip::common::nagios_plugins,
         # Required for using HTTPS in apt repositories.
         'apt-transport-https',
-        # Needed for the cron jobs installed by puppet
+        # Needed for the cron jobs installed by Puppet
         'cron',
       ]
     }

@@ -23,7 +23,7 @@ jsx-lexer
 # Needed for manage.py
 ipython
 
-# Needed for Image Processing
+# Needed for image processing
 Pillow
 
 # Needed for building complex DB queries
@@ -59,7 +59,7 @@ httplib2
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/issues/130
 https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.zip#egg=talon==1.2.10.zulip1
 
-# Needed for hipchat import
+# Needed for HipChat import
 hypchat
 
 # Needed for inlining the CSS in emails
@@ -71,7 +71,7 @@ PyJWT
 # Needed for including other Markdown files for user docs
 markdown-include
 
-# Needed to access rabbitmq
+# Needed to access RabbitMQ
 pika
 
 # Needed to access our database
@@ -89,7 +89,7 @@ python-dateutil
 # Needed for timezone work
 pytz
 
-# Needed for redis
+# Needed for Redis
 redis
 
 # Needed to parse source maps for error reporting

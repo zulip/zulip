@@ -28,7 +28,7 @@ ARG VAGRANT_UID
 
 RUN \
     # We use https://github.com/gdraheim/docker-systemctl-replacement
-    # to make services we install like postgres, redis, etc. normally
+    # to make services we install like Postgres, Redis, etc. normally
     # managed by systemd start within Docker, which breaks normal
     # operation of systemd.
     dpkg-divert --add --rename /bin/systemctl \

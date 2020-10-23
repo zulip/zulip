@@ -18,7 +18,7 @@ from zerver.lib.validator import (
 # text: Field text for admins - custom profile field in org settngs view
 # name: Field label or name - user profile in user settings view
 # hint: Field hint for realm users
-# url_patter: Field url linkifier
+# url_pattern: Field URL linkifier
 DEFAULT_EXTERNAL_ACCOUNTS = {
     "twitter": {
         "text": "Twitter",
@@ -45,7 +45,7 @@ def validate_external_account_field_data(field_data: ProfileFieldData) -> Profil
     if field_subtype not in DEFAULT_EXTERNAL_ACCOUNTS.keys():
         if field_subtype == "custom":
             if 'url_pattern' not in field_data.keys():
-                raise ValidationError(_("Custom external account must define url pattern"))
+                raise ValidationError(_("Custom external account must define URL pattern"))
         else:
             raise ValidationError(_("Invalid external account type"))
 

@@ -9,7 +9,7 @@ The vast majority of Zulip servers host just a single organization (or
 documents what's involved in hosting multiple Zulip organizations on a
 single server.
 
-Throughout this article, we'll assume you're working on a zulip server
+Throughout this article, we'll assume you're working on a Zulip server
 with hostname `zulip.example.com`.  You may also find the more
 [technically focused article on realms](../subsystems/realms.md) to be useful
 reading.
@@ -33,7 +33,7 @@ things:
   file.  That setting is the default in 1.7 and later.
 * Make sure you have SSL certificates for all of the subdomains you're
   going to use.  If you're using
-  [our LetsEncrypt instructions](ssl-certificates.md), it's easy to
+  [our Let's Encrypt instructions](ssl-certificates.md), it's easy to
   just specify multiple subdomains in your certificate request.
 * If necessary, modify your `nginx` configuration to use your new
   certificates.

@@ -333,7 +333,7 @@ def check_password_strength(password: str) -> bool:
 
 class EmailAuthBackend(ZulipAuthMixin):
     """
-    Email+Password Authentication Backend (the default).
+    Email+Password authentication backend (the default).
 
     Allows a user to sign in using an email/password pair.
     """
@@ -464,8 +464,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def django_to_ldap_username(self, username: str) -> str:
         """
         Translates django username (user_profile.delivery_email or whatever the user typed in the login
-        field when authenticating via the ldap backend) into ldap username.
-        Guarantees that the username it returns actually has an entry in the ldap directory.
+        field when authenticating via the LDAP backend) into LDAP username.
+        Guarantees that the username it returns actually has an entry in the LDAP directory.
         Raises ZulipLDAPExceptionNoMatchingLDAPUser if that's not possible.
         """
         result = username
@@ -490,9 +490,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                     result = username
 
         if _LDAPUser(self, result).attrs is None:
-            # Check that there actually is an ldap entry matching the result username
+            # Check that there actually is an LDAP entry matching the result username
             # we want to return. Otherwise, raise an exception.
-            error_message = "No ldap user matching django_to_ldap_username result: {}. Input username: {}"
+            error_message = "No LDAP user matching django_to_ldap_username result: {}. Input username: {}"
             raise ZulipLDAPExceptionNoMatchingLDAPUser(
                 error_message.format(result, username),
             )
@@ -509,7 +509,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             return "@".join((username, settings.LDAP_APPEND_DOMAIN))
 
         if settings.LDAP_EMAIL_ATTR is not None:
-            # Get email from ldap attributes.
+            # Get email from LDAP attributes.
             if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
                 raise ZulipLDAPException(f"LDAP user doesn't have the needed {settings.LDAP_EMAIL_ATTR} attribute")
             else:
@@ -690,7 +690,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         email address for this user obtained from LDAP has an active
         account in this Zulip realm.  If so, it will log them in.
 
-        Otherwise, to provide a seamless Single Sign-On experience
+        Otherwise, to provide a seamless single sign-on experience
         with LDAP, this function can automatically create a new Zulip
         user account in the realm (assuming the realm is configured to
         allow that email address to sign up).
@@ -767,9 +767,9 @@ class ZulipLDAPUser(_LDAPUser):
     """
     This is an extension of the _LDAPUser class, with a realm attribute
     attached to it. It's purpose is to call its inherited method
-    populate_user() which will sync the ldap data with the corresponding
+    populate_user() which will sync the LDAP data with the corresponding
     UserProfile. The realm attribute serves to uniquely identify the UserProfile
-    in case the ldap user is registered to multiple realms.
+    in case the LDAP user is registered to multiple realms.
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -961,7 +961,7 @@ def external_auth_method(cls: Type[ExternalAuthMethod]) -> Type[ExternalAuthMeth
     EXTERNAL_AUTH_METHODS.append(cls)
     return cls
 
-# We want to be able to store this data in redis, so it has to be easy to serialize.
+# We want to be able to store this data in Redis, so it has to be easy to serialize.
 # That's why we avoid having fields that could pose a problem for that.
 class ExternalAuthDataDict(TypedDict, total=False):
     subdomain: str
@@ -1093,8 +1093,8 @@ def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
 
 def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
                                  *args: Any, **kwargs: Any) -> Union[HttpResponse, Optional[UserProfile]]:
-    """Responsible for doing the Zulip-account lookup and validation parts
-    of the Zulip Social auth pipeline (similar to the authenticate()
+    """Responsible for doing the Zulip account lookup and validation parts
+    of the Zulip social auth pipeline (similar to the authenticate()
     methods in most other auth backends in this file).
 
     Returns a UserProfile object for successful authentication, and None otherwise.
@@ -1586,7 +1586,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         return self.strategy.request_data().get('native_flow', False)
 
     # This method replaces a method from python-social-auth; it is adapted to store
-    # the state_token data in redis.
+    # the state_token data in Redis.
     def get_or_create_state(self) -> str:
         '''Creates the Oauth2 state parameter in first step of the flow,
         before redirecting the user to the IdP (aka Apple).
@@ -1600,10 +1600,10 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         POST request coming from Apple.
 
         To work around this, we replace python-social-auth's default
-        session-based storage with storing the parameters in redis
+        session-based storage with storing the parameters in Redis
         under a random token derived from the state. That will allow
         us to validate the state and retrieve the params after the
-        redirect - by querying redis for the key derived from the
+        redirect - by querying Redis for the key derived from the
         state sent in the POST redirect.
         '''
         request_data = self.strategy.request_data().dict()
@@ -1622,7 +1622,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     def validate_state(self) -> Optional[str]:
         """
         This method replaces a method from python-social-auth; it is
-        adapted to retrieve the data stored in redis, save it in
+        adapted to retrieve the data stored in Redis, save it in
         the session so that it can be accessed by the social pipeline.
         """
         request_state = self.get_request_state()
@@ -1772,7 +1772,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         #
         # To protect against network eavesdropping of these
         # parameters, we send just a random token to the IdP in
-        # RelayState, which is used as a key into our redis data store
+        # RelayState, which is used as a key into our Redis data store
         # for fetching the actual parameters after the IdP has
         # returned a successful authentication.
         params_to_relay = self.standard_relay_params
@@ -1794,7 +1794,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     def get_data_from_redis(cls, key: str) -> Optional[Dict[str, Any]]:
         data = None
         if key.startswith('saml_token_'):
-            # Safety if statement, to not allow someone to poke around arbitrary redis keys here.
+            # Safety if statement, to not allow someone to poke around arbitrary Redis keys here.
             data = get_dict_from_redis(redis_client, "saml_token_{token}", key)
 
         return data

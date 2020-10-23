@@ -205,7 +205,7 @@ def init_worker(counter: Synchronized) -> None:
     create_test_databases(_worker_id)
     initialize_worker_path(_worker_id)
 
-    # We manually update the upload directory path in the url regex.
+    # We manually update the upload directory path in the URL regex.
     from zproject.dev_urls import avatars_url
     new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
     avatars_url.default_args['document_root'] = new_root

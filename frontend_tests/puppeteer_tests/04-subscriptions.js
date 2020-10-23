@@ -123,7 +123,7 @@ async function create_stream(page) {
     await page.waitForXPath('//*[text()="Create stream"]', {visible: true});
     await common.fill_form(page, "form#stream_creation_form", {
         stream_name: "Puppeteer",
-        stream_description: "Everything puppeteer",
+        stream_description: "Everything Puppeteer",
     });
     await page.click(await stream_span(page, "Scotland")); //  Subscribes all users from Scotland
     await page.click(await user_span(page, "cordelia")); // Add cordelia.
@@ -142,7 +142,7 @@ async function create_stream(page) {
     );
     const subscriber_count_selector = "[data-stream-name='Puppeteer'] .subscriber-count";
     assert.strictEqual(stream_name, "Puppeteer");
-    assert.strictEqual(stream_description, "Everything puppeteer");
+    assert.strictEqual(stream_description, "Everything Puppeteer");
 
     // Assert subscriber count becomes 5(scotland(+4), cordelia(+1), othello(-1), Desdemona(+1)).
     await page.waitForFunction(

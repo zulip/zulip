@@ -69,7 +69,7 @@ def generate_thumbnail_url(path: str,
     if settings.THUMBOR_URL == 'http://127.0.0.1:9995':
         # If THUMBOR_URL is the default then thumbor is hosted on same machine
         # as the Zulip server and we should serve a relative URL.
-        # We add a /thumbor in front of the relative url because we make
+        # We add a /thumbor in front of the relative URL because we make
         # use of a proxy pass to redirect request internally in Nginx to 9995
         # port where thumbor is running.
         thumbnail_url = '/thumbor' + encrypted_url

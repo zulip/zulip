@@ -121,7 +121,7 @@ fi
 read -r -a APT_OPTIONS <<<"${APT_OPTIONS:-}"
 # Install additional packages.
 read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
-# Comma-separated list of puppet manifests to install.  default is
+# Comma-separated list of Puppet manifests to install.  default is
 # zulip::voyager for an all-in-one system or zulip::dockervoyager for
 # Docker.  Use e.g. zulip::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
@@ -234,8 +234,8 @@ fi
 case ",$PUPPET_CLASSES," in
     *,zulip::voyager,* | *,zulip::postgres_appdb_tuned,*)
         if [ "$package_system" = apt ]; then
-            # We're going to install Postgres from the postgres apt
-            # repository; this may conflict with the existing postgres.
+            # We're going to install Postgres from the Postgres apt
+            # repository; this may conflict with the existing Postgres.
             OTHER_PG="$(dpkg --get-selections \
                 | grep -E '^postgresql-[0-9]+\s+install$' \
                 | grep -v "^postgresql-$POSTGRES_VERSION\b" \
@@ -405,7 +405,7 @@ EOF
         --classfile=/var/lib/puppet/classes.txt \
         >/dev/null
 
-    # We only need the postgres version setting on database hosts; but
+    # We only need the Postgres version setting on database hosts; but
     # we don't know if this is a database host until we have the catalog summary.
     if ! has_class "zulip::postgres_common" || [ "$package_system" != apt ]; then
         crudini --del /etc/zulip/zulip.conf postgresql
@@ -511,7 +511,7 @@ if has_class "zulip::app_frontend_base"; then
     chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
 
     if ! [ -e "/home/zulip/prod-static/generated" ]; then
-        # If we're installing from a git checkout, we need to run
+        # If we're installing from a Git checkout, we need to run
         # `tools/update-prod-static` in order to build the static
         # assets.
         su zulip -c '/home/zulip/deployments/current/tools/update-prod-static'
@@ -525,7 +525,7 @@ if [ -n "$NO_INIT_DB" ]; then
  Success!
 
  Stopping because --no-init-db was passed.
- To complete the installation, configure postgres and then run:
+ To complete the installation, configure Postgres and then run:
 
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
    su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'

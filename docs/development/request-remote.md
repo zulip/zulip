@@ -73,7 +73,7 @@ Once you've confirmed you can connect to your remote server, take a look at:
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Using the Development Environment](../development/using.md)
+* [Using the development environment](../development/using.md)
 * [Testing](../testing/testing.md)
 
 [github-join]: https://github.com/join

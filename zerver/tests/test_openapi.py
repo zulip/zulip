@@ -327,14 +327,14 @@ class OpenAPIArgumentsTest(ZulipTestCase):
             if not msg:  # nocoverage
                 msg = f"""
 We found some OpenAPI documentation for {method} {url_pattern},
-so maybe we shouldn't mark it as intentionally undocumented in the urls.
+so maybe we shouldn't mark it as intentionally undocumented in the URLs.
 """
             raise AssertionError(msg)  # nocoverage
         except KeyError:
             return
 
     def check_for_non_existant_openapi_endpoints(self) -> None:
-        """ Here, we check to see if every endpoint documented in the openapi
+        """ Here, we check to see if every endpoint documented in the OpenAPI
         documentation actually exists in urls.py and thus in actual code.
         Note: We define this as a helper called at the end of
         test_openapi_arguments instead of as a separate test to ensure that
@@ -500,7 +500,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                     # validator in these cases, but it does happen.
                     #
                     # If the REQ type is not string then, insert the
-                    # REQ and OPENAPI data types of the variable in
+                    # REQ and OpenAPI data types of the variable in
                     # the respective sets so that they can be dealt
                     # with later.  In either case remove the variable
                     # from `json_params`.
@@ -536,7 +536,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         has_request_variables decorator).
 
             At the end, we perform a reverse mapping test that verifies that
-        every url pattern defined in the openapi documentation actually exists
+        every URL pattern defined in the OpenAPI documentation actually exists
         in code.
         """
 

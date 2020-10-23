@@ -38,13 +38,13 @@ prefilled with that value.
 
 `AUTHENTICATION_BACKENDS`: Zulip supports a wide range of popular
 options for authenticating users to your server, including Google
-Auth, GitHub Auth, LDAP, SAML, REMOTE_USER, and more.
+auth, GitHub auth, LDAP, SAML, REMOTE_USER, and more.
 
 If you want an additional or different authentication backend, you
 will need to uncomment one or more and then do any additional
 configuration required for that backend as documented in the
 `settings.py` file. See the
-[section on Authentication](../production/authentication-methods.md) for more
+[section on authentication](../production/authentication-methods.md) for more
 detail on the available authentication backends and how to configure
 them.
 

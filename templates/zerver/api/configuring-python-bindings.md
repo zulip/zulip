@@ -17,7 +17,7 @@ A `.zuliprc` file is a plain text document that looks like this:
 
 ```
 [api]
-key=<api key from the web interface>
+key=<API key from the web interface>
 email=<your email address>
 site=<your Zulip server's URI>
 ...

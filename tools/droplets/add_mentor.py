@@ -5,7 +5,7 @@
 #
 # $ python3 add_mentor.py <mentor's username>
 #
-# Alternatively you can pass in --remove to remove their ssh key from the
+# Alternatively you can pass in --remove to remove their SSH key from the
 # machine:
 #
 # $ python3 add_mentor.py --remove <mentor's username>
@@ -19,7 +19,7 @@ from typing import List
 import requests
 
 parser = ArgumentParser(description='Give a mentor ssh access to this machine.')
-parser.add_argument('username', help='Github username of the mentor.')
+parser.add_argument('username', help='GitHub username of the mentor.')
 parser.add_argument('--remove', help='Remove his/her key from the machine.',
                     action='store_true')
 
@@ -35,7 +35,7 @@ def get_mentor_keys(username: str) -> List[str]:
 
     r = requests.get(url)
     if r.status_code != 200:
-        print('Cannot connect to Github...')
+        print('Cannot connect to GitHub...')
         sys.exit(1)
 
     keys = r.json()

@@ -18,7 +18,7 @@ ANSIBLETOWER_JOB_MESSAGE_TEMPLATE = """
 
 ANSIBLETOWER_JOB_HOST_ROW_TEMPLATE = '* {hostname}: {status}\n'
 
-@webhook_view('Ansibletower')
+@webhook_view('AnsibleTower')
 @has_request_variables
 def api_ansibletower_webhook(request: HttpRequest, user_profile: UserProfile,
                              payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:

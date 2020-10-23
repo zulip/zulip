@@ -43,7 +43,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
     Unauthenticated endpoints should not use this, as authentication is verified
     in the following ways:
-        * for paths beginning with /api, HTTP Basic auth
+        * for paths beginning with /api, HTTP basic auth
         * for paths beginning with /json (used by the web client), the session token
 
     This calls the function named in kwargs[request.method], if that request
@@ -108,7 +108,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         # as we should worst-case fail closed if we miscategorise a request.
 
         # for some special views (e.g. serving a file that has been
-        # uploaded), we support using the same url for web and API clients.
+        # uploaded), we support using the same URL for web and API clients.
         if ('override_api_url_scheme' in view_flags and
                 request.META.get('HTTP_AUTHORIZATION', None) is not None):
             # This request uses standard API based authentication.
@@ -132,7 +132,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                 auth_kwargs["skip_rate_limiting"] = True
             target_function = csrf_protect(authenticated_json_view(target_function, **auth_kwargs))
 
-        # most clients (mobile, bots, etc) use HTTP Basic Auth and REST calls, where instead of
+        # most clients (mobile, bots, etc) use HTTP basic auth and REST calls, where instead of
         # username:password, we use email:apiKey
         elif request.META.get('HTTP_AUTHORIZATION', None):
             # Wrap function with decorator to authenticate the user before

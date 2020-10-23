@@ -23,7 +23,7 @@
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     <select name="plan_type">
-        <option value="1" {% if realm.plan_type == 1 %}selected{% endif %}>Self Hosted</option>
+        <option value="1" {% if realm.plan_type == 1 %}selected{% endif %}>Self hosted</option>
         <option value="2" {% if realm.plan_type == 2 %}selected{% endif %}>Limited</option>
         <option value="3" {% if realm.plan_type == 3 %}selected{% endif %}>Standard</option>
         <option value="4" {% if realm.plan_type == 4 %}selected{% endif %}>Standard Free</option>

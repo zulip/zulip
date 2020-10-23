@@ -13,7 +13,7 @@ TOPIC_ORGANIZATION = "baxterandthehackers organization"
 TOPIC_BRANCH = "public-repo / changes"
 TOPIC_WIKI = "public-repo / Wiki Pages"
 
-class GithubWebhookTest(WebhookTestCase):
+class GitHubWebhookTest(WebhookTestCase):
     STREAM_NAME = 'github'
     URL_TEMPLATE = "/api/v1/external/github?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = 'github'
@@ -212,7 +212,7 @@ class GithubWebhookTest(WebhookTestCase):
         self.check_webhook("release", TOPIC_REPO, expected_message)
 
     def test_page_build_msg(self) -> None:
-        expected_message = "Github Pages build, triggered by baxterthehacker, has finished building."
+        expected_message = "GitHub Pages build, triggered by baxterthehacker, has finished building."
         self.check_webhook("page_build", TOPIC_REPO, expected_message)
 
     def test_status_msg(self) -> None:

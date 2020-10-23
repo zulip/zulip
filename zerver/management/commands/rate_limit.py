@@ -41,7 +41,7 @@ class Command(ZulipBaseCommand):
             try:
                 user_profile = get_user_profile_by_api_key(options['api_key'])
             except UserProfile.DoesNotExist:
-                raise CommandError("Unable to get user profile for api key {}".format(options['api_key']))
+                raise CommandError("Unable to get user profile for API key {}".format(options['api_key']))
 
         users = [user_profile]
         if options['bots']:

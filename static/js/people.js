@@ -648,7 +648,7 @@ export function small_avatar_url(message) {
     let person;
     if (message.sender_id) {
         // We should always have message.sender_id, except for in the
-        // tutorial, where it's ok to fall back to the url in the fake
+        // tutorial, where it's ok to fall back to the URL in the fake
         // messages.
         person = get_by_user_id(message.sender_id);
     }

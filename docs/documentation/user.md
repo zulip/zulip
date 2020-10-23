@@ -11,7 +11,7 @@ The feature articles serve a few different purposes:
 * Feature discovery, for someone browsing the `/help` page, and looking at
   the set of titles.
 * Public documentation of our featureset, for someone googling "can zulip do .."
-* Canned responses to support questions; if someone emails a zulip admin
+* Canned responses to support questions; if someone emails a Zulip admin
   asking "how do I change my name", they can reply with a link to the doc.
 * Feature explanations for new Zulip users and admins, especially for
   organization settings.
@@ -239,9 +239,9 @@ languages in API docs, etc.  To create a tab switcher, write:
 
     {start_tabs}
     {tab|desktop-web}
-    # First Tab's content
+    # First tab's content
     {tab|ios}
-    # Second Tab's content
+    # Second tab's content
     {tab|android}
     # Third tab's content
     {end_tabs}

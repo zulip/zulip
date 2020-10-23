@@ -5,7 +5,7 @@
 # the on-disk data in volumes. So the base image can not currently be upgraded
 # without users needing a manual pgdump and restore.
 
-# Install hunspell, zulip stop words, and run zulip database
+# Install hunspell, Zulip stop words, and run Zulip database
 # init.
 FROM groonga/pgroonga:latest-alpine-10-slim
 RUN apk add -U --no-cache hunspell-en

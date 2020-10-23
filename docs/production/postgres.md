@@ -8,7 +8,7 @@ Previous versions of Zulip used whatever version of Postgres was
 included with the base operating system (E.g. Postgres 12 on Ubuntu
 Focal, 10 on Ubuntu Bionic, and 9.6 on Ubuntu Xenial).  We recommend
 that installations currently using older Postgres releases [upgrade to
-Postgres 12][upgrade-postgres], as may drop support for older postgres
+Postgres 12][upgrade-postgres], as may drop support for older Postgres
 in a future release.
 
 [upgrade-postgres]: ../production/upgrade-or-modify.html#upgrading-postgresql
@@ -16,7 +16,7 @@ in a future release.
 #### Remote Postgres database
 
 This is a bit annoying to set up, but you can configure Zulip to use a
-dedicated postgres server by setting the `REMOTE_POSTGRES_HOST`
+dedicated Postgres server by setting the `REMOTE_POSTGRES_HOST`
 variable in /etc/zulip/settings.py, and configuring Postgres
 certificate authentication (see
 http://www.postgresql.org/docs/9.1/static/ssl-tcp.html and
@@ -25,11 +25,11 @@ documentation on how to set this up and deploy the certificates) to
 make the DATABASES configuration in `zproject/computed_settings.py`
 work (or override that configuration).
 
-If you want to use a remote Postgresql database, you should configure
+If you want to use a remote PostgreSQL database, you should configure
 the information about the connection with the server. You need a user
 called "zulip" in your database server. You can configure these
 options in `/etc/zulip/settings.py` (the below descriptions are from the
-Postgresql documentation):
+PostgreSQL documentation):
 
 * `REMOTE_POSTGRES_HOST`: Name or IP address of the remote host
 * `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server,
@@ -64,15 +64,15 @@ sudo update-rc.d postgresql disable
 ```
 
 In future versions of this feature, we'd like to implement and
-document how to the remote postgres database server itself
+document how to the remote Postgres database server itself
 automatically by using the Zulip install script with a different set
-of puppet manifests than the all-in-one feature; if you're interested
+of Puppet manifests than the all-in-one feature; if you're interested
 in working on this, post to the Zulip development mailing list and we
 can give you some tips.
 
-#### Debugging postgres database issues
+#### Debugging Postgres database issues
 
-When debugging postgres issues, in addition to the standard `pg_top`
+When debugging Postgres issues, in addition to the standard `pg_top`
 tool, often it can be useful to use this query:
 
 ```
@@ -92,9 +92,9 @@ sending a Postgres process SIGKILL. Doing so will cause the database
 to kill all current connections, roll back any pending transactions,
 and enter recovery mode.
 
-#### Stopping the Zulip postgres database
+#### Stopping the Zulip Postgres database
 
-To start or stop postgres manually, use the pg_ctlcluster command:
+To start or stop Postgres manually, use the pg_ctlcluster command:
 
 ```
 pg_ctlcluster 9.1 [--force] main {start|stop|restart|reload}
@@ -120,7 +120,7 @@ Many database parameters can be adjusted while the database is
 running. Just modify /etc/postgresql/9.1/main/postgresql.conf and
 issue a reload. The logs will note the change.
 
-#### Debugging issues starting postgres
+#### Debugging issues starting Postgres
 
 pg_ctlcluster often doesn't give you any information on why the
 database failed to start. It may tell you to check the logs, but you
@@ -141,7 +141,7 @@ pg_ctlcluster does.
 
 #### Postgres vacuuming alerts
 
-The `autovac_freeze` postgres alert from `check_postgres` is
+The `autovac_freeze` Postgres alert from `check_postgres` is
 particularly important.  This alert indicates that the age (in terms
 of number of transactions) of the oldest transaction id (XID) is
 getting close to the `autovacuum_freeze_max_age` setting.  When the
@@ -154,4 +154,4 @@ database as a database superuser (`postgres`).
 
 See
 http://www.postgresql.org/docs/9.1/static/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND
-for more details on postgres vacuuming.
+for more details on Postgres vacuuming.

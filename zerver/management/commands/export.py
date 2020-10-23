@@ -30,15 +30,15 @@ class Command(ZulipBaseCommand):
     * Sessions (everyone will need to log in again post-export)
     * Users' passwords and API keys (users will need to use SSO or reset password)
     * Mobile tokens for APNS/GCM (users will need to reconnect their mobile devices)
-    * ScheduledEmail (Not relevant on a new server)
-    * RemoteZulipServer (Unlikely to be migrated)
+    * ScheduledEmail (not relevant on a new server)
+    * RemoteZulipServer (unlikely to be migrated)
     * third_party_api_results cache (this means rerending all old
       messages could be expensive)
 
     Things that will break as a result of the export:
     * Passwords will not be transferred.  They will all need to go
       through the password reset flow to obtain a new password (unless
-      they intend to only use e.g. Google Auth).
+      they intend to only use e.g. Google auth).
     * Users will need to log out and re-log in to the Zulip desktop and
       mobile apps.  The apps now all have an option on the login page
       where you can specify which Zulip server to use; your users

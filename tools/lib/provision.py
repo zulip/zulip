@@ -40,7 +40,7 @@ VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 CONTINUOUS_INTEGRATION = 'GITHUB_ACTIONS' in os.environ or 'CIRCLECI' in os.environ
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
-    print(FAIL + "Error: No Zulip git repository present!" + ENDC)
+    print(FAIL + "Error: No Zulip Git repository present!" + ENDC)
     print("To set up the Zulip development environment, you should clone the code")
     print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
@@ -159,13 +159,13 @@ COMMON_YUM_DEPENDENCIES = [
 
 BUILD_PGROONGA_FROM_SOURCE = False
 if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in []:
-    # For platforms without a pgroonga release, we need to build it
+    # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
     SYSTEM_DEPENDENCIES = [
         *UBUNTU_COMMON_APT_DEPENDENCIES,
         f"postgresql-{POSTGRES_VERSION}",
-        # Dependency for building pgroonga from source
+        # Dependency for building PGroonga from source
         f"postgresql-server-dev-{POSTGRES_VERSION}",
         "libgroonga-dev",
         "libmsgpack-dev",
@@ -195,7 +195,7 @@ elif "fedora" in os_families():
         f"postgresql{POSTGRES_VERSION}-server",
         f"postgresql{POSTGRES_VERSION}",
         f"postgresql{POSTGRES_VERSION}-devel",
-        # Needed to build pgroonga from source
+        # Needed to build PGroonga from source
         "groonga-devel",
         "msgpack-devel",
         *VENV_DEPENDENCIES,
@@ -227,7 +227,7 @@ def install_system_deps() -> None:
     else:
         raise AssertionError("Invalid vendor")
 
-    # For some platforms, there aren't published pgroonga
+    # For some platforms, there aren't published PGroonga
     # packages available, so we build them from source.
     if BUILD_PGROONGA_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-pgroonga"])
@@ -279,13 +279,13 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         run_as_root(["ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
     postgres_dir = f'pgsql-{POSTGRES_VERSION}'
     for cmd in ['pg_config', 'pg_isready', 'psql']:
-        # Our tooling expects these postgres scripts to be at
+        # Our tooling expects these Postgres scripts to be at
         # well-known paths.  There's an argument for eventually
         # making our tooling auto-detect, but this is simpler.
         run_as_root(["ln", "-nsf", f"/usr/{postgres_dir}/bin/{cmd}",
                      f"/usr/bin/{cmd}"])
 
-    # From here, we do the first-time setup/initialization for the postgres database.
+    # From here, we do the first-time setup/initialization for the Postgres database.
     pg_datadir = f"/var/lib/pgsql/{POSTGRES_VERSION}/data"
     pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
 
@@ -300,7 +300,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
                 sudo_args = ['-H'])
     # Use vendored pg_hba.conf, which enables password authentication.
     run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
-    # Later steps will ensure postgres is started
+    # Later steps will ensure Postgres is started
 
     # Link in tsearch data files
     overwrite_symlink(
@@ -329,7 +329,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
         # hash the content of setup-yum-repo*
         sha_sum.update(open('scripts/lib/setup-yum-repo', 'rb').read())
 
-    # hash the content of build-pgroonga if pgroonga is built from source
+    # hash the content of build-pgroonga if PGroonga is built from source
     if BUILD_PGROONGA_FROM_SOURCE:
         sha_sum.update(open('scripts/lib/build-pgroonga', 'rb').read())
 

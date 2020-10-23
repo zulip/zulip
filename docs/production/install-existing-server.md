@@ -33,7 +33,7 @@ sudo wget -O /etc/nginx/nginx.conf.zulip \
 sudo meld /etc/nginx/nginx.conf /etc/nginx/nginx.conf.zulip  # be sure to merge to the right
 ```
 
-After the zulip installation completes, then you can overwrite (or
+After the Zulip installation completes, then you can overwrite (or
 merge) your new nginx.conf with the installed one:
 
 ```shell
@@ -41,13 +41,13 @@ $ sudo meld /etc/nginx/nginx.conf.zulip /etc/nginx/nginx.conf  # be sure to merg
 $ sudo service nginx restart
 ```
 
-Zulip's puppet configuration will change the ownership of
+Zulip's Puppet configuration will change the ownership of
 `/var/log/nginx` so that the `zulip` user can access it.  Depending on
 your configuration, this may or may not cause problems.
 
 ### Puppet
 
-If you have a puppet server running on your server, you will get an
+If you have a Puppet server running on your server, you will get an
 error message about not being able to connect to the client during the
 install process:
 
@@ -55,7 +55,7 @@ install process:
 puppet-agent[29873]: Could not request certificate: Failed to open TCP connection to puppet:8140
 ```
 
-So you'll need to shutdown any puppet servers.
+So you'll need to shutdown any Puppet servers.
 
 ```shell
 $ sudo service puppet-agent stop
@@ -75,7 +75,7 @@ If you have an existing PostgreSQL database, note that Zulip will use
 the default `main` as its database name; make sure you're not using
 that.
 
-### Memcached, redis, and rabbitmq
+### Memcached, Redis, and RabbitMQ
 
 Zulip will, by default, configure these services for its use.  The
 configuration we use is pretty basic, but if you're using them for

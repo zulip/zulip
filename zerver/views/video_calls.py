@@ -162,7 +162,7 @@ def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
 
 
 def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    # https://docs.bigbluebutton.org/dev/api.html#create for reference on the api calls
+    # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
     password = b32encode(secrets.token_bytes(7))[:10].decode()

@@ -15,7 +15,7 @@
 {"type":"direct_channel","direct_channel":{"members":["ron","harry", "ginny"],"favorited_by":null,"header":""}}
 {"type":"direct_post","direct_post":{"channel_members":["ron","harry"],"user":"ron","message":"hey harry","create_at":1566376137676,"flagged_by":null,"reactions":null,"replies":null,"attachments":null}}
 {"type":"direct_post","direct_post":{"channel_members":["ron","harry"],"user":"harry","message":"what's up","create_at":1566376318568,"flagged_by":null,"reactions":null,"replies":null,"attachments":null}}
-{"type":"direct_post","direct_post":{"channel_members":["ron","harry","ginny"],"user":"ginny","message":"Who is going to Hogesmead this weekend?","create_at":1566376226493,"flagged_by":null,"reactions":null,"replies":null,"attachments":null}}
+{"type":"direct_post","direct_post":{"channel_members":["ron","harry","ginny"],"user":"ginny","message":"Who is going to Hogsmeade this weekend?","create_at":1566376226493,"flagged_by":null,"reactions":null,"replies":null,"attachments":null}}
 {"type":"direct_post","direct_post":{"channel_members":["ron","harry","ginny"],"user":"harry","message":"I am going.","create_at":1566376311350,"flagged_by":null,"reactions":null,"replies":null,"attachments":null}}
 {"type":"direct_post","direct_post":{"channel_members":["ron","harry","ginny"],"user":"ron","message":"I am going as well","create_at":1566376286363,"flagged_by":null,"reactions":null,"replies":null,"attachments":null}}
 {"type":"direct_post","direct_post":{"channel_members":["harry","voldemort"],"user":"voldemort","message":"Hey Harry.","create_at":1566376318569,"flagged_by":null,"reactions":null,"replies":null,"attachments":null}}

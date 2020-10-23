@@ -10,7 +10,7 @@
  * Based on diffing library difflib, a js port of the python library.
  *
  * The sole exported function diff_strings(string_0, string_1) returns a pretty-printed
- * unicode string containing their diff.
+ * Unicode string containing their diff.
  */
 
 const difflib = require("difflib");

@@ -14,7 +14,7 @@ administrator][git-bash-admin] at all times.**
 You'll also need a GitHub account, which you can sign up for
 [here][github-join].
 
-We highly recommend you create an ssh key if you don't already have
+We highly recommend you create an SSH key if you don't already have
 one and [add it to your GitHub account][github-help-add-ssh-key].  If
 you don't, you'll have to type your GitHub username and password every
 time you interact with GitHub, which is usually several times a day.
@@ -44,7 +44,7 @@ If you don't already have one installed, here are some suggestions:
 - Windows: [SourceTree][gitgui-sourcetree]
 
 If you like working on the command line, but want better visualization and
-navigation of your git repo, try [Tig][tig], a cross-platform ncurses-based
+navigation of your Git repo, try [Tig][tig], a cross-platform ncurses-based
 text-mode interface to Git.
 
 And, if none of the above are to your liking, try [one of these][gitbook-guis].

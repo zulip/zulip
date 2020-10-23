@@ -21,9 +21,9 @@ First, export your data from Gitter.
    Zulip.
 
     !!! warn ""
-        **Note:** You'll need a gitter API token to export data. You can get this
+        **Note:** You'll need a Gitter API token to export data. You can get this
         token by following the instructions in the "**Getting Started**" section of the
-        [gitter documentation](https://developer.gitter.im/docs/).
+        [Gitter documentation](https://developer.gitter.im/docs/).
 
 {end_tabs}
 
@@ -90,7 +90,7 @@ to mark the appropriate users as administrators.
 ## Caveats
 
 - The [Gitter data export tool](https://github.com/minrk/archive-gitter)
-  doesn't support exporting private gitter channels.
+  doesn't support exporting private Gitter channels.
 
 - Gitter's export tool doesn't export email addresses; just GitHub
   usernames.  The import tool will thus use [GitHub's generated

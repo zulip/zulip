@@ -124,7 +124,7 @@ exports.process_message = function (msg) {
         topic_data.last_msg_id = msg.id;
     }
     // TODO: Add backend support for participated topics.
-    // Currently participated === Recently Participated
+    // Currently participated === recently participated
     // i.e. Only those topics are participated for which we have the user's
     // message fetched in the topic. Ideally we would want this to be attached
     // to topic info fetched from backend, which is currently not a thing.

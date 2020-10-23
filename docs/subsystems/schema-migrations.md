@@ -48,7 +48,7 @@ migrations.
   to the table, performing data backfills, or building indexes. We
   have a `zerver/lib/migrate.py` library to help with adding columns
   and backfilling data.  For building indexes on these tables, we
-  should do this using SQL with postgres's CONCURRENTLY keyword.
+  should do this using SQL with Postgres's CONCURRENTLY keyword.
 
 * **Atomicity**.  By default, each Django migration is run atomically
   inside a transaction.  This can be problematic if one wants to do

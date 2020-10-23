@@ -437,7 +437,7 @@ class TestSupportEndpoint(ZulipTestCase):
             zulip_realm = get_realm("zulip")
             self.assert_in_success_response([f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
                                              'Zulip Dev</h3>',
-                                             '<option value="1" selected>Self Hosted</option>',
+                                             '<option value="1" selected>Self hosted</option>',
                                              '<option value="2" >Limited</option>',
                                              'input type="number" name="discount" value="None"',
                                              '<option value="active" selected>Active</option>',
@@ -449,7 +449,7 @@ class TestSupportEndpoint(ZulipTestCase):
             lear_realm = get_realm("lear")
             self.assert_in_success_response([f'<input type="hidden" name="realm_id" value="{lear_realm.id}"',
                                              'Lear &amp; Co.</h3>',
-                                             '<option value="1" selected>Self Hosted</option>',
+                                             '<option value="1" selected>Self hosted</option>',
                                              '<option value="2" >Limited</option>',
                                              'input type="number" name="discount" value="None"',
                                              '<option value="active" selected>Active</option>',

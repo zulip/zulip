@@ -162,7 +162,7 @@ def get_web_link_regex() -> str:
 
     # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
     #
-    # We detect a url either by the `https?://` or by building around the TLD.
+    # We detect a URL either by the `https?://` or by building around the TLD.
 
     # In lieu of having a recursive regex (which python doesn't support) to match
     # arbitrary numbers of nested matching parenthesis, we manually build a regexp that
@@ -668,7 +668,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             description_elm.text = description
 
     def get_actual_image_url(self, url: str) -> str:
-        # Add specific per-site cases to convert image-preview urls to image urls.
+        # Add specific per-site cases to convert image-preview URLs to image URLs.
         # See https://github.com/zulip/zulip/issues/4658 for more information
         parsed_url = urllib.parse.urlparse(url)
         if (parsed_url.netloc == 'github.com' or parsed_url.netloc.endswith('.github.com')):
@@ -685,7 +685,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not self.md.image_preview_enabled:
             return False
         parsed_url = urllib.parse.urlparse(url)
-        # remove html urls which end with img extensions that can not be shorted
+        # remove HTML URLs which end with image extensions that can not be shorted
         if parsed_url.netloc == 'pasteboard.co':
             return False
 
@@ -696,15 +696,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return False
 
     def corrected_image_source(self, url: str) -> Optional[str]:
-        # This function adjusts any urls from linx.li and
-        # wikipedia.org to point to the actual image url.  It's
+        # This function adjusts any URLs from linx.li and
+        # wikipedia.org to point to the actual image URL.  It's
         # structurally very similar to dropbox_image, and possibly
         # should be rewritten to use open graph, but has some value.
         parsed_url = urllib.parse.urlparse(url)
         if parsed_url.netloc.lower().endswith('.wikipedia.org'):
             # Redirecting from "/wiki/File:" to "/wiki/Special:FilePath/File:"
             # A possible alternative, that avoids the redirect after hitting "Special:"
-            # is using the first characters of md5($filename) to generate the url
+            # is using the first characters of md5($filename) to generate the URL
             domain = parsed_url.scheme + "://" + parsed_url.netloc
             correct_url = domain + parsed_url.path[:6] + 'Special:FilePath' + parsed_url.path[5:]
             return correct_url
@@ -760,7 +760,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def youtube_id(self, url: str) -> Optional[str]:
         if not self.md.image_preview_enabled:
             return None
-        # Youtube video id extraction regular expression from https://pastebin.com/KyKAFv1s
+        # YouTube video id extraction regular expression from https://pastebin.com/KyKAFv1s
         # Slightly modified to support URLs of the forms
         #   - youtu.be/<id>
         #   - youtube.com/playlist?v=<id>&list=<list-id>
@@ -817,11 +817,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                      user_mentions: List[Dict[str, Any]],
                      media: List[Dict[str, Any]]) -> Element:
         """
-        Use data from the twitter API to turn links, mentions and media into A
-        tags. Also convert unicode emojis to images.
+        Use data from the Twitter API to turn links, mentions and media into A
+        tags. Also convert Unicode emojis to images.
 
-        This works by using the urls, user_mentions and media data from
-        the twitter API and searching for unicode emojis in the text using
+        This works by using the URLs, user_mentions and media data from
+        the twitter API and searching for Unicode emojis in the text using
         `unicode_emoji_regex`.
 
         The first step is finding the locations of the URLs, mentions, media and
@@ -1167,7 +1167,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if not self.is_absolute_url(url):
                 if self.is_image(url):
                     self.handle_image_inlining(root, found_url)
-                # We don't have a strong use case for doing url preview for relative links.
+                # We don't have a strong use case for doing URL preview for relative links.
                 continue
 
             dropbox_image = self.dropbox_image(url)
@@ -1276,7 +1276,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         time_element.text = markdown.util.AtomicString(time_input_string)
         return time_element
 
-# All of our emojis(non ZWJ sequences) belong to one of these unicode blocks:
+# All of our emojis(non ZWJ sequences) belong to one of these Unicode blocks:
 # \U0001f100-\U0001f1ff - Enclosed Alphanumeric Supplement
 # \U0001f200-\U0001f2ff - Enclosed Ideographic Supplement
 # \U0001f300-\U0001f5ff - Miscellaneous Symbols and Pictographs
@@ -1311,13 +1311,13 @@ unicode_emoji_regex = '(?P<syntax>['\
 # The equivalent JS regex is \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
 # \ud83e[\udd00-\uddff]|[\u2000-\u206f]|[\u2300-\u27bf]|[\u2b00-\u2bff]|[\u3000-\u303f]|
 # [\u3200-\u32ff]. See below comments for explanation. The JS regex is used by marked.js for
-# frontend unicode emoji processing.
+# frontend Unicode emoji processing.
 # The JS regex \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f] represents U0001f100-\U0001f64f
 # The JS regex \ud83d[\ude80-\udeff] represents \U0001f680-\U0001f6ff
 # The JS regex \ud83e[\udd00-\uddff] represents \U0001f900-\U0001f9ff
 # The JS regex [\u2000-\u206f] represents \u2000-\u206f
 # The JS regex [\u2300-\u27bf] represents \u2300-\u27bf
-# Similarly other JS regexes can be mapped to the respective unicode blocks.
+# Similarly other JS regexes can be mapped to the respective Unicode blocks.
 # For more information, please refer to the following article:
 # http://crocodillon.com/blog/parsing-emoji-unicode-in-javascript
 
@@ -1418,14 +1418,14 @@ class Tex(markdown.inlinepatterns.Pattern):
 
 def sanitize_url(url: str) -> Optional[str]:
     """
-    Sanitize a url against xss attacks.
+    Sanitize a URL against XSS attacks.
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
     """
     try:
         parts = urllib.parse.urlparse(url.replace(' ', '%20'))
         scheme, netloc, path, params, query, fragment = parts
     except ValueError:
-        # Bad url - so bad it couldn't be parsed.
+        # Bad URL - so bad it couldn't be parsed.
         return ''
 
     # If there is no scheme or netloc and there is a '@' in the path,
@@ -1467,7 +1467,7 @@ def sanitize_url(url: str) -> Optional[str]:
     # We already converted an empty scheme to http:// above, so we skip
     # the colon check, which would also forbid a lot of legitimate URLs.
 
-    # Url passes all tests. Return url as-is.
+    # URL passes all tests. Return URL as-is.
     return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
 
 def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> Union[Element, str]:
@@ -1530,7 +1530,7 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         parser.md.tab_length = 4
 
 class HashHeaderProcessor(markdown.blockprocessors.HashHeaderProcessor):
-    """ Process Hash Headers.
+    """ Process hash headers.
 
         Based on markdown.blockprocessors.HashHeaderProcessor, but requires space for heading.
     """
@@ -1540,7 +1540,7 @@ class HashHeaderProcessor(markdown.blockprocessors.HashHeaderProcessor):
     RE = re.compile(r'(?:^|\n)(?P<level>#{1,6})\s(?P<header>(?:\\.|[^\\])*?)#*(?:\n|$)')
 
 class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
-    """ Process BlockQuotes.
+    """ Process block quotes.
 
         Based on markdown.blockprocessors.BlockQuoteProcessor, but with 2-space indent
     """
@@ -1812,7 +1812,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         href = el.get('href')
         assert href is not None
 
-        # Sanitize url or don't parse link. See linkify_tests in markdown_test_cases for banned syntax.
+        # Sanitize URL or don't parse link. See linkify_tests in markdown_test_cases for banned syntax.
         href = sanitize_url(self.unescape(href.strip()))
         if href is None:
             return None  # no-op; the link is not processed.
@@ -1841,7 +1841,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return el, match_start, index
 
 def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
-    # Registry is a new class added by py-markdown to replace Ordered List.
+    # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
     # object instead of removing keys from the existing object.
     new_r = markdown.util.Registry()
@@ -1869,11 +1869,11 @@ class Markdown(markdown.Markdown):
         self.set_output_format('html')
 
     def build_parser(self) -> markdown.Markdown:
-        # Build the parser using selected default features from py-markdown.
+        # Build the parser using selected default features from Python-Markdown.
         # The complete list of all available processors can be found in the
         # super().build_parser() function.
         #
-        # Note: for any py-markdown updates, manually check if we want any
+        # Note: for any Python-Markdown updates, manually check if we want any
         # of the new features added upstream or not; they wouldn't get
         # included by default.
         self.preprocessors = self.build_preprocessors()
@@ -1948,7 +1948,7 @@ class Markdown(markdown.Markdown):
         ENTITY_RE = markdown.inlinepatterns.ENTITY_RE
         STRONG_EM_RE = r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*'
 
-        # Add Inline Patterns.  We use a custom numbering of the
+        # Add inline patterns.  We use a custom numbering of the
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
         reg = markdown.util.Registry()
@@ -1962,7 +1962,7 @@ class Markdown(markdown.Markdown):
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), 'link', 60)
         reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
-        # Reserve priority 45-54 for Realm Filters
+        # Reserve priority 45-54 for realm filters
         reg = self.register_realm_filters(reg)
         reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), 'entity', 40)
         reg.register(markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'), 'strong', 35)
@@ -2072,7 +2072,7 @@ def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
         for m in re.finditer(pattern, topic_name):
             matches += [realm_filter[1] % m.groupdict()]
 
-    # Also make raw urls navigable.
+    # Also make raw URLs navigable.
     for sub_string in basic_link_splitter.split(topic_name):
         link_match = re.match(get_web_link_regex(), sub_string)
         if link_match:

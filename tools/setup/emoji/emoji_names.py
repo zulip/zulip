@@ -4,10 +4,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # seems like best emoji for happy
     '1f600': {'canonical_name': 'grinning', 'aliases': ['happy']},
     '1f603': {'canonical_name': 'smiley', 'aliases': []},
-    # the google emoji for this is not great, so made People/9 'smile' and
+    # the Google emoji for this is not great, so made People/9 'smile' and
     # renamed this one
     '1f604': {'canonical_name': 'big_smile', 'aliases': []},
-    # from gemoji/unicode
+    # from gemoji/Unicode
     '1f601': {'canonical_name': 'grinning_face_with_smiling_eyes', 'aliases': []},
     # satisfied doesn't seem like a good description of these images
     '1f606': {'canonical_name': 'laughing', 'aliases': ['lol']},
@@ -18,7 +18,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # not sure how the glyphs match relaxed, but both iamcal and gemoji have it
     '263a': {'canonical_name': 'smiling_face', 'aliases': ['relaxed']},
     '1f60a': {'canonical_name': 'blush', 'aliases': []},
-    # halo comes from gemoji/unicode
+    # halo comes from gemoji/Unicode
     '1f607': {'canonical_name': 'innocent', 'aliases': ['halo']},
     '1f642': {'canonical_name': 'smile', 'aliases': []},
     '1f643': {'canonical_name': 'upside_down', 'aliases': ['oops']},
@@ -55,7 +55,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f614': {'canonical_name': 'pensive', 'aliases': ['tired']},
     '1f61f': {'canonical_name': 'worried', 'aliases': []},
     # these seem to better capture the glyphs. This is also what :/ turns into
-    # in google hangouts
+    # in Google Hangouts
     '1f615': {'canonical_name': 'oh_no', 'aliases': ['half_frown', 'concerned', 'confused']},
     '1f641': {'canonical_name': 'frown', 'aliases': ['slight_frown']},
     # sad seemed better than putting another frown as the primary name (see
@@ -88,7 +88,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f632': {'canonical_name': 'astonished', 'aliases': []},
     '1f635': {'canonical_name': 'dizzy', 'aliases': []},
     # the alternates are from https://emojipedia.org/flushed-face/. shame
-    # doesn't work with the google emoji
+    # doesn't work with the Google emoji
     '1f633': {'canonical_name': 'flushed', 'aliases': ['embarrassed', 'blushing']},
     '1f631': {'canonical_name': 'scream', 'aliases': []},
     # scared from https://emojipedia.org/fearful-face/, shock seemed like a
@@ -129,13 +129,13 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # hurt)
     '1f915': {'canonical_name': 'hurt', 'aliases': ['head_bandage', 'injured']},
     # devil from https://emojipedia.org/smiling-face-with-horns/,
-    # smiling_face_with_horns from gemoji/unicode
+    # smiling_face_with_horns from gemoji/Unicode
     '1f608': {'canonical_name': 'smiling_devil', 'aliases': ['smiling_imp', 'smiling_face_with_horns']},
     # angry_devil from https://beebom.com/emoji-meanings/
     '1f47f': {'canonical_name': 'devil', 'aliases': ['imp', 'angry_devil']},
     '1f479': {'canonical_name': 'ogre', 'aliases': []},
     '1f47a': {'canonical_name': 'goblin', 'aliases': []},
-    # pile_of_poo from gemoji/unicode
+    # pile_of_poo from gemoji/Unicode
     '1f4a9': {'canonical_name': 'poop', 'aliases': ['pile_of_poo']},
     # alternates seemed like reasonable additions
     '1f47b': {'canonical_name': 'ghost', 'aliases': ['boo', 'spooky', 'haunted']},
@@ -155,7 +155,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # smug_cat to parallel People/31
     '1f63c': {'canonical_name': 'smirk_cat', 'aliases': ['smug_cat']},
     '1f63d': {'canonical_name': 'kissing_cat', 'aliases': []},
-    # weary_cat from unicode/gemoji
+    # weary_cat from Unicode/gemoji
     '1f640': {'canonical_name': 'scream_cat', 'aliases': ['weary_cat']},
     '1f63f': {'canonical_name': 'crying_cat', 'aliases': []},
     # angry_cat to better parallel People/45
@@ -209,19 +209,19 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # due to 'high_five'
     '1f44b': {'canonical_name': 'wave', 'aliases': ['hello', 'hi']},
     '1f919': {'canonical_name': 'call_me', 'aliases': []},
-    # flexed_biceps from gemoji/unicode, strong seemed like a good addition
+    # flexed_biceps from gemoji/Unicode, strong seemed like a good addition
     '1f4aa': {'canonical_name': 'muscle', 'aliases': []},
     '1f595': {'canonical_name': 'middle_finger', 'aliases': []},
     '270d': {'canonical_name': 'writing', 'aliases': []},
     '1f933': {'canonical_name': 'selfie', 'aliases': []},
-    # Couldn't figure out why iamcal chose nail_care. unicode uses nail_polish,
+    # Couldn't figure out why iamcal chose nail_care. Unicode uses nail_polish,
     # gemoji uses both
     '1f485': {'canonical_name': 'nail_polish', 'aliases': ['nail_care']},
     '1f48d': {'canonical_name': 'ring', 'aliases': []},
     '1f484': {'canonical_name': 'lipstick', 'aliases': []},
     # People/18 seems like a better kiss for most circumstances
     '1f48b': {'canonical_name': 'lipstick_kiss', 'aliases': []},
-    # mouth from gemoji/unicode
+    # mouth from gemoji/Unicode
     '1f444': {'canonical_name': 'lips', 'aliases': ['mouth']},
     '1f445': {'canonical_name': 'tongue', 'aliases': []},
     '1f442': {'canonical_name': 'ear', 'aliases': []},
@@ -244,7 +244,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # It's used on twitter a bunch, either when showing off hair, or in a way
     # where People/144 would substitute. It'd be nice if there were another
     # emoji one could use for "good hair", but I think not a big loss to not
-    # have one for zulip, and not worth the eurocentrism.
+    # have one for Zulip, and not worth the eurocentrism.
     # '1f471': {'canonical_name': 'X', 'aliases': ['person_with_blond_hair']},
     # Added elderly since I think some people prefer that term
     '1f474': {'canonical_name': 'older_man', 'aliases': ['elderly_man']},
@@ -252,7 +252,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f475': {'canonical_name': 'older_woman', 'aliases': ['elderly_woman']},
     '1f472': {'canonical_name': 'gua_pi_mao', 'aliases': []},
     '1f473': {'canonical_name': 'turban', 'aliases': []},
-    # police seems like a more polite term, and matches the unicode
+    # police seems like a more polite term, and matches the Unicode
     '1f46e': {'canonical_name': 'police', 'aliases': ['cop']},
     '1f477': {'canonical_name': 'construction_worker', 'aliases': []},
     '1f482': {'canonical_name': 'guard', 'aliases': []},
@@ -328,7 +328,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # https://mashable.com/2015/10/23/ios-9-1-emoji-guide/. hard_hat and
     # rescue_worker seem like good additions
     '26d1': {'canonical_name': 'helmet', 'aliases': ['hard_hat', 'rescue_worker', 'safety_first', 'invincible']},
-    # backpack from gemoji, dominates satchel on google trends
+    # backpack from gemoji, dominates satchel on Google Trends
     '1f392': {'canonical_name': 'backpack', 'aliases': ['satchel']},
     '1f45d': {'canonical_name': 'pouch', 'aliases': []},
     '1f45b': {'canonical_name': 'purse', 'aliases': []},
@@ -340,7 +340,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f576': {'canonical_name': 'dark_sunglasses', 'aliases': []},
     '1f302': {'canonical_name': 'closed_umbrella', 'aliases': []},
     '2602': {'canonical_name': 'umbrella', 'aliases': []},
-    # Some animals have a unicode codepoint "<animal>", some have a codepoint
+    # Some animals have a Unicode codepoint "<animal>", some have a codepoint
     # "<animal> face", and some have both. If an animal has just a single
     # codepoint, we call it <animal>, regardless of what the codepoint is. If
     # an animal has both, we call the "<animal>" codepoint <animal>, and come
@@ -391,10 +391,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f41b': {'canonical_name': 'bug', 'aliases': ['caterpillar']},
     '1f98b': {'canonical_name': 'butterfly', 'aliases': []},
     '1f40c': {'canonical_name': 'snail', 'aliases': []},
-    # spiral_shell from unicode/gemoji, the others seemed like reasonable
+    # spiral_shell from Unicode/gemoji, the others seemed like reasonable
     # additions
     '1f41a': {'canonical_name': 'shell', 'aliases': ['seashell', 'conch', 'spiral_shell']},
-    # unicode/gemoji have lady_beetle; hopefully with ladybug we get both the
+    # Unicode/gemoji have lady_beetle; hopefully with ladybug we get both the
     # people that prefer lady_beetle (with beetle) and ladybug. There is also
     # ladybird, but seems a bit much for this to complete for bird.
     '1f41e': {'canonical_name': 'beetle', 'aliases': ['ladybug']},
@@ -511,11 +511,11 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # dizzy taken by People/54, had to come up with something else
     '1f4ab': {'canonical_name': 'seeing_stars', 'aliases': []},
     '2b50': {'canonical_name': 'star', 'aliases': []},
-    # glowing_star from gemoji/unicode
+    # glowing_star from gemoji/Unicode
     '1f31f': {'canonical_name': 'glowing_star', 'aliases': []},
     # glamour seems like a reasonable addition
     '2728': {'canonical_name': 'sparkles', 'aliases': ['glamour']},
-    # high_voltage from gemoji/unicode
+    # high_voltage from gemoji/Unicode
     '26a1': {'canonical_name': 'high_voltage', 'aliases': ['zap']},
     # https://emojipedia.org/fire/
     '1f525': {'canonical_name': 'fire', 'aliases': ['lit', 'hot', 'flame']},
@@ -555,7 +555,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # https://emojipedia.org/wind-blowing-face/
     '1f32c': {'canonical_name': 'windy', 'aliases': ['mother_nature']},
     '1f4a8': {'canonical_name': 'dash', 'aliases': []},
-    # tornado_cloud comes from the unicode, but e.g. gemoji drops the cloud
+    # tornado_cloud comes from the Unicode, but e.g. gemoji drops the cloud
     '1f32a': {'canonical_name': 'tornado', 'aliases': []},
     # hazy seemed like a good addition
     '1f32b': {'canonical_name': 'fog', 'aliases': ['hazy']},
@@ -587,7 +587,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f346': {'canonical_name': 'eggplant', 'aliases': []},
     '1f952': {'canonical_name': 'cucumber', 'aliases': []},
     '1f955': {'canonical_name': 'carrot', 'aliases': []},
-    # maize is from unicode
+    # maize is from Unicode
     '1f33d': {'canonical_name': 'corn', 'aliases': ['maize']},
     # chili_pepper seems like a reasonable addition
     '1f336': {'canonical_name': 'hot_pepper', 'aliases': ['chili_pepper']},
@@ -632,8 +632,8 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # seems like the best noodles? maybe this should be Foods/47? Noodles seem
     # like a bigger thing in east asia than in europe, so going with that.
     '1f35c': {'canonical_name': 'ramen', 'aliases': ['noodles']},
-    # seems like the best :food:. Also a reasonable :soup:, though the google
-    # one is indeed more a pot of food (the unicode) than a soup
+    # seems like the best :food:. Also a reasonable :soup:, though the Google
+    # one is indeed more a pot of food (the Unicode) than a soup
     '1f372': {'canonical_name': 'food', 'aliases': ['soup', 'stew']},
     # naruto is actual name, and I think don't need this to autocomplete for
     # "fish"
@@ -687,13 +687,13 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # Added eating_utensils so this would show up in typeahead for eat.
     '1f374': {'canonical_name': 'fork_and_knife', 'aliases': ['eating_utensils']},
     # Seems like the best emoji for hungry and meal. fork_and_knife_and_plate
-    # is from gemoji/unicode, and I think is better than the shorter iamcal
+    # is from gemoji/Unicode, and I think is better than the shorter iamcal
     # version in this case. The rest just seemed like good additions.
     '1f37d': {'canonical_name': 'hungry', 'aliases': ['meal', 'table_setting', 'fork_and_knife_with_plate', 'lets_eat']},
     # most people interested in this sport call it football
     '26bd': {'canonical_name': 'football', 'aliases': ['soccer']},
     '1f3c0': {'canonical_name': 'basketball', 'aliases': []},
-    # to distinguish from Activity/1, but is also the unicode name
+    # to distinguish from Activity/1, but is also the Unicode name
     '1f3c8': {'canonical_name': 'american_football', 'aliases': []},
     '26be': {'canonical_name': 'baseball', 'aliases': []},
     '1f3be': {'canonical_name': 'tennis', 'aliases': []},
@@ -701,9 +701,9 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f3c9': {'canonical_name': 'rugby', 'aliases': []},
     # https://emojipedia.org/billiards/ suggests this is actually used for
     # billiards, not for "unlucky" or "losing" or some other connotation of
-    # 8ball. The unicode name is billiards.
+    # 8ball. The Unicode name is billiards.
     '1f3b1': {'canonical_name': 'billiards', 'aliases': ['pool', '8_ball']},
-    # ping pong is the unicode name, and seems slightly more popular on
+    # ping pong is the Unicode name, and seems slightly more popular on
     # https://trends.google.com/trends/explore?q=table%20tennis,ping%20pong
     '1f3d3': {'canonical_name': 'ping_pong', 'aliases': ['table_tennis']},
     '1f3f8': {'canonical_name': 'badminton', 'aliases': []},
@@ -732,7 +732,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # generally than weight_lift. The others seemed like good additions.
     '1f3cb': {'canonical_name': 'lift', 'aliases': ['work_out', 'weight_lift', 'gym']},
     # The decisions on tenses here and in the rest of the sports section are
-    # mostly from gut feel. The unicode itself is all over the place.
+    # mostly from gut feel. The Unicode itself is all over the place.
     '1f93a': {'canonical_name': 'fencing', 'aliases': []},
     '1f93c': {'canonical_name': 'wrestling', 'aliases': []},
     # seemed like reasonable additions
@@ -763,7 +763,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # I feel like people call sports medals "medals", and military medals
     # "military medals". Also see Activity/56
     '1f3c5': {'canonical_name': 'medal', 'aliases': []},
-    # See Activity/55. military_medal is the gemoji/unicode
+    # See Activity/55. military_medal is the gemoji/Unicode
     '1f396': {'canonical_name': 'military_medal', 'aliases': []},
     # gold and number_one seem like good additions
     '1f947': {'canonical_name': 'first_place', 'aliases': ['gold', 'number_one']},
@@ -802,7 +802,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f3bb': {'canonical_name': 'violin', 'aliases': []},
     # dice seems more useful
     '1f3b2': {'canonical_name': 'dice', 'aliases': ['die']},
-    # direct_hit from gemoji/unicode, and seems more useful. bulls_eye seemed
+    # direct_hit from gemoji/Unicode, and seems more useful. bulls_eye seemed
     # like a reasonable addition
     '1f3af': {'canonical_name': 'direct_hit', 'aliases': ['darts', 'bulls_eye']},
     # strike seemed more useful than bowling
@@ -810,12 +810,12 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f3ae': {'canonical_name': 'video_game', 'aliases': []},
     # gambling seemed more useful than slot_machine
     '1f3b0': {'canonical_name': 'slot_machine', 'aliases': []},
-    # the google emoji for this is not red
+    # the Google emoji for this is not red
     '1f697': {'canonical_name': 'car', 'aliases': []},
     # rideshare seems like a reasonable addition
     '1f695': {'canonical_name': 'taxi', 'aliases': ['rideshare']},
-    # the google emoji for this is not blue. recreational_vehicle is from
-    # gemoji/unicode, jeep seemed like a good addition
+    # the Google emoji for this is not blue. recreational_vehicle is from
+    # gemoji/Unicode, jeep seemed like a good addition
     '1f699': {'canonical_name': 'recreational_vehicle', 'aliases': ['jeep']},
     # school_bus seemed like a reasonable addition, even though the twitter
     # glyph for this doesn't really look like a school bus
@@ -860,9 +860,9 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f69e': {'canonical_name': 'mountain_railway', 'aliases': []},
     # elevated_train seems like a reasonable addition
     '1f69d': {'canonical_name': 'monorail', 'aliases': ['elevated_train']},
-    # from gemoji/unicode. Also, don't thin we need two bullettrain's
+    # from gemoji/Unicode. Also, don't thin we need two bullettrain's
     '1f684': {'canonical_name': 'high_speed_train', 'aliases': []},
-    # google, wikipedia, etc prefer bullet train to bullettrain
+    # Google, Wikipedia, etc. prefer bullet train to bullettrain
     '1f685': {'canonical_name': 'bullet_train', 'aliases': []},
     '1f688': {'canonical_name': 'light_rail', 'aliases': []},
     '1f682': {'canonical_name': 'train', 'aliases': ['steam_locomotive']},
@@ -899,10 +899,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '2693': {'canonical_name': 'anchor', 'aliases': []},
     # there already is a construction in Places/82, and work_in_progress seems
     # like a useful thing to have. Construction_zone seems better than the
-    # unicode construction_sign, and is there partly so this autocompletes for
+    # Unicode construction_sign, and is there partly so this autocompletes for
     # construction.
     '1f6a7': {'canonical_name': 'work_in_progress', 'aliases': ['construction_zone']},
-    # alternates from https://emojipedia.org/fuel-pump/. unicode is fuel_pump,
+    # alternates from https://emojipedia.org/fuel-pump/. Unicode is fuel_pump,
     # not fuelpump
     '26fd': {'canonical_name': 'fuel_pump', 'aliases': ['gas_pump', 'petrol_pump']},
     # not sure why iamcal removed the space
@@ -985,7 +985,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # ocean_sunrise to parallel Places/109
     '1f305': {'canonical_name': 'sunrise', 'aliases': ['ocean_sunrise']},
     '1f304': {'canonical_name': 'mountain_sunrise', 'aliases': []},
-    # shooting_star and wish seem like way better descriptions. gemoji/unicode
+    # shooting_star and wish seem like way better descriptions. gemoji/Unicode
     # is shooting_star
     '1f320': {'canonical_name': 'shooting_star', 'aliases': ['wish']},
     '1f387': {'canonical_name': 'sparkler', 'aliases': []},
@@ -1000,16 +1000,16 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f309': {'canonical_name': 'bridge', 'aliases': []},
     '1f301': {'canonical_name': 'foggy', 'aliases': []},
     '231a': {'canonical_name': 'watch', 'aliases': []},
-    # unicode/gemoji is mobile_phone. The rest seem like good additions
+    # Unicode/gemoji is mobile_phone. The rest seem like good additions
     '1f4f1': {'canonical_name': 'mobile_phone', 'aliases': ['smartphone', 'iphone', 'android']},
     '1f4f2': {'canonical_name': 'calling', 'aliases': []},
-    # gemoji has laptop, even though the google emoji for this does not look
+    # gemoji has laptop, even though the Google emoji for this does not look
     # like a laptop
     '1f4bb': {'canonical_name': 'computer', 'aliases': ['laptop']},
     '2328': {'canonical_name': 'keyboard', 'aliases': []},
     '1f5a5': {'canonical_name': 'desktop_computer', 'aliases': []},
     '1f5a8': {'canonical_name': 'printer', 'aliases': []},
-    # gemoji/unicode is computer_mouse
+    # gemoji/Unicode is computer_mouse
     '1f5b1': {'canonical_name': 'computer_mouse', 'aliases': []},
     '1f5b2': {'canonical_name': 'trackball', 'aliases': []},
     # arcade seems like a reasonable addition
@@ -1022,7 +1022,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f4be': {'canonical_name': 'floppy_disk', 'aliases': []},
     '1f4bf': {'canonical_name': 'cd', 'aliases': []},
     '1f4c0': {'canonical_name': 'dvd', 'aliases': []},
-    # videocassette from gemoji/unicode
+    # videocassette from gemoji/Unicode
     '1f4fc': {'canonical_name': 'vhs', 'aliases': ['videocassette']},
     '1f4f7': {'canonical_name': 'camera', 'aliases': []},
     # both of these seem more useful than camera_with_flash
@@ -1056,7 +1056,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # seems like a reasonable addition
     '1f50b': {'canonical_name': 'battery', 'aliases': ['full_battery']},
     '1f50c': {'canonical_name': 'electric_plug', 'aliases': []},
-    # light_bulb seems better and from unicode/gemoji. idea seems like a good
+    # light_bulb seems better and from Unicode/gemoji. idea seems like a good
     # addition
     '1f4a1': {'canonical_name': 'light_bulb', 'aliases': ['bulb', 'idea']},
     '1f526': {'canonical_name': 'flashlight', 'aliases': []},
@@ -1143,7 +1143,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f381': {'canonical_name': 'gift', 'aliases': ['present']},
     # seemed like the best celebration
     '1f388': {'canonical_name': 'balloon', 'aliases': ['celebration']},
-    # from gemoji/unicode
+    # from gemoji/Unicode
     '1f38f': {'canonical_name': 'carp_streamer', 'aliases': ['flags']},
     '1f380': {'canonical_name': 'ribbon', 'aliases': ['decoration']},
     '1f38a': {'canonical_name': 'confetti', 'aliases': ['party_ball']},
@@ -1198,7 +1198,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f4d4': {'canonical_name': 'decorative_notebook', 'aliases': []},
     '1f4d2': {'canonical_name': 'ledger', 'aliases': ['spiral_notebook']},
     # the glyphs here are the same as Objects/147-149 (with a different color),
-    # for all but google
+    # for all but Google
     '1f4d5': {'canonical_name': 'red_book', 'aliases': ['closed_book']},
     '1f4d7': {'canonical_name': 'green_book', 'aliases': []},
     '1f4d8': {'canonical_name': 'blue_book', 'aliases': []},
@@ -1372,9 +1372,9 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f521': {'canonical_name': 'abcd', 'aliases': ['alphabet']},
     '1f520': {'canonical_name': 'capital_abcd', 'aliases': ['capital_letters']},
     '1f196': {'canonical_name': 'ng', 'aliases': []},
-    # from unicode/gemoji. Saving ok for People/111
+    # from Unicode/gemoji. Saving ok for People/111
     '1f197': {'canonical_name': 'squared_ok', 'aliases': []},
-    # from unicode, and to parallel Symbols/135. Saving up for Symbols/171
+    # from Unicode, and to parallel Symbols/135. Saving up for Symbols/171
     '1f199': {'canonical_name': 'squared_up', 'aliases': []},
     '1f192': {'canonical_name': 'cool', 'aliases': []},
     '1f195': {'canonical_name': 'new', 'aliases': []},

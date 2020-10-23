@@ -39,7 +39,7 @@ def zerver.lib.actions.create_user_messages(
 def zerver.lib.pysa.mark_sanitized(arg) -> Sanitize: ...
 
 ############################
-# Overbroad Approximations #
+# Overbroad approximations #
 ############################
 
 # Note that the below functions are overbroad approximations of Sanitizers and

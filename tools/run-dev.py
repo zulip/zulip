@@ -85,7 +85,7 @@ base_port = 9991
 if options.test:
     base_port = 9981
     settings_module = "zproject.test_settings"
-    # Don't auto-reload when running puppeteer tests
+    # Don't auto-reload when running Puppeteer tests
     runserver_args = ['--noreload']
 else:
     settings_module = "zproject.settings"
@@ -159,7 +159,7 @@ def server_processes() -> List[List[str]]:
 def do_one_time_webpack_compile() -> None:
     # We just need to compile webpack assets once at startup, not run a daemon,
     # in test mode.  Additionally, webpack-dev-server doesn't support running 2
-    # copies on the same system, so this model lets us run the puppeteer tests
+    # copies on the same system, so this model lets us run the Puppeteer tests
     # with a running development server.
     subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
 

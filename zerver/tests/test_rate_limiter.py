@@ -156,7 +156,7 @@ class RedisRateLimiterBackendTest(RateLimiterBackendBase):
         """
         This test cannot verify that the user will get unblocked
         after the correct amount of time, because that event happens
-        inside redis, so we're not able to mock the timer. Making the test
+        inside Redis, so we're not able to mock the timer. Making the test
         sleep for 1s is also too costly to be worth it.
         """
         obj = self.create_object('test', [(2, 5)])

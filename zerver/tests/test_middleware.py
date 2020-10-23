@@ -105,7 +105,7 @@ class OpenGraphTest(ZulipTestCase):
 
         self.check_title_and_description(
             '/api/',
-            "Zulip API Documentation",
+            "Zulip API documentation",
             [("Zulip's APIs allow you to integrate other services with Zulip. This "
               "guide should help you find the API you need:")], [])
 

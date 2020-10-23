@@ -32,7 +32,7 @@ def sync_ldap_user_data(user_profiles: List[UserProfile], deactivation_protectio
         if deactivation_protection:
             if not UserProfile.objects.filter(is_bot=False, is_active=True).exists():
                 error_msg = ("Ldap sync would have deactivated all users. This is most likely due " +
-                             "to a misconfiguration of ldap settings. Rolling back...\n" +
+                             "to a misconfiguration of LDAP settings. Rolling back...\n" +
                              "Use the --force option if the mass deactivation is intended.")
                 logger.error(error_msg)
                 # Raising an exception in this atomic block will rollback the transaction.
@@ -42,7 +42,7 @@ def sync_ldap_user_data(user_profiles: List[UserProfile], deactivation_protectio
                                                   role__gte=UserProfile.ROLE_REALM_ADMINISTRATOR).exists():
                     error_msg = ("Ldap sync would have deactivated all administrators of realm %s. " +
                                  "This is most likely due " +
-                                 "to a misconfiguration of ldap settings. Rolling back...\n" +
+                                 "to a misconfiguration of LDAP settings. Rolling back...\n" +
                                  "Use the --force option if the mass deactivation is intended.")
                     error_msg = error_msg % (string_id,)
                     logger.error(error_msg)

@@ -81,7 +81,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_rest_endpoint(self) -> None:
         """
-        Tests the /api/v1/user_uploads api endpoint. Here a single file is uploaded
+        Tests the /api/v1/user_uploads API endpoint. Here a single file is uploaded
         and downloaded using a username and api_key
         """
         fp = StringIO("zulip!")
@@ -107,7 +107,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_mobile_api_endpoint(self) -> None:
         """
-        Tests the /api/v1/user_uploads api endpoint with ?api_key
+        Tests the /api/v1/user_uploads API endpoint with ?api_key
         auth. Here a single file is uploaded and downloaded using a
         username and api_key
         """
@@ -186,7 +186,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_json_error(result, "You must specify a file to upload")
 
     # This test will go through the code path for uploading files onto LOCAL storage
-    # when zulip is in DEVELOPMENT mode.
+    # when Zulip is in DEVELOPMENT mode.
     def test_file_upload_authed(self) -> None:
         """
         A call to /json/user_uploads should return a uri and actually create an
@@ -216,7 +216,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
-        # Now try the endpoint that's supposed to return a temporary url for access
+        # Now try the endpoint that's supposed to return a temporary URL for access
         # to the file.
         result = self.client_get('/json' + uri)
         self.assert_json_success(result)
@@ -226,7 +226,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertNotEqual(url_only_url, uri)
         self.assertIn('user_uploads/temporary/', url_only_url)
         self.assertTrue(url_only_url.endswith('zulip.txt'))
-        # The generated url has a token authorizing the requestor to access the file
+        # The generated URL has a token authorizing the requestor to access the file
         # without being logged in.
         self.logout()
         self.assert_url_serves_contents_of_file(url_only_url, b"zulip!")
@@ -1041,7 +1041,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_valid_avatars(self) -> None:
         """
-        A PUT request to /json/users/me/avatar with a valid file should return a url and actually create an avatar.
+        A PUT request to /json/users/me/avatar with a valid file should return a URL and actually create an avatar.
         """
         version = 2
         for fname, rfname in self.correct_files:
@@ -1281,7 +1281,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_valid_icons(self) -> None:
         """
-        A PUT request to /json/realm/icon with a valid file should return a url
+        A PUT request to /json/realm/icon with a valid file should return a URL
         and actually create an realm icon.
         """
         for fname, rfname in self.correct_files:
@@ -1437,7 +1437,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_valid_logos(self) -> None:
         """
-        A PUT request to /json/realm/logo with a valid file should return a url
+        A PUT request to /json/realm/logo with a valid file should return a URL
         and actually create an realm logo.
         """
         for fname, rfname in self.correct_files:
@@ -1687,7 +1687,7 @@ class S3Test(ZulipTestCase):
         key = path[1:]
         self.assertEqual(b"zulip!", bucket.Object(key).get()['Body'].read())
 
-        # Now try the endpoint that's supposed to return a temporary url for access
+        # Now try the endpoint that's supposed to return a temporary URL for access
         # to the file.
         result = self.client_get('/json' + uri)
         self.assert_json_success(result)

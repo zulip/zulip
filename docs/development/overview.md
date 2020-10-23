@@ -39,7 +39,7 @@ method][install-vagrant].
 
 If you have a very slow network connection, however, you may want to
 avoid using Vagrant (which involves downloading an Ubuntu virtual
-machine or Linux Container) and either
+machine or Linux container) and either
 [install directly][install-direct] (recommended), or use
 [the manual install process][install-generic] instead.  These options
 only support Linux.
@@ -71,7 +71,7 @@ need to.
 Once you've installed the Zulip development environment, you'll want
 to read these documents to learn how to use it:
 
-* [Using the Development Environment][using-dev-env]
+* [Using the development environment][using-dev-env]
 * [Testing][testing] (and [Configuring CI][ci])
 
 And if you've set up the Zulip development environment on a remote

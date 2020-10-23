@@ -4,7 +4,7 @@
 #
 # Usage: Link or copy into /etc/munin/node.d/
 #
-# No Parameters
+# No parameters
 #
 # Magic markers (optional - only used by munin-config and some
 # installation scripts):

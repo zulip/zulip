@@ -10,7 +10,7 @@ if [ -z "$SERVER" ] || [ -z "$ROLES" ]; then
     echo "Installs an empty Ubuntu server in AWS with a Zulip server role."
     echo
     echo " * server is the local part of the hostname (e.g. postgres0)"
-    echo " * roles is a list of puppet rules to be passed to scripts/lib/install"
+    echo " * roles is a list of Puppet rules to be passed to scripts/lib/install"
     echo "   E.g. 'zulip::base,zulip::postgres_common'"
     echo " * branch is used to override the default branch to install from."
     echo

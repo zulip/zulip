@@ -26,7 +26,7 @@ if ! apt-get dist-upgrade -y "${APT_OPTIONS[@]}"; then
     apt-get dist-upgrade -y "${APT_OPTIONS[@]}"
 fi
 
-# Pin to postgresql 10 on Bionic, so we can test upgrading it
+# Pin to PostgreSQL 10 on Bionic, so we can test upgrading it
 if [ "$os_version_codename" = "bionic" ]; then
     export POSTGRES_VERSION=10
 fi

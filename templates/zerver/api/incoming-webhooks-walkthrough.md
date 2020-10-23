@@ -132,7 +132,7 @@ letter upper-case).
 
 The `webhook_view` decorator indicates that the 3rd party service will
 send the authorization as an API key in the query parameters. If your service uses
-HTTP Basic authentication, you would instead use the `authenticated_rest_api_view`
+HTTP basic authentication, you would instead use the `authenticated_rest_api_view`
 decorator.
 
 You should name your webhook function as such
@@ -174,10 +174,10 @@ validate the message and do the following:
 Finally, we return a 200 http status with a JSON format success message via
 `json_success()`.
 
-## Step 3: Create an api endpoint for the webhook
+## Step 3: Create an API endpoint for the webhook
 
 In order for an incoming webhook to be externally available, it must be mapped
-to a url. This is done in `zerver/lib/integrations.py`.
+to a URL. This is done in `zerver/lib/integrations.py`.
 
 Look for the lines beginning with:
 
@@ -191,7 +191,7 @@ And you'll find the entry for Hello World:
   WebhookIntegration('helloworld', ['misc'], display_name='Hello World'),
 ```
 
-This tells the Zulip api to call the `api_helloworld_webhook` function in
+This tells the Zulip API to call the `api_helloworld_webhook` function in
 `zerver/webhooks/helloworld/view.py` when it receives a request at
 `/api/v1/external/helloworld`.
 
@@ -232,7 +232,7 @@ Common validators are available in `zerver/lib/validators.py`.
 For either one of the command line tools, first, you'll need to get an API key
 from the **Your bots** section of your Zulip user's Settings page. To test the webhook,
 you'll need to [create a bot](https://zulip.com/help/add-a-bot-or-integration) with
-the **Incoming Webhook** type. Replace `<api_key>` with your bot's API key in the examples
+the **Incoming webhook** type. Replace `<api_key>` with your bot's API key in the examples
 presented below! This is how Zulip knows that the request was made by an authorized user.
 
 ### Curl
@@ -280,9 +280,9 @@ This is the GUI tool.
 
 1. Run `./tools/run-dev.py` then go to http://localhost:9991/devtools/integrations/.
 
-2. Set the following mandatory fields:  
-**Bot** - Any incoming webhook bot.  
-**Integration** - One of the integrations.  
+2. Set the following mandatory fields:
+**Bot** - Any incoming webhook bot.
+**Integration** - One of the integrations.
 **Fixture** - Though not mandatory, it's recommended that you select one and then tweak it if necessary.
 The remaining fields are optional, and the URL will automatically be generated.
 
@@ -467,7 +467,7 @@ request:
 2. Read through [Code styles and conventions](
    https://zulip.readthedocs.io/en/latest/contributing/code-style.html) and take a look
    through your code to double-check that you've followed Zulip's guidelines.
-3. Take a look at your git history to ensure your commits have been clear and
+3. Take a look at your Git history to ensure your commits have been clear and
    logical (see [Version Control](
    https://zulip.readthedocs.io/en/latest/contributing/version-control.html) for tips). If not,
    consider revising them with `git rebase --interactive`. For most incoming webhooks,

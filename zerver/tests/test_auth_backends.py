@@ -858,7 +858,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         # redirected back to the registered redirect uri.
 
         # We register callbacks for the key URLs on Identity Provider that
-        # auth completion url will call
+        # auth completion URL will call
         with responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock:
             requests_mock.add(
                 requests_mock.POST,
@@ -1368,11 +1368,11 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
                                            subdomain=subdomain, is_signup=True)
-            # Full name should get populated from ldap:
+            # Full name should get populated from LDAP:
             self.stage_two_of_registration(result, realm, subdomain, email, name, "New LDAP fullname",
                                            skip_registration_form=True)
 
-            # Now try a user that doesn't exist in ldap:
+            # Now try a user that doesn't exist in LDAP:
             email = self.nonreg_email("alice")
             name = "Alice Social"
             account_data_dict = self.get_account_data_dict(email=email, name=name)
@@ -1380,7 +1380,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                            expect_choose_email_screen=True,
                                            subdomain=subdomain, is_signup=True)
             # Full name should get populated as provided by the social backend, because
-            # this user isn't in the ldap dictionary:
+            # this user isn't in the LDAP dictionary:
             self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                            skip_registration_form=self.BACKEND_CLASS.full_name_validated)
         self.assertEqual(log_warn.output, [f'WARNING:root:New account email {email} could not be found in LDAP'])
@@ -1388,8 +1388,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_with_ldap_auth_registration_from_confirmation(self) -> None:
         """
-        This test checks that in configurations that use the ldap authentication backend
-        and a social backend, it is possible to create non-ldap users via the social backend.
+        This test checks that in configurations that use the LDAP authentication backend
+        and a social backend, it is possible to create non-LDAP users via the social backend.
         """
         self.init_default_ldap_database()
         email = self.nonreg_email("alice")
@@ -1413,11 +1413,11 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                            expect_choose_email_screen=True,
                                            subdomain=subdomain, is_signup=True)
             # Full name should get populated as provided by the social backend, because
-            # this user isn't in the ldap dictionary:
+            # this user isn't in the LDAP dictionary:
             self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                            skip_registration_form=self.BACKEND_CLASS.full_name_validated)
         self.assertEqual(log_warn.output, [f'WARNING:root:New account email {email} could not be found in LDAP'])
-        self.assertEqual(log_debug.output, [f'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: {email}. Input username: {email}'])
+        self.assertEqual(log_debug.output, [f'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: {email}. Input username: {email}'])
 
     def test_social_auth_complete(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
@@ -1867,7 +1867,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
 
             result = self.client_get(f'/accounts/{action}/social/saml/')
-            # No matching url pattern.
+            # No matching URL pattern.
             self.assertEqual(result.status_code, 404)
 
     def test_social_auth_saml_require_limit_to_subdomains(self) -> None:
@@ -2178,7 +2178,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
 
-            # (2) Check if auth fails when a state sent has no valid data stored in redis.
+            # (2) Check if auth fails when a state sent has no valid data stored in Redis.
             fake_state = "fa42e4ccdb630f0070c1daab70ad198d8786d4b639cd7a1b4db4d5a13c623060"
             result = self.client_post('/complete/apple/', {'state': fake_state})
             self.assertEqual(result.status_code, 302)
@@ -2392,7 +2392,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
             # that requires "choose email" screen;
             self.assert_in_success_response(["Select account"], result)
             # Verify that all the emails returned by GitHub auth
-            # are in the "choose email" screen.
+            # Are in the "choose email" screen.
             all_emails_verified = True
             for email_data_dict in self.email_data:
                 email = email_data_dict["email"]
@@ -3353,19 +3353,19 @@ class ExternalMethodDictsTests(ZulipTestCase):
         ):
             # Calling get_external_method_dicts without a realm returns all methods configured on the server:
             external_auth_methods = get_external_method_dicts()
-            # 1 IdP enabled for all realms + a dict for github auth
+            # 1 IdP enabled for all realms + a dict for GitHub auth
             self.assert_length(external_auth_methods, 2)
             self.assertEqual([external_auth_methods[0]['name'], external_auth_methods[1]['name']],
                              ['saml:test_idp', 'github'])
 
             external_auth_methods = get_external_method_dicts(get_realm("zulip"))
-            # Only test_idp enabled for the zulip realm, + github auth.
+            # Only test_idp enabled for the zulip realm, + GitHub auth.
             self.assert_length(external_auth_methods, 2)
             self.assertEqual([external_auth_methods[0]['name'], external_auth_methods[1]['name']],
                              ['saml:test_idp', 'github'])
 
             external_auth_methods = get_external_method_dicts(get_realm("zephyr"))
-            # Both idps enabled for the zephyr realm, + github auth.
+            # Both idps enabled for the zephyr realm, + GitHub auth.
             self.assert_length(external_auth_methods, 3)
             self.assertEqual({external_auth_methods[0]['name'], external_auth_methods[1]['name']},
                              {'saml:test_idp', 'saml:test_idp2'})
@@ -4074,7 +4074,7 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
     def test_authenticate_to_ldap_via_email(self) -> None:
         """
         With AUTH_LDAP_REVERSE_EMAIL_SEARCH configured, django_to_ldap_username
-        should be able to translate an email to ldap username,
+        should be able to translate an email to LDAP username,
         and thus it should be possible to authenticate through user_profile.delivery_email.
         """
         realm = get_realm("zulip")
@@ -4252,7 +4252,7 @@ class TestLDAP(ZulipLDAPTestCase):
                                              password="doesnt_matter",
                                              realm=get_realm('zulip'))
             self.assertEqual(log_debug.output, [
-                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: nonexistent. Input username: nonexistent@zulip.com'
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: nonexistent. Input username: nonexistent@zulip.com'
             ])
             self.assertIs(user, None)
 
@@ -4822,7 +4822,7 @@ class TestQueryLDAP(ZulipLDAPTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn'},
                            LDAP_EMAIL_ATTR='mail'):
             # This will look up the user by email in our test dictionary,
-            # should successfully find hamlet's ldap entry.
+            # should successfully find hamlet's LDAP entry.
             values = query_ldap(self.example_email('hamlet'))
         self.assertEqual(len(values), 2)
         self.assertIn('full_name: King Hamlet', values)

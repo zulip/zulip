@@ -104,12 +104,12 @@ files from S3.  Finally, `Attachment`'s `m2m` relationship ties to
 Here are the same classes of data, listed in roughly
 decreasing order of riskiness:
 
-- Message Data (sheer volume/lack of time/security)
-- File-Related Data (S3/security/lots of moving parts)
-- Recipient Data (complexity/security/cross-realm considerations)
-- Cross Realm Data (duplicate ids)
-- Disjoint User Data
-- Public Realm Data
+- Message data (sheer volume/lack of time/security)
+- File-related data (S3/security/lots of moving parts)
+- Recipient data (complexity/security/cross-realm considerations)
+- Cross realm data (duplicate ids)
+- Disjoint user data
+- Public realm data
 
 (Note the above list is essentially in reverse order of how we
 process the data, which isn't surprising for a top-down approach.)

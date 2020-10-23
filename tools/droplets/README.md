@@ -81,12 +81,12 @@ the user.
 In order for the script to work, the GitHub user must have:
 
 - forked the [zulip/zulip][zulip-zulip] repository, and
-- created an ssh key pair and added it to their GitHub account.
+- created an SSH key pair and added it to their GitHub account.
 
 (Share [this link][how-to-request] with students if they need to do these
 steps.)
 
-The script will stop if it can't find the user's fork or ssh keys.
+The script will stop if it can't find the user's fork or SSH keys.
 
 Once the droplet is created, you will see something similar to this message:
 
@@ -96,7 +96,7 @@ Your remote Zulip dev server has been created!
 - Connect to your server by running
   `ssh zulipdev@<username>.zulipdev.org` on the command line
   (Terminal for macOS and Linux, Bash for Git on Windows).
-- There is no password; your account is configured to use your ssh keys.
+- There is no password; your account is configured to use your SSH keys.
 - Once you log in, you should see `(zulip-py3-venv) ~$`.
 - To start the dev server, `cd zulip` and then run `./tools/run-dev.py`.
 - While the dev server is running, you can see the Zulip server in your browser
@@ -131,7 +131,7 @@ Rough steps:
 1. `tools/provision`
 1. `git clean -f`, in case things were added/removed from `.gitignore`.
 1. `tools/run-dev.py`, let it run to completion, and then Ctrl-C (to clear
-   out anything in the Rabbit MQ queue, load messages, etc).
+   out anything in the RabbitMQ queue, load messages, etc).
 1. `tools/run-dev.py`, and check that `base.zulipdev.org:9991` is up and running.
 1. `> ~/.bash_history && history -c && sudo shutdown -h now` to clear any command
    line history (To reduce chance of confusing new contributors in case you made a typo)
@@ -192,7 +192,7 @@ Rough steps:
 ## Remotely debugging a droplet
 
 To SSH into a droplet, first make sure you have a SSH key associated with your
-github account, then ask the student to run the following in their
+GitHub account, then ask the student to run the following in their
 VM:
 
 ```

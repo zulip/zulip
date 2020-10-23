@@ -197,7 +197,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             all_public_streams=True,
             apply_markdown=True,
             client_gravatar=True,
-            client_type_name='home grown api program',
+            client_type_name='home grown API program',
             event_types=['message'],
             last_connection_time=time.time(),
             queue_timeout=0,

@@ -199,19 +199,19 @@ elif args.from_git:
         logging.info("Shutting down server to build static assets on a low-RAM system.")
         shutdown_server()
 
-    # Note: The fact that this is before we apply puppet changes means
-    # that we don't support adding new puppet dependencies of
-    # update-prod-static with the git upgrade process.  But it'll fail
+    # Note: The fact that this is before we apply Puppet changes means
+    # that we don't support adding new Puppet dependencies of
+    # update-prod-static with the Git upgrade process.  But it'll fail
     # safely; this seems like a worthwhile tradeoff to minimize downtime.
     logging.info("Building static assets...")
     subprocess.check_call(["./tools/update-prod-static", "--prev-deploy=" +
                            os.path.join(DEPLOYMENTS_DIR, 'current')],
                           preexec_fn=su_to_zulip)
-    logging.info("Caching zulip git version...")
+    logging.info("Caching Zulip Git version...")
     subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 else:
     # Since this doesn't do any actual work, it's likely safe to have
-    # this run before we apply puppet changes (saving a bit of downtime).
+    # this run before we apply Puppet changes (saving a bit of downtime).
     logging.info("Installing static assets...")
     subprocess.check_call(["cp", "-rT", os.path.join(deploy_path, 'prod-static/serve'),
                            '/home/zulip/prod-static'], preexec_fn=su_to_zulip)
@@ -252,12 +252,12 @@ if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
 
 if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
     # By default, we shut down the service to apply migrations and
-    # puppet changes, to minimize risk of issues due to inconsistent
+    # Puppet changes, to minimize risk of issues due to inconsistent
     # state.
     shutdown_server()
 
 if not args.skip_puppet:
-    logging.info("Applying puppet changes...")
+    logging.info("Applying Puppet changes...")
     subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
     subprocess.check_call(["apt-get", "-y", "upgrade"])
 
@@ -283,5 +283,5 @@ else:
     logging.info("Skipping purging old deployments.")
 
 if args.skip_puppet:
-    logging.info("Showing un-applied puppet changes:")
+    logging.info("Showing un-applied Puppet changes:")
     subprocess.check_call(["./scripts/zulip-puppet-apply", "--noop", "--show_diff"])
