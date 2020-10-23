@@ -65,8 +65,6 @@ class zulip::base {
   }
   package { $base_packages: ensure => 'installed' }
 
-  $total_memory_mb = Integer($::memorysize_mb);
-
   group { 'zulip':
     ensure => present,
   }

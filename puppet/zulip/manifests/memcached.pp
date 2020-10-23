@@ -17,7 +17,7 @@ class zulip::memcached {
   }
   package { $memcached_packages: ensure => 'installed' }
 
-  $memcached_memory = zulipconf('memcached', 'memory', $zulip::base::total_memory_mb / 8)
+  $memcached_memory = zulipconf('memcached', 'memory', $zulip::common::total_memory_mb / 8)
   file { '/etc/sasl2':
     ensure => directory,
   }
