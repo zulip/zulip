@@ -1688,7 +1688,6 @@ div.focused_table {
     }
 
     > :not(.search_closed):not(.sub_count):not(.narrow_description) {
-        flex-shrink: 1;
         overflow: hidden;
     }
 
