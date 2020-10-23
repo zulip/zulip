@@ -26,4 +26,6 @@ class zulip::common {
     }
   }
   $supervisor_conf_dir = "${supervisor_system_conf_dir}/zulip"
+
+  $total_memory_mb = Integer($::memorysize_mb)
 }

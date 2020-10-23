@@ -3,10 +3,10 @@
 class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
-  $work_mem = $zulip::base::total_memory_mb / 512
-  $shared_buffers = $zulip::base::total_memory_mb / 8
-  $effective_cache_size = $zulip::base::total_memory_mb * 10 / 32
-  $maintenance_work_mem = $zulip::base::total_memory_mb / 32
+  $work_mem = $zulip::common::total_memory_mb / 512
+  $shared_buffers = $zulip::common::total_memory_mb / 8
+  $effective_cache_size = $zulip::common::total_memory_mb * 10 / 32
+  $maintenance_work_mem = $zulip::common::total_memory_mb / 32
 
   $random_page_cost = zulipconf('postgresql', 'random_page_cost', undef)
   $effective_io_concurrency = zulipconf('postgresql', 'effective_io_concurrency', undef)
