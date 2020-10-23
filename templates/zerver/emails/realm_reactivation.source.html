@@ -16,5 +16,5 @@
 
 <p>{% trans %}If the request was in error, you can take no action and this link will expire in 24 hours.{% endtrans %}</p>
 
-<p>{% trans %}Contact us any time at <a href="mailto:{{ support_email }}">{{ support_email }}</a> if you run into trouble, have any feedback, or just want to chat!{% endtrans %}</p>
+<p>{% trans support_email=macros.email_tag(support_email) %}Contact us any time at {{ support_email }} if you run into trouble, have any feedback, or just want to chat!{% endtrans %}</p>
 {% endblock %}
