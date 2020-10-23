@@ -388,8 +388,9 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
         # the startup performance of `manage.py` commands.
         import twitter
 
+        api = twitter.Api(tweet_mode='extended', **creds)
+
         try:
-            api = twitter.Api(tweet_mode='extended', **creds)
             # Sometimes Twitter hangs on responses.  Timing out here
             # will cause the Tweet to go through as-is with no inline
             # preview, rather than having the message be rejected
@@ -397,10 +398,6 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
             # formatting timeout.
             tweet = timeout(3, api.GetStatus, tweet_id)
             res = tweet.AsDict()
-        except AttributeError:
-            markdown_logger.error('Unable to load twitter api, you may have the wrong '
-                                  'library installed, see https://github.com/zulip/zulip/issues/86')
-            return None
         except TimeoutExpired:
             # We'd like to try again later and not cache the bad result,
             # so we need to re-raise the exception (just as though
