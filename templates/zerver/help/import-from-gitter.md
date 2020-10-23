@@ -45,8 +45,7 @@ skipping "Step 3: Create a Zulip organization, and log in" (you'll
 create your Zulip organization via the data import tool instead).
 
 Log in to a shell on your Zulip server as the `zulip` user. To import with
-the most common configuration, run the following commands, replacing
-`<token>` with the value generated above.
+the most common configuration, run the following commands:
 
 ```
 cd /home/zulip/deployments/current
