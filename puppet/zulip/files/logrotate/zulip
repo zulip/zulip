@@ -1,11 +1,21 @@
 /var/log/zulip/analytics.log
+/var/log/zulip/auth.log
 /var/log/zulip/digest.log
+/var/log/zulip/email-deliverer.log
+/var/log/zulip/email_content.log
+/var/log/zulip/email_mirror.log
 /var/log/zulip/errors.log
+/var/log/zulip/ldap.log
 /var/log/zulip/manage.log
+/var/log/zulip/message_retention.log
+/var/log/zulip/scheduled_message_deliverer.log
 /var/log/zulip/send_email.log
-/var/log/zulip/workers.log
+/var/log/zulip/slow_queries.log
+/var/log/zulip/soft_deactivation.log
+/var/log/zulip/sync_ldap_user_data.log
 /var/log/zulip/webhooks_errors.log
 /var/log/zulip/webhooks_unsupported_events.log
+/var/log/zulip/workers.log
 {
     missingok
     rotate 3
