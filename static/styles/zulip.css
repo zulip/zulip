@@ -1577,6 +1577,7 @@ div.focused_table {
         margin: 0 -4px 0 0;
         padding: 12px 6px;
         overflow: hidden;
+        text-overflow: ellipsis;
         @media (max-width: 500px) {
             padding: 7px 3.5px; /* based on having ~41.66% decrease */
         }
@@ -1685,10 +1686,6 @@ div.focused_table {
         @media (max-width: 500px) {
             padding: 5px 15px 0 0;
         }
-    }
-
-    > :not(.stream) {
-        text-overflow: ellipsis;
     }
 
     /* The very last element in the navbar is the search icon, the second
