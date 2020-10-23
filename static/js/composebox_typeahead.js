@@ -853,8 +853,9 @@ exports.content_typeahead_selected = function (item, event) {
         }
     } else if (this.completing === "topic_list") {
         // Stream + topic mention typeahead; close the stream+topic mention syntax
-        // with the topic and the final **.
-        const start = -this.token.length;
+        // with the topic and the final **.  Note that this.token.length can be 0
+        // if we are completing from `**streamname>`.
+        const start = beginning.length - this.token.length;
         beginning = beginning.slice(0, start) + item + "** ";
     } else if (this.completing === "time_jump") {
         let timestring = beginning.slice(Math.max(0, beginning.lastIndexOf("<time:")));

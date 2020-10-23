@@ -481,6 +481,21 @@ run_test("content_typeahead_selected", () => {
     expected_value = "#**Sweden** ";
     assert.equal(actual_value, expected_value);
 
+    // topic_list
+    fake_this.completing = "topic_list";
+
+    fake_this.query = "Hello #**Sweden>test";
+    fake_this.token = "test";
+    actual_value = ct.content_typeahead_selected.call(fake_this, "testing");
+    expected_value = "Hello #**Sweden>testing** ";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "Hello #**Sweden>";
+    fake_this.token = "";
+    actual_value = ct.content_typeahead_selected.call(fake_this, "testing");
+    expected_value = "Hello #**Sweden>testing** ";
+    assert.equal(actual_value, expected_value);
+
     // syntax
     fake_this.completing = "syntax";
 
