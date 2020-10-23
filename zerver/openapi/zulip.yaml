@@ -6317,6 +6317,16 @@ paths:
 
                           Array containing the ids of all messages which have been
                           [starred](/help/star-a-message) by the user.
+                      all_starred_messages:
+                        type: array
+                        items:
+                          type: object
+                        description: |
+                          Present if `starred_messages` is present in `fetch_event_types`.
+
+                          Array containing all messages which have been
+                          [starred](/help/star-a-message) by the user. This data can be
+                          used by the client to generate a list of all the starred topics.
                       streams:
                         type: array
                         items:

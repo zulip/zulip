@@ -833,14 +833,14 @@ def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
         for row in rows]
     return muted_stream_ids
 
-def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
+def get_starred_message_ids(user_profile: UserProfile) -> List[Tuple[int, int]]:
     return list(UserMessage.objects.filter(
         user_profile=user_profile,
     ).extra(
         where=[UserMessage.where_starred()],
     ).order_by(
         'message_id',
-    ).values_list('message_id', flat=True)[0:10000])
+    ).values_list('message_id', 'flags')[0:10000])
 
 def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)

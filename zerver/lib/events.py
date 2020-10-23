@@ -1,7 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 import copy
-from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Set
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
@@ -32,6 +32,7 @@ from zerver.lib.message import (
     get_recent_conversations_recipient_id,
     get_recent_private_conversations,
     get_starred_message_ids,
+    messages_for_ids,
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
@@ -353,8 +354,31 @@ def fetch_initial_state_data(
             # appropriate format.
             state['raw_unread_msgs'] = extract_unread_data_from_um_rows([], user_profile)
 
-    if want('starred_messages'):
-        state['starred_messages'] = [] if user_profile is None else get_starred_message_ids(user_profile)
+    if want('starred_messages') or want('all_starred_messages'):
+        if user_profile is None:
+            if want('starred_messages'):
+                state['starred_messages'] = []
+            if want('all_starred_messages'):
+                state['all_starred_messages'] = []
+        else:
+            user_message_flags = {}
+            message_ids: List[int] = []
+            messages_with_flags: List[Tuple[int, int]] = get_starred_message_ids(user_profile)
+            for message_id, flags in messages_with_flags:
+                user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
+                message_ids.append(message_id)
+
+            if want('starred_messages'):
+                state['starred_messages'] = message_ids
+            if want('all_starred_messages'):
+                state['all_starred_messages'] = messages_for_ids(
+                    message_ids=message_ids,
+                    user_message_flags=user_message_flags,
+                    search_fields={},
+                    apply_markdown=True,
+                    client_gravatar=True,
+                    allow_edit_history=False,
+                )
 
     if want('stream'):
         if include_streams:
@@ -816,12 +840,30 @@ def apply_event(state: Dict[str, Any],
         if 'raw_unread_msgs' in state and event['flag'] == 'read' and event['op'] == 'add':
             for remove_id in event['messages']:
                 remove_message_id_from_unread_mgs(state['raw_unread_msgs'], remove_id)
-        if event['flag'] == 'starred' and 'starred_messages' in state:
+        if event['flag'] == 'starred' and ('starred_messages' in state or 'all_starred_messages' in state):
             if event['op'] == 'add':
-                state['starred_messages'] += event['messages']
+                if 'starred_messages' in state:
+                    state['starred_messages'] += event['messages']
+                if 'all_starred_messages' in state:
+                    um_rows = UserMessage.objects.filter(user_profile=user_profile,
+                                                         message__id__in=event['messages'])
+                    user_message_flags = {um.message_id: um.flags_list() for um in um_rows}
+                    state['all_starred_messages'] += messages_for_ids(
+                        message_ids=event['messages'],
+                        user_message_flags=user_message_flags,
+                        search_fields={},
+                        apply_markdown=True,
+                        client_gravatar=True,
+                        allow_edit_history=False,
+                    )
+
             if event['op'] == 'remove':
-                state['starred_messages'] = [message for message in state['starred_messages']
-                                             if not (message in event['messages'])]
+                if 'starred_messages' in state:
+                    state['starred_messages'] = [message for message in state['starred_messages']
+                                                 if not (message in event['messages'])]
+                if 'all_starred_messages' in state:
+                    state['all_starred_messages'] = [msg for msg in state['all_starred_messages']
+                                                     if not (msg['id'] in event['messages'])]
     elif event['type'] == "realm_domains":
         if event['op'] == 'add':
             state['realm_domains'].append(event['realm_domain'])

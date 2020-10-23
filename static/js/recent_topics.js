@@ -9,6 +9,7 @@ const render_recent_topics_body = require("../templates/recent_topics_table.hbs"
 const people = require("./people");
 
 const topics = new Map(); // Key is stream-id:topic.
+exports.topics = topics;
 let topics_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
@@ -34,7 +35,7 @@ let col_focus = 1;
 // implement wraparound of elements with the right/left keys.  Must be
 // increased when we add new actions, or rethought if we add optional
 // actions that only appear in some rows.
-const MAX_SELECTABLE_COLS = 4;
+const MAX_SELECTABLE_COLS = 5;
 
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
@@ -202,6 +203,8 @@ function format_topic(topic_data) {
     const senders = all_senders.slice(-MAX_AVATAR);
     const senders_info = people.sender_info_with_small_avatar_urls_for_sender_ids(senders);
 
+    const is_starred = starred_messages.is_topic_starred(stream_id, topic);
+
     return {
         // stream info
         stream_id,
@@ -222,6 +225,7 @@ function format_topic(topic_data) {
         topic_muted,
         participated: topic_data.participated,
         full_last_msg_date_time: full_datetime.date + " " + full_datetime.time,
+        is_starred,
     };
 }
 
@@ -279,6 +283,13 @@ exports.filters_should_hide_topic = function (topic_data) {
     }
 
     if (!topic_data.participated && filters.has("participated")) {
+        return true;
+    }
+
+    if (filters.has("starred")) {
+        if (starred_messages.is_topic_starred(msg.stream_id, msg.topic)) {
+            return false;
+        }
         return true;
     }
 
@@ -387,6 +398,7 @@ exports.update_filters_view = function () {
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
         filter_muted: filters.has("include_muted"),
+        filter_starred: filters.has("starred"),
     });
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
@@ -425,6 +437,7 @@ exports.complete_rerender = function () {
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
         filter_muted: filters.has("include_muted"),
+        filter_starred: filters.has("starred"),
         search_val: $("#recent_topics_search").val() || "",
     });
     $("#recent_topics_table").html(rendered_body);

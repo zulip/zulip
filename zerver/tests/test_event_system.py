@@ -756,6 +756,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_user_groups=2,
             recent_private_conversations=1,
             starred_messages=1,
+            all_starred_messages=1,
             stream=2,
             stop_words=0,
             subscription=4,
