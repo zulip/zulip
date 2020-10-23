@@ -132,15 +132,17 @@ problems and how to resolve them:
   a virtual machine with broken DNS configuration; you can often
   correct this by configuring `/etc/hosts` properly.
 
-### Disabling unattended upgrades
+### Restrict unattended upgrades
 
 ```eval_rst
 .. important::
-    We recommend that you `disable Ubuntu's unattended-upgrades
-    <https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/>`_
-    and instead install apt upgrades manually.  With unattended upgrades
-    enabled, the moment a new Postgres release is published, your Zulip
-    server will have its Postgres server upgraded (and thus restarted).
+    We recommend that you `disable or limit Ubuntu's unattended-upgrades
+    to skip some server packages
+    <https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/>`;
+    if you disable them, do not forget to regularly install apt upgrades
+    manually.  With unattended upgrades enabled but not limited, the
+    moment a new Postgres release is published, your Zulip server will
+    have its Postgres server upgraded (and thus restarted).
 ```
 
 Restarting one of the system services that Zulip uses (Postgres,
@@ -168,9 +170,22 @@ restarting the Zulip server with
 installing system package updates to Postgres, memcached,
 RabbitMQ, or Redis.
 
-Few system administrators enjoy outages at random times (even if only
-brief) or the resulting distribution of error emails, which is why we
-recommend disabling `unattended-upgrades`.
+You can ensure that the `unattended-upgrades` package never upgrades
+PostgreSQL, memcached, Redis, or RabbitMQ, by configuring in
+`/etc/apt/apt.conf.d/50unattended-upgrades`:
+
+```
+// Python regular expressions, matching packages to exclude from upgrading
+Unattended-Upgrade::Package-Blacklist {
+    "libc\d+";
+    "memcached$";
+    "nginx-full$";
+    "postgresql-\d+$";
+    "rabbitmq-server$";
+    "redis-server$";
+    "supervisor$";
+};
+```
 
 ## Monitoring
 
