@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import argparse
 import os
 import sys
 
@@ -17,10 +16,5 @@ django.setup()
 from zerver.worker.queue_processors import get_active_worker_queues
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--queue-type',
-                        help="Specify which types of queues to list")
-    args = parser.parse_args()
-
-    for worker in sorted(get_active_worker_queues(args.queue_type)):
+    for worker in sorted(get_active_worker_queues()):
         print(worker)
