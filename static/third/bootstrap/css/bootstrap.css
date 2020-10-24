@@ -206,7 +206,7 @@ textarea {
 body {
   margin: 0;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 20px;
   color: #333333;
   background-color: #ffffff;
@@ -550,7 +550,7 @@ p {
 }
 .lead {
   margin-bottom: 20px;
-  font-size: 21px;
+  font-size: 1.3125rem;
   font-weight: 200;
   line-height: 30px;
 }
@@ -639,34 +639,34 @@ h3 {
   line-height: 40px;
 }
 h1 {
-  font-size: 38.5px;
+  font-size: 2.40625rem;
 }
 h2 {
-  font-size: 31.5px;
+  font-size: 1.96875rem;
 }
 h3 {
-  font-size: 24.5px;
+  font-size: 1.53125rem;
 }
 h4 {
-  font-size: 17.5px;
+  font-size: 1.09375rem;
 }
 h5 {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 h6 {
-  font-size: 11.9px;
+  font-size: 0.74375rem;
 }
 h1 small {
-  font-size: 24.5px;
+  font-size: 1.53125rem;
 }
 h2 small {
-  font-size: 17.5px;
+  font-size: 1.09375rem;
 }
 h3 small {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 h4 small {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .page-header {
   padding-bottom: 9px;
@@ -766,7 +766,7 @@ blockquote {
 }
 blockquote p {
   margin-bottom: 0;
-  font-size: 17.5px;
+  font-size: 1.09375rem;
   font-weight: 300;
   line-height: 1.25;
 }
@@ -811,7 +811,7 @@ code,
 pre {
   padding: 0 3px 2px;
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #333333;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -828,7 +828,7 @@ pre {
   display: block;
   padding: 9.5px;
   margin: 0 0 10px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 20px;
   word-break: break-all;
   word-wrap: break-word;
@@ -860,7 +860,7 @@ pre code {
 .badge {
   display: inline-block;
   padding: 2px 4px;
-  font-size: 11.844px;
+  font-size: 0.74025rem;
   font-weight: bold;
   line-height: 14px;
   color: #ffffff;
@@ -1191,14 +1191,14 @@ legend {
   width: 100%;
   padding: 0;
   margin-bottom: 20px;
-  font-size: 21px;
+  font-size: 1.3125rem;
   line-height: 40px;
   color: #333333;
   border: 0;
   border-bottom: 1px solid #e5e5e5;
 }
 legend small {
-  font-size: 15px;
+  font-size: 0.9375rem;
   color: #999999;
 }
 label,
@@ -1206,7 +1206,7 @@ input,
 button,
 select,
 textarea {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: normal;
   line-height: 20px;
 }
@@ -1241,7 +1241,7 @@ input[type="color"],
   height: 20px;
   padding: 4px 6px;
   margin-bottom: 10px;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 20px;
   color: #555555;
   -webkit-border-radius: 4px;
@@ -1756,7 +1756,7 @@ select:focus:invalid:focus {
 .input-prepend .dropdown-menu,
 .input-append .popover,
 .input-prepend .popover {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .input-append input,
 .input-prepend input,
@@ -1787,7 +1787,7 @@ select:focus:invalid:focus {
   height: 20px;
   min-width: 16px;
   padding: 4px 5px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: normal;
   line-height: 20px;
   text-align: center;
@@ -2508,7 +2508,7 @@ legend + .control-group {
 .nav-header {
   display: block;
   padding: 3px 15px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: bold;
   line-height: 20px;
   color: #999999;
@@ -2880,7 +2880,7 @@ legend + .control-group {
   display: block;
   padding: 10px 20px 10px;
   margin-left: -20px;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 200;
   color: #777777;
   text-shadow: 0 1px 0 #ffffff;
@@ -2967,7 +2967,7 @@ legend + .control-group {
   margin-bottom: 0;
   padding: 4px 14px;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: normal;
   line-height: 1;
   -webkit-border-radius: 15px;
@@ -3441,7 +3441,7 @@ legend + .control-group {
 .pagination-large ul > li > a,
 .pagination-large ul > li > span {
   padding: 11px 19px;
-  font-size: 17.5px;
+  font-size: 1.09375rem;
 }
 .pagination-large ul > li:first-child > a,
 .pagination-large ul > li:first-child > span {
@@ -3486,12 +3486,12 @@ legend + .control-group {
 .pagination-small ul > li > a,
 .pagination-small ul > li > span {
   padding: 2px 10px;
-  font-size: 11.9px;
+  font-size: 0.74375rem;
 }
 .pagination-mini ul > li > a,
 .pagination-mini ul > li > span {
   padding: 0 6px;
-  font-size: 10.5px;
+  font-size: 0.65625rem;
 }
 .pager {
   margin: 20px 0;
@@ -3721,7 +3721,7 @@ a.thumbnail:focus {
   height: 100%;
   color: #ffffff;
   float: left;
-  font-size: 12px;
+  font-size: 0.75rem;
   text-align: center;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
   background-color: #0e90d2;
@@ -3850,7 +3850,7 @@ a.thumbnail:focus {
 .hero-unit {
   padding: 60px;
   margin-bottom: 30px;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 200;
   line-height: 30px;
   color: inherit;
@@ -3861,7 +3861,7 @@ a.thumbnail:focus {
 }
 .hero-unit h1 {
   margin-bottom: 0;
-  font-size: 60px;
+  font-size: 3.75rem;
   line-height: 1;
   color: inherit;
   letter-spacing: -1px;
@@ -3903,7 +3903,7 @@ a.thumbnail:focus {
   z-index: 1030;
   display: block;
   visibility: visible;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.4;
   opacity: 0;
   filter: alpha(opacity=0);
@@ -4012,7 +4012,7 @@ a.thumbnail:focus {
 .popover-title {
   margin: 0;
   padding: 8px 14px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: normal;
   line-height: 18px;
   background-color: #f7f7f7;
@@ -4494,7 +4494,7 @@ a.thumbnail:focus {
   width: 40px;
   height: 40px;
   margin-top: -20px;
-  font-size: 60px;
+  font-size: 3.75rem;
   font-weight: 100;
   line-height: 30px;
   color: #ffffff;
@@ -4591,7 +4591,7 @@ a.thumbnail:focus {
 }
 .close {
   float: right;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: bold;
   line-height: 20px;
   color: #000000;
