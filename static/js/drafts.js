@@ -246,17 +246,17 @@ export function format_draft(draft) {
         // In case there is no stream for the draft, we need a
         // single space char for proper rendering of the stream label
         const space_string = new Handlebars.SafeString("&nbsp;");
-        let stream = draft.stream.length > 0 ? draft.stream : space_string;
+        let stream_name = draft.stream.length > 0 ? draft.stream : space_string;
         if (draft.stream_id) {
             const sub = sub_store.get(draft.stream_id);
-            if (sub && sub.name !== stream) {
-                stream = sub.name;
-                draft.stream = stream;
+            if (sub && sub.name !== stream_name) {
+                stream_name = sub.name;
+                draft.stream = stream_name;
                 draft_model.editDraft(id, draft);
             }
         }
         let draft_topic = util.get_draft_topic(draft);
-        const draft_stream_color = stream_data.get_color(stream);
+        const draft_stream_color = stream_data.get_color(stream_name);
 
         if (draft_topic === "") {
             draft_topic = compose.empty_topic_placeholder();
@@ -265,7 +265,7 @@ export function format_draft(draft) {
         formatted = {
             draft_id: draft.id,
             is_stream: true,
-            stream,
+            stream_name,
             stream_color: draft_stream_color,
             dark_background: color_class.get_css_class(draft_stream_color),
             topic: draft_topic,

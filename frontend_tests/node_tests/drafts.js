@@ -256,7 +256,7 @@ test("format_drafts", ({override, mock_template}) => {
         {
             draft_id: "id1",
             is_stream: true,
-            stream: "stream",
+            stream_name: "stream",
             stream_color: "#FFFFFF",
             dark_background: "",
             topic: "topic",
@@ -287,7 +287,7 @@ test("format_drafts", ({override, mock_template}) => {
         {
             draft_id: "id3",
             is_stream: true,
-            stream: "stream 2",
+            stream_name: "stream 2",
             stream_color: "#FFFFFF",
             dark_background: "",
             topic: "topic",
@@ -333,7 +333,7 @@ test("format_drafts", ({override, mock_template}) => {
         return {name: "stream-rename"};
     };
 
-    expected[0].stream = "stream-rename";
+    expected[0].stream_name = "stream-rename";
 
     drafts.launch();
     timerender.__Rewire__("render_now", stub_render_now);
