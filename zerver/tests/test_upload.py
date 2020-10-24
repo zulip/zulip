@@ -1096,15 +1096,18 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         source_path_id = avatar_disk_path(source_user_profile)
         target_path_id = avatar_disk_path(target_user_profile)
         self.assertNotEqual(source_path_id, target_path_id)
-        self.assertEqual(open(source_path_id, "rb").read(), open(target_path_id, "rb").read())
+        with open(source_path_id, "rb") as source, open(target_path_id, "rb") as target:
+            self.assertEqual(source.read(), target.read())
 
         source_original_path_id = avatar_disk_path(source_user_profile, original=True)
         target_original_path_id = avatar_disk_path(target_user_profile, original=True)
-        self.assertEqual(open(source_original_path_id, "rb").read(), open(target_original_path_id, "rb").read())
+        with open(source_original_path_id, "rb") as source, open(target_original_path_id, "rb") as target:
+            self.assertEqual(source.read(), target.read())
 
         source_medium_path_id = avatar_disk_path(source_user_profile, medium=True)
         target_medium_path_id = avatar_disk_path(target_user_profile, medium=True)
-        self.assertEqual(open(source_medium_path_id, "rb").read(), open(target_medium_path_id, "rb").read())
+        with open(source_medium_path_id, "rb") as source, open(target_medium_path_id, "rb") as target:
+            self.assertEqual(source.read(), target.read())
 
     def test_delete_avatar_image(self) -> None:
         self.login('hamlet')
@@ -1184,33 +1187,38 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
     # with a corresponding increase in the duration of the previous frame.
     def test_resize_emoji(self) -> None:
         # Test unequal width and height of animated GIF image
-        animated_unequal_img_data = get_test_image_file('animated_unequal_img.gif').read()
+        with get_test_image_file('animated_unequal_img.gif') as f:
+            animated_unequal_img_data = f.read()
         resized_img_data = resize_emoji(animated_unequal_img_data, size=50)
         im = Image.open(io.BytesIO(resized_img_data))
         self.assertEqual((50, 50), im.size)
 
         # Test corrupt image exception
-        corrupted_img_data = get_test_image_file('corrupt.gif').read()
+        with get_test_image_file('corrupt.gif') as f:
+            corrupted_img_data = f.read()
         with self.assertRaises(BadImageError):
             resize_emoji(corrupted_img_data)
 
         # Test an image larger than max is resized
+        with get_test_image_file('animated_large_img.gif') as f:
+            animated_large_img_data = f.read()
         with patch('zerver.lib.upload.MAX_EMOJI_GIF_SIZE', 128):
-            animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
             resized_img_data = resize_emoji(animated_large_img_data, size=50)
             im = Image.open(io.BytesIO(resized_img_data))
             self.assertEqual((50, 50), im.size)
 
         # Test an image file larger than max is resized
+        with get_test_image_file('animated_large_img.gif') as f:
+            animated_large_img_data = f.read()
         with patch('zerver.lib.upload.MAX_EMOJI_GIF_FILE_SIZE_BYTES', 3 * 1024 * 1024):
-            animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
             resized_img_data = resize_emoji(animated_large_img_data, size=50)
             im = Image.open(io.BytesIO(resized_img_data))
             self.assertEqual((50, 50), im.size)
 
         # Test an image smaller than max and smaller than file size max is not resized
+        with get_test_image_file('animated_large_img.gif') as f:
+            animated_large_img_data = f.read()
         with patch('zerver.lib.upload.MAX_EMOJI_GIF_SIZE', 512):
-            animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
             resized_img_data = resize_emoji(animated_large_img_data, size=50)
             im = Image.open(io.BytesIO(resized_img_data))
             self.assertEqual((256, 256), im.size)
@@ -1543,10 +1551,10 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_emoji_upload_local(self) -> None:
         user_profile = self.example_user("hamlet")
-        image_file = get_test_image_file("img.png")
         file_name = "emoji.png"
 
-        upload_emoji_image(image_file, file_name, user_profile)
+        with get_test_image_file("img.png") as image_file:
+            upload_emoji_image(image_file, file_name, user_profile)
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
@@ -1557,16 +1565,16 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         with get_test_image_file("img.png") as image_file, open(file_path + ".original", "rb") as original_file:
             self.assertEqual(image_file.read(), original_file.read())
 
-        resized_image = Image.open(open(file_path, "rb"))
         expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
-        self.assertEqual(expected_size, resized_image.size)
+        with Image.open(file_path) as resized_image:
+            self.assertEqual(expected_size, resized_image.size)
 
     def test_get_emoji_url_local(self) -> None:
         user_profile = self.example_user("hamlet")
-        image_file = get_test_image_file("img.png")
         file_name = "emoji.png"
 
-        upload_emoji_image(image_file, file_name, user_profile)
+        with get_test_image_file("img.png") as image_file:
+            upload_emoji_image(image_file, file_name, user_profile)
         url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
@@ -1816,13 +1824,13 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        image_file = get_test_image_file("img.png")
-        zerver.lib.upload.upload_backend.upload_realm_icon_image(image_file, user_profile)
+        with get_test_image_file("img.png") as image_file:
+            zerver.lib.upload.upload_backend.upload_realm_icon_image(image_file, user_profile)
 
         original_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.original")
         original_key = bucket.Object(original_path_id)
-        image_file.seek(0)
-        self.assertEqual(image_file.read(), original_key.get()['Body'].read())
+        with get_test_image_file("img.png") as image_file:
+            self.assertEqual(image_file.read(), original_key.get()['Body'].read())
 
         resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.png")
         resized_data = bucket.Object(resized_path_id).get()['Body'].read()
@@ -1835,13 +1843,13 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        image_file = get_test_image_file("img.png")
-        zerver.lib.upload.upload_backend.upload_realm_logo_image(image_file, user_profile, night)
+        with get_test_image_file("img.png") as image_file:
+            zerver.lib.upload.upload_backend.upload_realm_logo_image(image_file, user_profile, night)
 
         original_path_id = os.path.join(str(user_profile.realm.id), "realm", f"{file_name}.original")
         original_key = bucket.Object(original_path_id)
-        image_file.seek(0)
-        self.assertEqual(image_file.read(), original_key.get()['Body'].read())
+        with get_test_image_file("img.png") as image_file:
+            self.assertEqual(image_file.read(), original_key.get()['Body'].read())
 
         resized_path_id = os.path.join(str(user_profile.realm.id), "realm", f"{file_name}.png")
         resized_data = bucket.Object(resized_path_id).get()['Body'].read()
@@ -1857,17 +1865,17 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        image_file = get_test_image_file("img.png")
         emoji_name = "emoji.png"
-        zerver.lib.upload.upload_backend.upload_emoji_image(image_file, emoji_name, user_profile)
+        with get_test_image_file("img.png") as image_file:
+            zerver.lib.upload.upload_backend.upload_emoji_image(image_file, emoji_name, user_profile)
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
             emoji_file_name=emoji_name,
         )
         original_key = bucket.Object(emoji_path + ".original")
-        image_file.seek(0)
-        self.assertEqual(image_file.read(), original_key.get()['Body'].read())
+        with get_test_image_file("img.png") as image_file:
+            self.assertEqual(image_file.read(), original_key.get()['Body'].read())
 
         resized_data = bucket.Object(emoji_path).get()['Body'].read()
         resized_image = Image.open(io.BytesIO(resized_data))
@@ -1973,39 +1981,33 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
 class ExifRotateTests(ZulipTestCase):
     def test_image_do_not_rotate(self) -> None:
         # Image does not have _getexif method.
-        img_data = get_test_image_file('img.png').read()
-        img = Image.open(io.BytesIO(img_data))
-        result = exif_rotate(img)
-        self.assertEqual(result, img)
+        with get_test_image_file('img.png') as f, Image.open(f) as img:
+            result = exif_rotate(img)
+            self.assertEqual(result, img)
 
         # Image with no exif data.
-        img_data = get_test_image_file('img_no_exif.jpg').read()
-        img = Image.open(io.BytesIO(img_data))
-        result = exif_rotate(img)
-        self.assertEqual(result, img)
+        with get_test_image_file('img_no_exif.jpg') as f, Image.open(f) as img:
+            result = exif_rotate(img)
+            self.assertEqual(result, img)
 
         # Orientation of the image is 1.
-        img_data = get_test_image_file('img.jpg').read()
-        img = Image.open(io.BytesIO(img_data))
-        result = exif_rotate(img)
-        self.assertEqual(result, img)
+        with get_test_image_file('img.jpg') as f, Image.open(f) as img:
+            result = exif_rotate(img)
+            self.assertEqual(result, img)
 
     def test_image_rotate(self) -> None:
         with mock.patch('PIL.Image.Image.rotate') as rotate:
-            img_data = get_test_image_file('img_orientation_3.jpg').read()
-            img = Image.open(io.BytesIO(img_data))
-            exif_rotate(img)
-            rotate.assert_called_with(180, expand=True)
+            with get_test_image_file('img_orientation_3.jpg') as f, Image.open(f) as img:
+                exif_rotate(img)
+                rotate.assert_called_with(180, expand=True)
 
-            img_data = get_test_image_file('img_orientation_6.jpg').read()
-            img = Image.open(io.BytesIO(img_data))
-            exif_rotate(img)
-            rotate.assert_called_with(270, expand=True)
+            with get_test_image_file('img_orientation_6.jpg') as f, Image.open(f) as img:
+                exif_rotate(img)
+                rotate.assert_called_with(270, expand=True)
 
-            img_data = get_test_image_file('img_orientation_8.jpg').read()
-            img = Image.open(io.BytesIO(img_data))
-            exif_rotate(img)
-            rotate.assert_called_with(90, expand=True)
+            with get_test_image_file('img_orientation_8.jpg') as f, Image.open(f) as img:
+                exif_rotate(img)
+                rotate.assert_called_with(90, expand=True)
 
 class DecompressionBombTests(ZulipTestCase):
     def setUp(self) -> None:

@@ -1802,15 +1802,16 @@ class TestUserAgentParsing(ZulipTestCase):
         """Test for our user agent parsing logic, using a large data set."""
         user_agents_parsed: Dict[str, int] = defaultdict(int)
         user_agents_path = os.path.join(settings.DEPLOY_ROOT, "zerver/tests/fixtures/user_agents_unique")
-        for line in open(user_agents_path).readlines():
-            line = line.strip()
-            match = re.match('^(?P<count>[0-9]+) "(?P<user_agent>.*)"$', line)
-            assert match is not None
-            groupdict = match.groupdict()
-            count = groupdict["count"]
-            user_agent = groupdict["user_agent"]
-            ret = parse_user_agent(user_agent)
-            user_agents_parsed[ret["name"]] += int(count)
+        with open(user_agents_path) as f:
+            for line in f:
+                line = line.strip()
+                match = re.match('^(?P<count>[0-9]+) "(?P<user_agent>.*)"$', line)
+                assert match is not None
+                groupdict = match.groupdict()
+                count = groupdict["count"]
+                user_agent = groupdict["user_agent"]
+                ret = parse_user_agent(user_agent)
+                user_agents_parsed[ret["name"]] += int(count)
 
 
 class TestIgnoreUnhashableLRUCache(ZulipTestCase):

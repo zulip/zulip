@@ -324,14 +324,17 @@ def main(options: argparse.Namespace) -> "NoReturn":
     for apt_depedency in SYSTEM_DEPENDENCIES:
         sha_sum.update(apt_depedency.encode('utf8'))
     if "debian" in os_families():
-        sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
+        with open('scripts/lib/setup-apt-repo', 'rb') as fb:
+            sha_sum.update(fb.read())
     else:
         # hash the content of setup-yum-repo*
-        sha_sum.update(open('scripts/lib/setup-yum-repo', 'rb').read())
+        with open('scripts/lib/setup-yum-repo', 'rb') as fb:
+            sha_sum.update(fb.read())
 
     # hash the content of build-pgroonga if PGroonga is built from source
     if BUILD_PGROONGA_FROM_SOURCE:
-        sha_sum.update(open('scripts/lib/build-pgroonga', 'rb').read())
+        with open('scripts/lib/build-pgroonga', 'rb') as fb:
+            sha_sum.update(fb.read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
@@ -408,7 +411,8 @@ def main(options: argparse.Namespace) -> "NoReturn":
     # process inside the virtualenv.
     activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
     provision_inner = os.path.join(ZULIP_PATH, "tools", "lib", "provision_inner.py")
-    exec(open(activate_this).read(), dict(__file__=activate_this))
+    with open(activate_this) as f:
+        exec(f.read(), dict(__file__=activate_this))
     os.execvp(
         provision_inner,
         [
