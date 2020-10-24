@@ -21,7 +21,7 @@
 .todo-widget,
 .poll-widget {
     h4 {
-        font-size: 18px;
+        font-size: 1.125rem;
         font-weight: 600;
     }
 
@@ -38,7 +38,7 @@
 
 .poll-widget {
     .poll-names .todo-widget {
-        font-size: 14px;
+        font-size: 0.875rem;
         color: hsl(120, 100%, 25%);
     }
 
@@ -109,7 +109,7 @@ button {
 
 .widget-error {
     color: hsl(1, 45%, 50%);
-    font-size: 12px;
+    font-size: 0.75rem;
 }
 
 .poll-question-check,

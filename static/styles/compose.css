@@ -26,7 +26,7 @@
         }
 
         .alert-draft {
-            font-size: 14px;
+            font-size: 0.875rem;
             color: hsl(170, 48%, 54%);
             padding: 3px 12px;
             font-weight: 400;
@@ -251,7 +251,7 @@ div[id^="message-edit-send-status"],
 /* Like .alert .close */
 .send-status-close,
 .compose-send-status-close {
-    font-size: 17px;
+    font-size: 1.0625rem;
     font-weight: bold;
     color: hsl(0, 0%, 0%);
     text-shadow: 0 1px 0 hsl(0, 0%, 100%);
@@ -277,7 +277,7 @@ div[id^="message-edit-send-status"],
         position: absolute;
         right: 8px;
         top: 4px;
-        font-size: 17px;
+        font-size: 1.0625rem;
         font-weight: bold;
         color: hsl(0, 0%, 0%);
         text-shadow: 0 1px 0 hsl(0, 0%, 100%);
@@ -402,7 +402,7 @@ a.message-control-button {
     opacity: 0.4;
     color: inherit;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 0.875rem;
     width: 14px;
     height: 14px;
     margin-right: 8px;
@@ -458,7 +458,7 @@ a.message-control-button {
 a#undo_markdown_preview {
     text-decoration: none;
     position: relative;
-    font-size: 15px;
+    font-size: 0.9375rem;
 }
 
 #markdown_preview_spinner {
@@ -483,7 +483,7 @@ a#undo_markdown_preview {
     }
 
     #typeahead-header-text {
-        font-size: 12px;
+        font-size: 0.75rem;
     }
 
     &.typeahead {

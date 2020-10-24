@@ -139,7 +139,7 @@ h3 .fa-question-circle-o {
     margin-right: 4px;
 
     i {
-        font-size: 22px;
+        font-size: 1.375rem;
         cursor: pointer;
     }
 }
@@ -315,7 +315,7 @@ td .button {
     }
 
     .loading_indicator_text {
-        font-size: 12px;
+        font-size: 0.75rem;
         font-weight: 400;
         vertical-align: middle;
         line-height: 20px;
@@ -513,7 +513,7 @@ input[type="checkbox"] {
     margin-left: 10px;
     color: hsl(156, 30%, 50%);
     padding: 3px 10px;
-    font-size: 15px;
+    font-size: 0.9375rem;
 
     &:not(:empty) {
         border: 1px solid hsl(156, 30%, 50%);
@@ -587,7 +587,7 @@ input[type="checkbox"] {
         padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
-        font-size: 14px;
+        font-size: 0.875rem;
         padding-left: 0;
         margin-left: 5px;
         border: none;
@@ -863,7 +863,7 @@ input[type="checkbox"] {
 
 .edit_bot_email {
     font-weight: 400;
-    font-size: 18px;
+    font-size: 1.125rem;
     text-align: left;
     margin-top: 0;
     margin-bottom: 10px;
@@ -1093,7 +1093,7 @@ input[type="checkbox"] {
     .save-discard-widget-button {
         border-radius: 5px;
         border: 1px solid hsl(0, 0%, 80%);
-        font-size: 14px;
+        font-size: 0.875rem;
         padding: 3px 14px 4px 11px;
         text-decoration: none;
         color: hsl(0, 0%, 47%);
@@ -1135,7 +1135,7 @@ input[type="checkbox"] {
             vertical-align: bottom;
             margin-right: 3px;
             margin-bottom: 1px;
-            font-size: 15px;
+            font-size: 0.9375rem;
             font-weight: 500;
         }
     }

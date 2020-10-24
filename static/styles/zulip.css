@@ -131,7 +131,7 @@ p.n-margin {
     border-radius: 4px;
     display: none;
     height: 28px;
-    font-size: 16px;
+    font-size: 1rem;
     margin: 0 auto 12px;
     padding: 5px;
     i {
@@ -503,7 +503,7 @@ strong {
 }
 
 .sidebar-title {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: hsl(0, 0%, 43%);
     font-weight: normal;
     display: inline;
@@ -511,7 +511,7 @@ strong {
 
 .tooltip {
     &.in {
-        font-size: 12px;
+        font-size: 0.75rem;
         line-height: 1.3;
 
         opacity: 1;
@@ -535,7 +535,7 @@ strong {
 #message_edit_tooltip {
     float: right;
     color: hsl(0, 0%, 0%);
-    font-size: 13px;
+    font-size: 0.8125rem;
     margin-top: 3px;
     margin-left: 6px;
     opacity: 0.5;
@@ -705,7 +705,7 @@ td.pointer {
     padding-bottom: 5px;
     vertical-align: middle;
     line-height: 18px;
-    font-size: 14px;
+    font-size: 0.875rem;
     position: relative;
     max-width: calc(100% - 50px);
 
@@ -715,7 +715,7 @@ td.pointer {
 }
 
 .message_edit_notice {
-    font-size: 10px;
+    font-size: 0.625rem;
     opacity: 0.5;
     line-height: 0px;
     text-align: right;
@@ -728,7 +728,7 @@ td.pointer {
 
 .message_time {
     display: block;
-    font-size: 12px;
+    font-size: 0.75rem;
     opacity: 0.4;
     padding: 1px;
     font-weight: 400;
@@ -745,7 +745,7 @@ td.pointer {
 .alert-msg {
     position: absolute;
     right: -110px;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: hsl(170, 48%, 54%);
     background-color: hsl(0, 0%, 100%);
     z-index: 999;
@@ -830,7 +830,7 @@ td.pointer {
 }
 
 .star {
-    font-size: 14px;
+    font-size: 0.875rem;
 
     &:hover {
         cursor: pointer;
@@ -926,7 +926,7 @@ td.pointer {
     text-decoration: none;
 
     .invite-stream-icon {
-        font-size: 12px;
+        font-size: 0.75rem;
         line-height: 17px;
     }
 
@@ -983,7 +983,7 @@ td.pointer {
 
 .recipient_row_date {
     color: hsl(0, 0%, 53%);
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     padding: 3px 11px 2px 10px;
     height: 17px;
@@ -1082,7 +1082,7 @@ td.pointer {
         display: inline-block;
         padding: 3px 6px 2px 6px;
         font-weight: normal;
-        font-size: 14px;
+        font-size: 0.875rem;
         height: 17px;
         line-height: 17px;
         border-left-color: hsl(0, 0%, 27%);
@@ -1183,7 +1183,7 @@ td.pointer {
     position: relative;
 
     i.zulip-icon.bot {
-        font-size: 12px;
+        font-size: 0.75rem;
     }
 }
 
@@ -1192,7 +1192,7 @@ td.pointer {
     font-weight: 700;
     vertical-align: top;
     line-height: 12px;
-    font-size: 14px;
+    font-size: 0.875rem;
     margin-left: -3px;
 }
 
@@ -1293,7 +1293,7 @@ a.dark_background:hover,
 .info {
     display: inline-block;
     position: relative;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: hsl(0, 0%, 73%);
 }
 
@@ -1326,7 +1326,7 @@ div.focused_table {
 .message_content {
     line-height: 1.214;
     min-height: 17px;
-    font-size: 14px;
+    font-size: 0.875rem;
     margin-left: 46px;
     display: block;
     position: relative;
@@ -1391,7 +1391,7 @@ div.focused_table {
         margin: 0;
         padding: 0 10px;
         line-height: 17px;
-        font-size: 14px;
+        font-size: 0.875rem;
     }
 }
 
@@ -1405,7 +1405,7 @@ div.focused_table {
         vertical-align: baseline;
 
         line-height: 0px;
-        font-size: 14px;
+        font-size: 0.875rem;
 
         box-shadow: none;
     }
@@ -1552,7 +1552,7 @@ div.focused_table {
     height: $header_height;
     width: 100%;
     line-height: $header_height;
-    font-size: 16px;
+    font-size: 1rem;
     display: flex;
     align-content: flex-start;
     flex-wrap: nowrap;
@@ -1572,7 +1572,7 @@ div.focused_table {
         vertical-align: top;
         position: relative;
         font-weight: 600;
-        font-size: 16px;
+        font-size: 1rem;
         line-height: 16px;
         margin: 0 -4px 0 0;
         padding: 12px 6px;
@@ -1586,7 +1586,7 @@ div.focused_table {
         .fa {
             margin: 0 3px 0 5px;
             .fa-envelope {
-                font-size: 14px;
+                font-size: 0.875rem;
                 margin: 0 5px 0 5px;
             }
             .fa-hashtag {
@@ -1609,7 +1609,7 @@ div.focused_table {
     .sub_count,
     .narrow_description {
         background: none;
-        font-size: 14px;
+        font-size: 0.875rem;
         color: hsl(0, 0%, 40%);
         font-weight: 400;
         line-height: 20px;
@@ -1631,7 +1631,7 @@ div.focused_table {
             top: 25%;
             height: 50%;
             color: hsl(0, 0%, 88%);
-            font-size: 20px;
+            font-size: 1.25rem;
             @media (max-width: 500px) {
                 top: 10%;
             }
@@ -1679,7 +1679,7 @@ div.focused_table {
         flex: 0; /* makes sure search icon is always visible */
 
         cursor: pointer;
-        font-size: 20px;
+        font-size: 1.25rem;
 
         padding: 10px 15px 0 0;
         @media (max-width: 500px) {
@@ -1742,7 +1742,7 @@ div.focused_table {
 
         .fa-search {
             padding: 0;
-            font-size: 20px;
+            font-size: 1.25rem;
             position: absolute;
             left: 10px;
             top: 10px;
@@ -1756,7 +1756,7 @@ div.focused_table {
 
     #search_query {
         width: 100%;
-        font-size: 16px;
+        font-size: 1rem;
         height: $header_height;
         padding: 0;
         padding-left: 5px;
@@ -1784,7 +1784,7 @@ div.focused_table {
         text-align: center;
         padding: 4px;
         color: hsl(0, 0%, 80%);
-        font-size: 18px;
+        font-size: 1.125rem;
         box-shadow: none;
         text-shadow: none;
         z-index: 5;
@@ -1804,7 +1804,7 @@ div.focused_table {
         color: hsl(0, 0%, 80%);
         text-decoration: none;
         padding: 0 10px;
-        font-size: 20px;
+        font-size: 1.25rem;
         z-index: 5;
         left: 0;
     }
@@ -1832,7 +1832,7 @@ div.focused_table {
     @media (min-width: 500px) {
         .pill {
             padding: 2px 0 2px 0 !important;
-            font-size: 14px;
+            font-size: 0.875rem;
         }
     }
     @media (max-width: 500px) {
@@ -1883,7 +1883,7 @@ div.focused_table {
 
         .dropdown-toggle,
         li.active .dropdown-toggle {
-            font-size: 20px;
+            font-size: 1.25rem;
             color: inherit;
             opacity: 0.5;
             text-shadow: none;
@@ -1950,7 +1950,7 @@ div.focused_table {
     box-shadow: 0 0 1px hsla(0, 0%, 0%, 0.2);
     border-radius: 12px;
     padding: 1px 1px 1px 1px;
-    font-size: 9px;
+    font-size: 0.5625rem;
     z-index: 15;
     font-weight: normal;
     color: hsl(0, 0%, 100%);
@@ -2014,7 +2014,7 @@ div.focused_table {
     border-radius: 4px;
 
     /* For FontAwesome icons used in place of images for some users. */
-    font-size: 19px;
+    font-size: 1.1875rem;
     text-align: center;
 }
 
@@ -2164,7 +2164,7 @@ div.floating_recipient {
 .small_square_button {
     padding: 0;
     border: none;
-    font-size: 12px;
+    font-size: 0.75rem;
     width: 18px;
     height: 18px;
     border-radius: 4px;
