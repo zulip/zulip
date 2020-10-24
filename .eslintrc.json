@@ -110,6 +110,7 @@
         "unicorn/no-useless-undefined": "off",
         "unicorn/number-literal-case": "off",
         "unicorn/prefer-spread": "off",
+        "unicorn/prefer-ternary": "off",
         "unicorn/prevent-abbreviations": "off",
         "valid-typeof": ["error", {"requireStringLiterals": true}],
         "yoda": "error"
