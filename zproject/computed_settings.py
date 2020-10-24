@@ -307,6 +307,8 @@ elif REMOTE_POSTGRES_HOST != '':
     DATABASES['default'].update(
         HOST=REMOTE_POSTGRES_HOST,
         PORT=REMOTE_POSTGRES_PORT,
+        NAME=REMOTE_POSTGRES_NAME,
+        USER=REMOTE_POSTGRES_USER
     )
     if get_secret("postgres_password") is not None:
         DATABASES['default'].update(
