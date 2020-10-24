@@ -7,6 +7,7 @@ import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
     create_users,
@@ -41,6 +42,7 @@ from zerver.lib.users import access_user_by_id, get_accounts_for_email, user_ids
 from zerver.models import (
     CustomProfileField,
     InvalidFakeEmailDomain,
+    Message,
     PreregistrationUser,
     Realm,
     RealmDomain,
@@ -720,6 +722,9 @@ class PermissionTest(ZulipTestCase):
 
 class QueryCountTest(ZulipTestCase):
     def test_create_user_with_multiple_streams(self) -> None:
+        # add_new_user_history needs messages to be current
+        Message.objects.all().update(date_sent=timezone_now())
+
         # This just focuses on making sure we don't too many
         # queries/cache tries or send too many events.
         realm = get_realm("zulip")
