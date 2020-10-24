@@ -275,8 +275,6 @@ class ImportExportTest(ZulipTestCase):
             upload_emoji_image(img_file, '1.png', user_profile)
         with get_test_image_file('img.png') as img_file:
             upload_avatar_image(img_file, user_profile, user_profile)
-        with open(get_test_image_file('img.png').name, 'rb') as f:
-            test_image = f.read()
 
         with get_test_image_file('img.png') as img_file:
             upload.upload_backend.upload_realm_icon_image(img_file, user_profile)
@@ -289,7 +287,8 @@ class ImportExportTest(ZulipTestCase):
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=True)
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, True, acting_user=user_profile)
 
-        test_image = get_test_image_file('img.png').read()
+        with get_test_image_file('img.png') as img_file:
+            test_image = img_file.read()
         message.sender.avatar_source = 'U'
         message.sender.save()
 
@@ -334,7 +333,8 @@ class ImportExportTest(ZulipTestCase):
         for record in records:
             image_path = os.path.join(full_data['realm_icons_dir'], record["path"])
             if image_path[-9:] == ".original":
-                image_data = open(image_path, 'rb').read()
+                with open(image_path, 'rb') as image_file:
+                    image_data = image_file.read()
                 self.assertEqual(image_data, test_image)
             else:
                 self.assertTrue(os.path.exists(image_path))
@@ -400,7 +400,8 @@ class ImportExportTest(ZulipTestCase):
         for record in records:
             image_path = os.path.join(full_data['realm_icons_dir'], record["s3_path"])
             if image_path[-9:] == ".original":
-                image_data = open(image_path, 'rb').read()
+                with open(image_path, 'rb') as image_file:
+                    image_data = image_file.read()
                 self.assertEqual(image_data, test_image)
             else:
                 self.assertTrue(os.path.exists(image_path))
@@ -1053,7 +1054,7 @@ class ImportExportTest(ZulipTestCase):
         upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
         full_upload_path = os.path.join(settings.LOCAL_UPLOADS_DIR, upload_path)
 
-        with open(get_test_image_file('img.png').name, 'rb') as f:
+        with get_test_image_file('img.png') as f:
             test_image_data = f.read()
         self.assertIsNotNone(test_image_data)
 
@@ -1086,7 +1087,7 @@ class ImportExportTest(ZulipTestCase):
             with patch('logging.info'):
                 do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'), 'test-zulip')
         imported_realm = Realm.objects.get(string_id='test-zulip')
-        with open(get_test_image_file('img.png').name, 'rb') as f:
+        with get_test_image_file('img.png') as f:
             test_image_data = f.read()
 
         # Test attachments
