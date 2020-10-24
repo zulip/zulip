@@ -3,7 +3,7 @@ import os
 import smtplib
 import time
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Type
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -516,7 +516,7 @@ class WorkerTest(ZulipTestCase):
     def test_error_handling(self) -> None:
         processed = []
 
-        @queue_processors.assign_queue('unreliable_worker')
+        @queue_processors.assign_queue('unreliable_worker', is_test_queue=True)
         class UnreliableWorker(queue_processors.QueueProcessingWorker):
             def consume(self, data: Mapping[str, Any]) -> None:
                 if data["type"] == 'unexpected behaviour':
@@ -553,7 +553,7 @@ class WorkerTest(ZulipTestCase):
 
         processed = []
 
-        @queue_processors.assign_queue('unreliable_loopworker')
+        @queue_processors.assign_queue('unreliable_loopworker', is_test_queue=True)
         class UnreliableLoopWorker(queue_processors.LoopQueueProcessingWorker):
             def consume_batch(self, events: List[Dict[str, Any]]) -> None:
                 for event in events:
@@ -592,7 +592,7 @@ class WorkerTest(ZulipTestCase):
     def test_timeouts(self) -> None:
         processed = []
 
-        @queue_processors.assign_queue('timeout_worker')
+        @queue_processors.assign_queue('timeout_worker', is_test_queue=True)
         class TimeoutWorker(queue_processors.QueueProcessingWorker):
             MAX_CONSUME_SECONDS = 1
 
@@ -641,11 +641,22 @@ class WorkerTest(ZulipTestCase):
             TestWorker()
 
     def test_get_active_worker_queues(self) -> None:
-        test_queue_count = len(get_active_worker_queues(queue_type='test'))
-        self.assertEqual(3, test_queue_count)
+        test_queue_names = set(get_active_worker_queues(only_test_queues=True))
+        # Actually 6, but test_timeouts, which defines TimeoutWorker,
+        # is called after this
+        self.assertEqual(5, len(test_queue_names))
 
-        worker_queue_count = (len(QueueProcessingWorker.__subclasses__()) +
-                              len(EmailSendingWorker.__subclasses__()) +
-                              len(LoopQueueProcessingWorker.__subclasses__()) - 1)
-        self.assertEqual(worker_queue_count, len(get_active_worker_queues(include_test_queues=True)))
-        self.assertEqual(worker_queue_count - 3, len(get_active_worker_queues()))
+        worker_queue_classes: Set[Type[QueueProcessingWorker]] = set()
+        worker_queue_classes.update(QueueProcessingWorker.__subclasses__())
+        worker_queue_classes.update(EmailSendingWorker.__subclasses__())
+        worker_queue_classes.update(LoopQueueProcessingWorker.__subclasses__())
+
+        # Remove the abstract class
+        worker_queue_classes -= set([queue_processors.LoopQueueProcessingWorker])
+
+        # This misses that TestWorker, defined in test_worker_noname
+        # with no assign_queue, because it runs after this
+
+        worker_queue_names = set([x.queue_name for x in worker_queue_classes])
+        self.assertEqual(set(get_active_worker_queues()),
+                         worker_queue_names - test_queue_names)
