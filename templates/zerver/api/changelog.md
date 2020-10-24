@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 35**
+
+* The peer_add and peer_remove subscription events now have plural
+  versions of `user_ids` and `stream_ids`.
+
 **Feature level 34**
 
 * [`POST /register`](/api/register-queue): Added a new `wildcard_mention_policy`
