@@ -95,6 +95,10 @@ h3 .fa-question-circle-o {
     .input-size {
         width: 214px;
     }
+    .btn-danger:hover {
+        color: hsl(0, 0%, 100%);
+        background-color: hsl(354, 70%, 54%);
+    }
 }
 
 .user-avatar-section {
