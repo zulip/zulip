@@ -132,7 +132,27 @@ def get_merge_request_event_body(payload: Dict[str, Any], action: str,
 
 def get_merge_request_open_or_updated_body(payload: Dict[str, Any], action: str,
                                            include_title: bool=False) -> str:
+    '''
+    For MR updated events, look at what was updated/changed and set include_description
+    to True if and only if the thing changed was the body of the MR. 
+    For MR opened events, include_description will always be True.
+     '''
+    if 'changes' in payload:
+        changes_section = payload['changes']                    
+    if action == "created":                                         
+        include_description = True                      
+    elif changes_section.get("description"):        
+        include_description = True
+    else:
+        include_description = False
+    description = None
+    if ('changes' in payload) and ('description' in payload['changes']):
+        description = payload['changes']['description']['current']
+    else:
+        description = payload['object_attributes']['description']
+        
     pull_request = payload['object_attributes']
+
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
@@ -140,7 +160,7 @@ def get_merge_request_open_or_updated_body(payload: Dict[str, Any], action: str,
         pull_request.get('iid'),
         pull_request.get('source_branch'),
         pull_request.get('target_branch'),
-        pull_request.get('description'),
+        message=description if include_description else None,
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         type='MR',
         title=payload['object_attributes'].get('title') if include_title else None,
