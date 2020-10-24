@@ -118,32 +118,29 @@ class WorkerDeclarationException(Exception):
 ConcreteQueueWorker = TypeVar('ConcreteQueueWorker', bound='QueueProcessingWorker')
 
 def assign_queue(
-        queue_name: str, enabled: bool=True, queue_type: str="consumer",
+        queue_name: str, enabled: bool=True, is_test_queue: bool=False,
 ) -> Callable[[Type[ConcreteQueueWorker]], Type[ConcreteQueueWorker]]:
     def decorate(clazz: Type[ConcreteQueueWorker]) -> Type[ConcreteQueueWorker]:
         clazz.queue_name = queue_name
         if enabled:
-            register_worker(queue_name, clazz, queue_type)
+            register_worker(queue_name, clazz, is_test_queue)
         return clazz
     return decorate
 
 worker_classes: Dict[str, Type["QueueProcessingWorker"]] = {}
-queues: Dict[str, Dict[str, Type["QueueProcessingWorker"]]] = {}
-def register_worker(queue_name: str, clazz: Type['QueueProcessingWorker'], queue_type: str) -> None:
-    if queue_type not in queues:
-        queues[queue_type] = {}
-    queues[queue_type][queue_name] = clazz
+test_queues: Set[str] = set()
+def register_worker(queue_name: str, clazz: Type['QueueProcessingWorker'], is_test_queue: bool=False) -> None:
     worker_classes[queue_name] = clazz
+    if is_test_queue:
+        test_queues.add(queue_name)
 
 def get_worker(queue_name: str) -> 'QueueProcessingWorker':
     return worker_classes[queue_name]()
 
-def get_active_worker_queues(queue_type: Optional[str]=None, include_test_queues: bool=False) -> List[str]:
-    """Returns all the non-test worker queues."""
-    if queue_type is None:
-        return [queue_name for queue_name in worker_classes.keys()
-                if include_test_queues or queue_name not in queues["test"]]
-    return list(queues[queue_type].keys())
+def get_active_worker_queues(only_test_queues: bool=False) -> List[str]:
+    """Returns all (either test, or real) worker queues."""
+    return [queue_name for queue_name in worker_classes.keys()
+            if bool(queue_name in test_queues) == only_test_queues]
 
 def check_and_send_restart_signal() -> None:
     try:
@@ -844,7 +841,7 @@ class DeferredWorker(QueueProcessingWorker):
                 user_profile.realm.string_id, time.time() - start,
             )
 
-@assign_queue('test', queue_type="test")
+@assign_queue('test', is_test_queue=True)
 class TestWorker(QueueProcessingWorker):
     # This worker allows you to test the queue worker infrastructure without
     # creating significant side effects.  It can be useful in development or
@@ -857,7 +854,7 @@ class TestWorker(QueueProcessingWorker):
         with open(fn, 'ab') as f:
             f.write(message + b'\n')
 
-@assign_queue('noop', queue_type="test")
+@assign_queue('noop', is_test_queue=True)
 class NoopWorker(QueueProcessingWorker):
     """Used to profile the queue processing framework, in zilencer's queue_rate."""
 
@@ -875,7 +872,7 @@ class NoopWorker(QueueProcessingWorker):
         if self.consumed >= self.max_consume:
             self.stop()
 
-@assign_queue('noop_batch', queue_type="test")
+@assign_queue('noop_batch', is_test_queue=True)
 class BatchNoopWorker(LoopQueueProcessingWorker):
     """Used to profile the queue processing framework, in zilencer's queue_rate."""
     batch_size = 500
