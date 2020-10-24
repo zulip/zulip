@@ -13,7 +13,6 @@
 # settings.AUTHENTICATION_BACKENDS that have a function signature
 # matching the args/kwargs passed in the authenticate() call.
 import binascii
-import copy
 import json
 import logging
 from abc import ABC, abstractmethod
@@ -550,13 +549,12 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 # Don't do work to replace the avatar with itself.
                 return
 
-            io = BytesIO(ldap_avatar)
             # Structurally, to make the S3 backend happy, we need to
             # provide a Content-Type; since that isn't specified in
             # any metadata, we auto-detect it.
-            content_type = magic.from_buffer(copy.deepcopy(io).read()[0:1024], mime=True)
+            content_type = magic.from_buffer(ldap_avatar[:1024], mime=True)
             if content_type.startswith("image/"):
-                upload_avatar_image(io, user, user, content_type=content_type)
+                upload_avatar_image(BytesIO(ldap_avatar), user, user, content_type=content_type)
                 do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER, acting_user=None)
                 # Update avatar hash.
                 user.avatar_hash = user_avatar_content_hash(ldap_avatar)
