@@ -1,7 +1,7 @@
 /var/log/zulip/analytics.log
 /var/log/zulip/auth.log
 /var/log/zulip/digest.log
-/var/log/zulip/email-deliverer.log
+/var/log/zulip/email_deliverer.log
 /var/log/zulip/email_content.log
 /var/log/zulip/email_mirror.log
 /var/log/zulip/errors.log
