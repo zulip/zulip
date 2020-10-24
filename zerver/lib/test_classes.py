@@ -814,7 +814,8 @@ Output:
             os.path.dirname(__file__),
             f"../webhooks/{type}/fixtures/{action}.{file_type}",
         )
-        return open(fn).read()
+        with open(fn) as f:
+            return f.read()
 
     def fixture_file_name(self, file_name: str, type: str='') -> str:
         return os.path.join(
@@ -824,7 +825,8 @@ Output:
 
     def fixture_data(self, file_name: str, type: str='') -> str:
         fn = self.fixture_file_name(file_name, type)
-        return open(fn).read()
+        with open(fn) as f:
+            return f.read()
 
     def make_stream(self, stream_name: str, realm: Optional[Realm]=None,
                     invite_only: bool=False,

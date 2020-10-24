@@ -4657,8 +4657,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     @use_s3_backend
     def test_update_user_avatar_for_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
-        test_image_file = get_test_image_file('img.png').name
-        with open(test_image_file, 'rb') as f:
+        with get_test_image_file('img.png') as f:
             test_image_data = f.read()
         self.change_ldap_user_attr('hamlet', 'jpegPhoto', test_image_data)
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',

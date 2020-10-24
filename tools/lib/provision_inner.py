@@ -319,7 +319,8 @@ def main(options: argparse.Namespace) -> int:
 
     version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
     print(f'writing to {version_file}\n')
-    open(version_file, 'w').write(PROVISION_VERSION + '\n')
+    with open(version_file, 'w') as f:
+        f.write(PROVISION_VERSION + '\n')
 
     print()
     print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)

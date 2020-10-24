@@ -3099,8 +3099,10 @@ class UserSignUpTest(InviteUserBase):
 
         zulip_path_id = avatar_disk_path(hamlet_in_zulip)
         lear_path_id = avatar_disk_path(hamlet_in_lear)
-        zulip_avatar_bits = open(zulip_path_id, 'rb').read()
-        lear_avatar_bits = open(lear_path_id, 'rb').read()
+        with open(zulip_path_id, 'rb') as f:
+            zulip_avatar_bits = f.read()
+        with open(lear_path_id, 'rb') as f:
+            lear_avatar_bits = f.read()
 
         self.assertTrue(len(zulip_avatar_bits) > 500)
         self.assertEqual(zulip_avatar_bits, lear_avatar_bits)

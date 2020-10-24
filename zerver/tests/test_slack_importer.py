@@ -1,5 +1,6 @@
 import os
 import shutil
+from io import BytesIO
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 from unittest import mock
 from unittest.mock import ANY, call
@@ -767,7 +768,8 @@ class SlackImporter(ZulipTestCase):
         user_data_fixture = orjson.loads(self.fixture_data('user_data.json', type='slack_fixtures'))
         team_info_fixture = orjson.loads(self.fixture_data('team_info.json', type='slack_fixtures'))
         mock_get_slack_api_data.side_effect = [user_data_fixture['members'], {}, team_info_fixture["team"]]
-        mock_requests_get.return_value.raw = get_test_image_file("img.png")
+        with get_test_image_file("img.png") as f:
+            mock_requests_get.return_value.raw = BytesIO(f.read())
 
         with self.assertLogs(level="INFO"):
             do_convert_data(test_slack_zip_file, output_dir, token)

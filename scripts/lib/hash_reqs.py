@@ -10,12 +10,13 @@ from typing import Iterable, List
 def expand_reqs_helper(fpath: str) -> List[str]:
     result = []  # type: List[str]
 
-    for line in open(fpath):
-        if line.strip().startswith(('#', '--hash')):
-            continue
-        dep = line.split(" \\", 1)[0].strip()
-        if dep:
-            result.append(dep)
+    with open(fpath) as f:
+        for line in f:
+            if line.strip().startswith(('#', '--hash')):
+                continue
+            dep = line.split(" \\", 1)[0].strip()
+            if dep:
+                result.append(dep)
     return result
 
 def expand_reqs(fpath: str) -> List[str]:

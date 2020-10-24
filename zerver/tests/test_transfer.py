@@ -47,9 +47,12 @@ class TransferUploadsToS3Test(ZulipTestCase):
         medium_image_key = bucket.Object(path_id + "-medium.png")
 
         self.assertEqual(len(list(bucket.objects.all())), 3)
-        self.assertEqual(image_key.get()['Body'].read(), open(avatar_disk_path(user), "rb").read())
-        self.assertEqual(original_image_key.get()['Body'].read(), open(avatar_disk_path(user, original=True), "rb").read())
-        self.assertEqual(medium_image_key.get()['Body'].read(), open(avatar_disk_path(user, medium=True), "rb").read())
+        with open(avatar_disk_path(user), "rb") as f:
+            self.assertEqual(image_key.get()['Body'].read(), f.read())
+        with open(avatar_disk_path(user, original=True), "rb") as f:
+            self.assertEqual(original_image_key.get()['Body'].read(), f.read())
+        with open(avatar_disk_path(user, medium=True), "rb") as f:
+            self.assertEqual(medium_image_key.get()['Body'].read(), f.read())
 
     @mock_s3
     def test_transfer_message_files(self) -> None:
@@ -76,9 +79,9 @@ class TransferUploadsToS3Test(ZulipTestCase):
         RealmEmoji.objects.all().delete()
 
         emoji_name = "emoji.png"
-        image_file = get_test_image_file("img.png")
 
-        emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
+        with get_test_image_file("img.png") as image_file:
+            emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
         if not emoji:
             raise AssertionError("Unable to add emoji.")
 
@@ -94,8 +97,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
         original_key = bucket.Object(emoji_path + ".original")
         resized_key = bucket.Object(emoji_path)
 
-        image_file.seek(0)
-        image_data = image_file.read()
+        with get_test_image_file("img.png") as image_file:
+            image_data = image_file.read()
         resized_image_data = resize_emoji(image_data)
 
         self.assertEqual(image_data, original_key.get()['Body'].read())
