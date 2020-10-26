@@ -15,7 +15,7 @@ Zulip in production
    security-model
    authentication-methods
    export-and-import
-   postgres
+   postgresql
    upload-backends
    ssl-certificates
    email

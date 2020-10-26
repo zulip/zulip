@@ -150,7 +150,7 @@ installing Zulip with a dedicated database server.
 
 * **Dedicated database**.  For installations with hundreds of daily
   active users, we recommend using a [remote PostgreSQL
-  database](postgres.md), but it's not required.
+  database](postgresql.md), but it's not required.
 
 * **RAM:**  We recommended more RAM for larger installations:
     * With 25+ daily active users, 4GB of RAM.
