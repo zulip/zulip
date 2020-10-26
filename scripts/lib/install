@@ -497,7 +497,7 @@ EOF
 fi
 
 if has_class "zulip::postgresql_common" && [ -z "$NO_INIT_DB" ]; then
-    "$ZULIP_PATH"/scripts/setup/postgres-init-db
+    "$ZULIP_PATH"/scripts/setup/postgresql-init-db
 fi
 
 if has_class "zulip::app_frontend_base"; then

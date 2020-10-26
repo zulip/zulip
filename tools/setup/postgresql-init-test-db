@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -x
+set -e
+
+"$(dirname "$0")/postgresql-init-dev-db" test

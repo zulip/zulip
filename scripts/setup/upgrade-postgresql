@@ -39,7 +39,7 @@ fi
 )
 
 # Capture the output so we know where the path to the post-upgrade scripts is
-UPGRADE_LOG=$(mktemp "/var/log/zulip/postgres-upgrade-$UPGRADE_FROM-$UPGRADE_TO.XXXXXXXXX.log")
+UPGRADE_LOG=$(mktemp "/var/log/zulip/upgrade-postgresql-$UPGRADE_FROM-$UPGRADE_TO.XXXXXXXXX.log")
 pg_upgradecluster -v "$UPGRADE_TO" "$UPGRADE_FROM" main --method=upgrade --link | tee "$UPGRADE_LOG"
 SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPGRADE_TO-main.*" "$UPGRADE_LOG" || true)
 

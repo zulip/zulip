@@ -240,7 +240,7 @@ directory that would contain configuration files
 list of stopwords used by a PostgreSQL extension.
 
 In a development environment, configuration of that PostgreSQL
-extension is handled by `tools/postgres-init-dev-db` (invoked by
+extension is handled by `tools/postgresql-init-dev-db` (invoked by
 `tools/provision`).  That file also manages setting up the
 development PostgreSQL user.
 
