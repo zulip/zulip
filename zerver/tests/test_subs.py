@@ -2641,7 +2641,7 @@ class SubscriptionAPITest(ZulipTestCase):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
                                                         add_streams, self.streams, self.test_email,
                                                         self.streams + add_streams, self.test_realm)
-        self.assert_length(events, 7)
+        self.assert_length(events, 6)
 
     def test_successful_subscriptions_add_with_announce(self) -> None:
         """
@@ -2669,7 +2669,17 @@ class SubscriptionAPITest(ZulipTestCase):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, other_params,
                                                         add_streams, self.streams, self.test_email,
                                                         self.streams + add_streams, self.test_realm)
-        self.assertEqual(len(events), 8)
+        self.assertEqual(len(events), 7)
+
+        expected_stream_ids = {
+            get_stream(stream, self.test_realm).id
+            for stream in add_streams
+        }
+
+        (peer_add_event,) = [event for event in events if event["event"].get("op") == "peer_add"]
+
+        self.assertEqual(set(peer_add_event["event"]["stream_ids"]), expected_stream_ids)
+        self.assertEqual(set(peer_add_event["event"]["user_ids"]), {self.test_user.id})
 
     def test_successful_subscriptions_notifies_pm(self) -> None:
         """
@@ -3281,11 +3291,14 @@ class SubscriptionAPITest(ZulipTestCase):
 
         notifications = []
         for event in peer_events:
-            (stream_id,) = event['event']['stream_ids']
-            stream_name = Stream.objects.get(id=stream_id).name
+            stream_ids = event["event"]["stream_ids"]
+            stream_names = sorted(
+                Stream.objects.get(id=stream_id).name
+                for stream_id in stream_ids
+            )
             removed_user_ids = set(event['event']['user_ids'])
             notified_user_ids = set(event['users']) & our_user_ids
-            notifications.append((stream_name, removed_user_ids, notified_user_ids))
+            notifications.append((','.join(stream_names), removed_user_ids, notified_user_ids))
 
         notifications.sort(key=lambda tup: tup[0])
 
@@ -3294,8 +3307,7 @@ class SubscriptionAPITest(ZulipTestCase):
             [
                 ("private_stream", {user1.id, user2.id}, {user3.id, user4.id}),
                 ("stream1", {user1.id, user2.id}, {user3.id, user4.id, user5.id}),
-                ("stream2", {user2.id}, {user1.id, user3.id, user4.id, user5.id}),
-                ("stream3", {user2.id}, {user1.id, user3.id, user4.id, user5.id}),
+                ("stream2,stream3", {user2.id}, {user1.id, user3.id, user4.id, user5.id}),
             ],
         )
 
