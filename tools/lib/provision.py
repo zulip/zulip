@@ -89,19 +89,19 @@ distro_info = parse_os_release()
 vendor = distro_info['ID']
 os_version = distro_info['VERSION_ID']
 if vendor == "debian" and os_version == "10":  # buster
-    POSTGRES_VERSION = "11"
+    POSTGRESQL_VERSION = "11"
 elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
-    POSTGRES_VERSION = "10"
+    POSTGRESQL_VERSION = "10"
 elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
-    POSTGRES_VERSION = "11"
+    POSTGRESQL_VERSION = "11"
 elif vendor == "ubuntu" and os_version == "20.04":  # focal
-    POSTGRES_VERSION = "12"
+    POSTGRESQL_VERSION = "12"
 elif vendor == "fedora" and os_version == "29":
-    POSTGRES_VERSION = "10"
+    POSTGRESQL_VERSION = "10"
 elif vendor == "rhel" and os_version.startswith("7."):
-    POSTGRES_VERSION = "10"
+    POSTGRESQL_VERSION = "10"
 elif vendor == "centos" and os_version == "7":
-    POSTGRES_VERSION = "10"
+    POSTGRESQL_VERSION = "10"
 else:
     logging.critical("Unsupported platform: %s %s", vendor, os_version)
     sys.exit(1)
@@ -164,9 +164,9 @@ if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version 
     BUILD_PGROONGA_FROM_SOURCE = True
     SYSTEM_DEPENDENCIES = [
         *UBUNTU_COMMON_APT_DEPENDENCIES,
-        f"postgresql-{POSTGRES_VERSION}",
+        f"postgresql-{POSTGRESQL_VERSION}",
         # Dependency for building PGroonga from source
-        f"postgresql-server-dev-{POSTGRES_VERSION}",
+        f"postgresql-server-dev-{POSTGRESQL_VERSION}",
         "libgroonga-dev",
         "libmsgpack-dev",
         "clang-9",
@@ -176,25 +176,25 @@ if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version 
 elif "debian" in os_families():
     SYSTEM_DEPENDENCIES = [
         *UBUNTU_COMMON_APT_DEPENDENCIES,
-        f"postgresql-{POSTGRES_VERSION}",
-        f"postgresql-{POSTGRES_VERSION}-pgroonga",
+        f"postgresql-{POSTGRESQL_VERSION}",
+        f"postgresql-{POSTGRESQL_VERSION}-pgroonga",
         *VENV_DEPENDENCIES,
     ]
 elif "rhel" in os_families():
     SYSTEM_DEPENDENCIES = [
         *COMMON_YUM_DEPENDENCIES,
-        f"postgresql{POSTGRES_VERSION}-server",
-        f"postgresql{POSTGRES_VERSION}",
-        f"postgresql{POSTGRES_VERSION}-devel",
-        f"postgresql{POSTGRES_VERSION}-pgroonga",
+        f"postgresql{POSTGRESQL_VERSION}-server",
+        f"postgresql{POSTGRESQL_VERSION}",
+        f"postgresql{POSTGRESQL_VERSION}-devel",
+        f"postgresql{POSTGRESQL_VERSION}-pgroonga",
         *VENV_DEPENDENCIES,
     ]
 elif "fedora" in os_families():
     SYSTEM_DEPENDENCIES = [
         *COMMON_YUM_DEPENDENCIES,
-        f"postgresql{POSTGRES_VERSION}-server",
-        f"postgresql{POSTGRES_VERSION}",
-        f"postgresql{POSTGRES_VERSION}-devel",
+        f"postgresql{POSTGRESQL_VERSION}-server",
+        f"postgresql{POSTGRESQL_VERSION}",
+        f"postgresql{POSTGRESQL_VERSION}-devel",
         # Needed to build PGroonga from source
         "groonga-devel",
         "msgpack-devel",
@@ -203,9 +203,9 @@ elif "fedora" in os_families():
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():
-    TSEARCH_STOPWORDS_PATH = f"/usr/pgsql-{POSTGRES_VERSION}/share/tsearch_data/"
+    TSEARCH_STOPWORDS_PATH = f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/"
 else:
-    TSEARCH_STOPWORDS_PATH = f"/usr/share/postgresql/{POSTGRES_VERSION}/tsearch_data/"
+    TSEARCH_STOPWORDS_PATH = f"/usr/share/postgresql/{POSTGRESQL_VERSION}/tsearch_data/"
 REPO_STOPWORDS_PATH = os.path.join(
     ZULIP_PATH,
     "puppet",
@@ -277,16 +277,16 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         run_as_root(["python36", "-m", "ensurepip"])
         # `python36` is not aliased to `python3` by default
         run_as_root(["ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
-    postgres_dir = f'pgsql-{POSTGRES_VERSION}'
+    postgresql_dir = f'pgsql-{POSTGRESQL_VERSION}'
     for cmd in ['pg_config', 'pg_isready', 'psql']:
         # Our tooling expects these PostgreSQL scripts to be at
         # well-known paths.  There's an argument for eventually
         # making our tooling auto-detect, but this is simpler.
-        run_as_root(["ln", "-nsf", f"/usr/{postgres_dir}/bin/{cmd}",
+        run_as_root(["ln", "-nsf", f"/usr/{postgresql_dir}/bin/{cmd}",
                      f"/usr/bin/{cmd}"])
 
     # From here, we do the first-time setup/initialization for the PostgreSQL database.
-    pg_datadir = f"/var/lib/pgsql/{POSTGRES_VERSION}/data"
+    pg_datadir = f"/var/lib/pgsql/{POSTGRESQL_VERSION}/data"
     pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
 
     # We can't just check if the file exists with os.path, since the
@@ -296,7 +296,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         # Skip setup if it has been applied previously
         return
 
-    run_as_root([f"/usr/{postgres_dir}/bin/postgresql-{POSTGRES_VERSION}-setup", "initdb"],
+    run_as_root([f"/usr/{postgresql_dir}/bin/postgresql-{POSTGRESQL_VERSION}-setup", "initdb"],
                 sudo_args = ['-H'])
     # Use vendored pg_hba.conf, which enables password authentication.
     run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
@@ -305,11 +305,11 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     # Link in tsearch data files
     overwrite_symlink(
         "/usr/share/myspell/en_US.dic",
-        f"/usr/pgsql-{POSTGRES_VERSION}/share/tsearch_data/en_us.dict",
+        f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.dict",
     )
     overwrite_symlink(
         "/usr/share/myspell/en_US.aff",
-        f"/usr/pgsql-{POSTGRES_VERSION}/share/tsearch_data/en_us.affix",
+        f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.affix",
     )
 
 def main(options: argparse.Namespace) -> "NoReturn":
@@ -399,7 +399,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
     elif "fedora" in os_families():
         # These platforms don't enable and start services on
         # installing their package, so we do that here.
-        for service in [f"postgresql-{POSTGRES_VERSION}", "rabbitmq-server", "memcached", "redis"]:
+        for service in [f"postgresql-{POSTGRESQL_VERSION}", "rabbitmq-server", "memcached", "redis"]:
             run_as_root(["systemctl", "enable", service], sudo_args = ['-H'])
             run_as_root(["systemctl", "start", service], sudo_args = ['-H'])
 
