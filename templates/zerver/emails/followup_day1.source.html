@@ -20,7 +20,7 @@
     <li>{% trans organization_url=macros.link_tag(realm_uri) %}Organization URL: {{ organization_url }}{% endtrans %}<br></li>
     {% if ldap %}
         {% if ldap_username %}
-        <li>{{ _('Username:') }} {{ ldap_username }}<br></li>
+        <li>{% trans %}Username: {{ ldap_username }}{% endtrans %}<br></li>
         {% else %}
         <li>{{ _('Use your LDAP account to log in') }}<br></li>
         {% endif %}
