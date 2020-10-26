@@ -9785,6 +9785,10 @@ components:
             URL for the the user's avatar.  Will be `null` if the `client_gravatar`
             query parameter was set to `True` and the user's avatar is hosted by
             the Gravatar provider (i.e. the user has never uploaded an avatar).
+
+            **Changes**: In Zulip 3.0 (feature level 18), if the client has the
+            `user_avatar_url_field_optional` capability, this will be missing at
+            the server's sole discretion.
         avatar_version:
           type: integer
           description: |
