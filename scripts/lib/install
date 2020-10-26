@@ -480,7 +480,7 @@ EOF
     fi
 fi
 
-if has_class "zulip::profile::rabbit"; then
+if has_class "zulip::profile::rabbitmq"; then
     if ! rabbitmqctl status >/dev/null; then
         set +x
         cat <<EOF
