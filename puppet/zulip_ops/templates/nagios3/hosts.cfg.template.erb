@@ -58,7 +58,7 @@ define host{
        }
 <% end -%>
 
-<% @hosts_postgres_primary.each do |host| -%>
+<% @hosts_postgresql_primary.each do |host| -%>
 define host{
        use              generic-host
        host_name        <%= host %>
@@ -68,7 +68,7 @@ define host{
        }
 <% end -%>
 
-<% @hosts_postgres_replica.each do |host| -%>
+<% @hosts_postgresql_replica.each do |host| -%>
 define host{
        use              generic-host
        host_name        <%= host %>

@@ -31,7 +31,7 @@ class zulip_ops::profile::postgresql {
     unless  => 'test $(readlink /var/lib/postgresql) = "/srv/postgresql/" -a -d /srv/postgresql',
   }
 
-  file { "${zulip::postgresql_base::postgres_confdir}/pg_hba.conf":
+  file { "${zulip::postgresql_base::postgresql_confdir}/pg_hba.conf":
     ensure  => file,
     require => Package["postgresql-${zulip::postgresql_common::version}"],
     owner   => 'postgres',
