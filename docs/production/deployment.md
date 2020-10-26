@@ -100,7 +100,7 @@ flag, e.g.:
 sudo -s  # If not already root
 ./zulip-server-*/scripts/setup/install --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
-    --no-init-db --postgres-missing-dictionaries
+    --no-init-db --postgresql-missing-dictionaries
 ```
 
 The script also installs and starts PostgreSQL on the server by

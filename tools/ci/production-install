@@ -28,7 +28,7 @@ fi
 
 # Pin to PostgreSQL 10 on Bionic, so we can test upgrading it
 if [ "$os_version_codename" = "bionic" ]; then
-    export POSTGRES_VERSION=10
+    export POSTGRESQL_VERSION=10
 fi
 
 # Install Zulip
