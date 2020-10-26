@@ -1,11 +1,8 @@
 import datetime
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Union
 
 import pytz
 
-
-def get_all_timezones() -> List[str]:
-    return sorted(pytz.all_timezones)
 
 def get_timezone(tz: str) -> pytz.BaseTzInfo:
     return pytz.timezone(tz)
