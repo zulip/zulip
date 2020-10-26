@@ -11,7 +11,7 @@
 * {% trans organization_url=realm_uri %}Organization URL: {{ organization_url }}{% endtrans %}
 {% if ldap %}
 {% if ldap_username %}
-* {{ _('Username:') }} {{ ldap_username }}
+* {% trans %}Username: {{ ldap_username }}{% endtrans %}
 {% else %}
 * {{ _('Use your LDAP account to log in') }}
 {% endif %}
