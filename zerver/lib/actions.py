@@ -441,7 +441,8 @@ def process_new_human_user(user_profile: UserProfile,
             if stream not in streams:
                 streams.append(stream)
 
-    bulk_add_subscriptions(realm, streams, [user_profile], acting_user=acting_user)
+    bulk_add_subscriptions(realm, streams, [user_profile], acting_user=acting_user,
+                           from_user_creation=True)
 
     add_new_user_history(user_profile, streams)
 
@@ -2779,7 +2780,8 @@ def bulk_add_subscriptions(
     streams: Iterable[Stream],
     users: Iterable[UserProfile],
     color_map: Mapping[str, str]={},
-    acting_user: Optional[UserProfile]=None
+    acting_user: Optional[UserProfile]=None,
+    from_user_creation: bool=False,
 ) -> SubT:
     users = list(users)
 
@@ -2861,19 +2863,21 @@ def bulk_add_subscriptions(
     )
 
     # We now send several types of events to notify browsers.  The
-    # first batch is notifications to users on invite-only streams
-    # that the stream exists.
-    send_stream_creation_events_for_private_streams(
-        realm=realm,
-        stream_dict=stream_dict,
-        altered_user_dict=altered_user_dict,
-    )
+    # first batches of notifications are sent only to the user(s)
+    # being subscribed; we can skip these notifications when this is
+    # being called from the new user creation flow.
+    if not from_user_creation:
+        send_stream_creation_events_for_private_streams(
+            realm=realm,
+            stream_dict=stream_dict,
+            altered_user_dict=altered_user_dict,
+        )
 
-    send_subscription_add_events(
-        realm=realm,
-        sub_info_list=subs_to_add + subs_to_activate,
-        subscriber_dict=subscriber_peer_info.subscribed_ids,
-    )
+        send_subscription_add_events(
+            realm=realm,
+            sub_info_list=subs_to_add + subs_to_activate,
+            subscriber_dict=subscriber_peer_info.subscribed_ids,
+        )
 
     send_peer_subscriber_events(
         op="peer_add",
