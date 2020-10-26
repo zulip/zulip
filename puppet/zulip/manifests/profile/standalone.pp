@@ -12,7 +12,7 @@ class zulip::profile::standalone {
   include zulip::profile::postgresql
   include zulip::profile::redis
   include zulip::profile::memcached
-  include zulip::profile::rabbit
+  include zulip::profile::rabbitmq
   if $::osfamily == debian {
     # camo is only required on Debian-based systems as part of
     # our migration towards not including camo at all.

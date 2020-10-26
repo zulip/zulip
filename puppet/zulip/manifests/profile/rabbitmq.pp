@@ -1,14 +1,14 @@
-class zulip::profile::rabbit {
+class zulip::profile::rabbitmq {
   include zulip::profile::base
   $erlang = $::osfamily ? {
     'debian' => 'erlang-base',
     'redhat' => 'erlang',
   }
-  $rabbit_packages = [# Needed to run RabbitMQ
-                      $erlang,
-                      'rabbitmq-server',
-                      ]
-  package { $rabbit_packages: ensure => 'installed' }
+  $rabbitmq_packages = [
+    $erlang,
+    'rabbitmq-server',
+  ]
+  package { $rabbitmq_packages: ensure => 'installed' }
 
   # Removed 2020-09 in version 4.0; these lines can be removed in
   # Zulip version 5.0 and later.
