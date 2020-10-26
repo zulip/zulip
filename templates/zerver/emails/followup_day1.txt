@@ -16,7 +16,7 @@
 * {{ _('Use your LDAP account to log in') }}
 {% endif %}
 {% else %}
-* {{ _('Email:') }} {{ email }}
+* {% trans %}Email: {{ email }}{% endtrans %}
 {% endif %}
 {% trans apps_page_link="https://zulip.com/apps" %}(you'll need these to sign in to the mobile and desktop apps ({{ apps_page_link }})){% endtrans %}
 
