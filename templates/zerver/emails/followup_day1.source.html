@@ -25,7 +25,7 @@
         <li>{{ _('Use your LDAP account to log in') }}<br></li>
         {% endif %}
     {% else %}
-        <li>{{ _('Email:') }} {{ email }}<br></li>
+        <li>{% trans email=macros.email_tag(email) %}Email: {{ email }}{% endtrans %}<br></li>
     {% endif %}
     {% trans apps_page_link="https://zulip.com/apps" %}(you'll need these to sign in to the <a href="{{ apps_page_link }}">mobile and desktop</a> apps){% endtrans %}
 </p>
