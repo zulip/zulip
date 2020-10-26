@@ -22,7 +22,7 @@ if subprocess.check_output(['psql', '-v', 'ON_ERROR_STOP=1',
     report('OK', 'this is not the primary')
 
 try:
-    with open('/var/lib/nagios_state/last_postgres_backup') as f:
+    with open('/var/lib/nagios_state/last_postgresql_backup') as f:
         last_backup = dateutil.parser.parse(f.read())
 except OSError:
     report('UNKNOWN', 'could not determine completion time of last Postgres backup')

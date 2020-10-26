@@ -41,7 +41,7 @@ pg_data_path = pg_data_paths[0]
 run(['env-wal-g', 'backup-push', pg_data_path])
 
 now = datetime.now(tz=timezone.utc)
-with open('/var/lib/nagios_state/last_postgres_backup', 'w') as f:
+with open('/var/lib/nagios_state/last_postgresql_backup', 'w') as f:
     f.write(now.isoformat())
     f.write("\n")
 
