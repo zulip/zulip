@@ -112,21 +112,21 @@ def shutdown_server() -> None:
 # postgresql.version is required for database servers, but wasn't
 # previously; fill it in based on what the OS provides.
 if os.path.exists('/etc/init.d/postgresql'):
-    postgres_version = get_config(config_file, 'postgresql', 'version')
-    if not postgres_version:
-        default_postgres_version = {
+    postgresql_version = get_config(config_file, 'postgresql', 'version')
+    if not postgresql_version:
+        default_postgresql_version = {
             ('debian', '10'): '11',
             ('ubuntu', '18.04'): '10',
             ('ubuntu', '20.04'): '12',
             ('centos', '7'): '11',
         }
-        if (vendor, os_version) in default_postgres_version:
-            postgres_version = default_postgres_version[(vendor, os_version)]
+        if (vendor, os_version) in default_postgresql_version:
+            postgresql_version = default_postgresql_version[(vendor, os_version)]
         else:
             error_desupported_os(vendor, os_version)
         subprocess.check_call([
             "crudini", "--set", "/etc/zulip/zulip.conf",
-            "postgresql", "version", postgres_version])
+            "postgresql", "version", postgresql_version])
 
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
