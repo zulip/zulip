@@ -38,11 +38,11 @@
 # The default values of these variables are driven from the -D command-line
 # option or PGDATA environment variable, represented here as ConfigDir.
 
-data_directory = '<%= scope["zulip::postgresql_base::postgres_datadir"] %>'		# use data in another directory
+data_directory = '<%= scope["zulip::postgresql_base::postgresql_datadir"] %>'		# use data in another directory
 					# (change requires restart)
-hba_file = '<%= scope["zulip::postgresql_base::postgres_confdir"] %>/pg_hba.conf'	# host-based authentication file
+hba_file = '<%= scope["zulip::postgresql_base::postgresql_confdir"] %>/pg_hba.conf'	# host-based authentication file
 					# (change requires restart)
-ident_file = '<%= scope["zulip::postgresql_base::postgres_confdir"] %>/pg_ident.conf'	# ident configuration file
+ident_file = '<%= scope["zulip::postgresql_base::postgresql_confdir"] %>/pg_ident.conf'	# ident configuration file
 					# (change requires restart)
 
 # If external_pid_file is not explicitly set, no extra PID file is written.

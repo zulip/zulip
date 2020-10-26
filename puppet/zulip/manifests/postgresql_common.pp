@@ -3,7 +3,7 @@ class zulip::postgresql_common {
   case $::osfamily {
     'debian': {
       $postgresql = "postgresql-${version}"
-      $postgres_packages = [
+      $postgresql_packages = [
         # The database itself
         $postgresql,
         # tools for database monitoring; formerly ptop
@@ -17,14 +17,14 @@ class zulip::postgresql_common {
         # Python modules used in our monitoring/worker threads
         'python3-dateutil', # TODO: use a virtualenv instead
       ]
-      $postgres_user_reqs = [
+      $postgresql_user_reqs = [
         Package[$postgresql],
         Package['ssl-cert'],
       ]
     }
     'redhat': {
       $postgresql = "postgresql${version}"
-      $postgres_packages = [
+      $postgresql_packages = [
         $postgresql,
         "${postgresql}-server",
         "${postgresql}-devel",
@@ -49,7 +49,7 @@ class zulip::postgresql_common {
         owner  => 'root',
         group  => 'ssl-cert',
       }
-      $postgres_user_reqs = [
+      $postgresql_user_reqs = [
         Package[$postgresql],
         Group['ssl-cert'],
       ]
@@ -59,7 +59,7 @@ class zulip::postgresql_common {
     }
   }
 
-  zulip::safepackage { $postgres_packages: ensure => 'installed' }
+  zulip::safepackage { $postgresql_packages: ensure => 'installed' }
 
   if $::osfamily == 'debian' {
     # The logrotate file only created in debian-based systems
@@ -75,7 +75,7 @@ class zulip::postgresql_common {
   @user { 'postgres':
     groups     => ['ssl-cert'],
     membership => minimum,
-    require    => $postgres_user_reqs,
+    require    => $postgresql_user_reqs,
   }
   User <| title == postgres |> { groups +> 'zulip' }
 }

@@ -17,14 +17,14 @@ class zulip::profile::postgresql {
   $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
   $ssl_ca_file = zulipconf('postgresql', 'ssl_ca_file', undef)
 
-  file { $zulip::postgresql_base::postgres_confdirs:
+  file { $zulip::postgresql_base::postgresql_confdirs:
     ensure => directory,
     owner  => 'postgres',
     group  => 'postgres',
   }
 
-  $postgres_conf_file = "${zulip::postgresql_base::postgres_confdir}/postgresql.conf"
-  file { $postgres_conf_file:
+  $postgresql_conf_file = "${zulip::postgresql_base::postgresql_confdir}/postgresql.conf"
+  file { $postgresql_conf_file:
     ensure  => file,
     require => Package[$zulip::postgresql_base::postgresql],
     owner   => 'postgres',
@@ -33,9 +33,9 @@ class zulip::profile::postgresql {
     content => template("zulip/postgresql/${zulip::postgresql_common::version}/postgresql.conf.template.erb"),
   }
 
-  exec { $zulip::postgresql_base::postgres_restart:
+  exec { $zulip::postgresql_base::postgresql_restart:
     require     => Package[$zulip::postgresql_base::postgresql],
     refreshonly => true,
-    subscribe   => [ File[$postgres_conf_file] ],
+    subscribe   => [ File[$postgresql_conf_file] ],
   }
 }
