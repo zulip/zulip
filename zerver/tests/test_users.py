@@ -49,6 +49,7 @@ from zerver.models import (
     RealmDomain,
     Recipient,
     ScheduledEmail,
+    Stream,
     UserHotspot,
     UserProfile,
     check_valid_user_ids,
@@ -760,7 +761,7 @@ class QueryCountTest(ZulipTestCase):
         with queries_captured() as queries:
             with cache_tries_captured() as cache_tries:
                 with tornado_redirected_to_list(events):
-                    do_create_user(
+                    fred = do_create_user(
                         email="fred@zulip.com",
                         password="password",
                         realm=realm,
@@ -770,7 +771,21 @@ class QueryCountTest(ZulipTestCase):
 
         self.assert_length(queries, 81)
         self.assert_length(cache_tries, 23)
-        self.assert_length(events, 12)
+        self.assert_length(events, 10)
+
+        peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
+
+        notifications = set()
+        for event in peer_add_events:
+            stream_ids = event["event"]["stream_ids"]
+            stream_names = sorted(
+                Stream.objects.get(id=stream_id).name
+                for stream_id in stream_ids
+            )
+            self.assertTrue(event["event"]["user_ids"], {fred.id})
+            notifications.add(",".join(stream_names))
+
+        self.assertEqual(notifications, {"Denmark,Scotland,Verona", "private_stream1", "private_stream2"})
 
 class BulkCreateUserTest(ZulipTestCase):
     def test_create_users(self) -> None:

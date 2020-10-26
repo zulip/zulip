@@ -647,10 +647,10 @@ class NormalActionsTest(BaseAction):
                 prereg_user=prereg_user,
             ),
             state_change_expected=True,
-            num_events=5,
+            num_events=4,
         )
 
-        check_invites_changed('events[4]', events[4])
+        check_invites_changed('events[3]', events[3])
 
     def test_typing_events(self) -> None:
         events = self.verify_action(

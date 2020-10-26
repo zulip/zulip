@@ -2971,7 +2971,7 @@ def send_peer_subscriber_events(
         altered_user_ids = altered_user_dict[stream_id]
         peer_user_ids = private_peer_dict[stream_id] - altered_user_ids
 
-        if peer_user_ids:
+        if peer_user_ids and altered_user_ids:
             event = dict(
                 type="subscription",
                 op=op,
@@ -2987,27 +2987,46 @@ def send_peer_subscriber_events(
     ]
 
     if public_stream_ids:
-        public_peer_ids = set(active_non_guest_user_ids(realm.id))
+        user_streams: Dict[int, Set[int]] = defaultdict(set)
 
-        # TODO:
-        #
-        # We eventually want a special optimization for a single user that
-        # subscribes to many streams.  Right now we optimize for the other
-        # scenario, which is also kind of common--if we add/remove multiple
-        # users all for the same stream, we just send one event per stream.
+        public_peer_ids = set(active_non_guest_user_ids(realm.id))
 
         for stream_id in public_stream_ids:
             altered_user_ids = altered_user_dict[stream_id]
             peer_user_ids = public_peer_ids - altered_user_ids
 
-            if peer_user_ids:
-                event = dict(
-                    type="subscription",
-                    op=op,
-                    stream_ids=[stream_id],
-                    user_ids=sorted(list(altered_user_ids)),
-                )
-                send_event(realm, event, peer_user_ids)
+            if peer_user_ids and altered_user_ids:
+                if len(altered_user_ids) == 1:
+                    # If we only have one user, we will try to
+                    # find other streams they have (un)subscribed to
+                    # (where it's just them).  This optimization
+                    # typically works when a single user is subscribed
+                    # to multiple default public streams during
+                    # new-user registration.
+                    #
+                    # This optimization depends on all public streams
+                    # having the same peers for any single user, which
+                    # isn't the case for private streams.
+                    altered_user_id = list(altered_user_ids)[0]
+                    user_streams[altered_user_id].add(stream_id)
+                else:
+                    event = dict(
+                        type="subscription",
+                        op=op,
+                        stream_ids=[stream_id],
+                        user_ids=sorted(list(altered_user_ids)),
+                    )
+                    send_event(realm, event, peer_user_ids)
+
+        for user_id, stream_ids in user_streams.items():
+            peer_user_ids = public_peer_ids - {user_id}
+            event = dict(
+                type="subscription",
+                op=op,
+                stream_ids=sorted(list(stream_ids)),
+                user_ids=[user_id],
+            )
+            send_event(realm, event, peer_user_ids)
 
 def send_peer_remove_events(
     realm: Realm,
