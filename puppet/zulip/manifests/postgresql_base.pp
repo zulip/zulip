@@ -62,14 +62,14 @@ class zulip::postgresql_base {
     mode    => '0644',
     source  => 'puppet:///modules/zulip/postgresql/zulip_english.stop',
   }
-  file { "${zulip::common::nagios_plugins_dir}/zulip_postgres_appdb":
+  file { "${zulip::common::nagios_plugins_dir}/zulip_postgresql":
     require => Package[$zulip::common::nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',
     group   => 'root',
     mode    => '0755',
-    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgres_appdb',
+    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgresql',
   }
 
   $pgroonga = zulipconf('machine', 'pgroonga', '')

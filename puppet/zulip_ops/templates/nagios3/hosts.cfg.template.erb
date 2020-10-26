@@ -24,7 +24,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>
-       hostgroups       all,web,frontends,staging_frontends,singletornado_frontends,not_pageable_servers,postgres,postgres_appdb_primary
+       hostgroups       all,web,frontends,staging_frontends,singletornado_frontends,not_pageable_servers,postgresql,postgresql_primary
        }
 <% end -%>
 
@@ -64,7 +64,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,postgres,postgres_appdb_primary,pageable_servers
+       hostgroups       all,postgresql,postgresql_primary,pageable_servers
        }
 <% end -%>
 
@@ -74,7 +74,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,postgres_appdb,pageable_servers
+       hostgroups       all,postgresql,pageable_servers
        }
 <% end -%>
 

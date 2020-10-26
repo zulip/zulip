@@ -105,7 +105,7 @@ echo
 echo "Now running additional Nagios tests"
 echo
 if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors \
-    || ! su zulip -c /usr/lib/nagios/plugins/zulip_postgres_appdb/check_fts_update_log; then # || \
+    || ! su zulip -c /usr/lib/nagios/plugins/zulip_postgresql/check_fts_update_log; then # || \
     #   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure"; then
     set +x
     echo
