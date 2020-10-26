@@ -267,9 +267,11 @@ class ZulipUploadBackend:
 
 ### S3
 
-def get_bucket(session: Session, bucket_name: str) -> ServiceResource:
+def get_bucket(bucket_name: str, session: Optional[Session]=None) -> ServiceResource:
     # See https://github.com/python/typeshed/issues/2706
     # for why this return type is a `ServiceResource`.
+    if session is None:
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = session.resource('s3').Bucket(bucket_name)
     return bucket
 
@@ -336,12 +338,12 @@ class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:
         self.session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
 
-        self.avatar_bucket = get_bucket(self.session, settings.S3_AVATAR_BUCKET)
+        self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET, self.session)
         network_location = urllib.parse.urlparse(
             self.avatar_bucket.meta.client.meta.endpoint_url).netloc
         self.avatar_bucket_url = f"https://{self.avatar_bucket.name}.{network_location}"
 
-        self.uploads_bucket = get_bucket(self.session, settings.S3_AUTH_UPLOADS_BUCKET)
+        self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
 
     def delete_file_from_s3(self, path_id: str, bucket: ServiceResource) -> bool:
         key = bucket.Object(path_id)

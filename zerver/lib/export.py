@@ -15,7 +15,6 @@ import subprocess
 import tempfile
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
-import boto3
 import orjson
 from boto3.resources.base import ServiceResource
 from django.apps import apps
@@ -29,6 +28,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.upload import get_bucket
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -1272,9 +1272,7 @@ def _save_s3_object_to_file(key: ServiceResource, output_dir: str, processing_av
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
                          processing_avatars: bool=False, processing_emoji: bool=False,
                          processing_realm_icon_and_logo: bool=False) -> None:
-    session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-    s3 = session.resource('s3')
-    bucket = s3.Bucket(bucket_name)
+    bucket = get_bucket(bucket_name)
     records = []
 
     logging.info("Downloading uploaded files from %s", bucket_name)
