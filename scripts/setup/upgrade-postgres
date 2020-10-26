@@ -67,7 +67,7 @@ else
     echo "      be parsed out!  Please read the pg_upgradecluster output to understand"
     echo "      the current status of your cluster:"
     echo "          $UPGRADE_LOG"
-    echo "      and report this bug with the Postgres $UPGRADE_FROM -> $UPGRADE_TO upgrade to:"
+    echo "      and report this bug with the PostgreSQL $UPGRADE_FROM -> $UPGRADE_TO upgrade to:"
     echo "          https://github.com/zulip/zulip/issues"
     echo
     echo

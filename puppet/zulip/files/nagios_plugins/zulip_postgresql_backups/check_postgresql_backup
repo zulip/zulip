@@ -25,9 +25,9 @@ try:
     with open('/var/lib/nagios_state/last_postgresql_backup') as f:
         last_backup = dateutil.parser.parse(f.read())
 except OSError:
-    report('UNKNOWN', 'could not determine completion time of last Postgres backup')
+    report('UNKNOWN', 'could not determine completion time of last PostgreSQL backup')
 
 if datetime.now(tz=timezone.utc) - last_backup > timedelta(hours=25):
-    report('CRITICAL', f'last Postgres backup completed more than 25 hours ago: {last_backup}')
+    report('CRITICAL', f'last PostgreSQL backup completed more than 25 hours ago: {last_backup}')
 
-report('OK', f'last Postgres backup completed less than 25 hours ago: {last_backup}')
+report('OK', f'last PostgreSQL backup completed less than 25 hours ago: {last_backup}')

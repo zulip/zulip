@@ -12,7 +12,7 @@ service (or back):
   * Backups must be restored on a server running the same Zulip
     version (most precisely, one where `manage.py showmigrations` has
     the same output).
-  * Backups must be restored on a server running the same Postgres
+  * Backups must be restored on a server running the same PostgreSQL
     version.
   * Backups aren't useful for migrating organizations between
     self-hosting and Zulip Cloud (which may require renumbering all
@@ -20,7 +20,7 @@ service (or back):
 
   We highly recommend this tool in situations where it is applicable,
   because it is highly optimized and highly stable, since the hard
-  work is done by the built-in backup feature of Postgres.  We also
+  work is done by the built-in backup feature of PostgreSQL.  We also
   document [backup details](#backup-details) for users managing
   backups manually.
 
@@ -36,7 +36,7 @@ service (or back):
   Like the backup tool, logical data exports must be imported on a
   Zulip server running the same version.  However, logical data
   exports can be imported on Zulip servers running a different
-  Postgres version or hosting a different set of Zulip
+  PostgreSQL version or hosting a different set of Zulip
   organizations.  We recommend this tool in cases where the backup
   tool isn't applicable, including situations where an easily
   machine-parsable export format is desired.
@@ -47,8 +47,8 @@ service (or back):
   inexpensively preserve public stream conversations when
   decommissioning a Zulip organization.
 
-* It's possible to set up [Postgres streaming
-  replication](#postgres-streaming-replication) and the [S3 file
+* It's possible to set up [PostgreSQL streaming
+  replication](#postgresql-streaming-replication) and the [S3 file
   upload
   backend](../production/upload-backends.html#s3-backend-configuration)
   as part of a high evailability environment.
@@ -69,7 +69,7 @@ The backup tool provides the following options:
   to (default: write to a file in `/tmp`).  On success, the
   console output will show the path to the output tarball.
 - `--skip-db`: Skip backup of the database.  Useful if you're using a
-  remote Postgres host with its own backup system and just need to
+  remote PostgreSQL host with its own backup system and just need to
   backup non-database state.
 - `--skip-uploads`: If `LOCAL_UPLOADS_DIR` is set, user-uploaded files
   in that directory will be ignored.
@@ -228,9 +228,9 @@ confirm that your backups are working. You may also want to monitor
 that they are up to date using the Nagios plugin at:
 `puppet/zulip/files/nagios_plugins/zulip_postgresql_backups/check_postgresql_backup`.
 
-## Postgres streaming replication
+## PostgreSQL streaming replication
 
-Zulip has database configuration for using Postgres streaming
+Zulip has database configuration for using PostgreSQL streaming
 replication. You can see the configuration in these files:
 
 * `puppet/zulip_ops/manifests/profile/postgresql.pp`

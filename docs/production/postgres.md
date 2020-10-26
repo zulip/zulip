@@ -1,23 +1,23 @@
-Postgres database details
+PostgreSQL database details
 =========================
 
-Starting with Zulip 3.0, Zulip supports using Postgres 10, 11, or 12,
-defaulting to Postgres 12 for new installations.
+Starting with Zulip 3.0, Zulip supports using PostgreSQL 10, 11, or 12,
+defaulting to PostgreSQL 12 for new installations.
 
-Previous versions of Zulip used whatever version of Postgres was
-included with the base operating system (E.g. Postgres 12 on Ubuntu
+Previous versions of Zulip used whatever version of PostgreSQL was
+included with the base operating system (E.g. PostgreSQL 12 on Ubuntu
 Focal, 10 on Ubuntu Bionic, and 9.6 on Ubuntu Xenial).  We recommend
-that installations currently using older Postgres releases [upgrade to
-Postgres 12][upgrade-postgres], as may drop support for older Postgres
+that installations currently using older PostgreSQL releases [upgrade to
+PostgreSQL 12][upgrade-postgres], as may drop support for older PostgreSQL
 in a future release.
 
 [upgrade-postgres]: ../production/upgrade-or-modify.html#upgrading-postgresql
 
-#### Remote Postgres database
+#### Remote PostgreSQL database
 
 This is a bit annoying to set up, but you can configure Zulip to use a
-dedicated Postgres server by setting the `REMOTE_POSTGRES_HOST`
-variable in /etc/zulip/settings.py, and configuring Postgres
+dedicated PostgreSQL server by setting the `REMOTE_POSTGRES_HOST`
+variable in /etc/zulip/settings.py, and configuring PostgreSQL
 certificate authentication (see
 http://www.postgresql.org/docs/9.1/static/ssl-tcp.html and
 http://www.postgresql.org/docs/9.1/static/libpq-ssl.html for
@@ -64,15 +64,15 @@ sudo update-rc.d postgresql disable
 ```
 
 In future versions of this feature, we'd like to implement and
-document how to the remote Postgres database server itself
+document how to the remote PostgreSQL database server itself
 automatically by using the Zulip install script with a different set
 of Puppet manifests than the all-in-one feature; if you're interested
 in working on this, post to the Zulip development mailing list and we
 can give you some tips.
 
-#### Debugging Postgres database issues
+#### Debugging PostgreSQL database issues
 
-When debugging Postgres issues, in addition to the standard `pg_top`
+When debugging PostgreSQL issues, in addition to the standard `pg_top`
 tool, often it can be useful to use this query:
 
 ```
@@ -88,13 +88,13 @@ int)` or `SELECT pg_terminate_backend(pid int)` as the 'postgres'
 user. The former cancels the backend's current query and the latter
 terminates the backend process. They are implemented by sending SIGINT
 and SIGTERM to the processes, respectively.  We recommend against
-sending a Postgres process SIGKILL. Doing so will cause the database
+sending a PostgreSQL process SIGKILL. Doing so will cause the database
 to kill all current connections, roll back any pending transactions,
 and enter recovery mode.
 
-#### Stopping the Zulip Postgres database
+#### Stopping the Zulip PostgreSQL database
 
-To start or stop Postgres manually, use the pg_ctlcluster command:
+To start or stop PostgreSQL manually, use the pg_ctlcluster command:
 
 ```
 pg_ctlcluster 9.1 [--force] main {start|stop|restart|reload}
@@ -120,12 +120,12 @@ Many database parameters can be adjusted while the database is
 running. Just modify /etc/postgresql/9.1/main/postgresql.conf and
 issue a reload. The logs will note the change.
 
-#### Debugging issues starting Postgres
+#### Debugging issues starting PostgreSQL
 
 pg_ctlcluster often doesn't give you any information on why the
 database failed to start. It may tell you to check the logs, but you
 won't find any information there. pg_ctlcluster runs the following
-command underneath when it actually goes to start Postgres:
+command underneath when it actually goes to start PostgreSQL:
 
 ```
 /usr/lib/postgresql/9.1/bin/pg_ctl start -D /var/lib/postgresql/9.1/main -s -o \
@@ -134,18 +134,18 @@ command underneath when it actually goes to start Postgres:
 
 Since pg_ctl doesn't redirect stdout or stderr, running the above can
 give you better diagnostic information. However, you might want to
-stop Postgres and restart it using pg_ctlcluster after you've debugged
+stop PostgreSQL and restart it using pg_ctlcluster after you've debugged
 with this approach, since it does bypass some of the work that
 pg_ctlcluster does.
 
 
-#### Postgres vacuuming alerts
+#### PostgreSQL vacuuming alerts
 
-The `autovac_freeze` Postgres alert from `check_postgres` is
+The `autovac_freeze` PostgreSQL alert from `check_postgres` is
 particularly important.  This alert indicates that the age (in terms
 of number of transactions) of the oldest transaction id (XID) is
 getting close to the `autovacuum_freeze_max_age` setting.  When the
-oldest XID hits that age, Postgres will force a VACUUM operation,
+oldest XID hits that age, PostgreSQL will force a VACUUM operation,
 which can often lead to sudden downtime until the operation finishes.
 If it did not do this and the age of the oldest XID reached 2 billion,
 transaction id wraparound would occur and there would be data loss.
@@ -154,4 +154,4 @@ database as a database superuser (`postgres`).
 
 See
 http://www.postgresql.org/docs/9.1/static/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND
-for more details on Postgres vacuuming.
+for more details on PostgreSQL vacuuming.

@@ -90,7 +90,7 @@ the backend, but does in JavaScript.
 
 ## System packages
 
-For the third-party services like Postgres, Redis, Nginx, and RabbitMQ
+For the third-party services like PostgreSQL, Redis, Nginx, and RabbitMQ
 that are documented in the
 [architecture overview](../overview/architecture-overview.md), we rely on the
 versions of those packages provided alongside the Linux distribution
@@ -113,7 +113,7 @@ few places:
   install other dependencies, and (2) because that list is shared
   between development and production.
 
-We also rely on the PGroonga PPA for the PGroonga Postgres
+We also rely on the PGroonga PPA for the PGroonga PostgreSQL
 extension, used by our [full-text search](full-text-search.md).
 
 ## Python packages

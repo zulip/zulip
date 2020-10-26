@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# Processes updates to Postgres full-text search for new/edited messages.
+# Processes updates to PostgreSQL full-text search for new/edited messages.
 #
-# Zulip manages its Postgres full-text search as follows.  When the
-# content of a message is modified, a Postgres trigger logs the
+# Zulip manages its PostgreSQL full-text search as follows.  When the
+# content of a message is modified, a PostgreSQL trigger logs the
 # message ID to the `fts_update_log` table.  In the background, this
-# program processes `fts_update_log`, updating the Postgres full-text
+# program processes `fts_update_log`, updating the PostgreSQL full-text
 # search column search_tsvector in the main zerver_message.
 import sys
 
@@ -88,7 +88,7 @@ try:
     USING_PGROONGA = settings.USING_PGROONGA
 except ImportError:
     # process_fts_updates also supports running locally on a remote
-    # Postgres server; in that case, one can just connect to localhost
+    # PostgreSQL server; in that case, one can just connect to localhost
     USING_PGROONGA = False
 
 # Since we don't want a hard dependency on being able to access the

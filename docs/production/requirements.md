@@ -149,7 +149,7 @@ most use cases, there's little scalability benefit to doing so.  See
 installing Zulip with a dedicated database server.
 
 * **Dedicated database**.  For installations with hundreds of daily
-  active users, we recommend using a [remote Postgres
+  active users, we recommend using a [remote PostgreSQL
   database](postgres.md), but it's not required.
 
 * **RAM:**  We recommended more RAM for larger installations:
@@ -191,7 +191,7 @@ installing Zulip with a dedicated database server.
   always idle), and its database was using about 100GB of disk.
 
 * **Disaster recovery:** One can easily run a hot spare application
-  server and a hot spare database (using [Postgres streaming
+  server and a hot spare database (using [PostgreSQL streaming
   replication][streaming-replication]).  Make sure the hot spare
   application server has copies of `/etc/zulip` and you're either
   syncing `LOCAL_UPLOADS_DIR` or using the [S3 file uploads
@@ -214,5 +214,5 @@ whether Zulip is a fit for your organization or need further advice
 [contact Zulip support][contact-support].
 
 [s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
-[streaming-replication]: ../production/export-and-import.html#postgres-streaming-replication
+[streaming-replication]: ../production/export-and-import.html#postgresql-streaming-replication
 [contact-support]: https://zulip.com/help/contact-support

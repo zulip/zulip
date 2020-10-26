@@ -50,13 +50,13 @@ specific reason to prefer Docker.
 Zulip has full support for each top-level service living on its own
 machine.
 
-You can configure remote servers for Postgres, RabbitMQ, Redis,
+You can configure remote servers for PostgreSQL, RabbitMQ, Redis,
 in `/etc/zulip/settings.py`; just search for the service name in that
 file and you'll find inline documentation in comments for how to
 configure it.
 
 Since some of these services require some configuration on the node
-itself (e.g. installing our Postgres extensions), we have designed
+itself (e.g. installing our PostgreSQL extensions), we have designed
 the Puppet configuration that Zulip uses for installing and upgrading
 configuration to be completely modular.
 
@@ -103,9 +103,9 @@ sudo -s  # If not already root
     --no-init-db --postgres-missing-dictionaries
 ```
 
-The script also installs and starts Postgres on the server by
+The script also installs and starts PostgreSQL on the server by
 default. We don't need it, so run the following command to
-stop and disable the local Postgres server.
+stop and disable the local PostgreSQL server.
 
 ```
 sudo service postgresql stop
@@ -114,9 +114,9 @@ sudo update-rc.d postgresql disable
 
 This complication will be removed in a future version.
 
-#### Step 2: Create the Postgres database
+#### Step 2: Create the PostgreSQL database
 
-Access an administrative `psql` shell on your Postgres database, and
+Access an administrative `psql` shell on your PostgreSQL database, and
 run the commands in `scripts/setup/create-db.sql` to:
 
 * Create a database called `zulip`.
@@ -125,19 +125,19 @@ run the commands in `scripts/setup/create-db.sql` to:
   `zulip` in the `zulip` database. You might have to grant `create`
   privileges first for the `zulip` user to do this.
 
-Depending on how authentication works for your Postgres installation,
+Depending on how authentication works for your PostgreSQL installation,
 you may also need to set a password for the Zulip user, generate a
 client certificate, or similar; consult the documentation for your
 database provider for the available options.
 
-#### Step 3: Configure Zulip to use the Postgres database
+#### Step 3: Configure Zulip to use the PostgreSQL database
 
 In `/etc/zulip/settings.py` on your Zulip server, configure the
-following settings with details for how to connect to your Postgres
+following settings with details for how to connect to your PostgreSQL
 server.  Your database provider should provide these details.
 
-* `REMOTE_POSTGRES_HOST`: Name or IP address of the Postgres server.
-* `REMOTE_POSTGRES_PORT`: Port on the Postgres server.
+* `REMOTE_POSTGRES_HOST`: Name or IP address of the PostgreSQL server.
+* `REMOTE_POSTGRES_PORT`: Port on the PostgreSQL server.
 * `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server.
 
 If you're using password authentication, you should specify the
@@ -151,7 +151,7 @@ postgres_password = abcd1234
 Now complete the installation by running the following commands.
 
 ```
-# Ask Zulip installer to initialize the Postgres database.
+# Ask Zulip installer to initialize the PostgreSQL database.
 su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
 
 # And then generate a realm creation link:
@@ -513,7 +513,7 @@ setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-R
 
 Set to non-empty to enable replication to enable [streaming
 replication between PostgreSQL
-servers](../production/export-and-import.html#postgres-streaming-replication).
+servers](../production/export-and-import.html#postgresql-streaming-replication).
 
 #### `ssl_ca_file`
 

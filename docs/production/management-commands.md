@@ -106,9 +106,9 @@ There are dozens of useful management commands under
 
 * `./manage.py help`: Lists all available management commands.
 * `./manage.py dbshell`: If you're more comfortable with raw SQL than
-  Python, this will open a Postgres SQL shell connected to the Zulip
+  Python, this will open a PostgreSQL SQL shell connected to the Zulip
   server's database.  Beware of changing data; editing data directly
-  with SQL will often not behave correctly because Postgres doesn't
+  with SQL will often not behave correctly because PostgreSQL doesn't
   know to flush Zulip's caches or notify browsers of changes.
 * `./manage.py send_custom_email`: Can be used to send an email to a set
   of users.  The `--help` documents how to run it from a `manage.py

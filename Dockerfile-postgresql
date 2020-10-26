@@ -1,7 +1,7 @@
 # To build run `docker build -f Dockerfile-postgresql .` from the root of the
 # zulip repo.
 
-# Currently the postgres images do not support automatic upgrading of
+# Currently the PostgreSQL images do not support automatic upgrading of
 # the on-disk data in volumes. So the base image can not currently be upgraded
 # without users needing a manual pgdump and restore.
 

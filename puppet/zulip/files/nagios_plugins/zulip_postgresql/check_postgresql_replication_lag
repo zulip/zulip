@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """Nagios plugin to check the difference between the primary and
-replica Postgres servers' xlog location.  Requires that the user this
-connects to Postgres as has been granted the `pg_monitor` role.
+replica PostgreSQL servers' xlog location.  Requires that the user this
+connects to PostgreSQL as has been granted the `pg_monitor` role.
 
 """
 import re

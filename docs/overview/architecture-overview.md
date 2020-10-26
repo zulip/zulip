@@ -228,13 +228,13 @@ Also see [the queuing guide](../subsystems/queuing.md).
 
 ### PostgreSQL
 
-PostgreSQL (also known as Postgres) is the database that stores all
-persistent data, that is, data that's expected to live beyond a user's
-current session.  Starting with Zulip 3.0, new Zulip installations
-will install modern Postgres release rather than using the version included
-with the operating system.
+PostgreSQL is the database that stores all persistent data, that is,
+data that's expected to live beyond a user's current session.
+Starting with Zulip 3.0, new Zulip installations will install modern
+PostgreSQL release rather than using the version included with the
+operating system.
 
-In production, Postgres is installed with a default configuration. The
+In production, PostgreSQL is installed with a default configuration. The
 directory that would contain configuration files
 (`puppet/zulip/files/postgresql`) has only a utility script and a custom
 list of stopwords used by a PostgreSQL extension.

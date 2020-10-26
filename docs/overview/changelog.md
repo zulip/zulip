@@ -31,7 +31,7 @@ in bursts.
   data will fascilitate future features showing a log of activity by
   a given user or changes to an organization's settings.
 - Added support for using Sentry for processing backend exceptions.
-- Added documentation for using `wal-g` for continuous Postgres backups.
+- Added documentation for using `wal-g` for continuous PostgreSQL backups.
 - Added loading spinners for message editing widgets.
 - Added live update of compose placeholder text when recipients change.
 - The Zoom integration is now stable (no longer beta).
@@ -161,14 +161,14 @@ in bursts.
   duplicate accounts before upgrading.  Zulip Cloud only had two
   accounts affected by this bug, so we expect the vast majority of
   installations will have none.
-- This release switches Zulip to install Postgres 12 from the upstream
-  Postgres repository by default, rather than using the default
-  Postgres version included with the operating system.  Existing Zulip
-  installations will continue to work with Postgres 10; this detail is
+- This release switches Zulip to install PostgreSQL 12 from the upstream
+  PostgreSQL repository by default, rather than using the default
+  PostgreSQL version included with the operating system.  Existing Zulip
+  installations will continue to work with PostgreSQL 10; this detail is
   configured in `/etc/zulip/zulip.conf`.  We have no concrete plans to
-  start requiring Postgres 12, though we do expect it to improve
+  start requiring PostgreSQL 12, though we do expect it to improve
   performance.  Installations that would like to upgrade can follow
-  [our new Postgres upgrade guide][postgres-upgrade].
+  [our new PostgreSQL upgrade guide][postgresql-upgrade].
 - The format of the `JWT_AUTH_KEYS` setting has changed to include an
   [algorithms](https://pyjwt.readthedocs.io/en/latest/algorithms.html)
   list: `{"subdomain": "key"}` becomes `{"subdomain": {"key": "key",
@@ -182,7 +182,7 @@ in bursts.
   Upgrade notes for all releases one is upgrading across.
 
 [manage-shell]: ../production/management-commands.html#manage-py-shell
-[postgres-upgrade]: ../production/upgrade-or-modify.html#upgrading-postgresql
+[postgresql-upgrade]: ../production/upgrade-or-modify.html#upgrading-postgresql
 
 #### Full feature changelog
 
@@ -322,7 +322,7 @@ in bursts.
 ### 2.1.7 -- 2020-06-25
 
 - CVE-2020-15070: Fix privilege escalation vulnerability with custom
-  profile fields and direct write access to Zulip's Postgres database.
+  profile fields and direct write access to Zulip's PostgreSQL database.
 - Changed default memcached authentication username to zulip@localhost,
   fixing authentication problems when servers change their hostname.
 
@@ -366,7 +366,7 @@ details.
 
 - Fixed a regression in 2.1.3 that impacted creating the very first
   organization via our data import tools.
-- Remove the old `tsearch_extras` Postgres extension, which was causing
+- Remove the old `tsearch_extras` PostgreSQL extension, which was causing
   an exception restoring backups on fresh Zulip servers that had been
   generated on systems that had been upgraded from older Zulip releases.
 - Removed fetching GitHub contributor data from static asset build
@@ -444,7 +444,7 @@ details.
 - Added support for Debian buster.  Removed support for EOL Ubuntu Trusty.
 - Added support for SAML authentication.
 - Removed our dependency on `tsearch_extras`, making it possible to
-  run a production Zulip server against any Postgres database
+  run a production Zulip server against any PostgreSQL database
   (including those where one cannot install extensions, like Amazon RDS).
 - Significantly improved the email->Zulip gateway, and added [nice
   setup documentation](../production/email-gateway.md).  It now
@@ -700,7 +700,7 @@ lose the setting and need to re-enable it.
 - Fixed a table layout bug in "deactivated users" settings.
 - Fixed an exception when administrators edited bot users when custom
   profile fields were configured in the organization.
-- Fixed a bug enabling the PGRoonga search backend with older Postgres.
+- Fixed a bug enabling the PGRoonga search backend with older PostgreSQL.
 - Fixed getting personal API key when passwords are disabled.
 
 ### 2.0.3 -- 2019-04-23
@@ -1406,7 +1406,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Fixed the behavior of key combintions like Ctrl+Enter in the compose box.
 - Worked around Google Compute Engine's default boto configuration,
   which broke Zulip (and any other app using boto).
-- Zulip now will gracefully handle the Postgres server being restarted.
+- Zulip now will gracefully handle the PostgreSQL server being restarted.
 - Optimized marking an entire topic as read.
 - Switched from npm to yarn for downloading JS packages.
 - Switched the function of the 'q' and 'w' search hotkeys.
@@ -1717,7 +1717,7 @@ Zulip apps.
 - Added numerous hooks to Puppet modules to enable more configurations.
 - Moved several useful Puppet components into the main Puppet
   manifests (setting a Redis password, etc.).
-- Added automatic configuration of Postgres/memcached settings based
+- Added automatic configuration of PostgreSQL/memcached settings based
   on the server's available RAM.
 - Added scripts/upgrade-zulip-from-git for upgrading Zulip from a Git repo.
 - Added preliminary support for Python 3.  All of Zulip's test suites now
@@ -1834,7 +1834,7 @@ Zulip apps.
 
 ### 1.3.11 - 2016-05-02
 - Moved email digest support into the default Zulip production configuration.
-- Added options for configuring Postgres, RabbitMQ, Redis, and memcached
+- Added options for configuring PostgreSQL, RabbitMQ, Redis, and memcached
   in settings.py.
 - Added documentation on using Hubot to integrate with useful services
   not yet integrated with Zulip directly (e.g. Google Hangouts).
@@ -1864,7 +1864,7 @@ Zulip apps.
 - Added new integration for Travis CI.
 - Added settings option to control maximum file upload size.
 - Added support for running Zulip development environment in Docker.
-- Added easy configuration support for a remote Postgres database.
+- Added easy configuration support for a remote PostgreSQL database.
 - Added extensive documentation on scalability, backups, and security.
 - Recent private message threads are now displayed expanded similar to
   the pre-existing recent topics feature.
