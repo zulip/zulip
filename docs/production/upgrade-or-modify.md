@@ -234,7 +234,7 @@ instructions for other supported platforms.
 4. As root, upgrade the database to the latest version of PostgreSQL:
 
     ```
-    /home/zulip/deployments/current/scripts/setup/upgrade-postgres
+    /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
     ```
 
 5. Finally, we need to reinstall the current version of Zulip, which
@@ -423,10 +423,10 @@ To upgrade the version of PostgreSQL on the Zulip server:
 3. As root, run the database upgrade tool:
 
     ```
-    /home/zulip/deployments/current/scripts/setup/upgrade-postgres
+    /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
     ```
 
-`upgrade-postgres` will have finished by restarting your Zulip server;
+`upgrade-postgresql` will have finished by restarting your Zulip server;
 you should now be able to navigate to its URL and confirm everything
 is working correctly.
 

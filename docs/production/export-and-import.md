@@ -207,7 +207,7 @@ To restore from a manual backup, the process is basically the reverse of the abo
   from your backups.
 
 * If you ran `initialize-database` anyway above, you'll want to run
-  `scripts/setup/postgres-init-db` to drop the initial database first.
+  `scripts/setup/postgresql-init-db` to drop the initial database first.
 
 * Restore your database from the backup.
 
