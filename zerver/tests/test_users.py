@@ -5,6 +5,7 @@ from unittest import mock
 
 import orjson
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -725,6 +726,8 @@ class QueryCountTest(ZulipTestCase):
         # add_new_user_history needs messages to be current
         Message.objects.all().update(date_sent=timezone_now())
 
+        ContentType.objects.clear_cache()
+
         # This just focuses on making sure we don't too many
         # queries/cache tries or send too many events.
         realm = get_realm("zulip")
@@ -765,7 +768,7 @@ class QueryCountTest(ZulipTestCase):
                         prereg_user=prereg_user,
                     )
 
-        self.assertTrue(80 <= len(queries) <= 81)
+        self.assert_length(queries, 81)
         self.assert_length(cache_tries, 23)
         self.assert_length(events, 12)
 
