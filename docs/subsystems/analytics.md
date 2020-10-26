@@ -10,7 +10,7 @@ designed around the following goals:
 - Efficient to query so that we can display data in-app (e.g. on the streams
   page) with minimum impact on the overall performance of those pages.
 - Storage size smaller than the size of the main Message/UserMessage
-  database tables, so that we can store the data in the main Postgres
+  database tables, so that we can store the data in the main PostgreSQL
   database rather than using a specialized database platform.
 
 There are a few important things you need to understand in order to
@@ -89,7 +89,7 @@ it's easy to end up processing a huge amount of data inefficiently and
 needing a system like Hadoop to manage it. For the built-in analytics in
 Zulip, we've designed something lightweight and fast that can be available
 on any Zulip server without any extra dependencies through the carefully
-designed set of tables in Postgres.
+designed set of tables in PostgreSQL.
 
 This requires some care to avoid making the analytics tables larger than the
 rest of the Zulip database or adding a ton of computational load, but with

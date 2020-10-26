@@ -29,7 +29,7 @@ Options:
       environment to produce an image which is used elsewhere.  Uncommon.
 
   --postgres-version=12
-      Sets the version of Postgres that will be installed.
+      Sets the version of PostgreSQL that will be installed.
   --postgres-missing-dictionaries
       Set postgresql.missing_dictionaries, which alters the initial database.  Use with
       cloud managed databases like RDS.  Conflicts with --no-overwrite-settings.
@@ -235,8 +235,8 @@ fi
 case ",$PUPPET_CLASSES," in
     *,zulip::profile::standalone,* | *,zulip::profile::postgresql,*)
         if [ "$package_system" = apt ]; then
-            # We're going to install Postgres from the Postgres apt
-            # repository; this may conflict with the existing Postgres.
+            # We're going to install PostgreSQL from the PostgreSQL apt
+            # repository; this may conflict with the existing PostgreSQL.
             OTHER_PG="$(dpkg --get-selections \
                 | grep -E '^postgresql-[0-9]+\s+install$' \
                 | grep -v "^postgresql-$POSTGRES_VERSION\b" \
@@ -406,7 +406,7 @@ EOF
         --classfile=/var/lib/puppet/classes.txt \
         >/dev/null
 
-    # We only need the Postgres version setting on database hosts; but
+    # We only need the PostgreSQL version setting on database hosts; but
     # we don't know if this is a database host until we have the catalog summary.
     if ! has_class "zulip::postgresql_common" || [ "$package_system" != apt ]; then
         crudini --del /etc/zulip/zulip.conf postgresql
@@ -526,7 +526,7 @@ if [ -n "$NO_INIT_DB" ]; then
  Success!
 
  Stopping because --no-init-db was passed.
- To complete the installation, configure Postgres and then run:
+ To complete the installation, configure PostgreSQL and then run:
 
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
    su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'

@@ -33,7 +33,7 @@ class zulip::postgresql_base {
       $pgroonga_setup_sql_path = "${postgresql_sharedir}/pgroonga_setup.sql"
       $setup_system_deps = 'setup_yum_repo'
       $postgresql_restart = "systemctl restart postgresql-${zulip::postgresql_common::version}"
-      # TODO Since we can't find the Postgres dicts directory on CentOS yet, we
+      # TODO Since we can't find the PostgreSQL dicts directory on CentOS yet, we
       # link directly to the hunspell directory.
       $postgresql_dict_dict = '/usr/share/myspell/en_US.dic'
       $postgresql_dict_affix = '/usr/share/myspell/en_US.aff'

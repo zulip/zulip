@@ -279,13 +279,13 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         run_as_root(["ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
     postgres_dir = f'pgsql-{POSTGRES_VERSION}'
     for cmd in ['pg_config', 'pg_isready', 'psql']:
-        # Our tooling expects these Postgres scripts to be at
+        # Our tooling expects these PostgreSQL scripts to be at
         # well-known paths.  There's an argument for eventually
         # making our tooling auto-detect, but this is simpler.
         run_as_root(["ln", "-nsf", f"/usr/{postgres_dir}/bin/{cmd}",
                      f"/usr/bin/{cmd}"])
 
-    # From here, we do the first-time setup/initialization for the Postgres database.
+    # From here, we do the first-time setup/initialization for the PostgreSQL database.
     pg_datadir = f"/var/lib/pgsql/{POSTGRES_VERSION}/data"
     pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
 
@@ -300,7 +300,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
                 sudo_args = ['-H'])
     # Use vendored pg_hba.conf, which enables password authentication.
     run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
-    # Later steps will ensure Postgres is started
+    # Later steps will ensure PostgreSQL is started
 
     # Link in tsearch data files
     overwrite_symlink(

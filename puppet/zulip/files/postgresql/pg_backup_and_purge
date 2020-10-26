@@ -35,7 +35,7 @@ if is_rhel_based:
 else:
     pg_data_paths = glob.glob('/var/lib/postgresql/*/main')
 if len(pg_data_paths) != 1:
-    print(f"Postgres installation is not unique: {pg_data_paths}")
+    print(f"PostgreSQL installation is not unique: {pg_data_paths}")
     sys.exit(1)
 pg_data_path = pg_data_paths[0]
 run(['env-wal-g', 'backup-push', pg_data_path])

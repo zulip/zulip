@@ -12,7 +12,7 @@ class zulip::postgresql_common {
         'ssl-cert',
         # our dictionary
         'hunspell-en-us',
-        # Postgres Nagios check plugin
+        # PostgreSQL Nagios check plugin
         'check-postgres',
         # Python modules used in our monitoring/worker threads
         'python3-dateutil', # TODO: use a virtualenv instead

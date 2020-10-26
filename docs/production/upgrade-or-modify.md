@@ -195,7 +195,7 @@ some additional steps to update your Zulip installation, documented
 below.
 
 The steps are largely the same for the various OS upgrades aside from
-the versions of Postgres, so you should be able to adapt these
+the versions of PostgreSQL, so you should be able to adapt these
 instructions for other supported platforms.
 
 ### Upgrading from Ubuntu 18.04 Bionic to 20.04 Focal
@@ -226,7 +226,7 @@ instructions for other supported platforms.
     release update of Ubuntu 20.04 LTS is released.
 
     When `do-release-upgrade` asks you how to upgrade configuration
-    files for services that Zulip manages like Redis, Postgres,
+    files for services that Zulip manages like Redis, PostgreSQL,
     Nginx, and memcached, the best choice is `N` to keep the
     currently installed version.  But it's not important; the next
     step will re-install Zulip's configuration in any case.
@@ -357,7 +357,7 @@ instructions for other supported platforms.
    [debian-upgrade-os]: https://www.debian.org/releases/buster/amd64/release-notes/ch-upgrading.html
 
    When prompted for you how to upgrade configuration
-   files for services that Zulip manages like Redis, Postgres,
+   files for services that Zulip manages like Redis, PostgreSQL,
    Nginx, and memcached, the best choice is `N` to keep the
    currently installed version.  But it's not important; the next
    step will re-install Zulip's configuration in any case.

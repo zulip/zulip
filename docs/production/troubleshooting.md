@@ -141,11 +141,11 @@ problems and how to resolve them:
     <https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/>`;
     if you disable them, do not forget to regularly install apt upgrades
     manually.  With unattended upgrades enabled but not limited, the
-    moment a new Postgres release is published, your Zulip server will
-    have its Postgres server upgraded (and thus restarted).
+    moment a new PostgreSQL release is published, your Zulip server will
+    have its PostgreSQL server upgraded (and thus restarted).
 ```
 
-Restarting one of the system services that Zulip uses (Postgres,
+Restarting one of the system services that Zulip uses (PostgreSQL,
 memcached, Redis, or Rabbitmq) will drop the connections that
 Zulip processes have to the service, resulting in future operations on
 those connections throwing errors.
@@ -167,7 +167,7 @@ workers are commonly idle for periods of hours or days at a time.
 You can prevent this trickle when doing a planned upgrade by
 restarting the Zulip server with
 `/home/zulip/deployments/current/scripts/restart-server` after
-installing system package updates to Postgres, memcached,
+installing system package updates to PostgreSQL, memcached,
 RabbitMQ, or Redis.
 
 You can ensure that the `unattended-upgrades` package never upgrades
@@ -204,7 +204,7 @@ standard stuff:
   especially for the database and where uploads are stored.
 * Service uptime and standard monitoring for the [services Zulip
   depends on](#troubleshooting-services).  Most monitoring software
-  has standard plugins for Nginx, Postgres, Redis, RabbitMQ,
+  has standard plugins for Nginx, PostgreSQL, Redis, RabbitMQ,
   and memcached, and those will work well with Zulip.
 * `supervisorctl status` showing all services `RUNNING`.
 * Checking for processes being OOM killed.
@@ -245,8 +245,8 @@ Database monitoring:
 * `check_fts_update_log`: Checks whether full-text search updates are
   being processed properly or getting backlogged.
 * `check_postgres`: General checks for database health.
-* `check_postgresql_backup`: Checks status of Postgres backups.
-* `check_postgresql_replication_lag`: Checks whether Postgres streaming
+* `check_postgresql_backup`: Checks status of PostgreSQL backups.
+* `check_postgresql_replication_lag`: Checks whether PostgreSQL streaming
   replication is up to date.
 
 Standard server monitoring:

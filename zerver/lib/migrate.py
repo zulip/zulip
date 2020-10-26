@@ -13,7 +13,7 @@ def do_batch_update(cursor: CursorObj,
                     batch_size: int=10000,
                     sleep: float=0.1) -> None:  # nocoverage
     # The string substitution below is complicated by our need to
-    # support multiple Postgres versions.
+    # support multiple PostgreSQL versions.
     stmt = SQL('''
         UPDATE {}
         SET {}

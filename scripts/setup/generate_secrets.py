@@ -88,7 +88,7 @@ def generate_secrets(development: bool = False) -> None:
             add_secret(name, random_token())
 
     # These secrets are exclusive to a Zulip development environment.
-    # We use postgres peer authentication by default in production,
+    # We use PostgreSQL peer authentication by default in production,
     # and initial_password_salt is used to generate passwords for the
     # test/development database users.  See `manage.py
     # print_initial_password`.
