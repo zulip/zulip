@@ -17,7 +17,7 @@
 
 <p>
     {{ _('Your account details:') }}
-    <li>{{ _('Organization URL:') }} {{ realm_uri }}<br></li>
+    <li>{% trans organization_url=macros.link_tag(realm_uri) %}Organization URL: {{ organization_url }}{% endtrans %}<br></li>
     {% if ldap %}
         {% if ldap_username %}
         <li>{{ _('Username:') }} {{ ldap_username }}<br></li>

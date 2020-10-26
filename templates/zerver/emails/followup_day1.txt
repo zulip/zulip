@@ -8,7 +8,7 @@
 
 
 {{ _('Your account details:') }}
-* {{ _('Organization URL:') }} {{ realm_uri }}
+* {% trans organization_url=realm_uri %}Organization URL: {{ organization_url }}{% endtrans %}
 {% if ldap %}
 {% if ldap_username %}
 * {{ _('Username:') }} {{ ldap_username }}
