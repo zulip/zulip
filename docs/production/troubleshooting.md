@@ -246,7 +246,7 @@ Database monitoring:
   being processed properly or getting backlogged.
 * `check_postgres`: General checks for database health.
 * `check_postgresql_backup`: Checks status of Postgres backups.
-* `check_postgres_replication_lag`: Checks whether Postgres streaming
+* `check_postgresql_replication_lag`: Checks whether Postgres streaming
   replication is up to date.
 
 Standard server monitoring:
