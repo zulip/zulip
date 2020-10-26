@@ -441,7 +441,11 @@ def process_new_human_user(user_profile: UserProfile,
             if stream not in streams:
                 streams.append(stream)
 
-    bulk_add_subscriptions(realm, streams, [user_profile], acting_user=acting_user)
+    add_streams_for_new_user(
+        user=user_profile,
+        streams=streams,
+        acting_user=acting_user,
+    )
 
     add_new_user_history(user_profile, streams)
 
@@ -2773,6 +2777,62 @@ def send_subscription_add_events(
                      subscriptions=sub_dicts)
         send_event(realm, event, [user_id])
 
+def add_streams_for_new_user(
+    user: UserProfile,
+    streams: Iterable[Stream],
+    acting_user: Optional[UserProfile]=None
+) -> None:
+    # This is basically a subset of bulk_add_subscriptions, but it is much
+    # simpler due to us knowing that a new user does not have existing
+    # subscriptions, nor do we need to send them events.
+
+    realm = user.realm
+
+    # Sanity check out callers
+    for stream in streams:
+        assert stream.realm_id == realm.id
+
+    subs_to_add: List[SubInfo] = []
+    used_colors: Set[str] = set()
+
+    for stream in streams:
+        color = pick_color(user, used_colors)
+        used_colors.add(color)
+
+        sub = Subscription(
+            user_profile=user,
+            active=True,
+            color=color,
+            recipient_id=stream.recipient_id
+        )
+        sub_info = SubInfo(user, sub, stream)
+        subs_to_add.append(sub_info)
+
+    bulk_add_subs_to_db_with_logging(
+        realm=realm,
+        acting_user=acting_user,
+        subs_to_add=subs_to_add,
+        subs_to_activate=[],
+    )
+
+    altered_user_dict = {stream.id: {user.id} for stream in streams}
+    stream_dict = {stream.id: stream for stream in streams}
+    private_streams = [stream for stream in streams if stream.invite_only]
+
+    private_peer_dict = bulk_get_private_peers(
+        realm=realm,
+        private_streams=private_streams,
+    )
+
+    # Notify our peers.  (New users don't need to receive any events.)
+    send_peer_subscriber_events(
+        op="peer_add",
+        realm=realm,
+        altered_user_dict=altered_user_dict,
+        stream_dict=stream_dict,
+        private_peer_dict=private_peer_dict,
+    )
+
 SubT = Tuple[List[SubInfo], List[SubInfo]]
 def bulk_add_subscriptions(
     realm: Realm,
@@ -2782,6 +2842,14 @@ def bulk_add_subscriptions(
     acting_user: Optional[UserProfile]=None
 ) -> SubT:
     users = list(users)
+    # In our API we can theoretically have multiple users subscribe to multiple
+    # streams, so the logic here is somewhat complicated.  This function also
+    # gets called for the more typical cases of subscribing a single user to a
+    # stream in the webapp, or for adding several subscribers to an existing
+    # stream in the webapp.
+    #
+    # For the case of adding a new user, see add_streams_for_new_user, which
+    # is simpler and more optimized.
 
     # Sanity check out callers
     for stream in streams:
