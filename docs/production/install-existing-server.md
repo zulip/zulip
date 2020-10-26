@@ -67,9 +67,10 @@ $ sudo service puppet stop
 Zulip expects to install PostgreSQL 12, and find that listening on
 port 5432; any other version of PostgreSQL that is detected at install
 time will cause the install to abort.  If you already have PostgreSQL
-installed, you can pass `--postgres-version=` to the installer to have
-it use that version.  It will replace the package with the latest from
-the PostgreSQL apt repository, but existing data will be retained.
+installed, you can pass `--postgresql-version=` to the installer to
+have it use that version.  It will replace the package with the latest
+from the PostgreSQL apt repository, but existing data will be
+retained.
 
 If you have an existing PostgreSQL database, note that Zulip will use
 the default `main` as its database name; make sure you're not using

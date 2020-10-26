@@ -28,9 +28,9 @@ Options:
       install process; used when this command is run once in a highly-controlled
       environment to produce an image which is used elsewhere.  Uncommon.
 
-  --postgres-version=12
+  --postgresql-version=12
       Sets the version of PostgreSQL that will be installed.
-  --postgres-missing-dictionaries
+  --postgresql-missing-dictionaries
       Set postgresql.missing_dictionaries, which alters the initial database.  Use with
       cloud managed databases like RDS.  Conflicts with --no-overwrite-settings.
   --no-init-db
@@ -47,7 +47,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgres-version:,postgres-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -81,13 +81,13 @@ while true; do
             shift
             ;;
 
-        --postgres-version)
-            POSTGRES_VERSION="$2"
+        --postgresql-version)
+            POSTGRESQL_VERSION="$2"
             shift
             shift
             ;;
-        --postgres-missing-dictionaries)
-            POSTGRES_MISSING_DICTIONARIES=1
+        --postgresql-missing-dictionaries)
+            POSTGRESQL_MISSING_DICTIONARIES=1
             shift
             ;;
         --no-init-db)
@@ -127,7 +127,7 @@ read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
 # e.g. zulip::profile::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::standalone}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
-POSTGRES_VERSION="${POSTGRES_VERSION:-12}"
+POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-12}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     set +x
@@ -137,9 +137,9 @@ if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     exit 1
 fi
 
-if [ -n "$POSTGRES_MISSING_DICTIONARIES" ] && [ -n "$NO_OVERWRITE_SETTINGS" ]; then
+if [ -n "$POSTGRESQL_MISSING_DICTIONARIES" ] && [ -n "$NO_OVERWRITE_SETTINGS" ]; then
     set +x
-    echo "error: --postgres-missing-dictionaries and --no-overwrite-settings are incompatible" >&2
+    echo "error: --postgresql-missing-dictionaries and --no-overwrite-settings are incompatible" >&2
     echo >&2
     usage >&2
     exit 1
@@ -239,7 +239,7 @@ case ",$PUPPET_CLASSES," in
             # repository; this may conflict with the existing PostgreSQL.
             OTHER_PG="$(dpkg --get-selections \
                 | grep -E '^postgresql-[0-9]+\s+install$' \
-                | grep -v "^postgresql-$POSTGRES_VERSION\b" \
+                | grep -v "^postgresql-$POSTGRESQL_VERSION\b" \
                 | cut -f 1)" || true
             if [ -n "$OTHER_PG" ]; then
                 INDENTED="${OTHER_PG//$'\n'/$'\n'    }"
@@ -250,7 +250,7 @@ The following PostgreSQL servers were found to already be installed:
 
     $INDENTED
 
-Zulip needs to install PostgreSQL $POSTGRES_VERSION, but does not wish
+Zulip needs to install PostgreSQL $POSTGRESQL_VERSION, but does not wish
 to uninstall existing databases in order to do so.  Remove all other
 PostgreSQL servers manually before running the installer:
 
@@ -390,14 +390,14 @@ puppet_classes = $PUPPET_CLASSES
 deploy_type = production
 
 [postgresql]
-version = $POSTGRES_VERSION
+version = $POSTGRESQL_VERSION
 EOF
 
     if [ -n "$USE_CERTBOT" ]; then
         crudini --set /etc/zulip/zulip.conf certbot auto_renew yes
     fi
 
-    if [ -n "$POSTGRES_MISSING_DICTIONARIES" ]; then
+    if [ -n "$POSTGRESQL_MISSING_DICTIONARIES" ]; then
         crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
     fi
 
