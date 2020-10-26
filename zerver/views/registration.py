@@ -3,6 +3,7 @@ import smtplib
 import urllib
 from typing import Dict, List, Optional
 
+import pytz
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from django.core import validators
@@ -50,7 +51,6 @@ from zerver.lib.pysa import mark_sanitized
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
-from zerver.lib.timezone import get_all_timezones
 from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
@@ -290,7 +290,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         default_stream_groups = lookup_default_stream_groups(default_stream_group_names, realm)
 
         timezone = ""
-        if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
+        if 'timezone' in request.POST and request.POST['timezone'] in pytz.all_timezones_set:
             timezone = request.POST['timezone']
 
         if 'source_realm' in request.POST and request.POST["source_realm"] != "on":
