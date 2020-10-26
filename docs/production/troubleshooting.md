@@ -245,7 +245,7 @@ Database monitoring:
 * `check_fts_update_log`: Checks whether full-text search updates are
   being processed properly or getting backlogged.
 * `check_postgres`: General checks for database health.
-* `check_postgres_backup`: Checks status of Postgres backups.
+* `check_postgresql_backup`: Checks status of Postgres backups.
 * `check_postgres_replication_lag`: Checks whether Postgres streaming
   replication is up to date.
 

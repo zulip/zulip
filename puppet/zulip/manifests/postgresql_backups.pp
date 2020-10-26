@@ -50,13 +50,13 @@ class zulip::postgresql_backups {
     require     => File['/usr/local/bin/pg_backup_and_purge'],
   }
 
-  file { "${zulip::common::nagios_plugins_dir}/zulip_postgres_backups":
+  file { "${zulip::common::nagios_plugins_dir}/zulip_postgresql_backups":
     require => Package[$zulip::common::nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',
     group   => 'root',
     mode    => '0755',
-    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgres_backups',
+    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgresql_backups',
   }
 }

@@ -177,7 +177,7 @@ PostgreSQL server to add:
     `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  You
     can (and should) monitor that backups are running regularly via
     the Nagios plugin installed into
-    `/usr/lib/nagios/plugins/zulip_postgres_backups/check_postgres_backup`.
+    `/usr/lib/nagios/plugins/zulip_postgresql_backups/check_postgresql_backup`.
 
 * Any user-uploaded files.  If you're using S3 as storage for file
 uploads, this is backed up in S3. But if you have instead set
@@ -226,7 +226,7 @@ installation from one server to another.
 We recommend running a disaster recovery after setting up your backups to
 confirm that your backups are working. You may also want to monitor
 that they are up to date using the Nagios plugin at:
-`puppet/zulip/files/nagios_plugins/zulip_postgres_backups/check_postgres_backup`.
+`puppet/zulip/files/nagios_plugins/zulip_postgresql_backups/check_postgresql_backup`.
 
 ## Postgres streaming replication
 
