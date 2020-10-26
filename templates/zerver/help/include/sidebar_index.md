@@ -139,6 +139,7 @@
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
 * [Message retention policy](/help/message-retention-policy)
 * [SAML authentication](/help/saml-authentication)
+* [Change who can use wildcard mentions](/help/change-who-can-use-wildcard-mentions)
 
 ## Users & bots
 * [Invite new users](/help/invite-new-users)
