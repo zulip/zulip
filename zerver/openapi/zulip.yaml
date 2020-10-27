@@ -6621,6 +6621,31 @@ paths:
                         description: |
                           The numeric ID assigned to this playground.
                     example: {"id": 1, "result": "success", "msg": ""}
+  /realm/playgrounds/{playground_id}:
+    delete:
+      operationId: remove_realm_playground
+      tags: ["server_and_organizations"]
+      description: |
+        Remove realm playground options to run code snippets in
+        custom playgrounds
+
+        `DELETE {{ api_url }}/v1/realm/playgrounds/{playground_id}`
+      parameters:
+        - name: playground_id
+          in: path
+          description: |
+            The ID of the playground that you want to remove.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
   /register:
     post:
       operationId: register_queue

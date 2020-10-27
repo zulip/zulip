@@ -14,6 +14,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.actions import (
     do_add_linkifier,
     do_add_reaction,
+    do_add_realm_playground,
     do_create_user,
     update_user_presence,
 )
@@ -274,6 +275,19 @@ def add_realm_playground() -> Dict[str, object]:
         "name": "Python2 playground",
         "pygments_language": json.dumps("Python2"),
         "url_prefix": json.dumps("https://python2.example.com"),
+    }
+
+
+@openapi_param_value_generator(["/realm/playgrounds/{playground_id}:delete"])
+def remove_realm_playground() -> Dict[str, object]:
+    playground_info = dict(
+        name="Python playground",
+        pygments_language="Python",
+        url_prefix="https://python.example.com",
+    )
+    playground_id = do_add_realm_playground(get_realm("zulip"), **playground_info)
+    return {
+        "playground_id": playground_id,
     }
 
 

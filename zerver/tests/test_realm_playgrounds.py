@@ -2,6 +2,7 @@ from typing import Dict
 
 import orjson
 
+from zerver.lib.actions import do_add_realm_playground
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmPlayground, get_realm
 
@@ -93,3 +94,25 @@ class RealmPlaygroundTests(ZulipTestCase):
 
         resp = self.api_post(hamlet, "/json/realm/playgrounds")
         self.assert_json_error(resp, "Must be an organization administrator")
+
+        resp = self.api_delete(hamlet, "/json/realm/playgrounds/1")
+        self.assert_json_error(resp, "Must be an organization administrator")
+
+    def test_delete_realm_playground(self) -> None:
+        iago = self.example_user("iago")
+        realm = get_realm("zulip")
+
+        playground_info = dict(
+            name="Python playground",
+            pygments_language="Python",
+            url_prefix="https://python.example.com",
+        )
+        playground_id = do_add_realm_playground(realm, **playground_info)
+        self.assertTrue(RealmPlayground.objects.filter(name="Python playground").exists())
+
+        result = self.api_delete(iago, f"/json/realm/playgrounds/{playground_id + 1}")
+        self.assert_json_error(result, "Invalid playground")
+
+        result = self.api_delete(iago, f"/json/realm/playgrounds/{playground_id}")
+        self.assert_json_success(result)
+        self.assertFalse(RealmPlayground.objects.filter(name="Python").exists())

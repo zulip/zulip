@@ -396,6 +396,17 @@ def add_realm_playground(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/playgrounds", "post", "200")
 
 
+@openapi_test_function("/realm/playgrounds/{playground_id}:delete")
+def remove_realm_playground(client: Client) -> None:
+
+    # {code_example|start}
+    # Remove the playground with ID 1
+    result = client.call_endpoint(url="/realm/playgrounds/1", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/playgrounds/{playground_id}", "delete", "200")
+
+
 @openapi_test_function("/users/me:get")
 def get_profile(client: Client) -> None:
 
@@ -1436,6 +1447,7 @@ def test_server_organizations(client: Client) -> None:
     add_realm_playground(client)
     get_server_settings(client)
     remove_realm_filter(client)
+    remove_realm_playground(client)
     get_realm_emoji(client)
     upload_custom_emoji(client)
     get_realm_profile_fields(client)
