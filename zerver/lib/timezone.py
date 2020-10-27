@@ -1,4 +1,5 @@
 import datetime
+from functools import lru_cache
 from typing import Any, Dict, Union
 
 import pytz
@@ -7,8 +8,11 @@ import pytz
 # This method carefully trims a list of common timezones in the pytz
 # database and handles duplicate abbreviations in favor of the most
 # common/popular offset. The output of this can be directly passed as
-# tz_data to dateutil.parser.
-def _calculate_timezones() -> Dict[str, Union[int, Any]]:
+# tz_data to dateutil.parser. It takes about 25ms to run, so we want
+# to cache its results (while avoiding running it on process startup
+# since we only need it for Markdown rendering).
+@lru_cache(maxsize=None)
+def get_common_timezones() -> Dict[str, Union[int, Any]]:
     tzdata = {}
     normal = datetime.datetime(2009, 9, 1)  # Any random date is fine here.
     for str in pytz.all_timezones:
@@ -40,14 +44,3 @@ def _calculate_timezones() -> Dict[str, Union[int, Any]]:
         if tz_name == 'CST':
             tzdata[tz_name] = -64800  # America/All
     return tzdata
-
-timezone_data = None
-
-# _calculate_timezones takes about 25ms to run, so we want to cache
-# its results (while avoiding running it on process startup since we
-# only need it for Markdown rendering).
-def get_common_timezones() -> Dict[str, Union[int, Any]]:
-    global timezone_data
-    if timezone_data is None:
-        timezone_data = _calculate_timezones()
-    return timezone_data
