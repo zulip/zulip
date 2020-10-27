@@ -474,7 +474,7 @@ ENABLE_GRAVATAR = True
 # The email gateway integration supports sending messages into Zulip
 # by sending an email.
 # For details, see the documentation:
-#   https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
+#   https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 EMAIL_GATEWAY_PATTERN = ""
 
 # If you are using polling, edit the IMAP settings below:
