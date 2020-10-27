@@ -420,6 +420,9 @@ css_rules = RuleList(
     langs=['css'],
     rules=[
         *whitespace_rules,
+        {'pattern': r'font-size: ?(\d+\.)?\d+(px|cm|mm|in|pt|pc|%|ch|vw|vh|vmin|vmax)',
+         'exclude': {"static/styles/portico", "templates/"},
+         'description': "Only use relative units - `rem` or `em` for font-size."},
     ],
 )
 
