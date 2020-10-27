@@ -85,14 +85,14 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         run(["chown", "-R", POSTGRES_PWENT.pw_name, "--", tmp])
         os.setresuid(POSTGRES_PWENT.pw_uid, POSTGRES_PWENT.pw_uid, 0)
 
-        postgres_env = dict(os.environ)
+        postgresql_env = dict(os.environ)
         if db["HOST"] not in ["", "localhost"]:
-            postgres_env["PGHOST"] = db["HOST"]
+            postgresql_env["PGHOST"] = db["HOST"]
             if "PORT" in db:
-                postgres_env["PGPORT"] = db["PORT"]
-            postgres_env["PGUSER"] = db["USER"]
+                postgresql_env["PGPORT"] = db["PORT"]
+            postgresql_env["PGUSER"] = db["USER"]
             if "PASSWORD" in db:
-                postgres_env["PGPASSWORD"] = db["PASSWORD"]
+                postgresql_env["PGPASSWORD"] = db["PASSWORD"]
 
         run(
             [
@@ -101,10 +101,10 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
                 ),
                 db["NAME"]
             ],
-            env=postgres_env,
+            env=postgresql_env,
         )
-        run(["dropdb", "--if-exists", "--", db["NAME"]], cwd="/", env=postgres_env)
-        run(["createdb", "--owner=zulip", "--template=template0", "--", db["NAME"]], cwd="/", env=postgres_env)
+        run(["dropdb", "--if-exists", "--", db["NAME"]], cwd="/", env=postgresql_env)
+        run(["createdb", "--owner=zulip", "--template=template0", "--", db["NAME"]], cwd="/", env=postgresql_env)
         os.setresuid(0, 0, 0)
 
         if settings.PRODUCTION:
@@ -144,7 +144,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         # needs to run after zulip-puppet-apply to ensure full-text
         # search extensions are available and installed.
         os.setresuid(POSTGRES_PWENT.pw_uid, POSTGRES_PWENT.pw_uid, 0)
-        run(["pg_restore", "--dbname=" + db["NAME"], "--", db_dir], cwd="/", env=postgres_env)
+        run(["pg_restore", "--dbname=" + db["NAME"], "--", db_dir], cwd="/", env=postgresql_env)
         os.setresuid(0, 0, 0)
         run(["chown", "-R", str(uid), "--", tmp])
         os.setresuid(uid, uid, 0)
