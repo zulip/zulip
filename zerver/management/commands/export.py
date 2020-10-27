@@ -144,8 +144,16 @@ class Command(ZulipBaseCommand):
 
             print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
 
-            user_count = UserProfile.objects.filter(realm_id=realm.id).count()
-            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total users\n")
+            user_count = UserProfile.objects.filter(
+                realm_id=realm.id,
+                is_active=True,
+                is_bot=False,
+            ).exclude(
+                # We exclude guests, because they're not a priority for
+                # looking at whether most users are being exported.
+                role=UserProfile.ROLE_GUEST,
+            ).count()
+            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total non-guest users\n")
 
             proceed = input("Continue? [y/N] ")
             if proceed.lower() not in ('y', 'yes'):
