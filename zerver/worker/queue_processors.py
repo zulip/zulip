@@ -175,7 +175,7 @@ def timer_expired(limit: int, event_count: int, signal: int, frame: FrameType) -
 
 class QueueProcessingWorker(ABC):
     queue_name: str
-    MAX_CONSUME_SECONDS: Optional[int] = 10
+    MAX_CONSUME_SECONDS: Optional[int] = 30
     ENABLE_TIMEOUTS = False
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
     MAX_SECONDS_BEFORE_UPDATE_STATS = 30
