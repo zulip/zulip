@@ -1,7 +1,7 @@
 """Cron job implementation of Zulip's incoming email gateway's helper
 for forwarding emails into Zulip.
 
-https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
+https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 
 The email gateway supports two major modes of operation: An email
 server (using postfix) where the email address configured in
