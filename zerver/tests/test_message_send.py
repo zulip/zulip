@@ -3,6 +3,7 @@ from typing import Any, Optional, Set
 from unittest import mock
 
 import orjson
+import pytz
 from django.conf import settings
 from django.db.models import Q
 from django.http import HttpResponse
@@ -44,7 +45,6 @@ from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
-from zerver.lib.timezone import get_timezone
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
@@ -1013,7 +1013,7 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, 'Test message 6')
-        local_tz = get_timezone(tz_guess)
+        local_tz = pytz.timezone(tz_guess)
         utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))
         self.assertEqual(message.scheduled_timestamp,
                          convert_to_UTC(utz_defer_until))
@@ -1029,7 +1029,7 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, 'Test message 7')
-        local_tz = get_timezone(user.timezone)
+        local_tz = pytz.timezone(user.timezone)
         utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))
         self.assertEqual(message.scheduled_timestamp,
                          convert_to_UTC(utz_defer_until))

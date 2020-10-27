@@ -4,9 +4,6 @@ from typing import Any, Dict, Union
 import pytz
 
 
-def get_timezone(tz: str) -> pytz.BaseTzInfo:
-    return pytz.timezone(tz)
-
 # This method carefully trims a list of common timezones in the pytz
 # database and handles duplicate abbreviations in favor of the most
 # common/popular offset. The output of this can be directly passed as
