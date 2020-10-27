@@ -453,8 +453,12 @@ Set to the port number if you [prefer to listen on a port other than
 
 #### `no_serve_uploads`
 
-Set to true to configure `nginx` to enable [the S3 uploads
-backend](../production/upload-backends.html#s3-backend-configuration).
+To enable the [the S3 uploads backend][s3-uploads], one needs to both
+configure `settings.py` and set this to 'true' to configure
+`nginx`. Remove this field to return to the local uploads backend (any
+non-empty value is currently equivalent to true).
+
+[s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
 
 #### `uwsgi_buffer_size`
 
