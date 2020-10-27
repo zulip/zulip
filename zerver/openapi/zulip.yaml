@@ -6567,6 +6567,60 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JsonSuccess"
+  /realm/playgrounds:
+    post:
+      operationId: add_realm_playground
+      tags: ["server_and_organizations"]
+      description: |
+        Configure realm playgrounds options to run code snippets occuring
+        in a code block using playgrounds which supports that language.
+
+        `POST {{ api_url }}/v1/realm/playgrounds`
+      parameters:
+        - name: name
+          in: query
+          description: |
+            The user-visible display name of the playground which can be
+            used to pick the target playground, especially when multiple
+            playground options exist for that programming language.
+          schema:
+            type: string
+          example: "Python playground"
+          required: true
+        - name: pygments_language
+          in: query
+          description: |
+            The name of the Pygments language lexer for that
+            programming language.
+          schema:
+            type: string
+          example: "Python"
+          required: true
+        - name: url_prefix
+          in: query
+          description: |
+            The url prefix for the playground.
+          schema:
+            type: string
+          example: https://python.example.com
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      id:
+                        type: integer
+                        description: |
+                          The numeric ID assigned to this playground.
+                    example: {"id": 1, "result": "success", "msg": ""}
   /register:
     post:
       operationId: register_queue

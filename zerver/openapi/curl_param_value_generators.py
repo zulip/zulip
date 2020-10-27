@@ -5,7 +5,7 @@
 # based on Zulip's OpenAPI definitions, as well as test setup and
 # fetching of appropriate parameter values to use when running the
 # cURL examples as part of the tools/test-api test suite.
-
+import json
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
@@ -265,6 +265,15 @@ def remove_realm_filters() -> Dict[str, object]:
 def upload_custom_emoji() -> Dict[str, object]:
     return {
         "filename": "zerver/tests/images/animated_img.gif",
+    }
+
+
+@openapi_param_value_generator(["/realm/playgrounds:post"])
+def add_realm_playground() -> Dict[str, object]:
+    return {
+        "name": "Python2 playground",
+        "pygments_language": json.dumps("Python2"),
+        "url_prefix": json.dumps("https://python2.example.com"),
     }
 
 

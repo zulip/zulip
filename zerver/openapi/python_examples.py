@@ -380,6 +380,22 @@ def remove_realm_filter(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "delete", "200")
 
 
+@openapi_test_function("/realm/playgrounds:post")
+def add_realm_playground(client: Client) -> None:
+
+    # {code_example|start}
+    # Add a realm playground for Python
+    request = {
+        "name": "Python playground",
+        "pygments_language": json.dumps("Python"),
+        "url_prefix": json.dumps("https://python.example.com"),
+    }
+    result = client.call_endpoint(url="/realm/playgrounds", method="POST", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/playgrounds", "post", "200")
+
+
 @openapi_test_function("/users/me:get")
 def get_profile(client: Client) -> None:
 
@@ -1417,6 +1433,7 @@ def test_server_organizations(client: Client) -> None:
 
     get_realm_filters(client)
     add_realm_filter(client)
+    add_realm_playground(client)
     get_server_settings(client)
     remove_realm_filter(client)
     get_realm_emoji(client)

@@ -197,6 +197,7 @@ from zerver.models import (
     RealmDomain,
     RealmEmoji,
     RealmFilter,
+    RealmPlayground,
     Recipient,
     ScheduledEmail,
     ScheduledMessage,
@@ -6589,6 +6590,16 @@ def do_remove_realm_domain(
         do_set_realm_property(realm, "emails_restricted_to_domains", False, acting_user=acting_user)
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(realm, event, active_user_ids(realm.id))
+
+
+def do_add_realm_playground(realm: Realm, **kwargs: Any) -> int:
+    realm_playground = RealmPlayground(realm=realm, **kwargs)
+    # We expect full_clean to always pass since a thorough input validation
+    # is performed in the view (using check_url, check_pygments_language, etc)
+    # before calling this function.
+    realm_playground.full_clean()
+    realm_playground.save()
+    return realm_playground.id
 
 
 def get_occupied_streams(realm: Realm) -> QuerySet:
