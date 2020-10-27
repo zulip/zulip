@@ -1,5 +1,6 @@
 from typing import Iterable, Optional, Sequence, Union, cast
 
+import pytz
 from dateutil.parser import parse as dateparser
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -20,7 +21,6 @@ from zerver.lib.actions import (
 from zerver.lib.message import render_markdown
 from zerver.lib.response import json_error, json_success
 from zerver.lib.timestamp import convert_to_UTC
-from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import REQ_topic
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
@@ -143,7 +143,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
 
     deliver_at_usertz = deliver_at
     if deliver_at_usertz.tzinfo is None:
-        user_tz = get_timezone(local_tz)
+        user_tz = pytz.timezone(local_tz)
         deliver_at_usertz = user_tz.normalize(user_tz.localize(deliver_at))
     deliver_at = convert_to_UTC(deliver_at_usertz)
 
