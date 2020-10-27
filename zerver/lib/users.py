@@ -19,6 +19,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.lib.request import JsonableError
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -329,7 +330,7 @@ def format_user_row(realm: Realm, acting_user: Optional[UserProfile], row: Dict[
         is_guest=is_guest,
         is_bot=is_bot,
         full_name=row['full_name'],
-        timezone=row['timezone'],
+        timezone=canonicalize_timezone(row['timezone']),
         is_active = row['is_active'],
         date_joined = row['date_joined'].isoformat(),
     )
