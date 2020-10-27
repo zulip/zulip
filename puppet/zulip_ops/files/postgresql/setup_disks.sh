@@ -16,7 +16,7 @@ fi
 if [ ! -L /var/lib/postgresql ]; then
     service postgresql stop
     if [ -e /var/lib/postgresql ]; then
-        mv /var/lib/postgresql "/root/postgres-data-$(date +'%m-%d-%Y-%T')"
+        mv /var/lib/postgresql "/root/postgresql-data-$(date +'%m-%d-%Y-%T')"
     fi
     ln -s /srv/postgresql/ /var/lib
 fi
