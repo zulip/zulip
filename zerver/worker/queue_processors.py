@@ -36,6 +36,7 @@ from typing import (
 
 import orjson
 import requests
+import sentry_sdk
 from django.conf import settings
 from django.db import connection
 from django.db.models import F
@@ -313,8 +314,10 @@ class QueueProcessingWorker(ABC):
                 "queue_name": self.queue_name,
             })
             if isinstance(exception, WorkerTimeoutException):
-                logging.exception("%s in queue %s",
-                                  str(exception), self.queue_name, stack_info=True)
+                with sentry_sdk.push_scope() as scope:
+                    scope.fingerprint = ['worker-timeout', self.queue_name]
+                    logging.exception("%s in queue %s",
+                                      str(exception), self.queue_name, stack_info=True)
             else:
                 logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
         if not os.path.exists(settings.QUEUE_ERROR_DIR):
