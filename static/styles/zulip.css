@@ -191,12 +191,12 @@ p.n-margin {
     }
 
     h3 {
-        font-size: 16pt;
+        font-size: 1.3333rem;
         margin-top: 2px;
     }
 
     .exit-me {
-        font-size: 30pt;
+        font-size: 2.5rem;
         font-weight: 200;
         margin: 5px 0 0 10px;
         cursor: pointer;
