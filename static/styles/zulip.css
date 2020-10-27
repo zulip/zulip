@@ -464,7 +464,7 @@ li,
 }
 
 .btn-large {
-    font-size: 115%;
+    font-size: 1.00625rem;
 }
 
 /* Classes for hiding and showing controls */
@@ -1271,11 +1271,11 @@ a.dark_background:hover,
 }
 
 .small {
-    font-size: 80%;
+    font-size: 0.7rem;
 }
 
 .tiny {
-    font-size: 60%;
+    font-size: 0.525rem;
 }
 
 .actions_hovered {
@@ -1817,7 +1817,7 @@ div.focused_table {
 
     #search_arrows {
         padding-left: 35px;
-        font-size: 90%;
+        font-size: 0.7875rem;
         letter-spacing: normal;
     }
 
