@@ -1,9 +1,25 @@
 import datetime
 from functools import lru_cache
+from io import TextIOWrapper
 from typing import Any, Dict, Union
 
 import pytz
 
+
+@lru_cache(maxsize=None)
+def get_canonical_timezone_map() -> Dict[str, str]:
+    canonical = {}
+    with TextIOWrapper(
+        pytz.open_resource("tzdata.zi")  # type: ignore[attr-defined] # Unclear if this is part of the public pytz API
+    ) as f:
+        for line in f:
+            if line.startswith("L "):
+                l, name, alias = line.split()
+                canonical[alias] = name
+    return canonical
+
+def canonicalize_timezone(key: str) -> str:
+    return get_canonical_timezone_map().get(key, key)
 
 # This method carefully trims a list of common timezones in the pytz
 # database and handles duplicate abbreviations in favor of the most

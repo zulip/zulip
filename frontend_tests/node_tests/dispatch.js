@@ -496,7 +496,7 @@ run_test("realm_user", (override) => {
     const added_person = people.get_by_user_id(event.person.user_id);
     // sanity check a few individual fields
     assert.equal(added_person.full_name, "Test User");
-    assert.equal(added_person.timezone, "US/Eastern");
+    assert.equal(added_person.timezone, "America/New_York");
 
     // ...but really the whole struct gets copied without any
     // manipulation
