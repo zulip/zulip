@@ -1,14 +1,13 @@
 import logging
 import smtplib
 import urllib
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import pytz
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -593,50 +592,47 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
 def generate_204(request: HttpRequest) -> HttpResponse:
     return HttpResponse(content=None, status=204)
 
+def get_users(emails: List[str]) -> Tuple[Set[Any], Set[Any]]:
+    good_users = set()
+    bot_users = set()
+    for user in UserProfile.objects.filter(delivery_email__in=emails):
+        if user.is_active and user.is_bot is False and user.realm.deactivated is False:
+            good_users.add(user)
+        if user.is_bot:
+            bot_users.add(user.delivery_email)
+
+    return (good_users, bot_users)
+
 def find_account(request: HttpRequest) -> HttpResponse:
     from zerver.context_processors import common_context
     url = reverse('find_account')
 
     emails: List[str] = []
+    emails_sent: Set[str] = set()
+    emails_pending: Set[str] = set()
     if request.method == 'POST':
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
             emails = form.cleaned_data['emails']
-
-            # Django doesn't support __iexact__in lookup with EmailField, so we have
-            # to use Qs to get around that without needing to do multiple queries.
-            emails_q = Q()
-            for email in emails:
-                emails_q |= Q(delivery_email__iexact=email)
-
-            for user in UserProfile.objects.filter(
-                    emails_q, is_active=True, is_bot=False,
-                    realm__deactivated=False):
+            good_users, bot_users = get_users(emails)
+            for user in good_users:
                 context = common_context(user)
                 context.update(
                     email=user.delivery_email,
                 )
                 send_email('zerver/emails/find_team', to_user_ids=[user.id], context=context,
                            from_address=FromAddress.SUPPORT)
-
-            # Note: Show all the emails in the result otherwise this
-            # feature can be used to ascertain which email addresses
-            # are associated with Zulip.
-            data = urllib.parse.urlencode({'emails': ','.join(emails)})
-            return redirect(add_query_to_redirect_url(url, data))
+                if user.delivery_email not in emails_sent:
+                    emails_sent.add(user.delivery_email)
+            emails_pending = set(emails).difference(emails_sent).difference(bot_users)
+            pending_context = ({
+                'external_host': settings.EXTERNAL_HOST.split(":")[0],
+            })
+            for email in emails_pending:
+                send_email('zerver/emails/find_team', to_emails=[email], context=pending_context,
+                           from_address=FromAddress.SUPPORT)
     else:
         form = FindMyTeamForm()
-        result = request.GET.get('emails')
-        # The below validation is perhaps unnecessary, in that we
-        # shouldn't get able to get here with an invalid email unless
-        # the user hand-edits the URLs.
-        if result:
-            for email in result.split(','):
-                try:
-                    validators.validate_email(email)
-                    emails.append(email)
-                except ValidationError:
-                    pass
 
     return render(request,
                   'zerver/find_account.html',
