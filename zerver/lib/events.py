@@ -59,6 +59,7 @@ from zerver.models import (
     custom_profile_fields_for_realm,
     get_default_stream_groups,
     get_realm_domains,
+    get_realm_playgrounds,
     realm_filters_for_realm,
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
@@ -257,6 +258,9 @@ def fetch_initial_state_data(
 
     if want("realm_filters"):
         state["realm_filters"] = realm_filters_for_realm(realm.id)
+
+    if want("realm_playgrounds"):
+        state["realm_playgrounds"] = get_realm_playgrounds(realm)
 
     if want("realm_user_groups"):
         state["realm_user_groups"] = user_groups_in_realm_serialized(realm)
@@ -981,6 +985,8 @@ def apply_event(
         state["muted_users"] = event["muted_users"]
     elif event["type"] == "realm_filters":
         state["realm_filters"] = event["realm_filters"]
+    elif event["type"] == "realm_playgrounds":
+        state["realm_playgrounds"] = event["realm_playgrounds"]
     elif event["type"] == "update_display_settings":
         assert event["setting_name"] in UserProfile.property_types
         state[event["setting_name"]] = event["setting"]

@@ -10,6 +10,18 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 49**
+
+* Added new [`POST /realm/playground`](/api/add-playground) and
+  [`DELETE /realm/playground/{playground_id}`](/api/remove-playground)
+  endpoints for realm playgrounds.
+* [`GET /events`](/api/get-events): A new `realm_playgrounds` events
+  is sent when changes are made to a set of configured playgrounds for
+  an organization.
+* [`POST /register`](/api/register-queue): Added a new `realm_playgrounds`
+  field, which is required to fetch the set of configured playgrounds for
+  an organization.
+
 **Feature level 48**
 
 * [`POST /users/me/muted_users/{muted_user_id}`](/api/mute-user),

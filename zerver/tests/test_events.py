@@ -27,6 +27,7 @@ from zerver.lib.actions import (
     do_add_linkifier,
     do_add_reaction,
     do_add_realm_domain,
+    do_add_realm_playground,
     do_add_streams_to_default_stream_group,
     do_add_submessage,
     do_change_avatar_fields,
@@ -70,6 +71,7 @@ from zerver.lib.actions import (
     do_remove_realm_custom_profile_field,
     do_remove_realm_domain,
     do_remove_realm_emoji,
+    do_remove_realm_playground,
     do_remove_streams_from_default_stream_group,
     do_rename_stream,
     do_revoke_multi_use_invite,
@@ -126,6 +128,7 @@ from zerver.lib.event_schema import (
     check_realm_emoji_update,
     check_realm_export,
     check_realm_filters,
+    check_realm_playgrounds,
     check_realm_update,
     check_realm_update_dict,
     check_realm_user_add,
@@ -176,6 +179,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmDomain,
+    RealmPlayground,
     Service,
     Stream,
     UserGroup,
@@ -191,6 +195,7 @@ from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
 )
+from zerver.views.realm_playgrounds import access_playground_by_id
 
 
 class BaseAction(ZulipTestCase):
@@ -1357,6 +1362,24 @@ class NormalActionsTest(BaseAction):
 
         check_realm_domains_remove("events[0]", events[0])
         self.assertEqual(events[0]["domain"], "zulip.org")
+
+    def test_realm_playground_events(self) -> None:
+        playground_info = dict(
+            name="Python playground",
+            pygments_language="Python",
+            url_prefix="https://python.example.com",
+        )
+        events = self.verify_action(
+            lambda: do_add_realm_playground(self.user_profile.realm, **playground_info)
+        )
+        check_realm_playgrounds("events[0]", events[0])
+
+        last_id = RealmPlayground.objects.last().id
+        realm_playground = access_playground_by_id(self.user_profile.realm, last_id)
+        events = self.verify_action(
+            lambda: do_remove_realm_playground(self.user_profile.realm, realm_playground)
+        )
+        check_realm_playgrounds("events[0]", events[0])
 
     def test_create_bot(self) -> None:
         action = lambda: self.create_bot("test")

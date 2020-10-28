@@ -680,6 +680,24 @@ realm_domains_remove_event = event_dict_type(
 )
 check_realm_domains_remove = make_checker(realm_domains_remove_event)
 
+realm_playground_type = DictType(
+    required_keys=[("id", int), ("name", str), ("pygments_language", str), ("url_prefix", str)]
+)
+
+realm_playgrounds_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_playgrounds")),
+        ("realm_playgrounds", ListType(realm_playground_type)),
+    ]
+)
+_check_realm_playgrounds = make_checker(realm_playgrounds_event)
+
+
+def check_realm_playgrounds(var_name: str, event: Dict[str, object]) -> None:
+    _check_realm_playgrounds(var_name, event)
+    assert isinstance(event["realm_playgrounds"], list)
+
+
 realm_emoji_type = DictType(
     required_keys=[
         ("id", str),

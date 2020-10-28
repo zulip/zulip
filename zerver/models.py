@@ -1001,11 +1001,12 @@ class RealmPlayground(models.Model):
         return f"<RealmPlayground({self.realm.string_id}): {self.pygments_language} {self.name}>"
 
 
-def get_realm_playgrounds(realm: Realm) -> List[Dict[str, str]]:
-    playgrounds: List[Dict[str, str]] = []
+def get_realm_playgrounds(realm: Realm) -> List[Dict[str, Union[int, str]]]:
+    playgrounds: List[Dict[str, Union[int, str]]] = []
     for playground in RealmPlayground.objects.filter(realm=realm).all():
         playgrounds.append(
             dict(
+                id=playground.id,
                 name=playground.name,
                 pygments_language=playground.pygments_language,
                 url_prefix=playground.url_prefix,

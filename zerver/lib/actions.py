@@ -226,6 +226,7 @@ from zerver.models import (
     get_huddle_recipient,
     get_huddle_user_ids,
     get_old_unclaimed_attachments,
+    get_realm_playgrounds,
     get_stream,
     get_stream_by_id_in_realm,
     get_stream_cache_key,
@@ -6592,6 +6593,11 @@ def do_remove_realm_domain(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+def notify_realm_playgrounds(realm: Realm) -> None:
+    event = dict(type="realm_playgrounds", realm_playgrounds=get_realm_playgrounds(realm))
+    send_event(realm, event, active_user_ids(realm.id))
+
+
 def do_add_realm_playground(realm: Realm, **kwargs: Any) -> int:
     realm_playground = RealmPlayground(realm=realm, **kwargs)
     # We expect full_clean to always pass since a thorough input validation
@@ -6599,11 +6605,13 @@ def do_add_realm_playground(realm: Realm, **kwargs: Any) -> int:
     # before calling this function.
     realm_playground.full_clean()
     realm_playground.save()
+    notify_realm_playgrounds(realm)
     return realm_playground.id
 
 
-def do_remove_realm_playground(realm_playground: RealmPlayground) -> None:
+def do_remove_realm_playground(realm: Realm, realm_playground: RealmPlayground) -> None:
     realm_playground.delete()
+    notify_realm_playgrounds(realm)
 
 
 def get_occupied_streams(realm: Realm) -> QuerySet:
