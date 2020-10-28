@@ -172,6 +172,7 @@ def clear_supported_auth_backends_cache() -> None:
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
+    MAX_REALM_REDIRECT_URL_LENGTH = 128
 
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
@@ -193,6 +194,9 @@ class Realm(models.Model):
 
     date_created: datetime.datetime = models.DateTimeField(default=timezone_now)
     deactivated: bool = models.BooleanField(default=False)
+
+    # Redirect URL if the Realm has moved to another server
+    deactivated_redirect = models.URLField(max_length=MAX_REALM_REDIRECT_URL_LENGTH, null=True)
 
     # See RealmDomain for the domains that apply for a given organization.
     emails_restricted_to_domains: bool = models.BooleanField(default=False)

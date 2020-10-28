@@ -8,6 +8,7 @@ from django.conf import settings
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
+    do_add_deactivated_redirect,
     do_change_plan_type,
     do_change_realm_subdomain,
     do_create_realm,
@@ -221,6 +222,21 @@ class RealmTest(ZulipTestCase):
 
         do_deactivate_realm(realm)
         self.assertTrue(realm.deactivated)
+
+    def test_do_set_deactivated_redirect_on_deactivated_realm(self) -> None:
+        """Ensure that the redirect url is working when deactivating realm"""
+        realm = get_realm('zulip')
+
+        redirect_url = 'new_server.zulip.com'
+        do_deactivate_realm(realm)
+        self.assertTrue(realm.deactivated)
+        do_add_deactivated_redirect(realm, redirect_url)
+        self.assertEqual(realm.deactivated_redirect, redirect_url)
+
+        new_redirect_url = 'test.zulip.com'
+        do_add_deactivated_redirect(realm, new_redirect_url)
+        self.assertEqual(realm.deactivated_redirect, new_redirect_url)
+        self.assertNotEqual(realm.deactivated_redirect, redirect_url)
 
     def test_realm_reactivation_link(self) -> None:
         realm = get_realm('zulip')
