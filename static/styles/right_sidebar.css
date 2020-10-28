@@ -196,7 +196,7 @@
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */
-@media (max-width: 1165px) {
+@media (max-width: $lg-max) {
     #sidebar-keyboard-shortcuts {
         /* This is supposed to fix this appearing improperly in narrow
         windows.  It's likely the wrong solution; a proper fix likely
