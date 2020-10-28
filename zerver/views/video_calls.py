@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import json
 import random
@@ -14,6 +15,7 @@ from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
 from django.utils.crypto import constant_time_compare, salted_hmac
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
@@ -22,7 +24,7 @@ from oauthlib.oauth2 import OAuth2Error
 from requests_oauthlib import OAuth2Session
 
 from zerver.decorator import REQ, has_request_variables, zulip_login_required
-from zerver.lib.actions import do_set_zoom_token
+from zerver.lib.actions import do_set_webex_token, do_set_zoom_token
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.response import json_error, json_success
@@ -221,6 +223,62 @@ class ZoomVideo(AuthenticatedVideoApplication):
         return json_success()
 
 
+class WebexVideo(AuthenticatedVideoApplication):
+    application_name = "webex"
+
+    @property
+    def client_id(self) -> Optional[str]:
+        return settings.VIDEO_WEBEX_CLIENT_ID
+
+    @property
+    def client_secret(self) -> Optional[str]:
+        return settings.VIDEO_WEBEX_CLIENT_SECRET
+
+    authorization_scope = "meeting:schedules_read meeting:schedules_write"
+    authorization_url = urljoin(settings.VIDEO_WEBEX_API_URL, "/v1/authorize")
+    token_url = urljoin(settings.VIDEO_WEBEX_API_URL, "/v1/access_token")
+    auto_refresh_url = urljoin(settings.VIDEO_WEBEX_API_URL, "/v1/access_token")
+    create_meeting_url = urljoin(settings.VIDEO_WEBEX_API_URL, "/v1/meetings")
+
+    def get_token(self, user: UserProfile) -> Optional[object]:
+        return user.webex_token
+
+    def update_token(self, user: UserProfile, token: Optional[Dict[str, object]]) -> None:
+        do_set_webex_token(user, token)
+
+    def get_meeting_details(self, response: HttpResponse) -> Mapping[str, Any]:
+        response_json = response.json()
+        return {
+            "meetingNumber": response_json["meetingNumber"],
+            "title": response_json["title"],
+            "password": response_json["password"],
+            "startTime": response_json["start"],
+            "endTime": response_json["end"],
+            "url": response_json["webLink"],
+        }
+
+    def make_video_call(
+        self, request: HttpRequest, user: UserProfile, json: Optional[Any] = {}, **kwargs: Any
+    ) -> HttpResponse:
+        if not json or len(json) == 0:
+            start_time = timezone_now()
+            end_time = start_time + datetime.timedelta(minutes=settings.VIDEO_WEBEX_MEETING_LENGTH)
+            json = {
+                "title": kwargs.get("title", _("Webex meeting")),
+                "password": "".join(
+                    random.choices(
+                        settings.VIDEO_WEBEX_PASSWORD_CHARACTERS,
+                        k=settings.VIDEO_WEBEX_PASSWORD_LENGTH,
+                    )
+                ),
+                "start": start_time.isoformat(timespec="seconds"),
+                "end": end_time.isoformat(timespec="seconds"),
+                "enabledAutoRecordMeeting": settings.VIDEO_WEBEX_AUTO_RECORD_MEETING,
+                "allowAnyUserToBeCoHost": settings.VIDEO_WEBEX_ANY_USER_CAN_COHOST,
+            }
+        return super().make_video_call(request, user, json=json)
+
+
 @zulip_login_required
 @never_cache
 def register_zoom_user(request: HttpRequest) -> HttpResponse:
@@ -260,6 +318,44 @@ def make_zoom_video_call(request: HttpRequest, user: UserProfile) -> HttpRespons
 @require_POST
 def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
     return ZoomVideo().deauthorize_user(request)
+
+
+@zulip_login_required
+@never_cache
+def register_webex_user(request: HttpRequest) -> HttpResponse:
+    return WebexVideo().register_user(request)
+
+
+@never_cache
+@has_request_variables
+def complete_webex_user(
+    request: HttpRequest,
+    state: Dict[str, str] = REQ(
+        json_validator=check_dict([("realm", check_string)], value_validator=check_string)
+    ),
+) -> HttpResponse:
+    if get_subdomain(request) != state["realm"]:
+        return redirect(urljoin(get_realm(state["realm"]).uri, request.get_full_path()))
+    return complete_webex_user_in_realm(request)
+
+
+@zulip_login_required
+@has_request_variables
+def complete_webex_user_in_realm(
+    request: HttpRequest,
+    code: str = REQ(),
+    state: Dict[str, str] = REQ(
+        json_validator=check_dict([("sid", check_string)], value_validator=check_string)
+    ),
+) -> HttpResponse:
+    return WebexVideo().complete_user(request, state["sid"], code, include_client_id=True)
+
+
+@has_request_variables
+def make_webex_video_call(
+    request: HttpRequest, user: UserProfile, title: str = REQ()
+) -> HttpResponse:
+    return WebexVideo().make_video_call(request, user, title=title)
 
 
 def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:

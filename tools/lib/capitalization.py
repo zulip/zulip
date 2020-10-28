@@ -53,6 +53,7 @@ IGNORED_PHRASES = [
     r"Updown",
     r"V5",
     r"Webathena",
+    r"Webex",
     r"Windows",
     r"WordPress",
     r"XML",
