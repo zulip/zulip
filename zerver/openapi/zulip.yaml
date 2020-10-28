@@ -745,6 +745,31 @@ paths:
                             - type: object
                               description: |
                                 Event sent to a user's clients when the user completes the
+                                OAuth flow for the [Webex integration](/help/start-a-call).  Clients need
+                                to know whether initiating Webex OAuth is required before creating a Webex call.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - has_webex_token
+                                value:
+                                  type: boolean
+                                  description: |
+                                    A boolean specifying whether the user has a webex
+                                    token or not.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "has_webex_token",
+                                  "value": true,
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to a user's clients when the user completes the
                                 OAuth flow for the [Zoom integration](/help/start-a-call).  Clients need
                                 to know whether initiating Zoom OAuth is required before creating a Zoom call.
                               properties:
@@ -758,7 +783,7 @@ paths:
                                 value:
                                   type: boolean
                                   description: |
-                                    A boolean specifying whether the user has zoom
+                                    A boolean specifying whether the user has a zoom
                                     token or not.
                               additionalProperties: false
                               example:
@@ -7826,6 +7851,14 @@ paths:
                           A boolean which signifies whether the user has a zoom token and has thus completed
                           OAuth flow for the [Zoom integration](/help/start-a-call).  Clients need
                           to know whether initiating Zoom OAuth is required before creating a Zoom call.
+                      has_webex_token:
+                        type: boolean
+                        description: |
+                          Present if `video_calls` is present in `fetch_event_types`.
+
+                          A boolean which signifies whether the user has a webex token and has thus completed
+                          OAuth flow for the [Webex integration](/help/start-a-call).  Clients need
+                          to know whether initiating Webex OAuth is required before creating a Webex call.
                       giphy_api_key:
                         type: string
                         description: |

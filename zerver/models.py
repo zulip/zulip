@@ -1373,6 +1373,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     onboarding_steps: str = models.TextField(default="[]")
 
     zoom_token: Optional[object] = models.JSONField(default=None, null=True)
+    webex_token: Optional[object] = models.JSONField(default=None, null=True)
 
     objects: UserManager = UserManager()
 

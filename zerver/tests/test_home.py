@@ -90,6 +90,7 @@ class HomeTest(ZulipTestCase):
         "giphy_api_key",
         "giphy_rating_options",
         "has_mobile_devices",
+        "has_webex_token",
         "has_zoom_token",
         "high_contrast_mode",
         "hotspots",
