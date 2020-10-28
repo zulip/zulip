@@ -55,6 +55,8 @@ if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path
 
     # Install node symlink to /usr/local/bin
     ln -nsf "$NODE_BIN" /usr/local/bin/node
+    ln -nsf "$(dirname "$NODE_BIN")/npm" /usr/local/bin/npm
+    ln -nsf "$(dirname "$NODE_BIN")/npx" /usr/local/bin/npx
 fi
 
 # Work around the fact that apparently sudo doesn't clear the HOME
