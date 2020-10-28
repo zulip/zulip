@@ -32,8 +32,7 @@ class EmailLogTest(ZulipTestCase):
 
         self.assertEqual(get_forward_address(), forward_address)
 
-        with self.settings(EMAIL_BACKEND='zproject.email_backends.EmailLogBackEnd'), \
-                mock.patch('logging.info', return_value=None):
+        with self.settings(EMAIL_BACKEND='zproject.email_backends.EmailLogBackEnd'):
             with mock.patch('zproject.email_backends.EmailLogBackEnd.send_email_smtp'):
                 result = self.client_get('/emails/generate/')
                 self.assertEqual(result.status_code, 302)
