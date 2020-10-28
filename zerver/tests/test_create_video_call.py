@@ -12,23 +12,31 @@ class TestVideoCall(ZulipTestCase):
         self.user = self.example_user("hamlet")
         self.login_user(self.user)
 
-    def test_register_video_request_no_settings(self) -> None:
+    def test_register_zoom_video_request_no_client_id(self) -> None:
         with self.settings(VIDEO_ZOOM_CLIENT_ID=None):
             response = self.client_get("/calls/zoom/register")
             self.assert_json_error(
                 response,
-                "Zoom credentials have not been configured",
+                "Credentials have not been configured",
             )
 
-    def test_register_video_request(self) -> None:
+    def test_register_zoom_video_request_no_client_secret(self) -> None:
+        with self.settings(VIDEO_ZOOM_CLIENT_SECRET=None):
+            response = self.client_get("/calls/zoom/register")
+            self.assert_json_error(
+                response,
+                "Credentials have not been configured",
+            )
+
+    def test_register_zoom_video_request(self) -> None:
         response = self.client_get("/calls/zoom/register")
         self.assertEqual(response.status_code, 302)
 
     @responses.activate
-    def test_create_video_request_success(self) -> None:
+    def test_create_zoom_video_request_success(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "oldtoken", "expires_in": -60},
         )
 
@@ -40,20 +48,20 @@ class TestVideoCall(ZulipTestCase):
 
         responses.replace(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "newtoken", "expires_in": 60},
         )
 
         responses.add(
             responses.POST,
-            "https://api.zoom.us/v2/users/me/meetings",
+            "https://zoom.example.com/v2/users/me/meetings",
             json={"join_url": "example.com"},
         )
 
         response = self.client_post("/json/calls/zoom/create")
         self.assertEqual(
             responses.calls[-1].request.url,
-            "https://api.zoom.us/v2/users/me/meetings",
+            "https://zoom.example.com/v2/users/me/meetings",
         )
         self.assertEqual(
             responses.calls[-1].request.headers["Authorization"],
@@ -66,9 +74,9 @@ class TestVideoCall(ZulipTestCase):
         self.login_user(self.user)
 
         response = self.client_post("/json/calls/zoom/create")
-        self.assert_json_error(response, "Invalid Zoom access token")
+        self.assert_json_error(response, "Invalid access token")
 
-    def test_create_video_realm_redirect(self) -> None:
+    def test_create_zoom_video_complete_realm_redirect(self) -> None:
         response = self.client_get(
             "/calls/zoom/complete",
             {"code": "code", "state": '{"realm":"zephyr","sid":"somesid"}'},
@@ -77,28 +85,28 @@ class TestVideoCall(ZulipTestCase):
         self.assertIn("http://zephyr.testserver/", response.url)
         self.assertIn("somesid", response.url)
 
-    def test_create_video_sid_error(self) -> None:
+    def test_create_zoom_video_complete_incorrect_sid(self) -> None:
         response = self.client_get(
             "/calls/zoom/complete",
             {"code": "code", "state": '{"realm":"zulip","sid":"bad"}'},
         )
-        self.assert_json_error(response, "Invalid Zoom session identifier")
+        self.assert_json_error(response, "Invalid session identifier")
 
     @responses.activate
-    def test_create_video_credential_error(self) -> None:
-        responses.add(responses.POST, "https://zoom.us/oauth/token", status=400)
+    def test_create_zoom_video_credential_error(self) -> None:
+        responses.add(responses.POST, "https://zoom.example.com/oauth/token", status=400)
 
         response = self.client_get(
             "/calls/zoom/complete",
             {"code": "code", "state": '{"realm":"zulip","sid":""}'},
         )
-        self.assert_json_error(response, "Invalid Zoom credentials")
+        self.assert_json_error(response, "Invalid credentials")
 
     @responses.activate
-    def test_create_video_refresh_error(self) -> None:
+    def test_create_zoom_video_token_refresh_error(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "token", "expires_in": -60},
         )
 
@@ -108,22 +116,22 @@ class TestVideoCall(ZulipTestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-        responses.replace(responses.POST, "https://zoom.us/oauth/token", status=400)
+        responses.replace(responses.POST, "https://zoom.example.com/oauth/token", status=400)
 
         response = self.client_post("/json/calls/zoom/create")
-        self.assert_json_error(response, "Invalid Zoom access token")
+        self.assert_json_error(response, "Invalid access token")
 
     @responses.activate
-    def test_create_video_request_error(self) -> None:
+    def test_create_zoom_video_invalid_token(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "token"},
         )
 
         responses.add(
             responses.POST,
-            "https://api.zoom.us/v2/users/me/meetings",
+            "https://zoom.example.com/v2/users/me/meetings",
             status=400,
         )
 
@@ -134,20 +142,20 @@ class TestVideoCall(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
 
         response = self.client_post("/json/calls/zoom/create")
-        self.assert_json_error(response, "Failed to create Zoom call")
+        self.assert_json_error(response, "Failed to create call")
 
         responses.replace(
             responses.POST,
-            "https://api.zoom.us/v2/users/me/meetings",
+            "https://zoom.example.com/v2/users/me/meetings",
             status=401,
         )
 
         response = self.client_post("/json/calls/zoom/create")
-        self.assert_json_error(response, "Invalid Zoom access token")
+        self.assert_json_error(response, "Invalid access token")
 
     @responses.activate
     def test_deauthorize_zoom_user(self) -> None:
-        responses.add(responses.POST, "https://api.zoom.us/oauth/data/compliance")
+        responses.add(responses.POST, "https://zoom.example.com/oauth/data/compliance")
 
         response = self.client_post(
             "/calls/zoom/deauthorize",

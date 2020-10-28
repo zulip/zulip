@@ -100,6 +100,7 @@ SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
 
+VIDEO_ZOOM_API_URL: str = "https://api.zoom.us/"
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
 
