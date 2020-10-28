@@ -523,7 +523,7 @@ a#undo_markdown_preview {
     }
 }
 
-@media (max-width: 370px) {
+@media (max-width: $xs-max) {
     #stream_message_recipient_topic.recipient_box {
         width: calc(100% - 175px);
         min-width: 95px;
