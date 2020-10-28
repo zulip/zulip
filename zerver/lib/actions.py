@@ -858,6 +858,10 @@ def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
     realm.string_id = new_subdomain
     realm.save(update_fields=["string_id"])
 
+def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:
+    realm.deactivated_redirect = redirect_url
+    realm.save(update_fields=["deactivated_redirect"])
+
 def do_scrub_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -> None:
     if settings.BILLING_ENABLED:
         downgrade_now_without_creating_additional_invoices(realm)
