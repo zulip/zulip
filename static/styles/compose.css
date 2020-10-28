@@ -16,7 +16,7 @@
                 line-height: 1em;
             }
 
-            @media (min-width: 551px) {
+            @media (min-width: $sm-min) {
                 display: none;
             }
         }
@@ -33,7 +33,7 @@
             display: none;
         }
 
-        @media (max-width: 550px) {
+        @media (max-width: $sm-max) {
             .compose_stream_button,
             .compose_private_button {
                 display: none;
