@@ -1,3 +1,4 @@
+import {format} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -216,10 +217,12 @@ export function abort_xhr() {
 }
 
 export const zoom_token_callbacks = new Map();
+export const webex_token_callbacks = new Map();
 export const video_call_xhrs = new Map();
 
 export function abort_video_callbacks(edit_message_id = "") {
     zoom_token_callbacks.delete(edit_message_id);
+    webex_token_callbacks.delete(edit_message_id);
     if (video_call_xhrs.has(edit_message_id)) {
         video_call_xhrs.get(edit_message_id).abort();
         video_call_xhrs.delete(edit_message_id);
@@ -955,6 +958,28 @@ export function needs_subscribe_warning(user_id, stream_id) {
     return true;
 }
 
+function insert_webex_video_call_details(details, target_textarea) {
+    const meeting_number_text = $t({defaultMessage: "Meeting number"});
+    const password_text = $t({defaultMessage: "Password"});
+    const start_time_text = $t({defaultMessage: "Meeting start time"});
+    const end_time_text = $t({defaultMessage: "Meeting end time"});
+
+    const start_time_formatted = format(details.startTime, "PPPP p");
+    const end_time_formatted = format(details.endTime, "PPPP p");
+
+    compose_ui.insert_syntax_and_focus(
+        `${details.title}
+${meeting_number_text}: ${details.meetingNumber}
+${password_text}: ${details.password}
+${start_time_text}: ${start_time_formatted}
+${end_time_text}: ${end_time_formatted}
+`,
+        target_textarea,
+    );
+
+    insert_video_call_url(details.url, target_textarea);
+}
+
 function insert_video_call_url(url, target_textarea) {
     const link_text = $t({defaultMessage: "Click to join video call"});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea);
@@ -1317,6 +1342,55 @@ export function initialize() {
                 zoom_token_callbacks.set(key, make_zoom_call);
                 window.open(
                     window.location.protocol + "//" + window.location.host + "/calls/zoom/register",
+                    "_blank",
+                    "width=800,height=500,noopener,noreferrer",
+                );
+            }
+        } else if (
+            available_providers.webex &&
+            page_params.realm_video_chat_provider === available_providers.webex.id
+        ) {
+            abort_video_callbacks(edit_message_id);
+            const key = edit_message_id || "";
+
+            const make_webex_meeting = () => {
+                video_call_xhrs.set(
+                    key,
+                    channel.post({
+                        url: "/json/calls/webex/create",
+                        data: {title: compose_state.topic()},
+                        success(res) {
+                            video_call_xhrs.delete(key);
+                            insert_webex_video_call_details(res, target_textarea);
+                        },
+                        error(xhr, status) {
+                            video_call_xhrs.delete(key);
+                            if (
+                                status === "error" &&
+                                xhr.responseJSON &&
+                                xhr.responseJSON.code === "INVALID_WEBEX_TOKEN"
+                            ) {
+                                page_params.has_webex_token = false;
+                            }
+                            if (status !== "abort") {
+                                ui_report.generic_embed_error(
+                                    $t({defaultMessage: "Failed to create video call."}),
+                                );
+                            }
+                        },
+                    }),
+                );
+            };
+
+            if (page_params.has_webex_token) {
+                make_webex_meeting();
+            } else {
+                webex_token_callbacks.set(key, make_webex_meeting);
+                window.open(
+                    window.location.protocol +
+                        "//" +
+                        window.location.host +
+                        "/calls/webex/register",
                     "_blank",
                     "width=800,height=500,noopener,noreferrer",
                 );

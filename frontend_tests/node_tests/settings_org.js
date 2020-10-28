@@ -779,6 +779,10 @@ test("set_up", (override) => {
             id: 4,
             name: "Big Blue Button",
         },
+        webex: {
+            id: 5,
+            name: "Webex",
+        },
     };
 
     let upload_realm_logo_or_icon;
