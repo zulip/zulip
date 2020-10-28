@@ -4,8 +4,8 @@ set -eo pipefail
 ZULIP_PATH="$(dirname "$0")/../.."
 ZULIP_SRV="/srv"
 YARN_PACKAGE_JSON="$ZULIP_SRV/zulip-yarn/package.json"
-node_version=12.18.4
-yarn_version=1.22.5
+node_version=12.19.0
+yarn_version=1.22.10
 nvm_version=0.35.3
 
 # This is a fix for the fact that nvm uses $HOME to determine which
