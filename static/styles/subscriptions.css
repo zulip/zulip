@@ -1112,12 +1112,6 @@ ul.grey-box {
     .search-container {
         text-align: center;
     }
-
-    .subscriber_list_settings input {
-        float: left;
-        margin: 0 5px 0 0;
-        width: calc(50% - 45px);
-    }
 }
 
 /* Note that this block has settings_page CSS as well, and thus needs
