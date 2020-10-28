@@ -184,13 +184,14 @@ exports.abort_xhr = function () {
 };
 
 exports.zoom_token_callbacks = new Map();
-exports.zoom_xhrs = new Map();
+exports.video_call_xhrs = new Map();
 
-exports.abort_zoom = function (edit_message_id) {
+exports.abort_video_callbacks = function (edit_message_id) {
     const key = edit_message_id || "";
     exports.zoom_token_callbacks.delete(key);
-    if (exports.zoom_xhrs.has(key)) {
-        exports.zoom_xhrs.get(key).abort();
+    if (exports.video_call_xhrs.has(key)) {
+        exports.video_call_xhrs.get(key).abort();
+        exports.video_call_xhrs.delete(key);
     }
 };
 
@@ -1190,7 +1191,6 @@ exports.initialize = function () {
         }
 
         let video_call_link;
-        const video_call_id = util.random_int(100000000000000, 999999999999999);
         const available_providers = page_params.realm_available_video_chat_providers;
         const show_video_chat_button = exports.compute_show_video_chat_button();
 
@@ -1202,20 +1202,20 @@ exports.initialize = function () {
             available_providers.zoom &&
             page_params.realm_video_chat_provider === available_providers.zoom.id
         ) {
-            exports.abort_zoom(edit_message_id);
+            exports.abort_video_callbacks(edit_message_id);
             const key = edit_message_id || "";
 
             const make_zoom_call = () => {
-                exports.zoom_xhrs.set(
+                exports.video_call_xhrs.set(
                     key,
                     channel.post({
                         url: "/json/calls/zoom/create",
                         success(res) {
-                            exports.zoom_xhrs.delete(key);
+                            exports.video_call_xhrs.delete(key);
                             insert_video_call_url(res.url, target_textarea);
                         },
                         error(xhr, status) {
-                            exports.zoom_xhrs.delete(key);
+                            exports.video_call_xhrs.delete(key);
                             if (
                                 status === "error" &&
                                 xhr.responseJSON &&
@@ -1254,6 +1254,7 @@ exports.initialize = function () {
                 },
             });
         } else {
+            const video_call_id = util.random_int(100000000000000, 999999999999999);
             video_call_link = page_params.jitsi_server_url + "/" + video_call_id;
             insert_video_call_url(video_call_link, target_textarea);
         }
