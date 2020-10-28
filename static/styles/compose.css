@@ -510,7 +510,7 @@ a#undo_markdown_preview {
     }
 }
 
-@media (max-width: 500px) {
+@media (max-width: $xs-max) {
     .compose_stream_button,
     .compose_private_button,
     .compose_reply_button {

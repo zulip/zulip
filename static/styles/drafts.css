@@ -115,7 +115,7 @@
             right: -80px;
             font-size: 0.9em;
 
-            @media (max-width: 500px) {
+            @media (max-width: $xs-max) {
                 right: 0;
             }
 
