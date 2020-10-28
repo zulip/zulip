@@ -60,7 +60,7 @@ exports.initialize = function () {
             "<style> @media (max-width: 1165px) { .compose-content, .header-main .column-middle { margin-right: " +
                 (7 + sbWidth) +
                 "px !important; } } " +
-                "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " +
+                "@media (max-width: 767px) { .fixed-app .column-middle { margin-left: " +
                 (7 + sbWidth) +
                 "px !important; } } " +
                 "</style>",

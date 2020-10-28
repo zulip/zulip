@@ -210,7 +210,7 @@
     }
 }
 
-@media (max-width: 775px) {
+@media (max-width: $sm-max) {
     #user_search_section .user-list-filter {
         /* input should be 100% - 6px padding x2 - 1px border x2. */
         width: calc(100% - 12px - 2px);
