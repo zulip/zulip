@@ -11,7 +11,13 @@ function set_favicon() {
 export function update_favicon(new_message_count, pm_count) {
     if (favicon_state !== undefined) {
         favicon_state.image.removeEventListener("load", set_favicon);
-        favicon_state.image.src = "#";
+
+        // We need to remove this src so revokeObjectURL doesn't cause a
+        // net::ERR_FILE_NOT_FOUND error in Chrome. This seems to be the
+        // simplest way to do that without triggering an expensive network
+        // request or spewing a different console error.
+        favicon_state.image.src = "data:,";
+
         URL.revokeObjectURL(favicon_state.url);
         favicon_state = undefined;
     }
