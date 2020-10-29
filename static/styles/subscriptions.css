@@ -1102,7 +1102,7 @@ ul.grey-box {
     }
 }
 
-@media (max-width: 1033px) {
+@media (max-width: $md-max) {
     .subscriptions-container .left .search-container {
         flex-wrap: wrap;
         justify-content: space-evenly;
