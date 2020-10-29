@@ -245,14 +245,14 @@ exports.new_stream_clicked = function (stream_name) {
     }
     exports.show_new_stream_modal();
 
-    // at less than 700px we have a @media query that when you tap the
+    // at less than sm-max we have a @media query that when you tap the
     // .create_stream_button, the stream prompt slides in. However, when you
     // focus  the button on that page, the entire app view jumps over to
     // the other tab, and the animation breaks.
     // it is unclear whether this is a browser bug or "feature", however what
     // is clear is that this shouldn't be touched unless you're also changing
-    // the mobile @media query at 700px.
-    if (window.innerWidth > 700) {
+    // the mobile @media query at sm-max.
+    if (window.innerWidth > 767) {
         $("#create_stream_name").trigger("focus");
     }
 };

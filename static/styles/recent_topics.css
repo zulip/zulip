@@ -15,7 +15,7 @@
         max-width: 90%;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: $sm-max) {
         height: 95%;
         max-width: none;
         width: 90%;
