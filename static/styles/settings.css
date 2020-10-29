@@ -1897,7 +1897,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 }
 
-@media only screen and (max-width: 625px) {
+@media only screen and (max-width: $sm-max) {
     .bots_list .bot-information-box {
         width: calc(100% - 10px);
         max-height: unset;
