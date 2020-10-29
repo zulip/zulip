@@ -11,7 +11,7 @@ class EmailLogTest(ZulipTestCase):
     def test_generate_and_clear_email_log(self) -> None:
         with self.settings(EMAIL_BACKEND='zproject.email_backends.EmailLogBackEnd'), \
                 mock.patch('zproject.email_backends.EmailLogBackEnd.send_email_smtp'), \
-                mock.patch('logging.info', return_value=None), \
+                self.assertLogs(level="INFO") as m, \
                 self.settings(DEVELOPMENT_LOG_EMAILS=True):
             result = self.client_get('/emails/generate/')
             self.assertEqual(result.status_code, 302)
@@ -24,6 +24,8 @@ class EmailLogTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             result = self.client_get(result['Location'])
             self.assertIn('manually generate most of the emails by clicking', str(result.content))
+            output_log = "INFO:root:Emails sent in development are available at http://testserver/emails"
+            self.assertEqual(m.output, [output_log for i in range(15)])
 
     def test_forward_address_details(self) -> None:
         forward_address = "forward-to@example.com"

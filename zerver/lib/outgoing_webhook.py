@@ -295,7 +295,8 @@ def process_success_response(event: Dict[str, Any],
 def do_rest_call(base_url: str,
                  request_data: Any,
                  event: Dict[str, Any],
-                 service_handler: Any) -> None:
+                 service_handler: Any) -> Optional[Response]:
+    """Returns response of call if no exception occurs."""
     try:
         response = service_handler.send_data_to_server(
             base_url=base_url,
@@ -313,7 +314,7 @@ def do_rest_call(base_url: str,
             failure_message = f"Third party responded with {response.status_code}"
             fail_with_message(event, failure_message)
             notify_bot_owner(event, response.status_code, response.content)
-
+        return response
     except requests.exceptions.Timeout:
         logging.info(
             "Trigger event %s on %s timed out. Retrying",
@@ -321,12 +322,14 @@ def do_rest_call(base_url: str,
         )
         failure_message = "A timeout occurred."
         request_retry(event, failure_message=failure_message)
+        return None
 
     except requests.exceptions.ConnectionError:
         logging.info("Trigger event %s on %s resulted in a connection error. Retrying",
                      event["command"], event['service_name'])
         failure_message = "A connection error occurred. Is my bot server down?"
         request_retry(event, failure_message=failure_message)
+        return None
 
     except requests.exceptions.RequestException as e:
         response_message = (
@@ -336,3 +339,4 @@ def do_rest_call(base_url: str,
         logging.exception("Outhook trigger failed:", stack_info=True)
         fail_with_message(event, response_message)
         notify_bot_owner(event, exception=e)
+        return None

@@ -853,7 +853,7 @@ class ScrubRealmTest(ZulipTestCase):
 
         self.assertNotEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
 
-        with mock.patch('logging.warning'):
+        with self.assertLogs(level="WARNING"):
             do_scrub_realm(zulip)
 
         self.assertEqual(Message.objects.filter(sender__in=[iago, othello]).count(), 0)
