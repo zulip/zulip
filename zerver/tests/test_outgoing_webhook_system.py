@@ -79,7 +79,7 @@ class DoRestCallTests(ZulipTestCase):
             final_response = do_rest_call('',  None, mock_event, service_handler)
             assert final_response is not None
 
-            self.assertEqual(m.output, [f"WARNING:root:Message http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code 500.\n Content of response (in quotes): \"{final_response.content.decode()}\""])
+            self.assertEqual(m.output, [f"WARNING:root:Message http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code 500.\n Content of response (in quotes): \"{final_response.text}\""])
         bot_owner_notification = self.get_last_message()
         self.assertEqual(bot_owner_notification.content,
                          '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
@@ -101,7 +101,7 @@ The webhook got a response with status code *500*.''')
             final_response = do_rest_call('', None, mock_event, service_handler)
             assert final_response is not None
 
-            self.assertEqual(m.output, [f"WARNING:root:Message http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code 400.\n Content of response (in quotes): \"{final_response.content.decode()}\""])
+            self.assertEqual(m.output, [f"WARNING:root:Message http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code 400.\n Content of response (in quotes): \"{final_response.text}\""])
 
         self.assertTrue(mock_fail.called)
 
@@ -122,7 +122,7 @@ The webhook got a response with status code *400*.''')
             final_response = do_rest_call('', 'payload-stub', mock_event, service_handler)
             assert final_response is not None
 
-            self.assertEqual(m.output, [f"WARNING:root:Message http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code {final_response.status_code}.\n Content of response (in quotes): \"{final_response.content.decode()}\""])
+            self.assertEqual(m.output, [f"WARNING:root:Message http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code {final_response.status_code}.\n Content of response (in quotes): \"{final_response.text}\""])
 
         kwargs = mock_request.call_args[1]
         self.assertEqual(kwargs['data'], 'payload-stub')

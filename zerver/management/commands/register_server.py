@@ -1,4 +1,3 @@
-import json
 import subprocess
 from argparse import ArgumentParser
 from typing import Any
@@ -76,7 +75,7 @@ class Command(ZulipBaseCommand):
         try:
             response.raise_for_status()
         except requests.HTTPError:
-            content_dict = json.loads(response.content.decode("utf-8"))
+            content_dict = response.json()
             raise CommandError("Error: " + content_dict['msg'])
 
         if response.json()['created']:
