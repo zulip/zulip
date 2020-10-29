@@ -3,6 +3,20 @@ class zulip::profile::postgresql {
   include zulip::profile::base
   include zulip::postgresql_base
 
+  case $::osfamily {
+    'debian': {
+      $postgresql_conf_file = "${zulip::postgresql_base::postgresql_confdir}/postgresql.conf"
+      $postgres_template = "zulip/postgresql/${zulip::postgresql_common::version}/postgresql.conf.template.erb"
+    }
+    'redhat': {
+      $postgresql_conf_file = "/var/lib/pgsql/${zulip::postgresql_common::version}/data/postgresql.conf"
+      $postgres_template = "zulip/postgresql/${zulip::postgressql_common::version}/postgresql.conf.centos.template.erb"
+    }
+    default: {
+      fail('osfamily not supported')
+    }
+  }
+
   $work_mem = $zulip::common::total_memory_mb / 512
   $shared_buffers = $zulip::common::total_memory_mb / 8
   $effective_cache_size = $zulip::common::total_memory_mb * 10 / 32
@@ -32,14 +46,13 @@ class zulip::profile::postgresql {
     }
   }
 
-  $postgresql_conf_file = "${zulip::postgresql_base::postgresql_confdir}/postgresql.conf"
   file { $postgresql_conf_file:
     ensure  => file,
     require => Package[$zulip::postgresql_base::postgresql],
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0644',
-    content => template("zulip/postgresql/${zulip::postgresql_common::version}/postgresql.conf.template.erb"),
+    content => template($postgres_template),
   }
 
   exec { $zulip::postgresql_base::postgresql_restart:
