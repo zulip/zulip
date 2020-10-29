@@ -319,16 +319,19 @@ class TestGetChartData(ZulipTestCase):
 
         realm.date_created = timezone_now() - timedelta(days=3)
         realm.save(update_fields=["date_created"])
-        with mock.patch('logging.warning'):
-            result = self.client_get('/json/analytics/chart_data',
-                                     {'chart_name': 'messages_sent_over_time'})
+        with self.assertLogs(level="WARNING") as m:
+            result = self.client_get('/json/analytics/chart_data', {'chart_name': 'messages_sent_over_time'})
+            self.assertEqual(m.output, [f"WARNING:root:User from realm zulip attempted to access /stats, but the computed start time: {realm.date_created} (creation of realm or installation) is later than the computed end time: 0001-01-01 00:00:00+00:00 (last successful analytics update). Is the analytics cron job running?"])
+
         self.assert_json_error_contains(result, 'No analytics data available')
 
         realm.date_created = timezone_now() - timedelta(days=1, hours=2)
         realm.save(update_fields=["date_created"])
-        with mock.patch('logging.warning'):
+        with self.assertLogs(level="WARNING") as m:
             result = self.client_get('/json/analytics/chart_data',
                                      {'chart_name': 'messages_sent_over_time'})
+            self.assertEqual(m.output, [f"WARNING:root:User from realm zulip attempted to access /stats, but the computed start time: {realm.date_created} (creation of realm or installation) is later than the computed end time: 0001-01-01 00:00:00+00:00 (last successful analytics update). Is the analytics cron job running?"])
+
         self.assert_json_error_contains(result, 'No analytics data available')
 
         realm.date_created = timezone_now() - timedelta(days=1, minutes=10)
@@ -349,9 +352,11 @@ class TestGetChartData(ZulipTestCase):
 
         realm.date_created = timezone_now() - timedelta(days=3)
         realm.save(update_fields=["date_created"])
-        with mock.patch('logging.warning'):
+        with self.assertLogs(level="WARNING") as m:
             result = self.client_get('/json/analytics/chart_data',
                                      {'chart_name': 'messages_sent_over_time'})
+            self.assertEqual(m.output, [f"WARNING:root:User from realm zulip attempted to access /stats, but the computed start time: {realm.date_created} (creation of realm or installation) is later than the computed end time: {end_time} (last successful analytics update). Is the analytics cron job running?"])
+
         self.assert_json_error_contains(result, 'No analytics data available')
 
         realm.date_created = timezone_now() - timedelta(days=1, minutes=10)
@@ -372,9 +377,11 @@ class TestGetChartData(ZulipTestCase):
 
         realm.date_created = timezone_now() - timedelta(days=1, hours=2)
         realm.save(update_fields=["date_created"])
-        with mock.patch('logging.warning'):
+        with self.assertLogs(level="WARNING") as m:
             result = self.client_get('/json/analytics/chart_data',
                                      {'chart_name': 'messages_sent_over_time'})
+            self.assertEqual(m.output, [f"WARNING:root:User from realm zulip attempted to access /stats, but the computed start time: {realm.date_created} (creation of realm or installation) is later than the computed end time: {end_time} (last successful analytics update). Is the analytics cron job running?"])
+
         self.assert_json_error_contains(result, 'No analytics data available')
 
         realm.date_created = timezone_now() - timedelta(days=1, minutes=10)
