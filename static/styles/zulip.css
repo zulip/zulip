@@ -2885,20 +2885,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: 350px) {
-    html {
-        overflow-x: hidden;
-    }
-
-    body,
-    html,
-    .app-main,
-    .header-main {
-        min-width: 320px;
-    }
-}
-
-@media only screen and (min-width: 300px) and (max-width: $sm-max) {
+@media only screen and (max-width: $sm-max) {
     #feedback_container {
         width: calc(90% - 30px);
         left: 5%;
