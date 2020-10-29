@@ -1767,7 +1767,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     margin: 20px;
 }
 
-@media (max-width: 953px) {
+@media (max-width: $md-max) {
     .user-avatar-section,
     .realm-icon-section {
         float: none;
