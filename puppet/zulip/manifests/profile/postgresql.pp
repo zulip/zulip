@@ -23,6 +23,15 @@ class zulip::profile::postgresql {
     group  => 'postgres',
   }
 
+  # On Debian, the postgresql installer automatically initialize an
+  # empty DB during install. On CentOS, we have to do it manually.
+  if $::osfamily == 'redhat' {
+    exec { "sudo /usr/pgsql-${zulip::postgresql_common::version}/bin/postgresql-${zulip::postgresql_common::version}-setup initdb":
+      require => Package[$zulip::postgres_appdb_base::postgresql],
+      creates => "$pg_datadir/pg_stat"
+    }
+  }
+
   $postgresql_conf_file = "${zulip::postgresql_base::postgresql_confdir}/postgresql.conf"
   file { $postgresql_conf_file:
     ensure  => file,
