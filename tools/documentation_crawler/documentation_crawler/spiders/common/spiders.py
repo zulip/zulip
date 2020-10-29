@@ -63,6 +63,12 @@ class BaseDocumentationSpider(scrapy.Spider):
         self.log(response)
 
     def _is_external_link(self, url: str) -> bool:
+        if url.startswith("https://chat.zulip.org"):
+            # Since most chat.zulip.org URLs will be links to specific
+            # logged-in content that the spider cannot verify, or the
+            # homepage, there's no need to check those (which can
+            # cause errors when chat.zulip.org is being updated).
+            return True
         if "zulip.readthedocs" in url or "zulip.com" in url or "zulip.org" in url:
             # We want CI to check any links to Zulip sites.
             return False
