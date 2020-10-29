@@ -768,6 +768,7 @@ class DeferredWorker(QueueProcessingWorker):
     MAX_CONSUME_SECONDS = None
 
     def consume(self, event: Dict[str, Any]) -> None:
+        start = time.time()
         if event['type'] == 'mark_stream_messages_as_read':
             user_profile = get_user_profile_by_id(event['user_profile_id'])
 
@@ -795,7 +796,6 @@ class DeferredWorker(QueueProcessingWorker):
                         event['user_profile_id'])
                 retry_event(self.queue_name, event, failure_processor)
         elif event['type'] == 'realm_export':
-            start = time.time()
             realm = Realm.objects.get(id=event['realm_id'])
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
             export_event = RealmAuditLog.objects.get(id=event['id'])
@@ -843,6 +843,10 @@ class DeferredWorker(QueueProcessingWorker):
                 "Completed data export for %s in %s",
                 user_profile.realm.string_id, time.time() - start,
             )
+
+        end = time.time()
+        logger.info("deferred_work processed %s event (%dms)", event['type'],
+                    (end-start)*1000)
 
 @assign_queue('test', is_test_queue=True)
 class TestWorker(QueueProcessingWorker):
