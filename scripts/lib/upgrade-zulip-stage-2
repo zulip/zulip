@@ -256,12 +256,13 @@ if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
     # state.
     shutdown_server()
 
-# Adjust Puppet class names for the rename after 3.x
+# Adjust Puppet class names for the manifest renames in the 4.0 release
 class_renames = {
     'zulip::app_frontend': 'zulip::profile::app_frontend',
     'zulip::dockervoyager': 'zulip::profile::docker',
     'zulip::memcached': 'zulip::profile::memcached',
     'zulip::postgres_appdb_tuned': 'zulip::profile::postgresql',
+    'zulip::postgres_backups': 'zulip::postgresql_backups',
     'zulip::rabbit': 'zulip::profile::rabbitmq',
     'zulip::thumbor': 'zulip::profile::thumbor',
     'zulip::voyager': 'zulip::profile::standalone',
