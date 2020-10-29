@@ -647,9 +647,9 @@ behavior of the setting you just created.
 After you add a new view, you should document your feature. This
 feature adds new functionality that requires messages to have topics
 if the setting is enabled. A recommended way to document this feature
-would be to update and/or augment
-[Zulip's user documentation](https://chat.zulip.org/help/)
-to reflect your changes and additions.
+would be to update and/or augment [Zulip's user
+documentation](https://zulip.com/help/) to reflect your changes and
+additions.
 
 At the very least, this will involve adding (or modifying) a Markdown file
 documenting the feature to `templates/zerver/help/` in the main Zulip

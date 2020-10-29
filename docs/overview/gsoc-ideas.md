@@ -298,7 +298,7 @@ CSS](https://github.com/zulip/zulip/).
   would be great to demonstrate as part of an application.  The
   [Zulip integration writing guide](../documentation/integrations.md)
   and
-  [integration documentation](https://chat.zulip.org/integrations/)
+  [integration documentation](https://zulip.com/integrations/)
   are useful materials for learning about how things currently work,
   and
   [the integrations label on GitHub](https://github.com/zulip/zulip/labels/area%3A%20integrations)
@@ -307,7 +307,7 @@ CSS](https://github.com/zulip/zulip/).
 
 - Build a meta-integration that converts the Slack incoming webhook
   API to post messages into Zulip. Zulip has several dozen native
-  integrations (https://chat.zulip.org/integrations/), but Slack has a
+  integrations (https://zulip.com/integrations/), but Slack has a
   ton more.  We should build an interface to make all of Slack’s
   numerous third-party integrations work with Zulip as well, by
   basically building a Zulip incoming webhook interface that accepts
