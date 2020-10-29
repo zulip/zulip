@@ -1,5 +1,4 @@
-class zulip_ops::profile::redis {
-  include zulip_ops::profile::base
+class zulip_ops::profile::redis inherits zulip_ops::profile::base {
   include zulip::profile::redis
 
   # Need redis_password in its own file for Nagios
@@ -8,6 +7,6 @@ class zulip_ops::profile::redis {
     mode    => '0600',
     owner   => 'nagios',
     group   => 'nagios',
-    content => "${zulip::redis::redis_password}\n",
+    content => "${zulip::profile::redis::redis_password}\n",
   }
 }
