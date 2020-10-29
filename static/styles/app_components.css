@@ -177,7 +177,7 @@
             }
         }
 
-        &[disabled="disabled"] {
+        &:disabled {
             cursor: not-allowed;
             filter: saturate(0);
             background-color: hsl(0, 0%, 93%);
@@ -330,14 +330,14 @@
         color: hsl(0, 0%, 0%);
     }
 
-    &[disabled] {
+    &:disabled {
         visibility: hidden;
     }
 
     &,
     &:focus,
     &:active,
-    &[disabled]:hover {
+    &:disabled:hover {
         position: relative;
         right: 20px;
         background: none;
