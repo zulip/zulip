@@ -353,7 +353,7 @@ ul {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: $sm-max) {
     .message-info-popover,
     .user-info-popover {
         display: flex !important;
