@@ -494,7 +494,7 @@
     right: 12px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: $sm-max) {
     .rendered_markdown .message_embed {
         height: auto;
 
