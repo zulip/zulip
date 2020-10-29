@@ -115,7 +115,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* these are converting grey things to "new grey" */
-    *[disabled="disabled"],
+    :disabled,
     *[readonly="readonly"],
     .sidebar-title,
     .recipient_row_date {
@@ -329,7 +329,7 @@ on a dark background, and don't change the dark labels dark either. */
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,
-    .clear_search_button[disabled]:hover,
+    .clear_search_button:disabled:hover,
     #user-groups .save-instructions,
     #message_view_header .search_icon,
     #searchbox_legacy .search_icon,

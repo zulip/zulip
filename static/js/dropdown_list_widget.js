@@ -30,7 +30,7 @@ const DropdownListWidget = function (opts) {
         if (!value || value === opts.null_value) {
             elem.text(opts.default_text);
             elem.addClass("text-warning");
-            elem.closest(".input-group").find(".dropdown_list_reset_button:not([disabled])").hide();
+            elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").hide();
             return;
         }
 
@@ -39,7 +39,7 @@ const DropdownListWidget = function (opts) {
         const text = opts.render_text(item.name);
         elem.text(text);
         elem.removeClass("text-warning");
-        elem.closest(".input-group").find(".dropdown_list_reset_button:not([disabled])").show();
+        elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").show();
     };
 
     const update = (value) => {
