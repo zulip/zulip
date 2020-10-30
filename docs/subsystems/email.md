@@ -98,22 +98,24 @@ email_host_user = username@gmail.com
 email_password = gmail_password
 ```
 
-**Note: The base_image_uri of the images in forwarded emails would be replaced
-with `https://chat.zulip.org/static/images/emails` inorder for the email clients
-to render the images. See `zproject/email_backends.py` for more details.**
+### Notes
 
-While running the backend test suite, we use
+* The base_image_uri of the images in forwarded emails would be replaced
+with `https://chat.zulip.org/static/images/emails` inorder for the email clients
+to render the images. See `zproject/email_backends.py` for more details.
+
+* After changing any HTML email or `email_base.html`, you need to run
+  `scripts/setup/inline_email_css.py` for the changes to be reflected in the dev
+  environment. The script generates files like
+  `templates/zerver/emails/compiled/<template_prefix>.html`.
+
+* While running the backend test suite, we use
 `django.core.mail.backends.locmem.EmailBackend` as the email
 backend. The `locmem` backend stores messages in a special attribute
 of the django.core.mail module, "outbox". The outbox attribute is
 created when the first message is sent. It’s a list with an
 EmailMessage instance for each message that would be sent.
 
-Other notes:
-* After changing any HTML email or `email_base.html`, you need to run
-  `scripts/setup/inline_email_css.py` for the changes to be reflected in the dev
-  environment. The script generates files like
-  `templates/zerver/emails/compiled/<template_prefix>.html`.
 ## Email templates
 
 Zulip's email templates live under `templates/zerver/emails`.  Email
