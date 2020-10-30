@@ -321,9 +321,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #
 # (1) Register a new App at https://developer.facebook.com,
 # (2) Enter the App ID as SOCIAL_AUTH_FACEBOOK_KEY here,
-# (3) Uncomment SOCIAL_AUTH_FACEBOOK_SCOPE and SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS
-#     below, which shouldn't need modification.
-# (4) Put the App Secret in zulip-secrets.conf as 'facebook_oauth2_secret'.
+# (3) Put the App Secret in zulip-secrets.conf as 'facebook_oauth2_secret'.
+# (4) Uncomment SOCIAL_AUTH_FACEBOOK_SCOPE and SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS
+#     below if you want to modify them, but the defaults
+#     should suffice.
 #SOCIAL_AUTH_FACEBOOK_KEY = '<your Facebook App ID>'
 #SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 #SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
