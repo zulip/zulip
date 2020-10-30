@@ -661,7 +661,7 @@ markdown_rules = RuleList(
         {'pattern': r'\[(?P<url>[^\]]+)\]\((?P=url)\)',
          'description': 'Linkified Markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',
-         'exclude': {'docs/overview/contributing.md', 'docs/overview/readme.md', 'docs/README.md'},
+         'exclude': {'docs/overview/contributing.md', 'docs/overview/readme.md', 'docs/README.md', 'docs/subsystems/email.md'},
          'include_only': {'docs/'},
          'description': "Use relative links (../foo/bar.html) to other documents in docs/",
          },
