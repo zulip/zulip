@@ -629,7 +629,13 @@ class Realm(models.Model):
             ('api_super_user', "Can send messages as other users for mirroring"),
         )
 
+def realm_post_delete_handler(sender: Any, **kwargs: Any) -> None:
+    # This would be better as a functools.partial, but for some reason
+    # Django doesn't call it even when it's registered as a post_delete handler.
+    flush_realm(sender, from_deletion=True, **kwargs)
+
 post_save.connect(flush_realm, sender=Realm)
+post_delete.connect(realm_post_delete_handler, sender=Realm)
 
 def get_realm(string_id: str) -> Realm:
     return Realm.objects.get(string_id=string_id)
