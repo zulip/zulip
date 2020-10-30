@@ -433,6 +433,11 @@ class TestSupportEndpoint(ZulipTestCase):
                                              'class="copy-button" data-copytext="desdemona@zulip.com, iago@zulip.com"',
                                              ], result)
 
+        def check_othello_user_query_result(result: HttpResponse) -> None:
+            self.assert_in_success_response(['<span class="label">user</span>\n', '<h3>Othello, the Moor of Venice</h3>',
+                                             '<b>Email</b>: othello@zulip.com', '<b>Is active</b>: True<br>'
+                                             ], result)
+
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
             zulip_realm = get_realm("zulip")
             self.assert_in_success_response([f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
@@ -536,6 +541,15 @@ class TestSupportEndpoint(ZulipTestCase):
         check_hamlet_user_query_result(result)
         check_zulip_realm_query_result(result)
         check_lear_realm_query_result(result)
+
+        result = self.client_get("/activity/support", {"q": "King hamlet,lear"})
+        check_hamlet_user_query_result(result)
+        check_zulip_realm_query_result(result)
+        check_lear_realm_query_result(result)
+
+        result = self.client_get("/activity/support", {"q": "Othello, the Moor of Venice"})
+        check_othello_user_query_result(result)
+        check_zulip_realm_query_result(result)
 
         result = self.client_get("/activity/support", {"q": "lear, Hamlet <hamlet@zulip.com>"})
         check_hamlet_user_query_result(result)
