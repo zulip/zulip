@@ -427,12 +427,12 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return code
 
     def format_quote(self, text: str) -> str:
-        paragraphs = text.split("\n\n")
+        paragraphs = text.split("\n")
         quoted_paragraphs = []
         for paragraph in paragraphs:
             lines = paragraph.split("\n")
-            quoted_paragraphs.append("\n".join("> " + line for line in lines if line != ''))
-        return "\n\n".join(quoted_paragraphs)
+            quoted_paragraphs.append("\n".join("> " + line for line in lines))
+        return "\n".join(quoted_paragraphs)
 
     def format_spoiler(self, header: str, text: str) -> str:
         output = []

@@ -112,6 +112,22 @@
       "expected_output": "<blockquote>\n<p>text</p>\n</blockquote>"
     },
     {
+      "name": "multiple_blockquote",
+      "input": "> Hello World!\n\n> Hello Universe!",
+      "expected_output": "<blockquote>\n<p>Hello World!</p>\n</blockquote>\n<blockquote>\n<p>Hello Universe!</p>\n</blockquote>"
+    },
+    {
+      "name": "multiple_blockquote",
+      "input": "```quote\nText in\nmultiple lines.\n```\n\n> Text in a single line.",
+      "expected_output": "<blockquote>\n<p>Text in<br>\nmultiple lines.</p>\n</blockquote>\n<blockquote>\n<p>Text in a single line.</p>\n</blockquote>"
+    },
+    {
+      "name": "multiple_blockquote_with_quote_and_reply",
+      "input": "Hamlet said:\n~~~quote\nCan we talk ?\n~~~\n> Yes !!\n\nWelcome to Open Source.",
+      "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>Can we talk ?</p>\n</blockquote>\n<blockquote>\n<p>Yes !!</p>\n</blockquote>\n<p>Welcome to Open Source.</p>",
+      "text_content": "Hamlet said:\n> Can we talk ?\n\n> Yes !!\n\nWelcome to Open Source."
+    },
+    {
       "name": "fenced_quote_with_hashtag",
       "input": "```quote\n# line 1\n#line 2\n```",
       "expected_output": "<blockquote>\n<h1>line 1</h1>\n<p>#line 2</p>\n</blockquote>",
