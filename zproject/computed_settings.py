@@ -1108,6 +1108,11 @@ else:
 
 EMAIL_TIMEOUT = 15
 
+if DEVELOPMENT:
+    EMAIL_HOST = get_secret('email_host', '')
+    EMAIL_PORT = int(get_secret('email_port', '25'))
+    EMAIL_HOST_USER = get_secret('email_host_user', '')
+
 EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
 AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password', '')

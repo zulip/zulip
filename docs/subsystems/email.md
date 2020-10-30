@@ -59,19 +59,44 @@ custom backend, `EmailLogBackEnd`.  It does the following:
 * Print a friendly message on console advertising `/emails` to make
   this nice and discoverable.
 
+### Testing in a real email client
+
 You can also forward all the emails sent in the development environment
 to an email id of your choice by clicking on **Forward emails to a mail
 account** in `/emails` page. This feature can be used for testing how
-emails gets rendered by different email clients. Before enabling this
-you have to first configure the following SMTP settings.
+emails gets rendered by different email clients.
 
-* The hostname `EMAIL_HOST` in `zproject/dev_settings.py`.
-* The port `EMAIL_PORT` in `zproject/dev_settings.py`.
-* The username `EMAIL_HOST_USER` in `zproject/dev_settings.py`.
-* The password `email_password` in `zproject/dev-secrets.conf`.
+For using this feature you need to have access to the login credentials of
+an SMTP provider. The easiest way to do this would be to use Gmail
+as the SMTP provider. Go through
+[this doc](../production/email.html#using-gmail-for-outgoing-email) and
+configure Gmail to allow sending emails using it's SMTP server. You can
+ignore the warning to avoid using Gmail for sending emails since the doc
+is written for production environment.
 
-See [this](../production/email.html#free-outgoing-email-services)
-section for instructions on obtaining SMTP details.
+There are a bunch of other methods described
+[here](../production/email.html#free-outgoing-email-services) as well if you
+don't have a Gmail account or don't want to use it.
+
+Once you have the login credentials of the SMTP provider, set the appropriate value
+of the following keys in `zproject/dev-secrets.conf`
+
+* `email_host` - SMTP hostname.
+* `email_port` - SMTP port.
+* `email_host_user` - Username of the SMTP user
+* `email_password` - Password of the SMTP user.
+
+Here is an example of how `zproject/dev-secrets.conf` would look if you are using Gmail.
+
+```
+email_host = smtp.gmail.com
+email_port = 587
+email_host_user = username@gmail.com
+
+# This is different from your Gmail password if you have 2FA enabled for your Google account.
+# See the configuring Gmail to send email section above for more details
+email_password = gmail_password
+```
 
 **Note: The base_image_uri of the images in forwarded emails would be replaced
 with `https://chat.zulip.org/static/images/emails` inorder for the email clients
