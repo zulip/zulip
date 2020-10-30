@@ -329,8 +329,8 @@ class QueueProcessingWorker(ABC):
         line = f'{time.asctime()}\t{orjson.dumps(events).decode()}\n'
         lock_fn = fn + '.lock'
         with lockfile(lock_fn):
-            with open(fn, 'ab') as f:
-                f.write(line.encode('utf-8'))
+            with open(fn, 'a') as f:
+                f.write(line)
         check_and_send_restart_signal()
 
     def setup(self) -> None:

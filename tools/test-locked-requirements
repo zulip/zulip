@@ -57,8 +57,8 @@ def get_requirements_hash(tmp_dir: str, use_test_lock_files: bool = False) -> st
         lock_files_path = tmp_dir
     reqs_files.extend(sorted(glob.glob(os.path.join(lock_files_path, "*.txt"))))
     for file_path in reqs_files:
-        with open(file_path) as fp:
-            sha1.update(fp.read().encode("utf-8"))
+        with open(file_path, 'rb') as fp:
+            sha1.update(fp.read())
     return sha1.hexdigest()
 
 def may_be_setup_cache() -> None:
