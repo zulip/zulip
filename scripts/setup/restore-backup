@@ -123,7 +123,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
             rabbitmq_host = subprocess.check_output(
                 [os.path.join(settings.DEPLOY_ROOT,
                               "scripts", "get-django-setting"),
-                 "RABBITMQ_HOST"]).strip().decode("utf-8")
+                 "RABBITMQ_HOST"], universal_newlines=True).strip()
             if rabbitmq_host in ["127.0.0.1", "::1", "localhost", "localhost6"]:
                 run([os.path.join(settings.DEPLOY_ROOT,
                                   "scripts", "setup", "configure-rabbitmq")])
