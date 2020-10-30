@@ -1,7 +1,12 @@
 <div id="delete_message_modal" class="modal modal-bg hide new-style" tabindex="-1" role="dialog" aria-labelledby="delete_message_modal_label" aria-hidden="true">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{ _('Close') }}"><span aria-hidden="true">&times;</span></button>
-        <h3 id="delete_message_modal_label">{{ _("Delete message") }} </h3>
+        <h3 id="delete_message_modal_label">
+            {{ _("Delete message") }}
+            <a href="/help/edit-or-delete-a-message#delete-a-message" target="_blank" rel="noopener noreferrer">
+                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+            </a>
+        </h3>
     </div>
     <div class="modal-body">
         <div class="content">
