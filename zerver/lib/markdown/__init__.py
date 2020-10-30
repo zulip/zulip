@@ -1546,6 +1546,34 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
                     r'[ ]{0,3}>[ ]?(.*)')
     mention_re = re.compile(mention.find_mentions)
 
+    # run() is very slightly forked from the base class; see notes below.
+    def run(self, parent: Element, blocks: List[Any]) -> None:
+        block = blocks.pop(0)
+        m = self.RE.search(block)
+        if m:
+            before = block[:m.start()]  # Lines before blockquote
+            # Pass lines before blockquote in recursively for parsing forst.
+            self.parser.parseBlocks(parent, [before])
+            # Remove ``> `` from beginning of each line.
+            block = '\n'.join(
+                [self.clean(line) for line in block[m.start():].split('\n')]
+            )
+
+        # Zulip modification: The next line is patched to match
+        # CommonMark rather than original Markdown.  In original
+        # Markdown, blockquotes with a blank line between them were
+        # merged, which makes it impossible to break a blockquote with
+        # a blank line intentionally.
+        #
+        # This is a new blockquote. Create a new parent element.
+        quote = etree.SubElement(parent, 'blockquote')
+
+        # Recursively parse block with blockquote as parent.
+        # change parser state so blockquotes embedded in lists use p tags
+        self.parser.state.set('blockquote')
+        self.parser.parseChunk(quote, block)
+        self.parser.state.reset()
+
     def clean(self, line: str) -> str:
         # Silence all the mentions inside blockquotes
         line = re.sub(self.mention_re, lambda m: "@_{}".format(m.group('match')), line)
