@@ -576,13 +576,13 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
 # Called by models.py to flush various caches whenever we save
 # a Realm object.  The main tricky thing here is that Realm info is
 # generally cached indirectly through user_profile objects.
-def flush_realm(sender: Any, **kwargs: Any) -> None:
+def flush_realm(sender: Any, from_deletion: bool=False, **kwargs: Any) -> None:
     realm = kwargs['instance']
     users = realm.get_active_users()
     delete_user_profile_caches(users)
 
-    if realm.deactivated or (kwargs["update_fields"] is not None and
-                             "string_id" in kwargs['update_fields']):
+    if from_deletion or realm.deactivated or (kwargs["update_fields"] is not None and
+                                              "string_id" in kwargs['update_fields']):
         cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))

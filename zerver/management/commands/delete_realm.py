@@ -1,9 +1,6 @@
-import os
-import subprocess
 from argparse import ArgumentParser
 from typing import Any
 
-from django.conf import settings
 from django.core.management.base import CommandError
 
 from zerver.lib.management import ZulipBaseCommand
@@ -41,6 +38,5 @@ realms used for testing; consider using deactivate_realm instead."""
             raise CommandError("Aborting!")
 
         realm.delete()
-        subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "flush-memcached")])
 
         print("Realm has been successfully permanently deleted.")
