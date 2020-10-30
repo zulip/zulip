@@ -61,32 +61,33 @@ custom backend, `EmailLogBackEnd`.  It does the following:
 
 ### Testing in a real email client
 
-You can also forward all the emails sent in the development environment
-to an email id of your choice by clicking on **Forward emails to a mail
-account** in `/emails` page. This feature can be used for testing how
-emails gets rendered by different email clients.
+You can also forward all the emails sent in the development
+environment to an email account of your choice by clicking on
+**Forward emails to an email account** on the `/emails` page. This
+feature can be used for testing how the emails gets rendered by
+actual email clients.  This is important because web email clients
+have limited CSS functionality, autolinkify things, and otherwise
+mutate the HTML email one can see previewed on `/emails`.
 
-For using this feature you need to have access to the login
-credentials of an SMTP provider. The easiest way to do this would be
-to use Gmail as the SMTP provider. Go through [this
-doc](../production/email.html#using-gmail-for-outgoing-email) and
-configure a Gmail account to allow sending emails using SMTP. You can
-ignore the warning to avoid using Gmail for sending emails, since the
-anti-spam problems described there aren't relevant for testing use.
+To do this sort of testing, you need to setup an outgoing SMTP
+provider. Our production advice for
+[Gmail](../production/email.html#using-gmail-for-outgoing-email) and
+[transactional email
+providers](../production/email.html#free-outgoing-email-services) are
+relevant; you can ignore the Gmail warning as Gmail's rate limits are
+appropriate for this sort of low-volume testing.
 
-The services we [recommend for production
-use](../production/email.html#free-outgoing-email-services) are great
-choices as well.
-
-Once you have the login credentials of the SMTP provider, set the appropriate value
-of the following keys in `zproject/dev-secrets.conf`
+Once you have the login credentials of the SMTP provider, since there
+is not `/etc/zulip/settings.py` in development, configure it using the
+following keys in `zproject/dev-secrets.conf`
 
 * `email_host` - SMTP hostname.
 * `email_port` - SMTP port.
 * `email_host_user` - Username of the SMTP user
 * `email_password` - Password of the SMTP user.
 
-Here is an example of how `zproject/dev-secrets.conf` would look if you are using Gmail.
+Here is an example of how `zproject/dev-secrets.conf` might look if
+you are using Gmail.
 
 ```
 email_host = smtp.gmail.com
