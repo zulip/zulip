@@ -306,7 +306,7 @@ class TestCreateStreams(ZulipTestCase):
             "already_subscribed": {},
         }
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(orjson.loads(response.content.decode()), expected_response)
+        self.assertEqual(orjson.loads(response.content), expected_response)
 
         # 2 messages should be created, one in announce and one in the new stream itself.
         self.assertEqual(final_message_count - initial_message_count, 2)

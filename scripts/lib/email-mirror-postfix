@@ -81,7 +81,7 @@ MAX_ALLOWED_PAYLOAD = 25 * 1024 * 1024
 def process_response_error(e: HTTPError) -> None:
     if e.code == 400:
         response_content = e.read()
-        response_data = json.loads(response_content.decode('utf8'))
+        response_data = json.loads(response_content)
         print(response_data['msg'])
         exit(posix.EX_NOUSER)
     else:
