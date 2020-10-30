@@ -635,7 +635,7 @@ def to_dict_cache_key_id(message_id: int) -> str:
 def to_dict_cache_key(message: 'Message', realm_id: Optional[int]=None) -> str:
     return to_dict_cache_key_id(message.id)
 
-def open_graph_description_cache_key(content: Any, request: HttpRequest) -> str:
+def open_graph_description_cache_key(content: bytes, request: HttpRequest) -> str:
     return 'open_graph_description_path:{}'.format(make_safe_digest(request.META['PATH_INFO']))
 
 def flush_message(sender: Any, **kwargs: Any) -> None:
