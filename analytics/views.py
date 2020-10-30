@@ -1200,7 +1200,7 @@ def support(request: HttpRequest) -> HttpResponse:
     if query:
         key_words = get_invitee_emails_set(query)
 
-        context["users"] = UserProfile.objects.filter(delivery_email__in=key_words)
+        users = set(UserProfile.objects.filter(delivery_email__in=key_words))
         realms = set(Realm.objects.filter(string_id__in=key_words))
 
         for key_word in key_words:
@@ -1217,7 +1217,7 @@ def support(request: HttpRequest) -> HttpResponse:
                 except Realm.DoesNotExist:
                     pass
             except ValidationError:
-                pass
+                users.update(UserProfile.objects.filter(full_name__iexact=key_word))
 
         for realm in realms:
             realm.customer = get_customer_by_realm(realm)
@@ -1233,6 +1233,10 @@ def support(request: HttpRequest) -> HttpResponse:
                     realm.current_plan.licenses = last_ledger_entry.licenses
                     realm.current_plan.licenses_used = get_latest_seat_count(realm)
 
+        # full_names can have , in them
+        users.update(UserProfile.objects.filter(full_name__iexact=query))
+
+        context["users"] = users
         context["realms"] = realms
 
         confirmations: List[Dict[str, Any]] = []
