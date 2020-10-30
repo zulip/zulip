@@ -78,9 +78,9 @@ Dependencies:
 import re
 from typing import Any, Dict, Iterable, List, Mapping, MutableSequence, Optional
 
+import lxml.html
 import markdown
 from django.utils.html import escape
-from lxml import etree
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
@@ -402,8 +402,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         # Unfortunately, the pygments API doesn't offer a way to add
         # this, so we need to do it in a post-processing step.
         if lang:
-            parsed_code = etree.HTML(code)
-            div_tag = parsed_code[0][0]
+            div_tag = lxml.html.fromstring(code)
 
             # For the value of our data element, we get the lexer
             # subclass name instead of directly using the language,
@@ -424,9 +423,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 code_language = self._escape(lang)
 
             div_tag.attrib['data-code-language'] = code_language
-            # lxml implicitly converts tags like <span></span> into <span/>.
-            # Specifying method="c14n" when converting to string prevents that.
-            code = etree.tostring(div_tag, method="c14n").decode()
+            code = lxml.html.tostring(div_tag, encoding="unicode")
         return code
 
     def format_quote(self, text: str) -> str:

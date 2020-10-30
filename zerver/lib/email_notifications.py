@@ -82,7 +82,7 @@ def relative_to_full_url(base_url: str, content: str) -> str:
         fragment = lxml.html.fromstring(new_content)
 
     fragment.make_links_absolute(base_url)
-    content = lxml.html.tostring(fragment).decode("utf-8")
+    content = lxml.html.tostring(fragment, encoding="unicode")
 
     return content
 
@@ -115,7 +115,7 @@ def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
         del realm_emoji.attrib['class']
         realm_emoji.set('style', 'height: 20px;')
 
-    content = lxml.html.tostring(fragment).decode('utf-8')
+    content = lxml.html.tostring(fragment, encoding="unicode")
     return content
 
 def fix_spoilers_in_html(content: str, language: str) -> str:
@@ -141,7 +141,7 @@ def fix_spoilers_in_html(content: str, language: str) -> str:
         header_content.append(span_elem)
         header.drop_tag()
         spoiler_content.drop_tree()
-    content = lxml.html.tostring(fragment).decode("utf-8")
+    content = lxml.html.tostring(fragment, encoding="unicode")
     return content
 
 def fix_spoilers_in_text(content: str, language: str) -> str:
