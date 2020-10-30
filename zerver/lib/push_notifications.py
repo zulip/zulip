@@ -1,5 +1,4 @@
 import base64
-import binascii
 import logging
 import re
 import time
@@ -45,10 +44,10 @@ DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data: str) -> str:
-    return binascii.hexlify(base64.b64decode(data)).decode('utf-8')
+    return base64.b64decode(data).hex()
 
 def hex_to_b64(data: str) -> str:
-    return base64.b64encode(binascii.unhexlify(data)).decode()
+    return base64.b64encode(bytes.fromhex(data)).decode()
 
 #
 # Sending to APNs, for iOS
