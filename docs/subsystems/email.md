@@ -66,17 +66,17 @@ to an email id of your choice by clicking on **Forward emails to a mail
 account** in `/emails` page. This feature can be used for testing how
 emails gets rendered by different email clients.
 
-For using this feature you need to have access to the login credentials of
-an SMTP provider. The easiest way to do this would be to use Gmail
-as the SMTP provider. Go through
-[this doc](../production/email.html#using-gmail-for-outgoing-email) and
-configure Gmail to allow sending emails using it's SMTP server. You can
-ignore the warning to avoid using Gmail for sending emails since the doc
-is written for production environment.
+For using this feature you need to have access to the login
+credentials of an SMTP provider. The easiest way to do this would be
+to use Gmail as the SMTP provider. Go through [this
+doc](../production/email.html#using-gmail-for-outgoing-email) and
+configure a Gmail account to allow sending emails using SMTP. You can
+ignore the warning to avoid using Gmail for sending emails, since the
+anti-spam problems described there aren't relevant for testing use.
 
-There are a bunch of other methods described
-[here](../production/email.html#free-outgoing-email-services) as well if you
-don't have a Gmail account or don't want to use it.
+The services we [recommend for production
+use](../production/email.html#free-outgoing-email-services) are great
+choices as well.
 
 Once you have the login credentials of the SMTP provider, set the appropriate value
 of the following keys in `zproject/dev-secrets.conf`
@@ -100,21 +100,23 @@ email_password = gmail_password
 
 ### Notes
 
-* The base_image_uri of the images in forwarded emails would be replaced
-with `https://chat.zulip.org/static/images/emails` inorder for the email clients
-to render the images. See `zproject/email_backends.py` for more details.
-
 * After changing any HTML email or `email_base.html`, you need to run
-  `scripts/setup/inline_email_css.py` for the changes to be reflected in the dev
-  environment. The script generates files like
+  `scripts/setup/inline_email_css.py` for the changes to be reflected
+  in the development environment. The script generates files like
   `templates/zerver/emails/compiled/<template_prefix>.html`.
 
+* Images won't be displayed in a real email client unless you change
+  the `base_image_uri` used for emails to a public URL such as
+  `https://chat.zulip.org/static/images/emails` (image links to
+  `localhost:9991` aren't allowed by modern email providers). See
+  `zproject/email_backends.py` for more details.
+
 * While running the backend test suite, we use
-`django.core.mail.backends.locmem.EmailBackend` as the email
-backend. The `locmem` backend stores messages in a special attribute
-of the django.core.mail module, "outbox". The outbox attribute is
-created when the first message is sent. It’s a list with an
-EmailMessage instance for each message that would be sent.
+  `django.core.mail.backends.locmem.EmailBackend` as the email
+  backend. The `locmem` backend stores messages in a special attribute
+  of the django.core.mail module, "outbox". The outbox attribute is
+  created when the first message is sent. It’s a list with an
+  EmailMessage instance for each message that would be sent.
 
 ## Email templates
 
