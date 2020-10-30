@@ -323,7 +323,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "to": othello.email})
         self.assert_json_success(result)
-        message_id = orjson.loads(result.content.decode())['id']
+        message_id = orjson.loads(result.content)['id']
 
         recent_conversations = get_recent_private_conversations(user_profile)
         self.assertEqual(len(recent_conversations), 1)
@@ -338,7 +338,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "to": user_profile.email})
         self.assert_json_success(result)
-        self_message_id = orjson.loads(result.content.decode())['id']
+        self_message_id = orjson.loads(result.content)['id']
 
         recent_conversations = get_recent_private_conversations(user_profile)
         self.assertEqual(len(recent_conversations), 2)

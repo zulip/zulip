@@ -249,8 +249,7 @@ class EditMessageTest(ZulipTestCase):
         messages_result = self.client_get("/json/messages",
                                           {"anchor": msg_id_1, "num_before": 0, "num_after": 10})
         self.assert_json_success(messages_result)
-        json_messages = orjson.loads(
-            messages_result.content.decode('utf-8'))
+        json_messages = orjson.loads(messages_result.content)
         for msg in json_messages['messages']:
             self.assertNotIn("edit_history", msg)
 
@@ -271,8 +270,7 @@ class EditMessageTest(ZulipTestCase):
 
         message_edit_history_1 = self.client_get(
             "/json/messages/" + str(msg_id_1) + "/history")
-        json_response_1 = orjson.loads(
-            message_edit_history_1.content.decode('utf-8'))
+        json_response_1 = orjson.loads(message_edit_history_1.content)
         message_history_1 = json_response_1['message_history']
 
         # Check content of message after edit.
@@ -307,8 +305,7 @@ class EditMessageTest(ZulipTestCase):
 
         message_edit_history_2 = self.client_get(
             "/json/messages/" + str(msg_id_2) + "/history")
-        json_response_2 = orjson.loads(
-            message_edit_history_2.content.decode('utf-8'))
+        json_response_2 = orjson.loads(message_edit_history_2.content)
         message_history_2 = json_response_2['message_history']
 
         self.assertEqual(message_history_2[0]['rendered_content'],
@@ -342,8 +339,7 @@ class EditMessageTest(ZulipTestCase):
 
         message_edit_history_1 = self.client_get(
             "/json/messages/" + str(msg_id_1) + "/history")
-        json_response_1 = orjson.loads(
-            message_edit_history_1.content.decode('utf-8'))
+        json_response_1 = orjson.loads(message_edit_history_1.content)
         message_history_1 = json_response_1['message_history']
 
         # Check content of message after edit.
@@ -469,7 +465,7 @@ class EditMessageTest(ZulipTestCase):
         # correct filled-out fields
         message_edit_history = self.client_get("/json/messages/" + str(msg_id) + "/history")
 
-        json_response = orjson.loads(message_edit_history.content.decode('utf-8'))
+        json_response = orjson.loads(message_edit_history.content)
 
         # We reverse the message history view output so that the IDs line up with the above.
         message_history = list(reversed(json_response['message_history']))

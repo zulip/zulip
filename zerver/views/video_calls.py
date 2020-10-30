@@ -144,7 +144,7 @@ def make_zoom_video_call(request: HttpRequest, user: UserProfile) -> HttpRespons
 @require_POST
 @has_request_variables
 def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
-    data = json.loads(request.body.decode("utf-8"))
+    data = json.loads(request.body)
     payload = data["payload"]
     if payload["user_data_retention"] == "false":
         requests.post(
