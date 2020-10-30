@@ -57,7 +57,7 @@ for zuliprc_path in zuliprc_paths_list:
             arguments = ['./manage.py', 'print_initial_password', email]
         # We redirect 'stderr' to 'stdout' to avoid 'Connection to 127.0.0.1 closed'
         # appearing after this script finishes.
-        output = subprocess.check_output(arguments, stderr=subprocess.STDOUT).decode('UTF-8')
+        output = subprocess.check_output(arguments, stderr=subprocess.STDOUT, universal_newlines=True)
         new_key = output.split()[6]
 
         if new_key != key:

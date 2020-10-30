@@ -2,9 +2,10 @@ import hashlib
 import json
 import os
 import shutil
+import subprocess
 from typing import List, Optional
 
-from scripts.lib.zulip_tools import run, subprocess_text_output
+from scripts.lib.zulip_tools import run
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_SRV_PATH = "/srv"
@@ -30,14 +31,16 @@ def generate_sha1sum_node_modules(
     PACKAGE_JSON_FILE_PATH = os.path.join(setup_dir, 'package.json')
     YARN_LOCK_FILE_PATH = os.path.join(setup_dir, 'yarn.lock')
     sha1sum = hashlib.sha1()
-    sha1sum.update(subprocess_text_output(['cat', PACKAGE_JSON_FILE_PATH]).encode('utf8'))
+    with open(PACKAGE_JSON_FILE_PATH, "rb") as fb:
+        sha1sum.update(fb.read().strip())
     if os.path.exists(YARN_LOCK_FILE_PATH):
         # For backwards compatibility, we can't assume yarn.lock exists
-        sha1sum.update(subprocess_text_output(['cat', YARN_LOCK_FILE_PATH]).encode('utf8'))
+        with open(YARN_LOCK_FILE_PATH, "rb") as fb:
+            sha1sum.update(fb.read().strip())
     with open(YARN_PACKAGE_JSON) as f:
         yarn_version = json.load(f)['version']
         sha1sum.update(yarn_version.encode("utf8"))
-    sha1sum.update(subprocess_text_output(['node', '--version']).encode('utf8'))
+    sha1sum.update(subprocess.check_output(['node', '--version']).strip())
     yarn_args = get_yarn_args(production=production)
     sha1sum.update(''.join(sorted(yarn_args)).encode('utf8'))
     return sha1sum.hexdigest()

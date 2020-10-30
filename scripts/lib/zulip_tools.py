@@ -106,9 +106,6 @@ def is_invalid_upgrade(current_version: str, new_version: str) -> bool:
         return True
     return False
 
-def subprocess_text_output(args: Sequence[str]) -> str:
-    return subprocess.check_output(args, universal_newlines=True).strip()
-
 def get_zulip_pwent() -> pwd.struct_passwd:
     deploy_root_uid = os.stat(get_deploy_root()).st_uid
     if deploy_root_uid != 0:

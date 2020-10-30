@@ -232,7 +232,7 @@ migrations_needed = False
 if not args.skip_migrations:
     logging.info("Checking for needed migrations")
     migrations_output = subprocess.check_output(["./manage.py", "showmigrations"],
-                                                preexec_fn=su_to_zulip).decode("utf-8")
+                                                preexec_fn=su_to_zulip, universal_newlines=True)
     need_create_large_indexes = False
     for ln in migrations_output.split("\n"):
         line_str = ln.strip()
