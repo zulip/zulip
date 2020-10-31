@@ -511,12 +511,6 @@ a#undo_markdown_preview {
 }
 
 @media (max-width: 500px) {
-    .compose_stream_button,
-    .compose_private_button,
-    .compose_reply_button {
-        padding: 5px 10px 5px 10px;
-    }
-
     textarea.new_message_textarea {
         height: 30px !important;
         min-height: 30px !important;
