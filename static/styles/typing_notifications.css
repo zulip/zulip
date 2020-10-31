@@ -17,7 +17,7 @@
     }
 }
 
-@media (max-width: 775px) {
+@media (max-width: $md-max) {
     #typing_notifications {
         margin-right: 7px;
         margin-left: 7px;
