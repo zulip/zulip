@@ -49,8 +49,11 @@ import ssl
 import sys
 from configparser import RawConfigParser
 from urllib.error import HTTPError
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode, urljoin, urlparse
 from urllib.request import Request, urlopen
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+from scripts.lib.zulip_tools import get_config, get_config_file
 
 parser = argparse.ArgumentParser()
 
@@ -62,9 +65,10 @@ parser.add_argument(
     "-d",
     "--dst-host",
     dest="host",
-    default="https://127.0.0.1",
+    default="127.0.0.1",
     help="Destination server address for uploading email from email mirror. "
-    "Address must contain a HTTP protocol.",
+    "Address must contain a HTTP protocol. Otherwise, default value is assumed "
+    "based on the http_only setting.",
 )
 
 parser.add_argument(
@@ -125,6 +129,13 @@ def send_email_mirror(
 
     if test:
         exit(0)
+
+    if not urlparse(host).scheme:
+        config_file = get_config_file()
+        http_only_config = get_config(config_file, "application_server", "http_only", "")
+        http_only = http_only_config == "true"
+        scheme = "http://" if http_only else "https://"
+        host = scheme + host
 
     if host == "https://127.0.0.1":
         # Don't try to verify SSL when posting to 127.0.0.1; it won't
