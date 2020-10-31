@@ -10,7 +10,7 @@ these features:
 
 - **/ping**
 - **/day** (and /night, /light, /dark)
-- **/poll** (and /tictactoe, /todo) (BETA)
+- **/poll** (and /todo) (BETA)
 - **zform-enabled messages** for the trivia_quiz bot (BETA)
 
 The beta features are only turned on for chat.zulip.org as
@@ -106,11 +106,10 @@ launch widgets by sending one of the following messages:
 
 - /poll
 - /todo
-- /tictactoe
 
 The webapp client provides the "widget experience" by
 default. Other clients just show raw messages like
-"/poll" or "/ticactoe", and should be adding support
+"/poll", and should be adding support
 for widgets soon.
 
 Our customers have long requested a poll/survey widget.
@@ -154,8 +153,7 @@ Most of the logic is in the client; things are fairly opaque
 to the server at this point.
 
 The "submessage" architecture is generic.
-Our tictactoe widget and todo list widget use
-the same architecture as "poll".
+Our todo list widget uses the same architecture as "poll".
 
 If a client joins Zulip after a message has accumulated
 several submessage events, it will see all of those
@@ -363,16 +361,14 @@ server also sends this payload to all clients who are
 recipients of the parent message.
 
 When the message gets to the client, the codepath for **zform**
-is actually quite similar to what happens with more
-customized widgets like **poll** and **tictactoe**.  (In
-fact, **zform** is a sibling of **poll** and **tictactoe**, and **zform**
-just has a somewhat more generic job to do.) In
-`static/js/widgetize.js` you will see where this code
-converges, with snippets like this:
+is actually quite similar to what happens with a more
+customized widget like **poll**.  (In fact, **zform** is a
+sibling of **poll** and **zform** just has a somewhat more
+generic job to do.) In `static/js/widgetize.js` you will see
+where this code converges, with snippets like this:
 
 ~~~ js
 widgets.poll = poll_widget;
-widgets.tictactoe = tictactoe_widget;
 widgets.todo = todo_widget;
 widgets.zform = zform;
 ~~~

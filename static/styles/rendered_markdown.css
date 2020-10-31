@@ -247,36 +247,6 @@
         }
     }
 
-    /* CSS for message content widgets */
-    table.tictactoe {
-        width: 80px;
-        margin-left: 0;
-    }
-
-    td.tictactoe {
-        width: 15px;
-        border: none;
-        padding: 2px;
-    }
-
-    button.tictactoe-square {
-        background-color: hsl(156, 30%, 62%);
-        width: 40px;
-        height: 40px;
-        border: none;
-        border-radius: 3px;
-        font-size: 25px;
-        color: hsl(0, 0%, 100%);
-    }
-
-    button.tictactoe-square:hover {
-        background-color: hsl(155, 5%, 53%);
-    }
-
-    button.tictactoe-square:disabled {
-        background-color: hsl(156, 33%, 81%);
-    }
-
     /* embedded link previews */
     .message_inline_image_title {
         font-weight: bold;

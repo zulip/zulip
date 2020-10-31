@@ -6,7 +6,7 @@ from zerver.models import SubMessage
 
 
 def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
-    valid_widget_types = ['tictactoe', 'poll', 'todo']
+    valid_widget_types = ['poll', 'todo']
     tokens = content.split(' ')
 
     # tokens[0] will always exist

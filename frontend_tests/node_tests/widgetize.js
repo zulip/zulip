@@ -2,7 +2,6 @@
 
 set_global("$", global.make_zjquery());
 set_global("poll_widget", {});
-set_global("tictactoe_widget", {});
 set_global("todo_widget", {});
 set_global("zform", {});
 set_global("document", "document-stub");
