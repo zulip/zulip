@@ -279,7 +279,7 @@
             white-space: nowrap;
         }
 
-        @media (max-width: 750px) {
+        @media (max-width: $md-max) {
             /* Hide participants and last message time
                on smaller screens. This ensures user always
                has a nice UI experience. */
