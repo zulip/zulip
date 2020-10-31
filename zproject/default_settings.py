@@ -64,10 +64,10 @@ SOCIAL_AUTH_GITLAB_KEY = get_secret('social_auth_gitlab_key', development_only=T
 SOCIAL_AUTH_SUBDOMAIN: Optional[str] = None
 SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret('azure_oauth2_secret')
 SOCIAL_AUTH_GOOGLE_KEY = get_secret('social_auth_google_key', development_only=True)
-SOCIAL_AUTH_FACEBOOK_KEY: Optional[str] = None
-SOCIAL_AUTH_FACEBOOK_SECRET = get_secret('facebook_oauth2_secret')
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
-SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY: Optional[str] = None
+SOCIAL_AUTH_FACEBOOK_OAUTH2_SECRET = get_secret('facebook_oauth2_secret')
+SOCIAL_AUTH_FACEBOOK_OAUTH2_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_OAUTH2_PROFILE_EXTRA_PARAMS = {
   'fields': 'id, name, email'
 }
 # SAML:
