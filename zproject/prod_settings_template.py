@@ -320,6 +320,11 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # To set up Facebook OAuth2 authentication, you'll need to do the following:
 #
 # (1) Register a new App at https://developer.facebook.com,
+#      a) Add the 'Facebook Login' product,
+#      b) In the 'Facebook Login' settings:
+#          - Ensure 'Client OAuth Login' is enabled,
+#          - ensure 'Web OAuth Login' is enabled,
+#          - add to 'Valid OAuth Redirect URIs': https://zulip.example.com/complete/facebook-oauth2 (replacing zulip.example.com with your domain name).
 # (2) Enter the App ID as SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY here,
 # (3) Put the App Secret in zulip-secrets.conf as 'facebook_oauth2_secret'.
 # (4) Uncomment SOCIAL_AUTH_FACEBOOK_OAUTH2_SCOPE and SOCIAL_AUTH_FACEBOOK_OAUTH2_PROFILE_EXTRA_PARAMS
