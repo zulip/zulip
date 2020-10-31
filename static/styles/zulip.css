@@ -2680,7 +2680,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: 775px) {
+@media (max-width: $md-max) {
     body {
         padding: 0;
     }

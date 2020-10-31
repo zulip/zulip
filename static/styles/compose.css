@@ -503,7 +503,7 @@ a#undo_markdown_preview {
     }
 }
 
-@media (max-width: 775px) {
+@media (max-width: $md-max) {
     .compose-content {
         margin-right: 7px;
         margin-left: 7px;
