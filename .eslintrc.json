@@ -278,7 +278,6 @@
                 "subs": false,
                 "message_view_header": false,
                 "templates": false,
-                "tictactoe_widget": false,
                 "timerender": false,
                 "todo_widget": false,
                 "top_left_corner": false,

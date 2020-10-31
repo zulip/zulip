@@ -59,7 +59,6 @@ import "../topic_zoom";
 import "../filter";
 import "../poll_widget";
 import "../todo_widget";
-import "../tictactoe_widget";
 import "../zform";
 import "../widgetize";
 import "../submessage";

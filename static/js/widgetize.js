@@ -2,7 +2,6 @@
 
 const widgets = new Map([
     ["poll", poll_widget],
-    ["tictactoe", tictactoe_widget],
     ["todo", todo_widget],
     ["zform", zform],
 ]);
