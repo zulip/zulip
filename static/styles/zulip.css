@@ -1584,7 +1584,7 @@ div.focused_table {
         padding: 12px 6px;
         overflow: hidden;
         text-overflow: ellipsis;
-        @media (max-width: 500px) {
+        @media (max-width: $sm-max) {
             padding: 7px 3.5px; /* based on having ~41.66% decrease */
         }
         i {
@@ -1639,14 +1639,14 @@ div.focused_table {
             height: 50%;
             color: hsl(0, 0%, 88%);
             font-size: 20px;
-            @media (max-width: 500px) {
+            @media (max-width: $sm-max) {
                 top: 10%;
             }
         }
 
         &::before {
             left: -3px;
-            @media (max-width: 500px) {
+            @media (max-width: $sm-max) {
                 /* this ensures the before "|" doesn't overlap
                    with the stream name text on small narrows */
                 left: 0;
@@ -1671,7 +1671,7 @@ div.focused_table {
         padding: 12px 0;
         padding-left: 10px;
 
-        @media (max-width: 500px) {
+        @media (max-width: $sm-max) {
             padding: 7px 0;
             padding-left: 10px;
         }
@@ -1689,7 +1689,7 @@ div.focused_table {
         font-size: 20px;
 
         padding: 10px 15px 0 0;
-        @media (max-width: 500px) {
+        @media (max-width: $sm-max) {
             padding: 5px 15px 0 0;
         }
     }
@@ -2778,7 +2778,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: 500px) {
+@media (max-width: $sm-max) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
         margin-top: 31px;

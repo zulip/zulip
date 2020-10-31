@@ -217,7 +217,7 @@
     }
 }
 
-@media (max-width: 500px) {
+@media (max-width: $sm-max) {
     #userlist-toggle {
         height: 30px;
         line-height: 30px;

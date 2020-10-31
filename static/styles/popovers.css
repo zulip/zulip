@@ -402,7 +402,7 @@ ul {
             pointer-events: all;
         }
 
-        @media (max-width: 500px) {
+        @media (max-width: $sm-max) {
             .popover-inner {
                 width: 70%;
             }
