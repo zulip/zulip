@@ -1087,7 +1087,7 @@ ul.grey-box {
     }
 }
 
-@media (max-width: 1130px) {
+@media (max-width: $lg-max) {
     .subscriptions-container {
         max-width: 95%;
     }
