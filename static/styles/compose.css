@@ -510,13 +510,6 @@ a#undo_markdown_preview {
     }
 }
 
-@media (max-width: 500px) {
-    textarea.new_message_textarea {
-        height: 30px !important;
-        min-height: 30px !important;
-    }
-}
-
 @media (max-width: 370px) {
     #stream_message_recipient_topic.recipient_box {
         width: calc(100% - 175px);
