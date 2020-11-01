@@ -1180,7 +1180,7 @@ ul.grey-box {
     }
 }
 
-@media (max-width: 575px) {
+@media (max-width: $sm-max) {
     #subscription_overlay .subscription_settings .button-group {
         display: block;
         float: unset;
