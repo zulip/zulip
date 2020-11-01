@@ -150,3 +150,11 @@ test("get_list_info unreads", (override) => {
         ["topic 0", "topic 1", "topic 2", "topic 3", "topic 5", "topic 6", "topic 7", "topic 8"],
     );
 });
+
+run_test("test matches_filter", () => {
+    const topic_name = "name";
+    let filter = "ame";
+    assert(topic_list_data.matches_filter(topic_name, filter));
+    filter = "France";
+    assert(!topic_list_data.matches_filter(topic_name, filter));
+});

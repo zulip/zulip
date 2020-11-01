@@ -54,6 +54,7 @@ li.show-more-topics {
     }
 }
 
+#topic_filter_icon,
 #streams_inline_cog,
 #streams_filter_icon {
     float: right;
@@ -66,6 +67,10 @@ li.show-more-topics {
         opacity: 1;
         cursor: pointer;
     }
+}
+
+.topic_search_section {
+    margin-left: 10px;
 }
 
 #streams_inline_cog {

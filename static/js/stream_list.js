@@ -223,6 +223,7 @@ export function zoom_out_topics() {
         $(this).show();
     });
 
+    $(".topic_search_section").expectOne().addClass("notdisplayed");
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
     $("#stream_filters li.narrow-filter").show();
 }
