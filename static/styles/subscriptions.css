@@ -1185,15 +1185,6 @@ ul.grey-box {
     }
 }
 
-@media (max-width: 367px) {
-    #subscription_overlay .subscription_settings .button-group {
-        margin-top: 10px;
-        float: none;
-        display: inline-block;
-        vertical-align: top;
-    }
-}
-
 #stream-creation #invites-warning-modal .modal-footer {
     position: static;
 }
