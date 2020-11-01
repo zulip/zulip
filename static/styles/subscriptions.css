@@ -856,6 +856,7 @@ form#add_new_subscription {
             max-width: 260px;
 
             .stream-name-editable {
+                line-height: 1em;
                 display: block;
                 max-width: 20ch;
                 overflow: hidden;
