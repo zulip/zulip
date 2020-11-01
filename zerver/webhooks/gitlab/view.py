@@ -132,6 +132,14 @@ def get_merge_request_event_body(payload: Dict[str, Any], action: str,
 
 def get_merge_request_open_or_updated_body(payload: Dict[str, Any], action: str,
                                            include_title: bool=False) -> str:
+
+    changes = payload.get("changes", {})
+    description = None
+    if action == "created":
+        description = payload["object_attributes"]["description"]
+    elif "description" in changes:
+        description = payload["changes"]["description"]["current"]
+
     pull_request = payload['object_attributes']
     return get_pull_request_event_message(
         get_issue_user_name(payload),
@@ -140,7 +148,7 @@ def get_merge_request_open_or_updated_body(payload: Dict[str, Any], action: str,
         pull_request.get('iid'),
         pull_request.get('source_branch'),
         pull_request.get('target_branch'),
-        pull_request.get('description'),
+        message = description,
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         type='MR',
         title=payload['object_attributes'].get('title') if include_title else None,

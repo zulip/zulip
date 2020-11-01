@@ -368,9 +368,33 @@ A trivial change that should probably be ignored.
 
     def test_merge_request_updated_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
-        expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\nupdated desc\n~~~"
+        expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`."
         self.check_webhook(
-            'merge_request_hook__merge_request_updated',
+            'merge_request_hook__merge_request_updated_with_missing_changes_section',
+            expected_topic,
+            expected_message)
+
+    def test_merge_request_updated_with_empty_changes_section_event_message(self) -> None:
+        expected_topic = "gitLabZulipWebhook / MR #1 Test Zulip: Dummy Title"
+        expected_message = "Rohan Jayaram updated [MR #1](https://gitlab.com/rohan.jyrm/gitlabzulipwebhook/-/merge_requests/1) (assigned to Rohan Jayaram) from `fb1` to `master`."
+        self.check_webhook(
+            'merge_request_hook__merge_request_updated_with_empty_changes_section',
+            expected_topic,
+            expected_message)
+
+    def test_merge_request_updated_with_with_change_section_that_is_not_description_event_message(self) -> None:
+        expected_topic = "gitLabZulipWebhook / MR #1 Test Zulip: Dummy Title"
+        expected_message = "Rohan Jayaram updated [MR #1](https://gitlab.com/rohan.jyrm/gitlabzulipwebhook/-/merge_requests/1) (assigned to Rohan Jayaram) from `fb1` to `master`."
+        self.check_webhook(
+            'merge_request_hook__merge_request_updated_with_assignee_changes',
+            expected_topic,
+            expected_message)
+
+    def test_merge_request_updated_with_description_change_event_message(self) -> None:
+        expected_topic = "gitLabZulipWebhook / MR #1 Test Zulip: Dummy Title"
+        expected_message = "Rohan Jayaram updated [MR #1](https://gitlab.com/rohan.jyrm/gitlabzulipwebhook/-/merge_requests/1) (assigned to Rohan Jayaram) from `fb1` to `master`:\n\n~~~ quote\nTesting Webhooks Integration - Modifying Description to test issue fix\n~~~"
+        self.check_webhook(
+            'merge_request_hook__merge_request_updated_with_description_change',
             expected_topic,
             expected_message)
 

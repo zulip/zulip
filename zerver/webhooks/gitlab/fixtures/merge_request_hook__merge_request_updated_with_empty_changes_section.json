@@ -1,0 +1,131 @@
+{
+  "object_kind": "merge_request",
+  "event_type": "merge_request",
+  "user": {
+    "name": "Rohan Jayaram",
+    "username": "rohan.jyrm",
+    "avatar_url": "https://secure.gravatar.com/avatar/a2db3e7cae9eb094233a6ede81ab07f7?s=80&d=identicon",
+    "email": "someone@gmail.com"
+  },
+  "project": {
+    "id": 21718317,
+    "name": "gitLabZulipWebhook",
+    "description": "",
+    "web_url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook",
+    "avatar_url": null,
+    "git_ssh_url": "git@gitlab.com:rohan.jyrm/gitlabzulipwebhook.git",
+    "git_http_url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook.git",
+    "namespace": "Rohan Jayaram",
+    "visibility_level": 20,
+    "path_with_namespace": "rohan.jyrm/gitlabzulipwebhook",
+    "default_branch": "master",
+    "ci_config_path": "",
+    "homepage": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook",
+    "url": "git@gitlab.com:rohan.jyrm/gitlabzulipwebhook.git",
+    "ssh_url": "git@gitlab.com:rohan.jyrm/gitlabzulipwebhook.git",
+    "http_url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook.git"
+  },
+  "object_attributes": {
+    "assignee_id": 7350577,
+    "author_id": 7350577,
+    "created_at": "2020-10-12 06:25:55 UTC",
+    "description": "Testing Webhooks Integration",
+    "head_pipeline_id": null,
+    "id": 74020781,
+    "iid": 1,
+    "last_edited_at": "2020-10-31 22:44:51 UTC",
+    "last_edited_by_id": 7350577,
+    "merge_commit_sha": null,
+    "merge_error": null,
+    "merge_params": {
+      "force_remove_source_branch": "1"
+    },
+    "merge_status": "can_be_merged",
+    "merge_user_id": null,
+    "merge_when_pipeline_succeeds": false,
+    "milestone_id": null,
+    "source_branch": "fb1",
+    "source_project_id": 21718317,
+    "state_id": 1,
+    "target_branch": "master",
+    "target_project_id": 21718317,
+    "time_estimate": 0,
+    "title": "Test Zulip: Dummy Title",
+    "updated_at": "2020-10-31 22:44:51 UTC",
+    "updated_by_id": 7350577,
+    "url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook/-/merge_requests/1",
+    "source": {
+      "id": 21718317,
+      "name": "gitLabZulipWebhook",
+      "description": "",
+      "web_url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook",
+      "avatar_url": null,
+      "git_ssh_url": "git@gitlab.com:rohan.jyrm/gitlabzulipwebhook.git",
+      "git_http_url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook.git",
+      "namespace": "Rohan Jayaram",
+      "visibility_level": 20,
+      "path_with_namespace": "rohan.jyrm/gitlabzulipwebhook",
+      "default_branch": "master",
+      "ci_config_path": "",
+      "homepage": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook",
+      "url": "git@gitlab.com:rohan.jyrm/gitlabzulipwebhook.git",
+      "ssh_url": "git@gitlab.com:rohan.jyrm/gitlabzulipwebhook.git",
+      "http_url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook.git"
+    },
+    "target": {
+      "id": 21718317,
+      "name": "gitLabZulipWebhook",
+      "description": "",
+      "web_url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook",
+      "avatar_url": null,
+      "git_ssh_url": "git@gitlab.com:rohan.jyrm/gitlabzulipwebhook.git",
+      "git_http_url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook.git",
+      "namespace": "Rohan Jayaram",
+      "visibility_level": 20,
+      "path_with_namespace": "rohan.jyrm/gitlabzulipwebhook",
+      "default_branch": "master",
+      "ci_config_path": "",
+      "homepage": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook",
+      "url": "git@gitlab.com:rohan.jyrm/gitlabzulipwebhook.git",
+      "ssh_url": "git@gitlab.com:rohan.jyrm/gitlabzulipwebhook.git",
+      "http_url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook.git"
+    },
+    "last_commit": {
+      "id": "aaf14be9d7a7d54868321161b0e9ea9665c91482",
+      "message": "Add new file",
+      "title": "Add new file",
+      "timestamp": "2020-10-12T06:06:33+00:00",
+      "url": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook/-/commit/aaf14be9d7a7d54868321161b0e9ea9665c91482",
+      "author": {
+        "name": "Rohan Jayaram",
+        "email": "someone@gmail.com"
+      }
+    },
+    "work_in_progress": false,
+    "total_time_spent": 0,
+    "human_total_time_spent": null,
+    "human_time_estimate": null,
+    "assignee_ids": [
+      7350577
+    ],
+    "state": "opened",
+    "action": "update"
+  },
+  "labels": [],
+  "changes": {},
+  "repository": {
+    "name": "gitLabZulipWebhook",
+    "url": "git@gitlab.com:rohan.jyrm/gitlabzulipwebhook.git",
+    "description": "",
+    "homepage": "https://gitlab.com/rohan.jyrm/gitlabzulipwebhook"
+  },
+  "assignees": [
+    {
+      "name": "Rohan Jayaram",
+      "username": "rohan.jyrm",
+      "avatar_url": "https://secure.gravatar.com/avatar/a2db3e7cae9eb094233a6ede81ab07f7?s=80&d=identicon",
+      "email": "someone@gmail.com"
+    }
+  ]
+}
+
