@@ -101,7 +101,7 @@ exports.insert_new_messages = function insert_new_messages(messages, sent_by_thi
 
     unread_ops.process_visible();
     notifications.received_messages(messages);
-    stream_list.update_streams_sidebar();
+    stream_list.update_streams_sidebar(0);
     pm_list.update_private_messages();
     recent_topics.process_messages(messages);
 };
@@ -388,7 +388,7 @@ exports.update_messages = function update_messages(events) {
     }
 
     unread_ui.update_unread_counts();
-    stream_list.update_streams_sidebar();
+    stream_list.update_streams_sidebar(0);
     pm_list.update_private_messages();
 };
 

@@ -258,7 +258,7 @@ exports.edit_locally = function (message, request) {
     if (current_msg_list === message_list.narrowed) {
         message_list.narrowed.view.rerender_messages([message]);
     }
-    stream_list.update_streams_sidebar();
+    stream_list.update_streams_sidebar(0);
     pm_list.update_private_messages();
 };
 

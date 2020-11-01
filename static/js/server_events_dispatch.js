@@ -45,7 +45,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     num_messages: msg_ids.length,
                     max_removed_msg_id: Math.max(...msg_ids),
                 });
-                stream_list.update_streams_sidebar();
+                stream_list.update_streams_sidebar(0);
             }
 
             break;
@@ -438,7 +438,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 $("body").toggleClass("high-contrast");
             }
             if (event.setting_name === "demote_inactive_streams") {
-                stream_list.update_streams_sidebar();
+                stream_list.update_streams_sidebar(0);
                 stream_data.set_filter_out_inactives();
             }
             if (event.setting_name === "dense_mode") {

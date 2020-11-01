@@ -63,13 +63,13 @@ function get_search_term() {
 
 exports.add_sidebar_row = function (sub) {
     exports.create_sidebar_row(sub);
-    exports.build_stream_list();
+    exports.build_stream_list(0);
     exports.stream_cursor.redraw();
 };
 
 exports.remove_sidebar_row = function (stream_id) {
     exports.stream_sidebar.remove_row(stream_id);
-    exports.build_stream_list();
+    exports.build_stream_list(0);
     exports.stream_cursor.redraw();
 };
 
@@ -84,7 +84,7 @@ exports.create_initial_sidebar_rows = function () {
     }
 };
 
-exports.build_stream_list = function () {
+exports.build_stream_list = function (flag) {
     // This function assumes we have already created the individual
     // sidebar rows.  Our job here is to build the bigger widget,
     // which largely is a matter of arranging the individual rows in
@@ -98,7 +98,7 @@ exports.build_stream_list = function () {
     // we get three lists of streams (pinned/normal/dormant).
     const stream_groups = stream_sort.sort_groups(streams, get_search_term());
 
-    if (stream_groups.same_as_before) {
+    if (stream_groups.same_as_before && flag==0) {
         return;
     }
 
@@ -307,9 +307,9 @@ function set_stream_unread_count(stream_id, count) {
     exports.update_count_in_dom(unread_count_elem, count);
 }
 
-exports.update_streams_sidebar = function () {
+exports.update_streams_sidebar = function (flag) {
     const finish = blueslip.start_timing("build_stream_list");
-    exports.build_stream_list();
+    exports.build_stream_list(flag);
     finish();
     exports.stream_cursor.redraw();
 
@@ -332,14 +332,14 @@ exports.update_dom_with_unread_counts = function (counts) {
 exports.rename_stream = function (sub) {
     // The sub object is expected to already have the updated name
     build_stream_sidebar_row(sub);
-    exports.update_streams_sidebar(); // big hammer
+    exports.update_streams_sidebar(1); // big hammer
 };
 
 exports.refresh_pinned_or_unpinned_stream = function (sub) {
     // Pinned/unpinned streams require re-ordering.
     // We use kind of brute force now, which is probably fine.
     build_stream_sidebar_row(sub);
-    exports.update_streams_sidebar();
+    exports.update_streams_sidebar(0);
 
     // Only scroll pinned topics into view.  If we're unpinning
     // a topic, we may be literally trying to get it out of
@@ -463,7 +463,7 @@ function keydown_enter_key() {
 }
 
 function actually_update_streams_for_search() {
-    exports.update_streams_sidebar();
+    exports.update_streams_sidebar(0);
     resize.resize_page_components();
     exports.stream_cursor.reset();
 }
@@ -475,7 +475,7 @@ exports.initialize = function () {
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
-    exports.build_stream_list();
+    exports.build_stream_list(0);
     exports.set_event_handlers();
 };
 

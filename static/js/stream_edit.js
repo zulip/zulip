@@ -599,7 +599,7 @@ exports.change_stream_name = function (e) {
             ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
         },
     });
-    stream_list.update_streams_sidebar();
+    stream_list.update_streams_sidebar(1);
 };
 
 exports.set_raw_description = function (target, destination) {

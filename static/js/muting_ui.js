@@ -15,7 +15,7 @@ exports.rerender = function () {
     // immediate feel to the user, and if the backend fails temporarily,
     // re-doing a mute or unmute is a pretty recoverable thing.
 
-    stream_list.update_streams_sidebar();
+    stream_list.update_streams_sidebar(0);
     if (current_msg_list.muting_enabled) {
         current_msg_list.update_muting_and_rerender();
     }

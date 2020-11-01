@@ -117,7 +117,7 @@ run_test("create_sidebar_row", () => {
         topic_list_cleared = true;
     };
 
-    stream_list.build_stream_list();
+    stream_list.build_stream_list(0);
 
     assert(topic_list_cleared);
 
@@ -201,7 +201,7 @@ run_test("pinned_streams_never_inactive", () => {
     let row = stream_list.stream_sidebar.get_row(stream_id);
     stream_data.is_active = return_false;
 
-    stream_list.build_stream_list();
+    stream_list.build_stream_list(0);
     assert(social_sidebar.hasClass("inactive_stream"));
 
     stream_data.is_active = return_true;
@@ -218,7 +218,7 @@ run_test("pinned_streams_never_inactive", () => {
     row = stream_list.stream_sidebar.get_row(stream_id);
     stream_data.is_active = return_false;
 
-    stream_list.build_stream_list();
+    stream_list.build_stream_list(0);
     assert(!devel_sidebar.hasClass("inactive_stream"));
 
     row.update_whether_active();
@@ -457,7 +457,7 @@ run_test("sort_streams", () => {
     stream_data.clear_subscriptions();
 
     // Get coverage on early-exit.
-    stream_list.build_stream_list();
+    stream_list.build_stream_list(0);
 
     initialize_stream_data();
 
@@ -470,7 +470,7 @@ run_test("sort_streams", () => {
         appended_elems = elems;
     };
 
-    stream_list.build_stream_list();
+    stream_list.build_stream_list(0);
 
     const split = '<hr class="stream-split">';
     const expected_elems = [
@@ -513,7 +513,7 @@ run_test("separators_only_pinned_and_dormant", () => {
     stream_data.clear_subscriptions();
 
     // Get coverage on early-exit.
-    stream_list.build_stream_list();
+    stream_list.build_stream_list(0);
 
     // pinned streams
     const develSub = {
@@ -552,7 +552,7 @@ run_test("separators_only_pinned_and_dormant", () => {
         appended_elems = elems;
     };
 
-    stream_list.build_stream_list();
+    stream_list.build_stream_list(0);
 
     const split = '<hr class="stream-split">';
     const expected_elems = [
@@ -573,7 +573,7 @@ run_test("separators_only_pinned", () => {
     stream_data.clear_subscriptions();
 
     // Get coverage on early-exit.
-    stream_list.build_stream_list();
+    stream_list.build_stream_list(0);
 
     // pinned streams
     const develSub = {
@@ -599,7 +599,7 @@ run_test("separators_only_pinned", () => {
         appended_elems = elems;
     };
 
-    stream_list.build_stream_list();
+    stream_list.build_stream_list(0);
 
     const expected_elems = [
         // pinned

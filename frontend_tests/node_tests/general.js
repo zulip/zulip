@@ -720,7 +720,7 @@ run_test("stream_list", () => {
     const topic_list_helper = make_topic_list_helper();
 
     // This is what we are testing!
-    stream_list.update_streams_sidebar();
+    stream_list.update_streams_sidebar(0);
 
     jquery_helper.verify_actions();
     sidebar_helper.verify_actions();

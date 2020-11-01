@@ -55,7 +55,7 @@ function process_result(data, opts) {
     }
 
     huddle_data.process_loaded_messages(messages);
-    stream_list.update_streams_sidebar();
+    stream_list.update_streams_sidebar(0);
     pm_list.update_private_messages();
     recent_topics.process_messages(messages);
 
