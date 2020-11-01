@@ -96,6 +96,17 @@ img.task-completed {
     width: 15px;
 }
 
+.todo-widget {
+    .heading {
+        display: inline;
+        margin-right: 5px;
+    }
+    #todo-hide-completed,
+    #todo-show-completed {
+        margin-bottom: 5px;
+    }
+}
+
 input,
 button {
     &.add-task,

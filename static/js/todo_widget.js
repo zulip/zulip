@@ -153,6 +153,24 @@ export function activate(opts) {
             const data = task_data.handle.new_task.outbound(task, desc);
             callback(data);
         });
+
+        elem.find("#todo-hide-completed").on("click", (e) => {
+            e.stopPropagation();
+
+            elem.find("button.task-completed.task").hide();
+            elem.find("button.task-completed.task+.task").hide();
+            elem.find("button#todo-hide-completed").hide();
+            elem.find("button#todo-show-completed").show();
+        });
+
+        elem.find("#todo-show-completed").on("click", (e) => {
+            e.stopPropagation();
+
+            elem.find("button.task-completed.task").show();
+            elem.find("button.task-completed.task+.task").show();
+            elem.find("button#todo-hide-completed").show();
+            elem.find("button#todo-show-completed").hide();
+        });
     }
 
     function render_results() {
