@@ -1449,35 +1449,27 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
 class TestAuthenticatedRequirePostDecorator(ZulipTestCase):
     def test_authenticated_html_post_view_with_get_request(self) -> None:
         self.login('hamlet')
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(level="WARNING") as mock_warning:
             result = self.client_get(r'/accounts/register/', {'stream': 'Verona'})
             self.assertEqual(result.status_code, 405)
-            mock_warning.assert_called_once()  # Check we logged the Mock Not Allowed
-            self.assertEqual(mock_warning.call_args_list[0][0],
-                             ('Method Not Allowed (%s): %s', 'GET', '/accounts/register/'))
+            self.assertEqual(mock_warning.output, ["WARNING:root:Method Not Allowed (GET): /accounts/register/"])
 
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(level="WARNING") as mock_warning:
             result = self.client_get(r'/accounts/logout/', {'stream': 'Verona'})
             self.assertEqual(result.status_code, 405)
-            mock_warning.assert_called_once()  # Check we logged the Mock Not Allowed
-            self.assertEqual(mock_warning.call_args_list[0][0],
-                             ('Method Not Allowed (%s): %s', 'GET', '/accounts/logout/'))
+            self.assertEqual(mock_warning.output, ["WARNING:root:Method Not Allowed (GET): /accounts/logout/"])
 
     def test_authenticated_json_post_view_with_get_request(self) -> None:
         self.login('hamlet')
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(level="WARNING") as mock_warning:
             result = self.client_get(r'/api/v1/dev_fetch_api_key', {'stream': 'Verona'})
             self.assertEqual(result.status_code, 405)
-            mock_warning.assert_called_once()  # Check we logged the Mock Not Allowed
-            self.assertEqual(mock_warning.call_args_list[0][0],
-                             ('Method Not Allowed (%s): %s', 'GET', '/api/v1/dev_fetch_api_key'))
+            self.assertEqual(mock_warning.output, ["WARNING:root:Method Not Allowed (GET): /api/v1/dev_fetch_api_key"])
 
-        with mock.patch('logging.warning') as mock_warning:
+        with self.assertLogs(level="WARNING") as mock_warning:
             result = self.client_get(r'/json/remotes/server/register', {'stream': 'Verona'})
             self.assertEqual(result.status_code, 405)
-            mock_warning.assert_called_once()  # Check we logged the Mock Not Allowed
-            self.assertEqual(mock_warning.call_args_list[0][0],
-                             ('Method Not Allowed (%s): %s', 'GET', '/json/remotes/server/register'))
+            self.assertEqual(mock_warning.output, ["WARNING:root:Method Not Allowed (GET): /json/remotes/server/register"])
 
 class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
     def test_authenticated_json_post_view_if_everything_is_correct(self) -> None:

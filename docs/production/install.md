@@ -131,7 +131,7 @@ directory there, and makes `/home/zulip/deployments/current` as a
 symbolic link to it.
 * Installs Zulip's various dependencies.
 * Configures the various third-party services Zulip uses, including
-Postgres, RabbitMQ, Memcached and Redis.
+PostgreSQL, RabbitMQ, Memcached and Redis.
 * Initializes Zulip's database.
 
 If you'd like to deploy Zulip with these services on different

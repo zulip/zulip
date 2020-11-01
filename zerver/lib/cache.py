@@ -576,13 +576,13 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
 # Called by models.py to flush various caches whenever we save
 # a Realm object.  The main tricky thing here is that Realm info is
 # generally cached indirectly through user_profile objects.
-def flush_realm(sender: Any, **kwargs: Any) -> None:
+def flush_realm(sender: Any, from_deletion: bool=False, **kwargs: Any) -> None:
     realm = kwargs['instance']
     users = realm.get_active_users()
     delete_user_profile_caches(users)
 
-    if realm.deactivated or (kwargs["update_fields"] is not None and
-                             "string_id" in kwargs['update_fields']):
+    if from_deletion or realm.deactivated or (kwargs["update_fields"] is not None and
+                                              "string_id" in kwargs['update_fields']):
         cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
@@ -591,8 +591,7 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
-
-    if changed(kwargs, ['description']):
+    elif changed(kwargs, ['description']):
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
 
@@ -635,7 +634,7 @@ def to_dict_cache_key_id(message_id: int) -> str:
 def to_dict_cache_key(message: 'Message', realm_id: Optional[int]=None) -> str:
     return to_dict_cache_key_id(message.id)
 
-def open_graph_description_cache_key(content: Any, request: HttpRequest) -> str:
+def open_graph_description_cache_key(content: bytes, request: HttpRequest) -> str:
     return 'open_graph_description_path:{}'.format(make_safe_digest(request.META['PATH_INFO']))
 
 def flush_message(sender: Any, **kwargs: Any) -> None:

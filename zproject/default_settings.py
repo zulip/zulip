@@ -116,7 +116,8 @@ DEFAULT_AVATAR_URI = '/static/images/default-avatar.png'
 DEFAULT_LOGO_URI = '/static/images/logo/zulip-org-logo.svg'
 S3_AVATAR_BUCKET = ''
 S3_AUTH_UPLOADS_BUCKET = ''
-S3_REGION = ''
+S3_REGION = None
+S3_ENDPOINT_URL = None
 LOCAL_UPLOADS_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 

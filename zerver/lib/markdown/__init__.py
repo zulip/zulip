@@ -25,7 +25,7 @@ from typing import (
     Union,
 )
 from typing.re import Match, Pattern
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -587,12 +587,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # We strip leading '/' from relative URLs here to ensure
             # consistency in what gets passed to /thumbnail
             url = url.lstrip('/')
-            img.set("src", "/thumbnail?url={}&size=thumbnail".format(
-                urllib.parse.quote(url, safe=''),
-            ))
-            img.set('data-src-fullsize', "/thumbnail?url={}&size=full".format(
-                urllib.parse.quote(url, safe=''),
-            ))
+            img.set("src", "/thumbnail?" + urlencode({"url": url, "size": "thumbnail"}))
+            img.set('data-src-fullsize', "/thumbnail?" + urlencode({"url": url, "size": "full"}))
         else:
             img.set("src", url)
 
@@ -1549,6 +1545,34 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     RE = re.compile(r'(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))'
                     r'[ ]{0,3}>[ ]?(.*)')
     mention_re = re.compile(mention.find_mentions)
+
+    # run() is very slightly forked from the base class; see notes below.
+    def run(self, parent: Element, blocks: List[Any]) -> None:
+        block = blocks.pop(0)
+        m = self.RE.search(block)
+        if m:
+            before = block[:m.start()]  # Lines before blockquote
+            # Pass lines before blockquote in recursively for parsing forst.
+            self.parser.parseBlocks(parent, [before])
+            # Remove ``> `` from beginning of each line.
+            block = '\n'.join(
+                [self.clean(line) for line in block[m.start():].split('\n')]
+            )
+
+        # Zulip modification: The next line is patched to match
+        # CommonMark rather than original Markdown.  In original
+        # Markdown, blockquotes with a blank line between them were
+        # merged, which makes it impossible to break a blockquote with
+        # a blank line intentionally.
+        #
+        # This is a new blockquote. Create a new parent element.
+        quote = etree.SubElement(parent, 'blockquote')
+
+        # Recursively parse block with blockquote as parent.
+        # change parser state so blockquotes embedded in lists use p tags
+        self.parser.state.set('blockquote')
+        self.parser.parseChunk(quote, block)
+        self.parser.state.reset()
 
     def clean(self, line: str) -> str:
         # Silence all the mentions inside blockquotes

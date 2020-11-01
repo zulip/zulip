@@ -2,10 +2,10 @@
 
 {!admin-only.md!}
 
-There are several settings that control who can edit and delete messages and
-topics. By default, users have 10 minutes after posting a message to edit
-it, they can edit any topic at any time, and they cannot delete their
-messages.
+There are several settings that control who can [edit and delete
+messages](/help/edit-or-delete-a-message) and topics. By default,
+users have 10 minutes after posting a message to edit it, they can
+edit any topic at any time, and they cannot delete their messages.
 
 Different organizations have different message editing needs, so this area
 is highly configurable. Two things are true under any configuration:

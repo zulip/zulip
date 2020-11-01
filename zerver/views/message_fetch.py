@@ -227,15 +227,15 @@ class NarrowBuilder:
         """
         Escape user input to place in a regex
 
-        Python's re.escape escapes Unicode characters in a way which Postgres
+        Python's re.escape escapes Unicode characters in a way which PostgreSQL
         fails on, '\u03bb' to '\\\u03bb'. This function will correctly escape
-        them for Postgres, '\u03bb' to '\\u03bb'.
+        them for PostgreSQL, '\u03bb' to '\\u03bb'.
         """
         s = list(pattern)
         for i, c in enumerate(s):
             if c not in self._alphanum:
                 if ord(c) >= 128:
-                    # convert the character to hex Postgres regex will take
+                    # convert the character to hex PostgreSQL regex will take
                     # \uXXXX
                     s[i] = f'\\u{ord(c):0>4x}'
                 else:
@@ -325,7 +325,7 @@ class NarrowBuilder:
                     topic_match_sa('(instance "").d.d.d.d'),
                 )
             else:
-                # We limit `.d` counts, since Postgres has much better
+                # We limit `.d` counts, since PostgreSQL has much better
                 # query planning for this than they do for a regular
                 # expression (which would sometimes table scan).
                 cond = or_(
@@ -481,7 +481,7 @@ class NarrowBuilder:
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
                                            column("rendered_content"),
                                            tsquery).label("content_matches"))
-        # We HTML-escape the topic in Postgres to avoid doing a server round-trip
+        # We HTML-escape the topic in PostgreSQL to avoid doing a server round-trip
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
                                            func.escape_html(topic_column_sa()),
                                            tsquery).label("topic_matches"))
@@ -489,7 +489,7 @@ class NarrowBuilder:
         # Do quoted string matching.  We really want phrase
         # search here so we can ignore punctuation and do
         # stemming, but there isn't a standard phrase search
-        # mechanism in Postgres
+        # mechanism in PostgreSQL
         for term in re.findall(r'"[^"]+"|\S+', operand):
             if term[0] == '"' and term[-1] == '"':
                 term = term[1:-1]

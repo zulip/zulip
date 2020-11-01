@@ -38,4 +38,4 @@ Moved to [Management commands](../production/management-commands.md).
 
 ### API and your Zulip URL
 
-Moved to [REST API](https://chat.zulip.org/api/rest).
+Moved to [REST API](https://zulip.com/api/rest).

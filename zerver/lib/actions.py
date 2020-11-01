@@ -142,6 +142,7 @@ from zerver.lib.streams import (
     subscribed_to_stream,
 )
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import (
     LEGACY_PREV_TOPIC,
     ORIG_TOPIC,
@@ -3868,7 +3869,7 @@ def do_set_user_display_setting(user_profile: UserProfile,
     if setting_name == "timezone":
         payload = dict(email=user_profile.email,
                        user_id=user_profile.id,
-                       timezone=user_profile.timezone)
+                       timezone=canonicalize_timezone(user_profile.timezone))
         send_event(user_profile.realm,
                    dict(type='realm_user', op='update', person=payload),
                    active_user_ids(user_profile.realm_id))

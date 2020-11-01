@@ -54,8 +54,7 @@ class OpenGraphTest(ZulipTestCase):
                                     status_code: int=200) -> None:
         response = self.client_get(path)
         self.assertEqual(response.status_code, status_code)
-        decoded = response.content.decode('utf-8')
-        bs = BeautifulSoup(decoded, features='lxml')
+        bs = BeautifulSoup(response.content, features='lxml')
         open_graph_title = bs.select_one('meta[property="og:title"]').get('content')
         self.assertEqual(open_graph_title, title)
 
@@ -157,8 +156,7 @@ class OpenGraphTest(ZulipTestCase):
         response = self.client_get('/login/')
         self.assertEqual(response.status_code, 200)
 
-        decoded = response.content.decode('utf-8')
-        bs = BeautifulSoup(decoded, features='lxml')
+        bs = BeautifulSoup(response.content, features='lxml')
         open_graph_image = bs.select_one('meta[property="og:image"]').get('content')
         self.assertEqual(open_graph_image, f'{realm.uri}{realm_icon}')
 
@@ -171,8 +169,7 @@ class OpenGraphTest(ZulipTestCase):
             response = self.client_get('/login/')
         self.assertEqual(response.status_code, 200)
 
-        decoded = response.content.decode('utf-8')
-        bs = BeautifulSoup(decoded, features='lxml')
+        bs = BeautifulSoup(response.content, features='lxml')
         open_graph_image = bs.select_one('meta[property="og:image"]').get('content')
         self.assertEqual(open_graph_image, icon_url)
 
@@ -180,8 +177,7 @@ class OpenGraphTest(ZulipTestCase):
         response = self.client_get('/api/', subdomain='')
         self.assertEqual(response.status_code, 200)
 
-        decoded = response.content.decode('utf-8')
-        bs = BeautifulSoup(decoded, features='lxml')
+        bs = BeautifulSoup(response.content, features='lxml')
         open_graph_url = bs.select_one('meta[property="og:url"]').get('content')
 
         self.assertTrue(open_graph_url.endswith('/api/'))

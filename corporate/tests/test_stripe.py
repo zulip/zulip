@@ -654,7 +654,7 @@ class StripeTest(StripeTestCase):
             self.assert_not_in_success_response(["Go to your Zulip organization"], response)
 
             with patch('corporate.views.timezone_now', return_value=self.now):
-                response = self.client_get("/billing/?onboarding=true")
+                response = self.client_get("/billing/", {"onboarding": "true"})
                 self.assert_in_success_response(["Go to your Zulip organization"], response)
 
             with patch('corporate.lib.stripe.get_latest_seat_count', return_value=12):
@@ -1160,7 +1160,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, "/billing/")
 
-            response = self.client_get("/upgrade/?onboarding=true")
+            response = self.client_get("/upgrade/", {"onboarding": "true"})
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, "/billing/?onboarding=true")
 

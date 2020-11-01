@@ -661,7 +661,7 @@ markdown_rules = RuleList(
         {'pattern': r'\[(?P<url>[^\]]+)\]\((?P=url)\)',
          'description': 'Linkified Markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',
-         'exclude': {'docs/overview/contributing.md', 'docs/overview/readme.md', 'docs/README.md'},
+         'exclude': {'docs/overview/contributing.md', 'docs/overview/readme.md', 'docs/README.md', 'docs/subsystems/email.md'},
          'include_only': {'docs/'},
          'description': "Use relative links (../foo/bar.html) to other documents in docs/",
          },
@@ -697,6 +697,27 @@ help_markdown_rules = RuleList(
     length_exclude=markdown_docs_length_exclude,
 )
 
+puppet_rules = RuleList(
+    langs=['pp'],
+    rules=[
+        {'pattern': r'(include\s+|\$)zulip::(profile|base)\b',
+         'exclude': {
+             'puppet/zulip/manifests/profile/',
+             'puppet/zulip_ops/manifests/',
+             'puppet/zulip/manifests/dockervoyager.pp',
+         },
+         'description': 'Abstraction layering violation; only profiles should reference profiles or zulip::base',
+         },
+        {'pattern': r'(include\s+|\$)zulip_ops::(profile|base)\b',
+         'exclude': {
+             'puppet/zulip/manifests/',
+             'puppet/zulip_ops/manifests/profile/',
+         },
+         'description': 'Abstraction layering violation; only profiles should reference profiles or zulip_ops::base',
+         },
+    ],
+)
+
 txt_rules = RuleList(
     langs=['txt', 'text', 'yaml', 'rst', 'yml'],
     rules=whitespace_rules,
@@ -711,4 +732,5 @@ non_py_rules = [
     help_markdown_rules,
     bash_rules,
     txt_rules,
+    puppet_rules,
 ]

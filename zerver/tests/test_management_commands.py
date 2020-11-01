@@ -459,7 +459,7 @@ class TestExport(ZulipTestCase):
         self.assertEqual(mock_print.mock_calls, [
             call('\033[94mExporting realm\033[0m: zulip'),
             call('\n\033[94mMessage content:\033[0m\nOutbox emoji for export\n'),
-            call('\033[94mNumber of users that reacted outbox:\033[0m 2 / 13 total users\n'),
+            call('\033[94mNumber of users that reacted outbox:\033[0m 2 / 8 total non-guest users\n'),
         ])
 
         with self.assertRaisesRegex(CommandError, "Message with given ID does not"), \

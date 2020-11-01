@@ -242,9 +242,9 @@ else
     sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/*/tsearch_data/
 fi
 ./scripts/setup/configure-rabbitmq
-./tools/setup/postgres-init-dev-db
+./tools/setup/postgresql-init-dev-db
 ./tools/rebuild-dev-database
-./tools/setup/postgres-init-test-db
+./tools/setup/postgresql-init-test-db
 ./tools/rebuild-test-database
 ./manage.py compilemessages
 ```

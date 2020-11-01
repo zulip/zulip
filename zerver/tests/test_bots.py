@@ -1574,7 +1574,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         response = self.client_post("/json/bots", bot_metadata)
         self.assertEqual(response.status_code, 400)
         expected_error_message = 'Invalid stripe_api_key value _invalid_key (stripe_api_key starts with a "_" and is hence invalid.)'
-        self.assertEqual(orjson.loads(response.content.decode('utf-8'))["msg"], expected_error_message)
+        self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
 
@@ -1590,7 +1590,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         response = self.client_post("/json/bots", bot_metadata)
         self.assertEqual(response.status_code, 400)
         expected_error_message = "Missing configuration parameters: {'stripe_api_key'}"
-        self.assertEqual(orjson.loads(response.content.decode('utf-8'))["msg"], expected_error_message)
+        self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
 
@@ -1619,6 +1619,6 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         response = self.client_post("/json/bots", bot_metadata)
         self.assertEqual(response.status_code, 400)
         expected_error_message = "Invalid integration 'stripes'."
-        self.assertEqual(orjson.loads(response.content.decode('utf-8'))["msg"], expected_error_message)
+        self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")

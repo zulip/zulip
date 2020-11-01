@@ -110,15 +110,6 @@ GENERATE_STRIPE_FIXTURES = False
 # This is overridden in test_settings.py for the test suites
 BAN_CONSOLE_OUTPUT = False
 
-# Google Compute Engine has an /etc/boto.cfg that is "nicely
-# configured" to work with GCE's storage service.  However, their
-# configuration is super aggressive broken, in that it means importing
-# boto in a virtualenv that doesn't contain the GCE tools crashes.
-#
-# By using our own path for BOTO_CONFIG, we can cause boto to not
-# process /etc/boto.cfg.
-os.environ['BOTO_CONFIG'] = '/etc/zulip/boto.cfg'
-
 # These are the settings that we will check that the user has filled in for
 # production deployments before starting the app.  It consists of a series
 # of pairs of (setting name, default value that it must be changed from)
@@ -255,7 +246,7 @@ SILENCED_SYSTEM_CHECKS = [
 ########################################################################
 
 # Zulip's Django configuration supports 4 different ways to do
-# Postgres authentication:
+# PostgreSQL authentication:
 #
 # * The development environment uses the `local_database_password`
 #   secret from `zulip-secrets.conf` to authenticate with a local
@@ -264,18 +255,18 @@ SILENCED_SYSTEM_CHECKS = [
 #
 # The remaining 3 options are for production use:
 #
-# * Using Postgres' "peer" authentication to authenticate to a
+# * Using PostgreSQL's "peer" authentication to authenticate to a
 #   database on the local system using one's user ID (processes
 #   running as user `zulip` on the system are automatically
 #   authenticated as database user `zulip`).  This is the default in
 #   production.  We don't use this in the development environment,
 #   because it requires the developer's user to be called `zulip`.
 #
-# * Using password authentication with a remote Postgres server using
+# * Using password authentication with a remote PostgreSQL server using
 #   the `REMOTE_POSTGRES_HOST` setting and the password from the
 #   `postgres_password` secret.
 #
-# * Using passwordless authentication with a remote Postgres server
+# * Using passwordless authentication with a remote PostgreSQL server
 #   using the `REMOTE_POSTGRES_HOST` setting and a client certificate
 #   under `/home/zulip/.postgresql/`.
 #
@@ -317,7 +308,7 @@ elif REMOTE_POSTGRES_HOST != '':
     else:
         DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
 
-POSTGRES_MISSING_DICTIONARIES = bool(get_config('postgresql', 'missing_dictionaries', None))
+POSTGRESQL_MISSING_DICTIONARIES = bool(get_config('postgresql', 'missing_dictionaries', None))
 
 ########################################################################
 # RABBITMQ CONFIGURATION
@@ -1116,6 +1107,11 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_TIMEOUT = 15
+
+if DEVELOPMENT:
+    EMAIL_HOST = get_secret('email_host', '')
+    EMAIL_PORT = int(get_secret('email_port', '25'))
+    EMAIL_HOST_USER = get_secret('email_host_user', '')
 
 EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')

@@ -2,7 +2,6 @@ import random
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union
 from unittest import mock
-from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
@@ -307,7 +306,7 @@ class TestCreateStreams(ZulipTestCase):
             "already_subscribed": {},
         }
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(orjson.loads(response.content.decode()), expected_response)
+        self.assertEqual(orjson.loads(response.content), expected_response)
 
         # 2 messages should be created, one in announce and one in the new stream itself.
         self.assertEqual(final_message_count - initial_message_count, 2)
@@ -416,6 +415,16 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream('public_stream_1', realm)
         self.assertTrue(stream.invite_only)
         self.assertFalse(stream.history_public_to_subscribers)
+
+        default_stream = self.make_stream('default_stream', realm=realm)
+        do_add_default_stream(default_stream)
+        params = {
+            'stream_name': orjson.dumps('default_stream').decode(),
+            'is_private': orjson.dumps(True).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{default_stream.id}", params)
+        self.assert_json_error(result, "Default streams cannot be made private.")
+        self.assertFalse(default_stream.invite_only)
 
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
         params = {
@@ -1240,7 +1249,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(subscribers, [])
 
         # It doesn't show up in the list of public streams anymore.
-        result = self.client_get("/json/streams?include_subscribed=false")
+        result = self.client_get("/json/streams", {"include_subscribed": "false"})
         public_streams = [s["name"] for s in result.json()["streams"]]
         self.assertNotIn(active_name, public_streams)
         self.assertNotIn(deactivated_stream_name, public_streams)
@@ -1771,23 +1780,17 @@ class DefaultStreamTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
 
-        # Test admin can't add unsubscribed private stream
+        # Test admin can't access unsubscribed private stream for adding.
         stream_name = "private_stream"
         stream = self.make_stream(stream_name, invite_only=True)
         self.subscribe(self.example_user('iago'), stream_name)
         result = self.client_post('/json/default_streams', dict(stream_id=stream.id))
         self.assert_json_error(result, "Invalid stream id")
 
+        # Test admin can't add subscribed private stream also.
         self.subscribe(user_profile, stream_name)
         result = self.client_post('/json/default_streams', dict(stream_id=stream.id))
-        self.assert_json_success(result)
-        self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
-
-        # Test admin can remove unsubscribed private stream
-        self.unsubscribe(user_profile, stream_name)
-        result = self.client_delete('/json/default_streams', dict(stream_id=stream.id))
-        self.assert_json_success(result)
-        self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
+        self.assert_json_error(result, "Private streams cannot be made default.")
 
     def test_guest_user_access_to_streams(self) -> None:
         user_profile = self.example_user("polonius")
@@ -1795,7 +1798,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.assertEqual(user_profile.role, UserProfile.ROLE_GUEST)
 
         # Get all the streams that Polonius has access to (subscribed + web public streams)
-        result = self.client_get('/json/streams?include_web_public=true')
+        result = self.client_get("/json/streams", {"include_web_public": "true"})
         streams = result.json()['streams']
         subscribed, unsubscribed, never_subscribed = gather_subscriptions_helper(user_profile)
         self.assertEqual(len(streams),
@@ -3856,10 +3859,7 @@ class GetStreamsTest(ZulipTestCase):
             include_public = "false",
             include_subscribed = "false",
         )
-        request_variables = urlencode(filters)
-        result = self.api_get(
-            test_bot,
-            f"/api/v1/streams?{request_variables}")
+        result = self.api_get(test_bot, "/api/v1/streams", filters)
         owner_subs = self.api_get(hamlet, "/api/v1/users/me/subscriptions")
 
         self.assert_json_success(result)
@@ -3881,11 +3881,7 @@ class GetStreamsTest(ZulipTestCase):
             include_public = "false",
             include_subscribed = "true",
         )
-        request_variables = urlencode(filters)
-        result = self.api_get(
-            test_bot,
-            f"/api/v1/streams?{request_variables}",
-        )
+        result = self.api_get(test_bot, "/api/v1/streams", filters)
 
         self.assert_json_success(result)
         json = result.json()
@@ -3904,7 +3900,8 @@ class GetStreamsTest(ZulipTestCase):
         self.subscribe(test_bot, 'private_stream')
         result = self.api_get(
             test_bot,
-            "/api/v1/streams?include_owner_subscribed=true&include_public=true&include_subscribed=false",
+            "/api/v1/streams",
+            {"include_owner_subscribed": "true", "include_public": "true", "include_subscribed": "false"},
         )
 
         self.assert_json_success(result)
@@ -3923,7 +3920,8 @@ class GetStreamsTest(ZulipTestCase):
         # the bot's subs
         result = self.api_get(
             test_bot,
-            "/api/v1/streams?include_owner_subscribed=true&include_public=true&include_subscribed=true",
+            "/api/v1/streams",
+            {"include_owner_subscribed": "true", "include_public": "true", "include_subscribed": "true"},
         )
 
         self.assert_json_success(result)
@@ -3939,18 +3937,19 @@ class GetStreamsTest(ZulipTestCase):
         self.assertEqual(actual, expected)
 
     def test_all_active_streams_api(self) -> None:
-        url = '/api/v1/streams?include_all_active=true'
+        url = "/api/v1/streams"
+        data = {"include_all_active": "true"}
 
         # Check non-superuser can't use include_all_active
         normal_user = self.example_user('cordelia')
-        result = self.api_get(normal_user, url)
+        result = self.api_get(normal_user, url, data)
         self.assertEqual(result.status_code, 400)
 
         # Even realm admin users can't see all
         # active streams (without additional privileges).
         admin_user = self.example_user('iago')
         self.assertTrue(admin_user.is_realm_admin)
-        result = self.api_get(admin_user, url)
+        result = self.api_get(admin_user, url, data)
         self.assertEqual(result.status_code, 400)
 
         '''
@@ -3966,7 +3965,7 @@ class GetStreamsTest(ZulipTestCase):
         super_user.is_api_super_user = True
         super_user.save()
 
-        result = self.api_get(super_user, url)
+        result = self.api_get(super_user, url, data)
         self.assert_json_success(result)
         json = result.json()
 
@@ -3990,7 +3989,7 @@ class GetStreamsTest(ZulipTestCase):
         self.login_user(user)
 
         # Check it correctly lists the user's subs with include_public=false
-        result = self.api_get(user, "/api/v1/streams?include_public=false")
+        result = self.api_get(user, "/api/v1/streams", {"include_public": "false"})
         result2 = self.api_get(user, "/api/v1/users/me/subscriptions")
 
         self.assert_json_success(result)
@@ -4011,8 +4010,7 @@ class GetStreamsTest(ZulipTestCase):
             include_public = "true",
             include_subscribed = "false"
         )
-        request_variables = urlencode(filters)
-        result = self.api_get(user, f"/api/v1/streams?{request_variables}")
+        result = self.api_get(user, "/api/v1/streams", filters)
         self.assert_json_success(result)
 
         json = result.json()
@@ -4026,14 +4024,14 @@ class StreamIdTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.login_user(user)
         stream = gather_subscriptions(user)[0][0]
-        result = self.client_get("/json/get_stream_id?stream={}".format(stream['name']))
+        result = self.client_get("/json/get_stream_id", {"stream": stream['name']})
         self.assert_json_success(result)
         self.assertEqual(result.json()['stream_id'], stream['stream_id'])
 
     def test_get_stream_id_wrong_name(self) -> None:
         user = self.example_user('hamlet')
         self.login_user(user)
-        result = self.client_get("/json/get_stream_id?stream=wrongname")
+        result = self.client_get("/json/get_stream_id", {"stream": "wrongname"})
         self.assert_json_error(result, "Invalid stream name 'wrongname'")
 
 class InviteOnlyStreamTest(ZulipTestCase):

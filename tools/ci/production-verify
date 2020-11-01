@@ -71,7 +71,7 @@ su zulip -c /home/zulip/deployments/current/scripts/lib/queue_workers.py | sort 
 if ! diff /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt >/dev/null; then
     set +x
     echo "FAILURE: Runnable queue processors declared in zerver/worker/queue_processors.py "
-    echo "do not match those in puppet/zulip/manifests/base.pp"
+    echo "do not match those in puppet/zulip/manifests/profile/base.pp"
     echo "See https://zulip.readthedocs.io/en/latest/subsystems/queuing.html for details."
     echo
     diff -ur /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt
@@ -105,7 +105,7 @@ echo
 echo "Now running additional Nagios tests"
 echo
 if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors \
-    || ! su zulip -c /usr/lib/nagios/plugins/zulip_postgres_appdb/check_fts_update_log; then # || \
+    || ! su zulip -c /usr/lib/nagios/plugins/zulip_postgresql/check_fts_update_log; then # || \
     #   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure"; then
     set +x
     echo

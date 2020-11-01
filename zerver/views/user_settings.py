@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional
 
+import pytz
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.core.exceptions import ValidationError
@@ -40,7 +41,6 @@ from zerver.lib.rate_limiter import RateLimited
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
-from zerver.lib.timezone import get_all_timezones
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_int, check_int_in, check_string, check_string_in
 from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
@@ -158,7 +158,6 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 
     return json_success(result)
 
-all_timezones = set(get_all_timezones())
 emojiset_choices = {emojiset['key'] for emojiset in UserProfile.emojiset_choices()}
 
 @human_users_only
@@ -179,7 +178,7 @@ def update_display_settings_backend(
             emojiset_choices), default=None),
         demote_inactive_streams: Optional[int]=REQ(validator=check_int_in(
             UserProfile.DEMOTE_STREAMS_CHOICES), default=None),
-        timezone: Optional[str]=REQ(validator=check_string_in(all_timezones),
+        timezone: Optional[str]=REQ(validator=check_string_in(pytz.all_timezones_set),
                                     default=None)) -> HttpResponse:
 
     # We can't use REQ for this widget because

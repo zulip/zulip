@@ -1548,13 +1548,34 @@ run_test("on_events", () => {
         assert(compose_file_input_clicked);
     })();
 
-    (function test_video_link_compose_clicked() {
-        page_params.jitsi_server_url = "https://meet.jit.si";
-
-        let syntax_to_insert;
+    (function test_no_provider_video_link_compose_clicked() {
         let called = false;
 
         const textarea = $.create("target-stub");
+
+        const ev = {
+            preventDefault: noop,
+            target: {
+                to_$: () => textarea,
+            },
+        };
+
+        compose_ui.insert_syntax_and_focus = function () {
+            called = true;
+        };
+
+        const handler = $("body").get_on_handler("click", ".video_link");
+        $("#compose-textarea").val("");
+
+        handler(ev);
+        assert(!called);
+    })();
+
+    (function test_jitsi_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const textarea = $.create("jitsi-target-stub");
 
         const ev = {
             preventDefault: noop,
@@ -1571,24 +1592,45 @@ run_test("on_events", () => {
         const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
 
-        handler(ev);
-        assert(!called);
-
         page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.jitsi_meet.id;
-        handler(ev);
-
-        // video link ids consist of 15 random digits
-        let video_link_regex = /\[translated: Click to join video call]\(https:\/\/meet.jit.si\/\d{15}\)/;
-        assert.match(syntax_to_insert, video_link_regex);
 
         page_params.jitsi_server_url = null;
-        called = false;
         handler(ev);
         assert(!called);
+
+        page_params.jitsi_server_url = "https://meet.jit.si";
+        handler(ev);
+        // video link ids consist of 15 random digits
+        const video_link_regex = /\[translated: Click to join video call]\(https:\/\/meet.jit.si\/\d{15}\)/;
+        assert(called);
+        assert.match(syntax_to_insert, video_link_regex);
+    })();
+
+    (function test_zoom_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const textarea = $.create("zoom-target-stub");
+
+        const ev = {
+            preventDefault: noop,
+            target: {
+                to_$: () => textarea,
+            },
+        };
+
+        compose_ui.insert_syntax_and_focus = function (syntax) {
+            syntax_to_insert = syntax;
+            called = true;
+        };
+
+        const handler = $("body").get_on_handler("click", ".video_link");
+        $("#compose-textarea").val("");
 
         page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.zoom.id;
+        page_params.has_zoom_token = false;
 
         window.open = function (url) {
             assert(url.endsWith("/calls/zoom/register"));
@@ -1601,11 +1643,35 @@ run_test("on_events", () => {
         channel.post = function (payload) {
             assert.equal(payload.url, "/json/calls/zoom/create");
             payload.success({url: "example.zoom.com"});
+            return {abort: () => {}};
         };
 
         handler(ev);
-        video_link_regex = /\[translated: Click to join video call]\(example\.zoom\.com\)/;
+        const video_link_regex = /\[translated: Click to join video call]\(example\.zoom\.com\)/;
+        assert(called);
         assert.match(syntax_to_insert, video_link_regex);
+    })();
+
+    (function test_bbb_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const textarea = $.create("bbb-target-stub");
+
+        const ev = {
+            preventDefault: noop,
+            target: {
+                to_$: () => textarea,
+            },
+        };
+
+        compose_ui.insert_syntax_and_focus = function (syntax) {
+            syntax_to_insert = syntax;
+            called = true;
+        };
+
+        const handler = $("body").get_on_handler("click", ".video_link");
+        $("#compose-textarea").val("");
 
         page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.big_blue_button.id;
@@ -1619,7 +1685,8 @@ run_test("on_events", () => {
         };
 
         handler(ev);
-        video_link_regex = /\[translated: Click to join video call]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
+        const video_link_regex = /\[translated: Click to join video call]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
+        assert(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
 
@@ -1861,11 +1928,14 @@ run_test("test_video_chat_button_toggle", () => {
     stub_out_video_calls();
     page_params.realm_video_chat_provider =
         page_params.realm_available_video_chat_providers.jitsi_meet.id;
+    page_params.jitsi_server_url = null;
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), false);
 
     reset_jquery();
     stub_out_video_calls();
+    page_params.realm_video_chat_provider =
+        page_params.realm_available_video_chat_providers.jitsi_meet.id;
     page_params.jitsi_server_url = "https://meet.jit.si";
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), true);

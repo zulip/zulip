@@ -586,7 +586,7 @@ exports.end_message_row_edit = function (row) {
         currently_editing_messages.delete(message.id);
         current_msg_list.hide_edit_message(row);
 
-        compose.abort_zoom(message.id);
+        compose.abort_video_callbacks(message.id);
     }
     condense.show_message_expander(row);
     row.find(".message_reactions").show();

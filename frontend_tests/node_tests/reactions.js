@@ -59,9 +59,15 @@ const cali = {
     user_id: 7,
     full_name: "Cali",
 };
+const alexus = {
+    email: "alexus@example.com",
+    user_id: 8,
+    full_name: "Alexus",
+};
 people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(cali);
+people.add_active_user(alexus);
 
 const message = {
     id: 1001,
@@ -69,6 +75,18 @@ const message = {
         {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
         {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f642"},
         {emoji_name: "frown", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f641"},
+
+        {emoji_name: "tada", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f389"},
+        {emoji_name: "tada", user_id: 8, reaction_type: "unicode_emoji", emoji_code: "1f389"},
+
+        {emoji_name: "rocket", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f680"},
+        {emoji_name: "rocket", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f680"},
+        {emoji_name: "rocket", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f680"},
+
+        {emoji_name: "wave", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f44b"},
+        {emoji_name: "wave", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f44b"},
+        {emoji_name: "wave", user_id: 8, reaction_type: "unicode_emoji", emoji_code: "1f44b"},
+
         {
             emoji_name: "inactive_realm_emoji",
             user_id: 5,
@@ -147,7 +165,7 @@ run_test("basics", () => {
             local_id: "unicode_emoji,1f641",
             count: 1,
             user_ids: [7],
-            label: "Cali reacted with :frown:",
+            label: "translated: Cali reacted with :frown:",
             emoji_alt_code: false,
             class: "message_reaction",
         },
@@ -158,7 +176,7 @@ run_test("basics", () => {
             local_id: "realm_emoji,992",
             count: 1,
             user_ids: [5],
-            label: "You (click to remove) reacted with :inactive_realm_emoji:",
+            label: "translated: You (click to remove) reacted with :inactive_realm_emoji:",
             emoji_alt_code: false,
             is_realm_emoji: true,
             url: "TBD",
@@ -171,9 +189,43 @@ run_test("basics", () => {
             local_id: "unicode_emoji,1f642",
             count: 2,
             user_ids: [5, 6],
-            label: "You (click to remove) and Bob van Roberts reacted with :smile:",
+            label: "translated: You (click to remove) and Bob van Roberts reacted with :smile:",
             emoji_alt_code: false,
             class: "message_reaction reacted",
+        },
+        {
+            emoji_name: "tada",
+            reaction_type: "unicode_emoji",
+            emoji_code: "1f389",
+            local_id: "unicode_emoji,1f389",
+            count: 2,
+            user_ids: [7, 8],
+            label: "translated: Cali and Alexus reacted with :tada:",
+            emoji_alt_code: false,
+            class: "message_reaction",
+        },
+        {
+            emoji_name: "rocket",
+            reaction_type: "unicode_emoji",
+            emoji_code: "1f680",
+            local_id: "unicode_emoji,1f680",
+            count: 3,
+            user_ids: [5, 6, 7],
+            label:
+                "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
+            emoji_alt_code: false,
+            class: "message_reaction reacted",
+        },
+        {
+            emoji_name: "wave",
+            reaction_type: "unicode_emoji",
+            emoji_code: "1f44b",
+            local_id: "unicode_emoji,1f44b",
+            count: 3,
+            user_ids: [6, 7, 8],
+            label: "translated: Bob van Roberts, Cali and Alexus reacted with :wave:",
+            emoji_alt_code: false,
+            class: "message_reaction",
         },
     ];
     assert.deepEqual(result, expected_result);
@@ -303,7 +355,7 @@ run_test("emoji_reaction_title", () => {
 
     assert.equal(
         reactions.get_reaction_title_data(message_id, local_id),
-        "You (click to remove) and Bob van Roberts reacted with :smile:",
+        "translated: You (click to remove) and Bob van Roberts reacted with :smile:",
     );
 });
 
@@ -336,7 +388,7 @@ run_test("add_and_remove_reaction", () => {
         assert.equal(data.class, "message_reaction reacted");
         assert(!data.is_realm_emoji);
         assert.equal(data.message_id, 1001);
-        assert.equal(data.label, "You (click to remove) reacted with :8ball:");
+        assert.equal(data.label, "translated: You (click to remove) reacted with :8ball:");
         return "<new reaction html>";
     });
 
@@ -354,7 +406,7 @@ run_test("add_and_remove_reaction", () => {
     const local_id = "unicode_emoji,1f3b1";
     assert.equal(
         reactions.get_reaction_title_data(alice_event.message_id, local_id),
-        "You (click to remove) reacted with :8ball:",
+        "translated: You (click to remove) reacted with :8ball:",
     );
 
     // Running add_reaction again should not result in any changes
@@ -390,7 +442,7 @@ run_test("add_and_remove_reaction", () => {
     assert.equal(count_element.text(), "1");
 
     let current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
-    assert.deepEqual(current_emojis, ["smile", "inactive_realm_emoji", "8ball"]);
+    assert.deepEqual(current_emojis, ["smile", "rocket", "inactive_realm_emoji", "8ball"]);
 
     // Next, remove Alice's reaction, which exercises removing the
     // emoji icon.
@@ -408,7 +460,7 @@ run_test("add_and_remove_reaction", () => {
     assert(!removed);
 
     current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
-    assert.deepEqual(current_emojis, ["smile", "inactive_realm_emoji"]);
+    assert.deepEqual(current_emojis, ["smile", "rocket", "inactive_realm_emoji"]);
 
     // Now add Cali's realm_emoji reaction.
     const cali_event = {
@@ -671,7 +723,15 @@ run_test("remove last user", () => {
         );
     }
 
-    assert_names(["smile", "frown", "inactive_realm_emoji", "realm_emoji"]);
+    assert_names([
+        "smile",
+        "frown",
+        "tada",
+        "rocket",
+        "wave",
+        "inactive_realm_emoji",
+        "realm_emoji",
+    ]);
 
     const event = {
         reaction_type: "unicode_emoji",
@@ -682,7 +742,7 @@ run_test("remove last user", () => {
     };
     reactions.remove_reaction(event);
 
-    assert_names(["smile", "inactive_realm_emoji", "realm_emoji"]);
+    assert_names(["smile", "tada", "rocket", "wave", "inactive_realm_emoji", "realm_emoji"]);
 });
 
 run_test("local_reaction_id", () => {

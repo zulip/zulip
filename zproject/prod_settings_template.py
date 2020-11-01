@@ -406,7 +406,8 @@ ENABLE_FILE_LINKS = False
 LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 #S3_AUTH_UPLOADS_BUCKET = ""
 #S3_AVATAR_BUCKET = ""
-#S3_REGION = ""
+#S3_REGION = None
+#S3_ENDPOINT_URL = None
 
 # Maximum allowed size of uploaded files, in megabytes.  DO NOT SET
 # ABOVE 80MB.  The file upload implementation doesn't support chunked
@@ -434,7 +435,7 @@ ENABLE_GRAVATAR = True
 # and uncomment the following line.
 #DEFAULT_AVATAR_URI = '/local-static/default-avatar.png'
 
-# To access an external Postgres database you should define the host name in
+# To access an external PostgreSQL database you should define the host name in
 # REMOTE_POSTGRES_HOST, port in REMOTE_POSTGRES_PORT, password in the secrets file in the
 # property postgres_password, and the SSL connection mode in REMOTE_POSTGRES_SSLMODE
 # Valid values for REMOTE_POSTGRES_SSLMODE are documented in the
@@ -474,7 +475,7 @@ ENABLE_GRAVATAR = True
 # The email gateway integration supports sending messages into Zulip
 # by sending an email.
 # For details, see the documentation:
-#   https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
+#   https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 EMAIL_GATEWAY_PATTERN = ""
 
 # If you are using polling, edit the IMAP settings below:

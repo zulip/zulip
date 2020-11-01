@@ -869,6 +869,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         # Now, delete the message the normal way
         do_delete_messages(user_profile.realm, [message])
 
+        # This mock.patch() should be assertNoLogs once that feature
+        # is added to Python.
         with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
                 mock.patch('logging.error') as mock_logging_error, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
@@ -1648,11 +1650,11 @@ class Result:
 
 class TestSendToPushBouncer(ZulipTestCase):
     @mock.patch('requests.request', return_value=Result(status=500))
-    @mock.patch('logging.warning')
-    def test_500_error(self, mock_request: mock.MagicMock, mock_warning: mock.MagicMock) -> None:
-        with self.assertRaises(PushNotificationBouncerRetryLaterError):
-            result, failed = send_to_push_bouncer('register', 'register', {'data': 'true'})
-        mock_warning.assert_called_once()
+    def test_500_error(self, mock_request: mock.MagicMock) -> None:
+        with self.assertLogs(level="WARNING") as m:
+            with self.assertRaises(PushNotificationBouncerRetryLaterError):
+                send_to_push_bouncer('register', 'register', {'data': 'true'})
+            self.assertEqual(m.output, ["WARNING:root:Received 500 from push notification bouncer"])
 
     @mock.patch('requests.request', return_value=Result(status=400))
     def test_400_error(self, mock_request: mock.MagicMock) -> None:

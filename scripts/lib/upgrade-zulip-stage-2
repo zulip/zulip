@@ -9,6 +9,7 @@ import glob
 import hashlib
 import logging
 import os
+import re
 import subprocess
 import sys
 import time
@@ -32,7 +33,6 @@ from scripts.lib.zulip_tools import (
     get_config_file,
     get_tornado_ports,
     parse_os_release,
-    set_config,
     su_to_zulip,
 )
 
@@ -112,21 +112,21 @@ def shutdown_server() -> None:
 # postgresql.version is required for database servers, but wasn't
 # previously; fill it in based on what the OS provides.
 if os.path.exists('/etc/init.d/postgresql'):
-    postgres_version = get_config(config_file, 'postgresql', 'version')
-    if not postgres_version:
-        default_postgres_version = {
+    postgresql_version = get_config(config_file, 'postgresql', 'version')
+    if not postgresql_version:
+        default_postgresql_version = {
             ('debian', '10'): '11',
             ('ubuntu', '18.04'): '10',
             ('ubuntu', '20.04'): '12',
             ('centos', '7'): '11',
         }
-        if (vendor, os_version) in default_postgres_version:
-            postgres_version = default_postgres_version[(vendor, os_version)]
+        if (vendor, os_version) in default_postgresql_version:
+            postgresql_version = default_postgresql_version[(vendor, os_version)]
         else:
             error_desupported_os(vendor, os_version)
-        set_config(config_file, 'postgresql', 'version', postgres_version)
-        with open('/etc/zulip/zulip.conf', 'w') as zulipconf:
-            config_file.write(zulipconf)
+        subprocess.check_call([
+            "crudini", "--set", "/etc/zulip/zulip.conf",
+            "postgresql", "version", postgresql_version])
 
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
@@ -232,7 +232,7 @@ migrations_needed = False
 if not args.skip_migrations:
     logging.info("Checking for needed migrations")
     migrations_output = subprocess.check_output(["./manage.py", "showmigrations"],
-                                                preexec_fn=su_to_zulip).decode("utf-8")
+                                                preexec_fn=su_to_zulip, universal_newlines=True)
     need_create_large_indexes = False
     for ln in migrations_output.split("\n"):
         line_str = ln.strip()
@@ -255,6 +255,25 @@ if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
     # Puppet changes, to minimize risk of issues due to inconsistent
     # state.
     shutdown_server()
+
+# Adjust Puppet class names for the manifest renames in the 4.0 release
+class_renames = {
+    'zulip::app_frontend': 'zulip::profile::app_frontend',
+    'zulip::dockervoyager': 'zulip::profile::docker',
+    'zulip::memcached': 'zulip::profile::memcached',
+    'zulip::postgres_appdb_tuned': 'zulip::profile::postgresql',
+    'zulip::postgres_backups': 'zulip::postgresql_backups',
+    'zulip::rabbit': 'zulip::profile::rabbitmq',
+    'zulip::thumbor': 'zulip::profile::thumbor',
+    'zulip::voyager': 'zulip::profile::standalone',
+}
+classes = re.split(r'\s*,\s*', get_config(config_file, 'machine', 'puppet_classes'))
+new_classes = [class_renames.get(c, c) for c in classes if c != 'zulip::base']
+if classes != new_classes:
+    logging.info("Adjusting Puppet classes for renames...")
+    subprocess.check_call(["crudini", "--set", "/etc/zulip/zulip.conf",
+                           "machine", "puppet_classes", ", ".join(new_classes)])
+
 
 if not args.skip_puppet:
     logging.info("Applying Puppet changes...")

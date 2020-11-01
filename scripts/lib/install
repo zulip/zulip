@@ -28,9 +28,9 @@ Options:
       install process; used when this command is run once in a highly-controlled
       environment to produce an image which is used elsewhere.  Uncommon.
 
-  --postgres-version=12
-      Sets the version of Postgres that will be installed.
-  --postgres-missing-dictionaries
+  --postgresql-version=12
+      Sets the version of PostgreSQL that will be installed.
+  --postgresql-missing-dictionaries
       Set postgresql.missing_dictionaries, which alters the initial database.  Use with
       cloud managed databases like RDS.  Conflicts with --no-overwrite-settings.
   --no-init-db
@@ -47,7 +47,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgres-version:,postgres-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -81,13 +81,13 @@ while true; do
             shift
             ;;
 
-        --postgres-version)
-            POSTGRES_VERSION="$2"
+        --postgresql-version)
+            POSTGRESQL_VERSION="$2"
             shift
             shift
             ;;
-        --postgres-missing-dictionaries)
-            POSTGRES_MISSING_DICTIONARIES=1
+        --postgresql-missing-dictionaries)
+            POSTGRESQL_MISSING_DICTIONARIES=1
             shift
             ;;
         --no-init-db)
@@ -121,12 +121,13 @@ fi
 read -r -a APT_OPTIONS <<<"${APT_OPTIONS:-}"
 # Install additional packages.
 read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
-# Comma-separated list of Puppet manifests to install.  default is
-# zulip::voyager for an all-in-one system or zulip::dockervoyager for
-# Docker.  Use e.g. zulip::app_frontend for a Zulip frontend server.
-PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
+# Comma-separated list of Puppet manifests to install.  The default is
+# zulip::profile::standalone for an all-in-one system or
+# zulip::profile::docker for Docker.  Use
+# e.g. zulip::profile::app_frontend for a Zulip frontend server.
+PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::standalone}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
-POSTGRES_VERSION="${POSTGRES_VERSION:-12}"
+POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-12}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     set +x
@@ -136,9 +137,9 @@ if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     exit 1
 fi
 
-if [ -n "$POSTGRES_MISSING_DICTIONARIES" ] && [ -n "$NO_OVERWRITE_SETTINGS" ]; then
+if [ -n "$POSTGRESQL_MISSING_DICTIONARIES" ] && [ -n "$NO_OVERWRITE_SETTINGS" ]; then
     set +x
-    echo "error: --postgres-missing-dictionaries and --no-overwrite-settings are incompatible" >&2
+    echo "error: --postgresql-missing-dictionaries and --no-overwrite-settings are incompatible" >&2
     echo >&2
     usage >&2
     exit 1
@@ -232,13 +233,13 @@ EOF
 fi
 
 case ",$PUPPET_CLASSES," in
-    *,zulip::voyager,* | *,zulip::postgres_appdb_tuned,*)
+    *,zulip::profile::standalone,* | *,zulip::profile::postgresql,*)
         if [ "$package_system" = apt ]; then
-            # We're going to install Postgres from the Postgres apt
-            # repository; this may conflict with the existing Postgres.
+            # We're going to install PostgreSQL from the PostgreSQL apt
+            # repository; this may conflict with the existing PostgreSQL.
             OTHER_PG="$(dpkg --get-selections \
                 | grep -E '^postgresql-[0-9]+\s+install$' \
-                | grep -v "^postgresql-$POSTGRES_VERSION\b" \
+                | grep -v "^postgresql-$POSTGRESQL_VERSION\b" \
                 | cut -f 1)" || true
             if [ -n "$OTHER_PG" ]; then
                 INDENTED="${OTHER_PG//$'\n'/$'\n'    }"
@@ -249,7 +250,7 @@ The following PostgreSQL servers were found to already be installed:
 
     $INDENTED
 
-Zulip needs to install PostgreSQL $POSTGRES_VERSION, but does not wish
+Zulip needs to install PostgreSQL $POSTGRESQL_VERSION, but does not wish
 to uninstall existing databases in order to do so.  Remove all other
 PostgreSQL servers manually before running the installer:
 
@@ -286,7 +287,7 @@ elif [ "$package_system" = yum ]; then
 fi
 
 # Check early for missing SSL certificates
-if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && [ -z "$USE_CERTBOT""$SELF_SIGNED_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
+if [ "$PUPPET_CLASSES" = "zulip::profile::standalone" ] && [ -z "$USE_CERTBOT""$SELF_SIGNED_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
     set +x
     cat <<EOF
 
@@ -389,14 +390,14 @@ puppet_classes = $PUPPET_CLASSES
 deploy_type = production
 
 [postgresql]
-version = $POSTGRES_VERSION
+version = $POSTGRESQL_VERSION
 EOF
 
     if [ -n "$USE_CERTBOT" ]; then
         crudini --set /etc/zulip/zulip.conf certbot auto_renew yes
     fi
 
-    if [ -n "$POSTGRES_MISSING_DICTIONARIES" ]; then
+    if [ -n "$POSTGRESQL_MISSING_DICTIONARIES" ]; then
         crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
     fi
 
@@ -405,9 +406,9 @@ EOF
         --classfile=/var/lib/puppet/classes.txt \
         >/dev/null
 
-    # We only need the Postgres version setting on database hosts; but
+    # We only need the PostgreSQL version setting on database hosts; but
     # we don't know if this is a database host until we have the catalog summary.
-    if ! has_class "zulip::postgres_common" || [ "$package_system" != apt ]; then
+    if ! has_class "zulip::postgresql_common" || [ "$package_system" != apt ]; then
         crudini --del /etc/zulip/zulip.conf postgresql
     fi
 
@@ -458,7 +459,7 @@ elif [ "$package_system" = yum ]; then
     :
 fi
 
-if has_class "zulip::nginx" && ! has_class "zulip::dockervoyager"; then
+if has_class "zulip::nginx" && ! has_class "zulip::profile::docker"; then
     # Check nginx was configured properly now that we've installed it.
     # Most common failure mode is certs not having been installed.
     if ! nginx -t; then
@@ -479,7 +480,7 @@ EOF
     fi
 fi
 
-if has_class "zulip::rabbit"; then
+if has_class "zulip::profile::rabbitmq"; then
     if ! rabbitmqctl status >/dev/null; then
         set +x
         cat <<EOF
@@ -495,8 +496,8 @@ EOF
     "$ZULIP_PATH"/scripts/setup/configure-rabbitmq
 fi
 
-if has_class "zulip::postgres_common" && [ -z "$NO_INIT_DB" ]; then
-    "$ZULIP_PATH"/scripts/setup/postgres-init-db
+if has_class "zulip::postgresql_common" && [ -z "$NO_INIT_DB" ]; then
+    "$ZULIP_PATH"/scripts/setup/postgresql-init-db
 fi
 
 if has_class "zulip::app_frontend_base"; then
@@ -525,7 +526,7 @@ if [ -n "$NO_INIT_DB" ]; then
  Success!
 
  Stopping because --no-init-db was passed.
- To complete the installation, configure Postgres and then run:
+ To complete the installation, configure PostgreSQL and then run:
 
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
    su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'

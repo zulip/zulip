@@ -78,7 +78,7 @@ for msg in result['messages']:
     messages.append(msg)
 
 filename = f"zulip-{options.stream}.json"
-with open(filename, 'wb') as f:
-    f.write(json.dumps(messages, indent=0, sort_keys=False).encode('utf-8'))
+with open(filename, 'w') as f:
+    json.dump(messages, f, indent=0, sort_keys=False)
 print(f"{len(messages)} messages exported to {filename}")
 sys.exit(0)

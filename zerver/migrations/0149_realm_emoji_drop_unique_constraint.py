@@ -55,7 +55,7 @@ class S3Uploader(Uploader):
         super().__init__()
         session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
         self.bucket_name = settings.S3_AVATAR_BUCKET
-        self.bucket = session.resource('s3').Bucket(self.bucket_name)
+        self.bucket = session.resource('s3', region_name=settings.S3_REGION, endpoint_url=settings.S3_ENDPOINT_URL).Bucket(self.bucket_name)
 
     def copy_files(self, src_key: str, dst_key: str) -> None:
         source = dict(Bucket=self.bucket_name, Key=src_key)

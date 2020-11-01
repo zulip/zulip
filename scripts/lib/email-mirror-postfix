@@ -3,7 +3,7 @@
 """Postfix implementation of the incoming email gateway's helper for
 forwarding emails into Zulip.
 
-https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
+https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 
 The email gateway supports two major modes of operation: An email
 server (using Postfix) where the email address configured in
@@ -81,7 +81,7 @@ MAX_ALLOWED_PAYLOAD = 25 * 1024 * 1024
 def process_response_error(e: HTTPError) -> None:
     if e.code == 400:
         response_content = e.read()
-        response_data = json.loads(response_content.decode('utf8'))
+        response_data = json.loads(response_content)
         print(response_data['msg'])
         exit(posix.EX_NOUSER)
     else:
@@ -113,6 +113,10 @@ def send_email_mirror(
         # Don't try to verify SSL when posting to 127.0.0.1; it won't
         # work, and connections to 127.0.0.1 are secure without SSL.
         verify_ssl = False
+
+    # Because this script is run from postfix, it does not have any
+    # http proxy environment variables set which might interfere with
+    # access to localhost.
 
     context = None
     if not verify_ssl:

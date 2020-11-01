@@ -35,7 +35,7 @@ const me = {
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-    timezone: "US/Pacific",
+    timezone: "America/Los_Angeles",
     is_admin: false,
     is_guest: false,
     is_bot: false,
@@ -387,7 +387,7 @@ run_test("bot_custom_profile_data", () => {
 
 run_test("user_timezone", () => {
     const expected_pref = {
-        timezone: "US/Pacific",
+        timezone: "America/Los_Angeles",
         format: "H:mm",
     };
 
@@ -630,7 +630,7 @@ run_test("message_methods", () => {
                     value: "Field value",
                 },
             },
-            timezone: "US/Pacific",
+            timezone: "America/Los_Angeles",
             user_id: 30,
         },
     ]);

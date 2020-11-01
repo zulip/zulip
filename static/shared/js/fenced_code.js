@@ -55,22 +55,17 @@ export function wrap_code(code, lang) {
 }
 
 function wrap_quote(text) {
-    const paragraphs = text.split("\n\n");
+    const paragraphs = text.split("\n");
     const quoted_paragraphs = [];
 
     // Prefix each quoted paragraph with > at the
     // beginning of each line
     for (const paragraph of paragraphs) {
         const lines = paragraph.split("\n");
-        quoted_paragraphs.push(
-            lines
-                .filter((line) => line !== "")
-                .map((line) => "> " + line)
-                .join("\n"),
-        );
+        quoted_paragraphs.push(lines.map((line) => "> " + line).join("\n"));
     }
 
-    return quoted_paragraphs.join("\n\n");
+    return quoted_paragraphs.join("\n");
 }
 
 function wrap_tex(tex) {

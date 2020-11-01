@@ -15,5 +15,5 @@ def diff_strings(output: str, expected_output: str) -> str:
         raise DiffException(msg)
 
     command = ['node', mdiff_path, output, expected_output]
-    diff = subprocess.check_output(command).decode('utf-8')
+    diff = subprocess.check_output(command, universal_newlines=True)
     return diff

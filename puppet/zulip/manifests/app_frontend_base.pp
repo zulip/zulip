@@ -1,7 +1,6 @@
 # Minimal configuration to run a Zulip application server.
 # Default nginx configuration is included in extension app_frontend.pp.
 class zulip::app_frontend_base {
-  include zulip::common
   include zulip::nginx
   include zulip::sasl_modules
   include zulip::supervisor
@@ -12,7 +11,7 @@ class zulip::app_frontend_base {
     # shell.  This is not necessary on CentOS because the PostgreSQL
     # package already includes the client.  This may get us a more
     # recent client than the database server is configured to be,
-    # ($zulip::postgres_common::version), but they're compatible.
+    # ($zulip::postgresql_common::version), but they're compatible.
     zulip::safepackage { 'postgresql-client': ensure => 'installed' }
   }
   # For Slack import
@@ -65,7 +64,7 @@ class zulip::app_frontend_base {
   # This determines whether we run queue processors multithreaded or
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.
-  $queues_multiprocess = $zulip::base::total_memory_mb > 3500
+  $queues_multiprocess = $zulip::common::total_memory_mb > 3500
   $queues = [
     'deferred_work',
     'digest_emails',
@@ -89,6 +88,13 @@ class zulip::app_frontend_base {
     $uwsgi_default_processes = 4
   }
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
+  $proxy_host = zulipconf('http_proxy', 'host', '')
+  $proxy_port = zulipconf('http_proxy', 'port', '')
+  if $proxy_host != '' and $proxy_port != '' {
+    $proxy = "http://${proxy_host}:${proxy_port}"
+  } else {
+    $proxy = ''
+  }
   file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
     require => [Package[supervisor], Exec['stage_updated_sharding']],

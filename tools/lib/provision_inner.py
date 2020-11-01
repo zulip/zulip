@@ -252,7 +252,7 @@ def main(options: argparse.Namespace) -> int:
 
         dev_template_db_status = DEV_DATABASE.template_status()
         if options.is_force or dev_template_db_status == 'needs_rebuild':
-            run(["tools/setup/postgres-init-dev-db"])
+            run(["tools/setup/postgresql-init-dev-db"])
             if options.skip_dev_db_build:
                 # We don't need to build the manual development
                 # database on CircleCI for running tests, so we can
@@ -271,7 +271,7 @@ def main(options: argparse.Namespace) -> int:
 
         test_template_db_status = TEST_DATABASE.template_status()
         if options.is_force or test_template_db_status == 'needs_rebuild':
-            run(["tools/setup/postgres-init-test-db"])
+            run(["tools/setup/postgresql-init-test-db"])
             run(["tools/rebuild-test-database"])
             TEST_DATABASE.write_new_db_digest()
         elif test_template_db_status == 'run_migrations':

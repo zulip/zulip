@@ -1,6 +1,6 @@
 import base64
 import struct
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 # This file is adapted from samples/shellinabox/ssh-krb-wrapper in
 # https://github.com/davidben/webathena, which has the following
@@ -27,16 +27,6 @@ from typing import Any, Dict, List, Optional, Union
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-
-def force_bytes(s: Union[str, bytes], encoding: str='utf-8') -> bytes:
-    """converts a string to binary string"""
-    if isinstance(s, bytes):
-        return s
-    elif isinstance(s, str):
-        return s.encode(encoding)
-    else:
-        raise TypeError("force_bytes expects a string type")
 
 # Some DER encoding stuff. Bleh. This is because the ccache contains a
 # DER-encoded krb5 Ticket structure, whereas Webathena deserializes
@@ -141,8 +131,8 @@ def ccache_counted_octet_string(data: bytes) -> bytes:
 
 def ccache_principal(name: Dict[str, str], realm: str) -> bytes:
     header = struct.pack("!II", name["nameType"], len(name["nameString"]))
-    return (header + ccache_counted_octet_string(force_bytes(realm)) +
-            b"".join(ccache_counted_octet_string(force_bytes(c))
+    return (header + ccache_counted_octet_string(realm.encode()) +
+            b"".join(ccache_counted_octet_string(c.encode())
                      for c in name["nameString"]))
 
 def ccache_key(key: Dict[str, str]) -> bytes:

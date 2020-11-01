@@ -12,7 +12,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import HttpRequest
 from django.urls import reverse
-from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
@@ -227,7 +226,7 @@ class LoggingSetPasswordForm(SetPasswordForm):
 def generate_password_reset_url(user_profile: UserProfile,
                                 token_generator: PasswordResetTokenGenerator) -> str:
     token = token_generator.make_token(user_profile)
-    uid = urlsafe_base64_encode(force_bytes(user_profile.id))
+    uid = urlsafe_base64_encode(str(user_profile.id).encode())
     endpoint = reverse('password_reset_confirm',
                        kwargs=dict(uidb64=uid, token=token))
     return f"{user_profile.realm.uri}{endpoint}"

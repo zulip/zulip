@@ -1773,7 +1773,7 @@ div.focused_table {
     }
 
     .search_button,
-    .search_button[disabled]:hover {
+    .search_button:disabled:hover {
         position: absolute;
         right: 35px;
         top: 6px;
@@ -1794,7 +1794,7 @@ div.focused_table {
         color: hsl(0, 0%, 0%);
     }
 
-    .search_button[disabled] {
+    .search_button:disabled {
         visibility: hidden;
     }
 
@@ -2838,7 +2838,7 @@ select.inline_select_topic_edit {
         }
 
         .search_button,
-        .search_button[disabled]:hover {
+        .search_button:disabled:hover {
             top: 0;
         }
     }

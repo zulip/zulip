@@ -5,6 +5,7 @@ import time
 import urllib
 from typing import Any, List, Optional, Sequence
 from unittest.mock import MagicMock, patch
+from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
@@ -1643,8 +1644,8 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         url = "/accounts/register/"
         response = self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('login') + '?email=' +
-                         urllib.parse.quote_plus(email))
+        self.assertEqual(response.url, reverse('login') + '?' +
+                         urlencode({"email": email}))
 
 class InvitationsTestCase(InviteUserBase):
     def test_do_get_user_invites(self) -> None:
@@ -4067,7 +4068,7 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/')
 
-            result = self.client_get("/en/login/?next=/upgrade/")
+            result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
@@ -4079,7 +4080,7 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/')
 
-            result = self.client_get("/en/login/?next=/upgrade/")
+            result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
@@ -4091,7 +4092,7 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/')
 
-            result = self.client_get("/en/login/?next=/upgrade/")
+            result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
@@ -4160,7 +4161,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 0)
 
         # Just for coverage on perhaps-unnecessary validation code.
-        result = self.client_get('/accounts/find/?emails=invalid')
+        result = self.client_get("/accounts/find/", {"emails": "invalid"})
         self.assertEqual(result.status_code, 200)
 
     def test_find_team_zero_emails(self) -> None:
@@ -4336,7 +4337,7 @@ class RealmRedirectTest(ZulipTestCase):
         self.assert_in_success_response(["We couldn&#39;t find that Zulip organization."], result)
 
     def test_realm_redirect_with_next_param(self) -> None:
-        result = self.client_get("/accounts/go/?next=billing")
+        result = self.client_get("/accounts/go/", {"next": "billing"})
         self.assert_in_success_response(["Enter your organization's Zulip URL", 'action="/accounts/go/?next=billing"'], result)
 
         result = self.client_post("/accounts/go/?next=billing", {"subdomain": "lear"})

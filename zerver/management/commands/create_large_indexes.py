@@ -7,7 +7,7 @@ from zerver.lib.management import ZulipBaseCommand
 
 def create_indexes() -> None:
     #  Creating concurrent indexes is kind of a pain with current versions
-    #  of Django/Postgres, because you will get this error with seemingly
+    #  of Django/PostgreSQL, because you will get this error with seemingly
     #  reasonable code:
     #
     #    CREATE INDEX CONCURRENTLY cannot be executed from a function or multi-command string

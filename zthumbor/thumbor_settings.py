@@ -304,13 +304,15 @@ ALLOW_OLD_URLS = False
 ## Defaults to: 'Thumbor/6.1.5'
 #HTTP_LOADER_DEFAULT_USER_AGENT = 'Thumbor/6.1.5'
 
-## The proxy host needed to load images through
-## Defaults to: None
-#HTTP_LOADER_PROXY_HOST = None
 
-## The proxy port for the proxy host
-## Defaults to: None
-#HTTP_LOADER_PROXY_PORT = None
+if config_file.has_option("http_proxy", "host") and config_file.has_option("http_proxy", "port"):
+    ## The proxy host needed to load images through
+    ## Defaults to: None
+    HTTP_LOADER_PROXY_HOST = config_file.get("http_proxy", "host")
+
+    ## The proxy port for the proxy host
+    ## Defaults to: None
+    HTTP_LOADER_PROXY_PORT = int(config_file.get("http_proxy", "port"))
 
 ## The proxy username for the proxy host
 ## Defaults to: None

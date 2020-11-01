@@ -87,7 +87,8 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
             '',
             '> hi',
             '> bye',
-            '',
+            '> ',
+            '> ',
             '',
             '',
         ]
@@ -113,7 +114,8 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
             '',
             '',
             '> bye',
-            '',
+            '> ',
+            '> ',
             '',
             '',
         ]
@@ -177,9 +179,11 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
         expected = [
             '',
             '> hi',
-            '',
+            '> ',
             '> **py:hello()**',
-            '',
+            '> ',
+            '> ',
+            '> ',
             '',
             '',
         ]

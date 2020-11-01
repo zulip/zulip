@@ -1,6 +1,6 @@
 import time
 from copy import deepcopy
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import orjson
 
@@ -10,7 +10,7 @@ from zerver.models import Draft
 
 class DraftCreationTests(ZulipTestCase):
     def create_and_check_drafts_for_success(self, draft_dicts: List[Dict[str, Any]],
-                                            expected_draft_dicts: List[Dict[str, Any]]) -> None:
+                                            expected_draft_dicts: Optional[List[Dict[str, Any]]]=None) -> None:
         hamlet = self.example_user("hamlet")
 
         # Make sure that there are no drafts in the database before
@@ -23,7 +23,13 @@ class DraftCreationTests(ZulipTestCase):
         self.assert_json_success(resp)
 
         # Finally check to make sure that the drafts were actually created properly.
-        new_draft_dicts = [d.to_dict() for d in Draft.objects.order_by("last_edit_time")]
+        new_draft_dicts = []
+        for draft in Draft.objects.order_by("last_edit_time"):
+            draft_dict = draft.to_dict()
+            draft_dict.pop("id")
+            new_draft_dicts.append(draft_dict)
+        if expected_draft_dicts is None:
+            expected_draft_dicts = draft_dicts
         self.assertEqual(new_draft_dicts, expected_draft_dicts)
 
     def create_and_check_drafts_for_error(self, draft_dicts: List[Dict[str, Any]],
@@ -53,16 +59,9 @@ class DraftCreationTests(ZulipTestCase):
             "to": [visible_stream_id],
             "topic": "sync drafts",
             "content": "Let's add backend support for syncing drafts.",
-            "timestamp": 1595479019.4391587,
+            "timestamp": 1595479019,
         }]
-        expected_draft_dicts = [{
-            "type": "stream",
-            "to": [visible_stream_id],
-            "topic": "sync drafts",
-            "content": "Let's add backend support for syncing drafts.",
-            "timestamp": 1595479019.439159,  # We only go as far microseconds.
-        }]
-        self.create_and_check_drafts_for_success(draft_dicts, expected_draft_dicts)
+        self.create_and_check_drafts_for_success(draft_dicts)
 
     def test_create_one_personal_message_draft_properly(self) -> None:
         zoe = self.example_user("ZOE")
@@ -71,14 +70,14 @@ class DraftCreationTests(ZulipTestCase):
             "to": [zoe.id],
             "topic": "This topic should be ignored.",
             "content": "What if we made it possible to sync drafts in Zulip?",
-            "timestamp": 1595479019.43915,
+            "timestamp": 1595479019,
         }]
         expected_draft_dicts = [{
             "type": "private",
             "to": [zoe.id],
             "topic": "",  # For private messages the topic should be ignored.
             "content": "What if we made it possible to sync drafts in Zulip?",
-            "timestamp": 1595479019.43915,
+            "timestamp": 1595479019,
         }]
         self.create_and_check_drafts_for_success(draft_dicts, expected_draft_dicts)
 
@@ -97,7 +96,7 @@ class DraftCreationTests(ZulipTestCase):
             "to": [zoe.id, othello.id],
             "topic": "",  # For private messages the topic should be ignored.
             "content": "What if we made it possible to sync drafts in Zulip?",
-            "timestamp": 1595479019.0,
+            "timestamp": 1595479019,
         }]
         self.create_and_check_drafts_for_success(draft_dicts, expected_draft_dicts)
 
@@ -113,47 +112,24 @@ class DraftCreationTests(ZulipTestCase):
                 "to": [visible_stream_id],
                 "topic": "sync drafts",
                 "content": "Let's add backend support for syncing drafts.",
-                "timestamp": 1595479019.43915,
+                "timestamp": 1595479019,
             },  # Stream message draft
             {
                 "type": "private",
                 "to": [zoe.id],
-                "topic": "This topic should be ignored.",
+                "topic": "",
                 "content": "What if we made it possible to sync drafts in Zulip?",
-                "timestamp": 1595479020.43916,
+                "timestamp": 1595479020,
             },  # Private message draft
             {
                 "type": "private",
                 "to": [zoe.id, othello.id],
                 "topic": "",
                 "content": "What if we made it possible to sync drafts in Zulip?",
-                "timestamp": 1595479021.43916,
+                "timestamp": 1595479021,
             },  # Private group message draft
         ]
-        expected_draft_dicts = [
-            {
-                "type": "stream",
-                "to": [visible_stream_id],
-                "topic": "sync drafts",
-                "content": "Let's add backend support for syncing drafts.",
-                "timestamp": 1595479019.43915,
-            },
-            {
-                "type": "private",
-                "to": [zoe.id],
-                "topic": "",
-                "content": "What if we made it possible to sync drafts in Zulip?",
-                "timestamp": 1595479020.43916,
-            },
-            {
-                "type": "private",
-                "to": [zoe.id, othello.id],
-                "topic": "",
-                "content": "What if we made it possible to sync drafts in Zulip?",
-                "timestamp": 1595479021.43916,
-            }
-        ]
-        self.create_and_check_drafts_for_success(draft_dicts, expected_draft_dicts)
+        self.create_and_check_drafts_for_success(draft_dicts)
 
     def test_missing_timestamps(self) -> None:
         """ If a timestamp is not provided for a draft dict then it should be automatically
@@ -171,7 +147,7 @@ class DraftCreationTests(ZulipTestCase):
 
         self.assertEqual(Draft.objects.count(), 0)
 
-        current_time = round(time.time(), 6)
+        current_time = int(time.time())
         payload = {"drafts": orjson.dumps(draft_dicts).decode()}
         resp = self.api_post(hamlet, "/api/v1/drafts", payload)
         self.assert_json_success(resp)
@@ -179,10 +155,10 @@ class DraftCreationTests(ZulipTestCase):
         new_drafts = Draft.objects.all()
         self.assertEqual(Draft.objects.count(), 1)
         new_draft = new_drafts[0].to_dict()
-        self.assertTrue(isinstance(new_draft["timestamp"], float))
+        self.assertTrue(isinstance(new_draft["timestamp"], int))
         # Since it would be too tricky to get the same times, perform
         # a relative check.
-        self.assertTrue(new_draft["timestamp"] > current_time)
+        self.assertTrue(new_draft["timestamp"] >= current_time)
 
     def test_invalid_timestamp(self) -> None:
         draft_dicts = [{
@@ -205,14 +181,14 @@ class DraftCreationTests(ZulipTestCase):
                 "to": [],
                 "topic": "sync drafts",
                 "content": "Let's add backend support for syncing drafts.",
-                "timestamp": 1595479019.43915,
+                "timestamp": 1595479019,
             },
             {
                 "type": "",
                 "to": [],
                 "topic": "sync drafts",
                 "content": "Let's add backend support for syncing drafts.",
-                "timestamp": 1595479019.43915,
+                "timestamp": 1595479019,
             },
         ]
         expected_draft_dicts = [
@@ -221,14 +197,14 @@ class DraftCreationTests(ZulipTestCase):
                 "to": [],
                 "topic": "",
                 "content": "Let's add backend support for syncing drafts.",
-                "timestamp": 1595479019.43915,
+                "timestamp": 1595479019,
             },
             {
                 "type": "",
                 "to": [],
                 "topic": "",
                 "content": "Let's add backend support for syncing drafts.",
-                "timestamp": 1595479019.43915,
+                "timestamp": 1595479019,
             },
         ]
         self.create_and_check_drafts_for_success(draft_dicts, expected_draft_dicts)
@@ -239,7 +215,7 @@ class DraftCreationTests(ZulipTestCase):
             "to": [],
             "topic": "sync drafts",
             "content": "Let's add backend support for syncing drafts.",
-            "timestamp": 1595479019.439159,
+            "timestamp": 15954790199,
         }]
         self.create_and_check_drafts_for_error(
             draft_dicts,
@@ -254,7 +230,7 @@ class DraftCreationTests(ZulipTestCase):
             "to": [stream.id],  # This can't be accessed by hamlet.
             "topic": "sync drafts",
             "content": "Let's add backend support for syncing drafts.",
-            "timestamp": 1595479019.43915,
+            "timestamp": 1595479019,
         }]
         self.create_and_check_drafts_for_error(draft_dicts, "Invalid stream id")
 
@@ -264,7 +240,7 @@ class DraftCreationTests(ZulipTestCase):
             "to": [99999999999999],  # Hopefully, this doesn't exist.
             "topic": "sync drafts",
             "content": "Let's add backend support for syncing drafts.",
-            "timestamp": 1595479019.43915,
+            "timestamp": 1595479019,
         }]
         self.create_and_check_drafts_for_error(draft_dicts, "Invalid stream id")
 
@@ -274,7 +250,7 @@ class DraftCreationTests(ZulipTestCase):
             "to": [99999999999999],  # Hopefully, this doesn't exist either.
             "topic": "This topic should be ignored.",
             "content": "What if we made it possible to sync drafts in Zulip?",
-            "timestamp": 1595479019.43915,
+            "timestamp": 1595479019,
         }]
         self.create_and_check_drafts_for_error(draft_dicts, "Invalid user ID 99999999999999")
 
@@ -284,7 +260,7 @@ class DraftCreationTests(ZulipTestCase):
             "to": [],
             "topic": "sync drafts.",
             "content": "Some regular \x00 content here",
-            "timestamp": 1595479019.439159,
+            "timestamp": 15954790199,
         }]
         self.create_and_check_drafts_for_error(
             draft_dicts,
@@ -296,7 +272,7 @@ class DraftCreationTests(ZulipTestCase):
             "to": [10],
             "topic": "thinking about \x00",
             "content": "Let's add backend support for syncing drafts.",
-            "timestamp": 1595479019.439159,
+            "timestamp": 15954790199,
         }]
         self.create_and_check_drafts_for_error(
             draft_dicts,
@@ -319,7 +295,7 @@ class DraftEditTests(ZulipTestCase):
             "to": [stream_a],
             "topic": "drafts",
             "content": "The API should be good",
-            "timestamp": 1595505700.85247
+            "timestamp": 1595505700
         }
         resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()})
         self.assert_json_success(resp)
@@ -329,7 +305,7 @@ class DraftEditTests(ZulipTestCase):
         draft_dict["content"] = "The API needs to be structured yet simple to use."
         draft_dict["to"] = [stream_b]
         draft_dict["topic"] = "designing drafts"
-        draft_dict["timestamp"] = 1595505800.84923
+        draft_dict["timestamp"] = 1595505800
 
         # Update this change in the backend.
         resp = self.api_patch(hamlet, f"/api/v1/drafts/{new_draft_id}",
@@ -339,6 +315,7 @@ class DraftEditTests(ZulipTestCase):
         # Now make sure that the change was made successfully.
         new_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
         new_draft_dict = new_draft.to_dict()
+        new_draft_dict.pop("id")
         self.assertEqual(new_draft_dict, draft_dict)
 
     def test_edit_non_existant_draft(self) -> None:
@@ -353,7 +330,7 @@ class DraftEditTests(ZulipTestCase):
             "to": [10],
             "topic": "drafts",
             "content": "The API should be good",
-            "timestamp": 1595505700.85247
+            "timestamp": 1595505700
         }
         resp = self.api_patch(hamlet, "/api/v1/drafts/999999999",
                               {"draft": orjson.dumps(draft_dict).decode()})
@@ -376,7 +353,7 @@ class DraftEditTests(ZulipTestCase):
             "to": [stream_id],
             "topic": "drafts",
             "content": "The API should be good",
-            "timestamp": 1595505700.85247
+            "timestamp": 1595505700
         }
         resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()})
         self.assert_json_success(resp)
@@ -395,6 +372,7 @@ class DraftEditTests(ZulipTestCase):
         # Now make sure that no changes were made.
         existing_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
         existing_draft_dict = existing_draft.to_dict()
+        existing_draft_dict.pop("id")
         self.assertEqual(existing_draft_dict, draft_dict)
 
 class DraftDeleteTests(ZulipTestCase):
@@ -412,7 +390,7 @@ class DraftDeleteTests(ZulipTestCase):
             "to": [stream_id],
             "topic": "drafts",
             "content": "The API should be good",
-            "timestamp": 1595505700.85247
+            "timestamp": 1595505700
         }
         resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()})
         self.assert_json_success(resp)
@@ -455,7 +433,7 @@ class DraftDeleteTests(ZulipTestCase):
             "to": [stream_id],
             "topic": "drafts",
             "content": "The API should be good",
-            "timestamp": 1595505700.85247
+            "timestamp": 1595505700
         }
         resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()})
         self.assert_json_success(resp)
@@ -472,6 +450,7 @@ class DraftDeleteTests(ZulipTestCase):
         # Now make sure that no changes were made either.
         existing_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
         existing_draft_dict = existing_draft.to_dict()
+        existing_draft_dict.pop("id")
         self.assertEqual(existing_draft_dict, draft_dict)
 
 class DraftFetchTest(ZulipTestCase):
@@ -488,21 +467,21 @@ class DraftFetchTest(ZulipTestCase):
                 "to": [visible_stream_id],
                 "topic": "thinking out loud",
                 "content": "What if pigs really could fly?",
-                "timestamp": 1595479019.439159,
-            },
-            {
-                "type": "private",
-                "to": [zoe.id],
-                "topic": "",
-                "content": "What if made it possible to sync drafts in Zulip?",
-                "timestamp": 1595479020.439160,
+                "timestamp": 15954790197,
             },
             {
                 "type": "private",
                 "to": [zoe.id, othello.id],
                 "topic": "",
                 "content": "What if made it possible to sync drafts in Zulip?",
-                "timestamp": 1595479021.439161,
+                "timestamp": 15954790198,
+            },
+            {
+                "type": "private",
+                "to": [zoe.id],
+                "topic": "",
+                "content": "What if made it possible to sync drafts in Zulip?",
+                "timestamp": 15954790199,
             },
         ]
         payload = {"drafts": orjson.dumps(draft_dicts).decode()}
@@ -517,7 +496,7 @@ class DraftFetchTest(ZulipTestCase):
                 "to": [hamlet.id],
                 "topic": "",
                 "content": "Hello there!",
-                "timestamp": 1595479019.439159,
+                "timestamp": 15954790200,
             },
         ]
         payload = {"drafts": orjson.dumps(zoe_draft_dicts).decode()}
@@ -534,8 +513,11 @@ class DraftFetchTest(ZulipTestCase):
         self.assertEqual(data["count"], 3)
 
         first_draft_id = Draft.objects.order_by("id")[0].id
-        expected_draft_contents = {
-            "{}".format(i+first_draft_id): draft_dicts[i] for i in range(0, 3)
-        }  # In JSON, all keys must be strings.
+        expected_draft_contents = [
+            {
+                "id": first_draft_id + i,
+                **draft_dicts[i]
+            } for i in range(0, 3)
+        ]
 
         self.assertEqual(data["drafts"], expected_draft_contents)

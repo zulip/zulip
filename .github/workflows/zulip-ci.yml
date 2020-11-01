@@ -36,7 +36,7 @@ jobs:
     env:
       # GitHub Actions sets HOME to /github/home which causes
       # problem later in provison and frontend test that runs
-      # tools/setup/postgres-init-dev-db because of the .pgpass
+      # tools/setup/postgresql-init-dev-db because of the .pgpass
       # location. PostgreSQL (psql) expects .pgpass to be at
       # /home/github/.pgpass and setting home to `/home/github/`
       # ensures it written there because we write it to ~/.pgpass.

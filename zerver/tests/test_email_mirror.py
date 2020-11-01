@@ -1126,12 +1126,12 @@ class TestScriptMTA(ZulipTestCase):
 
         mail_template = self.fixture_data('simple.txt', type='email')
         mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
-        read_pipe, write_pipe = os.pipe()
-        os.write(write_pipe, mail.encode())
-        os.close(write_pipe)
-        subprocess.check_call(
+        subprocess.run(
             [script, '-r', stream_to_address, '-s', settings.SHARED_SECRET, '-t'],
-            stdin=read_pipe)
+            input=mail,
+            check=True,
+            universal_newlines=True,
+        )
 
     def test_error_no_recipient(self) -> None:
         script = os.path.join(os.path.dirname(__file__),
@@ -1142,21 +1142,17 @@ class TestScriptMTA(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
         mail_template = self.fixture_data('simple.txt', type='email')
         mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
-        read_pipe, write_pipe = os.pipe()
-        os.write(write_pipe, mail.encode())
-        os.close(write_pipe)
-        success_call = True
-        try:
-            subprocess.check_output([script, '-s', settings.SHARED_SECRET, '-t'],
-                                    stdin=read_pipe)
-        except subprocess.CalledProcessError as e:
-            self.assertEqual(
-                e.output,
-                b'5.1.1 Bad destination mailbox address: No missed message email address.\n',
-            )
-            self.assertEqual(e.returncode, 67)
-            success_call = False
-        self.assertFalse(success_call)
+        p = subprocess.run(
+            [script, '-s', settings.SHARED_SECRET, '-t'],
+            input=mail,
+            stdout=subprocess.PIPE,
+            universal_newlines=True,
+        )
+        self.assertEqual(
+            p.stdout,
+            '5.1.1 Bad destination mailbox address: No missed message email address.\n',
+        )
+        self.assertEqual(p.returncode, 67)
 
 
 class TestEmailMirrorTornadoView(ZulipTestCase):

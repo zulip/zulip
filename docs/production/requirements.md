@@ -77,9 +77,12 @@ on hardware requirements for larger organizations.
 * Incoming port 25 if you plan to enable Zulip's [incoming email
   integration](../production/email-gateway.md).
 * Outgoing HTTP(S) access (ports 80 and 443) to the public Internet so
-  that Zulip can properly manage image previews and embeds.  Outgoing
-  Internet access is not required if you [disable those
-  features](https://zulip.com/help/allow-image-link-previews).
+  that Zulip can properly manage image and website previews and mobile
+  push notifications.  Outgoing Internet access is not required if you
+  [disable those
+  features](https://zulip.com/help/allow-image-link-previews), or
+  configure an [existing outgoing HTTP
+  proxy](../production/deployment.html#using-an-outgoing-http-proxy).
 * Outgoing SMTP access (usually port 587) to your [SMTP
   server](../production/email.md) so that Zulip can send emails.
 * A domain name (e.g. `zulip.example.com`) that your users will use to
@@ -149,8 +152,8 @@ most use cases, there's little scalability benefit to doing so.  See
 installing Zulip with a dedicated database server.
 
 * **Dedicated database**.  For installations with hundreds of daily
-  active users, we recommend using a [remote Postgres
-  database](postgres.md), but it's not required.
+  active users, we recommend using a [remote PostgreSQL
+  database](postgresql.md), but it's not required.
 
 * **RAM:**  We recommended more RAM for larger installations:
     * With 25+ daily active users, 4GB of RAM.
@@ -191,7 +194,7 @@ installing Zulip with a dedicated database server.
   always idle), and its database was using about 100GB of disk.
 
 * **Disaster recovery:** One can easily run a hot spare application
-  server and a hot spare database (using [Postgres streaming
+  server and a hot spare database (using [PostgreSQL streaming
   replication][streaming-replication]).  Make sure the hot spare
   application server has copies of `/etc/zulip` and you're either
   syncing `LOCAL_UPLOADS_DIR` or using the [S3 file uploads
@@ -214,5 +217,5 @@ whether Zulip is a fit for your organization or need further advice
 [contact Zulip support][contact-support].
 
 [s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
-[streaming-replication]: ../production/export-and-import.html#postgres-streaming-replication
+[streaming-replication]: ../production/export-and-import.html#postgresql-streaming-replication
 [contact-support]: https://zulip.com/help/contact-support

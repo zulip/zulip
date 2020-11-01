@@ -36,6 +36,7 @@ from typing import (
 
 import orjson
 import requests
+import sentry_sdk
 from django.conf import settings
 from django.db import connection
 from django.db.models import F
@@ -174,7 +175,7 @@ def timer_expired(limit: int, event_count: int, signal: int, frame: FrameType) -
 
 class QueueProcessingWorker(ABC):
     queue_name: str
-    MAX_CONSUME_SECONDS: Optional[int] = 10
+    MAX_CONSUME_SECONDS: Optional[int] = 30
     ENABLE_TIMEOUTS = False
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
     MAX_SECONDS_BEFORE_UPDATE_STATS = 30
@@ -313,8 +314,10 @@ class QueueProcessingWorker(ABC):
                 "queue_name": self.queue_name,
             })
             if isinstance(exception, WorkerTimeoutException):
-                logging.exception("%s in queue %s",
-                                  str(exception), self.queue_name, stack_info=True)
+                with sentry_sdk.push_scope() as scope:
+                    scope.fingerprint = ['worker-timeout', self.queue_name]
+                    logging.exception("%s in queue %s",
+                                      str(exception), self.queue_name, stack_info=True)
             else:
                 logging.exception("Problem handling data on queue %s", self.queue_name, stack_info=True)
         if not os.path.exists(settings.QUEUE_ERROR_DIR):
@@ -326,8 +329,8 @@ class QueueProcessingWorker(ABC):
         line = f'{time.asctime()}\t{orjson.dumps(events).decode()}\n'
         lock_fn = fn + '.lock'
         with lockfile(lock_fn):
-            with open(fn, 'ab') as f:
-                f.write(line.encode('utf-8'))
+            with open(fn, 'a') as f:
+                f.write(line)
         check_and_send_restart_signal()
 
     def setup(self) -> None:
@@ -765,6 +768,7 @@ class DeferredWorker(QueueProcessingWorker):
     MAX_CONSUME_SECONDS = None
 
     def consume(self, event: Dict[str, Any]) -> None:
+        start = time.time()
         if event['type'] == 'mark_stream_messages_as_read':
             user_profile = get_user_profile_by_id(event['user_profile_id'])
 
@@ -792,7 +796,6 @@ class DeferredWorker(QueueProcessingWorker):
                         event['user_profile_id'])
                 retry_event(self.queue_name, event, failure_processor)
         elif event['type'] == 'realm_export':
-            start = time.time()
             realm = Realm.objects.get(id=event['realm_id'])
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
             export_event = RealmAuditLog.objects.get(id=event['id'])
@@ -840,6 +843,10 @@ class DeferredWorker(QueueProcessingWorker):
                 "Completed data export for %s in %s",
                 user_profile.realm.string_id, time.time() - start,
             )
+
+        end = time.time()
+        logger.info("deferred_work processed %s event (%dms)", event['type'],
+                    (end-start)*1000)
 
 @assign_queue('test', is_test_queue=True)
 class TestWorker(QueueProcessingWorker):

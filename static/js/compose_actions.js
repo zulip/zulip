@@ -267,7 +267,7 @@ exports.cancel = function () {
     clear_box();
     notifications.clear_compose_notifications();
     compose.abort_xhr();
-    compose.abort_zoom(undefined);
+    compose.abort_video_callbacks(undefined);
     compose_state.set_message_type(false);
     compose_pm_pill.clear();
     $(document).trigger($.Event("compose_canceled.zulip"));

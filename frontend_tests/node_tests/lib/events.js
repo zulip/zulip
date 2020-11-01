@@ -453,7 +453,7 @@ exports.fixtures = {
             is_bot: false,
             is_guest: false,
             profile_data: {},
-            timezone: "US/Eastern",
+            timezone: "America/New_York",
             date_joined: "2020-01-01",
         },
     },

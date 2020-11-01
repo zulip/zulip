@@ -23,7 +23,7 @@ in-product, so it's important to keep the docs up to date.
 ## Editing and testing
 
 The user documentation is available under `/help/` on any Zulip server;
-(e.g. <https://chat.zulip.org/help/> or `http://localhost:9991/help/` in
+(e.g. <https://zulip.com/help/> or `http://localhost:9991/help/` in
 the Zulip development environment). The user documentation is not hosted on
 ReadTheDocs, since Zulip supports running a server completely disconnected
 from the Internet, and we'd like the documentation to be available in that

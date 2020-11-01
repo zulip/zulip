@@ -228,19 +228,19 @@ Also see [the queuing guide](../subsystems/queuing.md).
 
 ### PostgreSQL
 
-PostgreSQL (also known as Postgres) is the database that stores all
-persistent data, that is, data that's expected to live beyond a user's
-current session.  Starting with Zulip 3.0, new Zulip installations
-will install modern Postgres release rather than using the version included
-with the operating system.
+PostgreSQL is the database that stores all persistent data, that is,
+data that's expected to live beyond a user's current session.
+Starting with Zulip 3.0, new Zulip installations will install modern
+PostgreSQL release rather than using the version included with the
+operating system.
 
-In production, Postgres is installed with a default configuration. The
+In production, PostgreSQL is installed with a default configuration. The
 directory that would contain configuration files
 (`puppet/zulip/files/postgresql`) has only a utility script and a custom
 list of stopwords used by a PostgreSQL extension.
 
 In a development environment, configuration of that PostgreSQL
-extension is handled by `tools/postgres-init-dev-db` (invoked by
+extension is handled by `tools/postgresql-init-dev-db` (invoked by
 `tools/provision`).  That file also manages setting up the
 development PostgreSQL user.
 
@@ -266,7 +266,7 @@ This component is intended to install Nagios plugins intended to be run
 on a Nagios server; most of the Zulip Nagios plugins are intended to be
 run on the Zulip servers themselves, and are included with the relevant
 component of the Zulip server (e.g.
-`puppet/zulip/manifests/postgres_backups.pp` installs a few under
+`puppet/zulip/manifests/postgresql_backups.pp` installs a few under
 `/usr/lib/nagios/plugins/zulip_backups`).
 
 ## Glossary

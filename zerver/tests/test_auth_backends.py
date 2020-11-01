@@ -317,7 +317,7 @@ class AuthBackendTest(ZulipTestCase):
         # instead of redirecting to app
         self.login('iago')
         realm = get_realm("zulip")
-        result = self.client_get('/login/?preview=true')
+        result = self.client_get("/login/", {"preview": "true"})
         self.assertEqual(result.status_code, 200)
         self.assert_in_response(realm.description, result)
         assert realm.name is not None
@@ -329,7 +329,7 @@ class AuthBackendTest(ZulipTestCase):
         result = self.client_patch('/json/realm', data)
         self.assert_json_success(result)
 
-        result = self.client_get('/login/?preview=true')
+        result = self.client_get("/login/", {"preview": "true"})
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("New realm description", result)
         self.assert_in_response("New Zulip", result)
@@ -1763,7 +1763,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(m.output, [self.logger_output("/login/saml/ : Bad idp param: KeyError: {}.".format("'idp'"), 'info')])
 
         with self.assertLogs(self.logger_string, level='INFO') as m:
-            result = self.client_get('/login/saml/?idp=bad_idp')
+            result = self.client_get("/login/saml/", {"idp": "bad_idp"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
         self.assertEqual(m.output, [self.logger_output("/login/saml/ : Bad idp param: KeyError: {}.".format("'bad_idp'"), 'info')])
@@ -3627,7 +3627,7 @@ class TestDevAuthBackend(ZulipTestCase):
 
 class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_start_remote_user_sso(self) -> None:
-        result = self.client_get('/accounts/login/start/sso/?param1=value1&params=value2')
+        result = self.client_get("/accounts/login/start/sso/", {"param1": "value1", "params": "value2"})
         self.assertEqual(result.status_code, 302)
 
         url = result.url
@@ -3871,7 +3871,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             user_profile = self.example_user('hamlet')
             email = user_profile.delivery_email
             with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
-                result = self.client_get('/accounts/login/sso/?next=' + next, REMOTE_USER=email)
+                result = self.client_get("/accounts/login/sso/", {"next": next}, REMOTE_USER=email)
             return result
 
         res = test_with_redirect_to_param_set_as_next()
@@ -3881,13 +3881,6 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
 
         # Third-party domains are rejected and just send you to root domain
         res = test_with_redirect_to_param_set_as_next('https://rogue.zulip-like.server/login')
-        self.assertEqual('http://zulip.testserver', res.url)
-
-        # In SSO based auth we never make browser send the hash to the backend.
-        # Rather we depend upon the browser's behaviour of persisting hash anchors
-        # in between redirect requests. See below stackoverflow conversation
-        # https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects
-        res = test_with_redirect_to_param_set_as_next('#narrow/stream/7-test-here')
         self.assertEqual('http://zulip.testserver', res.url)
 
 class TestJWTLogin(ZulipTestCase):

@@ -87,7 +87,7 @@ def further_validated_draft_dict(draft_dict: Dict[str, Any],
 
 def fetch_drafts(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     user_drafts = Draft.objects.filter(user_profile=user_profile).order_by("last_edit_time")
-    draft_dicts = {str(draft.id): draft.to_dict() for draft in user_drafts}
+    draft_dicts = [draft.to_dict() for draft in user_drafts]
     return json_success({"count": user_drafts.count(), "drafts": draft_dicts})
 
 @has_request_variables
