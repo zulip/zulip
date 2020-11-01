@@ -84,7 +84,7 @@ exports.create_initial_sidebar_rows = function () {
     }
 };
 
-exports.build_stream_list = function () {
+exports.build_stream_list = function (force_rerender) {
     // This function assumes we have already created the individual
     // sidebar rows.  Our job here is to build the bigger widget,
     // which largely is a matter of arranging the individual rows in
@@ -93,12 +93,15 @@ exports.build_stream_list = function () {
     if (streams.length === 0) {
         return;
     }
+    if (force_rerender === undefined) {
+        force_rerender = false;
+    }
 
     // The main logic to build the list is in stream_sort.js, and
     // we get three lists of streams (pinned/normal/dormant).
     const stream_groups = stream_sort.sort_groups(streams, get_search_term());
 
-    if (stream_groups.same_as_before) {
+    if (stream_groups.same_as_before && force_rerender === false) {
         return;
     }
 
@@ -307,9 +310,12 @@ function set_stream_unread_count(stream_id, count) {
     exports.update_count_in_dom(unread_count_elem, count);
 }
 
-exports.update_streams_sidebar = function () {
+exports.update_streams_sidebar = function (force_rerender) {
     const finish = blueslip.start_timing("build_stream_list");
-    exports.build_stream_list();
+    if (force_rerender === undefined) {
+        force_rerender = false;
+    }
+    exports.build_stream_list(force_rerender);
     finish();
     exports.stream_cursor.redraw();
 
@@ -332,7 +338,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 exports.rename_stream = function (sub) {
     // The sub object is expected to already have the updated name
     build_stream_sidebar_row(sub);
-    exports.update_streams_sidebar(); // big hammer
+    exports.update_streams_sidebar(true); // big hammer
 };
 
 exports.refresh_pinned_or_unpinned_stream = function (sub) {
