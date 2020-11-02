@@ -14,6 +14,9 @@ a name (e.g. "Zulip"), enter the webhook URL created earlier as
 
 ![](/static/images/integrations/newrelic/001.png)
 
+After saving the web hook, trigger a test notification to make sure
+everything works correctly.
+
 {!congrats.md!}
 
 ![](/static/images/integrations/newrelic/002.png)
