@@ -46,8 +46,10 @@ export function wrap_code(code, lang) {
     // the `/shared` folder. To handle such a case we check if pygments data is empty and fallback to
     // using the default header if it is.
     if (lang !== undefined && lang !== "" && Object.keys(pygments_data).length > 0) {
-        const code_language = _.get(pygments_data, [lang, "pretty_name"], _.escape(lang));
-        header = `<div class="codehilite" data-code-language="${code_language}"><pre><span></span><code>`;
+        const code_language = _.get(pygments_data, [lang, "pretty_name"], lang);
+        header = `<div class="codehilite" data-code-language="${_.escape(
+            code_language,
+        )}"><pre><span></span><code>`;
     }
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
