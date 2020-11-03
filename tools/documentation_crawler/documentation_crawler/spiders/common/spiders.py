@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from typing import Callable, Iterator, List, Optional, Union
 
@@ -42,6 +43,10 @@ VNU_IGNORE = [
 ]
 VNU_IGNORE_REGEX = re.compile(r'|'.join(VNU_IGNORE))
 
+DEPLOY_ROOT = os.path.abspath(os.path.join(__file__, "../../../../../.."))
+
+GITHUB_FILE_URL_PREFIX = "https://github.com/zulip/zulip/blob/master"
+GITHUB_DIRECTORY_URL_PREFIX = "https://github.com/zulip/zulip/tree/master"
 
 class BaseDocumentationSpider(scrapy.Spider):
     name: Optional[str] = None
@@ -69,7 +74,7 @@ class BaseDocumentationSpider(scrapy.Spider):
             # homepage, there's no need to check those (which can
             # cause errors when chat.zulip.org is being updated).
             return True
-        if "zulip.readthedocs" in url or "zulip.com" in url or "zulip.org" in url:
+        if "zulip.readthedocs" in url or "zulip.com" in url or "zulip.org" in url or "github.com/zulip/zulip/" in url:
             # We want CI to check any links to Zulip sites.
             return False
         if (len(url) > 4 and url[:4] == "file") or ("localhost" in url):
@@ -126,6 +131,20 @@ class BaseDocumentationSpider(scrapy.Spider):
         if self._is_external_url(url):
             callback = self.check_existing
             method = 'HEAD'
+
+            if url.startswith(GITHUB_FILE_URL_PREFIX):
+                file_path = url.replace(GITHUB_FILE_URL_PREFIX, DEPLOY_ROOT)
+                hash_index = file_path.find("#")
+                if hash_index != -1:
+                    file_path = file_path[:hash_index]
+                if not os.path.isfile(file_path):
+                    self.logger.error("There is no local file associated with the GitHub URL: %s", url)
+                return
+            elif url.startswith(GITHUB_DIRECTORY_URL_PREFIX):
+                dir_path = url.replace(GITHUB_DIRECTORY_URL_PREFIX, DEPLOY_ROOT)
+                if not os.path.isdir(dir_path):
+                    self.logger.error("There is no local directory associated with the GitHub URL: %s", url)
+                return
         elif '#' in url:
             dont_filter = True
             callback = self.check_fragment

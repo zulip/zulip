@@ -130,7 +130,7 @@ script performs several lint checks in parallel by forking out subprocesses.
 
 Note that our project does custom regex-based checks on the code, and we
 also customize how we call pyflakes and pycodestyle (pep8).  The code for these
-types of checks mostly lives [here](https://github.com/zulip/zulip/blob/master/tools/linter_lib).
+types of checks mostly lives [here](https://github.com/zulip/zulip/tree/master/tools/linter_lib).
 
 ### Special options
 
