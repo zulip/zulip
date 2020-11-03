@@ -131,19 +131,27 @@ class TestDigestEmailMessages(ZulipTestCase):
         one_day_ago = timezone_now() - datetime.timedelta(days=1)
         Message.objects.all().update(date_sent=one_day_ago)
 
-        othello = self.example_user('othello')
-        for stream in ['Verona', 'Scotland', 'Denmark']:
-            self.subscribe(othello, stream)
+        digest_users = [
+            self.example_user('othello'),
+        ]
+
+        for digest_user in digest_users:
+            for stream in ['Verona', 'Scotland', 'Denmark']:
+                self.subscribe(digest_user, stream)
+
         RealmAuditLog.objects.all().delete()
 
-        othello.long_term_idle = True
-        othello.save(update_fields=['long_term_idle'])
+        for digest_user in digest_users:
+            digest_user.long_term_idle = True
+            digest_user.save(update_fields=['long_term_idle'])
 
         # Send messages to a stream and unsubscribe - subscribe from that stream
         senders = ['hamlet', 'cordelia',  'iago', 'prospero', 'ZOE']
         self.simulate_stream_conversation('Verona', senders)
-        self.unsubscribe(othello, 'Verona')
-        self.subscribe(othello, 'Verona')
+
+        for digest_user in digest_users:
+            self.unsubscribe(digest_user, 'Verona')
+            self.subscribe(digest_user, 'Verona')
 
         # Send messages to other streams
         self.simulate_stream_conversation('Scotland', senders)
@@ -153,38 +161,41 @@ class TestDigestEmailMessages(ZulipTestCase):
         cutoff = time.mktime(one_hour_ago.timetuple())
 
         flush_per_request_caches()
+
         # When this test is run in isolation, one additional query is run which
         # is equivalent to
         # ContentType.objects.get(app_label='zerver', model='userprofile')
         # This code is run when we call `confirmation.models.create_confirmation_link`.
         # To trigger this, we call the one_click_unsubscribe_link function below.
-        one_click_unsubscribe_link(othello, 'digest')
-        with queries_captured() as queries:
-            handle_digest_email(othello.id, cutoff)
+        one_click_unsubscribe_link(digest_users[0], 'digest')
 
-        # This can definitely be optimized; for both the huddle and
-        # stream cases, the get_narrow_url API ends up double-fetching
-        # some data because of how the functions are organized.
-        self.assert_length(queries, 10)
+        for digest_user in digest_users:
+            with queries_captured() as queries:
+                handle_digest_email(digest_user.id, cutoff)
 
-        self.assertEqual(mock_send_future_email.call_count, 1)
-        kwargs = mock_send_future_email.call_args[1]
-        self.assertEqual(kwargs['to_user_ids'], [othello.id])
+            # This can definitely be optimized; for both the huddle and
+            # stream cases, the get_narrow_url API ends up double-fetching
+            # some data because of how the functions are organized.
+            self.assert_length(queries, 10)
 
-        hot_conversations = kwargs['context']['hot_conversations']
-        self.assertEqual(2, len(hot_conversations), [othello.id])
+            self.assertEqual(mock_send_future_email.call_count, 1)
+            kwargs = mock_send_future_email.call_args[1]
+            self.assertEqual(kwargs['to_user_ids'], [digest_user.id])
 
-        hot_convo = hot_conversations[0]
-        expected_participants = {
-            self.example_user(sender).full_name
-            for sender in senders
-        }
+            hot_conversations = kwargs['context']['hot_conversations']
+            self.assertEqual(2, len(hot_conversations), [digest_user.id])
 
-        self.assertEqual(set(hot_convo['participants']), expected_participants)
-        self.assertEqual(hot_convo['count'], 5 - 2)  # 5 messages, but 2 shown
-        teaser_messages = hot_convo['first_few_messages'][0]['senders']
-        self.assertIn('some content', teaser_messages[0]['content'][0]['plain'])
-        self.assertIn(teaser_messages[0]['sender'], expected_participants)
+            hot_convo = hot_conversations[0]
+            expected_participants = {
+                self.example_user(sender).full_name
+                for sender in senders
+            }
+
+            self.assertEqual(set(hot_convo['participants']), expected_participants)
+            self.assertEqual(hot_convo['count'], 5 - 2)  # 5 messages, but 2 shown
+            teaser_messages = hot_convo['first_few_messages'][0]['senders']
+            self.assertIn('some content', teaser_messages[0]['content'][0]['plain'])
+            self.assertIn(teaser_messages[0]['sender'], expected_participants)
 
     def test_exclude_subscription_modified_streams(self) -> None:
         othello = self.example_user('othello')
