@@ -103,7 +103,7 @@ def gather_hot_conversations(
 
     conversation_length: Dict[TopicKey, int] = defaultdict(int)
     conversation_messages: Dict[TopicKey, List[Message]] = defaultdict(list)
-    conversation_diversity: Dict[TopicKey, Set[str]] = defaultdict(set)
+    conversation_senders: Dict[TopicKey, Set[str]] = defaultdict(set)
     for message in messages:
         key = (message.recipient.type_id,
                message.topic_name())
@@ -114,11 +114,10 @@ def gather_hot_conversations(
             # Don't include automated messages in the count.
             continue
 
-        conversation_diversity[key].add(
-            message.sender.full_name)
+        conversation_senders[key].add(message.sender.full_name)
         conversation_length[key] += 1
 
-    diversity_list = list(conversation_diversity.items())
+    diversity_list = list(conversation_senders.items())
     diversity_list.sort(key=lambda entry: len(entry[1]), reverse=True)
 
     length_list = list(conversation_length.items())
@@ -142,7 +141,7 @@ def gather_hot_conversations(
 
     hot_conversation_render_payloads = []
     for h in hot_conversations:
-        users = list(conversation_diversity[h])
+        users = list(conversation_senders[h])
         count = conversation_length[h]
         messages = conversation_messages[h]
 
