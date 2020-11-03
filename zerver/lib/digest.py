@@ -30,6 +30,8 @@ log_to_file(logger, settings.DIGEST_LOG_PATH)
 
 DIGEST_CUTOFF = 5
 
+TopicKey = Tuple[int, str]
+
 # Digests accumulate 2 types of interesting traffic for a user:
 # 1. New streams
 # 2. Interesting stream traffic, as determined by the longest and most
@@ -99,9 +101,9 @@ def gather_hot_conversations(
         recipient__type_id__in=stream_ids,
         date_sent__gt=cutoff_date).select_related('recipient', 'sender', 'sending_client')
 
-    conversation_length: Dict[Tuple[int, str], int] = defaultdict(int)
-    conversation_messages: Dict[Tuple[int, str], List[Message]] = defaultdict(list)
-    conversation_diversity: Dict[Tuple[int, str], Set[str]] = defaultdict(set)
+    conversation_length: Dict[TopicKey, int] = defaultdict(int)
+    conversation_messages: Dict[TopicKey, List[Message]] = defaultdict(list)
+    conversation_diversity: Dict[TopicKey, Set[str]] = defaultdict(set)
     for message in messages:
         key = (message.recipient.type_id,
                message.topic_name())
