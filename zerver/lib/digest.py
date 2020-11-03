@@ -2,7 +2,7 @@ import datetime
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Dict, List, Set, Tuple, Union
+from typing import Any, Dict, List, Set, Tuple
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -218,10 +218,7 @@ def gather_new_streams(user_profile: UserProfile,
 def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
     return bool(hot_conversations or new_streams)
 
-def handle_digest_email(user_profile_id: int, cutoff: float,
-                        render_to_web: bool = False) -> Union[None, Dict[str, Any]]:
-    user_profile = get_user_profile_by_id(user_profile_id)
-
+def get_digest_context(user_profile: UserProfile, cutoff: float) -> Dict[str, Any]:
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
 
@@ -255,19 +252,20 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
     context["new_streams"] = new_streams
     context["new_streams_count"] = new_streams_count
 
-    # TODO: Set has_preheader if we want to include a preheader.
+    return context
 
-    if render_to_web:
-        return context
+def handle_digest_email(user_profile_id: int, cutoff: float) -> None:
+    user_profile = get_user_profile_by_id(user_profile_id)
+    context = get_digest_context(user_profile, cutoff)
 
     # We don't want to send emails containing almost no information.
-    if enough_traffic(context["hot_conversations"], new_streams_count):
+    if enough_traffic(context["hot_conversations"], context["new_streams_count"]):
         logger.info("Sending digest email for user %s", user_profile.id)
         # Send now, as a ScheduledEmail
         send_future_email('zerver/emails/digest', user_profile.realm, to_user_ids=[user_profile.id],
                           from_name="Zulip Digest", from_address=FromAddress.no_reply_placeholder,
                           context=context)
-    return None
+
 
 def exclude_subscription_modified_streams(user_profile: UserProfile,
                                           stream_ids: List[int],
