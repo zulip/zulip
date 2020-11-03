@@ -979,6 +979,14 @@ exports.initialize = function () {
         }
     });
 
+    // If user clicks 'Escape' on an active modal
+    $(document).on("keydown", (e) => {
+        // Enable mouse events for the background as the modal closes
+        if (e.which === 27) {
+            $(".overlay.show").attr("style", null);
+        }
+    });
+
     // Workaround for Bootstrap issue #5900, which basically makes dropdowns
     // unclickable on mobile devices.
     // https://github.com/twitter/bootstrap/issues/5900
