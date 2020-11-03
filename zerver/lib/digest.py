@@ -84,68 +84,68 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
                     user_profile.id,
                 )
 
-def gather_hot_conversations(
+def gather_hot_topics(
     user_profile: UserProfile,
     stream_ids: List[int],
     cutoff_date: datetime.datetime,
 ) -> List[Dict[str, Any]]:
-    # Gather stream conversations of 2 types:
-    # 1. long conversations
-    # 2. conversations where many different people participated
+    # Gather stream topics of 2 types:
+    # 1. long topics
+    # 2. topics where many different people participated
     #
     # Returns a list of dictionaries containing the templating
-    # information for each hot conversation.
+    # information for each hot topic.
 
     messages = Message.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
         date_sent__gt=cutoff_date).select_related('recipient', 'sender', 'sending_client')
 
-    conversation_length: Dict[TopicKey, int] = defaultdict(int)
-    conversation_messages: Dict[TopicKey, List[Message]] = defaultdict(list)
-    conversation_senders: Dict[TopicKey, Set[str]] = defaultdict(set)
+    topic_length: Dict[TopicKey, int] = defaultdict(int)
+    topic_messages: Dict[TopicKey, List[Message]] = defaultdict(list)
+    topic_senders: Dict[TopicKey, Set[str]] = defaultdict(set)
     for message in messages:
         key = (message.recipient.type_id,
                message.topic_name())
 
-        conversation_messages[key].append(message)
+        topic_messages[key].append(message)
 
         if not message.sent_by_human():
             # Don't include automated messages in the count.
             continue
 
-        conversation_senders[key].add(message.sender.full_name)
-        conversation_length[key] += 1
+        topic_senders[key].add(message.sender.full_name)
+        topic_length[key] += 1
 
-    topics_by_diversity = list(conversation_senders)
-    topics_by_diversity.sort(key=lambda key: conversation_senders[key], reverse=True)
+    topics_by_diversity = list(topic_senders)
+    topics_by_diversity.sort(key=lambda key: topic_senders[key], reverse=True)
 
-    topics_by_length = list(conversation_length)
-    topics_by_diversity.sort(key=lambda key: conversation_length[key], reverse=True)
+    topics_by_length = list(topic_length)
+    topics_by_diversity.sort(key=lambda key: topic_length[key], reverse=True)
 
-    # Get up to the 4 best conversations from the diversity list
-    # and length list, filtering out overlapping conversations.
-    hot_conversations = topics_by_diversity[:2]
+    # Get up to the 4 best topics from the diversity list
+    # and length list, filtering out overlapping topics.
+    hot_topics = topics_by_diversity[:2]
     for topic_key in topics_by_length:
-        if topic_key not in hot_conversations:
-            hot_conversations.append(topic_key)
-        if len(hot_conversations) >= 4:
+        if topic_key not in hot_topics:
+            hot_topics.append(topic_key)
+        if len(hot_topics) >= 4:
             break
 
     # There was so much overlap between the diversity and length lists that we
-    # still have < 4 conversations. Try to use remaining diversity items to pad
-    # out the hot conversations.
-    num_convos = len(hot_conversations)
+    # still have < 4 topics. Try to use remaining diversity items to pad
+    # out the hot topics.
+    num_convos = len(hot_topics)
     if num_convos < 4:
-        hot_conversations.extend(topics_by_diversity[num_convos:4])
+        hot_topics.extend(topics_by_diversity[num_convos:4])
 
-    hot_conversation_render_payloads = []
-    for h in hot_conversations:
-        users = list(conversation_senders[h])
-        count = conversation_length[h]
-        messages = conversation_messages[h]
+    hot_topic_render_payloads = []
+    for h in hot_topics:
+        users = list(topic_senders[h])
+        count = topic_length[h]
+        messages = topic_messages[h]
 
-        # We'll display up to 2 messages from the conversation.
+        # We'll display up to 2 messages from the topic.
         first_few_messages = messages[:2]
 
         teaser_data = {"participants": users,
@@ -153,8 +153,8 @@ def gather_hot_conversations(
                        "first_few_messages": build_message_list(
                            user_profile, first_few_messages)}
 
-        hot_conversation_render_payloads.append(teaser_data)
-    return hot_conversation_render_payloads
+        hot_topic_render_payloads.append(teaser_data)
+    return hot_topic_render_payloads
 
 def gather_new_streams(user_profile: UserProfile,
                        threshold: datetime.datetime) -> Tuple[int, Dict[str, List[str]]]:
@@ -208,7 +208,7 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
         stream_ids = exclude_subscription_modified_streams(user_profile, home_view_streams, cutoff_date)
 
     # Gather hot conversations.
-    context["hot_conversations"] = gather_hot_conversations(user_profile, stream_ids, cutoff_date)
+    context["hot_conversations"] = gather_hot_topics(user_profile, stream_ids, cutoff_date)
 
     # Gather new streams.
     new_streams_count, new_streams = gather_new_streams(
