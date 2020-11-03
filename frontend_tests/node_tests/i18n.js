@@ -77,6 +77,7 @@ run_test("t_tag", ({mock_template}) => {
         can_mute_topic: true,
         narrowed: true,
         topic: "testing",
+        not_spectator: true,
     };
 
     mock_template("actions_popover_content.hbs", true, (data, html) => {

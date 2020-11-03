@@ -401,12 +401,15 @@ export function toggle_actions_popover(element, id) {
 
     $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
     message_lists.current.select_id(id);
+    const not_spectator = !page_params.is_spectator;
     const elt = $(element);
     if (elt.data("popover") === undefined) {
         const message = message_lists.current.get(id);
         const message_container = message_lists.current.view.message_containers.get(message.id);
         const should_display_hide_option =
-            muted_users.is_user_muted(message.sender_id) && !message_container.is_hidden;
+            muted_users.is_user_muted(message.sender_id) &&
+            !message_container.is_hidden &&
+            not_spectator;
         const editability = message_edit.get_editability(message);
         let use_edit_icon;
         let editability_menu_item;
@@ -422,7 +425,10 @@ export function toggle_actions_popover(element, id) {
         }
         const topic = message.topic;
         const can_mute_topic =
-            message.stream && topic && !muted_topics.is_topic_muted(message.stream_id, topic);
+            message.stream &&
+            topic &&
+            !muted_topics.is_topic_muted(message.stream_id, topic) &&
+            not_spectator;
         const can_unmute_topic =
             message.stream && topic && muted_topics.is_topic_muted(message.stream_id, topic);
 
@@ -433,25 +439,32 @@ export function toggle_actions_popover(element, id) {
                     entry.prev_content !== undefined ||
                     util.get_edit_event_prev_topic(entry) !== undefined,
             ) &&
-            page_params.realm_allow_edit_history;
+            page_params.realm_allow_edit_history &&
+            not_spectator;
 
         // Disabling this for /me messages is a temporary workaround
         // for the fact that we don't have a styling for how that
         // should look.  See also condense.js.
         const should_display_collapse =
-            !message.locally_echoed && !message.is_me_message && !message.collapsed;
+            !message.locally_echoed &&
+            !message.is_me_message &&
+            !message.collapsed &&
+            not_spectator;
         const should_display_uncollapse =
             !message.locally_echoed && !message.is_me_message && message.collapsed;
 
         const should_display_edit_and_view_source =
-            message.content !== "<p>(deleted)</p>" ||
-            editability === message_edit.editability_types.FULL ||
-            editability === message_edit.editability_types.TOPIC_ONLY;
-        const should_display_quote_and_reply = message.content !== "<p>(deleted)</p>";
+            (message.content !== "<p>(deleted)</p>" ||
+                editability === message_edit.editability_types.FULL ||
+                editability === message_edit.editability_types.TOPIC_ONLY) &&
+            not_spectator;
+        const should_display_quote_and_reply =
+            message.content !== "<p>(deleted)</p>" && not_spectator;
 
         const conversation_time_uri = hash_util.by_conversation_and_time_uri(message);
 
-        const should_display_delete_option = message_edit.get_deletability(message);
+        const should_display_delete_option =
+            message_edit.get_deletability(message) && not_spectator;
         const args = {
             message_id: message.id,
             historical: message.historical,
