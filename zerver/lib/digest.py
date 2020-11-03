@@ -82,13 +82,22 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
                     user_profile.id,
                 )
 
-def gather_hot_conversations(user_profile: UserProfile, messages: List[Message]) -> List[Dict[str, Any]]:
+def gather_hot_conversations(
+    user_profile: UserProfile,
+    stream_ids: List[int],
+    cutoff_date: datetime.datetime,
+) -> List[Dict[str, Any]]:
     # Gather stream conversations of 2 types:
     # 1. long conversations
     # 2. conversations where many different people participated
     #
     # Returns a list of dictionaries containing the templating
     # information for each hot conversation.
+
+    messages = Message.objects.filter(
+        recipient__type=Recipient.STREAM,
+        recipient__type_id__in=stream_ids,
+        date_sent__gt=cutoff_date).select_related('recipient', 'sender', 'sending_client')
 
     conversation_length: Dict[Tuple[int, str], int] = defaultdict(int)
     conversation_messages: Dict[Tuple[int, str], List[Message]] = defaultdict(list)
@@ -197,15 +206,8 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
     else:
         stream_ids = exclude_subscription_modified_streams(user_profile, home_view_streams, cutoff_date)
 
-    # Fetch list of all messages sent after cutoff_date where the user is subscribed
-    messages = Message.objects.filter(
-        recipient__type=Recipient.STREAM,
-        recipient__type_id__in=stream_ids,
-        date_sent__gt=cutoff_date).select_related('recipient', 'sender', 'sending_client')
-
     # Gather hot conversations.
-    context["hot_conversations"] = gather_hot_conversations(
-        user_profile, messages)
+    context["hot_conversations"] = gather_hot_conversations(user_profile, stream_ids, cutoff_date)
 
     # Gather new streams.
     new_streams_count, new_streams = gather_new_streams(
