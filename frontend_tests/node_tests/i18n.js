@@ -37,6 +37,7 @@ run_test("t_tag", () => {
         can_edit_message: true,
         can_mute_topic: true,
         narrowed: true,
+        not_web_public_visitor: true,
     };
 
     const html = require("../../static/templates/actions_popover_content.hbs")(args);
