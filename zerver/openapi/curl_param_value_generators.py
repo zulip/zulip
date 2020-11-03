@@ -6,6 +6,7 @@
 # fetching of appropriate parameter values to use when running the
 # cURL examples as part of the tools/test-api test suite.
 
+import urllib.parse
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
@@ -78,10 +79,11 @@ def patch_openapi_example_values(
 def fetch_api_key() -> Dict[str, object]:
     email = helpers.example_email("iago")
     password = initial_password(email)
+    assert password is not None
 
     return {
         "username": email,
-        "password": password,
+        "password": urllib.parse.quote(password),
     }
 
 @openapi_param_value_generator(["/messages/{message_id}:get", "/messages/{message_id}/history:get",
