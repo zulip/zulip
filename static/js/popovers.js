@@ -547,6 +547,7 @@ exports.toggle_actions_popover = function (element, id) {
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
             should_display_edit_and_view_source,
             should_display_quote_and_reply,
+            not_web_public_visitor: !page_params.is_web_public_visitor,
         };
 
         const ypos = elt.offset().top;
