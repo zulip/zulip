@@ -137,18 +137,13 @@ def get_recent_topic_activity(
         topic_messages=topic_messages,
     )
 
-def gather_hot_topics(
-    user_profile: UserProfile,
+def get_hot_topics(
     topic_activity: TopicActivity,
-) -> List[Dict[str, Any]]:
-    # Returns a list of dictionaries containing the templating
-    # information for each hot topic.
+) -> List[TopicKey]:
+    # Get out top 4 hottest topics
 
     topics_by_diversity = topic_activity.topics_by_diversity
     topics_by_length = topic_activity.topics_by_length
-    topic_senders = topic_activity.topic_senders
-    topic_length = topic_activity.topic_length
-    topic_messages = topic_activity.topic_messages
 
     # Get up to the 4 best topics from the diversity list
     # and length list, filtering out overlapping topics.
@@ -165,6 +160,20 @@ def gather_hot_topics(
     num_convos = len(hot_topics)
     if num_convos < 4:
         hot_topics.extend(topics_by_diversity[num_convos:4])
+
+    return hot_topics
+
+def gather_hot_topics(
+    user_profile: UserProfile,
+    hot_topics: List[TopicKey],
+    topic_activity: TopicActivity,
+) -> List[Dict[str, Any]]:
+    # Returns a list of dictionaries containing the templating
+    # information for each hot topic.
+
+    topic_senders = topic_activity.topic_senders
+    topic_length = topic_activity.topic_length
+    topic_messages = topic_activity.topic_messages
 
     hot_topic_render_payloads = []
     for h in hot_topics:
@@ -235,9 +244,10 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
         stream_ids = exclude_subscription_modified_streams(user_profile, home_view_streams, cutoff_date)
 
     topic_activity = get_recent_topic_activity(stream_ids, cutoff_date)
+    hot_topics = get_hot_topics(topic_activity)
 
     # Gather hot conversations.
-    context["hot_conversations"] = gather_hot_topics(user_profile, topic_activity)
+    context["hot_conversations"] = gather_hot_topics(user_profile, hot_topics, topic_activity)
 
     # Gather new streams.
     new_streams_count, new_streams = gather_new_streams(
