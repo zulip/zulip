@@ -550,6 +550,7 @@ class MessageListView {
         const msg_to_render = {
             ...message_container,
             table_name: this.table_name,
+            not_web_public_visitor: !page_params.is_web_public_visitor,
         };
         return render_single_message(msg_to_render);
     }
@@ -564,6 +565,7 @@ class MessageListView {
                 message_groups,
                 use_match_properties,
                 table_name,
+                not_web_public_visitor: !page_params.is_web_public_visitor,
             }),
         );
     }
