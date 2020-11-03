@@ -1,6 +1,7 @@
 import datetime
 import logging
 from collections import defaultdict
+from dataclasses import dataclass
 from typing import Any, Dict, List, Set, Tuple, Union
 
 from django.conf import settings
@@ -31,6 +32,14 @@ log_to_file(logger, settings.DIGEST_LOG_PATH)
 DIGEST_CUTOFF = 5
 
 TopicKey = Tuple[int, str]
+
+@dataclass
+class TopicActivity:
+    topics_by_length: List[TopicKey]
+    topics_by_diversity: List[TopicKey]
+    topic_senders: Dict[TopicKey, Set[str]]  # full_name
+    topic_length: Dict[TopicKey, int]
+    topic_messages: Dict[TopicKey, List[Message]]
 
 # Digests accumulate 2 types of interesting traffic for a user:
 # 1. New streams
@@ -84,17 +93,14 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
                     user_profile.id,
                 )
 
-def gather_hot_topics(
-    user_profile: UserProfile,
+def get_recent_topic_activity(
     stream_ids: List[int],
     cutoff_date: datetime.datetime,
-) -> List[Dict[str, Any]]:
-    # Gather stream topics of 2 types:
-    # 1. long topics
-    # 2. topics where many different people participated
-    #
-    # Returns a list of dictionaries containing the templating
-    # information for each hot topic.
+) -> TopicActivity:
+    # Gather information about topic conversations, then
+    # classify by:
+    #   * topic length
+    #   * number of senders
 
     messages = Message.objects.filter(
         recipient__type=Recipient.STREAM,
@@ -122,6 +128,27 @@ def gather_hot_topics(
 
     topics_by_length = list(topic_length)
     topics_by_diversity.sort(key=lambda key: topic_length[key], reverse=True)
+
+    return TopicActivity(
+        topics_by_diversity=topics_by_diversity,
+        topics_by_length=topics_by_length,
+        topic_senders=topic_senders,
+        topic_length=topic_length,
+        topic_messages=topic_messages,
+    )
+
+def gather_hot_topics(
+    user_profile: UserProfile,
+    topic_activity: TopicActivity,
+) -> List[Dict[str, Any]]:
+    # Returns a list of dictionaries containing the templating
+    # information for each hot topic.
+
+    topics_by_diversity = topic_activity.topics_by_diversity
+    topics_by_length = topic_activity.topics_by_length
+    topic_senders = topic_activity.topic_senders
+    topic_length = topic_activity.topic_length
+    topic_messages = topic_activity.topic_messages
 
     # Get up to the 4 best topics from the diversity list
     # and length list, filtering out overlapping topics.
@@ -207,8 +234,10 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
     else:
         stream_ids = exclude_subscription_modified_streams(user_profile, home_view_streams, cutoff_date)
 
+    topic_activity = get_recent_topic_activity(stream_ids, cutoff_date)
+
     # Gather hot conversations.
-    context["hot_conversations"] = gather_hot_topics(user_profile, stream_ids, cutoff_date)
+    context["hot_conversations"] = gather_hot_topics(user_profile, topic_activity)
 
     # Gather new streams.
     new_streams_count, new_streams = gather_new_streams(
