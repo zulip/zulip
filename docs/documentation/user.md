@@ -250,7 +250,7 @@ The tab identifiers (e.g. `desktop-web` above) and their mappings to
 the tabs' labels are declared in
 [zerver/lib/markdown/tabbed_sections.py][tabbed-sections-code].
 
-[tabbed-sections-code]: https://github.com/zulip/zulip/blob/master/zerver/lib/markdown/tabbed_sections.py#L37
+[tabbed-sections-code]: https://github.com/zulip/zulip/blob/master/zerver/lib/markdown/tabbed_sections.py
 
 This widget can also be used just to create a nice box around a set of
 instructions
