@@ -117,18 +117,18 @@ def gather_hot_conversations(
         conversation_senders[key].add(message.sender.full_name)
         conversation_length[key] += 1
 
-    diversity_list = list(conversation_senders.items())
-    diversity_list.sort(key=lambda entry: len(entry[1]), reverse=True)
+    topics_by_diversity = list(conversation_senders)
+    topics_by_diversity.sort(key=lambda key: conversation_senders[key], reverse=True)
 
-    length_list = list(conversation_length.items())
-    length_list.sort(key=lambda entry: entry[1], reverse=True)
+    topics_by_length = list(conversation_length)
+    topics_by_diversity.sort(key=lambda key: conversation_length[key], reverse=True)
 
     # Get up to the 4 best conversations from the diversity list
     # and length list, filtering out overlapping conversations.
-    hot_conversations = [elt[0] for elt in diversity_list[:2]]
-    for candidate, _ in length_list:
-        if candidate not in hot_conversations:
-            hot_conversations.append(candidate)
+    hot_conversations = topics_by_diversity[:2]
+    for topic_key in topics_by_length:
+        if topic_key not in hot_conversations:
+            hot_conversations.append(topic_key)
         if len(hot_conversations) >= 4:
             break
 
@@ -137,7 +137,7 @@ def gather_hot_conversations(
     # out the hot conversations.
     num_convos = len(hot_conversations)
     if num_convos < 4:
-        hot_conversations.extend(elt[0] for elt in diversity_list[num_convos:4])
+        hot_conversations.extend(topics_by_diversity[num_convos:4])
 
     hot_conversation_render_payloads = []
     for h in hot_conversations:
