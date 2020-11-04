@@ -218,51 +218,51 @@ def gather_new_streams(user_profile: UserProfile,
 def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
     return bool(hot_conversations or new_streams)
 
-def get_digest_context(user_profile: UserProfile, cutoff: float) -> Dict[str, Any]:
+def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
 
-    context = common_context(user_profile)
+    context = common_context(user)
 
     # Start building email template data.
     context.update(
-        unsubscribe_link=one_click_unsubscribe_link(user_profile, "digest"),
+        unsubscribe_link=one_click_unsubscribe_link(user, "digest"),
     )
 
     home_view_streams = Subscription.objects.filter(
-        user_profile=user_profile,
+        user_profile=user,
         recipient__type=Recipient.STREAM,
         active=True,
         is_muted=False).values_list('recipient__type_id', flat=True)
 
-    if not user_profile.long_term_idle:
+    if not user.long_term_idle:
         stream_ids = home_view_streams
     else:
-        stream_ids = exclude_subscription_modified_streams(user_profile, home_view_streams, cutoff_date)
+        stream_ids = exclude_subscription_modified_streams(user, home_view_streams, cutoff_date)
 
     topic_activity = get_recent_topic_activity(stream_ids, cutoff_date)
     hot_topics = get_hot_topics(topic_activity)
 
     # Gather hot conversations.
-    context["hot_conversations"] = gather_hot_topics(user_profile, hot_topics, topic_activity)
+    context["hot_conversations"] = gather_hot_topics(user, hot_topics, topic_activity)
 
     # Gather new streams.
     new_streams_count, new_streams = gather_new_streams(
-        user_profile, cutoff_date)
+        user, cutoff_date)
     context["new_streams"] = new_streams
     context["new_streams_count"] = new_streams_count
 
     return context
 
-def handle_digest_email(user_profile_id: int, cutoff: float) -> None:
-    user_profile = get_user_profile_by_id(user_profile_id)
-    context = get_digest_context(user_profile, cutoff)
+def handle_digest_email(user_id: int, cutoff: float) -> None:
+    user = get_user_profile_by_id(user_id)
+    context = get_digest_context(user, cutoff)
 
     # We don't want to send emails containing almost no information.
     if enough_traffic(context["hot_conversations"], context["new_streams_count"]):
-        logger.info("Sending digest email for user %s", user_profile.id)
+        logger.info("Sending digest email for user %s", user.id)
         # Send now, as a ScheduledEmail
-        send_future_email('zerver/emails/digest', user_profile.realm, to_user_ids=[user_profile.id],
+        send_future_email('zerver/emails/digest', user.realm, to_user_ids=[user.id],
                           from_name="Zulip Digest", from_address=FromAddress.no_reply_placeholder,
                           context=context)
 
