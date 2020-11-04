@@ -8,6 +8,7 @@
 import inspect
 import json
 import re
+import shlex
 from typing import Any, Dict, List, Optional, Pattern, Tuple
 
 import markdown
@@ -213,7 +214,7 @@ cURL example."""
         # We currently don't have any non-JSON encoded arrays.
         assert(jsonify)
         if curl_argument:
-            return f"    --data-urlencode {param_name}='{ordered_ex_val_str}'"
+            return "    --data-urlencode " + shlex.quote(f"{param_name}={ordered_ex_val_str}")
         return ordered_ex_val_str  # nocoverage
     else:
         example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
@@ -222,7 +223,7 @@ cURL example."""
         if jsonify:
             example_value = json.dumps(example_value)
         if curl_argument:
-            return f"    -d '{param_name}={example_value}'"
+            return "    --data-urlencode " + shlex.quote(f"{param_name}={example_value}")
         return example_value
 
 def generate_curl_example(endpoint: str, method: str,
@@ -258,7 +259,7 @@ def generate_curl_example(endpoint: str, method: str,
 
     curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method,
                                                             api_url)]
-    lines.append(" ".join(curl_first_line_parts))
+    lines.append(" ".join(map(shlex.quote, curl_first_line_parts)))
 
     insecure_operations = ['/dev_fetch_api_key:post', '/fetch_api_key:post']
     if operation_security is None:
@@ -277,7 +278,7 @@ def generate_curl_example(endpoint: str, method: str,
         raise AssertionError("Unhandled securityScheme. Please update the code to handle this scheme.")
 
     if authentication_required:
-        lines.append(f"    -u {auth_email}:{auth_api_key}")
+        lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
 
     for param in operation_params:
         if param["in"] == "path":
@@ -297,7 +298,7 @@ def generate_curl_example(endpoint: str, method: str,
     if "requestBody" in operation_entry:
         properties = operation_entry["requestBody"]["content"]["multipart/form-data"]["schema"]["properties"]
         for key, property in properties.items():
-            lines.append('    -F "{}=@{}"'.format(key, property["example"]))
+            lines.append('    -F ' + shlex.quote('{}=@{}'.format(key, property["example"])))
 
     for i in range(1, len(lines)-1):
         lines[i] = lines[i] + " \\"
