@@ -155,6 +155,11 @@ function do_hashchange_normal(from_reload) {
 }
 
 function do_hashchange_overlay(old_hash) {
+    if (old_hash === undefined) {
+        // User directly requested to open an overlay.
+        // We need to show recent topics in the background.
+        recent_topics.show();
+    }
     const base = hash_util.get_hash_category(window.location.hash);
     const old_base = hash_util.get_hash_category(old_hash);
     const section = hash_util.get_hash_section(window.location.hash);
