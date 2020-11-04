@@ -651,13 +651,13 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 73)
+        self.assertEqual(len(queries), 72)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        self.assertEqual(len(cache_tries), 16)
+        self.assertEqual(len(cache_tries), 15)
 
         user_profile = self.nonreg_user('test')
         self.assert_logged_in_user_id(user_profile.id)
