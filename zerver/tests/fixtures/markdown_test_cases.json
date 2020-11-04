@@ -910,6 +910,28 @@
       "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://example.com/image.png\"><img data-src-fullsize=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=full\" src=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=thumbnail\"></a></div></div></div>",
       "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n</div></div>",
       "text_content": "header (…)\n"
+    },
+    {
+      "name": "embedded_link_inside_Bold",
+      "input": "**[Static types in Python](https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy)**",
+      "expected_output": "<p><strong><a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\">Static types in Python</a></strong></p>"
+    },
+    {
+      "name": "embedded_link_inside_Italic",
+      "input": "*[Static types in Python](https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy)*",
+      "expected_output": "<p><em><a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\">Static types in Python</a></em></p>"
+    },
+    {
+      "name": "edge_case_embedded_link_inside_Bold",
+      "input": "<h1>**<h1>[<h2>Static types in Python</h2>](https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy)</h1>**</h1>",
+      "expected_output": "<p>&lt;h1&gt;<strong>&lt;h1&gt;<a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\">&lt;h2&gt;Static types in Python&lt;/h2&gt;</a>&lt;/h1&gt;</strong>&lt;/h1&gt;</p>",
+      "marked_expected_output": "<p>&lt;h1&gt;<strong>&lt;h1&gt;<a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\">&lt;h2&gt;Static types in Python&lt;/h2&gt;</a>&lt;/h1&gt;</strong>&lt;/h1&gt;\n\n</p>"
+    },
+    {
+      "name": "edge_case_embedded_link_inside_Italic",
+      "input": "<h1>*<h1>[<h2>Static types in Python</h2>](https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy)</h1>*</h1>",
+      "expected_output": "<p>&lt;h1&gt;<em>&lt;h1&gt;<a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\">&lt;h2&gt;Static types in Python&lt;/h2&gt;</a>&lt;/h1&gt;</em>&lt;/h1&gt;</p>",
+      "marked_expected_output": "<p>&lt;h1&gt;<em>&lt;h1&gt;<a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\">&lt;h2&gt;Static types in Python&lt;/h2&gt;</a>&lt;/h1&gt;</em>&lt;/h1&gt;\n\n</p>"
     }
   ],
   "linkify_tests": [
