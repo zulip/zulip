@@ -1087,7 +1087,6 @@ Renderer.prototype.strong = function(text) {
 };
 
 Renderer.prototype.em = function(text) {
-  text = escape(text);
   return '<em>' + text + '</em>';
 };
 
