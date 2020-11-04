@@ -16,7 +16,7 @@ from zerver.lib.digest import (
 )
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured
+from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.models import (
     Message,
     Realm,
@@ -172,11 +172,13 @@ class TestDigestEmailMessages(ZulipTestCase):
 
             for digest_user in digest_users:
                 with queries_captured(keep_cache_warm=keep_cache_warm) as queries:
-                    handle_digest_email(digest_user.id, cutoff)
+                    with cache_tries_captured() as cache_tries:
+                        handle_digest_email(digest_user.id, cutoff)
 
                 keep_cache_warm = True
 
                 self.assert_length(queries, 10)
+                self.assert_length(cache_tries, 1)
 
         self.assertEqual(mock_send_future_email.call_count, len(digest_users))
 
