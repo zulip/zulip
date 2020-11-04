@@ -251,6 +251,7 @@
            as new messages arrive from the server. */
         .recent_topic_stream {
             width: 25%;
+            padding: 8px 8px;
         }
 
         .recent_topic_name {
@@ -274,9 +275,6 @@
             thead .participants_header,
             thead .last_msg_time_header {
                 display: none;
-            }
-            table td {
-                line-height: 2em;
             }
         }
     }
