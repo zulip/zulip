@@ -225,15 +225,15 @@ def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
     context = common_context(user)
 
     # Start building email template data.
-    context.update(
-        unsubscribe_link=one_click_unsubscribe_link(user, "digest"),
-    )
+    unsubscribe_link = one_click_unsubscribe_link(user, "digest")
+    context.update(unsubscribe_link=unsubscribe_link)
 
     home_view_streams = Subscription.objects.filter(
         user_profile=user,
         recipient__type=Recipient.STREAM,
         active=True,
-        is_muted=False).values_list('recipient__type_id', flat=True)
+        is_muted=False,
+    ).values_list('recipient__type_id', flat=True)
 
     if not user.long_term_idle:
         stream_ids = home_view_streams
@@ -247,8 +247,7 @@ def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
     context["hot_conversations"] = gather_hot_topics(user, hot_topics, topic_activity)
 
     # Gather new streams.
-    new_streams_count, new_streams = gather_new_streams(
-        user, cutoff_date)
+    new_streams_count, new_streams = gather_new_streams(user, cutoff_date)
     context["new_streams"] = new_streams
     context["new_streams_count"] = new_streams_count
 
@@ -262,9 +261,14 @@ def handle_digest_email(user_id: int, cutoff: float) -> None:
     if enough_traffic(context["hot_conversations"], context["new_streams_count"]):
         logger.info("Sending digest email for user %s", user.id)
         # Send now, as a ScheduledEmail
-        send_future_email('zerver/emails/digest', user.realm, to_user_ids=[user.id],
-                          from_name="Zulip Digest", from_address=FromAddress.no_reply_placeholder,
-                          context=context)
+        send_future_email(
+            'zerver/emails/digest',
+            user.realm,
+            to_user_ids=[user.id],
+            from_name="Zulip Digest",
+            from_address=FromAddress.no_reply_placeholder,
+            context=context,
+        )
 
 
 def exclude_subscription_modified_streams(user_profile: UserProfile,
