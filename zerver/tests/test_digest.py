@@ -122,12 +122,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         new_stream_names = kwargs['context']['new_streams']['plain']
         self.assertTrue('web_public_stream' in new_stream_names)
 
-    @mock.patch('zerver.lib.digest.enough_traffic')
-    @mock.patch('zerver.lib.digest.send_future_email')
-    def test_soft_deactivated_user_multiple_stream_senders(self,
-                                                           mock_send_future_email: mock.MagicMock,
-                                                           mock_enough_traffic: mock.MagicMock) -> None:
-
+    def test_soft_deactivated_user_multiple_stream_senders(self) -> None:
         one_day_ago = timezone_now() - datetime.timedelta(days=1)
         Message.objects.all().update(date_sent=one_day_ago)
 
@@ -169,17 +164,17 @@ class TestDigestEmailMessages(ZulipTestCase):
         # To trigger this, we call the one_click_unsubscribe_link function below.
         one_click_unsubscribe_link(digest_users[0], 'digest')
 
-        for digest_user in digest_users:
-            with queries_captured() as queries:
-                handle_digest_email(digest_user.id, cutoff)
+        with mock.patch('zerver.lib.digest.send_future_email') as mock_send_future_email:
+            for digest_user in digest_users:
+                with queries_captured() as queries:
+                    handle_digest_email(digest_user.id, cutoff)
 
-            # This can definitely be optimized; for both the huddle and
-            # stream cases, the get_narrow_url API ends up double-fetching
-            # some data because of how the functions are organized.
-            self.assert_length(queries, 10)
+                self.assert_length(queries, 10)
 
-            self.assertEqual(mock_send_future_email.call_count, 1)
-            kwargs = mock_send_future_email.call_args[1]
+        self.assertEqual(mock_send_future_email.call_count, len(digest_users))
+
+        for i, digest_user in enumerate(digest_users):
+            kwargs = mock_send_future_email.call_args_list[i][1]
             self.assertEqual(kwargs['to_user_ids'], [digest_user.id])
 
             hot_conversations = kwargs['context']['hot_conversations']
