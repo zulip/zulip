@@ -252,6 +252,24 @@
             white-space: nowrap;
         }
 
+        /* These fixed column widths prevent column widths from being adjusted
+           as new messages arrive from the server. */
+        .recent_topic_stream {
+            width: 25%;
+        }
+
+        .recent_topic_name {
+            width: 40%;
+        }
+
+        .recent_topic_users {
+            width: 20%;
+        }
+
+        .recent_topic_timestamp {
+            width: 15%;
+        }
+
         @media (width < $md_min) {
             /* Hide participants and last message time
                on smaller screens. This ensures user always
