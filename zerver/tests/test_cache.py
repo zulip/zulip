@@ -132,7 +132,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
         # The previous function call should have cached the result correctly, so now
         # no database queries should happen:
-        with queries_captured() as queries_two:
+        with queries_captured(keep_cache_warm=True) as queries_two:
             result_two = get_user_function_with_good_cache_keys(hamlet.id)
 
         self.assertEqual(result_two, hamlet)
@@ -156,7 +156,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
         self.assertEqual(result, None)
         self.assert_length(queries, 1)
 
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             result_two = get_user_function_can_return_none(last_user_id + 1)
 
         self.assertEqual(result_two, None)

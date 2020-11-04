@@ -165,7 +165,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         # This can definitely be optimized; for both the huddle and
         # stream cases, the get_narrow_url API ends up double-fetching
         # some data because of how the functions are organized.
-        self.assert_length(queries, 9)
+        self.assert_length(queries, 10)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]

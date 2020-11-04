@@ -66,6 +66,7 @@ from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     avatar_disk_path,
+    cache_tries_captured,
     find_key_by_email,
     get_test_image_file,
     load_subdomain_token,
@@ -647,10 +648,17 @@ class LoginTest(ZulipTestCase):
         flush_per_request_caches()
         ContentType.objects.clear_cache()
 
-        with queries_captured() as queries:
+        with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 74)
+        self.assertEqual(len(queries), 73)
+
+        # We can probably avoid a couple cache hits here, but there doesn't
+        # seem to be any O(N) behavior.  Some of the cache hits are related
+        # to sending messages, such as getting the welcome bot, looking up
+        # the alert words for a realm, etc.
+        self.assertEqual(len(cache_tries), 16)
+
         user_profile = self.nonreg_user('test')
         self.assert_logged_in_user_id(user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -897,7 +905,10 @@ class InviteUserTest(InviteUserBase):
         realm.save()
 
         with queries_captured() as queries:
-            result = try_invite()
+            with cache_tries_captured() as cache_tries:
+                result = try_invite()
+
+        self.assert_json_success(result)
 
         # TODO: Fix large query count here.
         #
@@ -908,7 +919,7 @@ class InviteUserTest(InviteUserBase):
         #       the large number of queries), so I just
         #       use an approximate equality check.
         actual_count = len(queries)
-        expected_count = 312
+        expected_count = 281
         if abs(actual_count - expected_count) > 1:
             raise AssertionError(f'''
                 Unexpected number of queries:
@@ -917,7 +928,13 @@ class InviteUserTest(InviteUserBase):
                 actual: {actual_count}
                 ''')
 
-        self.assert_json_success(result)
+        # Almost all of these cache hits are to re-fetch each one of the
+        # invitees.  These happen inside our queue processor for sending
+        # confirmation emails, so they are somewhat difficult to avoid.
+        #
+        # TODO: Mock the call to queue_json_publish, so we can measure the
+        # queue impact separately from the user-perceived impact.
+        self.assert_length(cache_tries, 32)
 
         # Next get line coverage on bumping a realm's max_invites.
         realm.date_created = timezone_now()
