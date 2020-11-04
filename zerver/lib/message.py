@@ -48,7 +48,6 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     get_display_recipient_by_id,
-    get_user_profile_by_id,
     get_usermessage_by_message_id,
     query_for_ids,
 )
@@ -685,7 +684,7 @@ def render_markdown(message: Message,
     if realm is None:
         realm = message.get_realm()
 
-    sender = get_user_profile_by_id(message.sender_id)
+    sender = message.sender
     sent_by_bot = sender.is_bot
     translate_emoticons = sender.translate_emoticons
 
