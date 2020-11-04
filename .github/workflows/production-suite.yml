@@ -97,6 +97,7 @@ jobs:
         with:
           name: production-tarball
           path: /tmp/production-build
+          retention-days: 14
 
   production_install:
     strategy:

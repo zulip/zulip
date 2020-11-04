@@ -148,6 +148,7 @@ jobs:
         with:
           name: puppeteer
           path: ./var/puppeteer
+          retention-days: 60
 
       - name: Check development database build
         if: ${{ matrix.is_focal }}
