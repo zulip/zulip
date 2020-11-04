@@ -9,6 +9,7 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.actions import do_create_user
 from zerver.lib.digest import (
+    bulk_handle_digest_email,
     enqueue_emails,
     exclude_subscription_modified_streams,
     gather_new_streams,
@@ -168,17 +169,14 @@ class TestDigestEmailMessages(ZulipTestCase):
         one_click_unsubscribe_link(digest_users[0], 'digest')
 
         with mock.patch('zerver.lib.digest.send_future_email') as mock_send_future_email:
-            keep_cache_warm = False
+            digest_user_ids = [user.id for user in digest_users]
 
-            for digest_user in digest_users:
-                with queries_captured(keep_cache_warm=keep_cache_warm) as queries:
-                    with cache_tries_captured() as cache_tries:
-                        handle_digest_email(digest_user.id, cutoff)
+            with queries_captured() as queries:
+                with cache_tries_captured() as cache_tries:
+                    bulk_handle_digest_email(digest_user_ids, cutoff)
 
-                keep_cache_warm = True
-
-                self.assert_length(queries, 10)
-                self.assert_length(cache_tries, 1)
+            self.assert_length(queries, 40)
+            self.assert_length(cache_tries, 4)
 
         self.assertEqual(mock_send_future_email.call_count, len(digest_users))
 
