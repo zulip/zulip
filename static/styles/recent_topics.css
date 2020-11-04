@@ -247,11 +247,6 @@
             }
         }
 
-        .recent_topic_stream,
-        thead .last_msg_time_header {
-            white-space: nowrap;
-        }
-
         /* These fixed column widths prevent column widths from being adjusted
            as new messages arrive from the server. */
         .recent_topic_stream {
