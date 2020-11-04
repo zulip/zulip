@@ -158,7 +158,7 @@ def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], O
         yield cache_queries
 
 @contextmanager
-def queries_captured(include_savepoints: bool=False) -> Generator[
+def queries_captured(include_savepoints: bool=False, keep_cache_warm: bool=False) -> Generator[
         List[Dict[str, Union[str, bytes]]], None, None]:
     '''
     Allow a user to capture just the queries executed during
@@ -171,8 +171,6 @@ def queries_captured(include_savepoints: bool=False) -> Generator[
                         action: Callable[[str, ParamsT], None],
                         sql: Query,
                         params: ParamsT) -> None:
-        cache = get_cache_backend(None)
-        cache.clear()
         start = time.time()
         try:
             return action(sql, params)
@@ -193,6 +191,9 @@ def queries_captured(include_savepoints: bool=False) -> Generator[
                            params: Iterable[Params]) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # nocoverage -- doesn't actually get used in tests
 
+    if not keep_cache_warm:
+        cache = get_cache_backend(None)
+        cache.clear()
     with mock.patch.multiple(TimeTrackingCursor, execute=cursor_execute, executemany=cursor_executemany):
         yield queries
 

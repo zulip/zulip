@@ -1416,7 +1416,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ['cordelia', 'prospero', 'iago', 'hamlet', 'ZOE']
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=32,
+            query_count=31,
             cache_count=9,
             target_users=target_users,
             is_realm_admin=True,
@@ -1489,7 +1489,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ['cordelia', 'prospero', 'othello', 'hamlet', 'ZOE']
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=32,
+            query_count=31,
             cache_count=9,
             target_users=target_users,
             is_realm_admin=False,
@@ -2984,7 +2984,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
                 )
-        self.assert_length(queries, 37)
+        self.assert_length(queries, 36)
 
         self.assert_length(events, 5)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -3817,7 +3817,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 [new_streams[0]],
                 dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
             )
-        self.assert_length(queries, 37)
+        self.assert_length(queries, 36)
 
         # Test creating private stream.
         with queries_captured() as queries:
@@ -3842,7 +3842,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     principals=orjson.dumps([user1.id, user2.id]).decode(),
                 ),
             )
-        self.assert_length(queries, 48)
+        self.assert_length(queries, 44)
 
 class GetStreamsTest(ZulipTestCase):
     def test_streams_api_for_bot_owners(self) -> None:
