@@ -128,6 +128,9 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         digest_users = [
             self.example_user('othello'),
+            self.example_user('aaron'),
+            self.example_user('desdemona'),
+            self.example_user('polonius'),
         ]
 
         for digest_user in digest_users:
@@ -165,9 +168,13 @@ class TestDigestEmailMessages(ZulipTestCase):
         one_click_unsubscribe_link(digest_users[0], 'digest')
 
         with mock.patch('zerver.lib.digest.send_future_email') as mock_send_future_email:
+            keep_cache_warm = False
+
             for digest_user in digest_users:
-                with queries_captured() as queries:
+                with queries_captured(keep_cache_warm=keep_cache_warm) as queries:
                     handle_digest_email(digest_user.id, cutoff)
+
+                keep_cache_warm = True
 
                 self.assert_length(queries, 10)
 
