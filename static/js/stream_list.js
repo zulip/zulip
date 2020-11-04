@@ -503,6 +503,11 @@ exports.set_event_handlers = function () {
             exports.toggle_filter_displayed(e);
         });
 
+    $("#streams_inline_cog").tooltip({
+        title: i18n.t("Subscribe, add, or configure streams"),
+        animation: false,
+        placement: "bottom",
+    });
     // check for user scrolls on streams list for first time
     ui.get_scroll_element($("#stream-filters-container")).on("scroll", function () {
         has_scrolled = true;
