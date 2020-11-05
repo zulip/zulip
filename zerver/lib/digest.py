@@ -224,6 +224,25 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
     result: Dict[int, Dict[str, Any]] = {}
 
+    user_ids = [user.id for user in users]
+
+    def get_stream_map(user_ids: List[int]) -> Dict[int, List[int]]:
+        # maps user_id -> [stream_id, stream_id, ...]
+        rows = Subscription.objects.filter(
+            user_profile_id__in=user_ids,
+            recipient__type=Recipient.STREAM,
+            active=True,
+            is_muted=False,
+        ).values('user_profile_id', 'recipient__type_id')
+
+        dct: Dict[int, List[int]] = defaultdict(list)
+        for row in rows:
+            dct[row['user_profile_id']].append(row['recipient__type_id'])
+
+        return dct
+
+    stream_map = get_stream_map(user_ids)
+
     for user in users:
         context = common_context(user)
 
@@ -231,12 +250,7 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
         unsubscribe_link = one_click_unsubscribe_link(user, "digest")
         context.update(unsubscribe_link=unsubscribe_link)
 
-        home_view_streams = Subscription.objects.filter(
-            user_profile=user,
-            recipient__type=Recipient.STREAM,
-            active=True,
-            is_muted=False,
-        ).values_list('recipient__type_id', flat=True)
+        home_view_streams = stream_map[user.id]
 
         if not user.long_term_idle:
             stream_ids = home_view_streams
