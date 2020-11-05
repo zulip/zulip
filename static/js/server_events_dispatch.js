@@ -486,6 +486,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (current_msg_list === message_list.narrowed) {
                     message_list.narrowed.rerender();
                 }
+                // Rerender buddy list status emoji
+                activity.build_user_sidebar();
             }
             settings_display.update_page();
             break;

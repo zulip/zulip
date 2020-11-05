@@ -2361,6 +2361,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
     top: 3px;
 }
 
+.status_emoji {
+    height: 20px;
+    width: 20px;
+    top: 5px;
+}
+
 /* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
     width: 100%;

@@ -180,13 +180,20 @@ exports.info_for = function (user_id) {
     const user_circle_class = exports.get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
     const my_user_status = exports.get_my_user_status(user_id);
+    const emojiset = page_params.emojiset;
+    let status_emoji = "";
+    if (emojiset !== "text") {
+        status_emoji = user_status.get_status_emoji(user_id);
+    }
     const user_circle_status = exports.status_description(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
         name: person.full_name,
         user_id,
+        emojiset,
         my_user_status,
+        status_emoji,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class,

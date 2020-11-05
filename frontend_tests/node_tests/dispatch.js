@@ -734,10 +734,18 @@ run_test("update_display_settings", (override) => {
         event = event_fixtures.update_display_settings__emojiset;
         called = false;
         override("settings_display.report_emojiset_change", stub.f);
+        override("activity.build_user_sidebar", noop);
         page_params.emojiset = "text";
         dispatch(event);
         assert_same(called, true);
         assert_same(page_params.emojiset, "google");
+    });
+
+    global.with_stub((stub) => {
+        event = event_fixtures.update_display_settings__emojiset;
+        override("settings_display.report_emojiset_change", noop);
+        override("activity.build_user_sidebar", stub.f);
+        dispatch(event);
     });
 
     override("starred_messages.rerender_ui", noop);

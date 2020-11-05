@@ -73,6 +73,46 @@ run_test("server", () => {
     assert(called);
 });
 
+run_test("status emoji", () => {
+    const tests = [
+        {
+            status: "In a meeting",
+            expected: "1f4c5",
+        },
+        {
+            status: "Commuting",
+            expected: "1f697",
+        },
+        {
+            status: "Out sick",
+            expected: "1f915",
+        },
+        {
+            status: "Vacationing",
+            expected: "1f334",
+        },
+        {
+            status: "Working remotely",
+            expected: "1f4bb",
+        },
+        {
+            status: "some other status",
+            expected: "1f4ac",
+        },
+        {
+            status: "",
+            expected: "",
+        },
+    ];
+    tests.forEach((test) => {
+        user_status.set_status_text({
+            user_id: 2,
+            status_text: test.status,
+        });
+        assert.equal(user_status.get_status_emoji(2), test.expected);
+    });
+});
+
 run_test("defensive checks", () => {
     blueslip.expect("error", "need ints for user_id", 2);
     user_status.set_away("string");

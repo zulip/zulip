@@ -49,6 +49,27 @@ exports.get_status_text = function (user_id) {
     return user_info.get(user_id);
 };
 
+exports.get_status_emoji = function (user_id) {
+    const status_text = user_info.get(user_id);
+    switch (status_text) {
+        case "In a meeting":
+            return "1f4c5"; // calendar
+        case "Commuting":
+            return "1f697"; // automobile
+        case "Out sick":
+            return "1f915"; // head bandage
+        case "Vacationing":
+            return "1f334"; // palm tree
+        case "Working remotely":
+            return "1f4bb"; // laptop
+        default:
+            if (status_text) {
+                return "1f4ac"; // speech balloon
+            }
+            return "";
+    }
+};
+
 exports.set_status_text = function (opts) {
     if (!opts.status_text) {
         user_info.delete(opts.user_id);
