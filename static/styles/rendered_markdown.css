@@ -564,12 +564,10 @@ pre code {
    to look more like a normal link */
 a code {
     color: hsl(200, 100%, 40%);
-    border-color: hsl(200, 100%, 40%);
 }
 
 a:hover code {
     color: hsl(200, 100%, 25%);
-    border-color: hsl(200, 100%, 25%);
 }
 
 /* Search highlight used in both topics and rendered_markdown */
