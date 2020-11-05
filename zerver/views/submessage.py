@@ -18,7 +18,9 @@ def process_submessage(
     msg_type: str = REQ(),
     content: str = REQ(),
 ) -> HttpResponse:
-    message, user_message = access_message(user_profile, message_id)
+    message, user_message = access_message(
+        user_profile, message_id, lock_message=False, lock_usermessage=False
+    )
 
     try:
         orjson.loads(content)

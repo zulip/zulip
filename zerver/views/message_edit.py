@@ -84,7 +84,9 @@ def get_message_edit_history(
 ) -> HttpResponse:
     if not user_profile.realm.allow_edit_history:
         return json_error(_("Message edit history is disabled in this organization"))
-    message, ignored_user_message = access_message(user_profile, message_id)
+    message, ignored_user_message = access_message(
+        user_profile, message_id, lock_message=False, lock_usermessage=False
+    )
 
     # Extract the message edit history from the message
     if message.edit_history is not None:
@@ -120,7 +122,9 @@ def update_message_backend(
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
         raise JsonableError(_("Invalid propagate_mode without topic edit"))
 
-    message, ignored_user_message = access_message(user_profile, message_id)
+    message, ignored_user_message = access_message(
+        user_profile, message_id, lock_message=False, lock_usermessage=False
+    )
     is_no_topic_msg = message.topic_name() == "(no topic)"
 
     # You only have permission to edit a message if:
@@ -286,7 +290,9 @@ def delete_message_backend(
     user_profile: UserProfile,
     message_id: int = REQ(converter=to_non_negative_int, path_only=True),
 ) -> HttpResponse:
-    message, ignored_user_message = access_message(user_profile, message_id)
+    message, ignored_user_message = access_message(
+        user_profile, message_id, lock_message=False, lock_usermessage=False
+    )
     validate_can_delete_message(user_profile, message)
     try:
         do_delete_messages(user_profile.realm, [message])
@@ -301,5 +307,7 @@ def json_fetch_raw_message(
     user_profile: UserProfile,
     message_id: int = REQ(converter=to_non_negative_int, path_only=True),
 ) -> HttpResponse:
-    (message, user_message) = access_message(user_profile, message_id)
+    (message, user_message) = access_message(
+        user_profile, message_id, lock_message=False, lock_usermessage=False
+    )
     return json_success({"raw_content": message.content})

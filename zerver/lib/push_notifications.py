@@ -857,7 +857,9 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         return
 
     try:
-        (message, user_message) = access_message(user_profile, missed_message["message_id"])
+        (message, user_message) = access_message(
+            user_profile, missed_message["message_id"], lock_message=False, lock_usermessage=False
+        )
     except JsonableError:
         if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
             # If the cause is a race with the message being deleted,

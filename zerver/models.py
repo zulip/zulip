@@ -2542,12 +2542,14 @@ class UserMessage(AbstractUserMessage):
 
 
 def get_usermessage_by_message_id(
-    user_profile: UserProfile, message_id: int
+    user_profile: UserProfile, message_id: int, lock_usermessage: bool
 ) -> Optional[UserMessage]:
     try:
-        return UserMessage.objects.select_related().get(
-            user_profile=user_profile, message_id=message_id
-        )
+        base_query = UserMessage.objects.select_related()
+        if lock_usermessage:
+            base_query = base_query.select_for_update()
+        usermessage = base_query.get(user_profile=user_profile, message_id=message_id)
+        return usermessage
     except UserMessage.DoesNotExist:
         return None
 

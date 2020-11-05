@@ -2220,7 +2220,9 @@ def check_add_reaction(
     emoji_code: Optional[str],
     reaction_type: Optional[str],
 ) -> None:
-    message, user_message = access_message(user_profile, message_id)
+    message, user_message = access_message(
+        user_profile, message_id, lock_message=False, lock_usermessage=False
+    )
 
     if emoji_code is None:
         # The emoji_code argument is only required for rare corner
@@ -5274,7 +5276,9 @@ def do_update_message_flags(
         if flag != "starred":
             raise JsonableError(_("Invalid message(s)"))
         # Validate that the user could have read the relevant message
-        message = access_message(user_profile, messages[0])[0]
+        message = access_message(
+            user_profile, messages[0], lock_message=False, lock_usermessage=False
+        )[0]
 
         # OK, this is a message that you legitimately have access
         # to via narrowing to the stream it is on, even though you

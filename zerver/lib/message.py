@@ -654,7 +654,7 @@ class ReactionDict:
 
 
 def access_message(
-    user_profile: UserProfile, message_id: int
+    user_profile: UserProfile, message_id: int, lock_message: bool, lock_usermessage: bool
 ) -> Tuple[Message, Optional[UserMessage]]:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
@@ -665,11 +665,14 @@ def access_message(
     information from a security perspective.
     """
     try:
-        message = Message.objects.select_related().get(id=message_id)
+        base_query = Message.objects.select_related()
+        if lock_message:
+            base_query = base_query.select_for_update()
+        message = base_query.get(id=message_id)
     except Message.DoesNotExist:
         raise JsonableError(_("Invalid message(s)"))
 
-    user_message = get_usermessage_by_message_id(user_profile, message_id)
+    user_message = get_usermessage_by_message_id(user_profile, message_id, lock_usermessage)
 
     if has_message_access(user_profile, message, user_message):
         return (message, user_message)
@@ -722,7 +725,10 @@ def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message])
     filtered_messages = []
 
     for message in messages:
-        user_message = get_usermessage_by_message_id(user_profile, message.id)
+        # We don't lock the UserMessage rows, since we only use them to check for access.
+        user_message = get_usermessage_by_message_id(
+            user_profile, message.id, lock_usermessage=False
+        )
         if has_message_access(user_profile, message, user_message):
             filtered_messages.append(message)
     return filtered_messages
