@@ -11,9 +11,9 @@ from zerver.lib.actions import do_create_user
 from zerver.lib.digest import (
     bulk_handle_digest_email,
     enqueue_emails,
-    exclude_subscription_modified_streams,
     gather_new_streams,
     handle_digest_email,
+    streams_recently_modified_for_user,
 )
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -199,30 +199,61 @@ class TestDigestEmailMessages(ZulipTestCase):
             self.assertIn('some content', teaser_messages[0]['content'][0]['plain'])
             self.assertIn(teaser_messages[0]['sender'], expected_participants)
 
-    def test_exclude_subscription_modified_streams(self) -> None:
+    def test_streams_recently_modified_for_user(self) -> None:
         othello = self.example_user('othello')
+        cordelia = self.example_user('cordelia')
+
         for stream in ['Verona', 'Scotland', 'Denmark']:
             self.subscribe(othello, stream)
-
-        # Delete all RealmAuditLogs to ignore any changes to subscriptions to
-        # streams done for the setup.
-        RealmAuditLog.objects.all().delete()
+            self.subscribe(cordelia, stream)
 
         realm = othello.realm
-        stream_names = self.get_streams(othello)
-        stream_ids = {name: get_stream(name, realm).id for name in stream_names}
+        denmark = get_stream('Denmark', realm)
+        verona = get_stream('Verona', realm)
+
+        two_hours_ago = timezone_now() - datetime.timedelta(hours=2)
+        one_hour_ago = timezone_now() - datetime.timedelta(hours=1)
+
+        # Delete all RealmAuditLogs to start with a clean slate.
+        RealmAuditLog.objects.all().delete()
+
+        # Unsubscribe and subscribe Othello from a stream
+        self.unsubscribe(othello, 'Denmark')
+        self.subscribe(othello, 'Denmark')
+
+        self.assertEqual(
+            streams_recently_modified_for_user(othello, one_hour_ago),
+            {denmark.id}
+        )
+
+        # Backdate all our logs (so that Denmark will no longer
+        # appear like a recently modified stream for Othello).
+        RealmAuditLog.objects.all().update(event_time=two_hours_ago)
+
+        # Now Denmark no longer appears recent to Othello.
+        self.assertEqual(
+            streams_recently_modified_for_user(othello, one_hour_ago),
+            set()
+        )
 
         # Unsubscribe and subscribe from a stream
         self.unsubscribe(othello, 'Verona')
         self.subscribe(othello, 'Verona')
 
-        one_sec_ago = timezone_now() - datetime.timedelta(seconds=1)
+        # Now, Verona, but not Denmark, appears recent.
+        self.assertEqual(
+            streams_recently_modified_for_user(othello, one_hour_ago),
+            {verona.id},
+        )
 
-        filtered_stream_ids = exclude_subscription_modified_streams(
-            othello, list(stream_ids.values()), one_sec_ago)
-        self.assertNotIn(stream_ids['Verona'], filtered_stream_ids)
-        self.assertIn(stream_ids['Scotland'], filtered_stream_ids)
-        self.assertIn(stream_ids['Denmark'], filtered_stream_ids)
+        # make sure we don't mix up Othello and Cordelia
+        self.unsubscribe(cordelia, 'Denmark')
+        self.subscribe(cordelia, 'Denmark')
+
+        self.assertEqual(
+            streams_recently_modified_for_user(cordelia, one_hour_ago),
+            {denmark.id}
+        )
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
