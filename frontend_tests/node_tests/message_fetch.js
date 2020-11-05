@@ -88,15 +88,27 @@ function reset_lists() {
 function config_fake_channel(conf) {
     const self = {};
     let called;
+    let called_with_newest_flag = false;
 
     channel.get = function (opts) {
+        assert.equal(opts.url, "/json/messages");
+        // There's a separate call with anchor="newest" that happens
+        // unconditionally; do basic verfication of that call.
+        if (opts.data.anchor === "newest") {
+            if (!called_with_newest_flag) {
+                called_with_newest_flag = true;
+                assert.equal(opts.data.num_after, 0);
+                return;
+            }
+            throw new Error("Only one 'newest' call allowed");
+        }
+
         if (called && !conf.can_call_again) {
             throw new Error("only use this for one call");
         }
         if (!conf.can_call_again) {
             assert(self.success === undefined);
         }
-        assert.equal(opts.url, "/json/messages");
         assert.deepEqual(opts.data, conf.expected_opts_data);
         self.success = opts.success;
         called = true;
