@@ -226,8 +226,7 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
     user_ids = [user.id for user in users]
 
-    def get_stream_map(user_ids: List[int]) -> Dict[int, List[int]]:
-        # maps user_id -> [stream_id, stream_id, ...]
+    def get_stream_map(user_ids: List[int]) -> Dict[int, Set[int]]:
         rows = Subscription.objects.filter(
             user_profile_id__in=user_ids,
             recipient__type=Recipient.STREAM,
@@ -235,9 +234,10 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
             is_muted=False,
         ).values('user_profile_id', 'recipient__type_id')
 
-        dct: Dict[int, List[int]] = defaultdict(list)
+        # maps user_id -> {stream_id, stream_id, ...}
+        dct: Dict[int, Set[int]] = defaultdict(set)
         for row in rows:
-            dct[row['user_profile_id']].append(row['recipient__type_id'])
+            dct[row['user_profile_id']].add(row['recipient__type_id'])
 
         return dct
 
@@ -250,14 +250,12 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
         unsubscribe_link = one_click_unsubscribe_link(user, "digest")
         context.update(unsubscribe_link=unsubscribe_link)
 
-        home_view_streams = stream_map[user.id]
+        stream_ids = stream_map[user.id]
 
-        if not user.long_term_idle:
-            stream_ids = home_view_streams
-        else:
-            stream_ids = exclude_subscription_modified_streams(user, home_view_streams, cutoff_date)
+        if user.long_term_idle:
+            stream_ids -= streams_recently_modified_for_user(user, cutoff_date)
 
-        topic_activity = get_recent_topic_activity(stream_ids, cutoff_date)
+        topic_activity = get_recent_topic_activity(sorted(list(stream_ids)), cutoff_date)
         hot_topics = get_hot_topics(topic_activity)
 
         # Gather hot conversations.
@@ -298,11 +296,7 @@ def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
 def handle_digest_email(user_id: int, cutoff: float) -> None:
     bulk_handle_digest_email([user_id], cutoff)
 
-def exclude_subscription_modified_streams(user_profile: UserProfile,
-                                          stream_ids: List[int],
-                                          cutoff_date: datetime.datetime) -> List[int]:
-    """Exclude streams from given list where users' subscription was modified."""
-
+def streams_recently_modified_for_user(user: UserProfile, cutoff_date: datetime.datetime) -> Set[int]:
     events = [
         RealmAuditLog.SUBSCRIPTION_CREATED,
         RealmAuditLog.SUBSCRIPTION_ACTIVATED,
@@ -311,9 +305,9 @@ def exclude_subscription_modified_streams(user_profile: UserProfile,
 
     # Streams where the user's subscription was changed
     modified_streams = RealmAuditLog.objects.filter(
-        realm=user_profile.realm,
-        modified_user=user_profile,
+        realm=user.realm,
+        modified_user=user,
         event_time__gt=cutoff_date,
         event_type__in=events).values_list('modified_stream_id', flat=True)
 
-    return list(set(stream_ids) - set(modified_streams))
+    return set(modified_streams)
