@@ -145,21 +145,18 @@ def get_hot_topics(
     topics_by_diversity = topic_activity.topics_by_diversity
     topics_by_length = topic_activity.topics_by_length
 
-    # Get up to the 4 best topics from the diversity list
-    # and length list, filtering out overlapping topics.
+    assert set(topics_by_diversity) == set(topics_by_length)
+
+    # Start with the two most diverse topics.
     hot_topics = topics_by_diversity[:2]
+
+    # Pad out our list up to 4 items, using the topics' length (aka message
+    # count) as the secondary filter.
     for topic_key in topics_by_length:
         if topic_key not in hot_topics:
             hot_topics.append(topic_key)
         if len(hot_topics) >= 4:
             break
-
-    # There was so much overlap between the diversity and length lists that we
-    # still have < 4 topics. Try to use remaining diversity items to pad
-    # out the hot topics.
-    num_convos = len(hot_topics)
-    if num_convos < 4:
-        hot_topics.extend(topics_by_diversity[num_convos:4])
 
     return hot_topics
 
