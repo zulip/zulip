@@ -1,7 +1,6 @@
 import datetime
 import logging
 from collections import defaultdict
-from dataclasses import dataclass
 from typing import Any, Dict, List, Set, Tuple
 
 from django.conf import settings
@@ -33,13 +32,38 @@ DIGEST_CUTOFF = 5
 
 TopicKey = Tuple[int, str]
 
-@dataclass
-class TopicActivity:
-    topics_by_length: List[TopicKey]
-    topics_by_diversity: List[TopicKey]
-    topic_senders: Dict[TopicKey, Set[str]]  # full_name
-    topic_length: Dict[TopicKey, int]
-    topic_messages: Dict[TopicKey, List[Message]]
+class DigestTopic:
+    def __init__(self, topic_key: TopicKey) -> None:
+        self.topic_key = topic_key
+        self.human_senders: Set[str] = set()
+        self.sample_messages: List[Message] = []
+        self.num_human_messages = 0
+
+    def add_message(self, message: Message) -> None:
+        if len(self.sample_messages) < 2:
+            self.sample_messages.append(message)
+
+        if message.sent_by_human():
+            self.human_senders.add(message.sender.full_name)
+            self.num_human_messages += 1
+
+    def length(self) -> int:
+        return self.num_human_messages
+
+    def diversity(self) -> int:
+        return len(self.human_senders)
+
+    def teaser_data(self, user_profile: UserProfile) -> Dict[str, Any]:
+        teaser_count = self.num_human_messages - len(self.sample_messages)
+        first_few_messages = build_message_list(
+            user_profile,
+            self.sample_messages,
+        )
+        return {
+            "participants": self.human_senders,
+            "count": teaser_count,
+            "first_few_messages": first_few_messages,
+        }
 
 # Digests accumulate 2 types of interesting traffic for a user:
 # 1. New streams
@@ -93,10 +117,10 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
                     user_profile.id,
                 )
 
-def get_recent_topic_activity(
+def get_recent_topics(
     stream_ids: List[int],
     cutoff_date: datetime.datetime,
-) -> TopicActivity:
+) -> List[DigestTopic]:
     # Gather information about topic conversations, then
     # classify by:
     #   * topic length
@@ -107,87 +131,35 @@ def get_recent_topic_activity(
         recipient__type_id__in=stream_ids,
         date_sent__gt=cutoff_date).select_related('recipient', 'sender', 'sending_client')
 
-    topic_length: Dict[TopicKey, int] = defaultdict(int)
-    topic_messages: Dict[TopicKey, List[Message]] = defaultdict(list)
-    topic_senders: Dict[TopicKey, Set[str]] = defaultdict(set)
+    digest_topic_map: Dict[TopicKey, DigestTopic] = {}
     for message in messages:
-        key = (message.recipient.type_id,
-               message.topic_name())
+        topic_key = (message.recipient.type_id, message.topic_name())
 
-        topic_messages[key].append(message)
+        if topic_key not in digest_topic_map:
+            digest_topic_map[topic_key] = DigestTopic(topic_key)
 
-        if not message.sent_by_human():
-            # Don't include automated messages in the count.
-            continue
+        digest_topic_map[topic_key].add_message(message)
 
-        topic_senders[key].add(message.sender.full_name)
-        topic_length[key] += 1
+    topics = list(digest_topic_map.values())
 
-    topics_by_diversity = list(topic_senders)
-    topics_by_diversity.sort(key=lambda key: topic_senders[key], reverse=True)
+    return topics
 
-    topics_by_length = list(topic_length)
-    topics_by_diversity.sort(key=lambda key: topic_length[key], reverse=True)
-
-    return TopicActivity(
-        topics_by_diversity=topics_by_diversity,
-        topics_by_length=topics_by_length,
-        topic_senders=topic_senders,
-        topic_length=topic_length,
-        topic_messages=topic_messages,
-    )
-
-def get_hot_topics(
-    topic_activity: TopicActivity,
-) -> List[TopicKey]:
-    # Get out top 4 hottest topics
-
-    topics_by_diversity = topic_activity.topics_by_diversity
-    topics_by_length = topic_activity.topics_by_length
-
-    assert set(topics_by_diversity) == set(topics_by_length)
+def get_hot_topics(topics: List[DigestTopic]) -> List[DigestTopic]:
+    topics_by_diversity = sorted(topics, key=lambda dt: dt.diversity())
+    topics_by_length = sorted(topics, key=lambda dt: dt.length())
 
     # Start with the two most diverse topics.
     hot_topics = topics_by_diversity[:2]
 
     # Pad out our list up to 4 items, using the topics' length (aka message
     # count) as the secondary filter.
-    for topic_key in topics_by_length:
-        if topic_key not in hot_topics:
-            hot_topics.append(topic_key)
+    for topic in topics_by_length:
+        if topic not in hot_topics:
+            hot_topics.append(topic)
         if len(hot_topics) >= 4:
             break
 
     return hot_topics
-
-def gather_hot_topics(
-    user_profile: UserProfile,
-    hot_topics: List[TopicKey],
-    topic_activity: TopicActivity,
-) -> List[Dict[str, Any]]:
-    # Returns a list of dictionaries containing the templating
-    # information for each hot topic.
-
-    topic_senders = topic_activity.topic_senders
-    topic_length = topic_activity.topic_length
-    topic_messages = topic_activity.topic_messages
-
-    hot_topic_render_payloads = []
-    for h in hot_topics:
-        users = list(topic_senders[h])
-        count = topic_length[h]
-        messages = topic_messages[h]
-
-        # We'll display up to 2 messages from the topic.
-        first_few_messages = messages[:2]
-
-        teaser_data = {"participants": users,
-                       "count": count - len(first_few_messages),
-                       "first_few_messages": build_message_list(
-                           user_profile, first_few_messages)}
-
-        hot_topic_render_payloads.append(teaser_data)
-    return hot_topic_render_payloads
 
 def gather_new_streams(user_profile: UserProfile,
                        threshold: datetime.datetime) -> Tuple[int, Dict[str, List[str]]]:
@@ -252,11 +224,14 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
         if user.long_term_idle:
             stream_ids -= streams_recently_modified_for_user(user, cutoff_date)
 
-        topic_activity = get_recent_topic_activity(sorted(list(stream_ids)), cutoff_date)
-        hot_topics = get_hot_topics(topic_activity)
+        recent_topics = get_recent_topics(sorted(list(stream_ids)), cutoff_date)
+        hot_topics = get_hot_topics(recent_topics)
 
-        # Gather hot conversations.
-        context["hot_conversations"] = gather_hot_topics(user, hot_topics, topic_activity)
+        # Get context data for hot conversations.
+        context["hot_conversations"] = [
+            hot_topic.teaser_data(user)
+            for hot_topic in hot_topics
+        ]
 
         # Gather new streams.
         new_streams_count, new_streams = gather_new_streams(user, cutoff_date)
