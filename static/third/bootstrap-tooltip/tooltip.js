@@ -19,6 +19,28 @@
  * ========================================================== */
 
 
+/*
+  Function to find whether the device is touch-enabled or not. 
+  Important to disable the tooltip for touch-based devices and allow
+  uninterrupted user events.
+  Source of Code: https://patrickhlauke.github.io/touch/touchscreen-detection/
+*/ 
+function isTouchScreen(){
+  var result = false
+  if (window.PointerEvent && ('maxTouchPoints' in navigator)) {
+    if (navigator.maxTouchPoints > 0) {
+      result = true
+    }
+  } else {
+    if (window.matchMedia && window.matchMedia("(any-pointer:coarse)").matches) {
+      result = true
+    } else if (window.TouchEvent || ('ontouchstart' in window)) {
+      result = true
+    }
+  }
+  return result
+}
+
 !function ($) {
 
     "use strict"; // jshint ;_;
@@ -42,7 +64,7 @@
         this.type = type
         this.$element = $(element)
         this.options = this.getOptions(options)
-        this.enabled = true
+        this.enabled = !isTouchScreen()
 
         if (this.options.trigger == 'click') {
           this.$element.on('click.' + this.type, this.options.selector, $.proxy(this.toggle, this))
