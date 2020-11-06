@@ -126,6 +126,10 @@ Some titles have been shortened for organizational purposes.
 
 [Java Tutorials for Beginners]: https://www.geeksforgeeks.org/java/
 
+*Tutorial* - [Learn Java from scratch][]
+
+[Learn Java from scratch]: https://www.rcsdk12.org/cms/lib/NY01001156/Centricity/Domain/4951/Head_First_Java_Second_Edition.pdf
+
 ## JavaScript/ECMAScript
 
 *Tutorial* - [clean-code-javascript Software engineering principles][]
