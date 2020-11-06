@@ -129,7 +129,14 @@ def get_recent_topics(
     messages = Message.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
-        date_sent__gt=cutoff_date).select_related('recipient', 'sender', 'sending_client')
+        date_sent__gt=cutoff_date,
+    ).order_by(
+        'id',  # we will sample the first few messages
+    ).select_related(
+        'recipient',  # we need stream_id
+        'sender',  # we need the sender's full name
+        'sending_client'  # for Message.sent_by_human
+    )
 
     digest_topic_map: Dict[TopicKey, DigestTopic] = {}
     for message in messages:
