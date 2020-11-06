@@ -417,8 +417,10 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
 def process_new_human_user(user_profile: UserProfile,
                            prereg_user: Optional[PreregistrationUser]=None,
                            newsletter_data: Optional[Mapping[str, str]]=None,
-                           default_stream_groups: Sequence[DefaultStreamGroup]=[],
+                           default_stream_groups: Sequence[DefaultStreamGroup]=None,
                            realm_creation: bool=False) -> None:
+    if default_stream_groups is None:
+        default_stream_groups = []
     realm = user_profile.realm
 
     mit_beta_user = realm.is_zephyr_mirror_realm
@@ -566,10 +568,13 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                    default_all_public_streams: Optional[bool]=None,
                    prereg_user: Optional[PreregistrationUser]=None,
                    newsletter_data: Optional[Dict[str, str]]=None,
-                   default_stream_groups: Sequence[DefaultStreamGroup]=[],
+                   default_stream_groups: Sequence[DefaultStreamGroup]=None,
                    source_profile: Optional[UserProfile]=None,
                    realm_creation: bool=False,
                    acting_user: Optional[UserProfile]=None) -> UserProfile:
+    
+    if default_stream_groups is None:
+        default_stream_groups = []
 
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name,
@@ -1112,8 +1117,10 @@ class RecipientInfoResult(TypedDict):
 def get_recipient_info(recipient: Recipient,
                        sender_id: int,
                        stream_topic: Optional[StreamTopicTarget],
-                       possibly_mentioned_user_ids: AbstractSet[int]=set(),
+                       possibly_mentioned_user_ids: AbstractSet[int]=None,
                        possible_wildcard_mention: bool=True) -> RecipientInfoResult:
+    if possibly_mentioned_user_ids is None:
+        possibly_mentioned_user_ids = set()
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
     wildcard_mention_user_ids: Set[int] = set()
@@ -1480,11 +1487,13 @@ def build_message_send_dict(message_dict: Dict[str, Any],
 
 def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, Any]]],
                      email_gateway: bool=False,
-                     mark_as_read: Sequence[int]=[]) -> List[int]:
+                     mark_as_read: Sequence[int]=None) -> List[int]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
     """
+    if mark_as_read is None:
+        mark_as_read = []
 
     # Filter out messages which didn't pass internal_prep_message properly
     messages = [message for message in messages_maybe_none if message is not None]
@@ -1686,7 +1695,9 @@ def create_user_messages(message: Message,
                          stream_push_user_ids: AbstractSet[int],
                          stream_email_user_ids: AbstractSet[int],
                          mentioned_user_ids: AbstractSet[int],
-                         mark_as_read: Sequence[int] = []) -> List[UserMessageLite]:
+                         mark_as_read: Sequence[int] = None) -> List[UserMessageLite]:
+    if mark_as_read is None:
+        mark_as_read = []
     ums_to_create = []
     for user_profile_id in um_eligible_user_ids:
         um = UserMessageLite(
@@ -2780,10 +2791,12 @@ def bulk_add_subscriptions(
     realm: Realm,
     streams: Iterable[Stream],
     users: Iterable[UserProfile],
-    color_map: Mapping[str, str]={},
+    color_map: Mapping[str, str]=None,
     acting_user: Optional[UserProfile]=None,
     from_user_creation: bool=False,
 ) -> SubT:
+    if color_map is None:
+        color_map = {}
     users = list(users)
 
     # Sanity check out callers
@@ -5443,7 +5456,9 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     return invites
 
 def do_create_multiuse_invite_link(referred_by: UserProfile, invited_as: int,
-                                   streams: Sequence[Stream] = []) -> str:
+                                   streams: Sequence[Stream] = None) -> str:
+    if streams is None:
+        streams = []
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
     if streams:

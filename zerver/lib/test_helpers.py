@@ -339,8 +339,10 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
         return f
     else:
-        def wrapper(self: 'ZulipTestCase', url: str, info: object = {},
+        def wrapper(self: 'ZulipTestCase', url: str, info: object = None,
                     **kwargs: Any) -> HttpResponse:
+            if info is None:
+                info = {}
             start = time.time()
             result = f(self, url, info, **kwargs)
             delay = time.time() - start

@@ -1546,12 +1546,14 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         return result
 
-    def generate_saml_response(self, email: str, name: str, extra_attributes: Mapping[str, List[str]]={}) -> str:
+    def generate_saml_response(self, email: str, name: str, extra_attributes: Mapping[str, List[str]]=None) -> str:
         """
         The samlresponse.txt fixture has a pre-generated SAMLResponse,
         with {email}, {first_name}, {last_name} placeholders, that can
         be filled out with the data we want.
         """
+        if extra_attributes is None:
+            extra_attributes = {}
         name_parts = name.split(' ')
         first_name = name_parts[0]
         last_name = name_parts[1]
@@ -2206,10 +2208,12 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         multiuse_object_key: str='',
         alternative_start_url: Optional[str]=None,
         id_token: Optional[str]=None,
-        account_data_dict: Dict[str, str]={},
+        account_data_dict: Dict[str, str]=None,
         *,
         user_agent: Optional[str]=None,
     ) -> Tuple[str, Dict[str, Any]]:
+        if account_data_dict is None:
+            account_data_dict = {}
         url, headers = super().prepare_login_url_and_headers(
             subdomain, mobile_flow_otp, desktop_flow_otp, is_signup, next,
             multiuse_object_key, alternative_start_url=alternative_start_url,
@@ -3372,7 +3376,9 @@ class ExternalMethodDictsTests(ZulipTestCase):
 
 class FetchAuthBackends(ZulipTestCase):
     def test_get_server_settings(self) -> None:
-        def check_result(result: HttpResponse, extra_fields: Sequence[Tuple[str, Validator[object]]] = []) -> None:
+        def check_result(result: HttpResponse, extra_fields: Sequence[Tuple[str, Validator[object]]] = None) -> None:
+            if extra_fields is None:
+                extra_fields = []
             authentication_methods_list = [
                 ('password', check_bool),
             ]

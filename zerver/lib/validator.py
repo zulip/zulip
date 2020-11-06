@@ -175,23 +175,35 @@ def check_tuple(sub_validators: List[Validator[ResultT]]) -> Validator[Tuple[Any
 
 # https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
 @overload
-def check_dict(required_keys: Iterable[Tuple[str, Validator[object]]]=[],
-               optional_keys: Iterable[Tuple[str, Validator[object]]]=[],
+def check_dict(required_keys: Iterable[Tuple[str, Validator[object]]]=None,
+               optional_keys: Iterable[Tuple[str, Validator[object]]]=None,
                *,
                _allow_only_listed_keys: bool=False) -> Validator[Dict[str, object]]:
+    if required_keys is None:
+        required_keys = []
+    if optional_keys is None:
+        optional_keys = []
     ...
 @overload
-def check_dict(required_keys: Iterable[Tuple[str, Validator[ResultT]]]=[],
-               optional_keys: Iterable[Tuple[str, Validator[ResultT]]]=[],
+def check_dict(required_keys: Iterable[Tuple[str, Validator[ResultT]]]=None,
+               optional_keys: Iterable[Tuple[str, Validator[ResultT]]]=None,
                *,
                value_validator: Validator[ResultT],
                _allow_only_listed_keys: bool=False) -> Validator[Dict[str, ResultT]]:
+    if required_keys is None:
+        required_keys = []
+    if optional_keys is None:
+        optional_keys = []
     ...
-def check_dict(required_keys: Iterable[Tuple[str, Validator[ResultT]]]=[],
-               optional_keys: Iterable[Tuple[str, Validator[ResultT]]]=[],
+def check_dict(required_keys: Iterable[Tuple[str, Validator[ResultT]]]=None,
+               optional_keys: Iterable[Tuple[str, Validator[ResultT]]]=None,
                *,
                value_validator: Optional[Validator[ResultT]]=None,
                _allow_only_listed_keys: bool=False) -> Validator[Dict[str, ResultT]]:
+    if required_keys is None:
+        required_keys = []
+    if optional_keys is None:
+        optional_keys = []
     def f(var_name: str, val: object) -> Dict[str, ResultT]:
         if not isinstance(val, dict):
             raise ValidationError(_('{var_name} is not a dict').format(var_name=var_name))
@@ -230,7 +242,9 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator[ResultT]]]=[],
     return f
 
 def check_dict_only(required_keys: Iterable[Tuple[str, Validator[ResultT]]],
-                    optional_keys: Iterable[Tuple[str, Validator[ResultT]]]=[]) -> Validator[Dict[str, ResultT]]:
+                    optional_keys: Iterable[Tuple[str, Validator[ResultT]]]=None) -> Validator[Dict[str, ResultT]]:
+    if optional_keys is None:
+        optional_keys = []
     return cast(
         Validator[Dict[str, ResultT]],
         check_dict(required_keys, optional_keys, _allow_only_listed_keys=True),

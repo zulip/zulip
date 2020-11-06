@@ -12,7 +12,9 @@ from zerver.openapi.openapi import get_openapi_return_values, likely_deprecated_
 REGEXP = re.compile(r'\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 
 class MarkdownReturnValuesTableGenerator(Extension):
-    def __init__(self, configs: Mapping[str, Any] = {}) -> None:
+    def __init__(self, configs: Mapping[str, Any] = None) -> None:
+        if configs is None:
+            configs = {}
         self.config: Dict[str, Any] = {}
 
     def extendMarkdown(self, md: markdown.Markdown) -> None:

@@ -57,9 +57,11 @@ class FromAddress:
 def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                 to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                 from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
-                language: Optional[str]=None, context: Mapping[str, Any]={},
+                language: Optional[str]=None, context: Mapping[str, Any]=None,
                 realm: Optional[Realm]=None
                 ) -> EmailMultiAlternatives:
+    if context is None:
+        context = {}
     # Callers should pass exactly one of to_user_id and to_email.
     assert (to_user_ids is None) ^ (to_emails is None)
     if to_user_ids is not None:
@@ -164,8 +166,10 @@ class NoEmailArgumentException(CommandError):
 def send_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
-               language: Optional[str]=None, context: Dict[str, Any]={},
+               language: Optional[str]=None, context: Dict[str, Any]=None,
                realm: Optional[Realm]=None) -> None:
+    if context is None:
+        context = {}
     mail = build_email(template_prefix, to_user_ids=to_user_ids, to_emails=to_emails,
                        from_name=from_name, from_address=from_address,
                        reply_to_email=reply_to_email, language=language, context=context,
@@ -183,7 +187,9 @@ def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:
 def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[List[int]]=None,
                       to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                       from_address: Optional[str]=None, language: Optional[str]=None,
-                      context: Dict[str, Any]={}, delay: datetime.timedelta=datetime.timedelta(0)) -> None:
+                      context: Dict[str, Any]=None, delay: datetime.timedelta=datetime.timedelta(0)) -> None:
+    if context is None:
+        context = {}
     template_name = template_prefix.split('/')[-1]
     email_fields = {'template_prefix': template_prefix, 'from_name': from_name, 'from_address': from_address,
                     'language': language, 'context': context}
@@ -217,7 +223,9 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
 
 def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional[str]=None,
                          from_address: Optional[str]=None, language: Optional[str]=None,
-                         context: Dict[str, Any]={}) -> None:
+                         context: Dict[str, Any]=None) -> None:
+    if context is None:
+        context = {}
     admins = realm.get_human_admin_users()
     admin_user_ids = [admin.id for admin in admins]
     send_email(template_prefix, to_user_ids=admin_user_ids, from_name=from_name,

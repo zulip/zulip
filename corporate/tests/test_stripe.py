@@ -144,8 +144,10 @@ def delete_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         os.remove(fixture_file)
 
 def normalize_fixture_data(decorated_function: CallableT,
-                           tested_timestamp_fields: Sequence[str] = []) -> None:  # nocoverage
+                           tested_timestamp_fields: Sequence[str] = None) -> None:  # nocoverage
     # stripe ids are all of the form cus_D7OT2jf5YAtZQ2
+    if tested_timestamp_fields is None:
+        tested_timestamp_fields = []
     id_lengths = [
         ('cus', 14), ('sub', 14), ('si', 14), ('sli', 14), ('req', 14), ('tok', 24), ('card', 24),
         ('txn', 24), ('ch', 24), ('in', 24), ('ii', 24), ('test', 12), ('src_client_secret', 24),
@@ -211,8 +213,10 @@ MOCKED_STRIPE_FUNCTION_NAMES = [f"stripe.{name}" for name in [
     "Token.create",
 ]]
 
-def mock_stripe(tested_timestamp_fields: Sequence[str]=[],
+def mock_stripe(tested_timestamp_fields: Sequence[str]=None,
                 generate: Optional[bool]=None) -> Callable[[CallableT], CallableT]:
+    if tested_timestamp_fields is None:
+        tested_timestamp_fields = []
     def _mock_stripe(decorated_function: CallableT) -> CallableT:
         generate_fixture = generate
         if generate_fixture is None:
@@ -302,8 +306,10 @@ class StripeTestCase(ZulipTestCase):
         return match.group(1) if match else None
 
     def upgrade(self, invoice: bool=False, talk_to_stripe: bool=True,
-                realm: Optional[Realm]=None, del_args: Sequence[str]=[],
+                realm: Optional[Realm]=None, del_args: Sequence[str]=None,
                 **kwargs: Any) -> HttpResponse:
+        if del_args is None:
+            del_args = []
         host_args = {}
         if realm is not None:  # nocoverage: TODO
             host_args['HTTP_HOST'] = realm.host
@@ -980,7 +986,9 @@ class StripeTest(StripeTestCase):
     def test_check_upgrade_parameters(self) -> None:
         # Tests all the error paths except 'not enough licenses'
         def check_error(error_description: str, upgrade_params: Mapping[str, Any],
-                        del_args: Sequence[str] = []) -> None:
+                        del_args: Sequence[str] = None) -> None:
+            if del_args is None:
+                del_args = []
             response = self.upgrade(talk_to_stripe=False, del_args=del_args, **upgrade_params)
             self.assert_json_error_contains(response, "Something went wrong. Please contact")
             self.assertEqual(orjson.loads(response.content)['error_description'], error_description)
@@ -994,7 +1002,9 @@ class StripeTest(StripeTestCase):
 
     def test_upgrade_license_counts(self) -> None:
         def check_min_licenses_error(invoice: bool, licenses: Optional[int], min_licenses_in_response: int,
-                                     upgrade_params: Dict[str, Any]={}) -> None:
+                                     upgrade_params: Dict[str, Any]=None) -> None:
+            if upgrade_params is None:
+                upgrade_params = {}
             if licenses is None:
                 del_args = ['licenses']
             else:
@@ -1011,7 +1021,9 @@ class StripeTest(StripeTestCase):
             self.assert_json_error_contains(response, f"with more than {MAX_INVOICED_LICENSES} licenses")
             self.assertEqual(orjson.loads(response.content)['error_description'], 'too many licenses')
 
-        def check_success(invoice: bool, licenses: Optional[int], upgrade_params: Dict[str, Any]={}) -> None:
+        def check_success(invoice: bool, licenses: Optional[int], upgrade_params: Dict[str, Any]=None) -> None:
+            if upgrade_params is None:
+                upgrade_params = {}
             if licenses is None:
                 del_args = ['licenses']
             else:

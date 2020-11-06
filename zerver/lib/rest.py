@@ -163,7 +163,9 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
 def rest_path(
     route: str,
-    kwargs: Mapping[str, object] = {},
+    kwargs: Mapping[str, object] = None,
     **handlers: Union[Callable[..., HttpResponse], Tuple[Callable[..., HttpResponse], Set[str]]],
 ) -> URLPattern:
+    if kwargs is None:
+        kwargs = {}
     return path(route, rest_dispatch, {**kwargs, **handlers})

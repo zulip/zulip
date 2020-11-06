@@ -441,9 +441,11 @@ def oauth_redirect_to_root(
     url: str,
     sso_type: str,
     is_signup: bool=False,
-    extra_url_params: Dict[str, str]={},
+    extra_url_params: Dict[str, str]=None,
     next: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
+    if extra_url_params is None:
+        extra_url_params = {}
     main_site_uri = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == 'social':
         main_site_uri = (settings.EXTERNAL_URI_SCHEME +

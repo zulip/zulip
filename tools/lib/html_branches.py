@@ -133,7 +133,9 @@ def html_branches(text: str, fn: Optional[str] = None) -> List[HtmlTreeBranch]:
     tree = html_tag_tree(text, fn)
     branches: List[HtmlTreeBranch] = []
 
-    def walk(node: Node, tag_info_list: Sequence[TagInfo] = []) -> None:
+    def walk(node: Node, tag_info_list: Sequence[TagInfo] = None) -> None:
+        if tag_info_list is None:
+            tag_info_list = []
         assert node.token is not None
         info = get_tag_info(node.token)
         tag_info_list = [*tag_info_list, info]

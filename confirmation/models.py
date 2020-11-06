@@ -65,7 +65,9 @@ def get_object_from_key(confirmation_key: str,
 
 def create_confirmation_link(obj: ContentType,
                              confirmation_type: int,
-                             url_args: Mapping[str, str] = {}) -> str:
+                             url_args: Mapping[str, str] = None) -> str:
+    if url_args is None:
+        url_args = {}
     key = generate_key()
     realm = None
     if hasattr(obj, 'realm'):
@@ -79,7 +81,9 @@ def create_confirmation_link(obj: ContentType,
 
 def confirmation_url(confirmation_key: str, realm: Optional[Realm],
                      confirmation_type: int,
-                     url_args: Mapping[str, str] = {}) -> str:
+                     url_args: Mapping[str, str] = None) -> str:
+    if url_args is None:
+        url_args = {}
     url_args = dict(url_args)
     url_args['confirmation_key'] = confirmation_key
     return urljoin(

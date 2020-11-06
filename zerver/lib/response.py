@@ -38,8 +38,10 @@ def json_method_not_allowed(methods: List[str]) -> HttpResponseNotAllowed:
 
 def json_response(res_type: str="success",
                   msg: str="",
-                  data: Mapping[str, Any]={},
+                  data: Mapping[str, Any]=None,
                   status: int=200) -> HttpResponse:
+    if data is None:
+        data = {}
     content = {"result": res_type, "msg": msg}
     content.update(data)
 
@@ -55,7 +57,9 @@ def json_response(res_type: str="success",
         status=status,
     )
 
-def json_success(data: Mapping[str, Any]={}) -> HttpResponse:
+def json_success(data: Mapping[str, Any]=None) -> HttpResponse:
+    if data is None:
+        data = {}
     return json_response(data=data)
 
 def json_response_from_error(exception: JsonableError) -> HttpResponse:
@@ -71,5 +75,7 @@ def json_response_from_error(exception: JsonableError) -> HttpResponse:
                          data=exception.data,
                          status=exception.http_status_code)
 
-def json_error(msg: str, data: Mapping[str, Any]={}, status: int=400) -> HttpResponse:
+def json_error(msg: str, data: Mapping[str, Any]=None, status: int=400) -> HttpResponse:
+    if data is None:
+        data = {}
     return json_response(res_type="error", msg=msg, data=data, status=status)

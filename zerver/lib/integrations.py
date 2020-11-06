@@ -57,7 +57,9 @@ class Integration:
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
                  stream_name: Optional[str]=None, legacy: bool=False,
-                 config_options: Sequence[Tuple[str, str, Validator[object]]]=[]) -> None:
+                 config_options: Sequence[Tuple[str, str, Validator[object]]]=None) -> None:
+        if config_options is None:
+            config_options = []
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
@@ -159,7 +161,9 @@ class WebhookIntegration(Integration):
                  function: Optional[str]=None, url: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
                  stream_name: Optional[str]=None, legacy: bool=False,
-                 config_options: Sequence[Tuple[str, str, Validator[object]]]=[]) -> None:
+                 config_options: Sequence[Tuple[str, str, Validator[object]]]=None) -> None:
+        if config_options is None:
+            config_options = []
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super().__init__(

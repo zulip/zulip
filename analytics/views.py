@@ -826,7 +826,9 @@ def sent_messages_report(realm: str) -> str:
 
 def ad_hoc_queries() -> List[Dict[str, str]]:
     def get_page(query: Composable, cols: Sequence[str], title: str,
-                 totals_columns: Sequence[int]=[]) -> Dict[str, str]:
+                 totals_columns: Sequence[int]=None) -> Dict[str, str]:
+        if totals_columns is None:
+            totals_columns = []
         cursor = connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()

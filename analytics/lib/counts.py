@@ -70,7 +70,9 @@ class LoggingCountStat(CountStat):
 
 class DependentCountStat(CountStat):
     def __init__(self, property: str, data_collector: 'DataCollector', frequency: str,
-                 interval: Optional[timedelta] = None, dependencies: Sequence[str] = []) -> None:
+                 interval: Optional[timedelta] = None, dependencies: Sequence[str] = None) -> None:
+        if dependencies is None:
+            dependencies = []
         CountStat.__init__(self, property, data_collector, frequency, interval=interval)
         self.dependencies = dependencies
 

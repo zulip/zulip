@@ -915,10 +915,14 @@ def do_events_register(
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    client_capabilities: Dict[str, bool] = {},
-    narrow: Iterable[Sequence[str]] = [],
+    client_capabilities: Dict[str, bool] = None,
+    narrow: Iterable[Sequence[str]] = None,
     fetch_event_types: Optional[Iterable[str]] = None
 ) -> Dict[str, Any]:
+    if client_capabilities is None:
+        client_capabilities = {}
+    if narrow is None:
+        narrow = []
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado

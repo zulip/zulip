@@ -10,7 +10,9 @@ T = TypeVar('T')
 def add(x: Any=0, y: Any=0) -> Any:
     return x + y
 
-def to_dict(v: Iterable[Tuple[Any, Any]]=[]) -> Dict[Any, Any]:
+def to_dict(v: Iterable[Tuple[Any, Any]]=None) -> Dict[Any, Any]:
+    if v is None:
+        v = []
     return dict(v)
 
 class TypesPrintTest(ZulipTestCase):
@@ -104,7 +106,9 @@ class TypesPrintTest(ZulipTestCase):
         class A(Dict[Any, Any]):
             pass
 
-        def to_A(v: Iterable[Tuple[Any, Any]]=[]) -> A:
+        def to_A(v: Iterable[Tuple[Any, Any]]=None) -> A:
+            if v is None:
+                v = []
             return A(v)
 
         self.check_signature("to_A() -> A([])", A(()), to_A)

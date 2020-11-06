@@ -296,12 +296,14 @@ def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT
 
 def build_recipients(zerver_userprofile: Iterable[ZerverFieldsT],
                      zerver_stream: Iterable[ZerverFieldsT],
-                     zerver_huddle: Iterable[ZerverFieldsT] = []) -> List[ZerverFieldsT]:
+                     zerver_huddle: Iterable[ZerverFieldsT] = None) -> List[ZerverFieldsT]:
     '''
     As of this writing, we only use this in the HipChat
     conversion.  The Slack and Gitter conversions do it more
     tightly integrated with creating other objects.
     '''
+    if zerver_huddle is None:
+        zerver_huddle = []
 
     recipients = []
 
@@ -368,7 +370,9 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
                        mentioned_user_ids: List[int],
                        message_id: int,
                        is_private: bool,
-                       long_term_idle: AbstractSet[int] = set()) -> Tuple[int, int]:
+                       long_term_idle: AbstractSet[int] = None) -> Tuple[int, int]:
+    if long_term_idle is None:
+        long_term_idle = set()
     user_ids = subscriber_map.get(recipient_id, set())
 
     user_messages_created = 0

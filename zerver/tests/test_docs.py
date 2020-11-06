@@ -34,9 +34,13 @@ class DocPageTest(ZulipTestCase):
             print("ERROR: {}".format(content.get('msg')))
             print()
 
-    def _test(self, url: str, expected_content: str, extra_strings: Sequence[str]=[],
-              landing_missing_strings: Sequence[str]=[], landing_page: bool=True,
+    def _test(self, url: str, expected_content: str, extra_strings: Sequence[str]=None,
+              landing_missing_strings: Sequence[str]=None, landing_page: bool=True,
               doc_html_str: bool=False) -> None:
+        if extra_strings is None:
+            extra_strings = []
+        if landing_missing_strings is None:
+            landing_missing_strings = []
 
         # Test the URL on the "zephyr" subdomain
         result = self.get_doc(url, subdomain="zephyr")

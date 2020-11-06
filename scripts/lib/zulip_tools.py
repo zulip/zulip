@@ -403,7 +403,7 @@ def files_and_string_digest(filenames: Sequence[str],
 
 def is_digest_obsolete(hash_name: str,
                        filenames: Sequence[str],
-                       extra_strings: Sequence[str] = []) -> bool:
+                       extra_strings: Sequence[str] = None) -> bool:
     '''
     In order to determine if we need to run some
     process, we calculate a digest of the important
@@ -422,6 +422,8 @@ def is_digest_obsolete(hash_name: str,
         - settings values (that we stringify with
           json, deterministically)
     '''
+    if extra_strings is None:
+        extra_strings = []
     last_hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
     try:
         with open(last_hash_path) as f:
@@ -437,7 +439,9 @@ def is_digest_obsolete(hash_name: str,
 
 def write_new_digest(hash_name: str,
                      filenames: Sequence[str],
-                     extra_strings: Sequence[str] = []) -> None:
+                     extra_strings: Sequence[str] = None) -> None:
+    if extra_strings is None:
+        extra_strings = []
     hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
     new_hash = files_and_string_digest(filenames, extra_strings)
     with open(hash_path, 'w') as f:

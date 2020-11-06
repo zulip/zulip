@@ -59,8 +59,10 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                         client_gravatar: bool, slim_presence: bool, queue_lifespan_secs: int,
                         event_types: Optional[Iterable[str]]=None,
                         all_public_streams: bool=False,
-                        narrow: Iterable[Sequence[str]]=[],
+                        narrow: Iterable[Sequence[str]]=None,
                         bulk_message_deletion: bool=False) -> Optional[str]:
+    if narrow is None:
+        narrow = []
 
     if not settings.USING_TORNADO:
         return None

@@ -239,10 +239,12 @@ Output:
                              intentionally_undocumented=intentionally_undocumented)
 
     @instrument_url
-    def client_patch(self, url: str, info: Dict[str, Any]={}, intentionally_undocumented: bool=False, **kwargs: Any) -> HttpResponse:
+    def client_patch(self, url: str, info: Dict[str, Any]=None, intentionally_undocumented: bool=False, **kwargs: Any) -> HttpResponse:
         """
         We need to urlencode, since Django's function won't do it for us.
         """
+        if info is None:
+            info = {}
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
@@ -251,7 +253,7 @@ Output:
         return result
 
     @instrument_url
-    def client_patch_multipart(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
+    def client_patch_multipart(self, url: str, info: Dict[str, Any]=None, **kwargs: Any) -> HttpResponse:
         """
         Use this for patch requests that have file uploads or
         that need some sort of multi-part content.  In the future
@@ -260,6 +262,8 @@ Output:
         with the Django test client, it deals with MULTIPART_CONTENT
         automatically, but not patch.)
         """
+        if info is None:
+            info = {}
         encoded = encode_multipart(BOUNDARY, info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
@@ -272,14 +276,18 @@ Output:
         return result
 
     @instrument_url
-    def client_put(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
+    def client_put(self, url: str, info: Dict[str, Any]=None, **kwargs: Any) -> HttpResponse:
+        if info is None:
+            info = {}
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         return django_client.put(url, encoded, **kwargs)
 
     @instrument_url
-    def client_delete(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
+    def client_delete(self, url: str, info: Dict[str, Any]=None, **kwargs: Any) -> HttpResponse:
+        if info is None:
+            info = {}
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
@@ -288,14 +296,18 @@ Output:
         return result
 
     @instrument_url
-    def client_options(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
+    def client_options(self, url: str, info: Dict[str, Any]=None, **kwargs: Any) -> HttpResponse:
+        if info is None:
+            info = {}
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         return django_client.options(url, encoded, **kwargs)
 
     @instrument_url
-    def client_head(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
+    def client_head(self, url: str, info: Dict[str, Any]=None, **kwargs: Any) -> HttpResponse:
+        if info is None:
+            info = {}
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
@@ -305,9 +317,11 @@ Output:
     def client_post(
         self,
         url: str,
-        info: Union[str, bytes, Dict[str, Any]] = {},
+        info: Union[str, bytes, Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> HttpResponse:
+        if info is None:
+            info = {}
         intentionally_undocumented: bool = kwargs.pop("intentionally_undocumented", False)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
@@ -330,7 +344,9 @@ Output:
         return match.func(req)
 
     @instrument_url
-    def client_get(self, url: str, info: Dict[str, Any] = {}, **kwargs: Any) -> HttpResponse:
+    def client_get(self, url: str, info: Dict[str, Any] = None, **kwargs: Any) -> HttpResponse:
+        if info is None:
+            info = {}
         intentionally_undocumented: bool = kwargs.pop("intentionally_undocumented", False)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
@@ -553,7 +569,7 @@ Output:
             realm_subdomain: str="zuliptest",
             from_confirmation: str='', full_name: Optional[str]=None,
             timezone: str='', realm_in_root_domain: Optional[str]=None,
-            default_stream_groups: Sequence[str]=[],
+            default_stream_groups: Sequence[str]=None,
             source_realm: str='',
             key: Optional[str]=None, **kwargs: Any) -> HttpResponse:
         """
@@ -564,6 +580,8 @@ Output:
 
         You can pass the HTTP_HOST variable for subdomains via kwargs.
         """
+        if default_stream_groups is None:
+            default_stream_groups = []
         if full_name is None:
             full_name = email.replace("@", "_")
         payload = {
@@ -886,10 +904,12 @@ Output:
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, user: UserProfile, streams: Iterable[str],
-                                    extra_post_data: Dict[str, Any]={}, invite_only: bool=False,
+                                    extra_post_data: Dict[str, Any]=None, invite_only: bool=False,
                                     is_web_public: bool=False,
                                     allow_fail: bool=False,
                                     **kwargs: Any) -> HttpResponse:
+        if extra_post_data is None:
+            extra_post_data = {}
         post_data = {'subscriptions': orjson.dumps([{"name": stream} for stream in streams]).decode(),
                      'is_web_public': orjson.dumps(is_web_public).decode(),
                      'invite_only': orjson.dumps(invite_only).decode()}

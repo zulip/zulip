@@ -31,8 +31,10 @@ class DictType:
     def __init__(
         self,
         required_keys: Sequence[Tuple[str, Any]],
-        optional_keys: Sequence[Tuple[str, Any]] = [],
+        optional_keys: Sequence[Tuple[str, Any]] = None,
     ) -> None:
+        if optional_keys is None:
+            optional_keys = []
         self.required_keys = required_keys
         self.optional_keys = optional_keys
 
@@ -237,7 +239,7 @@ class UrlType:
 
 def event_dict_type(
     required_keys: Sequence[Tuple[str, Any]],
-    optional_keys: Sequence[Tuple[str, Any]] = [],
+    optional_keys: Sequence[Tuple[str, Any]] = None,
 ) -> DictType:
 
     """
@@ -250,6 +252,8 @@ def event_dict_type(
         - sanity check that we have no duplicate keys
 
     """
+    if optional_keys is None:
+        optional_keys = []
     rkeys = [key[0] for key in required_keys]
     okeys = [key[0] for key in optional_keys]
     keys = rkeys + okeys

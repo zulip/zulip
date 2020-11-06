@@ -138,7 +138,9 @@ CODE_VALIDATORS = {
 }
 
 class FencedCodeExtension(markdown.Extension):
-    def __init__(self, config: Mapping[str, Any] = {}) -> None:
+    def __init__(self, config: Mapping[str, Any] = None) -> None:
+        if config is None:
+            config = {}
         self.config = {
             'run_content_validators': [
                 config.get('run_content_validators', False),
