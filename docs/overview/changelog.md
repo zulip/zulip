@@ -2,7 +2,9 @@
 
 All notable changes to the Zulip server are documented in this file.
 
-## 4.0 -- Unreleased
+## Zulip 4.x series
+
+### 4.0 -- Unreleased
 
 This section lists notable unreleased changes; it is generally updated
 in bursts.
@@ -55,6 +57,8 @@ in bursts.
   removing the last forked dependencies from the codebase.
 - Updated webapp codebase to use many modern ES6 patterns.
 - Relabeled :smile: and :stuck_out_tongue: emoji to use better codepoints.
+
+## Zulip 3.x series
 
 ### 3.2 -- September 15, 2020
 
@@ -318,6 +322,8 @@ in bursts.
 - Removed the legacy websockets-based system for sending messages.  This
   system was always a hack, was only ever used for one endpoint, and
   did not provide a measureable latency benefit over HTTP/2.
+
+## Zulip 2.1.x series
 
 ### 2.1.7 -- 2020-06-25
 
@@ -669,6 +675,8 @@ lose the setting and need to re-enable it.
 - Enabled webpack code splitting and deduplication.
 - Started migrating our frontend codebase to TypeScript.
 
+## Zulip 2.0.x series
+
 ### 2.0.8 -- 2019-12-12
 
 - CVE-2019-19775: Close open redirect in thumbnail view.
@@ -839,6 +847,8 @@ and is enabled by default in that case. To disable it, set
 - Countless behind-the-scenes improvements to Zulip's codebase,
   tooling, automated tests, error handling, and APIs.
 
+## Zulip 1.9.x series
+
 ### 1.9.2 -- 2019-01-29
 
 This release migrates Zulip off a deprecated Google+ API (necessary
@@ -991,6 +1001,8 @@ Zulip installations; it has minimal changes for existing servers.
 - Migrated our static asset pipeline to webpack.
 - Our steady work on codebase quality and our automated test suite
   continues.  Backend test coverage is now an incredible 98%.
+
+## Zulip 1.8.x series
 
 ### 1.8.1 -- 2018-05-07
 
@@ -1201,6 +1213,8 @@ Zulip installations; it has minimal changes for existing servers.
 #### Upgrade notes for 1.8.0
 
 This major release has no special upgrade notes.
+
+## Zulip 1.7.x series
 
 ### 1.7.2 -- 2018-04-12
 
@@ -1423,6 +1437,8 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Removed the old django-guardian dependency.
 - Removed several obsolete settings.
 - Partially completed migration to webpack as our static asset bundler.
+
+## Zulip 1.6.x and older
 
 ### 1.6.0 -- 2017-06-06
 
