@@ -28,9 +28,9 @@ exports.toggle = function (opts) {
                     value.key +
                     "' data-tab-id='" +
                     i +
-                    "' tabindex='0'>" +
+                    "' role='button' tabindex='0'>" +
                     value.label +
-                    "</div>",
+                    "</div>",   
             );
 
             // add proper classes for styling in CSS.
