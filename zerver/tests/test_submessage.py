@@ -115,7 +115,8 @@ class TestBasics(ZulipTestCase):
             content='{"name": "alice", "salary": 20}',
         )
         with mock.patch("zerver.lib.actions.send_event") as m:
-            result = self.client_post("/json/submessage", payload)
+            with self.captureOnCommitCallbacks(execute=True):
+                result = self.client_post("/json/submessage", payload)
         self.assert_json_success(result)
 
         submessage = SubMessage.objects.get(message_id=message_id)

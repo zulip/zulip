@@ -2115,6 +2115,10 @@ def do_add_submessage(
     msg_type: str,
     content: str,
 ) -> None:
+    """Should be called while holding a SELECT FOR UPDATE lock
+    (e.g. via access_message(..., lock_message=True)) on the
+    Message row, to prevent race conditions.
+    """
     submessage = SubMessage(
         sender_id=sender_id,
         message_id=message_id,
@@ -2134,7 +2138,7 @@ def do_add_submessage(
     ums = UserMessage.objects.filter(message_id=message_id)
     target_user_ids = [um.user_profile_id for um in ums]
 
-    send_event(realm, event, target_user_ids)
+    transaction.on_commit(lambda: send_event(realm, event, target_user_ids))
 
 
 def notify_reaction_update(
