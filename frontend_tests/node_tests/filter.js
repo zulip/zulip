@@ -708,6 +708,17 @@ run_test("predicate_basics", () => {
         content: '<p><a href="/user_uploads/randompath/attachment.ext">attachment.ext</a></p>',
     };
 
+    const widget_msg = {
+        submessages: [
+            {
+                id: 1,
+            },
+            {
+                id: 2,
+            },
+        ],
+    };
+
     const no_has_filter_matching_msg = {
         content: "<p>Testing</p>",
     };
@@ -716,6 +727,7 @@ run_test("predicate_basics", () => {
     assert(!predicate(img_msg));
     assert(!predicate(non_img_attachment_msg));
     assert(!predicate(link_msg));
+    assert(!predicate(widget_msg));
     assert(!predicate(no_has_filter_matching_msg));
 
     // HTML content of message is used to determine if image have link, image or attachment.
@@ -756,6 +768,9 @@ run_test("predicate_basics", () => {
     assert(!has_image(link_msg));
     set_find_results_for_msg_content(no_has_filter_matching_msg, ".message_inline_image", false);
     assert(!has_image(no_has_filter_matching_msg));
+
+    const has_widget = get_predicate([["has", "widget"]]);
+    assert(has_widget(widget_msg));
 });
 
 run_test("negated_predicates", () => {

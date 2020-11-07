@@ -39,6 +39,10 @@ exports.message_has_attachment = function (message) {
     return is_element_in_message_content(message, "a[href^='/user_uploads']");
 };
 
+exports.message_has_widget = function (message) {
+    return message.submessages.length > 0;
+};
+
 exports.add_old_messages = function (messages, msg_list) {
     return add_messages(messages, msg_list, {messages_are_new: false});
 };
