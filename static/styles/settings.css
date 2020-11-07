@@ -1303,6 +1303,9 @@ input[type="checkbox"] {
                 border-bottom: 1px solid transparent;
             }
 
+            &:focus {
+                    outline: 1px solid red;
+            }
             .text,
             .icon,
             .locked {
