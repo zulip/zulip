@@ -23,12 +23,7 @@ from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
 
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import (
-    authenticated_json_view,
-    require_non_guest_user,
-    require_post,
-    require_realm_admin,
-)
+from zerver.decorator import authenticated_json_view, require_post, require_realm_admin
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -416,7 +411,6 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
 RETENTION_DEFAULT: Union[str, int] = "realm_default"
 EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
 
-@require_non_guest_user
 @has_request_variables
 def add_subscriptions_backend(
         request: HttpRequest,
