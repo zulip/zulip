@@ -1304,7 +1304,7 @@ input[type="checkbox"] {
             }
 
             &:focus {
-                    outline: 1px solid red;
+                outline: 1px solid hsl(0, 100%, 50%);
             }
             .text,
             .icon,

@@ -30,7 +30,7 @@ exports.toggle = function (opts) {
                     i +
                     "' role='button' tabindex='0'>" +
                     value.label +
-                    "</div>",   
+                    "</div>",
             );
 
             // add proper classes for styling in CSS.
