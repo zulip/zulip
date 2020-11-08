@@ -1810,7 +1810,7 @@ class TestRequireDecorators(ZulipTestCase):
         guest_user = self.example_user("polonius")
         self.login_user(guest_user)
         result = self.common_subscribe_to_streams(guest_user, ["Denmark"], allow_fail=True)
-        self.assert_json_error(result, "Not allowed for guest users")
+        self.assert_json_error(result, "Unable to access stream (Denmark).")
 
         outgoing_webhook_bot = self.example_user("outgoing_webhook_bot")
         result = self.api_get(outgoing_webhook_bot, "/api/v1/bots")
