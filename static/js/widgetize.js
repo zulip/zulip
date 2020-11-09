@@ -25,6 +25,9 @@ exports.activate = function (in_opts) {
     events.shift();
 
     if (!widgets.has(widget_type)) {
+        if (widget_type === "tictactoe") {
+            return; // don't warn for deleted legacy widget
+        }
         blueslip.warn("unknown widget_type", widget_type);
         return;
     }

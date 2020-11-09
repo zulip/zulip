@@ -135,6 +135,13 @@ run_test("activate", () => {
     assert(!is_event_handled);
     assert.equal(blueslip.get_test_logs("warn")[0].more_info, "invalid_widget");
 
+    opts.widget_type = "tictactoe";
+
+    widgetize.activate(opts);
+    assert(!is_widget_elem_inserted);
+    assert(!is_widget_activated);
+    assert(!is_event_handled);
+
     /* Testing widgetize.handle_events */
     const post_activate_event = {
         data: {
