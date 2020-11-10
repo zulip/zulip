@@ -851,9 +851,12 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
 @has_request_variables
 def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=REQ()) -> HttpResponse:
     return_data: Dict[str, bool] = {}
-    subdomain = get_subdomain(request)
-    realm = get_realm(subdomain)
-    if not ldap_auth_enabled(realm=get_realm_from_request(request)):
+
+    realm = get_realm_from_request(request)
+    if realm is None:
+        return json_error(_("Invalid subdomain"))
+
+    if not ldap_auth_enabled(realm=realm):
         # In case we don't authenticate against LDAP, check for a valid
         # email. LDAP backend can authenticate against a non-email.
         validate_login_email(username)
