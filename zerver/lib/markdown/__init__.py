@@ -1884,17 +1884,31 @@ DEFAULT_MARKDOWN_KEY = -1
 ZEPHYR_MIRROR_MARKDOWN_KEY = -2
 
 class Markdown(markdown.Markdown):
-    def __init__(self, *args: Any, **kwargs: Union[bool, int, List[Any]]) -> None:
+    def __init__(
+        self,
+        realm_filters: List[Tuple[str, str, int]],
+        realm_filters_key: int,
+        email_gateway: bool,
+    ) -> None:
         # define default configs
         self.config = {
-            "realm_filters": [kwargs['realm_filters'],
-                              "Realm-specific filters for realm_filters_key {}".format(kwargs['realm'])],
-            "realm": [kwargs['realm'], "Realm id"],
-            "code_block_processor_disabled": [kwargs['code_block_processor_disabled'],
+            "realm_filters": [realm_filters,
+                              f"Realm-specific filters for realm_filters_key {realm_filters_key}"],
+            "realm": [realm_filters_key, "Realm id"],
+            "code_block_processor_disabled": [email_gateway,
                                               "Disabled for email gateway"],
         }
 
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            extensions=[
+                nl2br.makeExtension(),
+                tables.makeExtension(),
+                codehilite.makeExtension(
+                    linenums=False,
+                    guess_lang=False,
+                ),
+            ],
+        )
         self.set_output_format('html')
 
     def build_parser(self) -> markdown.Markdown:
@@ -2060,28 +2074,11 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
         del md_engines[md_engine_key]
 
     realm_filters = realm_filter_data[realm_filters_key]
-    md_engines[md_engine_key] = build_engine(
+    md_engines[md_engine_key] = Markdown(
         realm_filters=realm_filters,
         realm_filters_key=realm_filters_key,
         email_gateway=email_gateway,
     )
-
-def build_engine(realm_filters: List[Tuple[str, str, int]],
-                 realm_filters_key: int,
-                 email_gateway: bool) -> markdown.Markdown:
-    engine = Markdown(
-        realm_filters=realm_filters,
-        realm=realm_filters_key,
-        code_block_processor_disabled=email_gateway,
-        extensions = [
-            nl2br.makeExtension(),
-            tables.makeExtension(),
-            codehilite.makeExtension(
-                linenums=False,
-                guess_lang=False,
-            ),
-        ])
-    return engine
 
 # Split the topic name into multiple sections so that we can easily use
 # our common single link matching regex on it.
