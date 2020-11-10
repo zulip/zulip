@@ -3199,6 +3199,13 @@ class FetchAPIKeyTest(ZulipTestCase):
                                        password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
+    def test_invalid_subdomain(self) -> None:
+        with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
+            result = self.client_post("/api/v1/fetch_api_key",
+                                      dict(username='hamlet',
+                                           password=initial_password(self.email)))
+        self.assert_json_error(result, "Invalid subdomain", 400)
+
     def test_password_auth_disabled(self) -> None:
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
             result = self.client_post("/api/v1/fetch_api_key",
