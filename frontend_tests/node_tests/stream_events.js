@@ -163,12 +163,14 @@ run_test("update_property", (override) => {
             override("subs.update_stream_privacy", stub.f);
             stream_events.update_property(1, "invite_only", true, {
                 history_public_to_subscribers: true,
+                is_web_public: false,
             });
             const args = stub.get_args("sub", "val");
             assert.equal(args.sub.stream_id, 1);
             assert.deepEqual(args.val, {
                 invite_only: true,
                 history_public_to_subscribers: true,
+                is_web_public: false,
             });
         });
     }

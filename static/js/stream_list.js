@@ -289,6 +289,7 @@ exports.redraw_stream_privacy = function (sub) {
 
     const args = {
         invite_only: sub.invite_only,
+        is_web_public: sub.is_web_public,
         dark_background,
     };
 

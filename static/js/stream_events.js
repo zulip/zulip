@@ -54,6 +54,7 @@ exports.update_property = function (stream_id, property, value, other_values) {
             subs.update_stream_privacy(sub, {
                 invite_only: value,
                 history_public_to_subscribers: other_values.history_public_to_subscribers,
+                is_web_public: other_values.is_web_public,
             });
             break;
         case "stream_post_policy":
