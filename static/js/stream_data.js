@@ -480,6 +480,7 @@ exports.update_stream_post_policy = function (sub, stream_post_policy) {
 exports.update_stream_privacy = function (sub, values) {
     sub.invite_only = values.invite_only;
     sub.history_public_to_subscribers = values.history_public_to_subscribers;
+    sub.is_web_public = values.is_web_public;
 };
 
 exports.update_message_retention_setting = function (sub, message_retention_days) {

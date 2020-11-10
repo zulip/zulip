@@ -148,6 +148,11 @@ export function update_stream_privacy_type_icon(sub) {
                 .removeClass("hash")
                 .addClass("lock")
                 .html("<i class='fa fa-lock' aria-hidden='true'></i>");
+        } else if (sub.is_web_public) {
+            large_icon
+                .removeClass("hash")
+                .removeClass("lock")
+                .html("<i class='fa fa-globe' aria-hidden='true'></i>");
         } else {
             large_icon.addClass("hash").removeClass("lock").html("");
         }
