@@ -86,6 +86,7 @@ const stream_data = zrequire("stream_data");
 run_test("verify stream_data persists stream color", () => {
     assert.equal(stream_data.get_sub_by_name("Denmark"), undefined);
     stream_data.add_sub(denmark_stream);
+    assert.equal(stream_data.is_web_public(denmark_stream.id), false);
     const sub = stream_data.get_sub_by_name("Denmark");
     assert.equal(sub.color, "blue");
 });

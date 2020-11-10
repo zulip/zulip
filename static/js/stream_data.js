@@ -104,6 +104,13 @@ exports.stream_privacy_policy_values = {
             "Anyone can join; anyone can view complete message history without joining",
         ),
     },
+    web_public: {
+        code: "web-public",
+        name: i18n.t("Web public"),
+        description: i18n.t(
+            "Anyone (including guest users) can join; anyone on the internet can view complete message history without creating an account",
+        ),
+    },
     private_with_public_history: {
         code: "invite-only-public-history",
         name: i18n.t("Private, shared history"),
@@ -578,13 +585,21 @@ exports.id_is_subscribed = function (stream_id) {
 exports.get_stream_privacy_policy = function (stream_id) {
     const sub = exports.get_sub_by_id(stream_id);
 
-    if (!sub.invite_only) {
+    if (!sub.invite_only && !sub.is_web_public) {
         return exports.stream_privacy_policy_values.public.code;
     }
     if (sub.invite_only && !sub.history_public_to_subscribers) {
         return exports.stream_privacy_policy_values.private.code;
     }
+    if (sub.is_web_public) {
+        return exports.stream_privacy_policy_values.web_public.code;
+    }
     return exports.stream_privacy_policy_values.private_with_public_history.code;
+};
+
+exports.is_web_public = function (stream_id) {
+    const sub = subs_by_stream_id.get(stream_id);
+    return sub !== undefined && sub.is_web_public;
 };
 
 exports.get_invite_only = function (stream_name) {
