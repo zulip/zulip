@@ -3,7 +3,8 @@ import os
 import smtplib
 import time
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Type
+from inspect import isabstract
+from typing import Any, Callable, Dict, List, Mapping, Optional
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -646,17 +647,14 @@ class WorkerTest(ZulipTestCase):
         # is called after this
         self.assertEqual(5, len(test_queue_names))
 
-        worker_queue_classes: Set[Type[QueueProcessingWorker]] = set()
-        worker_queue_classes.update(QueueProcessingWorker.__subclasses__())
-        worker_queue_classes.update(EmailSendingWorker.__subclasses__())
-        worker_queue_classes.update(LoopQueueProcessingWorker.__subclasses__())
-
-        # Remove the abstract class
-        worker_queue_classes -= set([queue_processors.LoopQueueProcessingWorker])
-
         # This misses that TestWorker, defined in test_worker_noname
         # with no assign_queue, because it runs after this
 
-        worker_queue_names = set([x.queue_name for x in worker_queue_classes])
+        worker_queue_names = {
+            queue_class.queue_name
+            for base in [QueueProcessingWorker, EmailSendingWorker, LoopQueueProcessingWorker]
+            for queue_class in base.__subclasses__()
+            if not isabstract(queue_class)
+        }
         self.assertEqual(set(get_active_worker_queues()),
                          worker_queue_names - test_queue_names)
