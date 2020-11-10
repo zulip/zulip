@@ -156,18 +156,28 @@ function create_stream() {
 
     let invite_only;
     let history_public_to_subscribers;
+    let is_web_public;
     const privacy_setting = $("#stream_creation_form input[name=privacy]:checked").val();
 
     if (privacy_setting === "invite-only") {
         invite_only = true;
         history_public_to_subscribers = false;
+        is_web_public = false;
     } else if (privacy_setting === "invite-only-public-history") {
         invite_only = true;
         history_public_to_subscribers = true;
+        is_web_public = false;
+    } else if (privacy_setting === "web-public") {
+        invite_only = false;
+        history_public_to_subscribers = true;
+        is_web_public = true;
     } else {
         invite_only = false;
         history_public_to_subscribers = true;
+        is_web_public = false;
     }
+
+    data.is_web_public = JSON.stringify(is_web_public);
     data.invite_only = JSON.stringify(invite_only);
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
