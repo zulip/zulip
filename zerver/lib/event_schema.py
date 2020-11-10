@@ -1094,6 +1094,7 @@ stream_update_event = event_dict_type(
     optional_keys=[
         ("rendered_description", str),
         ("history_public_to_subscribers", bool),
+        ("is_web_public", bool),
     ],
 )
 _check_stream_update = make_checker(stream_update_event)
@@ -1121,7 +1122,7 @@ def check_stream_update(var_name: str, event: Dict[str, object],) -> None:
         assert extra_keys == set()
         assert isinstance(value, str)
     elif prop == "invite_only":
-        assert extra_keys == {"history_public_to_subscribers"}
+        assert extra_keys == {"history_public_to_subscribers", "is_web_public"}
         assert isinstance(value, bool)
     elif prop == "message_retention_days":
         assert extra_keys == set()

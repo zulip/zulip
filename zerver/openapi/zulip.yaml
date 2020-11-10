@@ -1114,6 +1114,10 @@ paths:
                                     Currently always true for public streams (i.e. invite_only=False implies
                                     history_public_to_subscribers=True), but clients should not make that
                                     assumption, as we may change that behavior in the future.
+                                is_web_public:
+                                  type: boolean
+                                  description: |
+                                    Specifies whether stream is web public or not.
                               additionalProperties: false
                               example:
                                 {
@@ -1122,6 +1126,7 @@ paths:
                                   "property": "invite_only",
                                   "value": true,
                                   "history_public_to_subscribers": true,
+                                  "is_web_public": false,
                                   "stream_id": 11,
                                   "name": "test_stream",
                                   "id": 0,
