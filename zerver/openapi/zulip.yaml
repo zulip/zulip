@@ -1085,6 +1085,14 @@ paths:
                                     Currently always true for public streams (i.e. invite_only=False implies
                                     history_public_to_subscribers=True), but clients should not make that
                                     assumption, as we may change that behavior in the future.
+                                is_web_public:
+                                  type: boolean
+                                  description: |
+                                    Note: Only present if the changed property was `invite_only`.
+
+                                    Whether the stream's history is now readable by web-public visitors.
+
+                                    **Changes**: New in Zulip 5.0 (feature level 71).
                               additionalProperties: false
                               example:
                                 {
@@ -1093,6 +1101,7 @@ paths:
                                   "property": "invite_only",
                                   "value": true,
                                   "history_public_to_subscribers": true,
+                                  "is_web_public": false,
                                   "stream_id": 11,
                                   "name": "test_stream",
                                   "id": 0,

@@ -13,6 +13,11 @@ below features are supported.
 
 **Feature level 70**
 
+* [`GET /events`](/api/get-events): Added `is_web_public` field to
+  `stream` events changing `invite_only`.
+
+**Feature level 70**
+
 * [`POST /register`](/api/register-queue): Added new top-level
   `server_timestamp` field when fetching presence data, to match the
   existing presence API.
