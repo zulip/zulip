@@ -8273,6 +8273,15 @@ paths:
             type: boolean
           example: true
           required: false
+        - name: is_web_public
+          in: query
+          description: |
+            Whether the stream has been configured to allow unauthenticated
+            access to its message history from the web.
+          schema:
+            type: boolean
+          example: true
+          required: false
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/MessageRetentionDays"
