@@ -4208,13 +4208,15 @@ def do_change_stream_invite_only(
     )
     stream.invite_only = invite_only
     stream.history_public_to_subscribers = history_public_to_subscribers
-    stream.save(update_fields=["invite_only", "history_public_to_subscribers"])
+    stream.is_web_public = False
+    stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
     event = dict(
         op="update",
         type="stream",
         property="invite_only",
         value=invite_only,
         history_public_to_subscribers=history_public_to_subscribers,
+        is_web_public=False,
         stream_id=stream.id,
         name=stream.name,
     )
