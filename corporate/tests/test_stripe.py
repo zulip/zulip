@@ -224,7 +224,7 @@ def mock_stripe(tested_timestamp_fields: Sequence[str]=[],
                     decorated_function.__name__, mocked_function_name, mocked_function)  # nocoverage
             else:
                 side_effect = read_stripe_fixture(decorated_function.__name__, mocked_function_name)
-            decorated_function = patch(mocked_function_name, side_effect=side_effect)(decorated_function)
+            decorated_function = cast(CallableT, patch(mocked_function_name, side_effect=side_effect)(decorated_function))
 
         @wraps(decorated_function)
         def wrapped(*args: object, **kwargs: object) -> object:
