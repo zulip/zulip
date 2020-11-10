@@ -627,6 +627,10 @@ def apply_event(state: Dict[str, Any],
                     obj[event['property']] = event['value']
                     if event['property'] == "description":
                         obj['rendered_description'] = event['rendered_description']
+                    if event.get('history_public_to_subscribers') is not None:
+                        obj['history_public_to_subscribers'] = event['history_public_to_subscribers']
+                    if event.get('is_web_public') is not None:
+                        obj['is_web_public'] = event['is_web_public']
             # Also update the pure streams data
             if 'streams' in state:
                 for stream in state['streams']:
@@ -636,6 +640,11 @@ def apply_event(state: Dict[str, Any],
                             stream[prop] = event['value']
                             if prop == 'description':
                                 stream['rendered_description'] = event['rendered_description']
+                            if event.get('history_public_to_subscribers') is not None:
+                                stream['history_public_to_subscribers'] = event['history_public_to_subscribers']
+                            if event.get('is_web_public') is not None:
+                                stream['is_web_public'] = event['is_web_public']
+
     elif event['type'] == 'default_streams':
         state['realm_default_streams'] = event['default_streams']
     elif event['type'] == 'default_stream_groups':
