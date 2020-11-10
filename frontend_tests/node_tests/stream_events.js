@@ -205,6 +205,7 @@ test("update_property", ({override}) => {
         override(stream_settings_ui, "update_stream_privacy", stub.f);
         stream_events.update_property(stream_id, "invite_only", true, {
             history_public_to_subscribers: true,
+            is_web_public: false,
         });
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("sub", "val");
@@ -212,6 +213,7 @@ test("update_property", ({override}) => {
         assert.deepEqual(args.val, {
             invite_only: true,
             history_public_to_subscribers: true,
+            is_web_public: false,
         });
     }
 

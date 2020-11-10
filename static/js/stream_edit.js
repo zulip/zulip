@@ -664,32 +664,45 @@ function change_stream_privacy(e) {
 
     let invite_only;
     let history_public_to_subscribers;
+    let is_web_public;
 
     switch (privacy_setting) {
         case stream_data.stream_privacy_policy_values.public.code: {
             invite_only = false;
             history_public_to_subscribers = true;
+            is_web_public = false;
 
             break;
         }
         case stream_data.stream_privacy_policy_values.private.code: {
             invite_only = true;
             history_public_to_subscribers = false;
+            is_web_public = false;
+
+            break;
+        }
+        case stream_data.stream_privacy_policy_values.web_public.code: {
+            invite_only = false;
+            history_public_to_subscribers = true;
+            is_web_public = true;
 
             break;
         }
         default: {
             invite_only = true;
             history_public_to_subscribers = true;
+            is_web_public = false;
         }
     }
 
     if (
         sub.invite_only !== invite_only ||
-        sub.history_public_to_subscribers !== history_public_to_subscribers
+        sub.history_public_to_subscribers !== history_public_to_subscribers ||
+        sub.is_web_public !== is_web_public
     ) {
         data.is_private = JSON.stringify(invite_only);
         data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
+        data.is_web_public = JSON.stringify(is_web_public);
     }
 
     let message_retention_days = $(

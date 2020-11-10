@@ -454,6 +454,7 @@ export function update_stream_post_policy(sub, stream_post_policy) {
 export function update_stream_privacy(sub, values) {
     sub.invite_only = values.invite_only;
     sub.history_public_to_subscribers = values.history_public_to_subscribers;
+    sub.is_web_public = values.is_web_public;
 }
 
 export function update_message_retention_setting(sub, message_retention_days) {
