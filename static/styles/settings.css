@@ -1304,7 +1304,8 @@ input[type="checkbox"] {
             }
 
             &:focus {
-                outline: 1px solid hsl(0, 100%, 50%);
+                outline: 1px dotted;
+                outline: -webkit-focus-ring-color auto 5px;
             }
             .text,
             .icon,
