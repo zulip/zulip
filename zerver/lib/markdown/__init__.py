@@ -41,6 +41,7 @@ import markdown.util
 import requests
 from django.conf import settings
 from django.db.models import Q
+from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
 from typing_extensions import TypedDict
@@ -1939,7 +1940,7 @@ class Markdown(markdown.Markdown):
         preprocessors.register(AlertWordNotificationProcessor(self), 'custom_text_notifications', 20)
         return preprocessors
 
-    def build_block_parser(self) -> markdown.util.Registry:
+    def build_block_parser(self) -> BlockParser:
         # We disable the following blockparsers from upstream:
         #
         # indent - replaced by ours
@@ -1947,7 +1948,7 @@ class Markdown(markdown.Markdown):
         # olist - replaced by ours
         # ulist - replaced by ours
         # quote - replaced by ours
-        parser = markdown.blockprocessors.BlockParser(self)
+        parser = BlockParser(self)
         parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 95)
         parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 90)
         if not self.getConfig('code_block_processor_disabled'):
