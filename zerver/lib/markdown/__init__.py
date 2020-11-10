@@ -1873,6 +1873,12 @@ DEFAULT_MARKDOWN_KEY = -1
 ZEPHYR_MIRROR_MARKDOWN_KEY = -2
 
 class Markdown(markdown.Markdown):
+    zulip_message: Optional[Message]
+    zulip_realm: Optional[Realm]
+    zulip_db_data: Optional[DbData]
+    image_preview_enabled: bool
+    url_embed_preview_enabled: bool
+
     def __init__(
         self,
         realm_filters: List[Tuple[str, str, int]],
@@ -2054,7 +2060,7 @@ class Markdown(markdown.Markdown):
             self.preprocessors = get_sub_registry(self.preprocessors, ['custom_text_notifications'])
             self.parser.blockprocessors = get_sub_registry(self.parser.blockprocessors, ['paragraph'])
 
-md_engines: Dict[Tuple[int, bool], markdown.Markdown] = {}
+md_engines: Dict[Tuple[int, bool], Markdown] = {}
 realm_filter_data: Dict[int, List[Tuple[str, str, int]]] = {}
 
 def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
