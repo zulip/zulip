@@ -127,7 +127,7 @@ exports.update_stream_row_in_settings_tab = function (sub) {
         const sub_row = subs.row_for_stream_id(sub.stream_id);
         if (sub.subscribed) {
             sub_row.removeClass("notdisplayed");
-        } else if (sub.invite_only || page_params.is_guest) {
+        } else if (sub.invite_only) {
             sub_row.addClass("notdisplayed");
         }
     }
