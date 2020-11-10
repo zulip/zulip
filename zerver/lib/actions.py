@@ -4223,9 +4223,11 @@ def do_change_stream_invite_only(
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
 
 
-def do_change_stream_web_public(stream: Stream, is_web_public: bool) -> None:
-    stream.is_web_public = is_web_public
-    stream.save(update_fields=["is_web_public"])
+def do_make_stream_web_public(stream: Stream) -> None:
+    stream.is_web_public = True
+    stream.invite_only = False
+    stream.history_public_to_subscribers = True
+    stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
 
 
 def do_change_stream_post_policy(stream: Stream, stream_post_policy: int) -> None:

@@ -1,8 +1,8 @@
 from django.http import HttpResponse
 
 from zerver.lib.actions import (
-    do_change_stream_web_public,
     do_deactivate_stream,
+    do_make_stream_web_public,
     get_web_public_streams,
     get_web_public_subs,
 )
@@ -26,7 +26,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
 
     def test_non_existant_topic(self) -> None:
         test_stream = self.make_stream("Test Public Archives")
-        do_change_stream_web_public(test_stream, True)
+        do_make_stream_web_public(test_stream)
         result = self.client_get(
             "/archive/streams/" + str(test_stream.id) + "/topics/nonexistenttopic",
         )
@@ -34,7 +34,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
 
     def test_web_public_stream_topic(self) -> None:
         test_stream = self.make_stream("Test Public Archives")
-        do_change_stream_web_public(test_stream, True)
+        do_make_stream_web_public(test_stream)
 
         def send_msg_and_get_result(msg: str) -> HttpResponse:
             self.send_stream_message(
@@ -67,7 +67,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
 
         # Now add a second public stream
         test_stream = self.make_stream("Test Public Archives")
-        do_change_stream_web_public(test_stream, True)
+        do_make_stream_web_public(test_stream)
         public_streams = get_web_public_streams(realm)
         self.assert_length(public_streams, 2)
         info = get_web_public_subs(realm)
@@ -111,7 +111,7 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
 
     def test_web_public_stream(self) -> None:
         test_stream = self.make_stream("Test Public Archives")
-        do_change_stream_web_public(test_stream, True)
+        do_make_stream_web_public(test_stream)
 
         self.send_stream_message(
             self.example_user("iago"),
