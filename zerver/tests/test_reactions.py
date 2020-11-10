@@ -4,7 +4,7 @@ from unittest import mock
 import orjson
 from django.http import HttpResponse
 
-from zerver.lib.actions import do_change_stream_invite_only, do_change_stream_web_public
+from zerver.lib.actions import do_change_stream_invite_only, do_make_stream_web_public
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import extract_message_dict
@@ -560,7 +560,7 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(remove)
 
         # Make stream web_public as well.
-        do_change_stream_web_public(stream, True)
+        do_make_stream_web_public(stream)
         # For is_web_public streams, events even on old messages
         # should go to all subscribers, including guests like polonius.
         events = []
