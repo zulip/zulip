@@ -8,6 +8,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.test import override_settings
+from markdown import Markdown
 
 from zerver.lib.actions import (
     do_add_alert_words,
@@ -75,7 +76,7 @@ class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
 
 class FencedBlockPreprocessorTest(ZulipTestCase):
     def test_simple_quoting(self) -> None:
-        processor = FencedBlockPreprocessor(None)
+        processor = FencedBlockPreprocessor(Markdown())
         markdown_input = [
             '~~~ quote',
             'hi',
@@ -96,7 +97,7 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
         self.assertEqual(lines, expected)
 
     def test_serial_quoting(self) -> None:
-        processor = FencedBlockPreprocessor(None)
+        processor = FencedBlockPreprocessor(Markdown())
         markdown_input = [
             '~~~ quote',
             'hi',
@@ -123,7 +124,7 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
         self.assertEqual(lines, expected)
 
     def test_serial_code(self) -> None:
-        processor = SimulatedFencedBlockPreprocessor(None)
+        processor = SimulatedFencedBlockPreprocessor(Markdown())
 
         markdown_input = [
             '``` .py',
@@ -165,7 +166,7 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
         self.assertEqual(lines, expected)
 
     def test_nested_code(self) -> None:
-        processor = SimulatedFencedBlockPreprocessor(None)
+        processor = SimulatedFencedBlockPreprocessor(Markdown())
 
         markdown_input = [
             '~~~ quote',
@@ -2207,7 +2208,7 @@ class MarkdownErrorTests(ZulipTestCase):
                 markdown_convert_wrapper(msg)
 
     def test_curl_code_block_validation(self) -> None:
-        processor = SimulatedFencedBlockPreprocessor(None)
+        processor = SimulatedFencedBlockPreprocessor(Markdown())
         processor.run_content_validators = True
 
         markdown_input = [
@@ -2222,7 +2223,7 @@ class MarkdownErrorTests(ZulipTestCase):
             processor.run(markdown_input)
 
     def test_curl_code_block_without_validation(self) -> None:
-        processor = SimulatedFencedBlockPreprocessor(None)
+        processor = SimulatedFencedBlockPreprocessor(Markdown())
 
         markdown_input = [
             '``` curl',
