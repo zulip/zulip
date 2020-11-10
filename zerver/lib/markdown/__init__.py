@@ -11,19 +11,7 @@ import urllib.parse
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from io import StringIO
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Dict, Generic, List, Optional, Set, Tuple, TypeVar, Union
 from typing.re import Match, Pattern
 from urllib.parse import urlencode, urlsplit
 from xml.etree import ElementTree as etree
@@ -1817,7 +1805,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
             return True
         return False
 
-    def run(self, lines: Iterable[str]) -> Iterable[str]:
+    def run(self, lines: List[str]) -> List[str]:
         db_data = self.md.zulip_db_data
         if self.md.zulip_message and db_data is not None:
             # We check for alert words here, the set of which are
