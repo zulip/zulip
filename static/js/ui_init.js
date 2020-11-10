@@ -273,6 +273,12 @@ exports.initialize_kitchen_sink_stuff = function () {
 
     $('.copy_message[data-toggle="tooltip"]').tooltip();
 
+    $("#streams_inline_cog").tooltip({
+        title: "Subscribe, add, or configure streams",
+        animation: false,
+        placement: "bottom",
+    });
+
     // We disable animations here because they can cause the tooltip
     // to change shape while fading away in weird way.
     $("#keyboard-icon").tooltip({placement: "left", animation: false});
