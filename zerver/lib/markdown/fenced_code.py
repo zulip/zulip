@@ -76,7 +76,7 @@ Dependencies:
 
 """
 import re
-from typing import Any, Dict, Iterable, List, Mapping, MutableSequence, Optional
+from typing import Any, Iterable, List, Mapping, MutableSequence, Optional, Sequence
 
 import lxml.html
 from django.utils.html import escape
@@ -329,7 +329,7 @@ class FencedBlockPreprocessor(Preprocessor):
 
         self.checked_for_codehilite = False
         self.run_content_validators = run_content_validators
-        self.codehilite_conf: Dict[str, List[Any]] = {}
+        self.codehilite_conf: Mapping[str, Sequence[Any]] = {}
 
     def push(self, handler: BaseHandler) -> None:
         self.handlers.append(handler)
