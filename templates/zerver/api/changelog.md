@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 41**
+
+* [`GET /events`](/api/get-events): Added a `is_web_public` property
+  in `update` type `stream` events.
+
 **Feature level 40**
 
 * [`POST /subscribe`](/api/subscribe): Added a `is_web_public` field to

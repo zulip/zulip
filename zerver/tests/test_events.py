@@ -43,8 +43,8 @@ from zerver.lib.actions import (
     do_change_plan_type,
     do_change_realm_domain,
     do_change_stream_description,
-    do_change_stream_invite_only,
     do_change_stream_message_retention_days,
+    do_change_stream_permission,
     do_change_stream_post_policy,
     do_change_subscription_property,
     do_change_user_delivery_email,
@@ -1984,9 +1984,16 @@ class SubscribeActionTest(BaseAction):
         events = self.verify_action(action, include_subscribers=include_subscribers)
         check_stream_update("events[0]", events[0])
 
-        # Update stream privacy
-        action = lambda: do_change_stream_invite_only(
-            stream, True, history_public_to_subscribers=True
+        # Update stream privacy - make stream web public
+        action = lambda: do_change_stream_permission(
+            stream, invite_only=False, history_public_to_subscribers=True, is_web_public=True
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers)
+        check_stream_update("events[0]", events[0])
+
+        # Update stream privacy - make stream private
+        action = lambda: do_change_stream_permission(
+            stream, invite_only=True, history_public_to_subscribers=True, is_web_public=False
         )
         events = self.verify_action(action, include_subscribers=include_subscribers)
         check_stream_update("events[0]", events[0])

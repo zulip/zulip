@@ -4229,6 +4229,21 @@ def do_make_stream_web_public(stream: Stream) -> None:
     stream.history_public_to_subscribers = True
     stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
 
+    # We reuse "invite_only" stream update API route here because
+    # both are similar events and similar UI updates will be required
+    # by the client to update this property for the user.
+    event = dict(
+        op="update",
+        type="stream",
+        property="invite_only",
+        value=False,
+        history_public_to_subscribers=True,
+        is_web_public=True,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+
 
 def do_change_stream_post_policy(stream: Stream, stream_post_policy: int) -> None:
     stream.stream_post_policy = stream_post_policy
