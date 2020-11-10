@@ -544,6 +544,59 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.invite_only)
         self.assertTrue(stream.history_public_to_subscribers)
 
+    def test_make_stream_web_public(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        self.make_stream("test_stream", realm=realm)
+        stream_id = get_stream("test_stream", realm).id
+
+        params = {
+            "stream_name": orjson.dumps("test_stream").decode(),
+            "is_web_public": orjson.dumps(True).decode(),
+            "history_public_to_subscribers": orjson.dumps(True).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_error(result, "Must be an organization or stream administrator")
+
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_error(result, "Must be an organization owner")
+
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_error(result, "Web public streams are not enabled.")
+
+        bad_params = {
+            "stream_name": orjson.dumps("test_stream").decode(),
+            "is_web_public": orjson.dumps(True).decode(),
+            "is_private": orjson.dumps(True).decode(),
+            "history_public_to_subscribers": orjson.dumps(True).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream_id}", bad_params)
+        self.assert_json_error(result, "Invalid parameters")
+
+        bad_params = {
+            "stream_name": orjson.dumps("test_stream").decode(),
+            "is_web_public": orjson.dumps(True).decode(),
+            "is_private": orjson.dumps(False).decode(),
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream_id}", bad_params)
+        self.assert_json_error(result, "Invalid parameters")
+
+        stream = get_stream("test_stream", realm)
+        self.assertFalse(stream.is_web_public)
+
+        result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_success(result)
+
+        stream = get_stream("test_stream", realm)
+        self.assertTrue(stream.is_web_public)
+        self.assertFalse(stream.invite_only)
+        self.assertTrue(stream.history_public_to_subscribers)
+
     def test_try_make_stream_public_with_private_history(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)

@@ -25,8 +25,8 @@ from zerver.lib.actions import (
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
     do_change_stream_description,
-    do_change_stream_invite_only,
     do_change_stream_message_retention_days,
+    do_change_stream_permission,
     do_change_stream_post_policy,
     do_change_subscription_property,
     do_create_default_stream_group,
@@ -258,6 +258,7 @@ def update_stream_backend(
         json_validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES), default=None
     ),
     history_public_to_subscribers: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    is_web_public: Optional[bool] = REQ(json_validator=check_bool, default=None),
     new_name: Optional[str] = REQ(default=None),
     message_retention_days: Optional[Union[int, str]] = REQ(
         json_validator=check_string_or_int, default=None
@@ -308,7 +309,21 @@ def update_stream_backend(
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if is_private and stream.id in default_stream_ids:
             raise JsonableError(_("Default streams cannot be made private."))
-        do_change_stream_invite_only(stream, is_private, history_public_to_subscribers)
+
+    if is_web_public:
+        # Enforce restrictions on creating web-public streams.
+        if not user_profile.realm.web_public_streams_enabled():
+            raise JsonableError(_("Web public streams are not enabled."))
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequired()
+        # Forbid parameter combinations that are inconsistent
+        if is_private or history_public_to_subscribers is False:
+            raise JsonableError(_("Invalid parameters"))
+
+    if is_private is not None or is_web_public is not None:
+        do_change_stream_permission(
+            stream, is_private, history_public_to_subscribers, is_web_public
+        )
     return json_success()
 
 

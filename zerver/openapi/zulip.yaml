@@ -12638,6 +12638,22 @@ paths:
             type: boolean
           example: true
           required: false
+        - name: is_web_public
+          in: query
+          description: |
+            Change whether the stream is a web-public stream.
+
+            Note that creating web public streams requires the
+            `WEB_PUBLIC_STREAMS_ENABLED` [server setting][server-settings]
+            to be enabled on the Zulip server in question.
+
+            [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+
+            **Changes**: New in Zulip 5.0 (feature level 98).
+          schema:
+            type: boolean
+          example: true
+          required: false
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/MessageRetentionDays"

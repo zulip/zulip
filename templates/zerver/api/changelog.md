@@ -15,6 +15,8 @@ below features are supported.
 
 * [`POST /subscribe`](/api/subscribe): Added `is_web_public` parameter
   for requesting the creation of a web-public stream.
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `is_web_public` parameter for converting a stream into a web-public stream.
 
 **Feature level 97**
 
