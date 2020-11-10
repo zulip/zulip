@@ -274,7 +274,7 @@ li.top_left_recent_topics {
     line-height: 1.25;
 }
 
-.top_left_all_messages i.fa-home {
+.top_left_all_messages i.fa-align-left {
     position: relative;
     font-size: 15px;
 }

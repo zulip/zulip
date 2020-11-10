@@ -24,7 +24,7 @@ function make_message_view_header(filter) {
     if (filter === undefined) {
         return {
             title: i18n.t("All messages"),
-            icon: "home",
+            icon: "align-left",
         };
     }
     message_view_header.title = filter.get_title();
