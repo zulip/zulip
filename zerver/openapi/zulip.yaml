@@ -10286,6 +10286,9 @@ components:
         Whether each returned stream object should include a `subscribers`
         field containing a list of the user IDs of its subscribers.
 
+        **Note**: Pass the parameters as dictionary rather than as arguments to function
+        in python i.e. ```client.list_subscriptions(dict(include_subscribers=True)) ```.
+
         (This may be significantly slower in organizations with
         thousands of users subscribed to many streams.)
 
