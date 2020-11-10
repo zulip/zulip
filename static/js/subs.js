@@ -342,9 +342,6 @@ exports.update_settings_for_unsubscribed = function (sub) {
     if (!sub.should_display_subscription_button) {
         stream_ui_updates.update_add_subscriptions_elements(sub);
     }
-    if (page_params.is_guest) {
-        stream_edit.open_edit_panel_empty();
-    }
 
     // Remove private streams from subscribed streams list.
     stream_ui_updates.update_stream_row_in_settings_tab(sub);
@@ -604,9 +601,6 @@ exports.setup_page = function (callback) {
             const toggler_elem = exports.toggler.get();
             $("#subscriptions_table .search-container").prepend(toggler_elem);
         }
-        if (page_params.is_guest) {
-            exports.toggler.disable_tab("all-streams");
-        }
 
         // show the "Stream settings" header by default.
         $(".display-type #stream_settings_title").show();
@@ -702,10 +696,14 @@ exports.change_state = function (section) {
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const stream_id = Number.parseInt(section, 10);
-        // Guest users can not access unsubscribed streams
-        // So redirect guest users to 'subscribed' tab
-        // for any unsubscribed stream settings hash
-        if (page_params.is_guest && !stream_data.id_is_subscribed(stream_id)) {
+        // Guest users can not access unsubscribed streams, unless
+        // it is a web public stream. So redirect guest users to
+        // 'subscribed' tab for any unsubscribed stream settings hash
+        if (
+            page_params.is_guest &&
+            !stream_data.id_is_subscribed(stream_id) &&
+            !stream_data.is_web_public(stream_id)
+        ) {
             exports.toggler.goto("subscribed");
         } else {
             exports.switch_to_stream_row(stream_id);
