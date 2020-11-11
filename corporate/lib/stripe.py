@@ -136,7 +136,7 @@ def next_month(billing_cycle_anchor: datetime, dt: datetime) -> datetime:
 
 
 def start_of_next_billing_cycle(plan: CustomerPlan, event_time: datetime) -> datetime:
-    if plan.status == CustomerPlan.FREE_TRIAL:
+    if plan.is_free_trial():
         assert plan.next_invoice_date is not None  # for mypy
         return plan.next_invoice_date
 
@@ -358,7 +358,7 @@ def make_end_of_cycle_updates_if_needed(
                 licenses=last_ledger_entry.licenses_at_next_renewal,
                 licenses_at_next_renewal=last_ledger_entry.licenses_at_next_renewal,
             )
-        if plan.status == CustomerPlan.FREE_TRIAL:
+        if plan.is_free_trial():
             plan.invoiced_through = last_ledger_entry
             assert plan.next_invoice_date is not None
             plan.billing_cycle_anchor = plan.next_invoice_date.replace(microsecond=0)

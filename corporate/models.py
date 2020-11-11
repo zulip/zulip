@@ -117,6 +117,9 @@ class CustomerPlan(models.Model):
             LicenseLedger.objects.filter(plan=self).order_by("id").last().licenses_at_next_renewal
         )
 
+    def is_free_trial(self) -> bool:
+        return self.status == CustomerPlan.FREE_TRIAL
+
 
 def get_current_plan_by_customer(customer: Customer) -> Optional[CustomerPlan]:
     return CustomerPlan.objects.filter(

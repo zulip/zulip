@@ -300,7 +300,6 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             if new_plan is not None:  # nocoverage
                 plan = new_plan
             assert plan is not None  # for mypy
-            free_trial = plan.status == CustomerPlan.FREE_TRIAL
             downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
             switch_to_annual_at_end_of_cycle = (
                 plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
@@ -324,7 +323,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             context.update(
                 plan_name=plan.name,
                 has_active_plan=True,
-                free_trial=free_trial,
+                free_trial=plan.is_free_trial(),
                 downgrade_at_end_of_cycle=downgrade_at_end_of_cycle,
                 automanage_licenses=plan.automanage_licenses,
                 switch_to_annual_at_end_of_cycle=switch_to_annual_at_end_of_cycle,
@@ -391,7 +390,7 @@ def update_plan(
             assert plan.fixed_price is None
             do_change_plan_status(plan, status)
         elif status == CustomerPlan.ENDED:
-            assert plan.status == CustomerPlan.FREE_TRIAL
+            assert plan.is_free_trial()
             downgrade_now_without_creating_additional_invoices(user.realm)
         return json_success()
 
