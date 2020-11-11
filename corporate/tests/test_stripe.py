@@ -35,6 +35,7 @@ from corporate.lib.stripe import (
     get_realms_to_default_discount_dict,
     invoice_plan,
     invoice_plans_as_needed,
+    is_realm_on_free_trial,
     make_end_of_cycle_updates_if_needed,
     next_month,
     process_initial_upgrade,
@@ -2968,6 +2969,24 @@ class BillingHelpersTest(ZulipTestCase):
                 "lear": Decimal("30.0000"),
             },
         )
+
+    def test_is_realm_on_free_trial(self) -> None:
+        realm = get_realm("zulip")
+        self.assertFalse(is_realm_on_free_trial(realm))
+
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            status=CustomerPlan.ACTIVE,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.ANNUAL,
+            tier=CustomerPlan.STANDARD,
+        )
+        self.assertFalse(is_realm_on_free_trial(realm))
+
+        plan.status = CustomerPlan.FREE_TRIAL
+        plan.save(update_fields=["status"])
+        self.assertTrue(is_realm_on_free_trial(realm))
 
 
 class LicenseLedgerTest(StripeTestCase):

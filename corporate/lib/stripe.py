@@ -785,6 +785,11 @@ def invoice_plans_as_needed(event_time: datetime = timezone_now()) -> None:
         invoice_plan(plan, event_time)
 
 
+def is_realm_on_free_trial(realm: Realm) -> bool:
+    plan = get_current_plan_by_realm(realm)
+    return plan is not None and plan.is_free_trial()
+
+
 def attach_discount_to_realm(
     realm: Realm, discount: Decimal, *, acting_user: Optional[UserProfile]
 ) -> None:
