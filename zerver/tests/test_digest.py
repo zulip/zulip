@@ -274,7 +274,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         Realm.objects.update(digest_emails_enabled=True)
         cutoff = timezone_now()
         # Test Tuesday
-        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
         all_user_profiles = UserProfile.objects.filter(
             is_active=True, is_bot=False, enable_digest_emails=True)
         # Check that all users without an a UserActivity entry are considered
@@ -300,7 +300,7 @@ class TestDigestEmailMessages(ZulipTestCase):
                       mock_queue_digest_recipient: mock.MagicMock) -> None:
         cutoff = timezone_now()
         # A Tuesday
-        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
         enqueue_emails(cutoff)
         mock_queue_digest_recipient.assert_not_called()
 
@@ -313,7 +313,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         Realm.objects.update(digest_emails_enabled=True)
         cutoff = timezone_now()
         # A Tuesday
-        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
         realms = Realm.objects.filter(deactivated=False, digest_emails_enabled=True)
         for realm in realms:
             user_profiles = UserProfile.objects.filter(realm=realm)
@@ -334,7 +334,7 @@ class TestDigestEmailMessages(ZulipTestCase):
     def test_only_enqueue_on_valid_day(self, mock_django_timezone: mock.MagicMock,
                                        mock_queue_digest_recipient: mock.MagicMock) -> None:
         # Not a Tuesday
-        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=6)
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=6, tzinfo=datetime.timezone.utc)
 
         # Check that digests are not sent on days other than Tuesday.
         cutoff = timezone_now()
@@ -350,7 +350,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         Realm.objects.update(digest_emails_enabled=True)
         cutoff = timezone_now()
         # A Tuesday
-        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
         bot = do_create_user(
             'some_bot@example.com',
             'password',
