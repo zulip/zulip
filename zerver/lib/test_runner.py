@@ -3,7 +3,6 @@ import os
 import random
 import shutil
 from functools import partial
-from multiprocessing.sharedctypes import Synchronized
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union, cast
 from unittest import TestLoader, TestSuite, runner
 from unittest.result import TestResult
@@ -178,7 +177,7 @@ def create_test_databases(worker_id: int) -> None:
         connection.settings_dict.update(settings_dict)
         connection.close()
 
-def init_worker(counter: Synchronized) -> None:
+def init_worker(counter: "multiprocessing.sharedctypes._Value") -> None:
     """
     This function runs only under parallel mode. It initializes the
     individual processes which are also called workers.
