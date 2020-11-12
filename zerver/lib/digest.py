@@ -10,6 +10,7 @@ from confirmation.models import one_click_unsubscribe_link
 from zerver.context_processors import common_context
 from zerver.lib.email_notifications import build_message_list
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.url_encoding import encode_stream
@@ -256,11 +257,14 @@ def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
     users = [get_user_profile_by_id(user_id) for user_id in user_ids]
     context_map = bulk_get_digest_context(users, cutoff)
 
+    digest_users = []
+
     for user in users:
         context = context_map[user.id]
 
         # We don't want to send emails containing almost no information.
         if enough_traffic(context["hot_conversations"], context["new_streams_count"]):
+            digest_users.append(user)
             logger.info("Sending digest email for user %s", user.id)
             # Send now, as a ScheduledEmail
             send_future_email(
@@ -271,6 +275,31 @@ def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
                 from_address=FromAddress.no_reply_placeholder,
                 context=context,
             )
+
+    bulk_write_realm_audit_logs(digest_users)
+
+def bulk_write_realm_audit_logs(users: List[UserProfile]) -> None:
+    if not users:
+        return
+
+    # We write RealmAuditLog rows for auditing, and we will also
+    # use these rows during the next run to possibly exclude the
+    # users (if insufficient time has passed).
+    last_message_id = get_last_message_id()
+    now = timezone_now()
+
+    log_rows = [
+        RealmAuditLog(
+            realm_id=user.realm_id,
+            modified_user_id=user.id,
+            event_last_message_id=last_message_id,
+            event_time=now,
+            event_type=RealmAuditLog.USER_DIGEST_EMAIL_CREATED,
+        )
+        for user in users
+    ]
+
+    RealmAuditLog.objects.bulk_create(log_rows)
 
 def handle_digest_email(user_id: int, cutoff: float) -> None:
     bulk_handle_digest_email([user_id], cutoff)

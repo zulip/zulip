@@ -15,6 +15,7 @@ from zerver.lib.digest import (
     handle_digest_email,
     streams_recently_modified_for_user,
 )
+from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
@@ -61,7 +62,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         with queries_captured() as queries:
             handle_digest_email(othello.id, cutoff)
 
-        self.assert_length(queries, 7)
+        self.assert_length(queries, 9)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -114,7 +115,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         with queries_captured() as queries:
             handle_digest_email(polonius.id, cutoff)
 
-        self.assert_length(queries, 7)
+        self.assert_length(queries, 9)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -175,7 +176,7 @@ class TestDigestEmailMessages(ZulipTestCase):
                 with cache_tries_captured() as cache_tries:
                     bulk_handle_digest_email(digest_user_ids, cutoff)
 
-            self.assert_length(queries, 37)
+            self.assert_length(queries, 39)
             self.assert_length(cache_tries, 4)
 
         self.assertEqual(mock_send_future_email.call_count, len(digest_users))
@@ -198,6 +199,15 @@ class TestDigestEmailMessages(ZulipTestCase):
             teaser_messages = hot_convo['first_few_messages'][0]['senders']
             self.assertIn('some content', teaser_messages[0]['content'][0]['plain'])
             self.assertIn(teaser_messages[0]['sender'], expected_participants)
+
+        last_message_id = get_last_message_id()
+        for digest_user in digest_users:
+            log_rows = RealmAuditLog.objects.filter(
+                modified_user_id=digest_user.id,
+                event_type=RealmAuditLog.USER_DIGEST_EMAIL_CREATED,
+            )
+            (log,) = log_rows
+            self.assertEqual(log.event_last_message_id, last_message_id)
 
     def test_streams_recently_modified_for_user(self) -> None:
         othello = self.example_user('othello')
