@@ -21,7 +21,7 @@ from zerver.models import (
     RealmAuditLog,
     Recipient,
     Subscription,
-    UserActivity,
+    UserActivityInterval,
     UserProfile,
     get_active_streams,
 )
@@ -71,17 +71,6 @@ class DigestTopic:
 # 2. Interesting stream traffic, as determined by the longest and most
 #    diversely comment upon topics.
 
-def inactive_since(user_id: int, cutoff: datetime.datetime) -> bool:
-    # Hasn't used the app in the last DIGEST_CUTOFF (5) days.
-    most_recent_visit = [row.last_visit for row in UserActivity.objects.filter(user_profile_id=user_id)]
-
-    if not most_recent_visit:
-        # This person has never used the app.
-        return True
-
-    last_visit = max(most_recent_visit)
-    return last_visit < cutoff
-
 def should_process_digest(realm_str: str) -> bool:
     if realm_str in settings.SYSTEM_ONLY_REALMS:
         # Don't try to send emails to system-only realms
@@ -125,10 +114,14 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
         event_time__gt=twelve_hours_ago,
     ).values_list('modified_user_id', flat=True).distinct())
 
-    user_ids = []
-    for user_id in realm_user_ids - recent_user_ids:
-        if inactive_since(user_id, cutoff):
-            user_ids.append(user_id)
+    realm_user_ids -= recent_user_ids
+
+    active_user_ids = set(UserActivityInterval.objects.filter(
+        user_profile_id__in=realm_user_ids,
+        end__gt=cutoff,
+    ).values_list('user_profile_id', flat=True).distinct())
+
+    user_ids = realm_user_ids - active_user_ids
 
     for user_id in user_ids:
         queue_digest_recipient(user_id, cutoff)

@@ -26,7 +26,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     Stream,
-    UserActivity,
+    UserActivityInterval,
     UserProfile,
     flush_per_request_caches,
     get_client,
@@ -307,7 +307,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_inactive_users_queued_for_digest(self) -> None:
-        UserActivity.objects.all().delete()
+        UserActivityInterval.objects.all().delete()
         RealmAuditLog.objects.all().delete()
         # Turn on realm digest emails for all realms
         Realm.objects.update(digest_emails_enabled=True)
@@ -316,7 +316,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         realm = get_realm("zulip")
         users = self.active_human_users(realm)
 
-        # Check that all users without an a UserActivity entry are considered
+        # Check that all users without an a UserActivityInterval entry are considered
         # inactive users and get enqueued.
         with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
@@ -325,11 +325,10 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         for user in users:
             last_visit = timezone_now() - datetime.timedelta(days=1)
-            UserActivity.objects.create(
-                last_visit=last_visit,
+            UserActivityInterval.objects.create(
+                start=last_visit,
+                end=last_visit,
                 user_profile=user,
-                count=0,
-                client=get_client("test_client"),
             )
 
         # Now we expect no users, due to recent activity.
@@ -340,7 +339,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # Now, backdate all our users activity.
         last_visit = timezone_now() - datetime.timedelta(days=7)
-        UserActivity.objects.all().update(last_visit=last_visit)
+        UserActivityInterval.objects.all().update(start=last_visit, end=last_visit)
 
         with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
