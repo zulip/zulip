@@ -458,14 +458,14 @@ class MessageListData {
         return item_list[cur_idx];
     }
 
-    change_message_id(old_id, new_id, opts) {
+    change_message_id(old_id, new_id) {
         // Update our local cache that uses the old id to the new id
         if (this._hash.has(old_id)) {
             const msg = this._hash.get(old_id);
             this._hash.delete(old_id);
             this._hash.set(new_id, msg);
         } else {
-            return;
+            return false;
         }
 
         if (this._local_only.has(old_id)) {
@@ -479,23 +479,14 @@ class MessageListData {
             this._selected_id = new_id;
         }
 
-        this.reorder_messages(new_id, opts);
+        return this.reorder_messages(new_id);
     }
 
-    reorder_messages(new_id, opts) {
+    reorder_messages(new_id) {
         const message_sort_func = (a, b) => a.id - b.id;
         // If this message is now out of order, re-order and re-render
         const current_message = this._hash.get(new_id);
         const index = this._items.indexOf(current_message);
-
-        if (index === -1) {
-            if (!this.muting_enabled && opts.is_current_list()) {
-                blueslip.error(
-                    "Trying to re-order message but can't find message with new_id in _items!",
-                );
-            }
-            return;
-        }
 
         const next = this._next_nonlocal_message(this._items, index, (idx) => idx + 1);
         const prev = this._next_nonlocal_message(this._items, index, (idx) => idx - 1);
@@ -509,14 +500,10 @@ class MessageListData {
             if (this.muting_enabled) {
                 this._all_items.sort(message_sort_func);
             }
-
-            // The data updates above need to happen synchronously,
-            // but the rerendering can be deferred.  It's unclear
-            // whether this deferral is necessary; it was present in
-            // the original 2013 local echo implementation but we
-            // don't have records for why we added it then.
-            setTimeout(opts.rerender_view, 0);
+            return true;
         }
+
+        return false;
     }
 
     get_last_message_sent_by_me() {

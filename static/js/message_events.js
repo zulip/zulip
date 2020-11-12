@@ -390,4 +390,15 @@ exports.update_messages = function update_messages(events) {
     pm_list.update_private_messages();
 };
 
+exports.remove_messages = function (message_ids) {
+    for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
+        if (list === undefined) {
+            continue;
+        }
+        list.remove_and_rerender(message_ids);
+    }
+    recent_senders.update_topics_of_deleted_message_ids(message_ids);
+    recent_topics.update_topics_of_deleted_message_ids(message_ids);
+};
+
 window.message_events = exports;

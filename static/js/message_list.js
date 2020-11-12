@@ -399,11 +399,10 @@ class MessageList {
     }
 
     change_message_id(old_id, new_id) {
-        const opts = {
-            is_current_list: () => current_msg_list === this,
-            rerender_view: () => this.rerender_view(),
-        };
-        this.data.change_message_id(old_id, new_id, opts);
+        const require_rerender = this.data.change_message_id(old_id, new_id);
+        if (require_rerender) {
+            this.rerender_view();
+        }
     }
 
     get_last_message_sent_by_me() {

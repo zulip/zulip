@@ -88,9 +88,7 @@ run_test("basics", () => {
     assert.equal(mld.selected_id(), 125.01);
 
     mld.get(125.01).id = 145;
-    mld.change_message_id(125.01, 145, {
-        rerender_view: () => {},
-    });
+    mld.change_message_id(125.01, 145);
     assert_contents(mld, [120, 130, 140, 145]);
 
     for (const msg of mld.all_messages()) {

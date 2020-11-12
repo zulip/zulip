@@ -105,17 +105,6 @@ exports.show_message_failed = function (message_id, failed_msg) {
     });
 };
 
-exports.remove_messages = function (message_ids) {
-    for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
-        if (list === undefined) {
-            continue;
-        }
-        list.remove_and_rerender(message_ids);
-    }
-    recent_senders.update_topics_of_deleted_message_ids(message_ids);
-    recent_topics.update_topics_of_deleted_message_ids(message_ids);
-};
-
 exports.show_failed_message_success = function (message_id) {
     // Previously failed message succeeded
     update_message_in_all_views(message_id, (row) => {

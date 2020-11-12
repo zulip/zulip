@@ -27,6 +27,7 @@ set_global("home_msg_list", {});
 set_global("hotspots", {});
 set_global("markdown", {});
 set_global("message_edit", {});
+set_global("message_events", {});
 set_global("message_list", {});
 set_global("muting_ui", {});
 set_global("narrow_state", {});
@@ -816,7 +817,7 @@ run_test("delete_message", (override) => {
     override("stream_list.update_streams_sidebar", noop);
     global.with_stub((stub) => {
         override("unread_ops.process_read_messages_event", noop);
-        override("ui.remove_messages", stub.f);
+        override("message_events.remove_messages", stub.f);
         dispatch(event);
         const args = stub.get_args("message_ids");
         assert_same(args.message_ids, [1337]);
