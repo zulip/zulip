@@ -372,33 +372,31 @@ class TestDigestEmailMessages(ZulipTestCase):
                 enqueue_emails(cutoff)
         queue_mock.assert_not_called()
 
-    @mock.patch('zerver.lib.digest.queue_digest_recipient')
-    @mock.patch('zerver.lib.digest.timezone_now')
     @override_settings(SEND_DIGEST_EMAILS=True)
-    def test_no_email_digest_for_bots(self, mock_django_timezone: mock.MagicMock,
-                                      mock_queue_digest_recipient: mock.MagicMock) -> None:
+    def test_no_email_digest_for_bots(self) -> None:
         RealmAuditLog.objects.all().delete()
-        # Turn on realm digest emails for all realms
-        Realm.objects.update(digest_emails_enabled=True)
-        cutoff = timezone_now()
-        # A Tuesday
-        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
+
+        cutoff = timezone_now() - datetime.timedelta(days=5)
+
+        realm = get_realm('zulip')
+        realm.digest_emails_enabled = True
+        realm.save()
+
         bot = do_create_user(
             'some_bot@example.com',
             'password',
-            get_realm('zulip'),
+            realm,
             'some_bot',
             bot_type=UserProfile.DEFAULT_BOT,
         )
-        UserActivity.objects.create(
-            last_visit=cutoff - datetime.timedelta(days=1),
-            user_profile=bot,
-            count=0,
-            client=get_client('test_client'))
 
         # Check that bots are not sent emails
-        enqueue_emails(cutoff)
-        for arg in mock_queue_digest_recipient.call_args_list:
+        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+            _enqueue_emails_for_realm(realm, cutoff)
+
+        assert queue_mock.call_count >= 5
+
+        for arg in queue_mock.call_args_list:
             user = arg[0][0]
             self.assertNotEqual(user.id, bot.id)
 
