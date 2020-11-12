@@ -303,35 +303,47 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         self.assertEqual(queue_mock.call_count, 0)
 
-    @mock.patch('zerver.lib.digest.queue_digest_recipient')
-    @mock.patch('zerver.lib.digest.timezone_now')
     @override_settings(SEND_DIGEST_EMAILS=True)
-    def test_inactive_users_queued_for_digest(self, mock_django_timezone: mock.MagicMock,
-                                              mock_queue_digest_recipient: mock.MagicMock) -> None:
+    def test_inactive_users_queued_for_digest(self) -> None:
+        UserActivity.objects.all().delete()
         RealmAuditLog.objects.all().delete()
         # Turn on realm digest emails for all realms
         Realm.objects.update(digest_emails_enabled=True)
-        cutoff = timezone_now()
-        # Test Tuesday
-        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
-        all_user_profiles = UserProfile.objects.filter(
-            is_active=True, is_bot=False, enable_digest_emails=True)
+        cutoff = timezone_now() - datetime.timedelta(days=5)
+
+        realm = get_realm("zulip")
+        users = self.active_human_users(realm)
+
         # Check that all users without an a UserActivity entry are considered
         # inactive users and get enqueued.
-        enqueue_emails(cutoff)
-        self.assertEqual(mock_queue_digest_recipient.call_count, all_user_profiles.count())
-        mock_queue_digest_recipient.reset_mock()
-        for realm in Realm.objects.filter(deactivated=False, digest_emails_enabled=True):
-            user_profiles = all_user_profiles.filter(realm=realm)
-            for user_profile in user_profiles:
-                UserActivity.objects.create(
-                    last_visit=cutoff - datetime.timedelta(days=1),
-                    user_profile=user_profile,
-                    count=0,
-                    client=get_client('test_client'))
-        # Check that inactive users are enqueued
-        enqueue_emails(cutoff)
-        self.assertEqual(mock_queue_digest_recipient.call_count, all_user_profiles.count())
+        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+            _enqueue_emails_for_realm(realm, cutoff)
+
+        self.assertEqual(queue_mock.call_count, len(users))
+
+        for user in users:
+            last_visit = timezone_now() - datetime.timedelta(days=1)
+            UserActivity.objects.create(
+                last_visit=last_visit,
+                user_profile=user,
+                count=0,
+                client=get_client("test_client"),
+            )
+
+        # Now we expect no users, due to recent activity.
+        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+            _enqueue_emails_for_realm(realm, cutoff)
+
+        self.assertEqual(queue_mock.call_count, 0)
+
+        # Now, backdate all our users activity.
+        last_visit = timezone_now() - datetime.timedelta(days=7)
+        UserActivity.objects.all().update(last_visit=last_visit)
+
+        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+            _enqueue_emails_for_realm(realm, cutoff)
+
+        self.assertEqual(queue_mock.call_count, len(users))
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
@@ -343,31 +355,6 @@ class TestDigestEmailMessages(ZulipTestCase):
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
         enqueue_emails(cutoff)
         mock_queue_digest_recipient.assert_not_called()
-
-    @mock.patch('zerver.lib.digest.enough_traffic', return_value=True)
-    @mock.patch('zerver.lib.digest.timezone_now')
-    @override_settings(SEND_DIGEST_EMAILS=True)
-    def test_active_users_not_enqueued(self, mock_django_timezone: mock.MagicMock,
-                                       mock_enough_traffic: mock.MagicMock) -> None:
-        RealmAuditLog.objects.all().delete()
-        # Turn on realm digest emails for all realms
-        Realm.objects.update(digest_emails_enabled=True)
-        cutoff = timezone_now()
-        # A Tuesday
-        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
-        realms = Realm.objects.filter(deactivated=False, digest_emails_enabled=True)
-        for realm in realms:
-            user_profiles = UserProfile.objects.filter(realm=realm)
-            for counter, user_profile in enumerate(user_profiles, 1):
-                UserActivity.objects.create(
-                    last_visit=cutoff + datetime.timedelta(days=1),
-                    user_profile=user_profile,
-                    count=0,
-                    client=get_client('test_client'))
-        # Check that an active user is not enqueued
-        with mock.patch('zerver.lib.digest.queue_digest_recipient') as mock_queue_digest_recipient:
-            enqueue_emails(cutoff)
-            self.assertEqual(mock_queue_digest_recipient.call_count, 0)
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
