@@ -295,8 +295,8 @@ class MessageList {
         return render_info;
     }
 
-    remove_and_rerender(messages) {
-        this.data.remove(messages);
+    remove_and_rerender(message_ids) {
+        this.data.remove(message_ids);
         this.rerender();
     }
 

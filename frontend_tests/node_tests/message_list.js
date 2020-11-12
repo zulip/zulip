@@ -113,7 +113,7 @@ run_test("basics", () => {
 
     list.view.clear_table = function () {};
 
-    list.remove_and_rerender([{id: 60}]);
+    list.remove_and_rerender([60]);
     const removed = list.all_messages().filter((msg) => msg.id !== 60);
     assert.deepEqual(list.all_messages(), removed);
 
@@ -410,7 +410,8 @@ run_test("add_remove_rerender", () => {
 
     global.with_stub((stub) => {
         list.rerender = stub.f;
-        list.remove_and_rerender(messages);
+        const message_ids = messages.map((msg) => msg.id);
+        list.remove_and_rerender(message_ids);
         assert.equal(stub.num_calls, 1);
         assert.equal(list.num_items(), 0);
     });

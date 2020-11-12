@@ -161,8 +161,12 @@ exports.update_messages = function update_messages(events) {
             const compose_stream_name = compose_state.stream_name();
             const orig_topic = util.get_edit_event_orig_topic(event);
 
+            const current_filter = narrow_state.filter();
             const current_selected_id = current_msg_list.selected_id();
             const selection_changed_topic = event.message_ids.includes(current_selected_id);
+            const event_messages = event.message_ids.map((id) => message_store.get(id));
+            // The event.message_ids received from the server are not in sorted order.
+            event_messages.sort((a, b) => a.id - b.id);
 
             if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
@@ -174,10 +178,7 @@ exports.update_messages = function update_messages(events) {
                 }
             }
 
-            const current_filter = narrow_state.filter();
-            const messages_to_rerender = [];
-            for (const id of event.message_ids) {
-                const msg = message_store.get(id);
+            for (const msg of event_messages) {
                 if (msg === undefined) {
                     continue;
                 }
@@ -221,21 +222,6 @@ exports.update_messages = function update_messages(events) {
                     topic_name: msg.topic,
                     message_id: msg.id,
                 });
-
-                if (
-                    current_filter &&
-                    current_filter.can_apply_locally() &&
-                    !current_filter.predicate()(msg)
-                ) {
-                    // This topic edit makes this message leave the
-                    // current narrow, which is not being changed as
-                    // part of processing this event.  So we should
-                    // remove the message from the current/narrowed message list.
-                    const cur_row = current_msg_list.get_row(id);
-                    if (cur_row !== undefined) {
-                        messages_to_rerender.push({id});
-                    }
-                }
             }
 
             if (going_forward_change) {
@@ -294,8 +280,9 @@ exports.update_messages = function update_messages(events) {
                 }
             }
 
-            // Ensure messages that are no longer part of this narrow
-            // are deleted from the message_list.
+            // Ensure messages that are no longer part of this
+            // narrow are deleted and messages that are now part
+            // of this narrow are added to the message_list.
             //
             // Even if we end up renarrowing, the message_list_data
             // part of this is important for non-rendering message
@@ -303,8 +290,19 @@ exports.update_messages = function update_messages(events) {
             // this should be a loop over all valid message_list_data
             // objects, without the rerender (which will naturally
             // happen in the following code).
-            if (!changed_narrow && messages_to_rerender.length > 0) {
-                current_msg_list.remove_and_rerender(messages_to_rerender);
+            if (!changed_narrow) {
+                let message_ids_to_remove = [];
+                if (current_filter && current_filter.can_apply_locally()) {
+                    const predicate = current_filter.predicate();
+                    message_ids_to_remove = event_messages.filter((msg) => !predicate(msg));
+                    message_ids_to_remove = message_ids_to_remove.map((msg) => msg.id);
+                }
+                // We filter out messages that do not belong to the message
+                // list and then pass these to the remove messages codepath.
+                // While we can pass all our messages to the add messages
+                // codepath as the filtering is done within the method.
+                current_msg_list.remove_and_rerender(message_ids_to_remove);
+                current_msg_list.add_messages(event_messages);
             }
         }
 

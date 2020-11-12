@@ -63,7 +63,7 @@ run_test("basics", () => {
     assert.equal(mld.selected_id(), 50);
     assert.equal(mld.selected_idx(), 8);
 
-    mld.remove([mld.get(50)]);
+    mld.remove([50]);
     assert_contents(mld, [10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
 
     mld.update_items_for_muting();
@@ -116,7 +116,7 @@ run_test("muting enabled", () => {
     mld.update_items_for_muting();
     assert.deepEqual(mld._items, [mld.get(35)]);
 
-    mld.remove(make_msgs([35, 15]));
+    mld.remove([35, 15]);
     assert_contents(mld, []);
     assert.deepEqual(mld._all_items, make_msgs([25, 45]));
 

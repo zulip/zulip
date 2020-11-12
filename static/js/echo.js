@@ -362,7 +362,7 @@ exports.message_send_error = function (message_id, error_response) {
 function abort_message(message) {
     // Remove in all lists in which it exists
     for (const msg_list of [message_list.all, home_msg_list, current_msg_list]) {
-        msg_list.remove_and_rerender([message]);
+        msg_list.remove_and_rerender([message.id]);
     }
 }
 

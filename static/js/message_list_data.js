@@ -297,26 +297,17 @@ class MessageListData {
         return viewable_messages;
     }
 
-    remove(messages) {
-        for (const message of messages) {
-            const stored_message = this._hash.get(message.id);
-            if (stored_message !== undefined) {
-                this._hash.delete(stored_message);
-            }
-            this._local_only.delete(message.id);
+    remove(message_ids) {
+        const msg_ids_to_remove = new Set(message_ids);
+        for (const id of msg_ids_to_remove) {
+            this._hash.delete(id);
+            this._local_only.delete(id);
         }
 
-        const msg_ids_to_remove = new Set();
-
-        for (const message of messages) {
-            msg_ids_to_remove.add(message.id);
-        }
-
-        this._items = this._items.filter((message) => !msg_ids_to_remove.has(message.id));
+        const remove_messages = (msg) => !msg_ids_to_remove.has(msg.id);
+        this._items = this._items.filter(remove_messages);
         if (this.muting_enabled) {
-            this._all_items = this._all_items.filter(
-                (message) => !msg_ids_to_remove.has(message.id),
-            );
+            this._all_items = this._all_items.filter(remove_messages);
         }
     }
 
