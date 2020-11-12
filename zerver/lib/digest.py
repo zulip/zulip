@@ -71,11 +71,9 @@ class DigestTopic:
 # 2. Interesting stream traffic, as determined by the longest and most
 #    diversely comment upon topics.
 
-def inactive_since(user_profile: UserProfile, cutoff: datetime.datetime) -> bool:
+def inactive_since(user_id: int, cutoff: datetime.datetime) -> bool:
     # Hasn't used the app in the last DIGEST_CUTOFF (5) days.
-    most_recent_visit = [row.last_visit for row in
-                         UserActivity.objects.filter(
-                             user_profile=user_profile)]
+    most_recent_visit = [row.last_visit for row in UserActivity.objects.filter(user_profile_id=user_id)]
 
     if not most_recent_visit:
         # This person has never used the app.
@@ -128,7 +126,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
     users = []
     for user in realm_users:
         if user.id not in recent_user_ids:
-            if inactive_since(user, cutoff):
+            if inactive_since(user.id, cutoff):
                 users.append(user)
 
     for user in users:
