@@ -345,30 +345,32 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         self.assertEqual(queue_mock.call_count, len(users))
 
-    @mock.patch('zerver.lib.digest.queue_digest_recipient')
-    @mock.patch('zerver.lib.digest.timezone_now')
-    def test_disabled(self, mock_django_timezone: mock.MagicMock,
-                      mock_queue_digest_recipient: mock.MagicMock) -> None:
-        RealmAuditLog.objects.all().delete()
-        cutoff = timezone_now()
-        # A Tuesday
-        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
-        enqueue_emails(cutoff)
-        mock_queue_digest_recipient.assert_not_called()
+    def tuesday(self) -> datetime.datetime:
+        return datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
 
-    @mock.patch('zerver.lib.digest.queue_digest_recipient')
-    @mock.patch('zerver.lib.digest.timezone_now')
+    @override_settings(SEND_DIGEST_EMAILS=False)
+    def test_disabled(self) -> None:
+        RealmAuditLog.objects.all().delete()
+
+        tuesday = self.tuesday()
+        cutoff = tuesday - datetime.timedelta(days=5)
+
+        with mock.patch("zerver.lib.digest.timezone_now", return_value=tuesday):
+            with mock.patch("zerver.lib.digest.queue_digest_recipient") as queue_mock:
+                enqueue_emails(cutoff)
+        queue_mock.assert_not_called()
+
     @override_settings(SEND_DIGEST_EMAILS=True)
-    def test_only_enqueue_on_valid_day(self, mock_django_timezone: mock.MagicMock,
-                                       mock_queue_digest_recipient: mock.MagicMock) -> None:
+    def test_only_enqueue_on_valid_day(self) -> None:
         RealmAuditLog.objects.all().delete()
-        # Not a Tuesday
-        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=6, tzinfo=datetime.timezone.utc)
 
-        # Check that digests are not sent on days other than Tuesday.
-        cutoff = timezone_now()
-        enqueue_emails(cutoff)
-        self.assertEqual(mock_queue_digest_recipient.call_count, 0)
+        not_tuesday = datetime.datetime(year=2016, month=1, day=6, tzinfo=datetime.timezone.utc)
+        cutoff = not_tuesday - datetime.timedelta(days=5)
+
+        with mock.patch("zerver.lib.digest.timezone_now", return_value=not_tuesday):
+            with mock.patch("zerver.lib.digest.queue_digest_recipient") as queue_mock:
+                enqueue_emails(cutoff)
+        queue_mock.assert_not_called()
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
