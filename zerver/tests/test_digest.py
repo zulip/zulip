@@ -399,8 +399,8 @@ class TestDigestEmailMessages(ZulipTestCase):
         assert queue_mock.call_count >= 5
 
         for arg in queue_mock.call_args_list:
-            user = arg[0][0]
-            self.assertNotEqual(user.id, bot.id)
+            user_id = arg[0][0]
+            self.assertNotEqual(user_id, bot.id)
 
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_new_stream_link(self) -> None:

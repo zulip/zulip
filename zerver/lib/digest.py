@@ -90,10 +90,12 @@ def should_process_digest(realm_str: str) -> bool:
 
 # Changes to this should also be reflected in
 # zerver/worker/queue_processors.py:DigestWorker.consume()
-def queue_digest_recipient(user_profile: UserProfile, cutoff: datetime.datetime) -> None:
+def queue_digest_recipient(user_id: int, cutoff: datetime.datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
-    event = {"user_profile_id": user_profile.id,
-             "cutoff": cutoff.strftime('%s')}
+    event = {
+        "user_profile_id": user_id,
+        "cutoff": cutoff.strftime('%s')
+    }
     queue_json_publish("digest_emails", event)
 
 def enqueue_emails(cutoff: datetime.datetime) -> None:
@@ -108,12 +110,12 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
 def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
     # This should only be called directly by tests.  Use enqueue_emails
     # to process all realms that are set up for processing on any given day.
-    realm_users = UserProfile.objects.filter(
+    realm_user_ids = set(UserProfile.objects.filter(
         realm=realm,
         is_active=True,
         is_bot=False,
         enable_digest_emails=True,
-    )
+    ).values_list('id', flat=True))
 
     twelve_hours_ago = timezone_now() - datetime.timedelta(hours=12)
 
@@ -123,17 +125,16 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
         event_time__gt=twelve_hours_ago,
     ).values_list('modified_user_id', flat=True).distinct())
 
-    users = []
-    for user in realm_users:
-        if user.id not in recent_user_ids:
-            if inactive_since(user.id, cutoff):
-                users.append(user)
+    user_ids = []
+    for user_id in realm_user_ids - recent_user_ids:
+        if inactive_since(user_id, cutoff):
+            user_ids.append(user_id)
 
-    for user in users:
-        queue_digest_recipient(user, cutoff)
+    for user_id in user_ids:
+        queue_digest_recipient(user_id, cutoff)
         logger.info(
             "User %s is inactive, queuing for potential digest",
-            user.id,
+            user_id,
         )
 
 def get_recent_topics(
