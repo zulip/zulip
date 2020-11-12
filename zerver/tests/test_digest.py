@@ -25,6 +25,7 @@ from zerver.models import (
     Message,
     Realm,
     RealmAuditLog,
+    Stream,
     UserActivity,
     UserProfile,
     flush_per_request_caches,
@@ -400,16 +401,27 @@ class TestDigestEmailMessages(ZulipTestCase):
             user = arg[0][0]
             self.assertNotEqual(user.id, bot.id)
 
-    @mock.patch('zerver.lib.digest.timezone_now')
     @override_settings(SEND_DIGEST_EMAILS=True)
-    def test_new_stream_link(self, mock_django_timezone: mock.MagicMock) -> None:
-        cutoff = datetime.datetime(year=2017, month=11, day=1, tzinfo=datetime.timezone.utc)
-        mock_django_timezone.return_value = datetime.datetime(year=2017, month=11, day=5, tzinfo=datetime.timezone.utc)
+    def test_new_stream_link(self) -> None:
+        Stream.objects.all().delete()
+        cutoff = timezone_now() - datetime.timedelta(days=5)
         cordelia = self.example_user('cordelia')
-        stream_id = create_stream_if_needed(cordelia.realm, 'New stream')[0].id
-        new_stream = gather_new_streams(cordelia, cutoff)[1]
-        expected_html = f"<a href='http://zulip.testserver/#narrow/stream/{stream_id}-New-stream'>New stream</a>"
-        self.assertIn(expected_html, new_stream['html'])
+        stream = create_stream_if_needed(cordelia.realm, 'New stream')[0]
+        stream.date_created = timezone_now()
+        stream.save()
+
+        stream_count, stream_info = gather_new_streams(cordelia, cutoff)
+        self.assertEqual(stream_count, 1)
+        expected_html = f"<a href='http://zulip.testserver/#narrow/stream/{stream.id}-New-stream'>New stream</a>"
+        self.assertEqual(stream_info['html'][0], expected_html)
+
+        # Make the stream appear to be older.
+        stream.date_created = timezone_now() - datetime.timedelta(days=7)
+        stream.save()
+
+        stream_count, stream_info = gather_new_streams(cordelia, cutoff)
+        self.assertEqual(stream_count, 0)
+        self.assertEqual(stream_info['html'], [])
 
     def simulate_stream_conversation(self, stream: str, senders: List[str]) -> List[int]:
         client = 'website'  # this makes `sent_by_human` return True
