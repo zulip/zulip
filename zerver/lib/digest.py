@@ -24,7 +24,6 @@ from zerver.models import (
     UserActivity,
     UserProfile,
     get_active_streams,
-    get_user_profile_by_id,
 )
 
 logger = logging.getLogger(__name__)
@@ -276,7 +275,9 @@ def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
 
 @transaction.atomic
 def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
-    users = [get_user_profile_by_id(user_id) for user_id in user_ids]
+    # We go directly to the database to get user objects,
+    # since inactive users are likely to not be in the cache.
+    users = UserProfile.objects.filter(id__in=user_ids).order_by('id')
     context_map = bulk_get_digest_context(users, cutoff)
 
     digest_users = []
