@@ -104,19 +104,39 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
 
     weekday = timezone_now().weekday()
     for realm in Realm.objects.filter(deactivated=False, digest_emails_enabled=True, digest_weekday=weekday):
-        if not should_process_digest(realm.string_id):
-            continue
+        if should_process_digest(realm.string_id):
+            _enqueue_emails_for_realm(realm, cutoff)
 
-        user_profiles = UserProfile.objects.filter(
-            realm=realm, is_active=True, is_bot=False, enable_digest_emails=True)
+def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
+    # This should only be called directly by tests.  Use enqueue_emails
+    # to process all realms that are set up for processing on any given day.
+    realm_users = UserProfile.objects.filter(
+        realm=realm,
+        is_active=True,
+        is_bot=False,
+        enable_digest_emails=True,
+    )
 
-        for user_profile in user_profiles:
-            if inactive_since(user_profile, cutoff):
-                queue_digest_recipient(user_profile, cutoff)
-                logger.info(
-                    "User %s is inactive, queuing for potential digest",
-                    user_profile.id,
-                )
+    twelve_hours_ago = timezone_now() - datetime.timedelta(hours=12)
+
+    recent_user_ids = set(RealmAuditLog.objects.filter(
+        realm_id=realm.id,
+        event_type=RealmAuditLog.USER_DIGEST_EMAIL_CREATED,
+        event_time__gt=twelve_hours_ago,
+    ).values_list('modified_user_id', flat=True).distinct())
+
+    users = []
+    for user in realm_users:
+        if user.id not in recent_user_ids:
+            if inactive_since(user, cutoff):
+                users.append(user)
+
+    for user in users:
+        queue_digest_recipient(user, cutoff)
+        logger.info(
+            "User %s is inactive, queuing for potential digest",
+            user.id,
+        )
 
 def get_recent_topics(
     stream_ids: List[int],

@@ -9,7 +9,9 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.actions import do_create_user
 from zerver.lib.digest import (
+    _enqueue_emails_for_realm,
     bulk_handle_digest_email,
+    bulk_write_realm_audit_logs,
     enqueue_emails,
     gather_new_streams,
     handle_digest_email,
@@ -265,11 +267,48 @@ class TestDigestEmailMessages(ZulipTestCase):
             {denmark.id}
         )
 
+    def active_human_users(self, realm: Realm) -> List[UserProfile]:
+        users = list(UserProfile.objects.filter(
+            realm=realm,
+            is_active=True,
+            is_bot=False,
+            enable_digest_emails=True,
+        ))
+
+        assert len(users) >= 5
+
+        return users
+
+    def test_twelve_hour_exemption(self) -> None:
+        RealmAuditLog.objects.all().delete()
+
+        realm = get_realm('zulip')
+
+        cutoff = timezone_now() - datetime.timedelta(days=5)
+
+        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+            _enqueue_emails_for_realm(realm, cutoff)
+
+        users = self.active_human_users(realm)
+
+        self.assertEqual(queue_mock.call_count, len(users))
+
+        # Simulate that we have sent digests for all our users.
+        bulk_write_realm_audit_logs(users)
+
+        # Now if we run again, we won't get any users, since they will have
+        # recent RealmAuditLog rows.
+        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+            _enqueue_emails_for_realm(realm, cutoff)
+
+        self.assertEqual(queue_mock.call_count, 0)
+
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_inactive_users_queued_for_digest(self, mock_django_timezone: mock.MagicMock,
                                               mock_queue_digest_recipient: mock.MagicMock) -> None:
+        RealmAuditLog.objects.all().delete()
         # Turn on realm digest emails for all realms
         Realm.objects.update(digest_emails_enabled=True)
         cutoff = timezone_now()
@@ -298,6 +337,7 @@ class TestDigestEmailMessages(ZulipTestCase):
     @mock.patch('zerver.lib.digest.timezone_now')
     def test_disabled(self, mock_django_timezone: mock.MagicMock,
                       mock_queue_digest_recipient: mock.MagicMock) -> None:
+        RealmAuditLog.objects.all().delete()
         cutoff = timezone_now()
         # A Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
@@ -309,6 +349,7 @@ class TestDigestEmailMessages(ZulipTestCase):
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_active_users_not_enqueued(self, mock_django_timezone: mock.MagicMock,
                                        mock_enough_traffic: mock.MagicMock) -> None:
+        RealmAuditLog.objects.all().delete()
         # Turn on realm digest emails for all realms
         Realm.objects.update(digest_emails_enabled=True)
         cutoff = timezone_now()
@@ -333,6 +374,7 @@ class TestDigestEmailMessages(ZulipTestCase):
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_only_enqueue_on_valid_day(self, mock_django_timezone: mock.MagicMock,
                                        mock_queue_digest_recipient: mock.MagicMock) -> None:
+        RealmAuditLog.objects.all().delete()
         # Not a Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=6, tzinfo=datetime.timezone.utc)
 
@@ -346,6 +388,7 @@ class TestDigestEmailMessages(ZulipTestCase):
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_no_email_digest_for_bots(self, mock_django_timezone: mock.MagicMock,
                                       mock_queue_digest_recipient: mock.MagicMock) -> None:
+        RealmAuditLog.objects.all().delete()
         # Turn on realm digest emails for all realms
         Realm.objects.update(digest_emails_enabled=True)
         cutoff = timezone_now()
