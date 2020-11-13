@@ -40,6 +40,10 @@ class DigestTopic:
         self.sample_messages: List[Message] = []
         self.num_human_messages = 0
 
+    def stream_id(self) -> int:
+        # topic_key is (stream_id, topic_name)
+        return self.topic_key[0]
+
     def add_message(self, message: Message) -> None:
         if len(self.sample_messages) < 2:
             self.sample_messages.append(message)
@@ -164,7 +168,14 @@ def get_recent_topics(
 
     return topics
 
-def get_hot_topics(topics: List[DigestTopic]) -> List[DigestTopic]:
+def get_hot_topics(
+    all_topics: List[DigestTopic],
+    stream_ids: Set[int],
+) -> List[DigestTopic]:
+    topics = [
+        topic for topic in all_topics
+        if topic.stream_id() in stream_ids
+    ]
     topics_by_diversity = sorted(topics, key=lambda dt: dt.diversity())
     topics_by_length = sorted(topics, key=lambda dt: dt.length())
 
@@ -232,14 +243,25 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
     stream_map = get_stream_map(user_ids)
 
+    all_stream_ids = set()
+
     for user in users:
         stream_ids = stream_map[user.id]
 
         if user.long_term_idle:
             stream_ids -= streams_recently_modified_for_user(user, cutoff_date)
 
-        recent_topics = get_recent_topics(sorted(list(stream_ids)), cutoff_date)
-        hot_topics = get_hot_topics(recent_topics)
+        all_stream_ids |= stream_ids
+
+    # Get all the recent topics for all the users.  This does the heavy
+    # lifting of making an expensive query to the Message table.  Then
+    # for each user, we filter to just the streams they care about.
+    recent_topics = get_recent_topics(sorted(list(all_stream_ids)), cutoff_date)
+
+    for user in users:
+        stream_ids = stream_map[user.id]
+
+        hot_topics = get_hot_topics(recent_topics, stream_ids)
 
         context = common_context(user)
 
