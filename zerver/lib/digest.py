@@ -243,13 +243,17 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
     stream_map = get_stream_map(user_ids)
 
+    long_term_idle_user_ids = [user.id for user in users if user.long_term_idle]
+
+    recently_modified_streams = get_modified_streams(long_term_idle_user_ids, cutoff_date)
+
     all_stream_ids = set()
 
     for user in users:
         stream_ids = stream_map[user.id]
 
         if user.long_term_idle:
-            stream_ids -= streams_recently_modified_for_user(user, cutoff_date)
+            stream_ids -= recently_modified_streams.get(user.id, set())
 
         all_stream_ids |= stream_ids
 
@@ -341,18 +345,25 @@ def bulk_write_realm_audit_logs(users: List[UserProfile]) -> None:
 def handle_digest_email(user_id: int, cutoff: float) -> None:
     bulk_handle_digest_email([user_id], cutoff)
 
-def streams_recently_modified_for_user(user: UserProfile, cutoff_date: datetime.datetime) -> Set[int]:
+def get_modified_streams(user_ids: List[int], cutoff_date: datetime.datetime) -> Dict[int, Set[int]]:
     events = [
         RealmAuditLog.SUBSCRIPTION_CREATED,
         RealmAuditLog.SUBSCRIPTION_ACTIVATED,
         RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
     ]
 
-    # Streams where the user's subscription was changed
-    modified_streams = RealmAuditLog.objects.filter(
-        realm=user.realm,
-        modified_user=user,
+    # Get rows where the users' subscriptions have changed.
+    rows = RealmAuditLog.objects.filter(
+        modified_user_id__in=user_ids,
         event_time__gt=cutoff_date,
-        event_type__in=events).values_list('modified_stream_id', flat=True)
+        event_type__in=events,
+    ).values("modified_user_id", "modified_stream_id").distinct()
 
-    return set(modified_streams)
+    result: Dict[int, Set[int]] = defaultdict(set)
+
+    for row in rows:
+        user_id = row["modified_user_id"]
+        stream_id = row["modified_stream_id"]
+        result[user_id].add(stream_id)
+
+    return result

@@ -14,8 +14,8 @@ from zerver.lib.digest import (
     bulk_write_realm_audit_logs,
     enqueue_emails,
     gather_new_streams,
+    get_modified_streams,
     handle_digest_email,
-    streams_recently_modified_for_user,
 )
 from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
@@ -180,7 +180,7 @@ class TestDigestEmailMessages(ZulipTestCase):
                 with cache_tries_captured() as cache_tries:
                     bulk_handle_digest_email(digest_user_ids, cutoff)
 
-            self.assert_length(queries, 37)
+            self.assert_length(queries, 34)
             self.assert_length(cache_tries, 0)
 
         self.assertEqual(mock_send_future_email.call_count, len(digest_users))
@@ -235,39 +235,31 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.unsubscribe(othello, 'Denmark')
         self.subscribe(othello, 'Denmark')
 
-        self.assertEqual(
-            streams_recently_modified_for_user(othello, one_hour_ago),
-            {denmark.id}
-        )
+        recent_streams = get_modified_streams([othello.id], one_hour_ago)
+        self.assertEqual(recent_streams[othello.id], {denmark.id})
 
         # Backdate all our logs (so that Denmark will no longer
         # appear like a recently modified stream for Othello).
         RealmAuditLog.objects.all().update(event_time=two_hours_ago)
 
         # Now Denmark no longer appears recent to Othello.
-        self.assertEqual(
-            streams_recently_modified_for_user(othello, one_hour_ago),
-            set()
-        )
+        recent_streams = get_modified_streams([othello.id], one_hour_ago)
+        self.assertEqual(recent_streams[othello.id], set())
 
         # Unsubscribe and subscribe from a stream
         self.unsubscribe(othello, 'Verona')
         self.subscribe(othello, 'Verona')
 
         # Now, Verona, but not Denmark, appears recent.
-        self.assertEqual(
-            streams_recently_modified_for_user(othello, one_hour_ago),
-            {verona.id},
-        )
+        recent_streams = get_modified_streams([othello.id], one_hour_ago)
+        self.assertEqual(recent_streams[othello.id], {verona.id})
 
         # make sure we don't mix up Othello and Cordelia
         self.unsubscribe(cordelia, 'Denmark')
         self.subscribe(cordelia, 'Denmark')
 
-        self.assertEqual(
-            streams_recently_modified_for_user(cordelia, one_hour_ago),
-            {denmark.id}
-        )
+        recent_streams = get_modified_streams([othello.id, cordelia.id], one_hour_ago)
+        self.assertEqual(recent_streams[cordelia.id], {denmark.id})
 
     def active_human_users(self, realm: Realm) -> List[UserProfile]:
         users = list(UserProfile.objects.filter(
