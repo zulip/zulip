@@ -290,7 +290,7 @@ def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
 def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
     # We go directly to the database to get user objects,
     # since inactive users are likely to not be in the cache.
-    users = UserProfile.objects.filter(id__in=user_ids).order_by('id')
+    users = UserProfile.objects.filter(id__in=user_ids).order_by("id").select_related("realm")
     context_map = bulk_get_digest_context(users, cutoff)
 
     digest_users = []
