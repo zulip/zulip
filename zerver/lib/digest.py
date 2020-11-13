@@ -85,10 +85,10 @@ def should_process_digest(realm_str: str) -> bool:
 
 # Changes to this should also be reflected in
 # zerver/worker/queue_processors.py:DigestWorker.consume()
-def queue_digest_recipient(user_id: int, cutoff: datetime.datetime) -> None:
+def queue_digest_user_ids(user_ids: List[int], cutoff: datetime.datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {
-        "user_profile_id": user_id,
+        "user_profile_id": user_ids,
         "cutoff": cutoff.strftime('%s')
     }
     queue_json_publish("digest_emails", event)
@@ -127,13 +127,19 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
         end__gt=cutoff,
     ).values_list('user_profile_id', flat=True).distinct())
 
-    user_ids = realm_user_ids - active_user_ids
+    user_ids = list(realm_user_ids - active_user_ids)
+    user_ids.sort()
 
-    for user_id in user_ids:
-        queue_digest_recipient(user_id, cutoff)
+    # We process batches of 30.  We want a big enough batch
+    # to amorize work, but not so big that a single item
+    # from the queue takes too long to process.
+    chunk_size = 30
+    for i in range(0, len(user_ids), chunk_size):
+        chunk_user_ids = user_ids[i:i + chunk_size]
+        queue_digest_user_ids(chunk_user_ids, cutoff)
         logger.info(
-            "User %s is inactive, queuing for potential digest",
-            user_id,
+            "Queuing user_ids for potential digest: %s",
+            chunk_user_ids,
         )
 
 def get_recent_topics(

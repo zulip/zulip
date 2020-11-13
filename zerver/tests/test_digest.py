@@ -283,19 +283,20 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         cutoff = timezone_now() - datetime.timedelta(days=5)
 
-        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         users = self.active_human_users(realm)
 
-        self.assertEqual(queue_mock.call_count, len(users))
+        num_queued_users = len(queue_mock.call_args[0][0])
+        self.assertEqual(num_queued_users, len(users))
 
         # Simulate that we have sent digests for all our users.
         bulk_write_realm_audit_logs(users)
 
         # Now if we run again, we won't get any users, since they will have
         # recent RealmAuditLog rows.
-        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         self.assertEqual(queue_mock.call_count, 0)
@@ -313,10 +314,11 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # Check that all users without an a UserActivityInterval entry are considered
         # inactive users and get enqueued.
-        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
-        self.assertEqual(queue_mock.call_count, len(users))
+        num_queued_users = len(queue_mock.call_args[0][0])
+        self.assertEqual(num_queued_users, len(users))
 
         for user in users:
             last_visit = timezone_now() - datetime.timedelta(days=1)
@@ -327,7 +329,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             )
 
         # Now we expect no users, due to recent activity.
-        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         self.assertEqual(queue_mock.call_count, 0)
@@ -336,10 +338,11 @@ class TestDigestEmailMessages(ZulipTestCase):
         last_visit = timezone_now() - datetime.timedelta(days=7)
         UserActivityInterval.objects.all().update(start=last_visit, end=last_visit)
 
-        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
-        self.assertEqual(queue_mock.call_count, len(users))
+        num_queued_users = len(queue_mock.call_args[0][0])
+        self.assertEqual(num_queued_users, len(users))
 
     def tuesday(self) -> datetime.datetime:
         return datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
@@ -352,7 +355,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         cutoff = tuesday - datetime.timedelta(days=5)
 
         with mock.patch("zerver.lib.digest.timezone_now", return_value=tuesday):
-            with mock.patch("zerver.lib.digest.queue_digest_recipient") as queue_mock:
+            with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
                 enqueue_emails(cutoff)
         queue_mock.assert_not_called()
 
@@ -364,7 +367,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         cutoff = not_tuesday - datetime.timedelta(days=5)
 
         with mock.patch("zerver.lib.digest.timezone_now", return_value=not_tuesday):
-            with mock.patch("zerver.lib.digest.queue_digest_recipient") as queue_mock:
+            with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
                 enqueue_emails(cutoff)
         queue_mock.assert_not_called()
 
@@ -387,14 +390,16 @@ class TestDigestEmailMessages(ZulipTestCase):
         )
 
         # Check that bots are not sent emails
-        with mock.patch('zerver.lib.digest.queue_digest_recipient') as queue_mock:
+        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
-        assert queue_mock.call_count >= 5
+        num_queued_users = len(queue_mock.call_args[0][0])
+        assert num_queued_users >= 5
 
         for arg in queue_mock.call_args_list:
-            user_id = arg[0][0]
-            self.assertNotEqual(user_id, bot.id)
+            user_ids = arg[0][0]
+            for user_id in user_ids:
+                self.assertNotEqual(user_id, bot.id)
 
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_new_stream_link(self) -> None:
