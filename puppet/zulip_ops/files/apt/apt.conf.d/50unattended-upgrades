@@ -6,6 +6,7 @@
 Unattended-Upgrade::Allowed-Origins {
     "${distro_id}:${distro_codename}";
     "${distro_id}:${distro_codename}-security";
+    "${distro_id}:${distro_codename}-updates";
     // Extended Security Maintenance; doesn't necessarily exist for
     // every release and this system may not have it installed, but if
     // available, the policy for updates is such that unattended-upgrades
