@@ -371,9 +371,6 @@ def bulk_write_realm_audit_logs(users: List[UserProfile]) -> None:
 
     RealmAuditLog.objects.bulk_create(log_rows)
 
-def handle_digest_email(user_id: int, cutoff: float) -> None:
-    bulk_handle_digest_email([user_id], cutoff)
-
 def get_modified_streams(user_ids: List[int], cutoff_date: datetime.datetime) -> Dict[int, Set[int]]:
     events = [
         RealmAuditLog.SUBSCRIPTION_CREATED,
