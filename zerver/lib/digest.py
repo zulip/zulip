@@ -218,6 +218,21 @@ def gather_new_streams(user_profile: UserProfile,
 def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
     return bool(hot_conversations or new_streams)
 
+def get_stream_map(user_ids: List[int]) -> Dict[int, Set[int]]:
+    rows = Subscription.objects.filter(
+        user_profile_id__in=user_ids,
+        recipient__type=Recipient.STREAM,
+        active=True,
+        is_muted=False,
+    ).values('user_profile_id', 'recipient__type_id')
+
+    # maps user_id -> {stream_id, stream_id, ...}
+    dct: Dict[int, Set[int]] = defaultdict(set)
+    for row in rows:
+        dct[row['user_profile_id']].add(row['recipient__type_id'])
+
+    return dct
+
 def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int, Dict[str, Any]]:
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
@@ -225,21 +240,6 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
     result: Dict[int, Dict[str, Any]] = {}
 
     user_ids = [user.id for user in users]
-
-    def get_stream_map(user_ids: List[int]) -> Dict[int, Set[int]]:
-        rows = Subscription.objects.filter(
-            user_profile_id__in=user_ids,
-            recipient__type=Recipient.STREAM,
-            active=True,
-            is_muted=False,
-        ).values('user_profile_id', 'recipient__type_id')
-
-        # maps user_id -> {stream_id, stream_id, ...}
-        dct: Dict[int, Set[int]] = defaultdict(set)
-        for row in rows:
-            dct[row['user_profile_id']].add(row['recipient__type_id'])
-
-        return dct
 
     stream_map = get_stream_map(user_ids)
 
