@@ -166,7 +166,7 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
             output.append(line)
     return '\n'.join(output)
 
-def build_message_list(user_profile: UserProfile, messages: List[Message]) -> List[Dict[str, Any]]:
+def build_message_list(user: UserProfile, messages: List[Message]) -> List[Dict[str, Any]]:
     """
     Builds the message list object for the missed message email template.
     The messages are collapsed into per-recipient and per-sender blocks, like
@@ -207,14 +207,14 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
         # plain text.
         plain = re.sub(
             r"/user_uploads/(\S*)",
-            user_profile.realm.uri + r"/user_uploads/\1", plain)
-        plain = fix_spoilers_in_text(plain, user_profile.default_language)
+            user.realm.uri + r"/user_uploads/\1", plain)
+        plain = fix_spoilers_in_text(plain, user.default_language)
 
         assert message.rendered_content is not None
         html = message.rendered_content
-        html = relative_to_full_url(user_profile.realm.uri, html)
-        html = fix_emojis(html, user_profile.realm.uri, user_profile.emojiset)
-        html = fix_spoilers_in_html(html, user_profile.default_language)
+        html = relative_to_full_url(user.realm.uri, html)
+        html = fix_emojis(html, user.realm.uri, user.emojiset)
+        html = fix_spoilers_in_html(html, user.default_language)
         if sender:
             plain, html = append_sender_to_message(plain, html, sender)
         return {'plain': plain, 'html': html}
@@ -224,25 +224,25 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
         return {'sender': sender,
                 'content': [build_message_payload(message, sender)]}
 
-    def message_header(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+    def message_header(message: Message) -> Dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
-            narrow_link = get_narrow_url(user_profile, message)
+            narrow_link = get_narrow_url(user, message)
             header = f"You and {message.sender.full_name}"
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         elif message.recipient.type == Recipient.HUDDLE:
             display_recipient = get_display_recipient(message.recipient)
             assert not isinstance(display_recipient, str)
-            narrow_link = get_narrow_url(user_profile, message,
+            narrow_link = get_narrow_url(user, message,
                                          display_recipient=display_recipient)
             other_recipients = [r['full_name'] for r in display_recipient
-                                if r['id'] != user_profile.id]
+                                if r['id'] != user.id]
             header = "You and {}".format(", ".join(other_recipients))
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         else:
             stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
-            narrow_link = get_narrow_url(user_profile, message, stream=stream)
+            narrow_link = get_narrow_url(user, message, stream=stream)
             header = f"{stream.name} > {message.topic_name()}"
-            stream_link = stream_narrow_url(user_profile.realm, stream)
+            stream_link = stream_narrow_url(user.realm, stream)
             header_html = f"<a href='{stream_link}'>{stream.name}</a> > <a href='{narrow_link}'>{message.topic_name()}</a>"
         return {"plain": header,
                 "html": header_html,
@@ -276,7 +276,7 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
     messages.sort(key=lambda message: message.date_sent)
 
     for message in messages:
-        header = message_header(user_profile, message)
+        header = message_header(message)
 
         # If we want to collapse into the previous recipient block
         if len(messages_to_render) > 0 and messages_to_render[-1]['header'] == header:
