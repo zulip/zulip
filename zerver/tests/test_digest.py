@@ -15,6 +15,7 @@ from zerver.lib.digest import (
     enqueue_emails,
     gather_new_streams,
     get_modified_streams,
+    get_recent_streams,
     handle_digest_email,
 )
 from zerver.lib.message import get_last_message_id
@@ -182,7 +183,7 @@ class TestDigestEmailMessages(ZulipTestCase):
                 with cache_tries_captured() as cache_tries:
                     bulk_handle_digest_email(digest_user_ids, cutoff)
 
-            self.assert_length(queries, 15)
+            self.assert_length(queries, 12)
             self.assert_length(cache_tries, 0)
 
         self.assertEqual(mock_send_future_email.call_count, len(digest_users))
@@ -404,16 +405,33 @@ class TestDigestEmailMessages(ZulipTestCase):
         stream.date_created = timezone_now()
         stream.save()
 
-        stream_count, stream_info = gather_new_streams(cordelia, cutoff)
+        realm = cordelia.realm
+
+        recent_streams = get_recent_streams(realm, cutoff)
+        stream_count, stream_info = gather_new_streams(realm, recent_streams, can_access_public=True)
         self.assertEqual(stream_count, 1)
         expected_html = f"<a href='http://zulip.testserver/#narrow/stream/{stream.id}-New-stream'>New stream</a>"
         self.assertEqual(stream_info['html'][0], expected_html)
+
+        # guests don't see our stream
+        stream_count, stream_info = gather_new_streams(realm, recent_streams, can_access_public=False)
+        self.assertEqual(stream_count, 0)
+        self.assertEqual(stream_info['html'], [])
+
+        # but they do if we make it web public
+        stream.is_web_public = True
+        stream.save()
+
+        recent_streams = get_recent_streams(realm, cutoff)
+        stream_count, stream_info = gather_new_streams(realm, recent_streams, can_access_public=True)
+        self.assertEqual(stream_count, 1)
 
         # Make the stream appear to be older.
         stream.date_created = timezone_now() - datetime.timedelta(days=7)
         stream.save()
 
-        stream_count, stream_info = gather_new_streams(cordelia, cutoff)
+        recent_streams = get_recent_streams(realm, cutoff)
+        stream_count, stream_info = gather_new_streams(realm, recent_streams, can_access_public=True)
         self.assertEqual(stream_count, 0)
         self.assertEqual(stream_info['html'], [])
 

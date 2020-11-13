@@ -194,17 +194,21 @@ def get_hot_topics(
 
     return hot_topics
 
-def gather_new_streams(user_profile: UserProfile,
-                       threshold: datetime.datetime) -> Tuple[int, Dict[str, List[str]]]:
-    if user_profile.is_guest:
-        new_streams = list(get_active_streams(user_profile.realm).filter(
-            is_web_public=True, date_created__gt=threshold))
+def get_recent_streams(realm: Realm, threshold: datetime.datetime) -> List[Stream]:
+    fields = ["id", "name", "is_web_public", "invite_only"]
+    return list(get_active_streams(realm).filter(date_created__gt=threshold).only(*fields))
 
-    elif user_profile.can_access_public_streams():
-        new_streams = list(get_active_streams(user_profile.realm).filter(
-            invite_only=False, date_created__gt=threshold))
+def gather_new_streams(
+    realm: Realm,
+    recent_streams: List[Stream],  # streams only need id and name
+    can_access_public: bool,
+) -> Tuple[int, Dict[str, List[str]]]:
+    if can_access_public:
+        new_streams = [stream for stream in recent_streams if not stream.invite_only]
+    else:
+        new_streams = [stream for stream in recent_streams if stream.is_web_public]
 
-    base_url = f"{user_profile.realm.uri}/#narrow/stream/"
+    base_url = f"{realm.uri}/#narrow/stream/"
 
     streams_html = []
     streams_plain = []
@@ -244,6 +248,12 @@ def get_slim_stream_map(stream_ids: Set[int]) -> Dict[int, Stream]:
     return {stream.id: stream for stream in streams}
 
 def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int, Dict[str, Any]]:
+    # We expect a non-empty list of users all from the same realm.
+    assert(users)
+    realm = users[0].realm
+    for user in users:
+        assert user.realm_id == realm.id
+
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
 
@@ -269,6 +279,8 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
     stream_map = get_slim_stream_map(all_stream_ids)
 
+    recent_streams = get_recent_streams(realm, cutoff_date)
+
     for user in users:
         stream_ids = user_stream_map[user.id]
 
@@ -287,7 +299,11 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
         ]
 
         # Gather new streams.
-        new_streams_count, new_streams = gather_new_streams(user, cutoff_date)
+        new_streams_count, new_streams = gather_new_streams(
+            realm=realm,
+            recent_streams=recent_streams,
+            can_access_public=user.can_access_public_streams()
+        )
         context["new_streams"] = new_streams
         context["new_streams_count"] = new_streams_count
 
