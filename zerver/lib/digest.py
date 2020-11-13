@@ -20,6 +20,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     Recipient,
+    Stream,
     Subscription,
     UserActivityInterval,
     UserProfile,
@@ -58,11 +59,12 @@ class DigestTopic:
     def diversity(self) -> int:
         return len(self.human_senders)
 
-    def teaser_data(self, user_profile: UserProfile) -> Dict[str, Any]:
+    def teaser_data(self, user: UserProfile, stream_map: Dict[int, Stream]) -> Dict[str, Any]:
         teaser_count = self.num_human_messages - len(self.sample_messages)
         first_few_messages = build_message_list(
-            user_profile,
-            self.sample_messages,
+            user=user,
+            messages=self.sample_messages,
+            stream_map=stream_map,
         )
         return {
             "participants": self.human_senders,
@@ -233,6 +235,14 @@ def get_user_stream_map(user_ids: List[int]) -> Dict[int, Set[int]]:
 
     return dct
 
+def get_slim_stream_map(stream_ids: Set[int]) -> Dict[int, Stream]:
+    # This can be passed to build_message_list.
+    streams = Stream.objects.filter(
+        id__in=stream_ids,
+    ).only('id', 'name')
+
+    return {stream.id: stream for stream in streams}
+
 def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int, Dict[str, Any]]:
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
@@ -257,6 +267,8 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
     # for each user, we filter to just the streams they care about.
     recent_topics = get_recent_topics(sorted(list(all_stream_ids)), cutoff_date)
 
+    stream_map = get_slim_stream_map(all_stream_ids)
+
     for user in users:
         stream_ids = user_stream_map[user.id]
 
@@ -270,7 +282,7 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
         # Get context data for hot conversations.
         context["hot_conversations"] = [
-            hot_topic.teaser_data(user)
+            hot_topic.teaser_data(user, stream_map)
             for hot_topic in hot_topics
         ]
 

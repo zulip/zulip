@@ -166,7 +166,11 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
             output.append(line)
     return '\n'.join(output)
 
-def build_message_list(user: UserProfile, messages: List[Message]) -> List[Dict[str, Any]]:
+def build_message_list(
+    user: UserProfile,
+    messages: List[Message],
+    stream_map: Dict[int, Stream],  # only needs id, name
+) -> List[Dict[str, Any]]:
     """
     Builds the message list object for the missed message email template.
     The messages are collapsed into per-recipient and per-sender blocks, like
@@ -239,7 +243,12 @@ def build_message_list(user: UserProfile, messages: List[Message]) -> List[Dict[
             header = "You and {}".format(", ".join(other_recipients))
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         else:
-            stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
+            stream_id = message.recipient.type_id
+            stream = stream_map.get(stream_id, None)
+            if stream is None:
+                # Some of our callers don't populate stream_map, so
+                # we just populate the stream from the database.
+                stream = Stream.objects.only('id', 'name').get(id=stream_id)
             narrow_link = get_narrow_url(user, message, stream=stream)
             header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user.realm, stream)
@@ -456,7 +465,11 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         )
     else:
         context.update(
-            messages=build_message_list(user_profile, [m['message'] for m in missed_messages]),
+            messages=build_message_list(
+                user=user_profile,
+                messages=[m['message'] for m in missed_messages],
+                stream_map={},
+            ),
             sender_str=", ".join(sender.full_name for sender in senders),
             realm_str=user_profile.realm.name,
             show_message_content=True,

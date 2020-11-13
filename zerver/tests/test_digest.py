@@ -68,7 +68,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         with queries_captured() as queries:
             handle_digest_email(othello.id, cutoff)
 
-        self.assert_length(queries, 10)
+        self.assert_length(queries, 9)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -124,7 +124,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         with queries_captured() as queries:
             handle_digest_email(polonius.id, cutoff)
 
-        self.assert_length(queries, 10)
+        self.assert_length(queries, 9)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -182,7 +182,7 @@ class TestDigestEmailMessages(ZulipTestCase):
                 with cache_tries_captured() as cache_tries:
                     bulk_handle_digest_email(digest_user_ids, cutoff)
 
-            self.assert_length(queries, 30)
+            self.assert_length(queries, 15)
             self.assert_length(cache_tries, 0)
 
         self.assertEqual(mock_send_future_email.call_count, len(digest_users))
