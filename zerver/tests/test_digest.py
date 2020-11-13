@@ -16,7 +16,6 @@ from zerver.lib.digest import (
     gather_new_streams,
     get_modified_streams,
     get_recent_streams,
-    handle_digest_email,
 )
 from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
@@ -67,7 +66,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         # To trigger this, we call the one_click_unsubscribe_link function below.
         one_click_unsubscribe_link(othello, 'digest')
         with queries_captured() as queries:
-            handle_digest_email(othello.id, cutoff)
+            bulk_handle_digest_email([othello.id], cutoff)
 
         self.assert_length(queries, 9)
 
@@ -123,7 +122,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         # To trigger this, we call the one_click_unsubscribe_link function below.
         one_click_unsubscribe_link(polonius, 'digest')
         with queries_captured() as queries:
-            handle_digest_email(polonius.id, cutoff)
+            bulk_handle_digest_email([polonius.id], cutoff)
 
         self.assert_length(queries, 9)
 
