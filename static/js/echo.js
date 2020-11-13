@@ -8,6 +8,7 @@ import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
 import * as message_list from "./message_list";
+import {mld_cache} from "./message_list_data_cache";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
@@ -327,6 +328,10 @@ export function update_message_lists({old_id, new_id}) {
             }
         }
     }
+
+    for (const mld of mld_cache.entries()) {
+        mld.change_message_id(old_id, new_id);
+    }
 }
 
 export function process_from_server(messages) {
@@ -410,6 +415,9 @@ function abort_message(message) {
     all_messages_data.remove([message.id]);
     for (const msg_list of [message_lists.home, message_lists.current]) {
         msg_list.remove_and_rerender([message.id]);
+    }
+    for (const mld of mld_cache.entries()) {
+        mld.remove([message.id]);
     }
 }
 
