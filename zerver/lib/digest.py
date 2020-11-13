@@ -233,12 +233,6 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
     stream_map = get_stream_map(user_ids)
 
     for user in users:
-        context = common_context(user)
-
-        # Start building email template data.
-        unsubscribe_link = one_click_unsubscribe_link(user, "digest")
-        context.update(unsubscribe_link=unsubscribe_link)
-
         stream_ids = stream_map[user.id]
 
         if user.long_term_idle:
@@ -246,6 +240,12 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
         recent_topics = get_recent_topics(sorted(list(stream_ids)), cutoff_date)
         hot_topics = get_hot_topics(recent_topics)
+
+        context = common_context(user)
+
+        # Start building email template data.
+        unsubscribe_link = one_click_unsubscribe_link(user, "digest")
+        context.update(unsubscribe_link=unsubscribe_link)
 
         # Get context data for hot conversations.
         context["hot_conversations"] = [
