@@ -45,7 +45,7 @@ class zulip::postfix_localmail {
     mode    => '0644',
     owner   => root,
     group   => root,
-    source  => 'puppet:///modules/zulip/postfix/virtual',
+    content => template('zulip/postfix/virtual.erb'),
     require => Package[postfix],
     notify  => Service['postfix'],
   }
