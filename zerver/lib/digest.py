@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 
 from django.conf import settings
+from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import one_click_unsubscribe_link
@@ -273,6 +274,7 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
     return bulk_get_digest_context([user], cutoff)[user.id]
 
+@transaction.atomic
 def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
     users = [get_user_profile_by_id(user_id) for user_id in user_ids]
     context_map = bulk_get_digest_context(users, cutoff)
