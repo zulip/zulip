@@ -61,7 +61,7 @@ from zerver.lib.actions import (
 from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, get_bot_handler
 from zerver.lib.context_managers import lockfile
 from zerver.lib.db import reset_queries
-from zerver.lib.digest import handle_digest_email
+from zerver.lib.digest import bulk_handle_digest_email
 from zerver.lib.email_mirror import decode_stream_email_address, is_missed_message_address
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.lib.email_mirror import rate_limit_mirror_by_realm
@@ -640,7 +640,12 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
     # management command, not here.
     def consume(self, event: Mapping[str, Any]) -> None:
         logging.info("Received digest event: %s", event)
-        handle_digest_email(event["user_profile_id"], event["cutoff"])
+        if "user_ids" in event:
+            user_ids = event["user_ids"]
+        else:
+            # legacy code may have enqueued a single id
+            user_ids = [event["user_profile_id"]]
+        bulk_handle_digest_email(user_ids, event["cutoff"])
 
 @assign_queue('email_mirror')
 class MirrorWorker(QueueProcessingWorker):
