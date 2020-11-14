@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Count
 from django.utils.translation import gettext as _
 
@@ -116,6 +117,7 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
         internal_send_private_message(welcome_bot, send_request.message.sender, content)
 
 
+@transaction.atomic
 def send_initial_realm_messages(realm: Realm) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
     # Make sure each stream created in the realm creation process has at least one message below
@@ -206,6 +208,8 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # We find the one of our just-sent messages with turtle.png in it,
     # and react to it.  This is a bit hacky, but works and is kinda a
     # 1-off thing.
-    turtle_message = Message.objects.get(id__in=message_ids, content__icontains="cute/turtle.png")
+    turtle_message = Message.objects.select_for_update().get(
+        id__in=message_ids, content__icontains="cute/turtle.png"
+    )
     (emoji_code, reaction_type) = emoji_name_to_emoji_code(realm, "turtle")
     do_add_reaction(welcome_bot, turtle_message, "turtle", emoji_code, reaction_type)
