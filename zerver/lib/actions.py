@@ -2215,7 +2215,7 @@ def notify_reaction_update(
         stream = Stream.objects.get(id=stream_id)
         user_ids |= subscriber_ids_with_stream_history_access(stream)
 
-    send_event(user_profile.realm, event, list(user_ids))
+    transaction.on_commit(lambda: send_event(user_profile.realm, event, list(user_ids)))
 
 
 def do_add_reaction(
@@ -2225,6 +2225,11 @@ def do_add_reaction(
     emoji_code: str,
     reaction_type: str,
 ) -> None:
+    """Should be called while holding a SELECT FOR UPDATE lock
+    (e.g. via access_message(..., lock_message=True)) on the
+    Message row, to prevent race conditions.
+    """
+
     reaction = Reaction(
         user_profile=user_profile,
         message=message,
@@ -2232,13 +2237,8 @@ def do_add_reaction(
         emoji_code=emoji_code,
         reaction_type=reaction_type,
     )
-    try:
-        reaction.save()
-    except django.db.utils.IntegrityError:  # nocoverage
-        # This can happen when a race results in the check in views
-        # code not catching an attempt to double-add a reaction, or
-        # perhaps if the emoji_name/emoji_code mapping is busted.
-        raise JsonableError(_("Reaction already exists."))
+
+    reaction.save()
 
     notify_reaction_update(user_profile, message, reaction, "add")
 
@@ -2250,7 +2250,7 @@ def check_add_reaction(
     emoji_code: Optional[str],
     reaction_type: Optional[str],
 ) -> None:
-    message, user_message = access_message(user_profile, message_id)
+    message, user_message = access_message(user_profile, message_id, lock_message=True)
 
     if emoji_code is None:
         # The emoji_code argument is only required for rare corner
@@ -2316,6 +2316,10 @@ def check_add_reaction(
 def do_remove_reaction(
     user_profile: UserProfile, message: Message, emoji_code: str, reaction_type: str
 ) -> None:
+    """Should be called while holding a SELECT FOR UPDATE lock
+    (e.g. via access_message(..., lock_message=True)) on the
+    Message row, to prevent race conditions.
+    """
     reaction = Reaction.objects.filter(
         user_profile=user_profile,
         message=message,
@@ -2323,6 +2327,7 @@ def do_remove_reaction(
         reaction_type=reaction_type,
     ).get()
     reaction.delete()
+
     notify_reaction_update(user_profile, message, reaction, "remove")
 
 
