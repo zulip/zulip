@@ -64,6 +64,7 @@ from zerver.lib.test_helpers import (
     create_s3_buckets,
     get_test_image_file,
     load_subdomain_token,
+    queries_captured,
     use_s3_backend,
 )
 from zerver.lib.upload import MEDIUM_AVATAR_SIZE, resize_avatar
@@ -3463,6 +3464,51 @@ class TestTwoFactor(ZulipTestCase):
             self.assert_logged_in_user_id(user_profile.id)
             # User logs in when otp device exists.
             self.assertIn('otp_device_id', self.client.session.keys())
+
+    @mock.patch('two_factor.models.totp')
+    def test_two_factor_login(self, mock_totp: mock.MagicMock) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        password = initial_password(email)
+        self.create_default_device(user_profile)
+
+        token = 123456
+
+        def totp(*args: Any, **kwargs: Any) -> int:
+            return token
+
+        mock_totp.side_effect = totp
+
+        with self.settings(
+                AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                TWO_FACTOR_CALL_GATEWAY='two_factor.gateways.fake.Fake',
+                TWO_FACTOR_SMS_GATEWAY='two_factor.gateways.fake.Fake',
+                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
+        ):
+            first_step_data = {"username": email,
+                               "password": password,
+                               "two_factor_login_view-current_step": "auth"}
+            with self.assertLogs('two_factor.gateways.fake', 'INFO') as info_log:
+                result = self.client_post("/accounts/login/", first_step_data)
+            self.assertEqual(result.status_code, 200)
+            self.assertEqual(info_log.output, [
+                'INFO:two_factor.gateways.fake:Fake SMS to +12125550100: "Your token is: 123456"'
+            ])
+
+            second_step_data = {"token-otp_token": str(token),
+                                "two_factor_login_view-current_step": "token"}
+            result = self.client_post("/accounts/login/", second_step_data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result['Location'], 'http://zulip.testserver')
+
+            # Going to login page should redirect to `realm.uri` if user is
+            # already logged in.
+            with queries_captured(keep_cache_warm=True) as queries:
+                result = self.client_get('/accounts/login/')
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result['Location'], 'http://zulip.testserver')
+
+            self.assert_length(queries, 4)
 
     @mock.patch('two_factor.models.totp')
     def test_two_factor_login_with_ldap(self, mock_totp: mock.MagicMock) -> None:
