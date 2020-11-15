@@ -3517,8 +3517,6 @@ class TestTwoFactor(ZulipTestCase):
         password = self.ldap_password('hamlet')
 
         user_profile = self.example_user('hamlet')
-        user_profile.set_password(password)
-        user_profile.save()
         self.create_default_device(user_profile)
 
         def totp(*args: Any, **kwargs: Any) -> int:
