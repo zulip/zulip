@@ -1626,6 +1626,51 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
                     inserts += 1
         return copy
 
+
+class AsteriskProcessor(markdown.inlinepatterns.AsteriskProcessor):
+    """Emphasis processor for handling strong and em matches inside asterisks."""
+
+    EmStrongItem = markdown.inlinepatterns.EmStrongItem
+    # ***strongem*** or ***em*strong**
+    EM_STRONG_RE = r'(\*)\1{2}(?!\s+)([^\*_^\n]+)(?<!\s)\1(?!\s+)([^\*_^\n]*)(?<!\s)\1{2}'
+    # ***strong**em*
+    STRONG_EM_RE = r'(\*)\1{2}(?!\s+)([^\*_^\n]+)(?<!\s)\1{2}(?!\s+)([^\*_^\n]+)(?<!\s)\1'
+    # **strong*em***
+    STRONG_EM3_RE = r'(\*)\1(?!\1\s+)([^\*_^\n]+)(?<!\s)\1(?!\1\s+)([^\*_^\n]+)(?<!\s)\1{3}'
+    # **strong**
+    STRONG_RE = r'(\*{2})(?!\s+)([^\*_^\n]+)(?<!\s)\1'
+    # *emphasis*
+    EMPHASIS_RE = r'(\*)(?!\s+)([^\*_^\n]+)(?<!\s)\1'
+
+    PATTERNS = [
+        EmStrongItem(re.compile(EM_STRONG_RE, re.DOTALL | re.UNICODE), 'double', 'strong,em'),
+        EmStrongItem(re.compile(STRONG_EM_RE, re.DOTALL | re.UNICODE), 'double', 'em,strong'),
+        EmStrongItem(re.compile(STRONG_EM3_RE, re.DOTALL | re.UNICODE), 'double2', 'strong,em'),
+        EmStrongItem(re.compile(STRONG_RE, re.DOTALL | re.UNICODE), 'single', 'strong'),
+        EmStrongItem(re.compile(EMPHASIS_RE, re.DOTALL | re.UNICODE), 'single', 'em')
+    ]
+
+class UnderscoreProcessor(markdown.inlinepatterns.UnderscoreProcessor):
+    """Emphasis processor for handling strong and em matches inside underscores."""
+
+    EmStrongItem = markdown.inlinepatterns.EmStrongItem
+    # ___strongem___ or ___em_strong__
+    EM_STRONG2_RE = r'(_)\1{2}(?!\s+)([^^\n]+)(?<!\s)\1(?!\s+)([^^\n]*)(?<!\s)\1{2}'
+    # ___strong__em_
+    STRONG_EM2_RE = r'(_)\1{2}(?!\s+)([^^\n]+)(?<!\s)\1{2}(?!\s+)([^^\n]*)(?<!\s)\1'
+    # __strong__
+    SMART_STRONG_RE = r'(?<!\w)(_{2})(?!_\s+)([^_^\n]+)(?<!_\s)\1(?!\w)'
+    # _emphasis_
+    SMART_EMPHASIS_RE = r'(?<!\w)(_)(?!\s+)([^_^\n]+)(?<!\s)\1(?!\w)'
+
+    PATTERNS = [
+        EmStrongItem(re.compile(EM_STRONG2_RE, re.DOTALL | re.UNICODE), 'double', 'strong,em'),
+        EmStrongItem(re.compile(STRONG_EM2_RE, re.DOTALL | re.UNICODE), 'double', 'em,strong'),
+        EmStrongItem(re.compile(SMART_STRONG_RE, re.DOTALL | re.UNICODE), 'single', 'strong'),
+        EmStrongItem(re.compile(SMART_EMPHASIS_RE, re.DOTALL | re.UNICODE), 'single', 'em')
+    ]
+
+
 # Name for the outer capture group we use to separate whitespace and
 # other delimiters from the actual content.  This value won't be an
 # option in user-entered capture groups.
@@ -1971,27 +2016,21 @@ class Markdown(markdown.Markdown):
         # image_reference - references not useful
         # short_reference - references not useful
         # ---------------------------------------------------
-        # strong_em -       for these three patterns,
-        # strong2 -         we have our own versions where
-        # emphasis2 -       we disable _ for bold and emphasis
 
         # Declare regexes for clean single line calls to .register().
         NOT_STRONG_RE = markdown.inlinepatterns.NOT_STRONG_RE
         # Custom strikethrough syntax: ~~foo~~
         DEL_RE = r'(?<!~)(\~\~)([^~\n]+?)(\~\~)(?!~)'
-        # Custom bold syntax: **foo** but not __foo__
-        # str inside ** must start and end with a word character
+        # Custom bold syntax: **foo** , __foo__
+        # str inside ** or __ must start and end with a word character
         # it need for things like "const char *x = (char *)y"
-        EMPHASIS_RE = r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*'
         ENTITY_RE = markdown.inlinepatterns.ENTITY_RE
-        STRONG_EM_RE = r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*'
 
         # Add inline patterns.  We use a custom numbering of the
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
         reg = markdown.util.Registry()
-        reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), 'backtick', 105)
-        reg.register(markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, 'strong,em'), 'strong_em', 100)
+        reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), 'backtick', 100)
         reg.register(UserMentionPattern(mention.find_mentions, self), 'usermention', 95)
         reg.register(Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'), 'tex', 90)
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), 'topic', 87)
@@ -2003,10 +2042,10 @@ class Markdown(markdown.Markdown):
         # Reserve priority 45-54 for realm filters
         reg = self.register_realm_filters(reg)
         reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), 'entity', 40)
-        reg.register(markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'), 'strong', 35)
-        reg.register(markdown.inlinepatterns.SimpleTagPattern(EMPHASIS_RE, 'em'), 'emphasis', 30)
-        reg.register(markdown.inlinepatterns.SimpleTagPattern(DEL_RE, 'del'), 'del', 25)
-        reg.register(markdown.inlinepatterns.SimpleTextInlineProcessor(NOT_STRONG_RE), 'not_strong', 20)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(DEL_RE, 'del'), 'del', 35)
+        reg.register(markdown.inlinepatterns.SimpleTextInlineProcessor(NOT_STRONG_RE), 'not_strong', 30)
+        reg.register(AsteriskProcessor(r'\*', self), 'em_strong', 25)
+        reg.register(UnderscoreProcessor(r'_', self), 'em_strong2', 20)
         reg.register(Emoji(EMOJI_REGEX, self), 'emoji', 15)
         reg.register(EmoticonTranslation(emoticon_regex, self), 'translate_emoticons', 10)
         # We get priority 5 from 'nl2br' extension

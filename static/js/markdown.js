@@ -496,16 +496,30 @@ exports.initialize = function (realm_filters, helper_config) {
     // We only keep the # Heading format.
     disable_markdown_regex(marked.Lexer.rules.tables, "lheading");
 
-    // Disable __strong__ (keeping **strong**)
-    marked.InlineLexer.rules.zulip.strong = /^\*\*([\S\s]+?)\*\*(?!\*)/;
-
     // Make sure <del> syntax matches the backend processor
     marked.InlineLexer.rules.zulip.del = /^(?!<~)~~([^~]+)~~(?!~)/;
 
-    // Disable _emphasis_ (keeping *emphasis*)
-    // Text inside ** must start and end with a word character
+    // Text inside ** or __ must start and end with a word character
     // to prevent mis-parsing things like "char **x = (char **)y"
-    marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?:\*\*|[\S\s])+?)(\S)\*(?!\*)/;
+    // ***strongem*** or ***em*strong**
+    marked.InlineLexer.rules.zulip.em_strong = /^(\*)\1{2}(?!\s+)([^*^_]+)(?<!\s)\1(?!\s+)([^*^_]*)(?<!\s)\1{2}/;
+    // ***strong**em*
+    marked.InlineLexer.rules.zulip.strong_em = /^(\*)\1{2}(?!\s+)([^*^_]+)(?<!\s)\1{2}(?!\s+)([^*^_]+)(?<!\s)\1/;
+    // **strong*em***
+    marked.InlineLexer.rules.zulip.strong_em3 = /^(\*)\1(?!\1\s+)([^*^_]+)(?<!\s)\1(?!\1\s+)([^*^_]+)(?<!\s)\1{3}/;
+    // **strong**
+    marked.InlineLexer.rules.zulip.strong = /^(\*{2})(?!\s+)([^*^_]+)(?<!\s)\1/;
+    // *emphasis*
+    marked.InlineLexer.rules.zulip.em = /^(\*)(?!\s+)([^*^_]+)(?<!\s)\1/;
+
+    // ___strongem___ or ___em_strong__
+    marked.InlineLexer.rules.zulip.em_strong2 = /^(_)\1{2}(?!\s+)([^^]+)(?<!\s)\1(?!\s+)([^^]*)(?<!\s)\1{2}/;
+    // ___strong__em_
+    marked.InlineLexer.rules.zulip.strong_em2 = /^(_)\1{2}(?!\s+)([^^]+)(?<!\s)\1{2}(?!\s+)([^^]*)(?<!\s)\1/;
+    // __smart__strong__
+    marked.InlineLexer.rules.zulip.smart_strong = /^(?<!\w)(_{2})(?!_\s+)([^^_]+)(?<!_\s)\1(?!\w)/;
+    // _smart_emphasis_
+    marked.InlineLexer.rules.zulip.smart_em = /^(?<!\w)(_)(?!\s+)([^^_]+)(?<!\s)\1(?!\w)/;
 
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, "autolink");

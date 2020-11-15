@@ -768,17 +768,41 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
-    // strong
-    if (cap = this.rules.strong.exec(src)) {
+    // ***strongem*** or ***em*strong** || ___strongem___ or ___em_strong__
+    if (cap = this.rules.em_strong.exec(src) || (cap = this.rules.em_strong2.exec(src))) {
       src = src.substring(cap[0].length);
-      out += this.renderer.strong(this.output(cap[2] || cap[1]));
+      if (cap[3]) {
+        out += this.renderer.strong(this.renderer.em(this.output(cap[2])) + cap[3]);
+      }
+      else {
+        out += this.renderer.strong(this.renderer.em(this.output(cap[2] + cap[3])));
+      }
       continue;
     }
 
-    // em
-    if (cap = this.rules.em.exec(src)) {
+    // ***strong**em* || ___strong__em_
+    if (cap = this.rules.strong_em.exec(src) || (cap = this.rules.strong_em2.exec(src))) {
       src = src.substring(cap[0].length);
-      out += this.renderer.em(this.output(cap[1] + cap[2]));
+      out += this.renderer.em(this.renderer.strong(this.output(cap[2])) + this.output(cap[3]));
+    }
+
+    // **strong*em***
+    if (cap = this.rules.strong_em3.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.renderer.strong(this.output(cap[2]) + this.renderer.em(this.output(cap[3])));
+    }
+
+    // **strong** || __smart__strong__
+    if (cap = this.rules.strong.exec(src) || (cap = this.rules.smart_strong.exec(src))) {
+      src = src.substring(cap[0].length);
+      out += this.renderer.strong(this.output(cap[2]));
+      continue;
+    }
+
+    // *em* || _smart_emphasis_
+    if (cap = this.rules.em.exec(src) || (cap = this.rules.smart_em.exec(src))) {
+      src = src.substring(cap[0].length);
+      out += this.renderer.em(this.output(cap[2]));
       continue;
     }
 
