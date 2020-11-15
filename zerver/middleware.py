@@ -8,6 +8,7 @@ from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
+from django.db.models.signals import post_save, pre_delete
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.middleware.common import CommonMiddleware
 from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
@@ -17,10 +18,17 @@ from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
+from django_otp.middleware import OTPMiddleware as BaseOTPMiddleware
+from django_otp.models import Device
 from sentry_sdk import capture_exception
 from sentry_sdk.integrations.logging import ignore_logger
 
-from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
+from zerver.lib.cache import (
+    cache_set,
+    cache_with_key,
+    get_remote_cache_requests,
+    get_remote_cache_time,
+)
 from zerver.lib.db import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
@@ -494,3 +502,46 @@ class ZulipCommonMiddleware(CommonMiddleware):
         if settings.RUNNING_INSIDE_TORNADO:
             return False
         return super().should_redirect_with_slash(request)
+
+class OTPMiddleware(BaseOTPMiddleware):
+    """
+    The original implementation does a database query on every request due to doing
+    lookups for devices by persisted_id. We do this override in order to take advantage
+    of caching.
+    """
+
+    # TODO: Consider using a hard-coded list instead of grabbing all subclasses?
+    device_classes = Device.__subclasses__()
+
+    @cache_with_key(
+        lambda instance, persistent_id: otp_middleware_device_from_persistent_id_cache_key(persistent_id)
+    )
+    def _device_from_persistent_id(self, persistent_id: str) -> Optional[Device]:
+        result = super()._device_from_persistent_id(persistent_id)
+        if result is not None:
+            # Ensure the device being used is in our list - the list is used
+            # for registering signal handlers to keep the cache up-to-date.
+            # An unexpected device class that doesn't have registered signal handlers
+            # would have stale cache issues, which could cause security problems.
+            assert result.__class__ in self.device_classes
+
+        return result
+
+def otp_middleware_device_from_persistent_id_cache_key(persistent_id: str) -> str:
+    return f'otp_middleware_device_{persistent_id}'
+
+def update_otp_middleware_device_cache(sender: Any, **kwargs: Any) -> None:
+    device = kwargs['instance']
+    cache_set(otp_middleware_device_from_persistent_id_cache_key(device.persistent_id),
+              device,
+              timeout=3600*24*7)
+
+def clear_otp_middleware_device_cache(sender: Any, **kwargs: Any) -> None:
+    device = kwargs['instance']
+    cache_set(otp_middleware_device_from_persistent_id_cache_key(device.persistent_id),
+              None,
+              timeout=3600*24*7)
+
+for cls in OTPMiddleware.device_classes:
+    post_save.connect(update_otp_middleware_device_cache, sender=cls)
+    pre_delete.connect(clear_otp_middleware_device_cache, sender=cls)

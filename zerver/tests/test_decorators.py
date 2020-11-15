@@ -1617,7 +1617,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             self.login_user(hamlet)
             request.session = self.client.session
             request.get_host = lambda: 'zulip.testserver'
-            self.create_default_device(request.user)
+            self.create_default_device(self.example_user('hamlet'))
 
             response = test_view(request)
 
@@ -1643,7 +1643,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             self.login_user(hamlet)
             request.session = self.client.session
             request.get_host = lambda: 'zulip.testserver'
-            self.create_default_device(request.user)
+            self.create_default_device(self.example_user('hamlet'))
 
             response = test_view(request)
             content = getattr(response, 'content')

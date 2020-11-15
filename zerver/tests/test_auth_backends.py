@@ -32,6 +32,7 @@ from onelogin.saml2.response import OneLogin_Saml2_Response
 from social_core.exceptions import AuthFailed, AuthStateForbidden
 from social_django.storage import BaseDjangoStorage
 from social_django.strategy import DjangoStrategy
+from two_factor.models import PhoneDevice
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
@@ -47,6 +48,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.cache import cache_get
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
 from zerver.lib.email_validation import (
     get_existing_user_errors,
@@ -79,6 +81,7 @@ from zerver.lib.validator import (
     check_string,
     validate_login_email,
 )
+from zerver.middleware import otp_middleware_device_from_persistent_id_cache_key
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -3512,7 +3515,52 @@ class TestTwoFactor(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result['Location'], 'http://zulip.testserver')
 
-            self.assert_length(queries, 4)
+            self.assert_length(queries, 3)
+
+    def test_deleting_device_clears_otp_middleware_cache(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        password = initial_password(email)
+        self.create_default_device(user_profile)
+
+        with self.settings(
+                AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
+        ):
+            self.login_with_2fa(email, password)
+            self.assert_logged_in_user_id(user_profile.id)
+
+            device = PhoneDevice.objects.get(user=user_profile)
+            cached_device = cache_get(otp_middleware_device_from_persistent_id_cache_key(device.persistent_id))[0]
+            self.assertEqual(device.persistent_id, cached_device.persistent_id)
+
+            PhoneDevice.objects.filter(user=user_profile).delete()
+            cached_device = cache_get(otp_middleware_device_from_persistent_id_cache_key(device.persistent_id))[0]
+            self.assertEqual(cached_device, None)
+
+    def test_editing_device_updates_otp_middleware_cache(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        password = initial_password(email)
+        self.create_default_device(user_profile)
+
+        with self.settings(
+                AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
+        ):
+            self.login_with_2fa(email, password)
+            self.assert_logged_in_user_id(user_profile.id)
+
+            device = PhoneDevice.objects.get(user=user_profile)
+            cached_device = cache_get(otp_middleware_device_from_persistent_id_cache_key(device.persistent_id))[0]
+            self.assertEqual(device.persistent_id, cached_device.persistent_id)
+
+            self.assertEqual(device.confirmed, True)
+            device.confirmed = False
+            device.save()
+            cached_device = cache_get(otp_middleware_device_from_persistent_id_cache_key(device.persistent_id))[0]
+            self.assertEqual(device.persistent_id, cached_device.persistent_id)
+            self.assertEqual(cached_device.confirmed, False)
 
     def test_two_factor_login_with_ldap(self) -> None:
         email = self.example_email('hamlet')
