@@ -16,13 +16,15 @@ class NonClosingPool(sqlalchemy.pool.NullPool):
         pass
 
     def recreate(self) -> 'NonClosingPool':
-        return self.__class__(creator=self._creator,
-                              recycle=self._recycle,
-                              use_threadlocal=self._use_threadlocal,
-                              reset_on_return=self._reset_on_return,
-                              echo=self.echo,
-                              logging_name=self._orig_logging_name,
-                              _dispatch=self.dispatch)
+        return self.__class__(
+            creator=self._creator,  # type: ignore[attr-defined] # implementation detail
+            recycle=self._recycle,  # type: ignore[attr-defined] # implementation detail
+            use_threadlocal=self._use_threadlocal,  # type: ignore[attr-defined] # implementation detail
+            reset_on_return=self._reset_on_return,  # type: ignore[attr-defined] # implementation detail
+            echo=self.echo,
+            logging_name=self._orig_logging_name,  # type: ignore[attr-defined] # implementation detail
+            _dispatch=self.dispatch,  # type: ignore[attr-defined] # implementation detail
+        )
 
 sqlalchemy_engine: Optional[Any] = None
 def get_sqlalchemy_connection() -> sqlalchemy.engine.base.Connection:
