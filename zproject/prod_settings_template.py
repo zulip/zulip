@@ -409,9 +409,10 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 #S3_REGION = None
 #S3_ENDPOINT_URL = None
 
-# Maximum allowed size of uploaded files, in megabytes.  DO NOT SET
-# ABOVE 80MB.  The file upload implementation doesn't support chunked
-# uploads, so browsers will crash if you try uploading larger files.
+# Maximum allowed size of uploaded files, in megabytes.  This value is
+# capped at 80MB in the nginx configuration, because the file upload
+# implementation doesn't use chunked uploads, and browsers may crash
+# with larger uploads.
 # Set MAX_FILE_UPLOAD_SIZE to 0 to disable file uploads completely
 # (including hiding upload-related options from UI).
 MAX_FILE_UPLOAD_SIZE = 25
