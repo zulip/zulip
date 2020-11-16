@@ -3191,6 +3191,14 @@ class FetchAPIKeyTest(ZulipTestCase):
                                        password=initial_password(self.email)))
         self.assert_json_success(result)
 
+    def test_disallowed_if_2fa_enabled(self) -> None:
+        with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
+            self.create_default_device(self.user_profile)
+            result = self.client_post("/api/v1/fetch_api_key",
+                                      dict(username=self.email,
+                                           password=initial_password(self.email)))
+            self.assert_json_error(result, "This endpoint is forbidden for users with 2FA enabled.", 403)
+
     def test_invalid_email(self) -> None:
         result = self.client_post("/api/v1/fetch_api_key",
                                   dict(username='hamlet',

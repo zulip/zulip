@@ -20,6 +20,7 @@ from django.utils.http import is_safe_url
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
+from django_otp import user_has_device
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -841,6 +842,11 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
                                 password=password,
                                 realm=realm,
                                 return_data=return_data)
+    if settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_has_device(user_profile):
+        # Allowing the use of just username+password to fetch the API key would completely
+        # undermine the point of having 2FA.
+        return json_error(_("This endpoint is forbidden for users with 2FA enabled."),
+                          data={"reason": "forbidden with 2fa"}, status=403)
     if return_data.get("inactive_user"):
         return json_error(_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)

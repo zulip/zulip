@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 # this list without any modification.
 IGNORED_PHRASES = [
     # Proper nouns and acronyms
+    r"2FA",
     r"Android",
     r"API",
     r"APNS",
