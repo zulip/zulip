@@ -212,6 +212,7 @@ def linkified_id(object_id: str, lower: bool=False) -> str:
         'ch': ('Charge', 'charges'),
         'cus': ('Customer', 'customers'),
         'dp': ('Dispute', 'disputes'),
+        'du': ('Dispute', 'disputes'),
         'file': ('File', 'files'),
         'link': ('File link', 'file_links'),
         'pi': ('Payment intent', 'payment_intents'),
