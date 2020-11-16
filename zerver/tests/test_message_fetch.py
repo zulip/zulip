@@ -8,7 +8,7 @@ from django.db import connection
 from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
-from sqlalchemy.sql import and_, column, select, table
+from sqlalchemy.sql import Select, and_, column, select, table
 from sqlalchemy.sql.elements import ClauseElement
 
 from analytics.lib.counts import COUNT_STATS
@@ -54,7 +54,6 @@ from zerver.views.message_fetch import (
     LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperator,
     NarrowBuilder,
-    Query,
     exclude_muting_conditions,
     find_first_unread_anchor,
     get_messages_backend,
@@ -454,7 +453,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='stream', operand='non-web-public-stream')
         builder = NarrowBuilder(self.user_profile, column('id'), self.realm, True)
 
-        def _build_query(term: Dict[str, Any]) -> Query:
+        def _build_query(term: Dict[str, Any]) -> Select:
             return builder.add_term(self.raw_query, term)
 
         self.assertRaises(BadNarrowOperator, _build_query, term)
@@ -467,7 +466,7 @@ class NarrowBuilderTest(ZulipTestCase):
             self.assertEqual(actual_params, params)
         self.assertIn(where_clause, get_sqlalchemy_sql(query))
 
-    def _build_query(self, term: Dict[str, Any]) -> Query:
+    def _build_query(self, term: Dict[str, Any]) -> Select:
         return self.builder.add_term(self.raw_query, term)
 
 class NarrowLibraryTest(ZulipTestCase):

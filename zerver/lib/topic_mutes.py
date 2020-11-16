@@ -2,7 +2,7 @@ import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from django.utils.timezone import now as timezone_now
-from sqlalchemy.sql import Selectable, and_, column, not_, or_
+from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
 
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import topic_match_sa
@@ -74,9 +74,9 @@ def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -
     ).exists()
     return is_muted
 
-def exclude_topic_mutes(conditions: List[Selectable],
+def exclude_topic_mutes(conditions: List[ClauseElement],
                         user_profile: UserProfile,
-                        stream_id: Optional[int]) -> List[Selectable]:
+                        stream_id: Optional[int]) -> List[ClauseElement]:
     query = MutedTopic.objects.filter(
         user_profile=user_profile,
     )
@@ -95,7 +95,7 @@ def exclude_topic_mutes(conditions: List[Selectable],
     if not rows:
         return conditions
 
-    def mute_cond(row: Dict[str, Any]) -> Selectable:
+    def mute_cond(row: Dict[str, Any]) -> ClauseElement:
         recipient_id = row['recipient_id']
         topic_name = row['topic_name']
         stream_cond = column("recipient_id") == recipient_id

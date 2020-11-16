@@ -2,7 +2,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from django.db import connection
 from django.db.models.query import Q, QuerySet
-from sqlalchemy.sql import column, func, literal
+from sqlalchemy import Text
+from sqlalchemy.sql import ColumnElement, column, func, literal
 
 from zerver.lib.request import REQ
 from zerver.models import Message, Stream, UserMessage, UserProfile
@@ -65,14 +66,14 @@ using "subject" in the DB sense, and nothing customer facing.
 DB_TOPIC_NAME = "subject"
 MESSAGE__TOPIC = 'message__subject'
 
-def topic_match_sa(topic_name: str) -> Any:
+def topic_match_sa(topic_name: str) -> "ColumnElement[bool]":
     # _sa is short for SQLAlchemy, which we use mostly for
     # queries that search messages
-    topic_cond = func.upper(column("subject")) == func.upper(literal(topic_name))
+    topic_cond = func.upper(column("subject", Text)) == func.upper(literal(topic_name))
     return topic_cond
 
-def topic_column_sa() -> Any:
-    return column("subject")
+def topic_column_sa() -> "ColumnElement[str]":
+    return column("subject", Text)
 
 def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet:
     topic_name = message.topic_name()
