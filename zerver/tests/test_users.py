@@ -42,7 +42,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.users import access_user_by_id, get_accounts_for_email, user_ids_to_users
+from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
 from zerver.models import (
     CustomProfileField,
     InvalidFakeEmailDomain,
@@ -1072,16 +1072,14 @@ class UserProfileTest(ZulipTestCase):
     def test_get_accounts_for_email(self) -> None:
         reset_emails_in_zulip_realm()
 
-        def check_account_present_in_accounts(
-            user: UserProfile, accounts: List[Dict[str, Optional[str]]]
-        ) -> None:
+        def check_account_present_in_accounts(user: UserProfile, accounts: List[Accounts]) -> None:
             for account in accounts:
                 realm = user.realm
                 if (
                     account["avatar"] == avatar_url(user)
                     and account["full_name"] == user.full_name
                     and account["realm_name"] == realm.name
-                    and account["string_id"] == realm.string_id
+                    and account["realm_id"] == realm.id
                 ):
                     return
             raise AssertionError("Account not found")
@@ -1117,22 +1115,24 @@ class UserProfileTest(ZulipTestCase):
 
     def test_get_source_profile(self) -> None:
         reset_emails_in_zulip_realm()
-        iago = get_source_profile("iago@zulip.com", "zulip")
+        zulip_realm_id = get_realm("zulip").id
+        iago = get_source_profile("iago@zulip.com", zulip_realm_id)
         assert iago is not None
         self.assertEqual(iago.email, "iago@zulip.com")
         self.assertEqual(iago.realm, get_realm("zulip"))
 
-        iago = get_source_profile("IAGO@ZULIP.com", "zulip")
+        iago = get_source_profile("IAGO@ZULIP.com", zulip_realm_id)
         assert iago is not None
         self.assertEqual(iago.email, "iago@zulip.com")
 
-        cordelia = get_source_profile("cordelia@zulip.com", "lear")
+        lear_realm_id = get_realm("lear").id
+        cordelia = get_source_profile("cordelia@zulip.com", lear_realm_id)
         assert cordelia is not None
         self.assertEqual(cordelia.email, "cordelia@zulip.com")
 
-        self.assertIsNone(get_source_profile("iagod@zulip.com", "zulip"))
-        self.assertIsNone(get_source_profile("iago@zulip.com", "ZULIP"))
-        self.assertIsNone(get_source_profile("iago@zulip.com", "lear"))
+        self.assertIsNone(get_source_profile("iagod@zulip.com", zulip_realm_id))
+        self.assertIsNone(get_source_profile("iago@zulip.com", 0))
+        self.assertIsNone(get_source_profile("iago@zulip.com", lear_realm_id))
 
     def test_copy_user_settings(self) -> None:
         iago = self.example_user("iago")

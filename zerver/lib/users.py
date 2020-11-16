@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
+from typing_extensions import TypedDict
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
@@ -269,7 +270,14 @@ def access_user_by_id(
     return target
 
 
-def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
+class Accounts(TypedDict):
+    realm_name: str
+    realm_id: int
+    full_name: str
+    avatar: Optional[str]
+
+
+def get_accounts_for_email(email: str) -> List[Accounts]:
     profiles = (
         UserProfile.objects.select_related("realm")
         .filter(
@@ -280,15 +288,17 @@ def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
         )
         .order_by("date_joined")
     )
-    return [
-        {
-            "realm_name": profile.realm.name,
-            "string_id": profile.realm.string_id,
-            "full_name": profile.full_name,
-            "avatar": avatar_url(profile),
-        }
-        for profile in profiles
-    ]
+    accounts: List[Accounts] = []
+    for profile in profiles:
+        accounts.append(
+            dict(
+                realm_name=profile.realm.name,
+                realm_id=profile.realm.id,
+                full_name=profile.full_name,
+                avatar=avatar_url(profile),
+            )
+        )
+    return accounts
 
 
 def get_api_key(user_profile: UserProfile) -> str:

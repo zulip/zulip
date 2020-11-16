@@ -760,6 +760,10 @@ def get_realm(string_id: str) -> Realm:
     return Realm.objects.get(string_id=string_id)
 
 
+def get_realm_by_id(realm_id: int) -> Realm:
+    return Realm.objects.get(id=realm_id)
+
+
 def name_changes_disabled(realm: Optional[Realm]) -> bool:
     if realm is None:
         return settings.NAME_CHANGES_DISABLED
@@ -2932,9 +2936,9 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
     return list(query)
 
 
-def get_source_profile(email: str, string_id: str) -> Optional[UserProfile]:
+def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
     try:
-        return get_user_by_delivery_email(email, get_realm(string_id))
+        return get_user_by_delivery_email(email, get_realm_by_id(realm_id))
     except (Realm.DoesNotExist, UserProfile.DoesNotExist):
         return None
 

@@ -198,7 +198,7 @@ $(() => {
     function update_full_name_section() {
         if (
             $("#source_realm_select").length &&
-            $("#source_realm_select").find(":selected").val() !== "on"
+            $("#source_realm_select").find(":selected").val() !== ""
         ) {
             $("#full_name_input_section").hide();
             $("#profile_info_section").show();

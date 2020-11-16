@@ -747,7 +747,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email("test"), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 71)
+        self.assertEqual(len(queries), 70)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
@@ -3611,7 +3611,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_get(confirmation_url, subdomain=subdomain)
         self.assertEqual(result.status_code, 200)
         result = self.submit_reg_form_for_user(
-            email, password, source_realm="on", HTTP_HOST=subdomain + ".testserver"
+            email, password, source_realm="", HTTP_HOST=subdomain + ".testserver"
         )
 
         hamlet = get_user(self.example_email("hamlet"), realm)
@@ -3665,7 +3665,10 @@ class UserSignUpTest(InviteUserBase):
         )
 
         result = self.submit_reg_form_for_user(
-            email, password, source_realm="zulip", HTTP_HOST=subdomain + ".testserver"
+            email,
+            password,
+            source_realm=str(hamlet_in_zulip.realm.id),
+            HTTP_HOST=subdomain + ".testserver",
         )
 
         hamlet_in_lear = get_user(email, lear_realm)
@@ -3726,6 +3729,38 @@ class UserSignUpTest(InviteUserBase):
                     ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
                 )
         self.assertEqual(result.status_code, 302)
+
+    def test_signup_using_invalid_subdomain_preserves_state_of_form(self) -> None:
+        """
+        Check that when we give invalid subdomain and submit the registration form
+        all the values in the form are preserved.
+        """
+        realm = get_realm("zulip")
+
+        password = "test"
+        email = self.example_email("iago")
+        realm_name = "Test"
+
+        result = self.client_post("/new/", {"email": email})
+        self.client_get(result["Location"])
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+        result = self.submit_reg_form_for_user(
+            email,
+            password,
+            realm_subdomain=realm.string_id,
+            realm_name=realm_name,
+            source_realm=str(realm.id),
+        )
+        self.assert_in_success_response(
+            [
+                "Subdomain unavailable. Please choose a different one.",
+                "selected >\n                            Zulip Dev\n",
+                'name="password"\n                      value="test"',
+                'value="Test"\n                          name="realm_name"',
+            ],
+            result,
+        )
 
     def test_replace_subdomain_in_confirmation_link(self) -> None:
         """

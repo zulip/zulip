@@ -111,13 +111,13 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
                 <div id="source_realm_select_section" class="input-group m-10 inline-block">
                     <select class="select" name="source_realm" id="source_realm_select">
-                        <option value="on"
-                          {% if "source_realm" in form.data and form.data["source_realm"] == "on" %}selected {% endif %}>
+                        <option value=""
+                          {% if "source_realm" in form.data and form.data["source_realm"] == "" %}selected {% endif %}>
                             {{ _('Don&rsquo;t import settings') }}
                         </option>
                         {% for account in accounts %}
-                        <option value="{{ account.string_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
-                          {% if ("source_realm" in form.data and account.string_id == form.data["source_realm"])
+                        <option value="{{ account.realm_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
+                          {% if ("source_realm" in form.data and account.realm_id == form.data["source_realm"]|int)
                           or ("source_realm" not in form.data and loop.index0 == 0) %} selected {% endif %}>
                             {{ account.realm_name }}
                         </option>
