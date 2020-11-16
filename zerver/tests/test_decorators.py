@@ -1599,6 +1599,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
         request.META['PATH_INFO'] = ''
         request.user = hamlet = self.example_user('hamlet')
         request.user.is_verified = lambda: False
+        request.user._otp_middleware_verify_user_applied = True
         self.login_user(hamlet)
         request.session = self.client.session
         request.get_host = lambda: 'zulip.testserver'
@@ -1614,6 +1615,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             request.META['PATH_INFO'] = ''
             request.user = hamlet = self.example_user('hamlet')
             request.user.is_verified = lambda: False
+            request.user._otp_middleware_verify_user_applied = True
             self.login_user(hamlet)
             request.session = self.client.session
             request.get_host = lambda: 'zulip.testserver'
@@ -1640,6 +1642,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             request.META['PATH_INFO'] = ''
             request.user = hamlet = self.example_user('hamlet')
             request.user.is_verified = lambda: True
+            request.user._otp_middleware_verify_user_applied = True
             self.login_user(hamlet)
             request.session = self.client.session
             request.get_host = lambda: 'zulip.testserver'

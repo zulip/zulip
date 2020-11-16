@@ -6,6 +6,7 @@ from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, 
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
+from django.contrib.auth.models import AnonymousUser
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
 from django.db.models.signals import post_save, pre_delete
@@ -40,7 +41,7 @@ from zerver.lib.response import json_error, json_response_from_error, json_unaut
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
 from zerver.lib.utils import statsd
-from zerver.models import Realm, flush_per_request_caches, get_realm
+from zerver.models import Realm, UserProfile, flush_per_request_caches, get_realm
 
 logger = logging.getLogger('zulip.requests')
 slow_query_logger = logging.getLogger('zulip.slow_queries')
@@ -526,6 +527,11 @@ class OTPMiddleware(BaseOTPMiddleware):
             assert result.__class__ in self.device_classes
 
         return result
+
+    def _verify_user(self, request: HttpRequest, user: Union[UserProfile, AnonymousUser]) -> Union[UserProfile, AnonymousUser]:
+        user = super()._verify_user(request, user)
+        user._otp_middleware_verify_user_applied = True
+        return user
 
 def otp_middleware_device_from_persistent_id_cache_key(persistent_id: str) -> str:
     return f'otp_middleware_device_{persistent_id}'

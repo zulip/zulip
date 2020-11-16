@@ -10,7 +10,6 @@ import django_otp
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as django_login
-from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, QueryDict
@@ -20,7 +19,6 @@ from django.template.response import SimpleTemplateResponse, TemplateResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
-from django_otp import user_has_device
 from two_factor.utils import default_device
 
 from zerver.lib.exceptions import (
@@ -352,6 +350,11 @@ def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optio
     return decorator
 
 def logged_in_and_active(request: HttpRequest) -> bool:
+    if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
+        # Defensive code - this should never happen as long as OTPMiddleware is enabled,
+        # but would be a big security issue if it does, so we should protect against it.
+        assert request.user._otp_middleware_verify_user_applied
+
     if not request.user.is_authenticated:
         return False
     if not request.user.is_active:
@@ -409,11 +412,7 @@ def zulip_login_required(
         logged_in_and_active,
         login_url=login_url,
         redirect_field_name=redirect_field_name,
-    )(
-        zulip_otp_required(
-            redirect_field_name=redirect_field_name, login_url=login_url,
-        )(add_logging_data(function))
-    )
+    )(add_logging_data(function))
 
     if function:
         return actual_decorator(function)
@@ -425,8 +424,7 @@ def web_public_view(
         login_url: str=settings.HOME_NOT_LOGGED_IN,
 ) -> Union[Callable[[ViewFuncT], ViewFuncT], ViewFuncT]:
     """
-    This wrapper adds client info for unauthenticated users but
-    forces authenticated users to go through 2fa.
+    This wrapper adds client info for unauthenticated users
 
     NOTE: This function == zulip_login_required in a production environment as
           web_public_view path has only been enabled for development purposes
@@ -436,8 +434,7 @@ def web_public_view(
         # Coverage disabled because DEVELOPMENT is always true in development.
         return zulip_login_required(view_func, redirect_field_name, login_url)  # nocoverage
 
-    actual_decorator = lambda view_func: zulip_otp_required(
-        redirect_field_name=redirect_field_name, login_url=login_url)(add_logging_data(view_func))
+    actual_decorator = lambda view_func: add_logging_data(view_func)
 
     return actual_decorator(view_func)
 
@@ -770,57 +767,6 @@ def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
             return json_success()
         return view_func(request, *args, **kwargs)
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
-
-def zulip_otp_required(
-    redirect_field_name: str='next',
-    login_url: str=settings.HOME_NOT_LOGGED_IN,
-) -> Callable[[ViewFuncT], ViewFuncT]:
-    """
-    The reason we need to create this function is that the stock
-    otp_required decorator doesn't play well with tests. We cannot
-    enable/disable if_configured parameter during tests since the decorator
-    retains its value due to closure.
-
-    Similar to :func:`~django.contrib.auth.decorators.login_required`, but
-    requires the user to be :term:`verified`. By default, this redirects users
-    to :setting:`OTP_LOGIN_URL`.
-    """
-
-    def test(user: UserProfile) -> bool:
-        """
-        :if_configured: If ``True``, an authenticated user with no confirmed
-        OTP devices will be allowed. Also, non-authenticated users will be
-        allowed as web_public_visitor users. Default is ``False``. If ``False``,
-        2FA will not do any authentication.
-        """
-        if_configured = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
-        if not if_configured:
-            return True
-
-        # User has completed 2FA verification
-        if user.is_verified():
-            return True
-
-        # This request is unauthenticated (logged-out) access; 2FA is
-        # not required or possible.
-        #
-        # TODO: Add a test for 2FA-enabled with web-public views.
-        if not user.is_authenticated:  # nocoverage
-            return True
-
-        # If the user doesn't have 2FA set up, we can't enforce 2FA.
-        if not user_has_device(user):
-            return True
-
-        # User has configured 2FA and is not verified, so the user
-        # fails the test (and we should redirect to the 2FA view).
-        return False
-
-    decorator = django_user_passes_test(test,
-                                        login_url=login_url,
-                                        redirect_field_name=redirect_field_name)
-
-    return decorator
 
 def add_google_analytics_context(context: Dict[str, object]) -> None:
     if settings.GOOGLE_ANALYTICS_ID is not None:  # nocoverage

@@ -314,9 +314,9 @@ class HomeTest(ZulipTestCase):
             self.create_default_device(user_profile)
             self.login_user(user_profile)
             result = self._get_home_page()
-            # User should not log in because otp device is configured but
-            # 2fa login function was not called.
-            self.assertEqual(result.status_code, 302)
+            # Home is web-public in DEVELOPMENT, so users are allowed through without
+            # being 2fa-verified even if it's enabled for the account.
+            self.assertEqual(result.status_code, 200)
 
             self.login_2fa(user_profile)
             result = self._get_home_page()
