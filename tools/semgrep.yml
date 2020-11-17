@@ -133,3 +133,9 @@ rules:
     pattern: eval
     severity: ERROR
     message: "Do not use eval under any circumstances; consider json.loads instead"
+
+  - id: typing-text
+    languages: [python]
+    pattern: typing.Text
+    severity: ERROR
+    message: "Use str instead of typing.Text"
