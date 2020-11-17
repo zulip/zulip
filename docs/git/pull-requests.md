@@ -26,6 +26,18 @@ work from being merged before you're confident in it.
 
 ## Create a pull request
 
+### Step 0: Make sure you're on a feature branch (not `master`)
+
+It is important to [work on a feature
+branch](using.html#work-on-a-feature-branch) when creating a pull
+request.  Your new pull request will be inextricably linked with your
+branch while it is open, so you will need to reserve your branch only
+for changes related to your issue, and avoid introducing extraneous
+changes for other issues or from upstream.
+
+If you are working on a branch named `master`, you need to create and
+switch to a feature branch before proceeding.
+
 ### Step 1: Update your branch with git rebase
 
 The best way to update your branch is with `git fetch` and `git rebase`. Do not
