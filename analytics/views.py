@@ -7,6 +7,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, Type, Union
+from urllib.parse import urlencode
 
 import pytz
 from django.conf import settings
@@ -14,7 +15,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import connection
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
 from django.urls import reverse
@@ -45,8 +46,10 @@ from zerver.decorator import (
     to_utc_datetime,
     zulip_login_required,
 )
+from zerver.forms import check_subdomain_available
 from zerver.lib.actions import (
     do_change_plan_type,
+    do_change_realm_subdomain,
     do_deactivate_realm,
     do_scrub_realm,
     do_send_realm_reactivation_email,
@@ -1108,6 +1111,11 @@ def get_confirmations(types: List[int], object_ids: List[int],
 @require_server_admin
 def support(request: HttpRequest) -> HttpResponse:
     context: Dict[str, Any] = {}
+
+    if "success_message" in request.session:
+        context["success_message"] = request.session["success_message"]
+        del request.session["success_message"]
+
     if settings.BILLING_ENABLED and request.method == "POST":
         # We check that request.POST only has two keys in it: The
         # realm_id and a field to change.
@@ -1132,6 +1140,17 @@ def support(request: HttpRequest) -> HttpResponse:
             attach_discount_to_realm(realm, new_discount)
             msg = f"Discount of {realm.string_id} changed to {new_discount} from {current_discount} "
             context["success_message"] = msg
+        elif request.POST.get("new_subdomain", None) is not None:
+            new_subdomain = request.POST.get("new_subdomain")
+            old_subdomain = realm.string_id
+            try:
+                check_subdomain_available(new_subdomain)
+            except ValidationError as error:
+                context["error_message"] = error.message
+            else:
+                do_change_realm_subdomain(realm, new_subdomain)
+                request.session["success_message"] = f"Subdomain changed from {old_subdomain} to {new_subdomain}"
+                return HttpResponseRedirect(reverse('support') + '?' + urlencode({'q': new_subdomain}))
         elif request.POST.get("status", None) is not None:
             status = request.POST.get("status")
             if status == "active":

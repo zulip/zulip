@@ -18,6 +18,13 @@
     </select>
     <button type="submit" class="button rounded small support-submit-button">Update</button>
 </form>
+<form method="POST">
+    <b>New subdomain</b>:<br>
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <input type="text" name="new_subdomain" required>
+    <button type="submit" class="button rounded small support-submit-button">Update</button>
+</form>
 <form method="POST" class="support-plan-type-form">
     <b>Plan type</b>:<br>
     {{ csrf_input }}
