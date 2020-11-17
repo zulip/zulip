@@ -714,6 +714,31 @@ class TestSupportEndpoint(ZulipTestCase):
             m.assert_called_once_with(lear_realm)
             self.assert_in_success_response(["Realm reactivation email sent to admins of lear"], result)
 
+    def test_change_subdomain(self) -> None:
+        cordelia = self.example_user('cordelia')
+        lear_realm = get_realm('lear')
+        self.login_user(cordelia)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}",
+                                                        "new_subdomain": "new_name"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+        self.login('iago')
+
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "new-name"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/activity/support?q=new-name")
+        realm_id = lear_realm.id
+        lear_realm = get_realm('new-name')
+        self.assertEqual(lear_realm.id, realm_id)
+        self.assertFalse(Realm.objects.filter(string_id='lear').exists())
+
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "new-name"})
+        self.assert_in_success_response(["Subdomain unavailable. Please choose a different one."], result)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "zulip"})
+        self.assert_in_success_response(["Subdomain unavailable. Please choose a different one."], result)
+
     def test_downgrade_realm(self) -> None:
         cordelia = self.example_user('cordelia')
         self.login_user(cordelia)
