@@ -1121,11 +1121,11 @@ def limit_query_to_range(query: Query,
         after_query = after_query.limit(after_limit)
 
     if need_both_sides:
-        query = union_all(before_query.self_group(), after_query.self_group())
+        return union_all(before_query.self_group(), after_query.self_group())
     elif need_before_query:
-        query = before_query
+        return before_query
     elif need_after_query:
-        query = after_query
+        return after_query
     else:
         # If we don't have either a before_query or after_query, it's because
         # some combination of num_before/num_after/anchor are zero or
@@ -1135,9 +1135,7 @@ def limit_query_to_range(query: Query,
         # for something like `message_id = 42` is exactly what we want.  In other
         # cases, which could possibly be buggy API clients, at least we will
         # return at most one row here.
-        query = query.where(id_col == anchor)
-
-    return query
+        return query.where(id_col == anchor)
 
 def post_process_limited_query(rows: List[Any],
                                num_before: int,
