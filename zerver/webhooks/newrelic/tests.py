@@ -7,13 +7,12 @@ class NewRelicHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'newrelic'
 
     def test_open(self) -> None:
-        expected_topic = "New Relic Alert - Test Policy (1234)"
+        expected_topic = "Test policy name (1234)"
         expected_message = """
-Incident **opened** for condition: **Server Down** at <time:2020-11-11 22:32:11.146000>
+[Incident](https://alerts.newrelic.com/accounts/2941966/incidents/1234) **opened** for condition: **Server Down** at <time:2020-11-11 22:32:11.146000>
 ``` quote
-I am a test Violation
+Violation description test.
 ```
-[View incident](https://alerts.newrelic.com/accounts/2941966/incidents/1234)
 """.strip()
 
         self.check_webhook(
@@ -24,9 +23,9 @@ I am a test Violation
         )
 
     def test_closed(self) -> None:
-        expected_topic = "New Relic Alert - Test Policy (1234)"
+        expected_topic = "Test policy name (1234)"
         expected_message = """
-Incident **closed** for condition: **Server Down**
+[Incident](https://alerts.newrelic.com/accounts/2941966/incidents/1234) **closed** for condition: **Server Down**
 """.strip()
 
         self.check_webhook(
@@ -37,9 +36,9 @@ Incident **closed** for condition: **Server Down**
         )
 
     def test_acknowledged(self) -> None:
-        expected_topic = "New Relic Alert - Test Policy (1234)"
+        expected_topic = "Test policy name (1234)"
         expected_message = """
-Incident **acknowledged** for condition: **Server Down**
+[Incident](https://alerts.newrelic.com/accounts/2941966/incidents/1234) **acknowledged** for condition: **Server Down**
 """.strip()
 
         self.check_webhook(
@@ -62,11 +61,11 @@ Incident **acknowledged** for condition: **Server Down**
     def test_missing_fields(self) -> None:
         expected_topic = "Unknown Policy (Unknown ID)"
         expected_message = """
-Incident **opened** for condition: **Unknown condition** at <time:2020-11-11 22:32:11.146000>
+[Incident](https://alerts.newrelic.com) **opened** for condition: **Unknown condition** at <time:2020-11-11 22:32:11.146000>
 ``` quote
 No details.
 ```
-[View incident](https://alerts.newrelic.com)""".strip()
+""".strip()
 
         self.check_webhook(
             "incident_default_fields",

@@ -12,14 +12,13 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 OPEN_TEMPLATE = """
-Incident **opened** for condition: **{condition_name}** at <time:{iso_timestamp}>
+[Incident]({incident_url}) **opened** for condition: **{condition_name}** at <time:{iso_timestamp}>
 ``` quote
 {details}
 ```
-[View incident]({incident_url})
 """.strip()
 
-DEFAULT_TEMPLATE = """Incident **{status}** for condition: **{condition_name}**""".strip()
+DEFAULT_TEMPLATE = """[Incident]({incident_url}) **{status}** for condition: **{condition_name}**""".strip()
 
 TOPIC_TEMPLATE = """{policy_name} ({incident_id})""".strip()
 
