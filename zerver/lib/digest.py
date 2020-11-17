@@ -243,18 +243,13 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
     stream_map = get_stream_map(user_ids)
 
-    long_term_idle_user_ids = [user.id for user in users if user.long_term_idle]
-
-    recently_modified_streams = get_modified_streams(long_term_idle_user_ids, cutoff_date)
+    recently_modified_streams = get_modified_streams(user_ids, cutoff_date)
 
     all_stream_ids = set()
 
     for user in users:
         stream_ids = stream_map[user.id]
-
-        if user.long_term_idle:
-            stream_ids -= recently_modified_streams.get(user.id, set())
-
+        stream_ids -= recently_modified_streams.get(user.id, set())
         all_stream_ids |= stream_ids
 
     # Get all the recent topics for all the users.  This does the heavy

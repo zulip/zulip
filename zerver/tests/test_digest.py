@@ -55,6 +55,9 @@ class TestDigestEmailMessages(ZulipTestCase):
         senders = ['hamlet', 'cordelia',  'iago', 'prospero', 'ZOE']
         self.simulate_stream_conversation('Verona', senders)
 
+        # Remove RealmAuditoLog rows, so we don't exclude polonius.
+        RealmAuditLog.objects.all().delete()
+
         flush_per_request_caches()
         # When this test is run in isolation, one additional query is run which
         # is equivalent to
@@ -65,7 +68,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         with queries_captured() as queries:
             handle_digest_email(othello.id, cutoff)
 
-        self.assert_length(queries, 10)
+        self.assert_length(queries, 11)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -108,6 +111,9 @@ class TestDigestEmailMessages(ZulipTestCase):
         senders = ['hamlet', 'cordelia',  'othello', 'desdemona']
         self.simulate_stream_conversation('web_public_stream', senders)
 
+        # Remove RealmAuditoLog rows, so we don't exclude polonius.
+        RealmAuditLog.objects.all().delete()
+
         flush_per_request_caches()
         # When this test is run in isolation, one additional query is run which
         # is equivalent to
@@ -118,7 +124,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         with queries_captured() as queries:
             handle_digest_email(polonius.id, cutoff)
 
-        self.assert_length(queries, 10)
+        self.assert_length(queries, 11)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -144,10 +150,6 @@ class TestDigestEmailMessages(ZulipTestCase):
                 self.subscribe(digest_user, stream)
 
         RealmAuditLog.objects.all().delete()
-
-        for digest_user in digest_users:
-            digest_user.long_term_idle = True
-            digest_user.save(update_fields=['long_term_idle'])
 
         # Send messages to a stream and unsubscribe - subscribe from that stream
         senders = ['hamlet', 'cordelia',  'iago', 'prospero', 'ZOE']
