@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Text
+from typing import Callable, List, Optional
 
 
 class FormattedException(Exception):
@@ -306,7 +306,7 @@ OPTIONAL_CLOSING_TAGS = [
     'stop',
 ]
 
-def is_self_closing_html_tag(s: Text, tag: Text) -> bool:
+def is_self_closing_html_tag(s: str, tag: str) -> bool:
     if s.endswith('/>'):
         if tag in OPTIONAL_CLOSING_TAGS:
             return True
