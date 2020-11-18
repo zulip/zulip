@@ -70,6 +70,16 @@ class DigestTopic:
             "first_few_messages": first_few_messages,
         }
 
+    def score(
+        self,
+        message_weight: int,
+        sender_weight: int,
+        react_weight: int
+    ) -> int:
+        score = message_weight * self.num_human_messages
+        score += sender_weight * len(self.human_senders)
+        return score
+
 # Digests accumulate 2 types of interesting traffic for a user:
 # 1. New streams
 # 2. Interesting stream traffic, as determined by the longest and most
