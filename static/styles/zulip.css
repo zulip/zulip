@@ -16,7 +16,7 @@ Our sidebars (and anything that top-align
 with them such as floating recipient bars)
 go beneath the header.
 */
-$sidebar_top: calc($header_height + $header_padding_bottom);
+$sidebar_top: -7px;
 
 body,
 html {
@@ -873,7 +873,13 @@ td.pointer {
     }
 }
 
+.column-middle-inner.tab-content {
+    overflow: visible;
+}
+
 .message_header {
+    position: sticky;
+    top: 50px;
     vertical-align: middle;
     text-align: left;
     /* We can overflow-y if the font size gets big */
@@ -882,8 +888,7 @@ td.pointer {
     white-space: nowrap;
     font-weight: 600;
     line-height: 14px;
-    position: relative;
-    z-index: 0;
+    z-index: 5;
 }
 
 .message_list {
@@ -892,8 +897,8 @@ td.pointer {
         margin-bottom: 10px;
     }
 }
-
 .floating_recipient {
+    display: none;
     .recipient_row {
         border-top: 1px solid hsl(0, 0%, 88%);
     }
@@ -1098,7 +1103,7 @@ td.pointer {
        private messages, mentions, and unread messages */
 
     .message-header-contents {
-        background-color: hsla(192, 19%, 75%, 0.2);
+        background-color: hsl(190, 23%, 95%);
         box-shadow: inset 1px 1px 0 hsl(0, 0%, 88%);
     }
 }
