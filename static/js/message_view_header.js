@@ -84,6 +84,11 @@ function bind_title_area_handlers() {
         search.initiate_search();
         e.preventDefault();
         e.stopPropagation();
+
+        $(".search_closed").tooltip({
+            title: "Search (/)",
+            placement: "bottom",
+        });
     });
 
     $("#message_view_header span:nth-last-child(2)").on("click", (e) => {
