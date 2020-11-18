@@ -110,9 +110,7 @@ to mark the appropriate users as administrators.
 
 - This tool doesn't translate Gitter's Markdown format into Zulip
   format Markdown (there are a few corner cases where the syntax is
-  different).  Additionally, Gitter's
-  [issue mentions](https://gitter.zendesk.com/hc/en-us/articles/200176692-Issue-and-Pull-Request-mentions)
-  aren't translated into anything yet.
+  different).  Additionally, Gitter's issue mention syntax isn't translated.
 
 [upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-from-a-git-repository
 [github-noreply]: https://docs.github.com/en/github/setting-up-and-managing-your-github-user-account/setting-your-commit-email-address
