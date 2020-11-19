@@ -1,0 +1,10 @@
+{
+    "incident_acknowledge_url": "https://alerts.newrelic.com/accounts/2941966/incidents/1234/acknowledge",
+    "duration": 5,
+    "incident_id": 1234,
+    "details": "Violation description test.",
+    "policy_name": "Test policy name",
+    "condition_name": "Server Down",
+    "timestamp": 1605133931151,
+    "incident_url": "https://alerts.newrelic.com/accounts/2941966/incidents/1234"
+}
