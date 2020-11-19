@@ -180,7 +180,7 @@ class NarrowBuilder:
         return method(query, operand, maybe_negate)
 
     def by_has(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        if operand not in ['attachment', 'image', 'link']:
+        if operand not in ['attachment', 'image', 'link', 'widget']:
             raise BadNarrowOperator("unknown 'has' operand " + operand)
         col_name = 'has_' + operand
         cond = column(col_name, Boolean)

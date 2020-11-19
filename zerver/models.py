@@ -1786,6 +1786,7 @@ class AbstractMessage(models.Model):
     has_attachment: bool = models.BooleanField(default=False, db_index=True)
     has_image: bool = models.BooleanField(default=False, db_index=True)
     has_link: bool = models.BooleanField(default=False, db_index=True)
+    has_widget: bool = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         abstract = True

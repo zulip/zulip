@@ -1539,6 +1539,13 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 message['message'].has_attachment = True
                 message['message'].save(update_fields=['has_attachment'])
 
+        # Save has_widget
+        for message in messages:
+            widget_content = message.get('widget_content')
+            if widget_content is not None and not message['message'].has_widget:
+                message['message'].has_widget = True
+                message['message'].save(update_fields=["has_widget"])
+
         ums: List[UserMessageLite] = []
         for message in messages:
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
