@@ -178,8 +178,8 @@ exports.load_messages = function (opts) {
     }
     let data = {anchor: opts.anchor, num_before: opts.num_before, num_after: opts.num_after};
 
-    if (opts.msg_list.narrowed && narrow_state.active()) {
-        let operators = narrow_state.public_operators();
+    if ((opts.msg_list.narrowed && narrow_state.active()) || opts.force_fetch) {
+        let operators = opts.msg_list.data.filter.public_operators();
         if (page_params.narrow !== undefined) {
             operators = operators.concat(page_params.narrow);
         }
@@ -458,6 +458,7 @@ exports.initialize = function () {
         num_before: consts.recent_topics_initial_fetch_size,
         num_after: 0,
         msg_list: recent_topics_message_list,
+        force_fetch: true,
     });
 };
 
