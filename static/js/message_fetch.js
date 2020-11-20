@@ -178,15 +178,27 @@ exports.load_messages = function (opts) {
     }
     let data = {anchor: opts.anchor, num_before: opts.num_before, num_after: opts.num_after};
 
-    if ((opts.msg_list.narrowed && narrow_state.active()) || opts.force_fetch) {
+    // This block is a hack; structurally, we want to set
+    //   data.narrow = opts.msg_list.data.filter.public_operators()
+    //
+    // But support for the message_list.all sharing of data with
+    // home_msg_list and the (hacky) page_params.narrow feature
+    // requires a somewhat ugly bundle of conditionals.
+    if (opts.msg_list === home_msg_list) {
+        if (page_params.narrow_stream !== undefined) {
+            data.narrow = JSON.stringify(page_params.narrow);
+        }
+        // Otherwise, we don't pass narrow for home_msg_list; this is
+        // required because it shares its data with all_msg_list, and
+        // so we need the server to send us message history from muted
+        // streams and topics even though home_msg_list's in:home
+        // operators will filter those.
+    } else {
         let operators = opts.msg_list.data.filter.public_operators();
         if (page_params.narrow !== undefined) {
             operators = operators.concat(page_params.narrow);
         }
         data.narrow = JSON.stringify(operators);
-    }
-    if (opts.msg_list === home_msg_list && page_params.narrow_stream !== undefined) {
-        data.narrow = JSON.stringify(page_params.narrow);
     }
 
     let update_loading_indicator = opts.msg_list === current_msg_list;
@@ -458,7 +470,6 @@ exports.initialize = function () {
         num_before: consts.recent_topics_initial_fetch_size,
         num_after: 0,
         msg_list: recent_topics_message_list,
-        force_fetch: true,
     });
 };
 
