@@ -11,7 +11,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView
 from django.contrib.auth.views import logout_then_login as django_logout_then_login
-from django.forms import Form
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import redirect, render
 from django.template.response import SimpleTemplateResponse
@@ -658,23 +657,12 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         )
         return context
 
-    def done(self, form_list: List[Form], **kwargs: Any) -> HttpResponse:
+    def get_success_url(self) -> str:
         """
-        Login the user and redirect to the desired page.
-
         We need to override this function so that we can redirect to
-        realm.uri instead of '/'.
+        realm.uri instead of '/' upon successful authentication attempt.
         """
-        realm_uri = self.get_user().realm.uri
-        # This mock.patch business is an unpleasant hack that we'd
-        # ideally like to remove by instead patching the upstream
-        # module to support better configurability of the
-        # LOGIN_REDIRECT_URL setting.  But until then, it works.  We
-        # import mock.patch here because mock has an expensive import
-        # process involving pbr -> pkgresources (which is really slow).
-        from unittest.mock import patch
-        with patch.object(settings, 'LOGIN_REDIRECT_URL', realm_uri):
-            return super().done(form_list, **kwargs)
+        return self.get_user().realm.uri
 
 @has_request_variables
 def login_page(
