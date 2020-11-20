@@ -97,4 +97,28 @@ exports.get_topics_for_message_ids = function (message_ids) {
     return topics;
 };
 
+exports.fetch_message_with_callback = function (message_id, callback) {
+    const data = {
+        anchor: message_id,
+        num_before: 0,
+        num_after: 0,
+    };
+
+    channel.get({
+        url: "/json/messages",
+        data,
+        idempotent: true,
+        success(data) {
+            let message = data.messages[0];
+            if (message.type === "stream") {
+                message_store.set_message_booleans(message);
+                message_store.add_message_metadata(message);
+                message = message_store.get(message_id);
+                recent_topics.process_messages([message]);
+                callback(message);
+            }
+        },
+    });
+};
+
 window.message_util = exports;

@@ -45,6 +45,7 @@
                     <i class="fa fa-pencil on_hover_topic_edit recipient_bar_icon" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}} role="button" tabindex="0" aria-label="{{t 'Edit' }}"></i>
                     {{/if}}
                 {{/if}}
+                <i class="star fa on_hover_topic_star recipient_bar_icon {{#if is_starred}} fa-star {{else}} fa-star-o empty-star {{/if}}" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" role="button" tabindex="0" title="{{t 'Star this topic' }}"></i>
 
                 <span class="topic_edit">
                     <span class="topic_edit_form" id="{{id}}"></span>

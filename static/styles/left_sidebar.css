@@ -232,6 +232,15 @@ li.active-sub-filter {
         display: inline-block;
         min-width: $left_col_size;
         text-align: center;
+
+        .globe-web-icon {
+            filter: brightness(1) invert(0);
+            opacity: 0.7;
+            width: 12px;
+            position: relative;
+            left: -1px;
+            top: 1px;
+        }
     }
 
     .count {

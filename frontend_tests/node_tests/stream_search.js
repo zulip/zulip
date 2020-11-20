@@ -178,6 +178,7 @@ run_test("expanding_sidebar", () => {
     stream_popover.show_streamlist_sidebar = () => {
         events.push("stream_popover.show_streamlist_sidebar");
     };
+    $("#streamlist-toggle").show();
 
     stream_list.initiate_search();
 

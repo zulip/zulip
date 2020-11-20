@@ -9,11 +9,11 @@ const render_recent_topics_body = require("../templates/recent_topics_table.hbs"
 const people = require("./people");
 
 const topics = new Map(); // Key is stream-id:topic.
+exports.topics = topics;
 let topics_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
-let filters = new Set();
 
 // Use this to set the focused element.
 //
@@ -26,7 +26,7 @@ let filters = new Set();
 // So, we use table as a grid system and
 // track the coordinates of the focus element via
 // `row_focus` and `col_focus`.
-let current_focus_elem;
+let current_focus_elem = "table";
 let row_focus = 0;
 // Start focus on the topic column, so Down+Enter works to visit a topic.
 let col_focus = 1;
@@ -35,7 +35,20 @@ let col_focus = 1;
 // implement wraparound of elements with the right/left keys.  Must be
 // increased when we add new actions, or rethought if we add optional
 // actions that only appear in some rows.
-const MAX_SELECTABLE_COLS = 4;
+const MAX_SELECTABLE_COLS = 5;
+
+// we use localstorage to persist the recent topic filters
+const ls_key = "recent_topic_filters";
+const ls = localstorage();
+
+let filters = new Set();
+exports.save_filters = function () {
+    ls.set(ls_key, Array.from(filters));
+};
+
+exports.load_filters = function () {
+    filters = new Set(ls.get(ls_key));
+};
 
 function set_default_focus() {
     // If at any point we are confused about the currently
@@ -43,6 +56,8 @@ function set_default_focus() {
     current_focus_elem = $("#recent_topics_search");
     current_focus_elem.trigger("focus");
 }
+
+exports.set_default_focus = set_default_focus;
 
 function set_table_focus(row, col) {
     const topic_rows = $("#recent_topics_table table tbody tr");
@@ -53,7 +68,10 @@ function set_table_focus(row, col) {
         return true;
     }
 
-    topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().trigger("focus");
+    // Setting focus after the render is complete doesn't partially hide the row from view.
+    setTimeout(() => {
+        topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().trigger("focus");
+    }, 0);
     current_focus_elem = "table";
     return true;
 }
@@ -185,6 +203,8 @@ function format_topic(topic_data) {
     const senders = all_senders.slice(-MAX_AVATAR);
     const senders_info = people.sender_info_with_small_avatar_urls_for_sender_ids(senders);
 
+    const is_starred = starred_messages.is_topic_starred(stream_id, topic);
+
     return {
         // stream info
         stream_id,
@@ -205,6 +225,7 @@ function format_topic(topic_data) {
         topic_muted,
         participated: topic_data.participated,
         full_last_msg_date_time: full_datetime.date + " " + full_datetime.time,
+        is_starred,
     };
 }
 
@@ -265,6 +286,13 @@ exports.filters_should_hide_topic = function (topic_data) {
         return true;
     }
 
+    if (filters.has("starred")) {
+        if (starred_messages.is_topic_starred(msg.stream_id, msg.topic)) {
+            return false;
+        }
+        return true;
+    }
+
     if (!filters.has("include_muted")) {
         const topic_muted = Boolean(muting.is_topic_muted(msg.stream_id, msg.topic));
         const stream_muted = stream_data.is_muted(msg.stream_id);
@@ -282,7 +310,7 @@ exports.filters_should_hide_topic = function (topic_data) {
 };
 
 exports.inplace_rerender = function (topic_key) {
-    if (!overlays.recent_topics_open()) {
+    if (!exports.is_visible()) {
         return false;
     }
     if (!topics.has(topic_key)) {
@@ -296,6 +324,12 @@ exports.inplace_rerender = function (topic_key) {
     if (exports.filters_should_hide_topic(topic_data)) {
         topic_row.hide();
     } else {
+        // If the topic hasn't been rendered as part of the recent topics
+        // during initial render, it will not be present in the DOM and hence,
+        // we cannot show it. So, we have to rerender all the topics here.
+        if (topic_row.length === 0) {
+            topics_widget.hard_redraw();
+        }
         topic_row.show();
     }
     revive_current_focus();
@@ -338,11 +372,14 @@ exports.set_filter = function (filter) {
     } else {
         filters.add(filter);
     }
+
+    exports.save_filters();
 };
 
 function show_selected_filters() {
     // Add `btn-selected-filter` to the buttons to show
     // which filters are applied.
+    exports.load_filters();
     if (filters.size === 0) {
         $("#recent_topics_filter_buttons")
             .find('[data-filter="all"]')
@@ -361,12 +398,12 @@ exports.update_filters_view = function () {
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
         filter_muted: filters.has("include_muted"),
+        filter_starred: filters.has("starred"),
     });
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
 
     topics_widget.hard_redraw();
-    revive_current_focus();
 };
 
 function stream_sort(a, b) {
@@ -392,7 +429,7 @@ function topic_sort(a, b) {
 }
 
 exports.complete_rerender = function () {
-    if (!overlays.recent_topics_open()) {
+    if (!exports.is_visible()) {
         return;
     }
     // Prepare header
@@ -400,13 +437,14 @@ exports.complete_rerender = function () {
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
         filter_muted: filters.has("include_muted"),
+        filter_starred: filters.has("starred"),
         search_val: $("#recent_topics_search").val() || "",
     });
     $("#recent_topics_table").html(rendered_body);
     show_selected_filters();
 
     // Show topics list
-    const container = $(".recent_topics_table table tbody");
+    const container = $("#recent_topics_table table tbody");
     container.empty();
     const mapped_topic_values = Array.from(exports.get().values()).map((value) => value);
 
@@ -429,18 +467,39 @@ exports.complete_rerender = function () {
         },
         html_selector: get_topic_row,
         simplebar_container: $("#recent_topics_table .table_fix_head"),
+        callback_after_render: revive_current_focus,
     });
-    revive_current_focus();
 };
 
-exports.launch = function () {
-    overlays.open_overlay({
-        name: "recent_topics",
-        overlay: $("#recent_topics_overlay"),
-        on_close() {
-            hashchange.exit_overlay();
-        },
-    });
+exports.is_visible = function () {
+    return $("#recent_topics_view").is(":visible");
+};
+
+exports.show = function () {
+    // Hide selected elements in the left sidebar.
+    top_left_corner.narrow_to_recent_topics();
+    stream_list.handle_narrow_deactivated();
+
+    // Hide "middle-column" which has html for rendering
+    // a messages narrow. We hide it and show recent topics.
+    $("#message_feed_container").hide();
+    $("#recent_topics_view").show();
+    $("#message_view_header_underpadding").hide();
+    $(".header").css("padding-bottom", "0px");
+
+    // Save text in compose box if open.
+    drafts.update_draft();
+    // Close the compose box, this removes
+    // any arbitrary bug for compose box in recent topics.
+    // This is required since, Recent Topics is the only view
+    // with no compose box.
+    compose_actions.cancel();
+
+    narrow.narrow_title = "Recent topics (beta)";
+    narrow_state.set_current_filter(undefined);
+    notifications.redraw_title();
+    message_view_header.render_title_area();
+
     exports.complete_rerender();
 };
 
@@ -448,19 +507,39 @@ function filter_buttons() {
     return $("#recent_filters_group").children();
 }
 
+exports.hide = function () {
+    $("#message_feed_container").show();
+    $("#recent_topics_view").hide();
+    // On firefox (and flaky on other browsers), focus
+    // remains on search box even after it is hidden. We
+    // forcefully blur it so that focus returns to the visible
+    // focused element.
+    $("#recent_topics_search").blur();
+
+    $("#message_view_header_underpadding").show();
+    $(".header").css("padding-bottom", "10px");
+
+    // This solves a bug with message_view_header
+    // being broken sometimes when we narrow
+    // to a filter and back to recent topics
+    // before it completely re-rerenders.
+    message_view_header.render_title_area();
+
+    // Fixes misaligned message_view and hidden
+    // floating_recipient_bar.
+    panels.resize_app();
+
+    // This makes sure user lands on the selected message
+    // and not always at the top of the narrow.
+    navigate.plan_scroll_to_selected();
+};
+
 exports.change_focused_element = function (e, input_key) {
     // Called from hotkeys.js; like all logic in that module,
     // returning true will cause the caller to do
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
     const $elem = $(e.target);
-
-    if ($("#recent_topics_table").find(":focus").length === 0) {
-        // This is a failsafe to return focus back to recent topics overlay,
-        // in case it loses focus due to some unknown reason.
-        set_default_focus();
-        return false;
-    }
 
     if (e.target.id === "recent_topics_search") {
         // Since the search box a text area, we want the browser to handle
@@ -542,6 +621,9 @@ exports.change_focused_element = function (e, input_key) {
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
         switch (input_key) {
+            case "open_recent_topics":
+                set_default_focus();
+                return true;
             case "shift_tab":
             case "vim_left":
             case "left_arrow":
@@ -573,7 +655,7 @@ exports.change_focused_element = function (e, input_key) {
         current_focus_elem.trigger("focus");
     }
 
-    return true;
+    return false;
 };
 
 window.recent_topics = exports;

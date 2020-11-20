@@ -212,7 +212,7 @@ class CommonUtils {
         await this.fill_form(page, "#login_form", params);
         await page.$eval("#login_form", (form) => form.submit());
 
-        await page.waitForSelector("#zhome .message_row", {visible: true});
+        await page.waitForSelector("#recent_topics_filter_buttons", {visible: true});
     }
 
     async log_out(page) {

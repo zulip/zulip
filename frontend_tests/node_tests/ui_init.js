@@ -110,6 +110,7 @@ rewiremock.proxy(() => zrequire("notifications"), {
 zrequire("pm_conversations");
 zrequire("pm_list");
 zrequire("list_cursor");
+zrequire("localstorage");
 zrequire("keydown_util");
 zrequire("stream_sort");
 zrequire("stream_list");
@@ -121,6 +122,7 @@ zrequire("top_left_corner");
 zrequire("starred_messages");
 zrequire("user_status");
 zrequire("user_status_ui");
+zrequire("recent_topics");
 
 const ui_init = rewiremock.proxy(() => zrequire("ui_init"), {
     "../../static/js/emojisets": {

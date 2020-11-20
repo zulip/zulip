@@ -17,6 +17,8 @@ exports.active = function () {
 };
 
 exports.filter = function () {
+    // Both, `All messages` and
+    // `Recent topics` have `current_filter=undefined`
     return current_filter;
 };
 

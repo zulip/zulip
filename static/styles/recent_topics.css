@@ -1,63 +1,23 @@
 .recent_topics_container {
-    position: relative;
-    height: 95%;
-    width: 70%;
-    max-width: 1200px;
-    max-height: 1000px;
     padding: 0;
     border-radius: 4px;
     background-color: hsl(0, 0%, 100%);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    max-height: 100vh;
 
-    @media (max-width: 1130px) {
-        max-width: 90%;
-    }
-
-    @media (max-width: 700px) {
-        height: 95%;
-        max-width: none;
-        width: 90%;
-    }
-
-    .recent_topics_header {
-        padding-top: 4px;
-        padding-bottom: 8px;
-        text-align: center;
-        border-bottom: 1px solid hsl(0, 0%, 87%);
-
-        h1 {
-            margin: 0;
-            font-size: 1.1em;
-            text-transform: uppercase;
-        }
-
-        .exit {
-            font-weight: 400;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: hsl(0, 0%, 67%);
-            cursor: pointer;
-
-            .exit-sign {
-                position: relative;
-                top: 3px;
-                margin-left: 3px;
-                font-size: 1.5rem;
-                font-weight: 600;
-                cursor: pointer;
-            }
-        }
-    }
-
-    .recent_topics_table {
-        margin: 0;
-        padding: 15px;
+    #recent_topics_table {
+        max-width: 100%;
+        padding-top: 12px;
         overflow: hidden !important;
         display: flex;
         flex-direction: column;
+        border-style: solid;
+        border-color: hsl(0, 0%, 88%);
+        border-width: 0 1px;
+        border-radius: 0;
+        margin-top: 40px;
 
         td {
             vertical-align: middle;
@@ -102,10 +62,11 @@
         }
 
         .table_fix_head {
-            padding: 10px;
-            padding-top: 0 !important;
-            overflow-y: auto;
-            max-height: 89%;
+            padding: 0 !important;
+            /* 100px = space occupied by `recent_topics_filter_buttons`( ~49px)
+                     + give user some extra space at the bottom so that last
+                       topic row is clearly visible. */
+            max-height: calc(100vh - 100px);
         }
 
         .table_fix_head table {
@@ -133,6 +94,10 @@
         .clear_search_button {
             /* Overrides app_components.css property. */
             padding-top: 6px !important;
+        }
+
+        #recent_topics_search_clear {
+            margin-top: -10px !important;
         }
 
         .btn-recent-filters {
@@ -226,11 +191,15 @@
         }
 
         tr {
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(100, 11%, 96%);
 
             &:hover {
                 background-color: hsl(210, 100%, 97%);
             }
+        }
+
+        .unread_topic {
+            background-color: hsl(0, 0%, 100%);
         }
 
         .last_msg_time {
@@ -245,7 +214,7 @@
             border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 1;
 
             &.active::after,
             &[data-sort]:hover::after {
@@ -283,6 +252,14 @@
             white-space: nowrap;
         }
 
+        thead .last_msg_time_header {
+            /* The responsive table of bootstrap
+               somehow ignores the width of ::after
+               element. This ensures it is always visible.
+            */
+            min-width: 93px;
+        }
+
         @media (max-width: 750px) {
             /* Hide participants and last message time
                on smaller screens. This ensures user always
@@ -298,4 +275,9 @@
             }
         }
     }
+}
+
+#recent_topics_view {
+    display: none;
+    position: relative;
 }

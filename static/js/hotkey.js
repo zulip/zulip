@@ -94,6 +94,7 @@ const keypress_mappings = {
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "narrow_by_topic", message_view_only: true}, //'S'
     86: {name: "view_selected_stream", message_view_only: false}, //'V'
+    97: {name: "all_messages", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
     100: {name: "open_drafts", message_view_only: true}, // 'd'
     101: {name: "edit_message", message_view_only: true}, // 'e'
@@ -268,7 +269,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    hashchange.go_to_location("");
+    hashchange.go_to_location("#");
     return true;
 };
 
@@ -472,7 +473,15 @@ exports.process_hotkey = function (e, hotkey) {
         case "vim_right":
         case "tab":
         case "shift_tab":
-            if (overlays.recent_topics_open()) {
+        case "open_recent_topics":
+            if (
+                ["#recent_topics", "#", ""].includes(window.location.hash) &&
+                !popovers.any_active() &&
+                !overlays.is_active() &&
+                !$("#searchbox_form #search_query").is(":focus") &&
+                !$(".user-list-filter").is(":focus") &&
+                !$(".stream-list-filter").is(":focus")
+            ) {
                 return recent_topics.change_focused_element(e, event_name);
             }
     }
@@ -516,10 +525,6 @@ exports.process_hotkey = function (e, hotkey) {
         }
         if (event_name === "open_drafts" && overlays.drafts_open()) {
             overlays.close_overlay("drafts");
-            return true;
-        }
-        if (event_name === "open_recent_topics" && overlays.recent_topics_open()) {
-            overlays.close_overlay("recent_topics");
             return true;
         }
         return false;
@@ -702,12 +707,6 @@ exports.process_hotkey = function (e, hotkey) {
 
     // Shortcuts that don't require a message
     switch (event_name) {
-        case "compose": // 'c': compose
-            compose_actions.start("stream", {trigger: "compose_hotkey"});
-            return true;
-        case "compose_private_message":
-            compose_actions.start("private", {trigger: "compose_hotkey"});
-            return true;
         case "narrow_private":
             return do_narrow_action((target, opts) => {
                 narrow.by("is", "private", opts);
@@ -740,6 +739,29 @@ exports.process_hotkey = function (e, hotkey) {
         case "p_key":
             narrow.narrow_to_next_pm_string();
             return true;
+        case "open_recent_topics":
+            hashchange.go_to_location("#");
+            return true;
+        case "all_messages":
+            hashchange.go_to_location("#all_messages");
+            return true;
+    }
+
+    // We don't want hotkeys below this to work when recent topics is
+    // open. These involve compose box hotkeys and hotkeys that can only
+    // be done performed on a message.
+    if (recent_topics.is_visible()) {
+        return true;
+    }
+
+    // Compose box hotkeys
+    switch (event_name) {
+        case "compose": // 'c': compose
+            compose_actions.start("stream", {trigger: "compose_hotkey"});
+            return true;
+        case "compose_private_message":
+            compose_actions.start("private", {trigger: "compose_hotkey"});
+            return true;
         case "open_drafts":
             drafts.launch();
             return true;
@@ -756,9 +778,6 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case "copy_with_c":
             copy_and_paste.copy_handler();
-            return true;
-        case "open_recent_topics":
-            hashchange.go_to_location("recent_topics");
             return true;
     }
 

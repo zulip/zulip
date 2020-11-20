@@ -101,6 +101,7 @@ alert_words.process_message = noop;
 zrequire("recent_senders");
 zrequire("unread");
 zrequire("stream_topic_history");
+zrequire("localstorage");
 zrequire("recent_topics");
 zrequire("overlays");
 
@@ -418,6 +419,7 @@ run_test("insert_message", (override) => {
     override("pm_list.update_private_messages", noop);
 
     const helper = test_helper();
+    set_global((recent_topics.is_visible = () => false));
 
     const new_message = {
         sender_id: isaac.user_id,

@@ -410,6 +410,13 @@ exports.initialize = function () {
 
     // RECENT TOPICS
 
+    $("body").on("click", ".on_hover_topic_star", (e) => {
+        e.stopPropagation();
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
+        const topic = $(e.currentTarget).attr("data-topic-name");
+        starred_messages.toggle_star_topic(stream_id, topic);
+    });
+
     $("body").on("click", "#recent_topics_search", (e) => {
         e.stopPropagation();
         recent_topics.change_focused_element(e, "click");

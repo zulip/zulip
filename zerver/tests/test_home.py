@@ -38,6 +38,7 @@ class HomeTest(ZulipTestCase):
     # Keep this list sorted!!!
     expected_page_params_keys = [
         "alert_words",
+        "all_starred_messages",
         "available_notification_sounds",
         "avatar_source",
         "avatar_url",

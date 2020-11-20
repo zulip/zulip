@@ -9,14 +9,18 @@ set_global("location", {
 set_global("to_$", () => window_stub);
 
 const people = zrequire("people");
+zrequire("localstorage");
 zrequire("hash_util");
 zrequire("hashchange");
 zrequire("stream_data");
 zrequire("navigate");
+zrequire("recent_topics");
+recent_topics.show = () => {};
 
 set_global("search", {
     update_button_visibility: () => {},
 });
+set_global((recent_topics.is_visible = () => false));
 set_global("document", "document-stub");
 set_global("history", {});
 
@@ -30,6 +34,9 @@ set_global("narrow", {});
 set_global("overlays", {});
 set_global("settings", {});
 set_global("subs", {});
+set_global("top_left_corner", {
+    handle_narrow_deactivated: () => {},
+});
 set_global("ui_util", {});
 
 run_test("operators_round_trip", () => {
@@ -154,7 +161,7 @@ function test_helper() {
 run_test("hash_interactions", () => {
     const helper = test_helper();
 
-    window.location.hash = "#";
+    window.location.hash = "#all_messages";
 
     helper.clear_events();
     hashchange.initialize();

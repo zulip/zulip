@@ -78,7 +78,15 @@ run_test("narrowing", () => {
     assert(!$(".top_left_mentions").hasClass("active-filter"));
     assert(!$(".top_left_private_messages").hasClass("active-filter"));
     assert(!$(".top_left_starred_messages").hasClass("active-filter"));
+    assert(!$(".top_left_recent_topics").hasClass("active-filter"));
     assert(pm_closed);
+
+    top_left_corner.narrow_to_recent_topics();
+    assert(!$(".top_left_all_messages").hasClass("active-filter"));
+    assert(!$(".top_left_mentions").hasClass("active-filter"));
+    assert(!$(".top_left_private_messages").hasClass("active-filter"));
+    assert(!$(".top_left_starred_messages").hasClass("active-filter"));
+    assert($(".top_left_recent_topics").hasClass("active-filter"));
 });
 
 run_test("update_count_in_dom", () => {

@@ -27,6 +27,9 @@
                     <div class="recent_topics_focusable">
                         <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}"></i>
                     </div>
+                    <div class="recent_topics_focusable">
+                        <i class="star fa on_hover_topic_star recipient_bar_icon {{#if is_starred}} fa-star {{else}} fa-star-o empty-star {{/if}}" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" role="button" tabindex="0" title="{{t 'Star this topic' }}"></i>
+                    </div>
                 </div>
             </div>
         </div>

@@ -146,6 +146,10 @@ exports.activate = function (raw_operators, opts) {
          or rerendering due to server-side changes.
     */
 
+    if (recent_topics.is_visible()) {
+        recent_topics.hide();
+    }
+
     const start_time = new Date();
     const was_narrowed_already = narrow_state.active();
     // most users aren't going to send a bunch of a out-of-narrow messages
@@ -765,9 +769,9 @@ function handle_post_narrow_deactivate_processes() {
     message_scroll.update_top_of_narrow_notices(home_msg_list);
 }
 
-exports.deactivate = function () {
+exports.deactivate = function (coming_from_recent_topics) {
     // NOTE: Never call this function independently,
-    // always use hashchange.go_to_location("") to
+    // always use hashchange.go_to_location("#all_messages") to
     // activate All message narrow.
     /*
       Switches current_msg_list from narrowed_msg_list to
@@ -781,8 +785,11 @@ exports.deactivate = function () {
       message_list_data structure caching system that happens to have
       home_msg_list in it.
      */
+    coming_from_recent_topics = coming_from_recent_topics || false;
     search.clear_search_form();
-    if (narrow_state.filter() === undefined) {
+    // Both All messages and Recent Topics have `undefiend` filter.
+    // Return if already in the All message narrow.
+    if (narrow_state.filter() === undefined && !coming_from_recent_topics) {
         return;
     }
     unnarrow_times = {start_time: new Date()};
