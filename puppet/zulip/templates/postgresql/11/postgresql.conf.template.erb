@@ -698,7 +698,7 @@ listen_addresses = <%= @listen_addresses %>
 wal_level = hot_standby
 max_wal_senders = 5
 archive_mode = on
-archive_command = '/usr/local/bin/env-wal-g wal-push %p'
+archive_command = '/usr/bin/timeout 10m /usr/local/bin/env-wal-g wal-push %p'
 
 # Replica settings (ignored on primary)
 hot_standby = on
