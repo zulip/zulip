@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from zerver.lib.message import SendMessageRequest
 from zerver.models import SubMessage
@@ -36,12 +36,45 @@ def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) ->
             option = re.sub(r"(\s*[-*]?\s*)", "", line.strip(), 1)
             if len(option) > 0:
                 options.append(option)
-        extra_data = {
+        poll_extra_data = {
             "question": question,
             "options": options,
         }
-        return extra_data
-    return None
+        return poll_extra_data
+    if widget_type == "todo":
+        todos: List[Dict[str, object]] = []
+        lines = content.splitlines()
+        for line in lines:
+            if len(line) > 0:
+                # If someone is using the list syntax, we remove it
+                # before adding an option.
+                stripped_line = re.sub(r"(\s*[-*]?\s*)", "", line.strip(), 1)
+                completed = False
+                if stripped_line.startswith("[x] "):
+                    stripped_line = stripped_line[4:]  # strip the "[x] "
+                    completed = True
+                if stripped_line.startswith("[ ] "):
+                    stripped_line = stripped_line[4:]  # strip the "[ ] "
+                    completed = False
+                if stripped_line.startswith("[] "):
+                    stripped_line = stripped_line[3:]  # strip the "[] "
+                    completed = False
+                todo_split = stripped_line.split(" - ", 1)
+                task = todo_split[0].strip()
+                if task:
+                    description = ""
+                    if len(todo_split) > 1:
+                        description = todo_split[1].strip()
+                    todo = {
+                        "task": task,
+                        "description": description,
+                        "completed": completed,
+                    }
+                    todos.append(todo.copy())
+        todo_extra_data = {
+            "todos": todos,
+        }
+        return todo_extra_data
 
 
 def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
