@@ -1495,7 +1495,7 @@ def build_message_send_dict(message_dict: Dict[str, Any],
     if message_dict['message'].mentions_wildcard:
         message_dict['wildcard_mention_user_ids'] = info['wildcard_mention_user_ids']
     else:
-        message_dict['wildcard_mention_user_ids'] = []
+        message_dict['wildcard_mention_user_ids'] = set()
 
     '''
     Once we have the actual list of mentioned ids from message
