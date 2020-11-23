@@ -55,6 +55,10 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
     assignee = None
     if pull_request.get('assignee'):
         assignee = pull_request['assignee']['login']
+    description = None
+    changes = payload.get('changes', {})
+    if 'body' in changes or action == 'opened':
+        description = pull_request['body']
 
     return get_pull_request_event_message(
         get_sender_name(payload),
@@ -62,7 +66,7 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
         pull_request['html_url'],
         target_branch=pull_request['head']['ref'],
         base_branch=pull_request['base']['ref'],
-        message=pull_request['body'],
+        message=description,
         assignee=assignee,
         number=pull_request['number'],
         title=pull_request['title'] if include_title else None,
