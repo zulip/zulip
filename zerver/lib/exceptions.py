@@ -308,3 +308,7 @@ class InvalidSubdomainError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Invalid subdomain")
+
+class ZephyrMessageAlreadySentException(Exception):
+    def __init__(self, message_id: int) -> None:
+        self.message_id = message_id

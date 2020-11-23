@@ -88,6 +88,7 @@ from zerver.lib.exceptions import (
     MarkdownRenderingException,
     StreamDoesNotExistError,
     StreamWithIDDoesNotExistError,
+    ZephyrMessageAlreadySentException,
 )
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
@@ -1521,16 +1522,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
     # Filter out messages which didn't pass internal_prep_message properly
     messages = [message for message in messages_maybe_none if message is not None]
 
-    # Filter out zephyr mirror anomalies where the message was already sent
-    already_sent_ids: List[int] = []
-    new_messages: List[MutableMapping[str, Any]] = []
-    for message in messages:
-        if isinstance(message['message'], int):
-            already_sent_ids.append(message['message'])
-        else:
-            new_messages.append(message)
-    messages = new_messages
-
     # Save the message receipts in the database
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
     with transaction.atomic():
@@ -1691,11 +1682,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                     },
                 )
 
-    # Note that this does not preserve the order of message ids
-    # returned.  In practice, this shouldn't matter, as we only
-    # mirror single zephyr messages at a time and don't otherwise
-    # intermingle sending zephyr messages with other messages.
-    return already_sent_ids + [message['message'].id for message in messages]
+    return [message['message'].id for message in messages]
 
 class UserMessageLite:
     '''
@@ -2172,11 +2159,13 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: s
         message_type_name,
         message_to,
         topic_name)
-
-    message = check_message(sender, client, addressee,
-                            message_content, realm, forged, forged_timestamp,
-                            forwarder_user_profile, local_id, sender_queue_id,
-                            widget_content)
+    try:
+        message = check_message(sender, client, addressee,
+                                message_content, realm, forged, forged_timestamp,
+                                forwarder_user_profile, local_id, sender_queue_id,
+                                widget_content)
+    except ZephyrMessageAlreadySentException as e:
+        return e.message_id
     return do_send_messages([message])[0]
 
 def check_schedule_message(sender: UserProfile, client: Client,
@@ -2433,7 +2422,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
     if client.name == "zephyr_mirror":
         id = already_sent_mirrored_message_id(message)
         if id is not None:
-            return {'message': id}
+            raise ZephyrMessageAlreadySentException(id)
 
     if widget_content is not None:
         try:
