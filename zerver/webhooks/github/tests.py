@@ -251,6 +251,14 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`."
         self.check_webhook("pull_request__edited", TOPIC_PR, expected_message)
 
+    def test_pull_request_edited_with_body_change(self) -> None:
+        expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1) from `issue-#1` to `main`:\n\n~~~ quote\nPR EDITED\n~~~"
+        self.check_webhook("pull_request__edited_with_body_change", TOPIC_PR, expected_message)
+
+    def test_pull_request_synchronized_with_body(self) -> None:
+        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`."
+        self.check_webhook("pull_request__synchronized_with_body", TOPIC_PR, expected_message)
+
     def test_pull_request_assigned_msg(self) -> None:
         expected_message = "baxterthehacker assigned [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) to baxterthehacker."
         self.check_webhook("pull_request__assigned", TOPIC_PR, expected_message)
