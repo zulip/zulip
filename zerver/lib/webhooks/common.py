@@ -1,4 +1,5 @@
 import importlib
+from datetime import datetime
 from typing import Any, Callable, Dict, Optional, Union
 from urllib.parse import unquote
 
@@ -158,3 +159,16 @@ def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict
             event_type = filename
         return {http_header_key: event_type}
     return fixture_to_headers
+
+def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
+    """If an integration requires time input in unix milliseconds, this helper
+    checks to ensure correct type and will catch any errors related to type or
+    value and raise a JsonableError.
+    Returns a datetime representing the time."""
+    try:
+        # timestamps are in milliseconds so divide by 1000
+        return datetime.fromtimestamp((milliseconds) / 1000)
+    except ValueError:
+        raise JsonableError(_("The {} webhook expects time in milleseconds.").format(webhook))
+    except TypeError:
+        raise JsonableError(_("The {} webhook expects time in milleseconds.").format(webhook))
