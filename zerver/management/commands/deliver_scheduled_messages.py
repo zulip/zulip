@@ -1,7 +1,7 @@
 import logging
 import time
 from datetime import timedelta
-from typing import Any, Dict
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.actions import build_message_send_dict, do_send_messages
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import sleep_forever
+from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, ScheduledMessage, get_user_by_delivery_email
 
 ## Setup ##
@@ -28,7 +29,7 @@ on all but one machine to make the command have no effect.)
 Usage: ./manage.py deliver_scheduled_messages
 """
 
-    def construct_message(self, scheduled_message: ScheduledMessage) -> Dict[str, Any]:
+    def construct_message(self, scheduled_message: ScheduledMessage) -> SendMessageRequest:
         message = Message()
         original_sender = scheduled_message.sender
         message.content = scheduled_message.content

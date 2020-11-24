@@ -1790,7 +1790,7 @@ class InternalPrepTest(ZulipTestCase):
             recipient_user=recipient_user,
             content=content)
         assert result is not None
-        message = result['message']
+        message = result.message
         self.assertIn('message was too long', message.content)
 
         # Simulate sending a message to somebody not in the
@@ -2000,7 +2000,7 @@ class CheckMessageTest(ZulipTestCase):
         message_content = 'whatever'
         addressee = Addressee.for_stream_name(stream_name, topic_name)
         ret = check_message(sender, client, addressee, message_content)
-        self.assertEqual(ret['message'].sender.id, sender.id)
+        self.assertEqual(ret.message.sender.id, sender.id)
 
     def test_guest_user_can_send_message(self) -> None:
         # Guest users can write to web_public streams.
@@ -2019,7 +2019,7 @@ class CheckMessageTest(ZulipTestCase):
         message_content = 'whatever'
         addressee = Addressee.for_stream_name(rome_stream.name, topic_name)
         ret = check_message(sender, client, addressee, message_content)
-        self.assertEqual(ret['message'].sender.id, sender.id)
+        self.assertEqual(ret.message.sender.id, sender.id)
 
     def test_bot_pm_feature(self) -> None:
         """We send a PM to a bot's owner if their bot sends a message to
@@ -2069,7 +2069,7 @@ class CheckMessageTest(ZulipTestCase):
 
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 2)
-        self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
+        self.assertEqual(ret.message.sender.email, 'othello-bot@zulip.com')
         self.assertIn("does not have any subscribers", most_recent_message(parent).content)
 
     def test_bot_pm_error_handling(self) -> None:
