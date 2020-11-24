@@ -47,14 +47,14 @@ def do_widget_post_save_actions(message: MutableMapping[str, Any]) -> None:
     This code works with the webapp; mobile and other
     clients should also start supporting this soon.
     '''
-    content = message['message'].content
+    message_content = message['message'].content
     sender_id = message['message'].sender_id
     message_id = message['message'].id
 
     widget_type = None
     extra_data = None
 
-    widget_type, extra_data = get_widget_data(content)
+    widget_type, extra_data = get_widget_data(message_content)
     widget_content = message.get('widget_content')
     if widget_content is not None:
         # Note that we validate this data in check_message,
