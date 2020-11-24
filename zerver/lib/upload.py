@@ -279,6 +279,11 @@ def get_bucket(bucket_name: str, session: Optional[Session]=None) -> ServiceReso
                               endpoint_url=settings.S3_ENDPOINT_URL).Bucket(bucket_name)
     return bucket
 
+def get_content_disposition(content_type: str) -> str:
+    if content_type not in INLINE_MIME_TYPES:
+        return "attachment"
+    return ""
+
 def upload_image_to_s3(
         # See https://github.com/python/typeshed/issues/2706
         bucket: ServiceResource,
@@ -291,15 +296,10 @@ def upload_image_to_s3(
         "user_profile_id": str(user_profile.id),
         "realm_id": str(user_profile.realm_id),
     }
-
-    content_disposition = ''
     if content_type is None:
-        content_type = ''
-    if content_type not in INLINE_MIME_TYPES:
-        content_disposition = "attachment"
-
+        content_type = ""
     key.put(Body=contents, Metadata=metadata, ContentType=content_type,
-            ContentDisposition=content_disposition)
+            ContentDisposition=get_content_disposition(content_type))
 
 def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
     upload_quota = realm.upload_quota_bytes()
