@@ -9,7 +9,7 @@ class NewRelicHookTests(WebhookTestCase):
     def test_open(self) -> None:
         expected_topic = "Test policy name (1234)"
         expected_message = """
-[Incident](https://alerts.newrelic.com/accounts/2941966/incidents/1234) **opened** for condition: **Server Down** at <time:2020-11-11 22:32:11.146000>
+[Incident](https://alerts.newrelic.com/accounts/2941966/incidents/1234) **opened** for condition: **Server Down** at <time:2020-11-11 22:32:11.151000>
 ``` quote
 Violation description test.
 ```
@@ -61,7 +61,7 @@ Violation description test.
     def test_missing_fields(self) -> None:
         expected_topic = "Unknown Policy (Unknown ID)"
         expected_message = """
-[Incident](https://alerts.newrelic.com) **opened** for condition: **Unknown condition** at <time:2020-11-11 22:32:11.146000>
+[Incident](https://alerts.newrelic.com) **opened** for condition: **Unknown condition** at <time:2020-11-11 22:32:11.151000>
 ``` quote
 No details.
 ```
@@ -102,7 +102,7 @@ No details.
                 "",
                 content_type="application/json",
             )
-        self.assertIn("The newrelic webhook expects timestamp and duration in milliseconds", e.exception.args[0])
+        self.assertIn("The newrelic webhook expects time in milleseconds.", e.exception.args[0])
 
     def test_time_too_large(self) -> None:
         with self.assertRaises(AssertionError) as e:
@@ -112,4 +112,4 @@ No details.
                 "",
                 content_type="application/json",
             )
-        self.assertIn("The newrelic webhook expects timestamp and duration in milliseconds", e.exception.args[0])
+        self.assertIn("The newrelic webhook expects time in milleseconds.", e.exception.args[0])
