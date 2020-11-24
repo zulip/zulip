@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from datetime import datetime
 from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
@@ -8,7 +7,7 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, unix_milliseconds_to_timestamp
 from zerver.models import UserProfile
 
 OPEN_TEMPLATE = """
@@ -43,19 +42,7 @@ def api_newrelic_webhook(
     if unix_time is None:
         return json_error(_("The newrelic webhook requires timestamp in milliseconds"))
 
-    duration = payload.get('duration', None)
-    if duration is None:
-        return json_error(_("The newrelic webhook requires duration in milliseconds"))
-
-    try:
-        # Timestamp - duration to get time alert started
-        # timestamps from NewRelic are in ms
-        iso_timestamp = datetime.fromtimestamp((unix_time - duration) / 1000)
-        info['iso_timestamp'] = iso_timestamp
-    except ValueError:
-        return json_error(_("The newrelic webhook expects timestamp and duration in milliseconds"))
-    except TypeError:
-        return json_error(_("The newrelic webhook expects timestamp and duration in milliseconds"))
+    info['iso_timestamp'] = unix_milliseconds_to_timestamp(unix_time, "newrelic")
 
     # These are the three promised current_state values
     if 'open' in info['status']:
