@@ -353,6 +353,7 @@ class MessageDict:
         row is a row from a .values() call, and it needs to have
         all the relevant fields populated
         '''
+
         return MessageDict.build_message_dict(
             message_id = row['id'],
             last_edit_time = row['last_edit_time'],

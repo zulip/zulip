@@ -1604,7 +1604,7 @@ class Stream(models.Model):
         return [row.to_dict() for row in query]
 
     def to_dict(self) -> Dict[str, Any]:
-        result = {}
+        result: Dict[str, Any] = {}
         for field_name in self.API_FIELDS:
             if field_name == "id":
                 result['stream_id'] = self.id
@@ -1613,7 +1613,8 @@ class Stream(models.Model):
                 result['date_created'] = datetime_to_timestamp(self.date_created)
                 continue
             result[field_name] = getattr(self, field_name)
-        result['is_announcement_only'] = self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
+        temp_dict = {"is_announcement_only": self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS, "is_deprecated": True}
+        result["is_announcement_only"] = temp_dict
         return result
 
 post_save.connect(flush_stream, sender=Stream)

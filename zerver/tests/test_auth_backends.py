@@ -3382,6 +3382,7 @@ class FetchAuthBackends(ZulipTestCase):
         def check_result(result: HttpResponse, extra_fields: Sequence[Tuple[str, Validator[object]]] = []) -> None:
             authentication_methods_list = [
                 ('password', check_bool),
+                ('deprecated', check_bool)
             ]
             for backend_name_with_case in AUTH_BACKEND_NAME_MAP:
                 authentication_methods_list.append((backend_name_with_case.lower(), check_bool))

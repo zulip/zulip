@@ -910,6 +910,7 @@ def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
         else:
             realm = None
     result = {
+        "deprecated": True,  # This authentication method is deprecated
         "password": password_auth_enabled(realm),
     }
     for auth_backend_name in AUTH_BACKEND_NAME_MAP:

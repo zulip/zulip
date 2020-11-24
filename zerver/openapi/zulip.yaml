@@ -4447,7 +4447,7 @@ paths:
                           versions do not return this field.
                         example: "2019-10-20T07:50:53.728864+00:00"
                       max_message_id:
-                        type: integer
+                        type: object
                         deprecated: true
                         description: |
                           The integer ID of the last message received by your account.
@@ -5990,7 +5990,7 @@ paths:
                           $ref: "#/components/schemas/Hotspot"
                       max_message_id:
                         type: integer
-                        deprecated: true
+                        # deprecated: true
                         description: |
                           Present if `message` is present in `fetch_event_types`.
 
@@ -7536,6 +7536,10 @@ paths:
                           **Changes**: Deprecated in Zulip 2.1, in favor of the more expressive
                           `external_authentication_methods`.
                         properties:
+                          deprecated:
+                            description: |
+                              Is this object (authentication_methods) deprecated
+                            type: boolean
                           password:
                             description: |
                               Whether the user can authenticate using password.
@@ -8723,7 +8727,7 @@ components:
         name:
           type: string
           description: |
-            Name of the uploaded file.
+            Name of the ©uploaded file.
         path_id:
           type: string
           description: |
@@ -8876,7 +8880,7 @@ components:
 
             Null is used for streams with no message history.
         is_announcement_only:
-          type: boolean
+          type: object
           deprecated: true
           description: |
             Whether the given stream is announcement only or not.

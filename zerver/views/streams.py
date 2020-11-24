@@ -245,7 +245,6 @@ def update_stream_backend(
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
     (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
-
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
@@ -648,7 +647,7 @@ def get_streams_backend(
         include_default: bool=REQ(validator=check_bool, default=False),
         include_owner_subscribed: bool=REQ(validator=check_bool, default=False),
 ) -> HttpResponse:
-
+    print('testing hello')
     streams = do_get_streams(user_profile, include_public=include_public,
                              include_web_public=include_web_public,
                              include_subscribed=include_subscribed,

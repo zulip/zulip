@@ -5017,13 +5017,14 @@ def build_stream_dict_for_sub(
 
     # Backwards-compatibility for clients that haven't been
     # updated for the in_home_view => is_muted API migration.
-    result["in_home_view"] = not result["is_muted"]
+    result["in_home_view"] = {'in_home_view': not result["is_muted"], 'is_deprecated': True}
 
     # Backwards-compatibility for clients that haven't been
     # updated for the is_announcement_only -> stream_post_policy
     # migration.
     result["is_announcement_only"] = \
-        stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
+        {"is_announcement_only": stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS,
+         "is_deprecated": True}
 
     # Add a few computed fields not directly from the data models.
     result["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
@@ -5737,7 +5738,8 @@ def do_get_streams(
             is_default[default_stream.id] = True
         for stream in streams:
             stream['is_default'] = is_default.get(stream["stream_id"], False)
-
+    print('lets look at streams:')
+    print(streams)
     return streams
 
 def notify_attachment_update(user_profile: UserProfile, op: str,
