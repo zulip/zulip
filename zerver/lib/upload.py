@@ -203,6 +203,9 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
 ### Common
 
 class ZulipUploadBackend:
+    def get_target_file_path(self, file_name: str, realm: Realm) -> str:
+        raise NotImplementedError()
+
     def upload_message_file(self, uploaded_file_name: str, uploaded_file_size: int,
                             content_type: Optional[str], file_data: bytes,
                             user_profile: UserProfile,
@@ -360,16 +363,19 @@ class S3UploadBackend(ZulipUploadBackend):
         key.delete()
         return True
 
+    def get_target_file_path(self, file_name: str, realm: Realm) -> str:
+        return "/".join([
+            str(realm.id),
+            secrets.token_urlsafe(18),
+            sanitize_name(file_name),
+        ])
+
     def upload_message_file(self, uploaded_file_name: str, uploaded_file_size: int,
                             content_type: Optional[str], file_data: bytes,
                             user_profile: UserProfile, target_realm: Optional[Realm]=None) -> str:
         if target_realm is None:
             target_realm = user_profile.realm
-        s3_file_name = "/".join([
-            str(target_realm.id),
-            secrets.token_urlsafe(18),
-            sanitize_name(uploaded_file_name),
-        ])
+        s3_file_name = self.get_target_file_path(uploaded_file_name, target_realm)
         url = f"/user_uploads/{s3_file_name}"
 
         upload_image_to_s3(
@@ -674,16 +680,19 @@ def get_local_file_path_id_from_token(token: str) -> Optional[str]:
     return path_id
 
 class LocalUploadBackend(ZulipUploadBackend):
+    def get_target_file_path(self, file_name: str, realm: Realm) -> str:
+        return "/".join([
+            str(realm.id),
+            format(random.randint(0, 255), 'x'),
+            secrets.token_urlsafe(18),
+            sanitize_name(file_name),
+        ])
+
     def upload_message_file(self, uploaded_file_name: str, uploaded_file_size: int,
                             content_type: Optional[str], file_data: bytes,
                             user_profile: UserProfile, target_realm: Optional[Realm]=None) -> str:
         # Split into 256 subdirectories to prevent directories from getting too big
-        path = "/".join([
-            str(user_profile.realm_id),
-            format(random.randint(0, 255), 'x'),
-            secrets.token_urlsafe(18),
-            sanitize_name(uploaded_file_name),
-        ])
+        path = self.get_target_file_path(uploaded_file_name, user_profile.realm)
 
         write_local_file('files', path, file_data)
         create_attachment(uploaded_file_name, path, user_profile, uploaded_file_size)
