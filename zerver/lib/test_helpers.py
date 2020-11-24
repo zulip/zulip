@@ -44,6 +44,7 @@ from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
+from zerver.lib.uploadhandlers import LocalFileUploadHandler, S3FileUploadHandler
 from zerver.models import (
     Client,
     Message,
@@ -480,10 +481,12 @@ def use_s3_backend(method: FuncT) -> FuncT:
     @override_settings(LOCAL_UPLOADS_DIR=None)
     def new_method(*args: Any, **kwargs: Any) -> Any:
         zerver.lib.upload.upload_backend = S3UploadBackend()
+        zerver.lib.uploadhandlers.ZulipUserFileUploadHandler = S3FileUploadHandler
         try:
             return method(*args, **kwargs)
         finally:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
+            zerver.lib.uploadhandlers.ZulipUserFileUploadHandler = LocalFileUploadHandler
     return new_method
 
 def create_s3_buckets(*bucket_names: str) -> List[ServiceResource]:

@@ -6,6 +6,7 @@ import shutil
 import time
 import urllib
 from io import StringIO
+from typing import Any, Dict
 from unittest import mock
 from unittest.mock import patch
 
@@ -58,6 +59,7 @@ from zerver.lib.upload import (
     upload_export_tarball,
     upload_message_file,
 )
+from zerver.lib.uploadhandlers import S3FileUploadHandler
 from zerver.lib.users import get_api_key
 from zerver.models import (
     Attachment,
@@ -161,7 +163,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # would be 1MB.
         with self.settings(MAX_FILE_UPLOAD_SIZE=0):
             result = self.client_post("/json/user_uploads", {'f1': fp})
-        self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MiB')
+        self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MiB', status_code=422)
 
     def test_multiple_upload_failure(self) -> None:
         """
@@ -529,7 +531,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d3 = StringIO("zulip!")
         d3.name = "dummy_3.txt"
         result = self.client_post("/json/user_uploads", {'file': d3})
-        self.assert_json_error(result, "Upload would exceed your organization's upload quota.")
+        self.assert_json_error(result, "Upload would exceed your organization's upload quota.", status_code=422)
 
         realm.upload_quota_gb = None
         realm.save(update_fields=['upload_quota_gb'])
@@ -1526,8 +1528,7 @@ class RealmNightLogoTest(RealmLogoTest):
     night = True
 
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
-
-    def test_file_upload_local(self) -> None:
+    def test_upload_message_file_local(self) -> None:
         user_profile = self.example_user('hamlet')
         uri = upload_message_file('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
 
@@ -1617,11 +1618,41 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         destroy_uploads()
         super().tearDown()
 
+class LocalFileUploadHandlerTest(UploadSerializeMixin, ZulipTestCase):
+    def test_local_file_upload_handler(self) -> None:
+        self.login('hamlet')
+        content = "z" * 1024 * 1024
+        fp = StringIO(content)
+        fp.name = "z.txt"
+
+        result = self.client_post("/json/user_uploads", {'file': fp})
+        self.assert_json_success(result)
+        uri = result.json()["uri"]
+
+        path_id = re.sub('/user_uploads/', '', uri)
+        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
+        self.assertTrue(os.path.isfile(file_path))
+
+        with open(file_path) as f:
+            self.assertEqual(f.read(), content)
+
+        uploaded_file = Attachment.objects.get(owner=self.example_user("hamlet"), path_id=path_id)
+        self.assertEqual(len(content), uploaded_file.size)
+
+    def test_local_file_upload_handler_with_improper_content_length(self) -> None:
+        self.login('hamlet')
+        content = "z" * 300 * 1024
+        invalid_content_length = 200 * 1024
+        fp = StringIO(content)
+        fp.name = "z.txt"
+
+        result = self.client_post("/json/user_uploads", {'file': fp}, CONTENT_LENGTH=invalid_content_length)
+        self.assert_json_error(result, "Error while uploading the file. Please try again.", status_code=422)
+        self.assertEqual(Attachment.objects.filter(owner=self.example_user("hamlet")).count(), 0)
 
 class S3Test(ZulipTestCase):
-
     @use_s3_backend
-    def test_file_upload_s3(self) -> None:
+    def test_upload_message_file_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user('hamlet')
@@ -1930,6 +1961,85 @@ class S3Test(ZulipTestCase):
         ])
         path_id = urllib.parse.urlparse(uri).path
         self.assertEqual(delete_export_tarball(path_id), path_id)
+
+class S3FileUploadHandlerTest(UploadSerializeMixin, ZulipTestCase):
+    @use_s3_backend
+    def test_s3_file_upload_handler(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        self.login('hamlet')
+        content = "z" * 1024 * 1024 * 7
+        fp = StringIO(content)
+        fp.name = "z.txt"
+
+        result = self.client_post("/json/user_uploads", {'file': fp})
+        self.assert_json_success(result)
+        uri = result.json()["uri"]
+
+        path_id = re.sub('/user_uploads/', '', uri)
+        s3_content = bucket.Object(path_id).get()['Body'].read()
+        self.assertEqual(content, s3_content.decode("utf-8"))
+
+        uploaded_file = Attachment.objects.get(owner=self.example_user("hamlet"), path_id=path_id)
+        self.assertEqual(len(content), uploaded_file.size)
+
+    @use_s3_backend
+    def test_s3_file_upload_handler_with_improper_content_length(self) -> None:
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        self.login('hamlet')
+        content = "z" * 300 * 1024
+        invalid_content_length = 200 * 1024
+        fp = StringIO(content)
+        fp.name = "z.txt"
+
+        result = self.client_post("/json/user_uploads", {'file': fp}, CONTENT_LENGTH=invalid_content_length)
+        self.assert_json_error(result, "Error while uploading the file. Please try again.", status_code=422)
+        self.assertEqual(Attachment.objects.filter(owner=self.example_user("hamlet")).count(), 0)
+
+    @use_s3_backend
+    def test_s3_file_upload_handler_with_s3_error(self) -> None:
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        self.login('hamlet')
+        content = "z" * 1024 * 1024 * 7
+        fp = StringIO(content)
+        fp.name = "z.txt"
+
+        make_api_call_original = botocore.client.BaseClient._make_api_call
+
+        def create_upload_mock(self: S3FileUploadHandler, operation_name: str, kwarg: Dict[Any, Any]) -> Any:
+            assert(operation_name == "CreateMultipartUpload")
+            parsed_response = {'Error': {'Code': '500', 'Message': 'Error creating'}}
+            raise botocore.exceptions.ClientError(parsed_response, operation_name)
+        with mock.patch("botocore.client.BaseClient._make_api_call", new=create_upload_mock):
+            with self.assertLogs(level='ERROR'):
+                result = self.client_post("/json/user_uploads", {'file': fp})
+        self.assert_json_error(result, "Error while uploading the file. Please try again.", status_code=422)
+
+        def upload_part_mock(self: S3FileUploadHandler, operation_name: str, kwarg: Dict[Any, Any]) -> Any:
+            if operation_name == "UploadPart":
+                parsed_response = {'Error': {'Code': '500', 'Message': 'Error Uploading'}}
+                raise botocore.exceptions.ClientError(parsed_response, operation_name)
+            return make_api_call_original(self, operation_name, kwarg)
+        with mock.patch("botocore.client.BaseClient._make_api_call", new=upload_part_mock):
+            with self.assertLogs(level='ERROR'):
+                fp.seek(0)
+                result = self.client_post("/json/user_uploads", {'file': fp})
+        self.assert_json_error(result, "Error while uploading the file. Please try again.", status_code=422)
+
+        def complete_upload_mock(self: S3FileUploadHandler, operation_name: str, kwarg: Dict[Any, Any]) -> Any:
+            if operation_name in ["CompleteMultipartUpload", "AbortMultipartUpload"]:
+                parsed_response = {'Error': {'Code': '500', 'Message': 'Error message'}}
+                raise botocore.exceptions.ClientError(parsed_response, operation_name)
+            return make_api_call_original(self, operation_name, kwarg)
+        with mock.patch("botocore.client.BaseClient._make_api_call", new=complete_upload_mock):
+            with self.assertLogs(level='ERROR'):
+                fp.seek(0)
+                result = self.client_post("/json/user_uploads", {'file': fp})
+                self.assert_json_error(result, "Error while uploading the file. Please try again.", status_code=422)
+
+        self.assertEqual(Attachment.objects.filter(owner=self.example_user("hamlet")).count(), 0)
 
 class SanitizeNameTests(ZulipTestCase):
     def test_file_name(self) -> None:

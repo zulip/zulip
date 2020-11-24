@@ -16,6 +16,7 @@ from zerver.decorator import (
 from zerver.lib.exceptions import MissingAuthenticationError
 from zerver.lib.response import json_method_not_allowed
 from zerver.lib.types import ViewFuncT
+from zerver.lib.upload import is_file_upload_request
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 FLAGS = ('override_api_url_scheme')
@@ -84,7 +85,9 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
     # Override requested method if magic method=??? parameter exists
     method_to_use = request.method
-    if request.POST and 'method' in request.POST:
+    # We skip this for file upload urls, since accessing request.POST will
+    # trigger FileUploadHandlers which needs access to request.user.
+    if not is_file_upload_request(request) and request.POST and 'method' in request.POST:
         method_to_use = request.POST['method']
 
     if method_to_use in supported_methods:

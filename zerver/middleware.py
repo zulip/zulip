@@ -31,6 +31,8 @@ from zerver.lib.request import set_request, unset_request
 from zerver.lib.response import json_error, json_response_from_error, json_unauthorized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
+from zerver.lib.upload import RealmUploadQuotaError
+from zerver.lib.uploadhandlers import UploadError, UploadFileSizeLimitExceeded
 from zerver.lib.utils import statsd
 from zerver.models import Realm, flush_per_request_caches, get_realm
 
@@ -330,6 +332,9 @@ class JsonErrorHandler(MiddlewareMixin):
             else:
                 # For /json routes, ask for session authentication.
                 return json_unauthorized(www_authenticate='session')
+
+        if isinstance(exception, (UploadFileSizeLimitExceeded, RealmUploadQuotaError, UploadError)):
+            return json_error(str(exception), status=422)
 
         if isinstance(exception, JsonableError):
             return json_response_from_error(exception)

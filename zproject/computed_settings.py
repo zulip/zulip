@@ -559,6 +559,12 @@ LOCALE_PATHS = (os.path.join(DEPLOY_ROOT, 'locale'),)
 # We want all temporary uploaded files to be stored on disk.
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
+FILE_UPLOAD_HANDLERS = [
+    'zerver.lib.uploadhandlers.ZulipUserFileUploadHandler',
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler'
+]
+
 STATICFILES_DIRS = ['static/']
 
 if DEBUG:

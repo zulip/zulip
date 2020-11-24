@@ -199,6 +199,8 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
     except DecompressionBombError:
         raise BadImageError(_("Image size exceeds limit."))
 
+def is_file_upload_request(request: HttpRequest) -> bool:
+    return request.path in set(['/json/user_uploads', '/api/v1/user_uploads'])
 
 ### Common
 
@@ -309,23 +311,22 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
     if (used_space + uploaded_file_size) > upload_quota:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
-def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Optional[str]]:
-
-    uploaded_file_name = user_file.name
+def get_file_info(request: HttpRequest, uploaded_file_name: str) -> Tuple[str, str]:
     content_type = request.GET.get('mimetype')
     if content_type is None:
         guessed_type = guess_type(uploaded_file_name)[0]
         if guessed_type is not None:
             content_type = guessed_type
+        else:
+            content_type = ""
     else:
         extension = guess_extension(content_type)
         if extension is not None:
             uploaded_file_name = uploaded_file_name + extension
 
     uploaded_file_name = urllib.parse.unquote(uploaded_file_name)
-    uploaded_file_size = user_file.size
 
-    return uploaded_file_name, uploaded_file_size, content_type
+    return uploaded_file_name, content_type
 
 def get_s3_client() -> Any:
     return boto3.client('s3', aws_access_key_id=settings.S3_KEY,
@@ -916,12 +917,6 @@ def create_attachment(file_name: str, path_id: str, user_profile: UserProfile,
     from zerver.lib.actions import notify_attachment_update
     notify_attachment_update(user_profile, 'add', attachment.to_dict())
     return True
-
-def upload_message_image_from_request(request: HttpRequest, user_file: File,
-                                      user_profile: UserProfile) -> str:
-    uploaded_file_name, uploaded_file_size, content_type = get_file_info(request, user_file)
-    return upload_message_file(uploaded_file_name, uploaded_file_size,
-                               content_type, user_file.read(), user_profile)
 
 def upload_export_tarball(realm: Realm, tarball_path: str,
                           percent_callback: Optional[Callable[[Any], None]]=None) -> str:
