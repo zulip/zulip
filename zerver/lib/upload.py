@@ -327,12 +327,14 @@ def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Opti
 
     return uploaded_file_name, uploaded_file_size, content_type
 
+def get_s3_client() -> Any:
+    return boto3.client('s3', aws_access_key_id=settings.S3_KEY,
+                        aws_secret_access_key=settings.S3_SECRET_KEY,
+                        region_name=settings.S3_REGION,
+                        endpoint_url=settings.S3_ENDPOINT_URL)
 
 def get_signed_upload_url(path: str) -> str:
-    client = boto3.client('s3', aws_access_key_id=settings.S3_KEY,
-                          aws_secret_access_key=settings.S3_SECRET_KEY,
-                          region_name=settings.S3_REGION,
-                          endpoint_url=settings.S3_ENDPOINT_URL)
+    client = get_s3_client()
     return client.generate_presigned_url(ClientMethod='get_object',
                                          Params={
                                              'Bucket': settings.S3_AUTH_UPLOADS_BUCKET,
