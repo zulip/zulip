@@ -84,16 +84,6 @@ No details.
             )
         self.assertIn("The newrelic webhook requires current_state be in [open|acknowledged|closed]", e.exception.args[0])
 
-    def test_missing_duration(self) -> None:
-        with self.assertRaises(AssertionError) as e:
-            self.check_webhook(
-                "incident_missing_duration",
-                "",
-                "",
-                content_type="application/json",
-            )
-        self.assertIn("The newrelic webhook requires duration in milliseconds", e.exception.args[0])
-
     def test_missing_timestamp(self) -> None:
         with self.assertRaises(AssertionError) as e:
             self.check_webhook(
