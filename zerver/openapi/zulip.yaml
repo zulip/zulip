@@ -4447,14 +4447,23 @@ paths:
                           versions do not return this field.
                         example: "2019-10-20T07:50:53.728864+00:00"
                       max_message_id:
-                        type: object
+                        type: integer
                         deprecated: true
                         description: |
                           The integer ID of the last message received by your account.
 
                           **Deprecated**.  We plan to remove this in favor of recommending
                           using `GET /messages` with `anchor="newest"`.
+                        additionalProperties: false
                         example: 30
+                      # max_message_id_deprecated:
+                      #   type: boolean
+                      #   description: |
+                      #     The integer ID of the last message received by your account.
+
+                      #     **Deprecated**.  We plan to remove this in favor of recommending
+                      #     using `GET /messages` with `anchor="newest"`.
+                      #   additionalProperties: false
                       user_id:
                         type: integer
                         description: |
@@ -6210,6 +6219,7 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id: {}
                                 is_announcement_only: {}
+                                is_announcement_only_deprecated: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -8051,6 +8061,7 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id: {}
                                 is_announcement_only: {}
+                                is_announcement_only_deprecated: {}
                                 is_default:
                                   type: boolean
                                   description: |
@@ -8790,6 +8801,7 @@ components:
             history_public_to_subscribers: {}
             first_message_id: {}
             is_announcement_only: {}
+            is_announcement_only_deprecated: {}
     BasicStreamBase:
       type: object
       description: |
@@ -8880,13 +8892,17 @@ components:
 
             Null is used for streams with no message history.
         is_announcement_only:
-          type: object
+          type: boolean
           deprecated: true
           description: |
             Whether the given stream is announcement only or not.
 
             **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
             `stream_post_policy` instead.
+        is_announcement_only_deprecated:
+          type: boolean
+          description: |
+            whether is announcement only is deprecated (should be)
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -9351,6 +9367,10 @@ components:
             Legacy property for if the given stream is muted, with inverted meeting.
 
             **Deprecated**; clients should use is_muted where available.
+        in_home_view_deprecated:
+          type: boolean
+          description: |
+            is in_home_view deprecated field (should be)
         is_announcement_only:
           type: boolean
           deprecated: true
@@ -9359,6 +9379,10 @@ components:
 
             **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
             `stream_post_policy` instead.
+        is_announcement_only_deprecated:
+          type: boolean
+          description: |
+            whether is_announcement_only is deprecated (should be)
         is_web_public:
           type: boolean
           description: |

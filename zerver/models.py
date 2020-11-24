@@ -1613,8 +1613,8 @@ class Stream(models.Model):
                 result['date_created'] = datetime_to_timestamp(self.date_created)
                 continue
             result[field_name] = getattr(self, field_name)
-        temp_dict = {"is_announcement_only": self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS, "is_deprecated": True}
-        result["is_announcement_only"] = temp_dict
+        result["is_announcement_only"] = self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
+        result["is_announcement_only_deprecated"] = True
         return result
 
 post_save.connect(flush_stream, sender=Stream)

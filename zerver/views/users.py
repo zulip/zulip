@@ -532,11 +532,13 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
                                       user_avatar_url_field_optional=False)
     result: Dict[str, Any] = raw_user_data[user_profile.id]
 
-    result['max_message_id'] = {'id': -1, 'deprecated': True}
+    result['max_message_id'] = -1
+    # result["max_message_id_deprecated"] = True
 
     messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
     if messages:
-        result['max_message_id'] = {'id': messages[0].id, 'deprecated': True}
+        result['max_message_id'] = messages[0].id
+        # result["max_message_id_deprecated"] = True
 
     return json_success(result)
 

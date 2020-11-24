@@ -2789,6 +2789,7 @@ def send_subscription_add_events(
                 sub_dict[field_name] = getattr(subscription, field_name)
 
             sub_dict['in_home_view'] = not subscription.is_muted
+            sub_dict['in_home_view_deprecated'] = True
             sub_dict['email_address'] = encode_email_address(stream, show_sender=True)
             sub_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
                 stream.id, stream.date_created, recent_traffic)
@@ -5017,15 +5018,15 @@ def build_stream_dict_for_sub(
 
     # Backwards-compatibility for clients that haven't been
     # updated for the in_home_view => is_muted API migration.
-    result["in_home_view"] = {'in_home_view': not result["is_muted"], 'is_deprecated': True}
+    result["in_home_view"] = not result["is_muted"]
+    result["in_home_view_deprecated"] = True
 
     # Backwards-compatibility for clients that haven't been
     # updated for the is_announcement_only -> stream_post_policy
     # migration.
     result["is_announcement_only"] = \
-        {"is_announcement_only": stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS,
-         "is_deprecated": True}
-
+       stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
+    result["is_announcement_only_deprecated"] = True
     # Add a few computed fields not directly from the data models.
     result["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
         stream["id"], stream["date_created"], recent_traffic)
@@ -5067,7 +5068,7 @@ def build_stream_dict_for_never_sub(
 
     # Backwards-compatibility addition of removed field.
     result["is_announcement_only"] = stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
-
+    result["is_announcement_only_deprecated"] = True  # flag to indicate announcement only is deprecated
     if subscribers is not None:
         result["subscribers"] = subscribers
 

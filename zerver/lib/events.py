@@ -146,7 +146,7 @@ def fetch_initial_state_data(
             state['max_message_id'] = user_messages[0]['message_id']
         else:
             state['max_message_id'] = -1
-
+    # state['max_message_id_deprecated'] = True
     if want('muted_topics'):
         state['muted_topics'] = [] if user_profile is None else get_topic_mutes(user_profile)
 
@@ -435,6 +435,7 @@ def apply_event(state: Dict[str, Any],
                 include_subscribers: bool) -> None:
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
+        # state['max_message_id_deprecated'] = True
         if 'raw_unread_msgs' in state:
             apply_unread_message_event(
                 user_profile,
@@ -458,6 +459,7 @@ def apply_event(state: Dict[str, Any],
                                         user_dict['id'] != user_profile.id),
                     )
                 conversations[recipient_id]['max_message_id'] = event['message']['id']
+                # conversations[recipient_id]['max_message_id_deprecated'] = True
             return
 
         # Below, we handle maintaining first_message_id.
@@ -771,6 +773,7 @@ def apply_event(state: Dict[str, Any],
             state['max_message_id'] = max_message.id
         else:
             state['max_message_id'] = -1
+        # state['max_message_id_deprecated'] = True
 
         if 'raw_unread_msgs' in state:
             for remove_id in message_ids:
