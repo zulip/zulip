@@ -20,7 +20,7 @@ def digest_page(request: HttpRequest) -> HttpResponse:
     react_weight = request.GET.get('react-weight', 1)
 
     if start_date:
-        #do something
+        # do something
         start_date += 1
     else:
         # do something else

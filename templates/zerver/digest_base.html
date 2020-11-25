@@ -11,19 +11,19 @@
             <div class="portico-page" id="digest-page-title">
                 <h1> Zulip Digest </h1>
             </div>
-        <div>
-            <form>
-                <label for="start">Start date:</label>
-                <input type="date" id="start" name="start" value="2020-11-24">
-                <label for="end">End date:</label>
-                <input type="date" id="end" name="end" value="2020-11-11">
-                <label for="message-weight">Message weight:</label>
-                <input type="number" id="message-weight" name="message-weight" value="1">
-                <label for="sender-weight">Sender weight:</label>
-                <input type="number" id="sender-weight" name="sender-weight" value="1">
-                <input type="hidden" id="react-weight" name="react-weight" value="1">
-            </form>
-        </div>
+            <div>
+                <form>
+                    <label for="start">Start date:</label>
+                    <input type="date" id="start" name="start" value="2020-11-24">
+                    <label for="end">End date:</label>
+                    <input type="date" id="end" name="end" value="2020-11-11">
+                    <label for="message-weight">Message weight:</label>
+                    <input type="number" id="message-weight" name="message-weight" value="1">
+                    <label for="sender-weight">Sender weight:</label>
+                    <input type="number" id="sender-weight" name="sender-weight" value="1">
+                    <input type="hidden" id="react-weight" name="react-weight" value="1">
+                </form>
+            </div>
             <div class="digest-email-html">
                 {% include 'zerver/emails/compiled/digest.html' %}
                 <img id="digest-footer" src="/static/images/emails/footer.png"/>
