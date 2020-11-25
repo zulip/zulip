@@ -9,6 +9,7 @@ import OptimizeCssAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import TerserPlugin from "terser-webpack-plugin";
 import webpack from "webpack";
 import BundleTracker from "webpack4-bundle-tracker";
+import WorkboxPlugin from "workbox-webpack-plugin";
 
 import DebugRequirePlugin from "./tools/debug-require-webpack-plugin";
 import assets from "./tools/webpack.assets.json";
@@ -171,6 +172,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
             path: path.resolve(__dirname, "static/webpack-bundles"),
             filename: production ? "[name].[contenthash].js" : "[name].js",
             chunkFilename: production ? "[contenthash].js" : "[id].js",
+            globalObject: "self", // https://github.com/webpack/webpack/issues/6642
         },
         resolve: {
             extensions: [".ts", ".js"],
@@ -248,11 +250,16 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                 template: "static/html/5xx.html",
                 chunks: ["error-styles"],
             }),
+            new WorkboxPlugin.InjectManifest({
+                swSrc: "./static/js/bundles/service_worker.js",
+                swDest: "service-worker.js",
+            }),
         ],
         devServer: {
             clientLogLevel: "error",
             headers: {
                 "Access-Control-Allow-Origin": "*",
+                "Service-Worker-Allowed": "/",
             },
             publicPath: "/webpack/",
             stats: "errors-only",

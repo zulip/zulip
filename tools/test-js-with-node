@@ -161,6 +161,7 @@ EXEMPT_FILES = {
     'static/js/unread_ui.js',
     'static/js/upload_widget.js',
     'static/js/user_status_ui.js',
+    'static/js/workbox-webpack-plugin.d.ts',
     'static/js/zcommand.js',
     'static/js/zform.js',
     'static/js/zulip.js',

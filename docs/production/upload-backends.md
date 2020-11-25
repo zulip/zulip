@@ -43,6 +43,28 @@ as world-readable, whereas the "uploaded files" one is not.
    For certain AWS regions, you may need to set the `S3_REGION`
    setting to your default AWS region's code (e.g. `"eu-central-1"`).
 
+1. You also need to configure your bucket to enable
+   cross origin requests by creating a CORS configuration.
+   Add the following rule and replace the `"*"` in `"AllowedOrigins"`
+   with your hostname. (e.g. - `"https://chat.zulip.org"`)
+
+```
+[
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "GET"
+        ],
+        "AllowedOrigins": [
+            "*"
+        ],
+        "ExposeHeaders": []
+    }
+]
+```
+
 1. You will need to configure `nginx` to direct requests for uploaded
     files to the Zulip server (which will then serve a redirect to the
     appropriate place in S3), rather than serving them directly.
