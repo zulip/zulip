@@ -1055,7 +1055,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     realm_id = 0
     domain_name = settings.EXTERNAL_HOST
 
-    log_token_warning(token)
+    check_token_access(token)
 
     slack_data_dir = slack_zip_file.replace('.zip', '')
     if not os.path.exists(slack_data_dir):
@@ -1124,11 +1124,18 @@ def get_data_file(path: str) -> Any:
         data = orjson.loads(fp.read())
         return data
 
-def log_token_warning(token: str) -> None:
-    if not token.startswith("xoxp-"):
-        logging.info('Not a Slack legacy token.\n'
-                     '  This token might not have all the needed scopes. We need the following scopes:\n'
-                     '  - emoji:read\n  - users:read\n  - users:read.email\n  - team:read')
+def check_token_access(token: str) -> None:
+    if token.startswith("xoxp-"):
+        logging.info('This is a Slack user token, which grants all rights the user has!')
+    elif token.startswith("xoxb-"):
+        data = requests.get("https://slack.com/api/team.info", {"token": token})
+        has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
+        required_scopes = set(['emoji:read', 'users:read', 'users:read.email', 'team:read'])
+        missing_scopes = required_scopes - has_scopes
+        if missing_scopes:
+            raise ValueError("Slack token is missing the following required scopes: {}".format(sorted(missing_scopes)))
+    else:
+        raise Exception("Unknown token type -- must start with xoxb- or xoxp-")
 
 
 def get_slack_api_data(slack_api_url: str, get_param: str, **kwargs: Any) -> Any:
