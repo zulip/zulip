@@ -1,0 +1,12 @@
+<script>
+  // Service worker requires https, thus in Dev env it will only work for localhost and no other realm.
+  if ('serviceWorker' in navigator) {
+    self.addEventListener('load', function() {
+      navigator.serviceWorker.register('/webpack/service-worker.js', { scope: '/' }).then(function(registration) {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      }, function(err) {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+    });
+  }
+</script>
