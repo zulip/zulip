@@ -154,16 +154,16 @@ function generate_title(emoji_name, user_ids) {
 
     if (user_ids.length === 1) {
         if (current_user_reacted) {
-            return i18n.t("You (click to remove) reacted with __emoji_name__", context);
+            return i18n.t("You (click to remove) reacted with __- emoji_name__", context);
         }
         context.username = usernames[0];
-        return i18n.t("__username__ reacted with __emoji_name__", context);
+        return i18n.t("__- username__ reacted with __- emoji_name__", context);
     }
 
     if (user_ids.length === 2 && current_user_reacted) {
         context.other_username = usernames[0];
         return i18n.t(
-            "You (click to remove) and __other_username__ reacted with __emoji_name__",
+            "You (click to remove) and __- other_username__ reacted with __- emoji_name__",
             context,
         );
     }
@@ -172,12 +172,12 @@ function generate_title(emoji_name, user_ids) {
     context.last_username = _.last(usernames);
     if (current_user_reacted) {
         return i18n.t(
-            "You (click to remove), __comma_separated_usernames__ and __last_username__ reacted with __emoji_name__",
+            "You (click to remove), __- comma_separated_usernames__ and __- last_username__ reacted with __- emoji_name__",
             context,
         );
     }
     return i18n.t(
-        "__comma_separated_usernames__ and __last_username__ reacted with __emoji_name__",
+        "__- comma_separated_usernames__ and __- last_username__ reacted with __- emoji_name__",
         context,
     );
 }
