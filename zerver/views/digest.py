@@ -26,7 +26,8 @@ def digest_page(request: HttpRequest) -> HttpResponse:
         # do something else
         start_date = 1
     cutoff = time.mktime((timezone_now() - timedelta(days=DIGEST_CUTOFF)).timetuple())
+    end_date = timezone_now()
 
-    context = get_digest_context(user_profile, cutoff)
+    context = get_digest_context(user_profile, cutoff, end_date)
     context.update(physical_address=settings.PHYSICAL_ADDRESS)
     return render(request, 'zerver/digest_base.html', context=context)

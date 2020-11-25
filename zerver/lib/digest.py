@@ -147,6 +147,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
 def get_recent_topics(
     stream_ids: List[int],
     cutoff_date: datetime.datetime,
+    end_date: datetime.datetime = timezone_now()
 ) -> List[DigestTopic]:
     # Gather information about topic conversations, then
     # classify by:
@@ -157,6 +158,7 @@ def get_recent_topics(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
         date_sent__gt=cutoff_date,
+        date_sent__lte=end_date,
     ).order_by(
         'id',  # we will sample the first few messages
     ).select_related(
@@ -202,15 +204,18 @@ def get_hot_topics(
 
     return hot_topics
 
-def gather_new_streams(user_profile: UserProfile,
-                       threshold: datetime.datetime) -> Tuple[int, Dict[str, List[str]]]:
+def gather_new_streams(
+    user_profile: UserProfile,
+    threshold: datetime.datetime,
+    end_date: datetime.datetime = timezone_now()
+) -> Tuple[int, Dict[str, List[str]]]:
     if user_profile.is_guest:
         new_streams = list(get_active_streams(user_profile.realm).filter(
-            is_web_public=True, date_created__gt=threshold))
+            is_web_public=True, date_created__gt=threshold, date_created__lte=end_date))
 
     elif user_profile.can_access_public_streams():
         new_streams = list(get_active_streams(user_profile.realm).filter(
-            invite_only=False, date_created__gt=threshold))
+            invite_only=False, date_created__gt=threshold, date_created__lte=end_date))
 
     base_url = f"{user_profile.realm.uri}/#narrow/stream/"
 
@@ -228,7 +233,11 @@ def gather_new_streams(user_profile: UserProfile,
 def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
     return bool(hot_conversations or new_streams)
 
-def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int, Dict[str, Any]]:
+def bulk_get_digest_context(
+    users: List[UserProfile],
+    cutoff: float,
+    end_date: datetime.datetime = timezone_now()
+) -> Dict[int, Dict[str, Any]]:
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
 
@@ -259,14 +268,14 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
         stream_ids = stream_map[user.id]
 
         if user.long_term_idle:
-            stream_ids -= streams_recently_modified_for_user(user, cutoff_date)
+            stream_ids -= streams_recently_modified_for_user(user, cutoff_date, end_date)
 
         all_stream_ids |= stream_ids
 
     # Get all the recent topics for all the users.  This does the heavy
     # lifting of making an expensive query to the Message table.  Then
     # for each user, we filter to just the streams they care about.
-    recent_topics = get_recent_topics(sorted(list(all_stream_ids)), cutoff_date)
+    recent_topics = get_recent_topics(sorted(list(all_stream_ids)), cutoff_date, end_date)
 
     for user in users:
         stream_ids = stream_map[user.id]
@@ -286,7 +295,7 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
         ]
 
         # Gather new streams.
-        new_streams_count, new_streams = gather_new_streams(user, cutoff_date)
+        new_streams_count, new_streams = gather_new_streams(user, cutoff_date, end_date)
         context["new_streams"] = new_streams
         context["new_streams_count"] = new_streams_count
 
@@ -294,8 +303,12 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
     return result
 
-def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
-    return bulk_get_digest_context([user], cutoff)[user.id]
+def get_digest_context(
+    user: UserProfile,
+    cutoff: float,
+    end_date: datetime.datetime = timezone_now()
+) -> Dict[str, Any]:
+    return bulk_get_digest_context([user], cutoff, end_date)[user.id]
 
 @transaction.atomic
 def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
@@ -351,7 +364,11 @@ def bulk_write_realm_audit_logs(users: List[UserProfile]) -> None:
 def handle_digest_email(user_id: int, cutoff: float) -> None:
     bulk_handle_digest_email([user_id], cutoff)
 
-def streams_recently_modified_for_user(user: UserProfile, cutoff_date: datetime.datetime) -> Set[int]:
+def streams_recently_modified_for_user(
+    user: UserProfile,
+    cutoff_date: datetime.datetime,
+    end_date: datetime.datetime = timezone_now()
+) -> Set[int]:
     events = [
         RealmAuditLog.SUBSCRIPTION_CREATED,
         RealmAuditLog.SUBSCRIPTION_ACTIVATED,
@@ -363,6 +380,7 @@ def streams_recently_modified_for_user(user: UserProfile, cutoff_date: datetime.
         realm=user.realm,
         modified_user=user,
         event_time__gt=cutoff_date,
+        event_time__lte=end_date,
         event_type__in=events).values_list('modified_stream_id', flat=True)
 
     return set(modified_streams)
