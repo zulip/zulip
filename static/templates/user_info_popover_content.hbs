@@ -7,7 +7,7 @@
                 {{#if is_bot}}
                 <i class="zulip-icon bot" aria-hidden="true"></i>
                 {{else}}
-                <span class="{{user_circle_class}} user_circle popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+                <span class="{{user_circle_class}}  user_circle popover_user_presence"  id="user_status_circle" title="{{user_last_seen_time_status}}"></span>
                 {{/if}}
             {{/if}}
         </li>
@@ -52,31 +52,24 @@
     </div>
 
     {{#if is_me}}
-        <hr>
-        {{#if can_set_away}}
-        <li>
-            <a tabindex="0" class="set_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as unavailable{{/tr}}
-            </a>
-        </li>
-        {{/if}}
-        {{#if can_revoke_away}}
-        <li>
-            <a tabindex="0" class="revoke_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as active{{/tr}}
-            </a>
-        </li>
-        {{/if}}
-        <li>
-            <a tabindex="0" class="update_status_text">
-                <i class="fa fa-comments" aria-hidden="true"></i>
-                {{#if status_text}}
-                    {{#tr this}}Edit status message{{/tr}}
-                {{else}}
-                    {{#tr this}}Set a status message{{/tr}}
-                {{/if}}
-            </a>
-        </li>
+    <hr>
+    <label for="status_info" class="dropdown-title">{{t "Status:" }}
+        <select name="status_info" class="status_info" id="status_info" >
+            {{#each status_info_values}}
+            <option value='{{this.value}}'>{{this.description}}</option>
+            {{/each}}
+        </select>
+    </label>
+    <li>
+        <a tabindex="0" class="update_status_text">
+            <i class="fa fa-comments" aria-hidden="true"></i>
+            {{#if status_text}}
+                {{#tr this}}Edit status message{{/tr}}
+            {{else}}
+                {{#tr this}}Set a status message{{/tr}}
+            {{/if}}
+        </a>
+    </li>
     {{/if}}
 
     {{#if status_text}}

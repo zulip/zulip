@@ -158,6 +158,16 @@ run_test("sender_hover", (override) => {
                 assert.deepEqual(opts, {
                     can_set_away: false,
                     can_revoke_away: false,
+                    status_info_values: {
+                        active: {
+                            value: "active",
+                            description: i18n.t("Active"),
+                        },
+                        inactive: {
+                            value: "inactive",
+                            description: i18n.t("Unavailable"),
+                        },
+                    },
                     user_full_name: "Alice Smith",
                     user_email: "alice@example.com",
                     user_id: 42,

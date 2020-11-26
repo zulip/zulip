@@ -185,6 +185,17 @@ function render_user_info_popover(
     let can_set_away = false;
     let can_revoke_away = false;
 
+    const status_info_values = {
+        active: {
+            value: "active",
+            description: i18n.t("Active"),
+        },
+        inactive: {
+            value: "inactive",
+            description: i18n.t("Unavailable"),
+        },
+    };
+
     if (is_me) {
         if (user_status.is_away(user.user_id)) {
             can_revoke_away = true;
@@ -214,6 +225,7 @@ function render_user_info_popover(
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         status_text: user_status.get_status_text(user.user_id),
+        status_info_values,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
     };
 
@@ -1000,25 +1012,24 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $("body").on("click", ".set_away_status", (e) => {
-        exports.hide_all();
-        user_status.server_set_away();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".revoke_away_status", (e) => {
-        exports.hide_all();
-        user_status.server_revoke_away();
+    $("body").on("click", ".status_info", (e) => {
+        const option = $(".status_info").val();
+        if (option === "inactive") {
+            user_status.server_set_away();
+            $("#user_status_circle").removeClass("user_circle_green");
+            $("#user_status_circle").addClass("user_circle_empty_line");
+        } else {
+            user_status.server_revoke_away();
+            $("#user_status_circle").removeClass("user_circle_empty_line");
+            $("#user_status_circle").addClass("user_circle_green");
+        }
         e.stopPropagation();
         e.preventDefault();
     });
 
     $("body").on("click", ".update_status_text", (e) => {
         exports.hide_all();
-
         user_status_ui.open_overlay();
-
         e.stopPropagation();
         e.preventDefault();
     });
