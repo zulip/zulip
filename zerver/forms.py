@@ -349,7 +349,8 @@ class OurAuthenticationForm(AuthenticationForm):
                 self.user_cache = authenticate(request=self.request, username=username, password=password,
                                                realm=realm, return_data=return_data)
             except RateLimited as e:
-                secs_to_freedom = int(float(str(e)))
+                assert e.secs_to_freedom is not None
+                secs_to_freedom = int(e.secs_to_freedom)
                 raise ValidationError(AUTHENTICATION_RATE_LIMITED_ERROR.format(secs_to_freedom))
 
             if return_data.get("inactive_realm"):
