@@ -66,10 +66,15 @@ def json_response_from_error(exception: JsonableError) -> HttpResponse:
     middleware takes care of transforming it into a response by
     calling this function.
     '''
-    return json_response('error',
-                         msg=exception.msg,
-                         data=exception.data,
-                         status=exception.http_status_code)
+    response = json_response('error',
+                             msg=exception.msg,
+                             data=exception.data,
+                             status=exception.http_status_code)
+
+    for header, value in exception.extra_headers.items():
+        response[header] = value
+
+    return response
 
 def json_error(msg: str, data: Mapping[str, Any]={}, status: int=400) -> HttpResponse:
     return json_response(res_type="error", msg=msg, data=data, status=status)

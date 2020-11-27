@@ -53,7 +53,7 @@ class RateLimitedObject(ABC):
         # Abort this request if the user is over their rate limits
         if ratelimited:
             # Pass information about what kind of entity got limited in the exception:
-            raise RateLimited(str(time))
+            raise RateLimited(time)
 
         calls_remaining, seconds_until_reset = self.api_calls_left()
 
