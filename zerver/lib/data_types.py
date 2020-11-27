@@ -296,5 +296,6 @@ def check_data(
     if hasattr(data_type, "check_data"):
         data_type.check_data(var_name, val)
         return
-    if not isinstance(val, data_type):
+    if not isinstance(val, (data_type)):
         raise AssertionError(f"{var_name} is not type {data_type}")
+    

@@ -81,7 +81,6 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile,
                        ) -> HttpResponse:
     # Extract the Tornado handler from the request
     handler: AsyncDjangoHandler = request._tornado_handler
-
     if user_client is None:
         valid_user_client = request.client
     else:
@@ -128,4 +127,5 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile,
         return response
     if result["type"] == "error":
         raise result["exception"]
+    result["response"]["descriptionString"] = "These are events from event queue"
     return json_success(result["response"])

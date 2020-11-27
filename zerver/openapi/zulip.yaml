@@ -119,7 +119,9 @@ paths:
             The email address for the user that owns the API key.
           schema:
             type: string
-          example: iago@zulip.com
+          exa
+          
+          mple: iago@zulip.com
           required: true
       security: []
       responses:
@@ -173,9 +175,9 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
-                    properties:
                       result: {}
                       msg: {}
+                      descriptionString: {}
                       events:
                         type: array
                         description: |
@@ -4456,14 +4458,6 @@ paths:
                           using `GET /messages` with `anchor="newest"`.
                         additionalProperties: false
                         example: 30
-                      # max_message_id_deprecated:
-                      #   type: boolean
-                      #   description: |
-                      #     The integer ID of the last message received by your account.
-
-                      #     **Deprecated**.  We plan to remove this in favor of recommending
-                      #     using `GET /messages` with `anchor="newest"`.
-                      #   additionalProperties: false
                       user_id:
                         type: integer
                         description: |

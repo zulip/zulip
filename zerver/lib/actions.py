@@ -5739,8 +5739,6 @@ def do_get_streams(
             is_default[default_stream.id] = True
         for stream in streams:
             stream['is_default'] = is_default.get(stream["stream_id"], False)
-    print('lets look at streams:')
-    print(streams)
     return streams
 
 def notify_attachment_update(user_profile: UserProfile, op: str,
