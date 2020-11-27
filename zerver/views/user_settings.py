@@ -98,7 +98,8 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
                                 realm=user_profile.realm, return_data=return_data):
                 return json_error(_("Wrong password!"))
         except RateLimited as e:
-            secs_to_freedom = int(float(str(e)))
+            assert e.secs_to_freedom is not None
+            secs_to_freedom = int(e.secs_to_freedom)
             return json_error(
                 _("You're making too many attempts! Try again in {} seconds.").format(secs_to_freedom),
             )

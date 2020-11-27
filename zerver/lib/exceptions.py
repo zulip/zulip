@@ -47,6 +47,7 @@ class ErrorCode(AbstractEnum):
     INVALID_ZOOM_TOKEN = ()
     UNAUTHENTICATED_USER = ()
     NONEXISTENT_SUBDOMAIN = ()
+    RATE_LIMIT_HIT = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.
@@ -110,6 +111,10 @@ class JsonableError(Exception):
         # the simplest form of use where we just get a plain message string
         # at construction time.
         return '{_msg}'
+
+    @property
+    def extra_headers(self) -> Dict[str, Any]:
+        return {}
 
     #
     # Infrastructure -- not intended to be overridden in subclasses.
@@ -179,9 +184,31 @@ class InvalidMarkdownIncludeStatement(JsonableError):
     def msg_format() -> str:
         return _("Invalid Markdown include statement: {include_statement}")
 
-class RateLimited(Exception):
-    def __init__(self, msg: str="") -> None:
-        super().__init__(msg)
+class RateLimited(JsonableError):
+    code = ErrorCode.RATE_LIMIT_HIT
+    http_status_code = 429
+
+    def __init__(self, secs_to_freedom: Optional[float]=None) -> None:
+        self.secs_to_freedom = secs_to_freedom
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("API usage exceeded rate limit")
+
+    @property
+    def extra_headers(self) -> Dict[str, Any]:
+        extra_headers_dict = super().extra_headers
+        if self.secs_to_freedom is not None:
+            extra_headers_dict["Retry-After"] = self.secs_to_freedom
+
+        return extra_headers_dict
+
+    @property
+    def data(self) -> Dict[str, Any]:
+        data_dict = super().data
+        data_dict['retry-after'] = self.secs_to_freedom
+
+        return data_dict
 
 class InvalidJSONError(JsonableError):
     code = ErrorCode.INVALID_JSON
