@@ -839,6 +839,8 @@ def parse_anchor_value(anchor_val: Optional[str],
         anchor = int(anchor_val)
         if anchor < 0:
             return 0
+        elif anchor > LARGER_THAN_MAX_MESSAGE_ID:
+            return LARGER_THAN_MAX_MESSAGE_ID
         return anchor
     except ValueError:
         raise JsonableError(_("Invalid anchor"))
