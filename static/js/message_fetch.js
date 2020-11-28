@@ -248,6 +248,7 @@ exports.load_messages = function (opts) {
                 // retry or display a connection error.
                 //
                 // FIXME: Warn the user when this has happened?
+                message_scroll.hide_indicators();
                 const data = {
                     messages: [],
                 };
