@@ -5,6 +5,9 @@ import shlex
 import subprocess
 import sys
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from scripts.lib.zulip_tools import ENDC, FAIL, OKGREEN
+
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Request the special webpack setup for frontend integration tests,
@@ -85,8 +88,9 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
             ret = 1
             ret = run_tests()[0]
     if ret != 0:
-        print("""
-The Puppeteer frontend tests failed! For help debugging, read:
+        print(f"""
+{FAIL}The Puppeteer frontend tests failed!{ENDC}
+For help debugging, read:
   https://zulip.readthedocs.io/en/latest/testing/testing-with-puppeteer.html
 or report and ask for help in chat.zulip.org""", file=sys.stderr)
         if os.environ.get("CIRCLECI"):
@@ -101,4 +105,5 @@ external_host = "zulipdev.com:9981"
 assert_provisioning_status_ok(options.force)
 prepare_puppeteer_run()
 run_tests(options.tests, external_host)
+print(f"{OKGREEN}All tests passed!{ENDC}")
 sys.exit(0)
