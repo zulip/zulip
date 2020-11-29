@@ -49,8 +49,14 @@
                 <span class="topic_edit">
                     <span class="topic_edit_form" id="{{id}}"></span>
                 </span>
-
-                <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Mute topic' }} (M)"></i>
+                
+                {{#if topic_muted}}
+                    <i class="fa fa-bell on_hover_topic_unmute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Unmute topic' }}" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
+                {{/if}}
+                {{#if topic_unmuted}}
+                    <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+                {{/if}}
+                
             </span>
             <span class="recipient_row_date {{#if group_date_divider_html}}{{else}}hide-date{{/if}}">{{{date}}}</span>
         </div>
