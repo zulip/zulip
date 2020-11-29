@@ -140,8 +140,8 @@ IGNORED_PHRASES = [
     r"\bN\b",
     # Capital c feels obtrusive in clear status option
     r"clear",
-    r"group private messages with __recipient__",
-    r"private messages with __recipient__",
+    r"group private messages with __- recipient__",
+    r"private messages with __- recipient__",
     r"private messages with yourself",
     # TO CLEAN UP
     # Just want to avoid churning login.html right now

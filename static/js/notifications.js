@@ -564,19 +564,21 @@ exports.send_test_notification = function (content) {
     ]);
 };
 
+// Note that this returns values that are not HTML-escaped, for use in
+// handlebars templates that will do further escaping.
 function get_message_header(message) {
     if (message.type === "stream") {
         return message.stream + " > " + message.topic;
     }
     if (message.display_recipient.length > 2) {
-        return i18n.t("group private messages with __recipient__", {
+        return i18n.t("group private messages with __- recipient__", {
             recipient: message.display_reply_to,
         });
     }
     if (people.is_current_user(message.reply_to)) {
         return i18n.t("private messages with yourself");
     }
-    return i18n.t("private messages with __recipient__", {recipient: message.display_reply_to});
+    return i18n.t("private messages with __- recipient__", {recipient: message.display_reply_to});
 }
 
 exports.get_local_notify_mix_reason = function (message) {
