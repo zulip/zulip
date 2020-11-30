@@ -17,9 +17,9 @@ const zjquery = require("./zjquery");
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
     only: [
-        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../static/js")) + path.sep),
+        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../static/js") + path.sep)),
         new RegExp(
-            "^" + _.escapeRegExp(path.resolve(__dirname, "../../static/shared/js")) + path.sep,
+            "^" + _.escapeRegExp(path.resolve(__dirname, "../../static/shared/js") + path.sep),
         ),
     ],
     plugins: ["rewire-ts"],
