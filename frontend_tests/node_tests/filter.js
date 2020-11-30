@@ -2,10 +2,12 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+
 zrequire("unread");
 zrequire("stream_data");
 const people = zrequire("people");
-global.stub_out_jquery();
+stub_out_jquery();
 set_global("$", global.make_zjquery());
 zrequire("message_util", "js/message_util");
 zrequire("Filter", "js/filter");

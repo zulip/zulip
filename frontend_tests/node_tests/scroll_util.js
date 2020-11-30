@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 zrequire("scroll_util");
 set_global("ui", {
     get_scroll_element: (element) => element,

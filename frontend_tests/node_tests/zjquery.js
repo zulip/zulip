@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global} = require("../zjsunit/namespace");
+
 /*
 
 This test module actually tests our test code, particularly zjquery, and

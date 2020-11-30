@@ -5,6 +5,8 @@ const {strict: assert} = require("assert");
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+
 set_global("$", global.make_zjquery());
 set_global("DOMParser", new JSDOM().window.DOMParser);
 set_global("document", {});

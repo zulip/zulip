@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {zrequire} = require("../zjsunit/namespace");
+
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
 
 // The data structures here may be different for

@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const emoji = zrequire("emoji", "shared/js/emoji");
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
 zrequire("compose_state");
@@ -331,7 +333,7 @@ run_test("content_typeahead_selected", () => {
         },
     });
     let set_timeout_called = false;
-    global.patch_builtin("setTimeout", (f, time) => {
+    set_global("setTimeout", (f, time) => {
         f();
         assert.equal(time, 0);
         set_timeout_called = true;

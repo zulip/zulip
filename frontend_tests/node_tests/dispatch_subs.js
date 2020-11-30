@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const events = require("./lib/events");
 
 const event_fixtures = events.fixtures;

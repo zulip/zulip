@@ -5,6 +5,8 @@ const {strict: assert} = require("assert");
 const {JSDOM} = require("jsdom");
 const rewiremock = require("rewiremock/node");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const events = require("./lib/events");
 
 set_global("bridge", false);
@@ -721,7 +723,7 @@ run_test("send_message", () => {
         return stub_state;
     }
 
-    global.patch_builtin("setTimeout", (func) => {
+    set_global("setTimeout", (func) => {
         func();
     });
     global.server_events = {

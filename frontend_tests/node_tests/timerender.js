@@ -5,6 +5,8 @@ const {strict: assert} = require("assert");
 const moment = require("moment");
 const XDate = require("xdate");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("$", global.make_zjquery());
 set_global("page_params", {
     twenty_four_hour_time: true,

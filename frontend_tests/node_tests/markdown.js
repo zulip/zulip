@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+
 zrequire("hash_util");
 
 const emoji = zrequire("emoji", "shared/js/emoji");

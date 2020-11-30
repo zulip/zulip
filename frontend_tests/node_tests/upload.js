@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("$", global.make_zjquery());
 set_global("document", {
     location: {},
@@ -273,7 +275,7 @@ run_test("upload_files", () => {
     upload.upload_files(uppy, config, files);
     assert.equal(add_file_counter, 1);
 
-    global.patch_builtin("setTimeout", (func) => {
+    set_global("setTimeout", (func) => {
         func();
     });
     hide_upload_status_called = false;
@@ -542,7 +544,7 @@ run_test("uppy_events", () => {
     assert.equal(compose_ui_autosize_textarea_called, false);
 
     const on_complete_callback = callbacks.complete;
-    global.patch_builtin("setTimeout", (func) => {
+    set_global("setTimeout", (func) => {
         func();
     });
     let hide_upload_status_called = false;

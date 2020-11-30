@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 zrequire("unread");
 zrequire("stream_data");
 zrequire("stream_topic_history");

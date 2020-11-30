@@ -37,14 +37,6 @@ if (files.length === 0) {
 }
 
 // Set up our namespace helpers.
-global.with_field = namespace.with_field;
-global.set_global = namespace.set_global;
-global.patch_builtin = namespace.set_global;
-global.zrequire = namespace.zrequire;
-global.reset_module = namespace.reset_module;
-global.stub_out_jquery = namespace.stub_out_jquery;
-global.with_overrides = namespace.with_overrides;
-
 global.window = new Proxy(global, {
     set: (obj, prop, value) => {
         namespace.set_global(prop, value);
@@ -107,7 +99,7 @@ global.run_test = (label, f) => {
         console.info("        test: " + label);
     }
     try {
-        global.with_overrides(f);
+        namespace.with_overrides(f);
     } catch (error) {
         console.info("-".repeat(50));
         console.info(`test failed: ${current_file_name} > ${label}`);
@@ -120,16 +112,16 @@ global.run_test = (label, f) => {
 
 try {
     files.forEach((file) => {
-        set_global("location", {
+        namespace.set_global("location", {
             hash: "#",
         });
-        global.patch_builtin("setTimeout", noop);
-        global.patch_builtin("setInterval", noop);
+        namespace.set_global("setTimeout", noop);
+        namespace.set_global("setInterval", noop);
         _.throttle = immediate;
         _.debounce = immediate;
 
-        set_global("blueslip", make_zblueslip());
-        set_global("i18n", stub_i18n);
+        namespace.set_global("blueslip", make_zblueslip());
+        namespace.set_global("i18n", stub_i18n);
         namespace.clear_zulip_refs();
 
         run_one_module(file);

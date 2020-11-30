@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+
 set_global("document", "document-stub");
 set_global("$", global.make_zjquery());
 

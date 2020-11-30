@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const autosize = require("autosize");
 
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+
 zrequire("compose_ui");
 const people = zrequire("people");
 zrequire("user_status");

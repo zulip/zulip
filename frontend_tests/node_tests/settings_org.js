@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("$", global.make_zjquery());
 
 const noop = () => {};
@@ -200,7 +202,7 @@ function test_submit_settings_form(submit_form) {
         realm_create_stream_policy: settings_config.create_stream_policy_values.by_members.code,
     });
 
-    global.patch_builtin("setTimeout", (func) => func());
+    set_global("setTimeout", (func) => func());
     const ev = {
         preventDefault: noop,
         stopPropagation: noop,
