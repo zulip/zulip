@@ -72,7 +72,7 @@ run_test("basics", () => {
     warning = common.password_warning(password, password_field(6));
     assert.equal(warning, 'Repeats like "aaa" are easy to guess');
 
-    delete global.zxcvbn;
+    set_global("zxcvbn", undefined);
     password = "aaaaaaaa";
     accepted = common.password_quality(password, bar, password_field(6, 1e100));
     assert(accepted === undefined);
