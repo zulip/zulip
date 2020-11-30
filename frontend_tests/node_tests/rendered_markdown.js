@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 zrequire("user_groups");

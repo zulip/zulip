@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("scroll_util");
 set_global("ui", {
     get_scroll_element: (element) => element,

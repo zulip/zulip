@@ -1,5 +1,6 @@
 "use strict";
 
+const {strict: assert} = require("assert");
 const fs = require("fs");
 
 const {JSDOM} = require("jsdom");

@@ -1,5 +1,6 @@
 "use strict";
 
+const {strict: assert} = require("assert");
 // This tests the stream searching functionality which currently
 // lives in stream_list.js.
 

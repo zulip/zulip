@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 /*
 
 This test module actually tests our test code, particularly zblueslip, and

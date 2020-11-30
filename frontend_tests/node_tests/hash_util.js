@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("hash_util");
 zrequire("stream_data");
 const people = zrequire("people");

@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("unread");
 
 zrequire("Filter", "js/filter");

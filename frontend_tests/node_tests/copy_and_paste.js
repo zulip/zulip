@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 global.stub_out_jquery();
 
 set_global("page_params", {

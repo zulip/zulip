@@ -1,5 +1,6 @@
 "use strict";
 
+const {strict: assert} = require("assert");
 // These unit tests for static/js/message_list.js emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.

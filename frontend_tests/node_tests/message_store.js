@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const util = zrequire("util");
 zrequire("pm_conversations");
 const people = zrequire("people");

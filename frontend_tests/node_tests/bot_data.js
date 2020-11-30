@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _settings_bots = {
     render_bots: () => {},
 };

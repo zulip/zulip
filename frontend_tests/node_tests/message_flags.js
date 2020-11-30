@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("unread");
 zrequire("unread_ops");
 zrequire("message_flags");

@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const XDate = require("xdate");
 
 set_global("$", global.make_zjquery());

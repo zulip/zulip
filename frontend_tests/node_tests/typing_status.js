@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("typing");
 zrequire("people");
 zrequire("compose_pm_pill");

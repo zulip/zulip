@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const {JSDOM} = require("jsdom");
 const rewiremock = require("rewiremock/node");
 
