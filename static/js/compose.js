@@ -1301,4 +1301,34 @@ exports.initialize = function () {
     }
 };
 
+$(".compose_drafts_button").tooltip({
+    title: i18n.t("Drafts (d)"),
+    animation: false,
+    placement: "top",
+});
+
+$(".compose_mobile_button").tooltip({
+    title: i18n.t("New message (c)"),
+    animation: false,
+    placement: "top",
+});
+
+$(".compose_stream_button").tooltip({
+    title: i18n.t("New topic (c)"),
+    animation: false,
+    placement: "top",
+});
+
+$(".compose_private_button").tooltip({
+    title: i18n.t("New private message (x)"),
+    animation: false,
+    placement: "top",
+});
+
+$(".compose_reply_button").tooltip({
+    title: i18n.t("Reply (r)"),
+    animation: false,
+    placement: "top",
+});
+
 window.compose = exports;
