@@ -54,22 +54,22 @@ run_test("get_editability", () => {
         sent_by_me: true,
     };
 
-    global.page_params = {
+    set_global("page_params", {
         realm_allow_message_editing: false,
-    };
+    });
     assert.equal(get_editability(message), editability_types.NO);
 
-    global.page_params = {
+    set_global("page_params", {
         realm_allow_message_editing: true,
         // Limit of 0 means no time limit on editing messages
         realm_message_content_edit_limit_seconds: 0,
-    };
+    });
     assert.equal(get_editability(message), editability_types.FULL);
 
-    global.page_params = {
+    set_global("page_params", {
         realm_allow_message_editing: true,
         realm_message_content_edit_limit_seconds: 10,
-    };
+    });
     const now = new Date();
     const current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 60;
@@ -88,13 +88,13 @@ run_test("get_editability", () => {
         sent_by_me: false,
         type: "stream",
     };
-    global.page_params = {
+    set_global("page_params", {
         realm_allow_community_topic_editing: true,
         realm_allow_message_editing: true,
         realm_message_content_edit_limit_seconds: 0,
         realm_community_topic_editing_limit_seconds: 86400,
         is_admin: false,
-    };
+    });
     message.timestamp = current_timestamp - 60;
     assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
 
@@ -119,11 +119,11 @@ run_test("get_editability", () => {
 });
 
 run_test("get_deletability", () => {
-    global.page_params = {
+    set_global("page_params", {
         is_admin: true,
         realm_allow_message_deleting: false,
         realm_message_content_delete_limit_seconds: 0,
-    };
+    });
     const message = {
         sent_by_me: false,
         locally_echoed: true,

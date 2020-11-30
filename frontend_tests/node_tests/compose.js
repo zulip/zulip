@@ -729,11 +729,11 @@ run_test("send_message", () => {
     set_global("setTimeout", (func) => {
         func();
     });
-    global.server_events = {
+    set_global("server_events", {
         assert_get_events_running() {
             stub_state.get_events_running_called += 1;
         },
-    };
+    });
 
     // Tests start here.
     (function test_message_send_success_codepath() {
@@ -1045,8 +1045,8 @@ run_test("initialize", () => {
     });
     $("#compose #attach_files").addClass("notdisplayed");
 
-    global.document = "document-stub";
-    global.csrf_token = "fake-csrf-token";
+    set_global("document", "document-stub");
+    set_global("csrf_token", "fake-csrf-token");
 
     page_params.max_file_upload_size_mib = 512;
 
@@ -1097,13 +1097,13 @@ run_test("initialize", () => {
     function set_up_compose_start_mock(expected_opts) {
         compose_actions_start_checked = false;
 
-        global.compose_actions = {
+        set_global("compose_actions", {
             start(msg_type, opts) {
                 assert.equal(msg_type, "stream");
                 assert.deepEqual(opts, expected_opts);
                 compose_actions_start_checked = true;
             },
-        };
+        });
     }
 
     (function test_page_params_narrow_path() {
@@ -1152,7 +1152,7 @@ run_test("update_fade", () => {
     let set_focused_recipient_checked = false;
     let update_all_called = false;
 
-    global.compose_fade = {
+    set_global("compose_fade", {
         set_focused_recipient(msg_type) {
             assert.equal(msg_type, "private");
             set_focused_recipient_checked = true;
@@ -1160,7 +1160,7 @@ run_test("update_fade", () => {
         update_all() {
             update_all_called = true;
         },
-    };
+    });
 
     compose_state.set_message_type(false);
     keyup_handler_func();
@@ -1850,13 +1850,11 @@ run_test("create_message_object", () => {
         "#compose-textarea": "burrito",
     };
 
-    global.$ = function (selector) {
-        return {
-            val() {
-                return page[selector];
-            },
-        };
-    };
+    set_global("$", (selector) => ({
+        val() {
+            return page[selector];
+        },
+    }));
 
     global.compose_state.get_message_type = function () {
         return "stream";
