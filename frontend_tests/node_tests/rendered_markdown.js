@@ -196,7 +196,7 @@ run_test("timestamp-twenty-four-hour-time", () => {
     $content.set_find_results("time", $array([$timestamp]));
 
     // We will temporarily change the 24h setting for this test.
-    const old_page_params = global.page_params;
+    const old_page_params = page_params;
 
     set_global("page_params", {...old_page_params, twenty_four_hour_time: true});
     rm.update_elements($content);

@@ -74,7 +74,7 @@ run_test("basics", () => {
 
     assert.deepEqual(list.all_messages(), messages);
 
-    global.$.Event = function (ev) {
+    $.Event = function (ev) {
         assert.equal(ev, "message_selected.zulip");
     };
     list.select_id(50);

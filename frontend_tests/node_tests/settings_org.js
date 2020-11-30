@@ -653,9 +653,7 @@ function test_parse_time_limit() {
     const elem = $("#id_realm_message_content_edit_limit_minutes");
     const test_function = (value, expected_value = value) => {
         elem.val(value);
-        global.page_params.realm_message_content_edit_limit_seconds = settings_org.parse_time_limit(
-            elem,
-        );
+        page_params.realm_message_content_edit_limit_seconds = settings_org.parse_time_limit(elem);
         assert.equal(
             settings_org.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",

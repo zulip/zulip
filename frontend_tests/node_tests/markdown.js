@@ -137,12 +137,11 @@ const amp_group = {
     members: [],
 };
 
-global.user_groups.add(hamletcharacters);
-global.user_groups.add(backend);
-global.user_groups.add(edgecase_group);
-global.user_groups.add(amp_group);
+user_groups.add(hamletcharacters);
+user_groups.add(backend);
+user_groups.add(edgecase_group);
+user_groups.add(amp_group);
 
-const stream_data = global.stream_data;
 const denmark = {
     subscribed: false,
     color: "blue",
