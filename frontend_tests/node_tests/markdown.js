@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -259,12 +260,12 @@ run_test("marked_shared", () => {
         const output = message.content;
         const error_message = `Failure in test: ${test.name}`;
         if (test.marked_expected_output) {
-            global.markdown_assert.notEqual(test.expected_output, output, error_message);
-            global.markdown_assert.equal(test.marked_expected_output, output, error_message);
+            markdown_assert.notEqual(test.expected_output, output, error_message);
+            markdown_assert.equal(test.marked_expected_output, output, error_message);
         } else if (test.backend_only_rendering) {
             assert.equal(markdown.contains_backend_only_syntax(test.input), true);
         } else {
-            global.markdown_assert.equal(test.expected_output, output, error_message);
+            markdown_assert.equal(test.expected_output, output, error_message);
         }
     });
 });

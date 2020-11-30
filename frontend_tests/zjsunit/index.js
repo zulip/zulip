@@ -74,9 +74,6 @@ function short_tb(tb) {
     return lines.splice(0, i + 1).join("\n") + "\n(...)\n";
 }
 
-// Set up Markdown comparison helper
-global.markdown_assert = require("./markdown_assert");
-
 let current_file_name;
 
 function run_one_module(file) {
