@@ -259,6 +259,9 @@ class DecoratorTestCase(ZulipTestCase):
         request.body = '{"a": "b"}'
         self.assertEqual(get_payload(request), {'a': 'b'})
 
+    def logger_output(self, output_string: str, type: str, logger: str) -> str:
+        return f'{type.upper()}:zulip.zerver.{logger}:{output_string}'
+
     def test_webhook_view(self) -> None:
         @webhook_view('ClientName')
         def my_webhook(request: HttpRequest, user_profile: UserProfile) -> str:
@@ -310,7 +313,8 @@ class DecoratorTestCase(ZulipTestCase):
         # Test when content_type is application/json and request.body
         # is valid JSON; exception raised in the webhook function
         # should be re-raised
-        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
+
+        with self.assertLogs('zulip.zerver.webhooks', level='INFO') as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
                 request.body = "{}"
                 request.content_type = 'application/json'
@@ -318,7 +322,8 @@ class DecoratorTestCase(ZulipTestCase):
 
         # Test when content_type is not application/json; exception raised
         # in the webhook function should be re-raised
-        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
+
+        with self.assertLogs('zulip.zerver.webhooks', level='INFO') as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
                 request.body = "notjson"
                 request.content_type = 'text/plain'
@@ -327,25 +332,25 @@ class DecoratorTestCase(ZulipTestCase):
         # Test when content_type is application/json but request.body
         # is not valid JSON; invalid JSON should be logged and the
         # exception raised in the webhook function should be re-raised
-        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
+        with self.assertLogs('zulip.zerver.webhooks', level='ERROR') as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
                 request.body = "invalidjson"
                 request.content_type = 'application/json'
                 request.META['HTTP_X_CUSTOM_HEADER'] = 'custom_value'
                 my_webhook_raises_exception(request)
 
-        mock_exception.assert_called_with("raised by webhook function", stack_info=True)
+        self.assertIn(self.logger_output("raised by webhook function\n", 'error', 'webhooks'), log.output[0])
 
         # Test when an unsupported webhook event occurs
-        with mock.patch('zerver.decorator.webhook_unsupported_events_logger.exception') as mock_exception:
-            exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook"
+        exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook"
+        with self.assertLogs('zulip.zerver.webhooks.unsupported', level='ERROR') as log:
             with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
                 request.body = "invalidjson"
                 request.content_type = 'application/json'
                 request.META['HTTP_X_CUSTOM_HEADER'] = 'custom_value'
                 my_webhook_raises_exception_unsupported_event(request)
 
-        mock_exception.assert_called_with(exception_msg, stack_info=True)
+        self.assertIn(self.logger_output(exception_msg, 'error', 'webhooks.unsupported'), log.output[0])
 
         with self.settings(RATE_LIMITING=True):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
@@ -386,13 +391,11 @@ class SkipRateLimitingTest(ZulipTestCase):
         request = HostRequestMock(host="zulip.testserver")
         request.META['HTTP_AUTHORIZATION'] = self.encode_email(self.example_email("hamlet"))
         request.method = 'POST'
-
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_unlimited_view(request)
 
         self.assert_json_success(result)
         self.assertFalse(rate_limit_mock.called)
-
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_rate_limited_view(request)
 
@@ -411,13 +414,11 @@ class SkipRateLimitingTest(ZulipTestCase):
         request = HostRequestMock(host="zulip.testserver")
         request.method = 'POST'
         request.POST['api_key'] = get_api_key(self.example_user("hamlet"))
-
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_unlimited_view(request)
 
         self.assert_json_success(result)
         self.assertFalse(rate_limit_mock.called)
-
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_rate_limited_view(request)
 
@@ -434,13 +435,11 @@ class SkipRateLimitingTest(ZulipTestCase):
         request = HostRequestMock(host="zulip.testserver")
         request.method = 'POST'
         request.user = self.example_user("hamlet")
-
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_unlimited_view(request)
 
         self.assert_json_success(result)
         self.assertFalse(rate_limit_mock.called)
-
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
             result = my_rate_limited_view(request)
 
@@ -555,7 +554,6 @@ class RateLimitTestCase(ZulipTestCase):
             return 'some value'
 
         f = rate_limit()(f)
-
         with self.settings(RATE_LIMITING=True):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
                 with self.errors_disallowed():
@@ -578,7 +576,6 @@ class RateLimitTestCase(ZulipTestCase):
             return 'some value'
 
         f = rate_limit()(f)
-
         with self.settings(RATE_LIMITING=True):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
                 with self.errors_disallowed():
@@ -602,7 +599,6 @@ class RateLimitTestCase(ZulipTestCase):
             return 'some value'
 
         f = rate_limit()(f)
-
         with self.settings(RATE_LIMITING=False):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
                 with self.errors_disallowed():
@@ -625,7 +621,6 @@ class RateLimitTestCase(ZulipTestCase):
             return 'some value'
 
         f = rate_limit()(f)
-
         with self.settings(RATE_LIMITING=True):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
                 with self.errors_disallowed():
@@ -655,7 +650,6 @@ class RateLimitTestCase(ZulipTestCase):
             return 'some value'
 
         f = rate_limit()(f)
-
         with self.settings(RATE_LIMITING=True):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
                 with self.errors_disallowed():
