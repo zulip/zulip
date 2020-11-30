@@ -366,7 +366,7 @@ const map_language_to_playground_info = {
     Rust: [
         {
             name: "Rust playground",
-            url_prefix: "https://play.rust-lang.org/?code=",
+            url_prefix: "https://play.rust-lang.org/?edition=2018&code=",
         },
     ],
     Julia: [
