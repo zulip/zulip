@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
+const {with_stub} = require("../zjsunit/stub");
 
 // Important note on these tests:
 //
@@ -83,7 +84,7 @@ function return_false() {
 
 function stubbing(func_name_to_stub, test_function) {
     with_overrides((override) => {
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override(func_name_to_stub, stub.f);
             test_function(stub);
         });
