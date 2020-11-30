@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 set_global("page_params", {
     search_pills_enabled: false,
 });

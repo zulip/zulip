@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const events = require("./lib/events");
 
 const event_fixtures = events.fixtures;

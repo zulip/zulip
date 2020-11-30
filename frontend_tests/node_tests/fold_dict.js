@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const {FoldDict} = zrequire("fold_dict");
 
 run_test("basic", () => {

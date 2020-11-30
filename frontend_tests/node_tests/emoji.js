@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 
 const events = require("./lib/events");

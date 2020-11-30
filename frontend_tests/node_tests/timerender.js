@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const moment = require("moment");
 const XDate = require("xdate");
 

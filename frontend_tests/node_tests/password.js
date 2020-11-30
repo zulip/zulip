@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 set_global("zxcvbn", zrequire("zxcvbn", "zxcvbn"));
 zrequire("common");
 

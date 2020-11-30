@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("user_groups");
 
 run_test("user_groups", () => {

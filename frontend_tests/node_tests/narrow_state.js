@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const people = zrequire("people");
 zrequire("Filter", "js/filter");
 zrequire("stream_data");

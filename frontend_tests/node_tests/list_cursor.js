@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("list_cursor");
 
 run_test("config errors", () => {

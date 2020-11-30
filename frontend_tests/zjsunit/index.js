@@ -25,8 +25,6 @@ require("@babel/register")({
     plugins: ["rewire-ts"],
 });
 
-global.assert = require("assert").strict;
-
 // Create a helper function to avoid sneaky delays in tests.
 function immediate(f) {
     return () => f();

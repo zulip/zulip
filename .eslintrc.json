@@ -361,7 +361,6 @@
         {
             "files": ["frontend_tests/**"],
             "globals": {
-                "assert": false,
                 "document": false,
                 "reset_module": false,
                 "set_global": false,

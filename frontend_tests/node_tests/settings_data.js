@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
 

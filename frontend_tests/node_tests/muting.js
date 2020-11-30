@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("timerender");
 zrequire("muting");
 zrequire("stream_data");

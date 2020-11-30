@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const ui = zrequire("ui");
 
 set_global("navigator", {

@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
 
 run_test("get_unused_fence", () => {

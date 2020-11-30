@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const rs = zrequire("recent_senders");
 
 let next_id = 0;

@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("unread");
 zrequire("stream_data");
 zrequire("stream_topic_history");

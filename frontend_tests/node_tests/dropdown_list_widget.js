@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("dropdown_list_widget");
 zrequire("scroll_util");
 set_global("$", global.make_zjquery());
