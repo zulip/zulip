@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const people = zrequire("people");
 set_global("md5", (s) => "md5-" + s);
 zrequire("user_pill");

@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const rewiremock = require("rewiremock/node");
 
 // Dependencies

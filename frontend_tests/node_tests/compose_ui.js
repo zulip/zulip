@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const autosize = require("autosize");
 
 zrequire("compose_ui");

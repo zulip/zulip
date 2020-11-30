@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const util = zrequire("util");
 set_global("$", global.make_zjquery());
 

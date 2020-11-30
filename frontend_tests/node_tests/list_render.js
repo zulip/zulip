@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("list_render");
 
 // We need these stubs to get by instanceof checks.

@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 set_global("$", global.make_zjquery());
 zrequire("hash_util");
 zrequire("hashchange");

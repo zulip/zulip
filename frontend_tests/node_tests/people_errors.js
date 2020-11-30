@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const people = zrequire("people");
 
 const return_false = function () {

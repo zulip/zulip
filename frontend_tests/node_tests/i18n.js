@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("templates");
 
 // We download our translations in `page_params` (which

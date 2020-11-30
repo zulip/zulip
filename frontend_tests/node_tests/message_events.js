@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("message_events");
 zrequire("message_store");
 zrequire("muting");

@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("submessage");
 
 set_global("channel", {});

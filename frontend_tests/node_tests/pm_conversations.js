@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const pmc = zrequire("pm_conversations");
 
 run_test("partners", () => {

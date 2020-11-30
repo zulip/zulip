@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const noop = function () {};
 const return_false = function () {
     return false;

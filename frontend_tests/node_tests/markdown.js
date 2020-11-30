@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 zrequire("hash_util");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
