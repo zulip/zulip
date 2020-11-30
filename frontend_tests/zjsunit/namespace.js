@@ -73,7 +73,7 @@ exports.restore = function () {
 };
 
 exports.stub_out_jquery = function () {
-    set_global("$", () => ({
+    exports.set_global("$", () => ({
         on() {},
         trigger() {},
         hide() {},

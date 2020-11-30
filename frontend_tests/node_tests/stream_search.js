@@ -1,6 +1,8 @@
 "use strict";
 
 const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
 // This tests the stream searching functionality which currently
 // lives in stream_list.js.
 

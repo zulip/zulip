@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const noop = function () {};
 
 const events = require("./lib/events");
@@ -14,7 +16,7 @@ const typing_person1 = events.typing_person1;
 
 set_global("$", global.make_zjquery());
 
-global.patch_builtin("setTimeout", (func) => func());
+set_global("setTimeout", (func) => func());
 
 set_global("activity", {});
 set_global("alert_words_ui", {});

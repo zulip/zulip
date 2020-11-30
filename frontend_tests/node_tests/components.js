@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 zrequire("keydown_util");
 zrequire("components");
 

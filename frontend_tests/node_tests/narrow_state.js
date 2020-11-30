@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const people = zrequire("people");
 zrequire("Filter", "js/filter");
 zrequire("stream_data");

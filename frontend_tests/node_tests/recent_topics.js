@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {reset_module, set_global, zrequire} = require("../zjsunit/namespace");
+
 zrequire("message_util");
 
 const noop = () => {};

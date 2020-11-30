@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 zrequire("unread");
 
 zrequire("Filter", "js/filter");
@@ -11,7 +13,7 @@ zrequire("MessageListData", "js/message_list_data");
 set_global("page_params", {});
 set_global("muting", {});
 
-global.patch_builtin("setTimeout", (f, delay) => {
+set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     return f();
 });

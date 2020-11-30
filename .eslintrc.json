@@ -362,11 +362,7 @@
             "files": ["frontend_tests/**"],
             "globals": {
                 "document": false,
-                "reset_module": false,
-                "set_global": false,
-                "window": false,
-                "with_field": false,
-                "zrequire": false
+                "window": false
             },
             "rules": {
                 "no-sync": "off"

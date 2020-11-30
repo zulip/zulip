@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {zrequire} = require("../zjsunit/namespace");
+
 const pmc = zrequire("pm_conversations");
 
 run_test("partners", () => {

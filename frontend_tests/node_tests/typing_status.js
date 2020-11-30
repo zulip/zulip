@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 zrequire("typing");
 zrequire("people");
 zrequire("compose_pm_pill");
@@ -38,8 +40,8 @@ run_test("basics", () => {
         events.timer_cleared = true;
     }
 
-    global.patch_builtin("setTimeout", set_timeout);
-    global.patch_builtin("clearTimeout", clear_timeout);
+    set_global("setTimeout", set_timeout);
+    set_global("clearTimeout", clear_timeout);
 
     function notify_server_start(recipient) {
         assert.equal(recipient, "alice");

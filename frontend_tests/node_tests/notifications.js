@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 // Dependencies
 set_global(
     "$",

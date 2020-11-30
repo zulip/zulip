@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("page_params", {
     realm_uri: "https://chat.example.com",
     realm_embedded_bots: [

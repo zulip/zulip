@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const XDate = require("xdate");
 
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+
 set_global("$", global.make_zjquery());
 
 zrequire("localstorage");

@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("narrow_state", {});
 set_global("unread", {});
 set_global("muting", {});

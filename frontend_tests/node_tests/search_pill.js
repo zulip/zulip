@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {zrequire} = require("../zjsunit/namespace");
+
 zrequire("search_pill");
 zrequire("input_pill");
 zrequire("Filter", "js/filter");

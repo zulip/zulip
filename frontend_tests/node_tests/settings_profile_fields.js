@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("page_params", {});
 set_global("$", global.make_zjquery());
 set_global("loading", {});

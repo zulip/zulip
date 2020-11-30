@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("$", global.make_zjquery());
 set_global("document", "document-stub");
 

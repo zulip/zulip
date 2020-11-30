@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 zrequire("user_pill");
 zrequire("pill_typeahead");
 zrequire("settings_user_groups");
@@ -329,7 +331,7 @@ run_test("populate_user_groups", () => {
     }
 
     pills.onPillRemove = function (handler) {
-        global.patch_builtin("setTimeout", (func) => {
+        set_global("setTimeout", (func) => {
             func();
         });
         realm_user_group.members = new Set([2, 31]);
@@ -789,7 +791,7 @@ run_test("on_events", () => {
             assert.equal(opts.data.description, "translated: All mobile members");
             api_endpoint_called = true;
             (function test_post_success() {
-                global.patch_builtin("setTimeout", (func) => {
+                set_global("setTimeout", (func) => {
                     func();
                 });
                 opts.success();
