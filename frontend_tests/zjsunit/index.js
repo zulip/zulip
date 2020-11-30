@@ -44,7 +44,7 @@ global.window = new Proxy(global, {
 global.to_$ = () => window;
 
 // Set up Handlebars
-global.stub_templates = handlebars.stub_templates;
+handlebars.hook_require();
 
 const noop = function () {};
 

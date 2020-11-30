@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -132,7 +133,7 @@ run_test("populate_user_groups", () => {
 
     let templates_render_called = false;
     const fake_rendered_temp = $.create("fake_admin_user_group_list_template_rendered");
-    global.stub_templates((template, args) => {
+    stub_templates((template, args) => {
         assert.equal(template, "admin_user_group_list");
         assert.equal(args.user_group.id, 1);
         assert.equal(args.user_group.name, "Mobile");
@@ -375,7 +376,7 @@ run_test("with_external_user", () => {
         return noop;
     };
 
-    global.stub_templates(() => noop);
+    stub_templates(() => noop);
 
     people.get_by_user_id = function () {
         return noop;

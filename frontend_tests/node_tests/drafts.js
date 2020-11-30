@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const XDate = require("xdate");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -308,7 +309,7 @@ run_test("format_drafts", (override) => {
         return stub_render_now(time, new XDate(1549958107000));
     };
 
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "draft_table_body");
         // Tests formatting and sorting of drafts
         assert.deepEqual(data.drafts, expected);
