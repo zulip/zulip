@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const _settings_bots = {
     render_bots: () => {},
 };

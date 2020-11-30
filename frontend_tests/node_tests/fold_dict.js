@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {zrequire} = require("../zjsunit/namespace");
+
 const {FoldDict} = zrequire("fold_dict");
 
 run_test("basic", () => {

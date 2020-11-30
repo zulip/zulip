@@ -5,6 +5,8 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const noop = () => {};
 const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});

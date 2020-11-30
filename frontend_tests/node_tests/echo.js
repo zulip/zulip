@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("$", global.make_zjquery());
 set_global("markdown", {});
 set_global("local_message", {

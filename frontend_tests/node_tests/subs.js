@@ -2,7 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-global.stub_out_jquery();
+const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+
+stub_out_jquery();
 
 set_global("ui", {
     get_content_element: (element) => element,

@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("page_params", {
     search_pills_enabled: true,
 });
@@ -28,7 +30,7 @@ set_global("search_pill_widget", {
     },
 });
 
-global.patch_builtin("setTimeout", (func) => func());
+set_global("setTimeout", (func) => func());
 
 run_test("clear_search_form", () => {
     $("#search_query").val("noise");

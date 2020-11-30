@@ -1,5 +1,7 @@
 "use strict";
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("$", global.make_zjquery());
 
 zrequire("keydown_util");

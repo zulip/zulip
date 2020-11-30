@@ -6,6 +6,8 @@ const fs = require("fs");
 const JQuery = require("jquery");
 const {JSDOM} = require("jsdom");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const jquery = JQuery(dom.window);

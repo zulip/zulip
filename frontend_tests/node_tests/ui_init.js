@@ -2,6 +2,8 @@
 
 const rewiremock = require("rewiremock/node");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 /*
     This test suite is designed to find errors
     in our initialization sequence.  It doesn't

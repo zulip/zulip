@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {zrequire} = require("../zjsunit/namespace");
+
 const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
 
 run_test("get_unused_fence", () => {

@@ -2,14 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-global.stub_out_jquery();
+const {JSDOM} = require("jsdom");
+
+const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+
+stub_out_jquery();
 
 set_global("page_params", {
     development_environment: true,
 });
 set_global("compose_ui", {});
-
-const {JSDOM} = require("jsdom");
 
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 const {DOMParser, document} = window;

@@ -1,6 +1,8 @@
 "use strict";
 
 const {strict: assert} = require("assert");
+
+const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
 // These unit tests for static/js/message_list.js emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
@@ -8,7 +10,7 @@ const {strict: assert} = require("assert");
 const noop = function () {};
 
 set_global("Filter", noop);
-global.stub_out_jquery();
+stub_out_jquery();
 set_global("document", null);
 set_global("narrow_state", {});
 set_global("stream_data", {});

@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
 

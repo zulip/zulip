@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const util = zrequire("util");
 zrequire("pm_conversations");
 const people = zrequire("people");

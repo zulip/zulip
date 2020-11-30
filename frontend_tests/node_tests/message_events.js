@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 zrequire("message_events");
 zrequire("message_store");
 zrequire("muting");

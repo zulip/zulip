@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {zrequire} = require("../zjsunit/namespace");
+
 zrequire("colorspace");
 
 run_test("sRGB_to_linear", () => {

@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {zrequire} = require("../zjsunit/namespace");
+
 zrequire("stream_data");
 const people = zrequire("people");
 zrequire("compose_fade");

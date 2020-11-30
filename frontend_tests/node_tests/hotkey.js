@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
+
 // Important note on these tests:
 //
 // The way the Zulip hotkey tests work is as follows.  First, we set
@@ -80,7 +82,7 @@ function return_false() {
 }
 
 function stubbing(func_name_to_stub, test_function) {
-    global.with_overrides((override) => {
+    with_overrides((override) => {
         global.with_stub((stub) => {
             override(func_name_to_stub, stub.f);
             test_function(stub);

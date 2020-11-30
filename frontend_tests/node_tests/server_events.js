@@ -2,11 +2,13 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+
 const noop = function () {};
 
 set_global("document", {});
 set_global("addEventListener", noop);
-global.stub_out_jquery();
+stub_out_jquery();
 
 zrequire("message_store");
 zrequire("server_events_dispatch");

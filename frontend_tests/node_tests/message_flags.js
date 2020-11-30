@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 zrequire("unread");
 zrequire("unread_ops");
 zrequire("message_flags");

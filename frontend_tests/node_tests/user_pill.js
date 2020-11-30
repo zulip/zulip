@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const people = zrequire("people");
 set_global("md5", (s) => "md5-" + s);
 zrequire("user_pill");

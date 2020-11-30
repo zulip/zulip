@@ -4,6 +4,8 @@ const {strict: assert} = require("assert");
 
 const XDate = require("xdate");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 const people = zrequire("people");
 zrequire("presence");
 

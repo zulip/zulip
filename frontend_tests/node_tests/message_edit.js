@@ -2,12 +2,14 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+
 set_global("document", null);
 set_global("page_params", {
     realm_community_topic_editing_limit_seconds: 86400,
 });
 
-global.stub_out_jquery();
+stub_out_jquery();
 
 zrequire("message_edit");
 

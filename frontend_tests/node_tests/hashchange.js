@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+
 set_global("$", global.make_zjquery());
 const window_stub = $.create("window-stub");
 set_global("location", {
