@@ -2,13 +2,14 @@
 
 const {strict: assert} = require("assert");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 const {LazySet} = zrequire("lazy_set");
 
 const noop = () => {};
-global.stub_templates(() => noop);
+stub_templates(() => noop);
 
 set_global("channel", {});
 set_global("hashchange", {update_browser_history: noop});

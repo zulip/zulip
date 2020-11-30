@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -79,7 +80,7 @@ run_test("create_sidebar_row", () => {
         devel_count.set_find_results(".value", devel_value);
         devel_count.set_parent(sidebar_row);
 
-        global.stub_templates((template_name, data) => {
+        stub_templates((template_name, data) => {
             assert.equal(template_name, "stream_sidebar_row");
             assert.equal(data.uri, "#narrow/stream/100-devel");
             return "<devel sidebar row>";
@@ -98,7 +99,7 @@ run_test("create_sidebar_row", () => {
         social_count.set_find_results(".value", social_value);
         social_count.set_parent(sidebar_row);
 
-        global.stub_templates((template_name, data) => {
+        stub_templates((template_name, data) => {
             assert.equal(template_name, "stream_sidebar_row");
             assert.equal(data.uri, "#narrow/stream/200-social");
             return "<social sidebar row>";
@@ -144,7 +145,7 @@ run_test("create_sidebar_row", () => {
 
     social.invite_only = true;
     social.color = "#222222";
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "stream_privacy");
         assert.equal(data.invite_only, true);
         assert.equal(data.dark_background, "dark_background");
@@ -673,7 +674,7 @@ run_test("rename_stream", () => {
     const li_stub = $.create("li stub");
     li_stub.length = 0;
 
-    global.stub_templates((name, payload) => {
+    stub_templates((name, payload) => {
         assert.equal(name, "stream_sidebar_row");
         assert.deepEqual(payload, {
             name: "Development",
@@ -721,7 +722,7 @@ run_test("refresh_pin", () => {
     const li_stub = $.create("li stub");
     li_stub.length = 0;
 
-    global.stub_templates(() => ({to_$: () => li_stub}));
+    stub_templates(() => ({to_$: () => li_stub}));
 
     stream_list.update_count_in_dom = noop;
     $("#stream_filters").append = noop;
@@ -750,7 +751,7 @@ run_test("create_initial_sidebar_rows", () => {
 
     stream_list.update_count_in_dom = noop;
 
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "stream_sidebar_row");
         return "<div>stub-html-" + data.name;
     });

@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -26,7 +27,7 @@ run_test("render_alert_words_ui", () => {
     const alert_word_items = $.create("alert_word_items");
     word_list.set_find_results(".alert-word-item", alert_word_items);
 
-    global.stub_templates((name, args) => {
+    stub_templates((name, args) => {
         assert.equal(name, "settings/alert_word_settings_item");
         return "stub-" + args.word;
     });

@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -59,7 +60,7 @@ function test_populate(opts) {
     loading.destroy_indicator = () => {};
 
     const template_data = [];
-    global.stub_templates((fn, data) => {
+    stub_templates((fn, data) => {
         assert.equal(fn, "admin_profile_field_list");
         template_data.push(data);
         return "whatever";
