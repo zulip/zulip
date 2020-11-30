@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {with_stub} = require("../zjsunit/stub");
 
 set_global("document", "document-stub");
 set_global("$", global.make_zjquery());
@@ -260,7 +261,7 @@ run_test("sending", (override) => {
     override("reactions.add_reaction", () => {});
     override("reactions.remove_reaction", () => {});
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         global.channel.del = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
         const args = stub.get_args("args").args;
@@ -282,7 +283,7 @@ run_test("sending", (override) => {
         args.error();
     });
     emoji_name = "alien"; // not set yet
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         global.channel.post = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
         const args = stub.get_args("args").args;
@@ -295,7 +296,7 @@ run_test("sending", (override) => {
     });
 
     emoji_name = "inactive_realm_emoji";
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         // Test removing a deactivated realm emoji. An user can interact with a
         // deactivated realm emoji only by clicking on a reaction, hence, only
         // `process_reaction_click()` codepath supports deleting/adding a deactivated
@@ -312,7 +313,7 @@ run_test("sending", (override) => {
     });
 
     emoji_name = "zulip"; // Test adding zulip emoji.
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         global.channel.post = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
         const args = stub.get_args("args").args;
@@ -774,7 +775,7 @@ run_test("process_reaction_click", () => {
         emoji_name: "smile",
         emoji_code: "1f642",
     };
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         global.channel.del = stub.f;
         reactions.process_reaction_click(message_id, "unicode_emoji,1f642");
         const args = stub.get_args("args").args;

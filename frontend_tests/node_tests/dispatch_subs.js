@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_stub, with_stub} = require("../zjsunit/stub");
 
 const events = require("./lib/events");
 
@@ -40,7 +41,7 @@ test("add", (override) => {
         name: sub.name,
     });
 
-    global.with_stub((subscription_stub) => {
+    with_stub((subscription_stub) => {
         override("stream_events.mark_subscribed", subscription_stub.f);
         dispatch(event);
         const args = subscription_stub.get_args("sub", "subscribers");
@@ -57,10 +58,10 @@ test("peer add/remove", (override) => {
         stream_id: event.stream_ids[0],
     });
 
-    const subs_stub = global.make_stub();
+    const subs_stub = make_stub();
     override("subs.update_subscribers_ui", subs_stub.f);
 
-    const compose_fade_stub = global.make_stub();
+    const compose_fade_stub = make_stub();
     override("compose_fade.update_faded_users", compose_fade_stub.f);
 
     dispatch(event);
@@ -85,7 +86,7 @@ test("remove", (override) => {
 
     stream_data.add_sub(sub);
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("stream_events.mark_unsubscribed", stub.f);
         dispatch(event);
         const args = stub.get_args("sub");
@@ -95,7 +96,7 @@ test("remove", (override) => {
 
 test("update", (override) => {
     const event = event_fixtures.subscription__update;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("stream_events.update_property", stub.f);
         dispatch(event);
         const args = stub.get_args("stream_id", "property", "value");
@@ -108,7 +109,7 @@ test("update", (override) => {
 test("add error handling", (override) => {
     // test blueslip errors/warns
     const event = event_fixtures.subscription__add;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("blueslip.error", stub.f);
         dispatch(event);
         assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 101");

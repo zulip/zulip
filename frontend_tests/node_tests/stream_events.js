@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_stub, with_stub} = require("../zjsunit/stub");
 
 const noop = function () {};
 const return_true = function () {
@@ -68,7 +69,7 @@ run_test("update_property", (override) => {
 
     // Test update color
     {
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("stream_color.update_stream_color", stub.f);
             stream_events.update_property(1, "color", "blue");
             const args = stub.get_args("sub", "val");
@@ -79,7 +80,7 @@ run_test("update_property", (override) => {
 
     // Test in home view
     {
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("stream_muting.update_is_muted", stub.f);
             stream_events.update_property(1, "in_home_view", false);
             const args = stub.get_args("sub", "val");
@@ -120,7 +121,7 @@ run_test("update_property", (override) => {
 
     // Test name change
     {
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("subs.update_stream_name", stub.f);
             stream_events.update_property(1, "name", "the frontend");
             const args = stub.get_args("sub", "val");
@@ -131,7 +132,7 @@ run_test("update_property", (override) => {
 
     // Test description change
     {
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("subs.update_stream_description", stub.f);
             stream_events.update_property(1, "description", "we write code", {
                 rendered_description: "we write code",
@@ -156,7 +157,7 @@ run_test("update_property", (override) => {
 
     // Test stream privacy change event
     {
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("subs.update_stream_privacy", stub.f);
             stream_events.update_property(1, "invite_only", true, {
                 history_public_to_subscribers: true,
@@ -172,7 +173,7 @@ run_test("update_property", (override) => {
 
     // Test stream stream_post_policy change event
     {
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("subs.update_stream_post_policy", stub.f);
             stream_events.update_property(
                 1,
@@ -187,7 +188,7 @@ run_test("update_property", (override) => {
 
     // Test stream message_retention_days change event
     {
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("subs.update_message_retention_setting", stub.f);
             stream_events.update_property(1, "message_retention_days", 20);
             const args = stub.get_args("sub", "val");
@@ -243,9 +244,9 @@ run_test("marked_subscribed", (override) => {
         let args;
         let list_updated = false;
 
-        const stream_list_stub = global.make_stub();
-        const message_view_header_stub = global.make_stub();
-        const message_util_stub = global.make_stub();
+        const stream_list_stub = make_stub();
+        const message_view_header_stub = make_stub();
+        const message_util_stub = make_stub();
 
         override("stream_color.update_stream_color", noop);
         override("stream_list.add_sidebar_row", stream_list_stub.f);
@@ -280,7 +281,7 @@ run_test("marked_subscribed", (override) => {
         });
 
         // narrow state is undefined
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("message_util.do_unread_count_updates", noop);
             override("stream_list.add_sidebar_row", noop);
             override("subs.set_color", stub.f);
@@ -299,7 +300,7 @@ run_test("marked_subscribed", (override) => {
         override("message_util.do_unread_count_updates", noop);
         override("stream_list.add_sidebar_row", noop);
 
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("stream_data.set_subscribers", stub.f);
             const user_ids = [15, 20, 25];
             stream_events.mark_subscribed(frontend, user_ids, "");
@@ -309,7 +310,7 @@ run_test("marked_subscribed", (override) => {
         });
 
         // assign self as well
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("stream_data.subscribe_myself", stub.f);
             stream_events.mark_subscribed(frontend, [], "");
             const args = stub.get_args("sub");
@@ -317,7 +318,7 @@ run_test("marked_subscribed", (override) => {
         });
 
         // and finally update subscriber settings
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("subs.update_settings_for_subscribed", stub.f);
             stream_events.mark_subscribed(frontend, [], "");
             const args = stub.get_args("sub");
@@ -351,7 +352,7 @@ run_test("mark_unsubscribed", (override) => {
     // Test unsubscribe
     frontend.subscribed = true;
     {
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("stream_data.unsubscribe_myself", stub.f);
             override("subs.update_settings_for_unsubscribed", noop);
             override("stream_list.remove_sidebar_row", noop);
@@ -363,7 +364,7 @@ run_test("mark_unsubscribed", (override) => {
 
     // Test update settings after unsubscribe
     {
-        global.with_stub((stub) => {
+        with_stub((stub) => {
             override("subs.update_settings_for_unsubscribed", stub.f);
             override("stream_data.unsubscribe_myself", noop);
             override("stream_list.remove_sidebar_row", noop);
@@ -376,7 +377,7 @@ run_test("mark_unsubscribed", (override) => {
     // Test update bookend and remove done event
     narrow_state.set_current_filter(frontend_filter);
     {
-        const message_view_header_stub = global.make_stub();
+        const message_view_header_stub = make_stub();
         override("message_view_header.render_title_area", message_view_header_stub.f);
         override("stream_data.unsubscribe_myself", noop);
         override("subs.update_settings_for_unsubscribed", noop);
@@ -413,7 +414,7 @@ const dev_help = {
 stream_data.add_sub(dev_help);
 
 run_test("remove_deactivated_user_from_all_streams", () => {
-    const subs_stub = global.make_stub();
+    const subs_stub = make_stub();
     subs.update_subscribers_ui = subs_stub.f;
 
     dev_help.can_access_subscribers = true;

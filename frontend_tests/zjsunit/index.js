@@ -10,7 +10,6 @@ const _ = require("lodash");
 const handlebars = require("./handlebars");
 const stub_i18n = require("./i18n");
 const namespace = require("./namespace");
-const stub = require("./stub");
 const {make_zblueslip} = require("./zblueslip");
 const zjquery = require("./zjquery");
 
@@ -44,10 +43,6 @@ global.window = new Proxy(global, {
     },
 });
 global.to_$ = () => window;
-
-// Set up stub helpers.
-global.make_stub = stub.make_stub;
-global.with_stub = stub.with_stub;
 
 // Set up fake jQuery
 global.make_zjquery = zjquery.make_zjquery;
