@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {
     is_admin: false,

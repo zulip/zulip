@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("hash_util");

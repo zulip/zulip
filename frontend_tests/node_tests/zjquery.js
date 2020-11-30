@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 /*

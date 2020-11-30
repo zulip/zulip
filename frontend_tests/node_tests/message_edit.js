@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 set_global("document", null);
 set_global("page_params", {

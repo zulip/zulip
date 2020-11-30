@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {realm_is_zephyr_mirror_realm: false});
 set_global("md5", (s) => "md5-" + s);

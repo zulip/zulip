@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 zrequire("emoji_picker");
