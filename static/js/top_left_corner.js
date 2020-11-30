@@ -117,6 +117,9 @@ exports.narrow_to_recent_topics = function () {
     remove($(".top_left_mentions"));
     $(".top_left_recent_topics").addClass("active-filter");
     pm_list.close();
+    setTimeout(() => {
+        resize.resize_stream_filters_container();
+    }, 0);
 };
 
 window.top_left_corner = exports;

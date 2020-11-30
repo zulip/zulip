@@ -6,6 +6,9 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+set_global("resize", {
+    resize_stream_filters_container: () => {},
+});
 const Filter = zrequire("Filter", "js/filter");
 zrequire("unread_ui");
 const people = zrequire("people");
@@ -85,6 +88,9 @@ run_test("narrowing", () => {
     assert(!$(".top_left_recent_topics").hasClass("active-filter"));
     assert(pm_closed);
 
+    set_global("setTimeout", (f) => {
+        f();
+    });
     top_left_corner.narrow_to_recent_topics();
     assert(!$(".top_left_all_messages").hasClass("active-filter"));
     assert(!$(".top_left_mentions").hasClass("active-filter"));
