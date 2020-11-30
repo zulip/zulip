@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
@@ -197,8 +198,6 @@ run_test("fenced_block_defaults", () => {
 
 markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
 
-const markdown_data = global.read_fixture_data("markdown_test_cases.json");
-
 run_test("markdown_detection", () => {
     const no_markup = [
         "This is a plaintext message",
@@ -246,7 +245,7 @@ run_test("markdown_detection", () => {
 });
 
 run_test("marked_shared", () => {
-    const tests = markdown_data.regular_tests;
+    const tests = markdown_test_cases.regular_tests;
 
     tests.forEach((test) => {
         // Ignore tests if specified
