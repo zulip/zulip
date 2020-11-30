@@ -140,10 +140,10 @@ run_test("get_edit_event_prev_topic", () => {
 });
 
 run_test("is_mobile", () => {
-    global.window.navigator = {userAgent: "Android"};
+    window.navigator = {userAgent: "Android"};
     assert(util.is_mobile());
 
-    global.window.navigator = {userAgent: "Not mobile"};
+    window.navigator = {userAgent: "Not mobile"};
     assert(!util.is_mobile());
 });
 

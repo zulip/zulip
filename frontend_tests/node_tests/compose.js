@@ -70,8 +70,8 @@ set_global("ui_util", {});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
-global.document.location.protocol = "https:";
-global.document.location.host = "foo.com";
+document.location.protocol = "https:";
+document.location.host = "foo.com";
 
 zrequire("zcommand");
 zrequire("compose_ui");
@@ -542,10 +542,10 @@ run_test("markdown_shortcuts", () => {
     let compose_value = $("#compose_textarea").val();
     let selected_word = "";
 
-    global.document.queryCommandEnabled = function () {
+    document.queryCommandEnabled = function () {
         return queryCommandEnabled;
     };
-    global.document.execCommand = function (cmd, bool, markdown) {
+    document.execCommand = function (cmd, bool, markdown) {
         const compose_textarea = $("#compose-textarea");
         const value = compose_textarea.val();
         $("#compose-textarea").val(
@@ -1856,7 +1856,7 @@ run_test("create_message_object", () => {
         },
     }));
 
-    global.compose_state.get_message_type = function () {
+    compose_state.get_message_type = function () {
         return "stream";
     };
 
@@ -1873,7 +1873,7 @@ run_test("create_message_object", () => {
     assert.equal(message.topic, "lunch");
     assert.equal(message.content, "burrito");
 
-    global.compose_state.get_message_type = function () {
+    compose_state.get_message_type = function () {
         return "private";
     };
     compose_state.private_message_recipient = function () {

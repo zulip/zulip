@@ -85,11 +85,11 @@ function get_suggestions(base_query, query) {
 run_test("basic_get_suggestions", () => {
     const query = "fred";
 
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return [];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return "office";
     };
 
@@ -102,11 +102,11 @@ run_test("basic_get_suggestions", () => {
 run_test("subset_suggestions", () => {
     const query = "stream:Denmark topic:Hamlet shakespeare";
 
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return [];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 
@@ -122,11 +122,11 @@ run_test("subset_suggestions", () => {
 });
 
 run_test("private_suggestions", () => {
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return [];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 
@@ -239,11 +239,11 @@ run_test("private_suggestions", () => {
 });
 
 run_test("group_suggestions", () => {
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return [];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 
@@ -391,11 +391,11 @@ init();
 run_test("empty_query_suggestions", () => {
     const query = "";
 
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return ["devel", "office"];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 
@@ -437,10 +437,10 @@ run_test("has_suggestions", () => {
     // Checks that category wise suggestions are displayed instead of a single
     // default suggestion when suggesting `has` operator.
     let query = "h";
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return ["devel", "office"];
     };
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 
@@ -497,10 +497,10 @@ run_test("has_suggestions", () => {
 });
 
 run_test("check_is_suggestions", () => {
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return ["devel", "office"];
     };
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 
@@ -570,11 +570,11 @@ run_test("check_is_suggestions", () => {
 });
 
 run_test("sent_by_me_suggestions", () => {
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return [];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 
@@ -648,18 +648,18 @@ run_test("topic_suggestions", () => {
     let suggestions;
     let expected;
 
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return ["office"];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return "office";
     };
 
     const devel_id = 44;
     const office_id = 77;
 
-    global.stream_data.get_stream_id = function (stream_name) {
+    stream_data.get_stream_id = function (stream_name) {
         switch (stream_name) {
             case "office":
                 return office_id;
@@ -747,11 +747,11 @@ run_test("topic_suggestions", () => {
 run_test("whitespace_glitch", () => {
     const query = "stream:office "; // note trailing space
 
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return ["office"];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 
@@ -765,11 +765,11 @@ run_test("whitespace_glitch", () => {
 });
 
 run_test("stream_completion", () => {
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return ["office", "dev help"];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 
@@ -794,11 +794,11 @@ run_test("stream_completion", () => {
 run_test("people_suggestions", () => {
     let query = "te";
 
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return [];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 
@@ -912,11 +912,11 @@ run_test("operator_suggestions", () => {
 });
 
 run_test("queries_with_spaces", () => {
-    global.stream_data.subscribed_streams = function () {
+    stream_data.subscribed_streams = function () {
         return ["office", "dev help"];
     };
 
-    global.narrow_state.stream = function () {
+    narrow_state.stream = function () {
         return;
     };
 

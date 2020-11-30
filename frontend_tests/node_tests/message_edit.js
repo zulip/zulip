@@ -102,19 +102,19 @@ run_test("get_editability", () => {
     assert.equal(message_edit.is_topic_editable(message), true);
 
     message.sent_by_me = true;
-    global.page_params.realm_allow_community_topic_editing = false;
+    page_params.realm_allow_community_topic_editing = false;
     assert.equal(message_edit.is_topic_editable(message), true);
 
     message.sent_by_me = false;
-    global.page_params.realm_allow_community_topic_editing = false;
+    page_params.realm_allow_community_topic_editing = false;
     assert.equal(message_edit.is_topic_editable(message), false);
 
     message.sent_by_me = false;
-    global.page_params.realm_allow_community_topic_editing = false;
-    global.page_params.is_admin = true;
+    page_params.realm_allow_community_topic_editing = false;
+    page_params.is_admin = true;
     assert.equal(message_edit.is_topic_editable(message), true);
 
-    global.page_params.realm_allow_message_editing = false;
+    page_params.realm_allow_message_editing = false;
     assert.equal(message_edit.is_topic_editable(message), false);
 });
 
@@ -133,7 +133,7 @@ run_test("get_deletability", () => {
     assert.equal(message_edit.get_deletability(message), true);
 
     // Non-admin can't delete message sent by others
-    global.page_params.is_admin = false;
+    page_params.is_admin = false;
     assert.equal(message_edit.get_deletability(message), false);
 
     // Locally echoed messages are not deletable
@@ -143,14 +143,14 @@ run_test("get_deletability", () => {
     message.locally_echoed = false;
     assert.equal(message_edit.get_deletability(message), false);
 
-    global.page_params.realm_allow_message_deleting = true;
+    page_params.realm_allow_message_deleting = true;
     assert.equal(message_edit.get_deletability(message), true);
 
     const now = new Date();
     const current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 5;
 
-    global.page_params.realm_message_content_delete_limit_seconds = 10;
+    page_params.realm_message_content_delete_limit_seconds = 10;
     assert.equal(message_edit.get_deletability(message), true);
 
     message.timestamp = current_timestamp - 60;

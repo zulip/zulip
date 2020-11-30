@@ -56,7 +56,7 @@ run_test("sort_streams", () => {
     ];
     test_streams.forEach(stream_data.update_calculated_fields);
 
-    global.stream_data.is_active = function (sub) {
+    stream_data.is_active = function (sub) {
         return sub.name !== "dead";
     };
 
@@ -261,19 +261,19 @@ run_test("sort_recipients", () => {
     pm_conversations.set_partner(7);
 
     // For splitting based on recency
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 7,
         stream_id: 1,
         topic: "Dev Topic",
         id: (next_id += 1),
     });
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 5,
         stream_id: 1,
         topic: "Dev Topic",
         id: (next_id += 1),
     });
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 6,
         stream_id: 1,
         topic: "Dev Topic",
@@ -291,13 +291,13 @@ run_test("sort_recipients", () => {
         "a_bot@zulip.com",
     ]);
 
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 5,
         stream_id: 2,
         topic: "Linux Topic",
         id: (next_id += 1),
     });
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 7,
         stream_id: 2,
         topic: "Linux Topic",

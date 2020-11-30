@@ -94,7 +94,7 @@ run_test("event_dispatch_error", () => {
     setup();
 
     const data = {events: [{type: "stream", op: "update", id: 1, other: "thing"}]};
-    global.channel.get = function (options) {
+    channel.get = function (options) {
         options.success(data);
     };
 
@@ -114,7 +114,7 @@ run_test("event_new_message_error", () => {
     setup();
 
     const data = {events: [{type: "message", id: 1, other: "thing", message: {}}]};
-    global.channel.get = function (options) {
+    channel.get = function (options) {
         options.success(data);
     };
 
@@ -130,7 +130,7 @@ run_test("event_new_message_error", () => {
 run_test("event_edit_message_error", () => {
     setup();
     const data = {events: [{type: "update_message", id: 1, other: "thing"}]};
-    global.channel.get = function (options) {
+    channel.get = function (options) {
         options.success(data);
     };
     blueslip.expect("error", "Failed to update messages\nupdate error");

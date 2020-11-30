@@ -57,7 +57,7 @@ run_test("create_sidebar_row", () => {
         subscribed: true,
         pin_to_top: true,
     };
-    global.stream_data.add_sub(devel);
+    stream_data.add_sub(devel);
 
     const social = {
         name: "social",
@@ -65,9 +65,9 @@ run_test("create_sidebar_row", () => {
         color: "green",
         subscribed: true,
     };
-    global.stream_data.add_sub(social);
+    stream_data.add_sub(social);
 
-    global.unread.num_unread_for_stream = function () {
+    unread.num_unread_for_stream = function () {
         return 42;
     };
 
@@ -190,7 +190,7 @@ run_test("pinned_streams_never_inactive", () => {
         subscribed: true,
         pin_to_top: true,
     };
-    global.stream_data.add_sub(devel);
+    stream_data.add_sub(devel);
 
     const social = {
         name: "social",
@@ -198,7 +198,7 @@ run_test("pinned_streams_never_inactive", () => {
         color: "green",
         subscribed: true,
     };
-    global.stream_data.add_sub(social);
+    stream_data.add_sub(social);
 
     // we use social and devel created in create_social_sidebar_row() and create_devel_sidebar_row()
 
@@ -235,7 +235,7 @@ run_test("pinned_streams_never_inactive", () => {
 set_global("$", make_zjquery());
 
 function add_row(sub) {
-    global.stream_data.add_sub(sub);
+    stream_data.add_sub(sub);
     const row = {
         update_whether_active() {},
         get_li() {
@@ -468,7 +468,7 @@ run_test("sort_streams", () => {
 
     initialize_stream_data();
 
-    global.stream_data.is_active = function (sub) {
+    stream_data.is_active = function (sub) {
         return sub.name !== "cars";
     };
 
@@ -493,7 +493,7 @@ run_test("sort_streams", () => {
 
     assert.deepEqual(appended_elems, expected_elems);
 
-    const streams = global.stream_sort.get_streams();
+    const streams = stream_sort.get_streams();
 
     assert.deepEqual(streams, [
         // three groups: pinned, normal, dormant
@@ -550,7 +550,7 @@ run_test("separators_only_pinned_and_dormant", () => {
     };
     add_row(DenmarkSub);
 
-    global.stream_data.is_active = function (sub) {
+    stream_data.is_active = function (sub) {
         return sub.name !== "Denmark";
     };
 
