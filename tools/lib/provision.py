@@ -177,7 +177,7 @@ elif "debian" in os_families():
     SYSTEM_DEPENDENCIES = [
         *UBUNTU_COMMON_APT_DEPENDENCIES,
         f"postgresql-{POSTGRESQL_VERSION}",
-        f"postgresql-{POSTGRESQL_VERSION}-pgroonga",
+        f"postgresql-{POSTGRESQL_VERSION}-pgdg-pgroonga",
         *VENV_DEPENDENCIES,
     ]
 elif "rhel" in os_families():
@@ -186,7 +186,7 @@ elif "rhel" in os_families():
         f"postgresql{POSTGRESQL_VERSION}-server",
         f"postgresql{POSTGRESQL_VERSION}",
         f"postgresql{POSTGRESQL_VERSION}-devel",
-        f"postgresql{POSTGRESQL_VERSION}-pgroonga",
+        f"postgresql{POSTGRESQL_VERSION}-pgdg-pgroonga",
         *VENV_DEPENDENCIES,
     ]
 elif "fedora" in os_families():
