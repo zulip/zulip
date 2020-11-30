@@ -3,10 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("poll_widget");
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 const people = zrequire("people");
 

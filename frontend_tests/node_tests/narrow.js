@@ -3,8 +3,9 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 zrequire("hash_util");
 zrequire("hashchange");
 zrequire("narrow_state");

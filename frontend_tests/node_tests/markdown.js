@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("hash_util");
 
@@ -58,7 +59,7 @@ fenced_code.initialize(pygments_data);
 const doc = "";
 set_global("document", doc);
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 const cordelia = {
     full_name: "Cordelia Lear",

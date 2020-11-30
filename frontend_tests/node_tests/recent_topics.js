@@ -3,13 +3,14 @@
 const {strict: assert} = require("assert");
 
 const {reset_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("message_util");
 
 const noop = () => {};
 set_global(
     "$",
-    global.make_zjquery({
+    make_zjquery({
         silent: true,
     }),
 );

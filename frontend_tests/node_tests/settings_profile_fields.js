@@ -5,9 +5,10 @@ const {strict: assert} = require("assert");
 const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("page_params", {});
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("loading", {});
 
 const SHORT_TEXT_ID = 1;
