@@ -9,6 +9,7 @@ const _ = require("lodash");
 const handlebars = require("./handlebars");
 const stub_i18n = require("./i18n");
 const namespace = require("./namespace");
+const test = require("./test");
 const {make_zblueslip} = require("./zblueslip");
 
 require("@babel/register")({
@@ -66,29 +67,13 @@ function short_tb(tb) {
     return lines.splice(0, i + 1).join("\n") + "\n(...)\n";
 }
 
-let current_file_name;
-
 function run_one_module(file) {
     console.info("running test " + path.basename(file, ".js"));
-    current_file_name = file;
+    test.set_current_file_name(file);
     require(file);
 }
 
-global.run_test = (label, f) => {
-    if (files.length === 1) {
-        console.info("        test: " + label);
-    }
-    try {
-        namespace.with_overrides(f);
-    } catch (error) {
-        console.info("-".repeat(50));
-        console.info(`test failed: ${current_file_name} > ${label}`);
-        console.info();
-        throw error;
-    }
-    // defensively reset blueslip after each test.
-    blueslip.reset();
-};
+test.set_verbose(files.length === 1);
 
 try {
     files.forEach((file) => {

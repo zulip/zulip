@@ -6,6 +6,7 @@ const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());

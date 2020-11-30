@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const autosize = require("autosize");
 
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("compose_ui");

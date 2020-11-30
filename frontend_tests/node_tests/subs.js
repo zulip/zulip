@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 stub_out_jquery();

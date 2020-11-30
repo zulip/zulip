@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());

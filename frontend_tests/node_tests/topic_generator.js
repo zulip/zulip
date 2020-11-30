@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 const pm_conversations = zrequire("pm_conversations");
 pm_conversations.recent = {};

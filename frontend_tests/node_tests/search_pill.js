@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 zrequire("search_pill");
 zrequire("input_pill");
