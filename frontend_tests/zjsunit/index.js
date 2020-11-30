@@ -35,13 +35,12 @@ if (files.length === 0) {
 }
 
 // Set up our namespace helpers.
-global.window = new Proxy(global, {
+const window = new Proxy(global, {
     set: (obj, prop, value) => {
         namespace.set_global(prop, value);
         return true;
     },
 });
-global.to_$ = () => window;
 
 // Set up Handlebars
 handlebars.hook_require();
@@ -77,6 +76,8 @@ test.set_verbose(files.length === 1);
 
 try {
     files.forEach((file) => {
+        namespace.set_global("window", window);
+        namespace.set_global("to_$", () => window);
         namespace.set_global("location", {
             hash: "#",
         });
