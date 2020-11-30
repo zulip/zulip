@@ -4,9 +4,10 @@ const {strict: assert} = require("assert");
 
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {with_stub} = require("../zjsunit/stub");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("document", "document-stub");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji", "shared/js/emoji");

@@ -3,9 +3,10 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("document", "document-stub");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 zrequire("unread_ui");
 zrequire("Filter", "js/filter");
@@ -229,7 +230,7 @@ run_test("pinned_streams_never_inactive", () => {
     assert(!devel_sidebar.hasClass("inactive_stream"));
 });
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 function add_row(sub) {
     global.stream_data.add_sub(sub);
@@ -383,7 +384,7 @@ run_test("zoom_in_and_zoom_out", () => {
     assert($("#streams_list").hasClass("zoom-out"));
 });
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("narrowing", () => {
     initialize_stream_data();
@@ -698,7 +699,7 @@ run_test("rename_stream", () => {
     assert(count_updated);
 });
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("refresh_pin", () => {
     initialize_stream_data();

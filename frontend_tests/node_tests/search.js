@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("page_params", {
     search_pills_enabled: true,
@@ -16,7 +17,7 @@ const noop = () => {};
 const return_true = () => true;
 const return_false = () => false;
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("narrow_state", {filter: return_false});
 set_global("search_suggestion", {});
 set_global("ui_util", {

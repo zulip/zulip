@@ -5,12 +5,13 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("user_pill");
 zrequire("pill_typeahead");
 zrequire("settings_user_groups");
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("confirm_dialog", {});
 
 const noop = function () {};
@@ -391,7 +392,7 @@ run_test("with_external_user", () => {
     };
 
     // Reset zjquery to test stuff with user who cannot edit
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 
     let user_group_find_called = 0;
     const user_group_stub = $('div.user-group[id="1"]');

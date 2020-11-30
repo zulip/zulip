@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const {LazySet} = zrequire("lazy_set");
 
@@ -32,7 +33,7 @@ set_global("typeahead_helper", {});
 set_global("ui", {
     get_scroll_element: noop,
 });
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 zrequire("input_pill");
 const people = zrequire("people");

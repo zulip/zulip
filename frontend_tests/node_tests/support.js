@@ -6,6 +6,7 @@ const fs = require("fs");
 const {JSDOM} = require("jsdom");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const template = fs.readFileSync("templates/analytics/realm_details.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
@@ -16,7 +17,7 @@ global.$ = (f) => {
     jquery_init = f;
 };
 zrequire("support", "js/analytics/support");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("scrub_realm", () => {
     jquery_init();

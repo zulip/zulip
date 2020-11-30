@@ -6,6 +6,7 @@ const {JSDOM} = require("jsdom");
 const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const events = require("./lib/events");
 
@@ -13,7 +14,7 @@ set_global("bridge", false);
 
 const noop = function () {};
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("DOMParser", new JSDOM().window.DOMParser);
 set_global("compose_actions", {
     update_placeholder_text: noop,
@@ -108,7 +109,7 @@ function stub_out_video_calls() {
 
 function reset_jquery() {
     // Avoid leaks.
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 }
 
 const new_user = {
@@ -201,7 +202,7 @@ run_test("validate_stream_message_address_info", () => {
 
 run_test("validate", () => {
     function initialize_pm_pill() {
-        set_global("$", global.make_zjquery());
+        set_global("$", make_zjquery());
 
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
@@ -1892,7 +1893,7 @@ run_test("create_message_object", () => {
 });
 
 run_test("nonexistent_stream_reply_error", () => {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 
     const actions = [];
     $("#nonexistent_stream_reply_error").show = () => {

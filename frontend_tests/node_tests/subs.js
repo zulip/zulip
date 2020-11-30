@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 stub_out_jquery();
 
@@ -20,7 +21,7 @@ set_global("location", {
 
 zrequire("subs");
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("hash_util", {
     by_stream_uri: () => {},
 });

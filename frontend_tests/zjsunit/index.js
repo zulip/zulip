@@ -11,7 +11,6 @@ const handlebars = require("./handlebars");
 const stub_i18n = require("./i18n");
 const namespace = require("./namespace");
 const {make_zblueslip} = require("./zblueslip");
-const zjquery = require("./zjquery");
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
@@ -43,9 +42,6 @@ global.window = new Proxy(global, {
     },
 });
 global.to_$ = () => window;
-
-// Set up fake jQuery
-global.make_zjquery = zjquery.make_zjquery;
 
 // Set up Handlebars
 global.stub_templates = handlebars.stub_templates;

@@ -3,10 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 // This tests the stream searching functionality which currently
 // lives in stream_list.js.
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 zrequire("stream_list");
 
 const noop = () => {};

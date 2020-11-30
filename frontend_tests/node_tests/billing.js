@@ -6,6 +6,7 @@ const fs = require("fs");
 const {JSDOM} = require("jsdom");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const noop = () => {};
 const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
@@ -24,7 +25,7 @@ set_global("StripeCheckout", {
 });
 
 zrequire("billing", "js/billing/billing");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("initialize", () => {
     let token_func;
