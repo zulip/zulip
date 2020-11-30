@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 

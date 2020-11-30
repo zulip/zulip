@@ -7,6 +7,7 @@ const moment = require("moment-timezone");
 const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 const people = rewiremock.proxy(() => zrequire("people"), {
     "moment-timezone": () => moment("20130208T080910"),

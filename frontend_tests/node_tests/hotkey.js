@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {with_stub} = require("../zjsunit/stub");
+const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 // Important note on these tests:

@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
 const {with_stub} = require("../zjsunit/stub");
+const {run_test} = require("../zjsunit/test");
 // These unit tests for static/js/message_list.js emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
