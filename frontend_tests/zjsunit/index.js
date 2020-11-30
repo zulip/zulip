@@ -1,6 +1,5 @@
 "use strict";
 
-const fs = require("fs");
 const Module = require("module");
 const path = require("path");
 
@@ -51,13 +50,6 @@ const noop = function () {};
 // Set up fake module.hot
 Module.prototype.hot = {
     accept: noop,
-};
-
-// Set up fixtures.
-global.read_fixture_data = (fn) => {
-    const full_fn = path.join(__dirname, "../../zerver/tests/fixtures/", fn);
-    const data = JSON.parse(fs.readFileSync(full_fn, "utf8", "r"));
-    return data;
 };
 
 function short_tb(tb) {
