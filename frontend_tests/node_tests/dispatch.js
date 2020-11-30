@@ -74,7 +74,6 @@ set_global("page_params", {
     is_admin: true,
     realm_description: "already set description",
 });
-const page_params = global.page_params;
 
 // For data-oriented modules, just use them, don't stub them.
 zrequire("alert_words");
@@ -181,7 +180,7 @@ run_test("custom profile fields", (override) => {
     override("settings_profile_fields.populate_profile_fields", noop);
     override("settings_account.add_custom_profile_fields_to_settings", noop);
     dispatch(event);
-    assert_same(global.page_params.custom_profile_fields, event.fields);
+    assert_same(page_params.custom_profile_fields, event.fields);
 });
 
 run_test("default_streams", (override) => {

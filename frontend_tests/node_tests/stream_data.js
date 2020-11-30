@@ -100,7 +100,7 @@ run_test("basics", () => {
     assert(!stream_data.get_invite_only("unknown"));
 
     assert.equal(stream_data.get_color("social"), "red");
-    assert.equal(stream_data.get_color("unknown"), global.stream_color.default_color);
+    assert.equal(stream_data.get_color("unknown"), stream_color.default_color);
 
     assert.equal(stream_data.get_name("denMARK"), "Denmark");
     assert.equal(stream_data.get_name("unknown Stream"), "unknown Stream");
@@ -427,7 +427,7 @@ run_test("admin_options", () => {
     }
 
     // non-admins can't do anything
-    global.page_params.is_admin = false;
+    page_params.is_admin = false;
     let sub = make_sub();
     stream_data.update_calculated_fields(sub);
     assert(!sub.is_realm_admin);
@@ -437,7 +437,7 @@ run_test("admin_options", () => {
     assert.equal(sub.color, "blue");
 
     // the remaining cases are for admin users
-    global.page_params.is_admin = true;
+    page_params.is_admin = true;
 
     // admins can make public streams become private
     sub = make_sub();
@@ -530,7 +530,7 @@ run_test("stream_settings", () => {
     // For guest user only retrieve subscribed streams
     sub_rows = stream_data.get_updated_unsorted_subs();
     assert.equal(sub_rows.length, 3);
-    global.page_params.is_guest = true;
+    page_params.is_guest = true;
     sub_rows = stream_data.get_updated_unsorted_subs();
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");

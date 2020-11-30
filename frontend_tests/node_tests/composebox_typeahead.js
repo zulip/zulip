@@ -285,9 +285,9 @@ const call_center = {
     members: [],
 };
 
-global.user_groups.add(hamletcharacters);
-global.user_groups.add(backend);
-global.user_groups.add(call_center);
+user_groups.add(hamletcharacters);
+user_groups.add(backend);
+user_groups.add(call_center);
 
 const make_emoji = function (emoji_dict) {
     return {emoji_name: emoji_dict.name, emoji_code: emoji_dict.emoji_code};
@@ -1100,7 +1100,7 @@ run_test("initialize", () => {
     $("#compose-send-button").fadeOut = noop;
     $("#compose-send-button").fadeIn = noop;
     let channel_post_called = false;
-    global.channel.post = function (params) {
+    channel.post = function (params) {
         assert.equal(params.url, "/json/users/me/enter-sends");
         assert.equal(params.idempotent, true);
         assert.deepEqual(params.data, {enter_sends: page_params.enter_sends});

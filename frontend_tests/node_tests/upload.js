@@ -23,8 +23,8 @@ set_global("bridge", false);
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
-global.document.location.protocol = "https:";
-global.document.location.host = "foo.com";
+document.location.protocol = "https:";
+document.location.host = "foo.com";
 
 zrequire("compose_ui");
 zrequire("compose_state");

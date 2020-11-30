@@ -200,7 +200,7 @@ run_test("streams", () => {
         assert.equal(actual, expected);
     }
 
-    global.stream_sort.get_streams = function () {
+    stream_sort.get_streams = function () {
         return ["announce", "muted", "devel", "test here"];
     };
 
@@ -251,7 +251,7 @@ run_test("topics", () => {
     // Now test the deeper function that is wired up to
     // real functions stream_data/stream_sort/unread.
 
-    global.stream_sort.get_streams = function () {
+    stream_sort.get_streams = function () {
         return ["announce", "muted", "devel", "test here"];
     };
 
@@ -274,19 +274,19 @@ run_test("topics", () => {
         return [];
     };
 
-    global.stream_data.get_stream_id = function (stream_name) {
+    stream_data.get_stream_id = function (stream_name) {
         return stream_id_dct[stream_name];
     };
 
-    global.stream_data.is_stream_muted_by_name = function (stream_name) {
+    stream_data.is_stream_muted_by_name = function (stream_name) {
         return stream_name === "muted";
     };
 
-    global.unread.topic_has_any_unread = function (stream_id) {
+    unread.topic_has_any_unread = function (stream_id) {
         return [devel_stream_id, muted_stream_id].includes(stream_id);
     };
 
-    global.muting.is_topic_muted = function (stream_name, topic) {
+    muting.is_topic_muted = function (stream_name, topic) {
         return topic === "muted";
     };
 

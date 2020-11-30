@@ -275,7 +275,7 @@ run_test("save_narrow", () => {
     assert.equal(window.location.hash, "#narrow/is/private");
 
     let url_pushed;
-    global.history.pushState = (state, title, url) => {
+    history.pushState = (state, title, url) => {
         url_pushed = url;
     };
 

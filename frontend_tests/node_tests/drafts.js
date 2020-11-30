@@ -148,22 +148,22 @@ run_test("draft_model", () => {
 
 run_test("snapshot_message", () => {
     function stub_draft(draft) {
-        global.compose_state.get_message_type = function () {
+        compose_state.get_message_type = function () {
             return draft.type;
         };
-        global.compose_state.composing = function () {
+        compose_state.composing = function () {
             return Boolean(draft.type);
         };
-        global.compose_state.message_content = function () {
+        compose_state.message_content = function () {
             return draft.content;
         };
-        global.compose_state.private_message_recipient = function () {
+        compose_state.private_message_recipient = function () {
             return draft.private_message_recipient;
         };
-        global.compose_state.stream_name = function () {
+        compose_state.stream_name = function () {
             return draft.stream;
         };
-        global.compose_state.topic = function () {
+        compose_state.topic = function () {
             return draft.topic;
         };
     }
@@ -182,7 +182,7 @@ run_test("snapshot_message", () => {
 });
 
 run_test("initialize", () => {
-    global.window.addEventListener = function (event_name, f) {
+    window.addEventListener = function (event_name, f) {
         assert.equal(event_name, "beforeunload");
         let called = false;
         drafts.update_draft = function () {

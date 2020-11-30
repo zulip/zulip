@@ -44,8 +44,6 @@ const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
 
-const compose_state = global.compose_state;
-
 compose_state.private_message_recipient = (function () {
     let recipient;
 
@@ -129,7 +127,7 @@ run_test("start", () => {
     compose_actions.clear_textarea = noop;
 
     // Start stream message
-    global.narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = function () {
         const opts = {};
         opts.stream = "stream1";
         opts.topic = "topic1";
@@ -156,7 +154,7 @@ run_test("start", () => {
     };
     stream_data.add_sub(denmark);
 
-    global.narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = function () {
         const opts = {};
         opts.trigger = "new topic button";
         return opts;
@@ -167,7 +165,7 @@ run_test("start", () => {
     assert.equal($("#stream_message_recipient_stream").val(), "Denmark");
     assert.equal($("#stream_message_recipient_topic").val(), "");
 
-    global.narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = function () {
         const opts = {};
         opts.trigger = "compose_hotkey";
         return opts;
@@ -194,7 +192,7 @@ run_test("start", () => {
     stream_data.clear_subscriptions();
 
     // Start PM
-    global.narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = function () {
         const opts = {};
         opts.private_message_recipient = "foo@example.com";
         return opts;
