@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {with_stub} = require("../zjsunit/stub");
 // These unit tests for static/js/message_list.js emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
@@ -311,7 +312,7 @@ run_test("bookend", (override) => {
     override("stream_data.is_subscribed", () => true);
     override("stream_data.get_sub", () => ({invite_only: false}));
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         const bookend = stub.get_args("content", "subscribed", "show_button");
@@ -324,7 +325,7 @@ run_test("bookend", (override) => {
     list.last_message_historical = false;
     override("stream_data.is_subscribed", () => false);
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         const bookend = stub.get_args("content", "subscribed", "show_button");
@@ -339,7 +340,7 @@ run_test("bookend", (override) => {
 
     override("stream_data.get_sub", () => ({invite_only: true}));
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         const bookend = stub.get_args("content", "subscribed", "show_button");
@@ -351,7 +352,7 @@ run_test("bookend", (override) => {
     expected = "translated: You are not subscribed to stream IceCream";
     list.last_message_historical = true;
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         const bookend = stub.get_args("content", "subscribed", "show_button");
@@ -410,7 +411,7 @@ run_test("add_remove_rerender", () => {
     list.add_messages(messages);
     assert.equal(list.num_items(), 3);
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         list.rerender = stub.f;
         const message_ids = messages.map((msg) => msg.id);
         list.remove_and_rerender(message_ids);

@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_stub, with_stub} = require("../zjsunit/stub");
 
 const noop = function () {};
 
@@ -126,7 +127,7 @@ run_test("alert_words", (override) => {
 
 run_test("attachments", (override) => {
     const event = event_fixtures.attachment__add;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         // attachments_ui is hard to test deeply
         override("attachments_ui.update_attachments", stub.f);
         dispatch(event);
@@ -137,7 +138,7 @@ run_test("attachments", (override) => {
 run_test("user groups", (override) => {
     let event = event_fixtures.user_group__add;
     override("settings_user_groups.reload", noop);
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("user_groups.add", stub.f);
         dispatch(event);
         const args = stub.get_args("group");
@@ -145,7 +146,7 @@ run_test("user groups", (override) => {
     });
 
     event = event_fixtures.user_group__add_members;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("user_groups.add_members", stub.f);
         dispatch(event);
         const args = stub.get_args("group_id", "user_ids");
@@ -154,7 +155,7 @@ run_test("user groups", (override) => {
     });
 
     event = event_fixtures.user_group__remove_members;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("user_groups.remove_members", stub.f);
         dispatch(event);
         const args = stub.get_args("group_id", "user_ids");
@@ -163,7 +164,7 @@ run_test("user groups", (override) => {
     });
 
     event = event_fixtures.user_group__update;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("user_groups.update", stub.f);
         dispatch(event);
         const args = stub.get_args("event");
@@ -184,7 +185,7 @@ run_test("custom profile fields", (override) => {
 run_test("default_streams", (override) => {
     const event = event_fixtures.default_streams;
     override("settings_streams.update_default_streams_table", noop);
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("stream_data.set_realm_default_streams", stub.f);
         dispatch(event);
         const args = stub.get_args("realm_default_streams");
@@ -202,7 +203,7 @@ run_test("hotspots", (override) => {
 run_test("invites_changed", (override) => {
     const event = event_fixtures.invites_changed;
     $("#admin-invites-list").length = 1;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("settings_invites.set_up", stub.f);
         dispatch(event); // stub automatically checks if stub.f is called once
     });
@@ -211,7 +212,7 @@ run_test("invites_changed", (override) => {
 run_test("muted_topics", (override) => {
     const event = event_fixtures.muted_topics;
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("muting_ui.handle_updates", stub.f);
         dispatch(event);
         const args = stub.get_args("muted_topics");
@@ -222,7 +223,7 @@ run_test("muted_topics", (override) => {
 run_test("presence", (override) => {
     const event = event_fixtures.presence;
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("activity.update_presence_info", stub.f);
         dispatch(event);
         const args = stub.get_args("user_id", "presence", "server_time");
@@ -234,7 +235,7 @@ run_test("presence", (override) => {
 
 run_test("reaction", (override) => {
     let event = event_fixtures.reaction__add;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("reactions.add_reaction", stub.f);
         dispatch(event);
         const args = stub.get_args("event");
@@ -243,7 +244,7 @@ run_test("reaction", (override) => {
     });
 
     event = event_fixtures.reaction__remove;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("reactions.remove_reaction", stub.f);
         dispatch(event);
         const args = stub.get_args("event");
@@ -391,8 +392,8 @@ run_test("realm settings", (override) => {
 
 run_test("realm_bot", (override) => {
     let event = event_fixtures.realm_bot__add;
-    global.with_stub((bot_stub) => {
-        global.with_stub((admin_stub) => {
+    with_stub((bot_stub) => {
+        with_stub((admin_stub) => {
             override("bot_data.add", bot_stub.f);
             override("settings_users.update_bot_data", admin_stub.f);
             dispatch(event);
@@ -404,8 +405,8 @@ run_test("realm_bot", (override) => {
     });
 
     event = event_fixtures.realm_bot__remove;
-    global.with_stub((bot_stub) => {
-        global.with_stub((admin_stub) => {
+    with_stub((bot_stub) => {
+        with_stub((admin_stub) => {
             override("bot_data.deactivate", bot_stub.f);
             override("settings_users.update_bot_data", admin_stub.f);
             dispatch(event);
@@ -421,8 +422,8 @@ run_test("realm_bot", (override) => {
     dispatch(event);
 
     event = event_fixtures.realm_bot__update;
-    global.with_stub((bot_stub) => {
-        global.with_stub((admin_stub) => {
+    with_stub((bot_stub) => {
+        with_stub((admin_stub) => {
             override("bot_data.update", bot_stub.f);
             override("settings_users.update_bot_data", admin_stub.f);
 
@@ -450,7 +451,7 @@ run_test("realm_emoji", (override) => {
     const ui_stubs = [];
 
     for (const func_name of ui_func_names) {
-        const ui_stub = global.make_stub();
+        const ui_stub = make_stub();
         override(func_name, ui_stub.f);
         ui_stubs.push(ui_stub);
     }
@@ -519,7 +520,7 @@ run_test("realm_user", (override) => {
     assert(!people.is_active_user_for_popover(event.person.user_id));
 
     event = event_fixtures.realm_user__update;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("user_events.update_person", stub.f);
         dispatch(event);
         const args = stub.get_args("person");
@@ -529,7 +530,7 @@ run_test("realm_user", (override) => {
 
 run_test("restart", (override) => {
     const event = event_fixtures.restart;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("reload.initiate", stub.f);
         dispatch(event);
         const args = stub.get_args("options");
@@ -541,7 +542,7 @@ run_test("restart", (override) => {
 run_test("stream", (override) => {
     let event = event_fixtures.stream__update;
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("stream_events.update_property", stub.f);
         override("settings_streams.update_default_streams_table", noop);
         dispatch(event);
@@ -553,7 +554,7 @@ run_test("stream", (override) => {
 
     // stream create
     event = event_fixtures.stream__create;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("stream_data.create_streams", stub.f);
         override("stream_data.get_sub_by_id", noop);
         override("stream_data.update_calculated_fields", noop);
@@ -569,7 +570,7 @@ run_test("stream", (override) => {
 
     // stream delete
     event = event_fixtures.stream__delete;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("subs.remove_stream", noop);
         override("stream_data.delete_sub", noop);
         override("settings_streams.update_default_streams_table", noop);
@@ -608,7 +609,7 @@ run_test("stream", (override) => {
 
 run_test("submessage", (override) => {
     const event = event_fixtures.submessage;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("submessage.handle_event", stub.f);
         dispatch(event);
         const submsg = stub.get_args("submsg").submsg;
@@ -626,7 +627,7 @@ run_test("submessage", (override) => {
 
 run_test("typing", (override) => {
     let event = event_fixtures.typing__start;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("typing_events.display_notification", stub.f);
         dispatch(event);
         const args = stub.get_args("event");
@@ -634,7 +635,7 @@ run_test("typing", (override) => {
     });
 
     event = event_fixtures.typing__stop;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("typing_events.hide_notification", stub.f);
         dispatch(event);
         const args = stub.get_args("event");
@@ -707,7 +708,7 @@ run_test("update_display_settings", (override) => {
         assert_same(secs, 300);
     };
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         event = event_fixtures.update_display_settings__color_scheme_dark;
         page_params.color_scheme = 1;
         override("night_mode.enable", stub.f); // automatically checks if called
@@ -716,7 +717,7 @@ run_test("update_display_settings", (override) => {
         assert(page_params.color_scheme, 2);
     });
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         event = event_fixtures.update_display_settings__color_scheme_light;
         page_params.color_scheme = 1;
         override("night_mode.disable", stub.f); // automatically checks if called
@@ -725,7 +726,7 @@ run_test("update_display_settings", (override) => {
         assert(page_params.color_scheme, 3);
     });
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         event = event_fixtures.update_display_settings__color_scheme_automatic;
         page_params.color_scheme = 2;
         override("night_mode.default_preference_checker", stub.f); // automatically checks if called
@@ -734,7 +735,7 @@ run_test("update_display_settings", (override) => {
         assert(page_params.color_scheme, 1);
     });
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         event = event_fixtures.update_display_settings__emojiset;
         called = false;
         override("settings_display.report_emojiset_change", stub.f);
@@ -756,7 +757,7 @@ run_test("update_display_settings", (override) => {
     dispatch(event);
     assert_same(page_params.fluid_layout_width, true);
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         event = event_fixtures.update_display_settings__demote_inactive_streams;
         override("stream_data.set_filter_out_inactives", noop);
         override("stream_list.update_streams_sidebar", stub.f);
@@ -768,7 +769,7 @@ run_test("update_display_settings", (override) => {
 
 run_test("update_global_notifications", (override) => {
     const event = event_fixtures.update_global_notifications;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("notifications.handle_global_notification_updates", stub.f);
         override("settings_notifications.update_page", noop);
         dispatch(event);
@@ -781,7 +782,7 @@ run_test("update_global_notifications", (override) => {
 run_test("update_message (read)", (override) => {
     const event = event_fixtures.update_message_flags__read;
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("unread_ops.process_read_messages_event", stub.f);
         dispatch(event);
         const args = stub.get_args("message_ids");
@@ -793,7 +794,7 @@ run_test("update_message (stars)", (override) => {
     override("starred_messages.rerender_ui", noop);
 
     let event = event_fixtures.update_message_flags__starred_add;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("ui.update_starred_view", stub.f);
         dispatch(event);
         const args = stub.get_args("message_id", "new_value");
@@ -804,7 +805,7 @@ run_test("update_message (stars)", (override) => {
     });
 
     event = event_fixtures.update_message_flags__starred_remove;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("ui.update_starred_view", stub.f);
         dispatch(event);
         const args = stub.get_args("message_id", "new_value");
@@ -819,20 +820,20 @@ run_test("delete_message", (override) => {
     const event = event_fixtures.delete_message;
 
     override("stream_list.update_streams_sidebar", noop);
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("unread_ops.process_read_messages_event", noop);
         override("message_events.remove_messages", stub.f);
         dispatch(event);
         const args = stub.get_args("message_ids");
         assert_same(args.message_ids, [1337]);
     });
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("unread_ops.process_read_messages_event", stub.f);
         dispatch(event);
         const args = stub.get_args("message_ids");
         assert_same(args.message_ids, [1337]);
     });
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("stream_topic_history.remove_messages", stub.f);
         dispatch(event);
         const args = stub.get_args("opts");
@@ -845,7 +846,7 @@ run_test("delete_message", (override) => {
 
 run_test("user_status", (override) => {
     let event = event_fixtures.user_status__set_away;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("activity.on_set_away", stub.f);
         dispatch(event);
         const args = stub.get_args("user_id");
@@ -853,7 +854,7 @@ run_test("user_status", (override) => {
     });
 
     event = event_fixtures.user_status__revoke_away;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("activity.on_revoke_away", stub.f);
         dispatch(event);
         const args = stub.get_args("user_id");
@@ -861,7 +862,7 @@ run_test("user_status", (override) => {
     });
 
     event = event_fixtures.user_status__set_status_text;
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("activity.redraw_user", stub.f);
         dispatch(event);
         const args = stub.get_args("user_id");
@@ -875,7 +876,7 @@ run_test("realm_export", (override) => {
     const event = event_fixtures.realm_export;
     override("settings_exports.populate_exports_table", noop);
     dispatch(event);
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         override("settings_exports.populate_exports_table", stub.f);
         dispatch(event);
 
