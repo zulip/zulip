@@ -14,9 +14,9 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
 let jquery_init;
-global.$ = (f) => {
+set_global("$", (f) => {
     jquery_init = f;
-};
+});
 zrequire("support", "js/analytics/support");
 set_global("$", make_zjquery());
 

@@ -696,9 +696,9 @@ run_test("initialize", () => {
     channel.post = function (payload) {
         payload.success({});
     };
-    global.server_events = {
+    set_global("server_events", {
         check_for_unsuspend() {},
-    };
+    });
 
     let scroll_handler_started;
     buddy_list.start_scroll_handler = () => {
@@ -725,7 +725,7 @@ run_test("initialize", () => {
             presences: {},
         });
     };
-    global.setInterval = (func) => func();
+    set_global("setInterval", (func) => func());
 
     $(window).off("focus");
     activity.initialize();
