@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -94,7 +95,7 @@ run_test("filter_table", () => {
 
     let populated_subs;
 
-    global.stub_templates((fn, data) => {
+    stub_templates((fn, data) => {
         assert.equal(fn, "subscriptions");
         populated_subs = data.subscriptions;
     });

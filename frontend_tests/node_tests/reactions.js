@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {with_stub} = require("../zjsunit/stub");
 const {make_zjquery} = require("../zjsunit/zjquery");
@@ -388,7 +389,7 @@ run_test("add_and_remove_reaction", () => {
     };
 
     let template_called;
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         template_called = true;
         assert.equal(template_name, "message_reaction");
         assert.equal(data.class, "message_reaction reacted");
@@ -478,7 +479,7 @@ run_test("add_and_remove_reaction", () => {
     };
 
     template_called = false;
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(data.class, "message_reaction");
         assert(data.is_realm_emoji);
         template_called = true;

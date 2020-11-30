@@ -2,6 +2,7 @@
 
 const rewiremock = require("rewiremock/node");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -74,7 +75,7 @@ for (const mod of ignore_modules) {
 }
 
 util.is_mobile = () => false;
-global.stub_templates(() => "some-html");
+stub_templates(() => "some-html");
 ui.get_scroll_element = (element) => element;
 
 zrequire("alert_words");

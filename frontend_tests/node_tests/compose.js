@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {JSDOM} = require("jsdom");
 const rewiremock = require("rewiremock/node");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -156,7 +157,7 @@ run_test("validate_stream_message_address_info", () => {
 
     sub.subscribed = false;
     stream_data.add_sub(sub);
-    global.stub_templates((template_name) => {
+    stub_templates((template_name) => {
         assert.equal(template_name, "compose_not_subscribed");
         return "compose_not_subscribed_stub";
     });
@@ -220,7 +221,7 @@ run_test("validate", () => {
 
         $("#zephyr-mirror-error").is = noop;
 
-        global.stub_templates((fn) => {
+        stub_templates((fn) => {
             assert.equal(fn, "input_pill");
             return "<div>pill-html</div>";
         });
@@ -393,7 +394,7 @@ run_test("validate_stream_message", () => {
         assert.equal(stream_id, 101);
         return 16;
     };
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "compose_all_everyone");
         assert.equal(data.count, 16);
         return "compose_all_everyone_stub";
@@ -988,7 +989,7 @@ run_test("warn_if_private_stream_is_linked", () => {
     const checks = [
         (function () {
             let called;
-            global.stub_templates((template_name, context) => {
+            stub_templates((template_name, context) => {
                 called = true;
                 assert.equal(template_name, "compose_private_stream_alert");
                 assert.equal(context.stream_name, "Denmark");
@@ -1283,7 +1284,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
 
         (function () {
             let called;
-            global.stub_templates((template_name, context) => {
+            stub_templates((template_name, context) => {
                 called = true;
                 assert.equal(template_name, "compose_invite_users");
                 assert.equal(context.user_id, 34);
@@ -1344,7 +1345,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
 
     // Now try to mention the same person again. The template should
     // not render.
-    global.stub_templates(noop);
+    stub_templates(noop);
     compose.warn_if_mentioning_unsubscribed_user(mentioned);
     assert.equal($("#compose_invite_users").visible(), true);
     assert(looked_for_existing);
