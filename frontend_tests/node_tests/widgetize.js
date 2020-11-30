@@ -3,8 +3,9 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("poll_widget", {});
 set_global("todo_widget", {});
 set_global("zform", {});

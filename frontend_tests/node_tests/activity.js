@@ -3,8 +3,9 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 const window_stub = $.create("window-stub");
 set_global("to_$", () => window_stub);
 $(window).idle = () => {};

@@ -3,6 +3,7 @@
 const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 /*
     This test suite is designed to find errors
@@ -130,7 +131,7 @@ const ui_init = rewiremock.proxy(() => zrequire("ui_init"), {
     },
 });
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 const document_stub = $.create("document-stub");
 document.to_$ = () => document_stub;

@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
@@ -171,7 +172,7 @@ stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(netherland_stream);
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 set_global("page_params", {});
 set_global("channel", {});

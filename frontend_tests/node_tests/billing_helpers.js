@@ -7,12 +7,13 @@ const JQuery = require("jquery");
 const {JSDOM} = require("jsdom");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const jquery = JQuery(dom.window);
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("page_params", {});
 set_global("loading", {});
 set_global("history", {});

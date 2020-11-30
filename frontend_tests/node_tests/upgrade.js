@@ -6,6 +6,7 @@ const fs = require("fs");
 const {JSDOM} = require("jsdom");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const noop = () => {};
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
@@ -34,7 +35,7 @@ set_global("page_params", {
 
 zrequire("helpers", "js/billing/helpers");
 zrequire("upgrade", "js/billing/upgrade");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("initialize", () => {
     let token_func;

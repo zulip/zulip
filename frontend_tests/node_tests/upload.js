@@ -5,8 +5,9 @@ const {strict: assert} = require("assert");
 const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("document", {
     location: {},
 });
@@ -360,7 +361,7 @@ run_test("uppy_config", () => {
 });
 
 run_test("file_input", () => {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 
     upload.setup_upload({mode: "compose"});
 
@@ -383,7 +384,7 @@ run_test("file_input", () => {
 });
 
 run_test("file_drop", () => {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 
     upload.setup_upload({mode: "compose"});
 
@@ -423,7 +424,7 @@ run_test("file_drop", () => {
 });
 
 run_test("copy_paste", () => {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 
     upload.setup_upload({mode: "compose"});
 
@@ -464,7 +465,7 @@ run_test("copy_paste", () => {
 });
 
 run_test("uppy_events", () => {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
     const callbacks = {};
     let uppy_cancel_all_called = false;
     let state = {};

@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("hash_util");
 zrequire("stream_data");
@@ -12,7 +13,7 @@ zrequire("narrow_state");
 
 set_global(
     "$",
-    global.make_zjquery({
+    make_zjquery({
         silent: true,
     }),
 );

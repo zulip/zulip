@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {with_stub} = require("../zjsunit/stub");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const util = zrequire("util");
 zrequire("pm_conversations");
@@ -12,7 +13,7 @@ zrequire("message_store");
 
 const noop = function () {};
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("document", "document-stub");
 
 set_global("alert_words", {

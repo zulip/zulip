@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {with_stub} = require("../zjsunit/stub");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 // Important note on these tests:
 //
@@ -30,7 +31,7 @@ set_global("overlays", {});
 
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 
