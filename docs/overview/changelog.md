@@ -15,7 +15,7 @@ in bursts.
 - Permit outgoing mail from postfix; this resolves a bug introduced in
   Zulip Server 3.2 which prevented Zulip from sending outgoing mail if
   the local mail server (used mostly for incoming mail) was also used
-  for outgoing email (`MAIL_HOST=``'``localhost``'`).
+  for outgoing email (`MAIL_HOST='localhost'`).
 - Ensure that the `upgrade-postgres` tool upgrades the cluster’s data
   to the specific PostgreSQL version requested; this resolves a bug
   where, now that PostgreSQL 13 has been released, `upgrade-postgres`
