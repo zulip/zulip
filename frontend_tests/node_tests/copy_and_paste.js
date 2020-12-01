@@ -4,10 +4,8 @@ const {strict: assert} = require("assert");
 
 const {JSDOM} = require("jsdom");
 
-const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-stub_out_jquery();
 
 set_global("page_params", {
     development_environment: true,
