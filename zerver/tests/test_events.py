@@ -1439,47 +1439,50 @@ class NormalActionsTest(BaseAction):
         check_hotspots('events[0]', events[0])
 
     def test_rename_stream(self) -> None:
-        stream = self.make_stream('old_name')
-        new_name = 'stream with a brand new name'
-        self.subscribe(self.user_profile, stream.name)
-        action = lambda: do_rename_stream(stream, new_name, self.user_profile)
-        events = self.verify_action(action, num_events=3)
+        for i, include_streams in enumerate([True, False]):
+            old_name = f'old name{i}'
+            new_name = f'new name{i}'
 
-        check_stream_update('events[0]', events[0])
-        self.assertEqual(events[0]['name'], 'old_name')
+            stream = self.make_stream(old_name)
+            self.subscribe(self.user_profile, stream.name)
+            action = lambda: do_rename_stream(stream, new_name, self.user_profile)
+            events = self.verify_action(action, num_events=3, include_streams=include_streams)
 
-        check_stream_update('events[1]', events[1])
-        self.assertEqual(events[1]['name'], 'old_name')
+            check_stream_update('events[0]', events[0])
+            self.assertEqual(events[0]['name'], old_name)
 
-        check_message('events[2]', events[2])
+            check_stream_update('events[1]', events[1])
+            self.assertEqual(events[1]['name'], old_name)
 
-        fields = dict(
-            sender_email='notification-bot@zulip.com',
-            display_recipient=new_name,
-            sender_full_name='Notification Bot',
-            is_me_message=False,
-            type='stream',
-            client='Internal',
-        )
+            check_message('events[2]', events[2])
 
-        fields[TOPIC_NAME] = 'stream events'
+            fields = dict(
+                sender_email='notification-bot@zulip.com',
+                display_recipient=new_name,
+                sender_full_name='Notification Bot',
+                is_me_message=False,
+                type='stream',
+                client='Internal',
+            )
 
-        msg = events[2]['message']
-        for k, v in fields.items():
-            self.assertEqual(msg[k], v)
+            fields[TOPIC_NAME] = 'stream events'
+
+            msg = events[2]['message']
+            for k, v in fields.items():
+                self.assertEqual(msg[k], v)
 
     def test_deactivate_stream_neversubscribed(self) -> None:
-        stream = self.make_stream('old_name')
-
-        action = lambda: do_deactivate_stream(stream)
-        events = self.verify_action(action)
-
-        check_stream_delete('events[0]', events[0])
+        for i, include_streams in enumerate([True, False]):
+            stream = self.make_stream(f"stream{i}")
+            action = lambda: do_deactivate_stream(stream)
+            events = self.verify_action(action, include_streams=include_streams)
+            check_stream_delete('events[0]', events[0])
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
-        action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
-        events = self.verify_action(action, num_events=2)
-        check_subscription_peer_add('events[1]', events[1])
+        for i, include_streams in enumerate([True, False]):
+            action = lambda: self.subscribe(self.example_user("othello"), f"test_stream{i}")
+            events = self.verify_action(action, num_events=2, include_streams=True)
+            check_subscription_peer_add('events[1]', events[1])
 
     def test_remove_other_user_never_subscribed(self) -> None:
         self.subscribe(self.example_user("othello"), "test_stream")
