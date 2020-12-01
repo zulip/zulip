@@ -606,12 +606,16 @@ def apply_event(state: Dict[str, Any],
 
                     # Add stream to never_subscribed (if not invite_only)
                     state['never_subscribed'].append(stream_data)
-                state['streams'].append(stream)
-            state['streams'].sort(key=lambda elt: elt["name"])
+                if 'streams' in state:
+                    state['streams'].append(stream)
+
+            if 'streams' in state:
+                state['streams'].sort(key=lambda elt: elt["name"])
 
         if event['op'] == 'delete':
             deleted_stream_ids = {stream['stream_id'] for stream in event['streams']}
-            state['streams'] = [s for s in state['streams'] if s['stream_id'] not in deleted_stream_ids]
+            if 'streams' in state:
+                state['streams'] = [s for s in state['streams'] if s['stream_id'] not in deleted_stream_ids]
             state['never_subscribed'] = [stream for stream in state['never_subscribed'] if
                                          stream['stream_id'] not in deleted_stream_ids]
 
@@ -624,13 +628,14 @@ def apply_event(state: Dict[str, Any],
                     if event['property'] == "description":
                         obj['rendered_description'] = event['rendered_description']
             # Also update the pure streams data
-            for stream in state['streams']:
-                if stream['name'].lower() == event['name'].lower():
-                    prop = event['property']
-                    if prop in stream:
-                        stream[prop] = event['value']
-                        if prop == 'description':
-                            stream['rendered_description'] = event['rendered_description']
+            if 'streams' in state:
+                for stream in state['streams']:
+                    if stream['name'].lower() == event['name'].lower():
+                        prop = event['property']
+                        if prop in stream:
+                            stream[prop] = event['value']
+                            if prop == 'description':
+                                stream['rendered_description'] = event['rendered_description']
     elif event['type'] == 'default_streams':
         state['realm_default_streams'] = event['default_streams']
     elif event['type'] == 'default_stream_groups':
