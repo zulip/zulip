@@ -14,10 +14,6 @@ const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
-let jquery_init;
-set_global("$", (f) => {
-    jquery_init = f;
-});
 set_global("helpers", {
     set_tab: noop,
 });
@@ -25,7 +21,6 @@ set_global("StripeCheckout", {
     configure: noop,
 });
 
-zrequire("billing", "js/billing/billing");
 set_global("$", make_zjquery());
 
 run_test("initialize", () => {
@@ -75,7 +70,7 @@ run_test("initialize", () => {
     $("#payment-method").data = (key) =>
         document.querySelector("#payment-method").getAttribute("data-" + key);
 
-    jquery_init();
+    zrequire("billing", "js/billing/billing");
 
     assert(set_tab_called);
     assert(stripe_checkout_configure_called);
