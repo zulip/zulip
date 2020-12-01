@@ -24,6 +24,18 @@ let subs = set_global("subs", {});
 set_global("recent_topics", {
     complete_rerender: () => {},
 });
+
+set_global("message_list", {
+    all: {
+        all_messages() {
+            return ["msg"];
+        },
+    },
+});
+
+subs = set_global("subs", {update_settings_for_subscribed: noop});
+set_global("overlays", {streams_open: return_true});
+
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -54,14 +66,6 @@ const frontend = {
     is_muted: true,
     invite_only: false,
 };
-
-set_global("message_list", {
-    all: {
-        all_messages() {
-            return ["msg"];
-        },
-    },
-});
 
 stream_data.add_sub(frontend);
 
@@ -246,9 +250,6 @@ run_test("marked_subscribed (error)", (override) => {
 run_test("marked_subscribed (normal)", (override) => {
     override(stream_data, "subscribe_myself", noop);
     override(stream_data, "update_calculated_fields", noop);
-
-    subs = set_global("subs", {update_settings_for_subscribed: noop});
-    set_global("overlays", {streams_open: return_true});
 
     override(stream_color, "update_stream_color", noop);
 

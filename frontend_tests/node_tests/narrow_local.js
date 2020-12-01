@@ -5,16 +5,16 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+const message_list = set_global("message_list", {});
+set_global("muting", {
+    is_topic_muted: () => false,
+});
+
 const Filter = zrequire("Filter", "js/filter");
 const {MessageListData} = zrequire("MessageListData", "js/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const narrow = zrequire("narrow");
 zrequire("stream_data");
-
-const message_list = set_global("message_list", {});
-set_global("muting", {
-    is_topic_muted: () => false,
-});
 
 function test_with(fixture) {
     const filter = new Filter(fixture.filter_terms);

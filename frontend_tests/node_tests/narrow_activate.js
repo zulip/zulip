@@ -5,16 +5,9 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const util = zrequire("util");
-
-const narrow_state = zrequire("narrow_state");
 set_global("resize", {
     resize_stream_filters_container: () => {},
 });
-const stream_data = zrequire("stream_data");
-zrequire("Filter", "js/filter");
-zrequire("unread");
-const narrow = zrequire("narrow");
 
 const channel = set_global("channel", {});
 const compose = set_global("compose", {});
@@ -65,6 +58,13 @@ set_global("setTimeout", (f, t) => {
 set_global("muting", {
     is_topic_muted: () => false,
 });
+
+const util = zrequire("util");
+const narrow_state = zrequire("narrow_state");
+const stream_data = zrequire("stream_data");
+zrequire("Filter", "js/filter");
+zrequire("unread");
+const narrow = zrequire("narrow");
 
 const denmark = {
     subscribed: false,

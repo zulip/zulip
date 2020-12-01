@@ -6,9 +6,8 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+// This tests the stream searching functionality which currently
 // lives in stream_list.js.
-
-const stream_list = zrequire("stream_list");
 
 const noop = () => {};
 
@@ -19,6 +18,8 @@ set_global("resize", {
 
 const popovers = set_global("popovers", {});
 const stream_popover = set_global("stream_popover", {});
+
+const stream_list = zrequire("stream_list");
 
 function expand_sidebar() {
     $(".app-main .column-left").addClass("expanded");

@@ -9,10 +9,6 @@ const {run_test} = require("../zjsunit/test");
 
 set_global("document", "document-stub");
 
-const Filter = zrequire("Filter", "js/filter");
-const MessageListView = zrequire("MessageListView", "js/message_list_view");
-const message_list = zrequire("message_list");
-
 const noop = () => {};
 
 const page_params = set_global("page_params", {
@@ -47,6 +43,10 @@ set_global("rows", {
         };
     },
 });
+
+const Filter = zrequire("Filter", "js/filter");
+const MessageListView = zrequire("MessageListView", "js/message_list_view");
+const message_list = zrequire("message_list");
 
 let next_timestamp = 1500000000;
 

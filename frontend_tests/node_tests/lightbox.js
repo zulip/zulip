@@ -6,10 +6,6 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const rows = zrequire("rows");
-const lightbox = zrequire("lightbox");
-
-const message_store = set_global("message_store", {});
 set_global("Image", class Image {});
 set_global("overlays", {
     close_overlay: () => {},
@@ -19,6 +15,10 @@ set_global("overlays", {
 set_global("popovers", {
     hide_all: () => {},
 });
+
+const rows = zrequire("rows");
+const lightbox = zrequire("lightbox");
+const message_store = set_global("message_store", {});
 
 rows.is_draft_row = () => false;
 

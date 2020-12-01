@@ -9,15 +9,6 @@ const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-zrequire("hash_util");
-zrequire("narrow");
-zrequire("narrow_state");
-const people = zrequire("people");
-zrequire("presence");
-zrequire("buddy_data");
-const user_status = zrequire("user_status");
-const message_edit = zrequire("message_edit");
-
 const noop = function () {};
 
 set_global("current_msg_list", {});
@@ -48,6 +39,14 @@ const stream_data = set_global("stream_data", {});
 
 const ClipboardJS = noop;
 
+zrequire("hash_util");
+zrequire("narrow");
+zrequire("narrow_state");
+const people = zrequire("people");
+zrequire("presence");
+zrequire("buddy_data");
+const user_status = zrequire("user_status");
+const message_edit = zrequire("message_edit");
 function import_popovers() {
     return rewiremock.proxy(() => zrequire("popovers"), {
         clipboard: ClipboardJS,

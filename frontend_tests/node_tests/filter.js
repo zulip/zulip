@@ -6,14 +6,14 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+const message_store = set_global("message_store", {});
+const page_params = set_global("page_params", {});
+
 zrequire("unread");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 zrequire("message_util", "js/message_util");
 const Filter = zrequire("Filter", "js/filter");
-
-const message_store = set_global("message_store", {});
-const page_params = set_global("page_params", {});
 
 const me = {
     email: "me@example.com",

@@ -6,6 +6,34 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+const noop = () => {};
+
+const stream_topic_history = set_global("stream_topic_history", {});
+
+const message_store = set_global("message_store", {
+    user_ids: () => [],
+});
+
+const page_params = set_global("page_params", {});
+const channel = set_global("channel", {});
+const compose = set_global("compose", {
+    finish: noop,
+});
+
+let autosize_called;
+set_global("compose_ui", {
+    autosize_textarea() {
+        autosize_called = true;
+    },
+});
+let set_timeout_called;
+set_global("setTimeout", (f, time) => {
+    f();
+    assert.equal(time, 0);
+    set_timeout_called = true;
+});
+set_global("document", "document-stub");
+
 const emoji = zrequire("emoji", "shared/js/emoji");
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
 const compose_state = zrequire("compose_state");
@@ -20,19 +48,13 @@ const composebox_typeahead = zrequire("composebox_typeahead");
 zrequire("recent_senders");
 zrequire("settings_org");
 const settings_config = zrequire("settings_config");
+const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 
 // To be eliminated in next commit:
 stream_data.update_calculated_fields = () => {};
 stream_data.set_filter_out_inactives = () => false;
 
-const stream_topic_history = set_global("stream_topic_history", {});
-
-const message_store = set_global("message_store", {
-    user_ids: () => [],
-});
-
 const ct = composebox_typeahead;
-const noop = () => {};
 
 // Use a slightly larger value than what's user-facing
 // to facilitate testing different combinations of
@@ -171,17 +193,9 @@ stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(netherland_stream);
 
-const page_params = set_global("page_params", {});
-const channel = set_global("channel", {});
-const compose = set_global("compose", {
-    finish: noop,
-});
-
 emoji.active_realm_emojis = new Map();
 emoji.emojis_by_name = emojis_by_name;
 emoji.emojis = emoji_list;
-
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 
 const alice = {
     email: "alice@zulip.com",
@@ -325,19 +339,8 @@ run_test("content_typeahead_selected", () => {
         caret_called2 = true;
         return this;
     };
-    let autosize_called = false;
-    set_global("compose_ui", {
-        autosize_textarea() {
-            autosize_called = true;
-        },
-    });
-    let set_timeout_called = false;
-    set_global("setTimeout", (f, time) => {
-        f();
-        assert.equal(time, 0);
-        set_timeout_called = true;
-    });
-    set_global("document", "document-stub");
+    autosize_called = false;
+    set_timeout_called = false;
 
     // emoji
     fake_this.completing = "emoji";

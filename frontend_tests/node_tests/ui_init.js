@@ -28,8 +28,6 @@ const $ = require("../zjsunit/zjquery");
 
 */
 
-const util = zrequire("util");
-
 set_global("document", {
     location: {
         protocol: "http",
@@ -38,9 +36,34 @@ set_global("document", {
 
 set_global("csrf_token", "whatever");
 
-set_global("$", () => {});
-const resize = set_global("resize", {});
+const resize = set_global("resize", {
+    handler: () => {},
+});
 const page_params = set_global("page_params", {});
+
+page_params.realm_default_streams = [];
+page_params.subscriptions = [];
+page_params.unsubscribed = [];
+page_params.never_subscribed = [];
+page_params.realm_notifications_stream_id = -1;
+page_params.unread_msgs = {
+    huddles: [],
+    pms: [],
+    streams: [],
+    mentions: [],
+};
+page_params.recent_private_conversations = [];
+page_params.user_status = {};
+page_params.realm_emoji = {};
+page_params.realm_users = [];
+page_params.realm_non_active_users = [];
+page_params.cross_realm_bots = [];
+page_params.muted_topics = [];
+page_params.realm_user_groups = [];
+page_params.realm_bots = [];
+page_params.realm_filters = [];
+page_params.starred_messages = [];
+page_params.presences = [];
 
 const ignore_modules = [
     "activity",
@@ -69,7 +92,7 @@ const ignore_modules = [
     "unread_ui",
 ];
 
-const {server_events, ui} = Object.fromEntries(
+const {message_viewport, server_events, ui} = Object.fromEntries(
     ignore_modules.map((mod) => [
         mod,
         set_global(mod, {
@@ -77,6 +100,12 @@ const {server_events, ui} = Object.fromEntries(
         }),
     ]),
 );
+
+server_events.home_view_loaded = () => true;
+
+resize.watch_manual_resize = () => {};
+
+const util = zrequire("util");
 
 zrequire("hash_util");
 zrequire("stream_color");
@@ -117,14 +146,6 @@ zrequire("user_status");
 zrequire("user_status_ui");
 zrequire("recent_topics");
 
-const ui_init = rewiremock.proxy(() => zrequire("ui_init"), {
-    "../../static/js/emojisets": {
-        initialize: () => {},
-    },
-});
-
-set_global("$", $);
-
 run_test("initialize_everything", () => {
     util.is_mobile = () => false;
     stub_templates(() => "some-html");
@@ -137,40 +158,13 @@ run_test("initialize_everything", () => {
     const window_stub = $.create("window-stub");
     set_global("to_$", () => window_stub);
     window_stub.idle = () => {};
+    window_stub.on = () => window_stub;
 
-    ui_init.initialize_kitchen_sink_stuff = () => {};
-
-    page_params.realm_default_streams = [];
-    page_params.subscriptions = [];
-    page_params.unsubscribed = [];
-    page_params.never_subscribed = [];
-    page_params.realm_notifications_stream_id = -1;
-    page_params.unread_msgs = {
-        huddles: [],
-        pms: [],
-        streams: [],
-        mentions: [],
-    };
-    page_params.recent_private_conversations = [];
-    page_params.user_status = {};
-    page_params.realm_emoji = {};
-    page_params.realm_users = [];
-    page_params.realm_non_active_users = [];
-    page_params.cross_realm_bots = [];
-    page_params.muted_topics = [];
-    page_params.realm_user_groups = [];
-    page_params.realm_bots = [];
-    page_params.realm_filters = [];
-    page_params.starred_messages = [];
-    page_params.presences = [];
+    message_viewport.message_pane = $(".app");
 
     const $message_view_header = $.create("#message_view_header");
     $message_view_header.append = () => {};
     upload.setup_upload = () => {};
-
-    server_events.home_view_loaded = () => true;
-
-    resize.watch_manual_resize = () => {};
 
     $("#stream_message_recipient_stream").typeahead = () => {};
     $("#stream_message_recipient_topic").typeahead = () => {};
@@ -193,5 +187,9 @@ run_test("initialize_everything", () => {
 
     $("<audio>")[0] = "stub";
 
-    ui_init.initialize_everything();
+    rewiremock.proxy(() => zrequire("ui_init"), {
+        "../../static/js/emojisets": {
+            initialize: () => {},
+        },
+    });
 });

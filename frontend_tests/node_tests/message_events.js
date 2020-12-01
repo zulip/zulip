@@ -5,15 +5,6 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_events = zrequire("message_events");
-const message_store = zrequire("message_store");
-zrequire("muting");
-const people = zrequire("people");
-zrequire("recent_senders");
-const stream_data = zrequire("stream_data");
-const stream_topic_history = zrequire("stream_topic_history");
-const unread = zrequire("unread");
-
 const condense = set_global("condense", {});
 set_global("current_msg_list", {});
 const message_edit = set_global("message_edit", {});
@@ -23,6 +14,15 @@ const page_params = set_global("page_params", {});
 const pm_list = set_global("pm_list", {});
 const stream_list = set_global("stream_list", {});
 const unread_ui = set_global("unread_ui", {});
+
+const message_events = zrequire("message_events");
+const message_store = zrequire("message_store");
+zrequire("muting");
+const people = zrequire("people");
+zrequire("recent_senders");
+const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
+const unread = zrequire("unread");
 
 const alice = {
     email: "alice@example.com",

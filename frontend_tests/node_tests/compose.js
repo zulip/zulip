@@ -29,6 +29,7 @@ const _document = {
         return false;
     },
     location: {},
+    to_$: () => $("document-stub"),
 };
 
 const _drafts = {
@@ -860,8 +861,6 @@ test_ui("send_message", () => {
         assert(!$("#sending-indicator").visible());
     })();
 });
-
-set_global("document", "document-stub");
 
 test_ui("enter_with_preview_open", () => {
     // Test sending a message with content.

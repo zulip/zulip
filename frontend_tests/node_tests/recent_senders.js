@@ -5,8 +5,6 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const rs = zrequire("recent_senders");
-
 let next_id = 0;
 const messages = [];
 
@@ -20,7 +18,10 @@ set_global("message_list", {
         },
     },
 });
+
+const rs = zrequire("recent_senders");
 zrequire("message_util.js");
+
 run_test("process_message_for_senders", () => {
     const stream1 = 1;
     const stream2 = 2;

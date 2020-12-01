@@ -23,8 +23,6 @@ const {run_test} = require("../zjsunit/test");
 // We set our default narrow to all messages here.
 window.location.hash = "#all_messages";
 
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-
 set_global("navigator", {
     platform: "",
 });
@@ -35,17 +33,6 @@ let overlays = set_global("overlays", {});
 
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
-
-const emoji = zrequire("emoji", "shared/js/emoji");
-
-emoji.initialize({
-    realm_emoji: {},
-    emoji_codes,
-});
-
-const activity = zrequire("activity");
-const hotkey = zrequire("hotkey");
-zrequire("common");
 
 const compose_actions = set_global("compose_actions", {});
 const condense = set_global("condense", {});
@@ -82,6 +69,17 @@ set_global("current_msg_list", {
 });
 set_global("recent_topics", {
     is_visible: () => false,
+});
+
+const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+const emoji = zrequire("emoji", "shared/js/emoji");
+const activity = zrequire("activity");
+const hotkey = zrequire("hotkey");
+zrequire("common");
+
+emoji.initialize({
+    realm_emoji: {},
+    emoji_codes,
 });
 
 function return_true() {

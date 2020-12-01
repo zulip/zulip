@@ -5,10 +5,6 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const people = zrequire("people");
-const settings_config = zrequire("settings_config");
-const user_events = zrequire("user_events");
-
 set_global("activity", {
     redraw() {},
 });
@@ -54,6 +50,10 @@ const settings_account = set_global("settings_account", {
 });
 
 const message_live_update = set_global("message_live_update", {});
+
+const people = zrequire("people");
+const settings_config = zrequire("settings_config");
+const user_events = zrequire("user_events");
 
 const me = {
     email: "me@example.com",

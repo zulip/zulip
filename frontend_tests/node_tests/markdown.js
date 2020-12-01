@@ -7,36 +7,9 @@ const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("hash_util");
-
-const emoji = zrequire("emoji", "shared/js/emoji");
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
-const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
-const markdown_config = zrequire("markdown_config");
-const marked = zrequire("marked", "third/marked/lib/marked");
-
-const markdown = zrequire("markdown");
-zrequire("message_store");
-const people = zrequire("people");
-const stream_data = zrequire("stream_data");
-const user_groups = zrequire("user_groups");
-
 set_global("location", {
     origin: "http://zulip.zulipdev.com",
 });
-
-const emoji_params = {
-    realm_emoji: {
-        1: {
-            id: 1,
-            name: "burrito",
-            source_url: "/static/generated/emoji/images/emoji/burrito.png",
-            deactivated: false,
-        },
-    },
-    emoji_codes,
-};
 
 const page_params = set_global("page_params", {
     realm_users: [],
@@ -55,11 +28,37 @@ function Image() {
     return {};
 }
 set_global("Image", Image);
-emoji.initialize(emoji_params);
-fenced_code.initialize(pygments_data);
 
 const doc = "";
 set_global("document", doc);
+
+zrequire("hash_util");
+const emoji = zrequire("emoji", "shared/js/emoji");
+const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
+const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
+const markdown_config = zrequire("markdown_config");
+const marked = zrequire("marked", "third/marked/lib/marked");
+const markdown = zrequire("markdown");
+zrequire("message_store");
+const people = zrequire("people");
+const stream_data = zrequire("stream_data");
+const user_groups = zrequire("user_groups");
+
+const emoji_params = {
+    realm_emoji: {
+        1: {
+            id: 1,
+            name: "burrito",
+            source_url: "/static/generated/emoji/images/emoji/burrito.png",
+            deactivated: false,
+        },
+    },
+    emoji_codes,
+};
+
+emoji.initialize(emoji_params);
+fenced_code.initialize(pygments_data);
 
 const cordelia = {
     full_name: "Cordelia Lear",

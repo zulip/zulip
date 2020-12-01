@@ -10,18 +10,12 @@ const $ = require("../zjsunit/zjquery");
 
 set_global("document", "document-stub");
 
-const message_fetch = zrequire("message_fetch");
-
 const noop = () => {};
 
 function MessageListView() {
     return {};
 }
 set_global("MessageListView", MessageListView);
-
-const Filter = zrequire("Filter", "js/filter");
-const message_list = zrequire("message_list");
-const people = zrequire("people");
 
 set_global("recent_topics", {
     process_messages: noop,
@@ -49,6 +43,11 @@ const server_events = set_global("server_events", {});
 const stream_list = set_global("stream_list", {
     maybe_scroll_narrow_into_view: () => {},
 });
+
+const message_fetch = zrequire("message_fetch");
+const Filter = zrequire("Filter", "js/filter");
+const message_list = zrequire("message_list");
+const people = zrequire("people");
 
 const alice = {
     email: "alice@example.com",

@@ -8,20 +8,20 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+set_global("padded_widget", {
+    update_padding: () => {},
+});
+
+set_global("message_viewport", {
+    height: () => 550,
+});
+
 const people = zrequire("people");
 zrequire("buddy_data");
 const buddy_list = zrequire("buddy_list");
 zrequire("ui");
 
-set_global("padded_widget", {
-    update_padding: () => {},
-});
-
 function init_simulated_scrolling() {
-    set_global("message_viewport", {
-        height: () => 550,
-    });
-
     const elem = {
         dataset: {},
         scrollTop: 0,

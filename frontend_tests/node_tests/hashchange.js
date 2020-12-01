@@ -13,17 +13,6 @@ set_global("location", {
 });
 set_global("to_$", () => window_stub);
 
-const people = zrequire("people");
-zrequire("localstorage");
-const hash_util = zrequire("hash_util");
-const hashchange = zrequire("hashchange");
-const stream_data = zrequire("stream_data");
-zrequire("navigate");
-
-const recent_topics = zrequire("recent_topics");
-recent_topics.show = () => {};
-recent_topics.is_visible = () => false;
-
 set_global("search", {
     update_button_visibility: () => {},
 });
@@ -44,6 +33,17 @@ const ui_util = set_global("ui_util", {});
 set_global("top_left_corner", {
     handle_narrow_deactivated: () => {},
 });
+
+const people = zrequire("people");
+zrequire("localstorage");
+const hash_util = zrequire("hash_util");
+const hashchange = zrequire("hashchange");
+const stream_data = zrequire("stream_data");
+zrequire("navigate");
+
+const recent_topics = zrequire("recent_topics");
+recent_topics.show = () => {};
+recent_topics.is_visible = () => false;
 
 run_test("operators_round_trip", () => {
     let operators;

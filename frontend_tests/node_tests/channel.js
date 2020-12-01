@@ -8,6 +8,12 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const reload = set_global("reload", {});
+
+set_global("setTimeout", (f, delay) => {
+    assert.equal(delay, 0);
+    f();
+});
+
 zrequire("reload_state");
 const channel = zrequire("channel");
 
@@ -260,11 +266,6 @@ run_test("retry", () => {
         },
 
         check_ajax_options(options) {
-            set_global("setTimeout", (f, delay) => {
-                assert.equal(delay, 0);
-                f();
-            });
-
             blueslip.expect("log", "Retrying idempotent[object Object]");
             test_with_mock_ajax({
                 run_code() {

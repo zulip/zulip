@@ -12,9 +12,7 @@ $(window).idle = () => {};
 
 let filter_key_handlers;
 
-const huddle_data = zrequire("huddle_data");
-
-let page_params = set_global("page_params", {
+const page_params = set_global("page_params", {
     realm_users: [],
     user_id: 999,
 });
@@ -75,7 +73,11 @@ set_global("resize", _resize);
 set_global("scroll_util", _scroll_util);
 set_global("stream_popover", _stream_popover);
 set_global("ui", _ui);
+set_global("server_events", {
+    check_for_unsuspend() {},
+});
 
+const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
 zrequire("unread");
 zrequire("hash_util");
@@ -672,10 +674,6 @@ test_ui("initialize", (override) => {
 
     clear();
 
-    set_global("server_events", {
-        check_for_unsuspend() {},
-    });
-
     let scroll_handler_started;
     buddy_list.start_scroll_handler = () => {
         scroll_handler_started = true;
@@ -749,8 +747,6 @@ test_ui("electron_bridge", () => {
 });
 
 test_ui("test_send_or_receive_no_presence_for_web_public_visitor", () => {
-    page_params = set_global("page_params", {
-        is_web_public_visitor: true,
-    });
+    page_params.is_web_public_visitor = true;
     activity.send_presence_to_server();
 });

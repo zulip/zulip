@@ -11,6 +11,7 @@ const page_params = set_global("page_params", {
 set_global("message_store", {
     user_ids: () => [],
 });
+set_global("narrow", {});
 
 const settings_config = zrequire("settings_config");
 page_params.realm_email_address_visibility =
@@ -71,8 +72,6 @@ function init() {
     people.initialize_current_user(me.user_id);
 }
 init();
-
-set_global("narrow", {});
 
 page_params.is_admin = true;
 

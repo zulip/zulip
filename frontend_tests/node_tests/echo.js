@@ -14,9 +14,6 @@ const page_params = set_global("page_params", {});
 const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));
 
-const echo = zrequire("echo");
-const people = zrequire("people");
-
 let disparities = [];
 let messages_to_rerender = [];
 
@@ -46,6 +43,9 @@ set_global("home_msg_list", {
 set_global("message_list", {});
 
 set_global("current_msg_list", "");
+
+const echo = zrequire("echo");
+const people = zrequire("people");
 
 run_test("process_from_server for un-echoed messages", () => {
     const waiting_for_ack = new Map();

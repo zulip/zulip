@@ -9,8 +9,6 @@ const $ = require("../zjsunit/zjquery");
 set_global("page_params", {
     search_pills_enabled: false,
 });
-const search = zrequire("search");
-zrequire("message_view_header");
 
 const noop = () => {};
 const return_true = () => true;
@@ -25,6 +23,9 @@ const narrow = set_global("narrow", {});
 const Filter = set_global("Filter", {});
 
 set_global("setTimeout", (func) => func());
+
+const search = zrequire("search");
+zrequire("message_view_header");
 
 run_test("update_button_visibility", () => {
     const search_query = $("#search_query");

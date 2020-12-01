@@ -6,11 +6,6 @@ const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
-const util = zrequire("util");
-const people = zrequire("people");
-const pm_conversations = zrequire("pm_conversations");
-const message_store = zrequire("message_store");
-
 const noop = () => {};
 
 set_global("document", "document-stub");
@@ -27,6 +22,11 @@ set_global("page_params", {
     realm_allow_message_editing: true,
     is_admin: true,
 });
+
+const util = zrequire("util");
+const people = zrequire("people");
+const pm_conversations = zrequire("pm_conversations");
+const message_store = zrequire("message_store");
 
 const denmark = {
     subscribed: false,

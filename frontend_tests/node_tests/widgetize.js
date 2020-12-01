@@ -9,10 +9,10 @@ const $ = require("../zjsunit/zjquery");
 const poll_widget = set_global("poll_widget", {});
 set_global("document", "document-stub");
 
-const widgetize = zrequire("widgetize");
-
 const narrow_state = set_global("narrow_state", {});
 set_global("current_msg_list", {});
+
+const widgetize = zrequire("widgetize");
 
 run_test("activate", (override) => {
     // Both widgetize.activate and widgetize.handle_event are tested

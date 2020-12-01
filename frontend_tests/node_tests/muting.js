@@ -5,10 +5,11 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+const page_params = set_global("page_params", {});
+
 zrequire("timerender");
 const muting = zrequire("muting");
 const stream_data = zrequire("stream_data");
-const page_params = set_global("page_params", {});
 
 run_test("edge_cases", () => {
     // private messages

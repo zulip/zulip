@@ -13,8 +13,30 @@ const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
-// Let's start with testing
-// a function from util.js.
+// Some quick housekeeping:  Let's clear page_params, which is a data
+// structure that the server sends down to us when the app starts.  We
+// prefer to test with a clean slate.
+
+set_global("page_params", {});
+
+const activity = set_global("activity", {});
+const message_live_update = set_global("message_live_update", {});
+const pm_list = set_global("pm_list", {});
+const settings_users = set_global("settings_users", {});
+const home_msg_list = set_global("home_msg_list", {});
+const message_list = set_global("message_list", {});
+const message_util = set_global("message_util", {});
+const notifications = set_global("notifications", {});
+const overlays = set_global("overlays", {});
+const resize = set_global("resize", {});
+let stream_list = set_global("stream_list", {});
+let unread_ops = set_global("unread_ops", {});
+const unread_ui = set_global("unread_ui", {});
+const channel = set_global("channel", {});
+const message_viewport = set_global("message_viewport", {});
+const topic_list = set_global("topic_list", {});
+
+// Let's start with testing a function from util.js.
 //
 // We will use our special zrequire helper to import the
 // code from util. We use zrequire instead of require,
@@ -69,17 +91,11 @@ const denmark_stream = {
     subscribed: false,
 };
 
-// Some quick housekeeping:  Let's clear page_params, which is a data
-// structure that the server sends down to us when the app starts.  We
-// prefer to test with a clean slate.
-//
 // We use both set_global and zrequire here for test isolation.
 //
 // We also introduce the run_test helper, which mostly just causes
 // a line of output to go to the console. It does a little more than
 // that, which we will see later.
-
-set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");
 
@@ -343,11 +359,6 @@ run_test("add_user_event", () => {
 
 const noop = () => {};
 
-const activity = set_global("activity", {});
-const message_live_update = set_global("message_live_update", {});
-const pm_list = set_global("pm_list", {});
-const settings_users = set_global("settings_users", {});
-
 zrequire("user_events");
 
 run_test("update_user_event", (override) => {
@@ -422,16 +433,6 @@ function test_helper() {
    a lot of its work out to other objects.
 
 */
-
-const home_msg_list = set_global("home_msg_list", {});
-const message_list = set_global("message_list", {});
-const message_util = set_global("message_util", {});
-const notifications = set_global("notifications", {});
-const overlays = set_global("overlays", {});
-const resize = set_global("resize", {});
-let stream_list = set_global("stream_list", {});
-let unread_ops = set_global("unread_ops", {});
-const unread_ui = set_global("unread_ui", {});
 
 const huddle_data = zrequire("huddle_data");
 const message_events = zrequire("message_events");
@@ -582,8 +583,6 @@ run_test("explore make_stub", (override) => {
 
 */
 
-const channel = set_global("channel", {});
-const message_viewport = set_global("message_viewport", {});
 zrequire("message_flags");
 
 unread_ops = zrequire("unread_ops");
@@ -683,8 +682,6 @@ run_test("unread_ops", (override) => {
     stream_list to manipulate DOM.
 
 */
-
-const topic_list = set_global("topic_list", {});
 
 stream_list = zrequire("stream_list");
 

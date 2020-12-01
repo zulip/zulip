@@ -9,9 +9,6 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const user_pill = zrequire("user_pill");
-const settings_user_groups = zrequire("settings_user_groups");
-
 const confirm_dialog = set_global("confirm_dialog", {});
 
 const noop = () => {};
@@ -19,7 +16,6 @@ const noop = () => {};
 const pills = {
     pill: {},
 };
-const settings_config = zrequire("settings_config");
 
 let create_item_handler;
 
@@ -32,9 +28,12 @@ const user_groups = set_global("user_groups", {
 });
 const ui_report = set_global("ui_report", {});
 
-const people = zrequire("people");
-
 const page_params = set_global("page_params", {});
+
+const user_pill = zrequire("user_pill");
+const settings_user_groups = zrequire("settings_user_groups");
+const settings_config = zrequire("settings_config");
+const people = zrequire("people");
 
 function reset_test_setup(pill_container_stub) {
     function input_pill_stub(opts) {

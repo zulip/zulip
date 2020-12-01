@@ -11,7 +11,6 @@ const ui = set_global("ui", {
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
 });
-const stream_data = zrequire("stream_data");
 set_global("page_params", {});
 
 const denmark_stream_id = 101;
@@ -20,11 +19,12 @@ set_global("location", {
     hash: `#streams/${denmark_stream_id}/announce`,
 });
 
-const subs = zrequire("subs");
-
 set_global("hash_util", {
     by_stream_uri: () => {},
 });
+
+const stream_data = zrequire("stream_data");
+const subs = zrequire("subs");
 
 run_test("redraw_left_panel", (override) => {
     override(subs, "add_tooltip_to_left_panel_row", () => {});

@@ -5,11 +5,6 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const Filter = zrequire("Filter", "js/filter");
-const people = zrequire("people");
-const stream_data = zrequire("stream_data");
-const unread = zrequire("unread");
-
 const message_store = set_global("message_store", {});
 set_global("page_params", {});
 
@@ -17,6 +12,10 @@ set_global("muting", {
     is_topic_muted: () => false,
 });
 
+const Filter = zrequire("Filter", "js/filter");
+const people = zrequire("people");
+const stream_data = zrequire("stream_data");
+const unread = zrequire("unread");
 // The main code we are testing lives here.
 const narrow_state = zrequire("narrow_state");
 

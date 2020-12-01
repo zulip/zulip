@@ -7,10 +7,6 @@ const {reset_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-zrequire("message_util");
-zrequire("narrow_state");
-zrequire("localstorage");
-
 const noop = () => {};
 set_global("top_left_corner", {
     narrow_to_recent_topics: noop,
@@ -30,10 +26,6 @@ set_global("notifications", {
 set_global("message_view_header", {
     render_title_area: noop,
 });
-
-const people = zrequire("people");
-people.is_my_user_id = (id) => id === 1;
-people.sender_info_with_small_avatar_urls_for_sender_ids = (ids) => ids;
 
 set_global("timerender", {
     last_seen_status_from_date: () => "Just now",
@@ -170,6 +162,15 @@ set_global("stream_data", {
         false,
     id_is_subscribed: () => true,
 });
+
+zrequire("message_util");
+zrequire("narrow_state");
+zrequire("localstorage");
+const people = zrequire("people");
+let rt = zrequire("recent_topics");
+
+people.is_my_user_id = (id) => id === 1;
+people.sender_info_with_small_avatar_urls_for_sender_ids = (ids) => ids;
 
 let id = 0;
 
@@ -313,7 +314,6 @@ function verify_topic_data(all_topics, stream, topic, last_msg_id, participated)
     assert.equal(topic_data.participated, participated);
 }
 
-let rt = reset_module("recent_topics");
 rt.set_default_focus();
 
 function stub_out_filter_buttons() {

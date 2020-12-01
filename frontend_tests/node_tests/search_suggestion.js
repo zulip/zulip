@@ -13,6 +13,8 @@ set_global("message_store", {
     user_ids: () => [],
 });
 
+set_global("narrow", {});
+
 const settings_config = zrequire("settings_config");
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
@@ -76,7 +78,6 @@ function init() {
 init();
 
 page_params.is_admin = true;
-set_global("narrow", {});
 
 stream_topic_history.reset();
 

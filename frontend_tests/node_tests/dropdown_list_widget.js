@@ -6,14 +6,14 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const dropdown_list_widget = zrequire("dropdown_list_widget");
-zrequire("scroll_util");
-
 const noop = () => {};
 const _ListWidget = {
     create: () => ({init: noop}),
 };
 set_global("ListWidget", _ListWidget);
+
+const dropdown_list_widget = zrequire("dropdown_list_widget");
+zrequire("scroll_util");
 
 const setup_zjquery_data = (name) => {
     const input_group = $(".input_group");

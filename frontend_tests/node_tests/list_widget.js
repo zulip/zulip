@@ -5,8 +5,6 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const ListWidget = zrequire("list_widget");
-
 // We need these stubs to get by instanceof checks.
 // The ListWidget library allows you to insert objects
 // that are either jQuery, Element, or just raw HTML
@@ -33,6 +31,8 @@ set_global("$", (arg) => {
         html: () => arg,
     };
 });
+
+const ListWidget = zrequire("list_widget");
 
 // We build objects here that simulate jQuery containers.
 // The main thing to do at first is simulate that our

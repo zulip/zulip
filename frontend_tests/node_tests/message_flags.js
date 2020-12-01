@@ -5,16 +5,17 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+set_global("starred_messages", {
+    add: () => {},
+    remove: () => {},
+});
+
 zrequire("unread");
 zrequire("unread_ops");
 const message_flags = zrequire("message_flags");
 
 const ui = set_global("ui", {});
 const channel = set_global("channel", {});
-set_global("starred_messages", {
-    add: () => {},
-    remove: () => {},
-});
 
 run_test("starred", () => {
     const message = {

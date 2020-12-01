@@ -5,6 +5,25 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+set_global("$", (selector) => {
+    switch (selector) {
+        case "#stream_message_recipient_stream":
+            return {
+                val() {
+                    return "social";
+                },
+            };
+        case "#stream_message_recipient_topic":
+            return {
+                val() {
+                    return "lunch";
+                },
+            };
+        default:
+            throw new Error(`Unknown selector ${selector}`);
+    }
+});
+
 const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -43,25 +62,6 @@ run_test("set_focused_recipient", () => {
     };
     stream_data.add_sub(sub);
     peer_data.set_subscribers(sub.stream_id, [me.user_id, alice.user_id]);
-
-    set_global("$", (selector) => {
-        switch (selector) {
-            case "#stream_message_recipient_stream":
-                return {
-                    val() {
-                        return "social";
-                    },
-                };
-            case "#stream_message_recipient_topic":
-                return {
-                    val() {
-                        return "lunch";
-                    },
-                };
-            default:
-                throw new Error(`Unknown selector ${selector}`);
-        }
-    });
 
     compose_fade.set_focused_recipient("stream");
 

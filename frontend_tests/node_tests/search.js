@@ -9,10 +9,6 @@ const $ = require("../zjsunit/zjquery");
 set_global("page_params", {
     search_pills_enabled: true,
 });
-const search = zrequire("search");
-const search_pill = zrequire("search_pill");
-const Filter = zrequire("Filter", "js/filter");
-zrequire("message_view_header");
 
 const noop = () => {};
 const return_true = () => true;
@@ -32,6 +28,11 @@ set_global("search_pill_widget", {
 });
 
 set_global("setTimeout", (func) => func());
+
+const search = zrequire("search");
+const search_pill = zrequire("search_pill");
+const Filter = zrequire("Filter", "js/filter");
+zrequire("message_view_header");
 
 run_test("clear_search_form", () => {
     $("#search_query").val("noise");

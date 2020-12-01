@@ -9,22 +9,10 @@ const $ = require("../zjsunit/zjquery");
 
 set_global("document", "document-stub");
 
-zrequire("unread_ui");
-const Filter = zrequire("Filter", "js/filter");
-const stream_sort = zrequire("stream_sort");
-const stream_color = zrequire("stream_color");
-zrequire("hash_util");
-const unread = zrequire("unread");
-const stream_data = zrequire("stream_data");
-const scroll_util = zrequire("scroll_util");
-const stream_list = zrequire("stream_list");
-zrequire("ui");
 const page_params = set_global("page_params", {
     is_admin: false,
     realm_users: [],
 });
-
-stream_color.initialize();
 
 const noop = () => {};
 const return_false = () => false;
@@ -37,6 +25,19 @@ set_global("popovers", {});
 set_global("keydown_util", {
     handle: noop,
 });
+
+zrequire("unread_ui");
+const Filter = zrequire("Filter", "js/filter");
+const stream_sort = zrequire("stream_sort");
+const stream_color = zrequire("stream_color");
+zrequire("hash_util");
+const unread = zrequire("unread");
+const stream_data = zrequire("stream_data");
+const scroll_util = zrequire("scroll_util");
+const stream_list = zrequire("stream_list");
+zrequire("ui");
+
+stream_color.initialize();
 
 const devel = {
     name: "devel",

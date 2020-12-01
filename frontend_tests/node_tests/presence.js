@@ -5,15 +5,15 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const people = zrequire("people");
-const presence = zrequire("presence");
-
 const return_false = () => false;
 
 const server_events = set_global("server_events", {});
 const reload_state = set_global("reload_state", {
     is_in_progress: return_false,
 });
+
+const people = zrequire("people");
+const presence = zrequire("presence");
 
 const OFFLINE_THRESHOLD_SECS = 140;
 

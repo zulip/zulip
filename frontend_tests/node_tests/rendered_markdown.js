@@ -2,19 +2,20 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+
+set_global("rtl", {
+    get_direction: () => "ltr",
+});
+const page_params = set_global("page_params", {emojiset: "apple"});
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
 zrequire("timerender");
-
-set_global("rtl", {
-    get_direction: () => "ltr",
-});
 
 const iago = {
     email: "iago@zulip.com",
@@ -64,8 +65,6 @@ const $array = (array) => {
     };
     return {each};
 };
-
-let page_params = set_global("page_params", {emojiset: "apple"});
 
 const get_content_element = () => {
     const $content = $.create(".rendered_markdown");
@@ -194,18 +193,15 @@ run_test("timestamp-twenty-four-hour-time", () => {
     $content.set_find_results("time", $array([$timestamp]));
 
     // We will temporarily change the 24h setting for this test.
-    const old_page_params = page_params;
+    with_field(page_params, "twenty_four_hour_time", true, () => {
+        rm.update_elements($content);
+        assert.equal($timestamp.text(), "Wed, Jul 15 2020, 20:40");
+    });
 
-    page_params = set_global("page_params", {...old_page_params, twenty_four_hour_time: true});
-    rm.update_elements($content);
-    assert.equal($timestamp.text(), "Wed, Jul 15 2020, 20:40");
-
-    page_params = set_global("page_params", {...old_page_params, twenty_four_hour_time: false});
-    rm.update_elements($content);
-    assert.equal($timestamp.text(), "Wed, Jul 15 2020, 8:40 PM");
-
-    // Set page_params back to its original value.
-    page_params = set_global("page_params", old_page_params);
+    with_field(page_params, "twenty_four_hour_time", false, () => {
+        rm.update_elements($content);
+        assert.equal($timestamp.text(), "Wed, Jul 15 2020, 8:40 PM");
+    });
 });
 
 run_test("timestamp-error", () => {

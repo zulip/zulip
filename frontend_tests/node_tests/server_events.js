@@ -17,17 +17,6 @@ set_global("document", {
 });
 set_global("addEventListener", noop);
 
-// Turn off $.now so we can import server_events.
-set_global("$", {
-    now() {},
-});
-
-zrequire("message_store");
-const server_events = zrequire("server_events");
-zrequire("sent_messages");
-
-set_global("$", $);
-
 const channel = set_global("channel", {});
 set_global("home_msg_list", {
     select_id: noop,
@@ -53,6 +42,17 @@ set_global("ui_report", {
         return false;
     },
 });
+
+// Turn off $.now so we can import server_events.
+set_global("$", {
+    now() {},
+});
+
+zrequire("message_store");
+const server_events = zrequire("server_events");
+zrequire("sent_messages");
+
+set_global("$", $);
 
 server_events.home_view_loaded();
 

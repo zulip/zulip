@@ -6,10 +6,6 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const input_pill = zrequire("input_pill");
-
-zrequire("templates");
-
 set_global("document", {});
 
 const noop = () => {};
@@ -22,6 +18,9 @@ set_global("ui_util", {
 set_global("getSelection", () => ({
     anchorOffset: 0,
 }));
+
+zrequire("templates");
+const input_pill = zrequire("input_pill");
 
 let id_seq = 0;
 run_test("set_up_ids", () => {

@@ -10,46 +10,16 @@ const noop = () => {};
 const return_false = () => false;
 const return_true = () => true;
 
+set_global("page_params", {});
+
 set_global("document", {
     location: {}, // we need this to load compose.js
+    to_$: () => $("document-stub"),
 });
-
-set_global("page_params", {});
 
 const compose_pm_pill = set_global("compose_pm_pill", {});
 
 const hash_util = set_global("hash_util", {});
-
-const people = zrequire("people");
-const compose_ui = zrequire("compose_ui");
-const compose = zrequire("compose");
-const compose_state = zrequire("compose_state");
-const compose_actions = zrequire("compose_actions");
-const stream_data = zrequire("stream_data");
-
-set_global("document", "document-stub");
-
-compose_actions.update_placeholder_text = noop;
-
-const start = compose_actions.start;
-const cancel = compose_actions.cancel;
-const get_focus_area = compose_actions._get_focus_area;
-const respond_to_message = compose_actions.respond_to_message;
-const reply_with_mention = compose_actions.reply_with_mention;
-const quote_and_reply = compose_actions.quote_and_reply;
-
-compose_state.private_message_recipient = (function () {
-    let recipient;
-
-    return function (arg) {
-        if (arg === undefined) {
-            return recipient;
-        }
-
-        recipient = arg;
-        return undefined;
-    };
-})();
 
 set_global("reload_state", {
     is_in_progress: return_false,
@@ -79,23 +49,51 @@ set_global("common", {
     status_classes: "status_classes",
 });
 
+set_global("current_msg_list", {
+    can_mark_messages_read() {
+        return true;
+    },
+});
+
+const channel = set_global("channel", {});
+
+const people = zrequire("people");
+const compose_ui = zrequire("compose_ui");
+const compose = zrequire("compose");
+const compose_state = zrequire("compose_state");
+const compose_actions = zrequire("compose_actions");
+const stream_data = zrequire("stream_data");
+
+compose_actions.update_placeholder_text = noop;
+
+const start = compose_actions.start;
+const cancel = compose_actions.cancel;
+const get_focus_area = compose_actions._get_focus_area;
+const respond_to_message = compose_actions.respond_to_message;
+const reply_with_mention = compose_actions.reply_with_mention;
+const quote_and_reply = compose_actions.quote_and_reply;
+
+compose_state.private_message_recipient = (function () {
+    let recipient;
+
+    return function (arg) {
+        if (arg === undefined) {
+            return recipient;
+        }
+
+        recipient = arg;
+        return undefined;
+    };
+})();
+
 function stub_selected_message(msg) {
-    set_global("current_msg_list", {
-        selected_message() {
-            return msg;
-        },
-        can_mark_messages_read() {
-            return true;
-        },
-    });
+    current_msg_list.selected_message = () => msg;
 }
 
 function stub_channel_get(success_value) {
-    set_global("channel", {
-        get(opts) {
-            opts.success(success_value);
-        },
-    });
+    channel.get = (opts) => {
+        opts.success(success_value);
+    };
 }
 
 function assert_visible(sel) {

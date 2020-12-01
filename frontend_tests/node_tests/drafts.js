@@ -7,11 +7,6 @@ const {set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const {localstorage} = zrequire("localstorage");
-const drafts = zrequire("drafts");
-const timerender = zrequire("timerender");
-zrequire("stream_color");
-
 const ls_container = new Map();
 const noop = () => {};
 
@@ -42,6 +37,11 @@ set_global("markdown", {
 set_global("page_params", {
     twenty_four_hour_time: false,
 });
+
+const {localstorage} = zrequire("localstorage");
+const drafts = zrequire("drafts");
+const timerender = zrequire("timerender");
+zrequire("stream_color");
 
 const legacy_draft = {
     stream: "stream",
