@@ -7,7 +7,6 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {realm_is_zephyr_mirror_realm: false});
-set_global("md5", (s) => "md5-" + s);
 
 const settings_config = zrequire("settings_config");
 const pm_conversations = zrequire("pm_conversations");
