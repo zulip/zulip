@@ -7,6 +7,24 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 3.3 -- December 1, 2020
+
+- Guest users should not be allowed to post to streams marked “Only
+  organization full members can post.”  This flaw has existed since
+  the feature was added in Zulip Server 3.0.
+- Permit outgoing mail from postfix; this resolves a bug introduced in
+  Zulip Server 3.2 which prevented Zulip from sending outgoing mail if
+  the local mail server (used mostly for incoming mail) was also used
+  for outgoing email (`MAIL_HOST=``'``localhost``'`).
+- Ensure that the `upgrade-postgres` tool upgrades the cluster’s data
+  to the specific PostgreSQL version requested; this resolves a bug
+  where, now that PostgreSQL 13 has been released, `upgrade-postgres`
+  would attempt to upgrade to that version and not PostgreSQL 12.
+- Replace the impenetrably-named `./manage.py knight` with
+  `./manage.py change_user_role`, and extend it to support
+  “Organization owner” roles.
+- Handle realm emojis that have been manually deleted more gracefully.
+
 ### 3.2 -- September 15, 2020
 
 - Switched from `libmemcached` to `python-binary-memcached`, a
