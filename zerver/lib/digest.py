@@ -65,7 +65,7 @@ class DigestTopic:
             self.sample_messages,
         )
         return {
-            "participants": self.human_senders,
+            "participants": sorted(self.human_senders),
             "count": teaser_count,
             "first_few_messages": first_few_messages,
         }
