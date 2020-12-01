@@ -77,6 +77,8 @@
         #recent_topics_filter_buttons {
             margin: 0 10px 0 10px;
             display: flex;
+            /* Search box has no height without this in safari. */
+            flex: 0 0 auto;
             flex-wrap: wrap;
             justify-content: flex-start;
         }
