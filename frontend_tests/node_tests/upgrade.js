@@ -13,11 +13,6 @@ const noop = () => {};
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
-let jquery_init;
-
-set_global("$", (f) => {
-    jquery_init = f;
-});
 
 set_global("helpers", {
     set_tab: noop,
@@ -35,7 +30,6 @@ set_global("page_params", {
 });
 
 zrequire("helpers", "js/billing/helpers");
-zrequire("upgrade", "js/billing/upgrade");
 set_global("$", make_zjquery());
 
 run_test("initialize", () => {
@@ -109,7 +103,7 @@ run_test("initialize", () => {
     $("#autopay-form").data = (key) =>
         document.querySelector("#autopay-form").getAttribute("data-" + key);
 
-    jquery_init();
+    zrequire("upgrade", "js/billing/upgrade");
 
     const e = {
         preventDefault: noop,

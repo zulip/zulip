@@ -13,8 +13,6 @@ set_global("page_params", {
     is_guest: false,
 });
 
-set_global("$", () => {});
-
 set_global("document", null);
 stub_out_jquery();
 
