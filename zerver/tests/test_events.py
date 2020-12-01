@@ -1442,8 +1442,6 @@ class NormalActionsTest(BaseAction):
         stream = self.make_stream('old_name')
         new_name = 'stream with a brand new name'
         self.subscribe(self.user_profile, stream.name)
-        notification = '<p><span class="user-mention silent" data-user-id="{user_id}">King Hamlet</span> renamed stream <strong>old_name</strong> to <strong>stream with a brand new name</strong>.</p>'
-        notification = notification.format(user_id=self.user_profile.id)
         action = lambda: do_rename_stream(stream, new_name, self.user_profile)
         events = self.verify_action(action, num_events=3)
 
