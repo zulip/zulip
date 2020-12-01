@@ -21,7 +21,6 @@ zrequire("composebox_typeahead");
 zrequire("recent_senders");
 zrequire("settings_org");
 const settings_config = zrequire("settings_config");
-set_global("md5", (s) => "md5-" + s);
 
 // To be eliminated in next commit:
 stream_data.update_calculated_fields = () => {};
