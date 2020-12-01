@@ -216,7 +216,9 @@ exports.close_active_modal = function () {
 
 exports.close_for_hash_change = function () {
     $(".overlay.show").removeClass("show");
-    reset_state();
+    if (active_overlay) {
+        close_handler();
+    }
 };
 
 exports.open_settings = function () {
