@@ -50,7 +50,7 @@ them.
 
 ### Mobile and desktop apps
 
-The Zulip apps expect to be talking to to servers with a properly
+The Zulip apps expect to be talking to servers with a properly
 signed SSL certificate, in most cases and will not accept a
 self-signed certificate.  You should get a proper SSL certificate
 before testing the apps.
