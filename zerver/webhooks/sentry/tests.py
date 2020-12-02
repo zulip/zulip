@@ -105,6 +105,17 @@ Traceback:
 ```"""
         self.check_webhook("webhook_event_for_exception_python", expected_topic, expected_message)
 
+    def test_webhook_event_for_exception_javascript(self) -> None:
+        expected_topic = 'TypeError: can\'t access property "bar", x.foo is undefined'
+        expected_message = """
+**New exception:** [TypeError: can't access property "bar", x.foo is undefined](https://sentry.io/organizations/foo-bar-org/issues/1982047746/event/f3bf5fc4e354451db9e885a69b2a2b51/)
+```quote
+**level:** error
+**timestamp:** 2020-10-26 16:39:54
+**filename:** None
+```"""
+        self.check_webhook("webhook_event_for_exception_javascript", expected_topic, expected_message)
+
     def test_event_for_message_golang(self) -> None:
         expected_topic = "A test message event from golang."
         expected_message = """

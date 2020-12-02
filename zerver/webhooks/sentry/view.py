@@ -238,7 +238,8 @@ def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any
 
     event_path = f"event/{event_id}/"
     event['web_url'] = urljoin(payload['url'], event_path)
-    event['datetime'] = datetime.fromtimestamp(event['timestamp']).isoformat()
+    timestamp = event.get('timestamp', event['received'])
+    event['datetime'] = datetime.fromtimestamp(timestamp).isoformat()
     return payload
 
 
