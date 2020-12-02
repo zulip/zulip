@@ -64,8 +64,13 @@
     <b>Discount (use 85 for nonprofits)</b>:<br>
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    {% if realm.current_plan and realm.current_plan.fixed_price %}
+    <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" disabled>
+    <button type="submit" class="button rounded small support-submit-button" disabled>Update</button>
+    {% else %}
     <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" required>
     <button type="submit" class="button rounded small support-submit-button">Update</button>
+    {% endif %}
 </form>
 {% if realm.current_plan %}
 <div class="current-plan-details">
