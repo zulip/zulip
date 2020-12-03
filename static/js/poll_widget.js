@@ -59,7 +59,6 @@ class PollData {
         for (const [key, obj] of this.key_to_option) {
             const voters = Array.from(obj.votes.keys());
             const current_user_vote = voters.includes(this.me);
-
             options.push({
                 option: obj.option,
                 names: people.safe_full_names(voters),
@@ -87,7 +86,6 @@ class PollData {
                 };
 
                 this.my_idx += 1;
-
                 return event;
             },
 
@@ -208,7 +206,7 @@ exports.activate = function (opts) {
         const author_help = is_my_poll && !has_question;
 
         elem.find(".poll-question-header").toggle(!input_mode);
-        elem.find(".poll-question-header").text(question);
+        elem.find(".poll-question-header").html(question);
         elem.find(".poll-edit-question").toggle(can_edit);
         update_edit_controls();
 
@@ -245,9 +243,9 @@ exports.activate = function (opts) {
             new_question = old_question;
         }
 
-        // Optimistically set the question locally.
-        poll_data.set_question(new_question);
-        render_question();
+        // Decided not to do this to prevent XSS attacks, so that escaping could happen
+        // poll_data.set_question(new_question);
+        // render_question();
 
         // If there were no actual edits, we can exit now.
         if (new_question === old_question) {

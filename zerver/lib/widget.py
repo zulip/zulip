@@ -2,8 +2,16 @@ import json
 import re
 from typing import Any, MutableMapping, Optional, Tuple
 
-from zerver.models import SubMessage
+from zerver.lib.markdown import markdown_convert
+from zerver.models import SubMessage, get_realm
 
+
+def filter_and_render_string(input: str) -> str:
+    # Run through the markdown engine so that links will work
+    output = markdown_convert(input, message_realm=get_realm('zulip'),)
+    # Remove p tags from render output, so the options do not create new lines
+    output = re.sub(r'<\/*p>', '', output)
+    return output
 
 def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
     valid_widget_types = ['poll', 'todo']
@@ -28,17 +36,18 @@ def get_extra_data_from_widget_type(content: str,
         question = ''
         options = []
         if lines and lines[0]:
-            question = lines.pop(0).strip()
+            question = filter_and_render_string(lines.pop(0).strip())
         for line in lines:
             # If someone is using the list syntax, we remove it
             # before adding an option.
             option = re.sub(r'(\s*[-*]?\s*)', '', line.strip(), 1)
             if len(option) > 0:
-                options.append(option)
+                options.append(filter_and_render_string(option))
         extra_data = {
             'question': question,
             'options': options,
         }
+
         return extra_data
     return None
 

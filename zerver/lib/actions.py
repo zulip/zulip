@@ -1,5 +1,6 @@
 import datetime
 import itertools
+import json
 import logging
 import os
 import time
@@ -173,7 +174,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key, log_statsd_event
 from zerver.lib.validator import check_widget_content
-from zerver.lib.widget import do_widget_post_save_actions
+from zerver.lib.widget import do_widget_post_save_actions, filter_and_render_string
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
     Attachment,
@@ -1803,6 +1804,14 @@ def do_add_submessage(realm: Realm,
                       msg_type: str,
                       content: str,
                       ) -> None:
+    content_json = json.loads(content)
+
+    if "option" in content_json:
+        content_json["option"] = filter_and_render_string(content_json["option"])
+    elif "question" in content_json:
+        content_json["question"] = filter_and_render_string(content_json["question"])
+    content = json.dumps(content_json)
+
     submessage = SubMessage(
         sender_id=sender_id,
         message_id=message_id,
@@ -1810,7 +1819,6 @@ def do_add_submessage(realm: Realm,
         content=content,
     )
     submessage.save()
-
     event = dict(
         type="submessage",
         msg_type=msg_type,
