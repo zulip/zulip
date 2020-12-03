@@ -1,4 +1,4 @@
-# See https://github.com/returntocorp/semgrep/blob/experimental/docs/config/advanced.md
+# See https://semgrep.dev/docs/writing-rules/rule-syntax/ for documentation on YAML rule syntax
 
 rules:
   ####################### PYTHON RULES #######################
