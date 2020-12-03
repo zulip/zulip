@@ -1873,6 +1873,9 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         flex-direction: column;
         margin-top: 5px;
     }
+    #settings_page .custom_user_field textarea {
+        width: calc(100% - 25px);
+    }
 }
 
 @media only screen and (width < $lg_min) {
