@@ -160,6 +160,11 @@ class StripeCardError(BillingError):
 class StripeConnectionError(BillingError):
     pass
 
+class InvalidBillingSchedule(Exception):
+    def __init__(self, billing_schedule: int) -> None:
+        self.message = f"Unknown billing_schedule: {billing_schedule}"
+        super().__init__(self.message)
+
 def catch_stripe_errors(func: CallableT) -> CallableT:
     @wraps(func)
     def wrapped(*args: object, **kwargs: object) -> object:
@@ -325,6 +330,21 @@ def update_or_create_stripe_customer(user: UserProfile, stripe_token: Optional[s
         do_replace_payment_source(user, stripe_token)
     return customer
 
+def get_price_per_license(tier: int, billing_schedule: int, discount: Optional[Decimal]=None) -> int:
+    # TODO use variables to account for Zulip Plus
+    assert(tier == CustomerPlan.STANDARD)
+
+    price_per_license: Optional[int] = None
+    if billing_schedule == CustomerPlan.ANNUAL:
+        price_per_license = 8000
+    elif billing_schedule == CustomerPlan.MONTHLY:
+        price_per_license = 800
+    else:  # nocoverage
+        raise InvalidBillingSchedule(billing_schedule)
+    if discount is not None:
+        price_per_license = int(float(price_per_license * (1 - discount / 100)) + .00001)
+    return price_per_license
+
 def compute_plan_parameters(
         automanage_licenses: bool, billing_schedule: int,
         discount: Optional[Decimal],
@@ -334,17 +354,14 @@ def compute_plan_parameters(
     # TODO talk about leapseconds?
     billing_cycle_anchor = timezone_now().replace(microsecond=0)
     if billing_schedule == CustomerPlan.ANNUAL:
-        # TODO use variables to account for Zulip Plus
-        price_per_license = 8000
         period_end = add_months(billing_cycle_anchor, 12)
     elif billing_schedule == CustomerPlan.MONTHLY:
-        price_per_license = 800
         period_end = add_months(billing_cycle_anchor, 1)
-    else:
-        raise AssertionError(f'Unknown billing_schedule: {billing_schedule}')
-    if discount is not None:
-        # There are no fractional cents in Stripe, so round down to nearest integer.
-        price_per_license = int(float(price_per_license * (1 - discount / 100)) + .00001)
+    else:  # nocoverage
+        raise InvalidBillingSchedule(billing_schedule)
+
+    price_per_license = get_price_per_license(CustomerPlan.STANDARD, billing_schedule, discount)
+
     next_invoice_date = period_end
     if automanage_licenses:
         next_invoice_date = add_months(billing_cycle_anchor, 1)
