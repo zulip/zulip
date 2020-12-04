@@ -265,7 +265,7 @@ def sponsorship(
         context=context,
     )
 
-    update_sponsorship_status(realm, True)
+    update_sponsorship_status(realm, True, acting_user=user)
     user.is_billing_admin = True
     user.save(update_fields=["is_billing_admin"])
 

@@ -941,7 +941,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
     def test_approve_sponsorship(self) -> None:
         lear_realm = get_realm("lear")
-        update_sponsorship_status(lear_realm, True)
+        update_sponsorship_status(lear_realm, True, acting_user=None)
         king_user = self.lear_user("king")
         king_user.role = UserProfile.ROLE_REALM_OWNER
         king_user.save()

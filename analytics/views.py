@@ -1334,10 +1334,10 @@ def support(request: HttpRequest) -> HttpResponse:
         elif request.POST.get("sponsorship_pending", None) is not None:
             sponsorship_pending = request.POST.get("sponsorship_pending")
             if sponsorship_pending == "true":
-                update_sponsorship_status(realm, True)
+                update_sponsorship_status(realm, True, acting_user=request.user)
                 context["success_message"] = f"{realm.string_id} marked as pending sponsorship."
             elif sponsorship_pending == "false":
-                update_sponsorship_status(realm, False)
+                update_sponsorship_status(realm, False, acting_user=request.user)
                 context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
         elif request.POST.get("approve_sponsorship") is not None:
             if request.POST.get("approve_sponsorship") == "approve_sponsorship":

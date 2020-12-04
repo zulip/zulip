@@ -761,10 +761,21 @@ def attach_discount_to_realm(
     )
 
 
-def update_sponsorship_status(realm: Realm, sponsorship_pending: bool) -> None:
+def update_sponsorship_status(
+    realm: Realm, sponsorship_pending: bool, *, acting_user: Optional[UserProfile]
+) -> None:
     customer, _ = Customer.objects.get_or_create(realm=realm)
     customer.sponsorship_pending = sponsorship_pending
     customer.save(update_fields=["sponsorship_pending"])
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            "sponsorship_pending": sponsorship_pending,
+        },
+    )
 
 
 def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
