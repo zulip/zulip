@@ -2391,13 +2391,26 @@ class StripeTest(StripeTestCase):
         )
         self.assertEqual(plan.charge_automatically, False)
 
-        update_billing_method_of_current_plan(realm, True)
+        iago = self.example_user("iago")
+        update_billing_method_of_current_plan(realm, True, acting_user=iago)
         plan.refresh_from_db()
         self.assertEqual(plan.charge_automatically, True)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED
+        ).last()
+        expected_extra_data = {"charge_automatically": plan.charge_automatically}
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
 
-        update_billing_method_of_current_plan(realm, False)
+        update_billing_method_of_current_plan(realm, False, acting_user=iago)
         plan.refresh_from_db()
         self.assertEqual(plan.charge_automatically, False)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED
+        ).last()
+        expected_extra_data = {"charge_automatically": plan.charge_automatically}
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
 
 
 class RequiresBillingAccessTest(ZulipTestCase):

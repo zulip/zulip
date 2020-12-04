@@ -1318,12 +1318,16 @@ def support(request: HttpRequest) -> HttpResponse:
         elif request.POST.get("billing_method", None) is not None:
             billing_method = request.POST.get("billing_method")
             if billing_method == "send_invoice":
-                update_billing_method_of_current_plan(realm, charge_automatically=False)
+                update_billing_method_of_current_plan(
+                    realm, charge_automatically=False, acting_user=request.user
+                )
                 context[
                     "success_message"
                 ] = f"Billing method of {realm.string_id} updated to pay by invoice."
             elif billing_method == "charge_automatically":
-                update_billing_method_of_current_plan(realm, charge_automatically=True)
+                update_billing_method_of_current_plan(
+                    realm, charge_automatically=True, acting_user=request.user
+                )
                 context[
                     "success_message"
                 ] = f"Billing method of {realm.string_id} updated to charge automatically."

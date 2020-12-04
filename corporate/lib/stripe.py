@@ -868,8 +868,19 @@ def void_all_open_invoices(realm: Realm) -> int:
     return voided_invoices_count
 
 
-def update_billing_method_of_current_plan(realm: Realm, charge_automatically: bool) -> None:
+def update_billing_method_of_current_plan(
+    realm: Realm, charge_automatically: bool, *, acting_user: Optional[UserProfile]
+) -> None:
     plan = get_current_plan_by_realm(realm)
     if plan is not None:
         plan.charge_automatically = charge_automatically
         plan.save(update_fields=["charge_automatically"])
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "charge_automatically": charge_automatically,
+            },
+        )
