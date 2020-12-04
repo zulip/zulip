@@ -849,7 +849,7 @@ class TestSupportEndpoint(ZulipTestCase):
             "/activity/support",
             {"realm_id": f"{iago.realm_id}", "billing_method": "charge_automatically"},
         )
-        m.assert_called_once_with(get_realm("zulip"), charge_automatically=True)
+        m.assert_called_once_with(get_realm("zulip"), charge_automatically=True, acting_user=iago)
         self.assert_in_success_response(
             ["Billing method of zulip updated to charge automatically"], result
         )
@@ -859,7 +859,7 @@ class TestSupportEndpoint(ZulipTestCase):
         result = self.client_post(
             "/activity/support", {"realm_id": f"{iago.realm_id}", "billing_method": "send_invoice"}
         )
-        m.assert_called_once_with(get_realm("zulip"), charge_automatically=False)
+        m.assert_called_once_with(get_realm("zulip"), charge_automatically=False, acting_user=iago)
         self.assert_in_success_response(
             ["Billing method of zulip updated to pay by invoice"], result
         )
