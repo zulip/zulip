@@ -1136,10 +1136,9 @@ def support(request: HttpRequest) -> HttpResponse:
             context["success_message"] = msg
         elif request.POST.get("discount", None) is not None:
             new_discount = Decimal(request.POST.get("discount"))
-            current_discount = get_discount_for_realm(realm)
+            current_discount = get_discount_for_realm(realm) or 0
             attach_discount_to_realm(realm, new_discount)
-            msg = f"Discount of {realm.string_id} changed to {new_discount} from {current_discount} "
-            context["success_message"] = msg
+            context["success_message"] = f"Discount of {realm.string_id} changed to {new_discount}% from {current_discount}%."
         elif request.POST.get("new_subdomain", None) is not None:
             new_subdomain = request.POST.get("new_subdomain")
             old_subdomain = realm.string_id
