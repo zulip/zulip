@@ -1286,7 +1286,7 @@ def support(request: HttpRequest) -> HttpResponse:
         elif request.POST.get("discount", None) is not None:
             new_discount = Decimal(request.POST.get("discount"))
             current_discount = get_discount_for_realm(realm) or 0
-            attach_discount_to_realm(realm, new_discount)
+            attach_discount_to_realm(realm, new_discount, acting_user=request.user)
             context[
                 "success_message"
             ] = f"Discount of {realm.string_id} changed to {new_discount}% from {current_discount}%."

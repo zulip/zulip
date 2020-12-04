@@ -1596,7 +1596,12 @@ class StripeTest(StripeTestCase):
     def test_attach_discount_to_realm(self, *mocks: Mock) -> None:
         # Attach discount before Stripe customer exists
         user = self.example_user("hamlet")
-        attach_discount_to_realm(user.realm, Decimal(85))
+        attach_discount_to_realm(user.realm, Decimal(85), acting_user=user)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
+        ).last()
+        expected_extra_data = str({"old_discount": None, "new_discount": Decimal("85")})
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.login_user(user)
         # Check that the discount appears in page_params
         self.assert_in_success_response(["85"], self.client_get("/upgrade/"))
@@ -1616,7 +1621,7 @@ class StripeTest(StripeTestCase):
         # Attach discount to existing Stripe customer
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
-        attach_discount_to_realm(user.realm, Decimal(25))
+        attach_discount_to_realm(user.realm, Decimal(25), acting_user=user)
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             process_initial_upgrade(
                 user, self.seat_count, True, CustomerPlan.ANNUAL, stripe_create_token().id
@@ -1630,7 +1635,7 @@ class StripeTest(StripeTestCase):
         )
         plan = CustomerPlan.objects.get(price_per_license=6000, discount=Decimal(25))
 
-        attach_discount_to_realm(user.realm, Decimal(50))
+        attach_discount_to_realm(user.realm, Decimal(50), acting_user=user)
         plan.refresh_from_db()
         self.assertEqual(plan.price_per_license, 4000)
         self.assertEqual(plan.discount, 50)
@@ -1639,12 +1644,20 @@ class StripeTest(StripeTestCase):
         invoice_plans_as_needed(self.next_year + timedelta(days=10))
         [invoice, _, _] = stripe.Invoice.list(customer=customer.stripe_customer_id)
         self.assertEqual([4000 * self.seat_count], [item.amount for item in invoice.lines])
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
+        ).last()
+        expected_extra_data = str(
+            {"old_discount": Decimal("25.0000"), "new_discount": Decimal("50")}
+        )
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.acting_user, user)
 
     def test_get_discount_for_realm(self) -> None:
         user = self.example_user("hamlet")
         self.assertEqual(get_discount_for_realm(user.realm), None)
 
-        attach_discount_to_realm(user.realm, Decimal(85))
+        attach_discount_to_realm(user.realm, Decimal(85), acting_user=None)
         self.assertEqual(get_discount_for_realm(user.realm), 85)
 
     @mock_stripe()
