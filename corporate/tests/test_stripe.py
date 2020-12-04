@@ -22,6 +22,7 @@ from corporate.lib.stripe import (
     MAX_INVOICED_LICENSES,
     MIN_INVOICED_LICENSES,
     BillingError,
+    InvalidBillingSchedule,
     StripeCardError,
     add_months,
     attach_discount_to_realm,
@@ -29,6 +30,7 @@ from corporate.lib.stripe import (
     compute_plan_parameters,
     get_discount_for_realm,
     get_latest_seat_count,
+    get_price_per_license,
     invoice_plan,
     invoice_plans_as_needed,
     make_end_of_cycle_updates_if_needed,
@@ -1985,6 +1987,24 @@ class BillingHelpersTest(ZulipTestCase):
                     None if free_trial is None else Decimal(free_trial),
                 )
                 self.assertEqual(output_, output)
+
+    def test_get_price_per_license(self) -> None:
+        self.assertEqual(
+            get_price_per_license(CustomerPlan.STANDARD, CustomerPlan.ANNUAL), 8000
+        )
+        self.assertEqual(
+            get_price_per_license(CustomerPlan.STANDARD, CustomerPlan.MONTHLY), 800
+        )
+        self.assertEqual(
+            get_price_per_license(CustomerPlan.STANDARD, CustomerPlan.MONTHLY, discount=Decimal(50)),
+            400
+        )
+
+        with self.assertRaises(AssertionError):
+            get_price_per_license(CustomerPlan.PLUS, CustomerPlan.MONTHLY)
+
+        with self.assertRaisesRegex(InvalidBillingSchedule, "Unknown billing_schedule: 1000"):
+            get_price_per_license(CustomerPlan.STANDARD, 1000)
 
     def test_update_or_create_stripe_customer_logic(self) -> None:
         user = self.example_user('hamlet')
