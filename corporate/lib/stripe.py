@@ -767,7 +767,7 @@ def update_sponsorship_status(realm: Realm, sponsorship_pending: bool) -> None:
     customer.save(update_fields=["sponsorship_pending"])
 
 
-def approve_sponsorship(realm: Realm, acting_user: Optional[UserProfile]) -> None:
+def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     from zerver.lib.actions import do_change_plan_type, internal_send_private_message
 
     do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=acting_user)
@@ -775,6 +775,12 @@ def approve_sponsorship(realm: Realm, acting_user: Optional[UserProfile]) -> Non
     if customer is not None and customer.sponsorship_pending:
         customer.sponsorship_pending = False
         customer.save(update_fields=["sponsorship_pending"])
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.REALM_SPONSORSHIP_APPROVED,
+            event_time=timezone_now(),
+        )
     notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
     for billing_admin in realm.get_human_billing_admin_users():
         with override_language(billing_admin.default_language):
