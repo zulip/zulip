@@ -589,6 +589,11 @@ def invoice_plans_as_needed(event_time: datetime=timezone_now()) -> None:
 
 def attach_discount_to_realm(realm: Realm, discount: Decimal) -> None:
     Customer.objects.update_or_create(realm=realm, defaults={'default_discount': discount})
+    plan = get_current_plan_by_realm(realm)
+    if plan is not None:
+        plan.price_per_license = get_price_per_license(plan.tier, plan.billing_schedule, discount)
+        plan.discount = discount
+        plan.save(update_fields=["price_per_license", "discount"])
 
 def update_sponsorship_status(realm: Realm, sponsorship_pending: bool) -> None:
     customer, _ = Customer.objects.get_or_create(realm=realm)

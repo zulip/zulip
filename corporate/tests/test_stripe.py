@@ -1244,10 +1244,10 @@ class StripeTest(StripeTestCase):
         self.assert_in_success_response(['85'], self.client_get("/upgrade/"))
         # Check that the customer was charged the discounted amount
         self.upgrade()
-        stripe_customer_id = Customer.objects.values_list('stripe_customer_id', flat=True).first()
-        [charge] = stripe.Charge.list(customer=stripe_customer_id)
+        customer = Customer.objects.first()
+        [charge] = stripe.Charge.list(customer=customer.stripe_customer_id)
         self.assertEqual(1200 * self.seat_count, charge.amount)
-        [invoice] = stripe.Invoice.list(customer=stripe_customer_id)
+        [invoice] = stripe.Invoice.list(customer=customer.stripe_customer_id)
         self.assertEqual([1200 * self.seat_count, -1200 * self.seat_count],
                          [item.amount for item in invoice.lines])
         # Check CustomerPlan reflects the discount
@@ -1257,13 +1257,25 @@ class StripeTest(StripeTestCase):
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=['status'])
         attach_discount_to_realm(user.realm, Decimal(25))
-        process_initial_upgrade(user, self.seat_count, True, CustomerPlan.ANNUAL, stripe_create_token().id)
-        [charge0, charge1] = stripe.Charge.list(customer=stripe_customer_id)
-        self.assertEqual(6000 * self.seat_count, charge0.amount)
-        [invoice0, invoice1] = stripe.Invoice.list(customer=stripe_customer_id)
+        with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
+            process_initial_upgrade(user, self.seat_count, True, CustomerPlan.ANNUAL, stripe_create_token().id)
+        [charge, _] = stripe.Charge.list(customer=customer.stripe_customer_id)
+        self.assertEqual(6000 * self.seat_count, charge.amount)
+        [invoice, _] = stripe.Invoice.list(customer=customer.stripe_customer_id)
         self.assertEqual([6000 * self.seat_count, -6000 * self.seat_count],
-                         [item.amount for item in invoice0.lines])
+                         [item.amount for item in invoice.lines])
         plan = CustomerPlan.objects.get(price_per_license=6000, discount=Decimal(25))
+
+        attach_discount_to_realm(user.realm, Decimal(50))
+        plan.refresh_from_db()
+        self.assertEqual(plan.price_per_license, 4000)
+        self.assertEqual(plan.discount, 50)
+        customer.refresh_from_db()
+        self.assertEqual(customer.default_discount, 50)
+        invoice_plans_as_needed(self.next_year + timedelta(days=10))
+        [invoice, _, _] = stripe.Invoice.list(customer=customer.stripe_customer_id)
+        self.assertEqual([4000 * self.seat_count],
+                         [item.amount for item in invoice.lines])
 
     def test_get_discount_for_realm(self) -> None:
         user = self.example_user('hamlet')
