@@ -279,7 +279,8 @@ class RealmTest(ZulipTestCase):
 
     def test_do_send_realm_reactivation_email(self) -> None:
         realm = get_realm("zulip")
-        do_send_realm_reactivation_email(realm)
+        iago = self.example_user("iago")
+        do_send_realm_reactivation_email(realm, acting_user=iago)
         from django.core.mail import outbox
 
         self.assertEqual(len(outbox), 1)
@@ -298,6 +299,12 @@ class RealmTest(ZulipTestCase):
         )
         realm = get_realm("zulip")
         self.assertFalse(realm.deactivated)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                event_type=RealmAuditLog.REALM_REACTIVATION_EMAIL_SENT, acting_user=iago
+            ).count(),
+            1,
+        )
 
     def test_realm_reactivation_with_random_link(self) -> None:
         random_link = "/reactivate/5e89081eb13984e0f3b130bf7a4121d153f1614b"

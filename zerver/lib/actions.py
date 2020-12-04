@@ -7103,8 +7103,14 @@ def check_delete_user_group(user_group_id: int, user_profile: UserProfile) -> No
     do_send_delete_user_group_event(user_profile.realm, user_group_id, user_profile.realm.id)
 
 
-def do_send_realm_reactivation_email(realm: Realm) -> None:
+def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     url = create_confirmation_link(realm, Confirmation.REALM_REACTIVATION)
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_REACTIVATION_EMAIL_SENT,
+        event_time=timezone_now(),
+    )
     context = {"confirmation_url": url, "realm_uri": realm.uri, "realm_name": realm.name}
     language = realm.default_language
     send_email_to_admins(
