@@ -44,6 +44,7 @@ from corporate.lib.stripe import (
     update_license_ledger_for_automanaged_plan,
     update_license_ledger_if_needed,
     update_or_create_stripe_customer,
+    update_sponsorship_status,
     void_all_open_invoices,
 )
 from corporate.models import (
@@ -1667,6 +1668,20 @@ class StripeTest(StripeTestCase):
         self.assertEqual(message.content, expected_message)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
         self.assertEqual(message.recipient_id, recipient_id)
+
+    def test_update_sponsorship_status(self) -> None:
+        lear = get_realm("lear")
+        iago = self.example_user("iago")
+        update_sponsorship_status(lear, True, acting_user=iago)
+        customer = get_customer_by_realm(realm=lear)
+        assert customer is not None
+        self.assertTrue(customer.sponsorship_pending)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
+        ).last()
+        expected_extra_data = {"sponsorship_pending": True}
+        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.acting_user, iago)
 
     def test_get_discount_for_realm(self) -> None:
         user = self.example_user("hamlet")
