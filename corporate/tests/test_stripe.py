@@ -592,7 +592,7 @@ class StripeTest(StripeTestCase):
             .order_by("id")
         )
         self.assertEqual(
-            audit_log_entries,
+            audit_log_entries[:3],
             [
                 (
                     RealmAuditLog.STRIPE_CUSTOMER_CREATED,
@@ -600,10 +600,9 @@ class StripeTest(StripeTestCase):
                 ),
                 (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(stripe_customer.created)),
                 (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
-                # TODO: Check for REALM_PLAN_TYPE_CHANGED
-                # (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
             ],
         )
+        self.assertEqual(audit_log_entries[3][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
         self.assertEqual(
             orjson.loads(
                 RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
@@ -722,17 +721,16 @@ class StripeTest(StripeTestCase):
             .order_by("id")
         )
         self.assertEqual(
-            audit_log_entries,
+            audit_log_entries[:2],
             [
                 (
                     RealmAuditLog.STRIPE_CUSTOMER_CREATED,
                     timestamp_to_datetime(stripe_customer.created),
                 ),
                 (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
-                # TODO: Check for REALM_PLAN_TYPE_CHANGED
-                # (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
             ],
         )
+        self.assertEqual(audit_log_entries[2][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
         self.assertEqual(
             orjson.loads(
                 RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
@@ -828,7 +826,7 @@ class StripeTest(StripeTestCase):
                 .order_by("id")
             )
             self.assertEqual(
-                audit_log_entries,
+                audit_log_entries[:3],
                 [
                     (
                         RealmAuditLog.STRIPE_CUSTOMER_CREATED,
@@ -839,10 +837,9 @@ class StripeTest(StripeTestCase):
                         timestamp_to_datetime(stripe_customer.created),
                     ),
                     (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
-                    # TODO: Check for REALM_PLAN_TYPE_CHANGED
-                    # (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
                 ],
             )
+            self.assertEqual(audit_log_entries[3][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
             self.assertEqual(
                 orjson.loads(
                     RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
@@ -1033,17 +1030,16 @@ class StripeTest(StripeTestCase):
                 .order_by("id")
             )
             self.assertEqual(
-                audit_log_entries,
+                audit_log_entries[:2],
                 [
                     (
                         RealmAuditLog.STRIPE_CUSTOMER_CREATED,
                         timestamp_to_datetime(stripe_customer.created),
                     ),
                     (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
-                    # TODO: Check for REALM_PLAN_TYPE_CHANGED
-                    # (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
                 ],
             )
+            self.assertEqual(audit_log_entries[2][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
             self.assertEqual(
                 orjson.loads(
                     RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
@@ -1247,7 +1243,6 @@ class StripeTest(StripeTestCase):
             .values_list("event_type", flat=True)
             .order_by("id")
         )
-        # TODO: Test for REALM_PLAN_TYPE_CHANGED as the last entry
         self.assertEqual(
             audit_log_entries,
             [
@@ -1255,6 +1250,7 @@ class StripeTest(StripeTestCase):
                 RealmAuditLog.STRIPE_CARD_CHANGED,
                 RealmAuditLog.STRIPE_CARD_CHANGED,
                 RealmAuditLog.CUSTOMER_PLAN_CREATED,
+                RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
             ],
         )
         # Check that we correctly updated Realm

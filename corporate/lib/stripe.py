@@ -606,7 +606,7 @@ def process_initial_upgrade(
 
     from zerver.lib.actions import do_change_plan_type
 
-    do_change_plan_type(realm, Realm.STANDARD)
+    do_change_plan_type(realm, Realm.STANDARD, acting_user=user)
 
 
 def update_license_ledger_for_automanaged_plan(
@@ -751,10 +751,10 @@ def update_sponsorship_status(realm: Realm, sponsorship_pending: bool) -> None:
     customer.save(update_fields=["sponsorship_pending"])
 
 
-def approve_sponsorship(realm: Realm) -> None:
+def approve_sponsorship(realm: Realm, acting_user: Optional[UserProfile]) -> None:
     from zerver.lib.actions import do_change_plan_type, internal_send_private_message
 
-    do_change_plan_type(realm, Realm.STANDARD_FREE)
+    do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=acting_user)
     customer = get_customer_by_realm(realm)
     if customer is not None and customer.sponsorship_pending:
         customer.sponsorship_pending = False
@@ -793,7 +793,7 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
 def process_downgrade(plan: CustomerPlan) -> None:
     from zerver.lib.actions import do_change_plan_type
 
-    do_change_plan_type(plan.customer.realm, Realm.LIMITED)
+    do_change_plan_type(plan.customer.realm, Realm.LIMITED, acting_user=None)
     plan.status = CustomerPlan.ENDED
     plan.save(update_fields=["status"])
 
