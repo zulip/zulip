@@ -3611,7 +3611,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_get(confirmation_url, subdomain=subdomain)
         self.assertEqual(result.status_code, 200)
         result = self.submit_reg_form_for_user(
-            email, password, source_realm="", HTTP_HOST=subdomain + ".testserver"
+            email, password, source_realm_id="", HTTP_HOST=subdomain + ".testserver"
         )
 
         hamlet = get_user(self.example_email("hamlet"), realm)
@@ -3667,7 +3667,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.submit_reg_form_for_user(
             email,
             password,
-            source_realm=str(hamlet_in_zulip.realm.id),
+            source_realm_id=str(hamlet_in_zulip.realm.id),
             HTTP_HOST=subdomain + ".testserver",
         )
 
@@ -3750,7 +3750,7 @@ class UserSignUpTest(InviteUserBase):
             password,
             realm_subdomain=realm.string_id,
             realm_name=realm_name,
-            source_realm=str(realm.id),
+            source_realm_id=str(realm.id),
         )
         self.assert_in_success_response(
             [

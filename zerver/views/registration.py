@@ -311,7 +311,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         if "timezone" in request.POST and request.POST["timezone"] in pytz.all_timezones_set:
             timezone = request.POST["timezone"]
 
-        if "source_realm" in request.POST and request.POST["source_realm"] != "":
+        if "source_realm_id" in request.POST and request.POST["source_realm_id"] != "":
             source_profile: Optional[UserProfile] = get_source_profile(
                 email, int(request.POST["source_realm_id"])
             )
