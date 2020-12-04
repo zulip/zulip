@@ -897,13 +897,14 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
+        iago = self.example_user("iago")
         self.login("iago")
 
         with mock.patch("analytics.views.attach_discount_to_realm") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"}
             )
-            m.assert_called_once_with(get_realm("lear"), 25)
+            m.assert_called_once_with(get_realm("lear"), 25, acting_user=iago)
             self.assert_in_success_response(["Discount of lear changed to 25% from 0%"], result)
 
     def test_change_sponsorship_status(self) -> None:
