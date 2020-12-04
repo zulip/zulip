@@ -330,6 +330,10 @@ def update_or_create_stripe_customer(user: UserProfile, stripe_token: Optional[s
         do_replace_payment_source(user, stripe_token)
     return customer
 
+def calculate_discounted_price_per_license(original_price_per_license: int, discount: Decimal) -> int:
+    # There are no fractional cents in Stripe, so round down to nearest integer.
+    return int(float(original_price_per_license * (1 - discount / 100)) + .00001)
+
 def get_price_per_license(tier: int, billing_schedule: int, discount: Optional[Decimal]=None) -> int:
     # TODO use variables to account for Zulip Plus
     assert(tier == CustomerPlan.STANDARD)
@@ -342,7 +346,7 @@ def get_price_per_license(tier: int, billing_schedule: int, discount: Optional[D
     else:  # nocoverage
         raise InvalidBillingSchedule(billing_schedule)
     if discount is not None:
-        price_per_license = int(float(price_per_license * (1 - discount / 100)) + .00001)
+        price_per_license = calculate_discounted_price_per_license(price_per_license, discount)
     return price_per_license
 
 def compute_plan_parameters(
