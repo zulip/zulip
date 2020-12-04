@@ -33,6 +33,7 @@ function size_blocks(blocks, usable_height) {
 function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
+    const app_height = $(".app").height();
     const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
     const invite_user_link_height = $("#invite-user-link").safeOuterHeight(true) || 0;
 
@@ -54,7 +55,7 @@ function get_new_heights() {
     // RIGHT SIDEBAR
 
     const usable_height =
-        viewport_height -
+        app_height -
         Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
         $("#userlist-header").safeOuterHeight(true) -
         $("#user_search_section").safeOuterHeight(true) -
