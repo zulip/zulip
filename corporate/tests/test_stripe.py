@@ -25,6 +25,7 @@ from corporate.lib.stripe import (
     InvalidBillingSchedule,
     StripeCardError,
     add_months,
+    approve_sponsorship,
     attach_discount_to_realm,
     catch_stripe_errors,
     compute_plan_parameters,
@@ -65,7 +66,7 @@ from zerver.lib.actions import (
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.models import Realm, RealmAuditLog, UserProfile, get_realm
+from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile, get_realm
 
 CallableT = TypeVar("CallableT", bound=Callable[..., Any])
 
@@ -1652,6 +1653,20 @@ class StripeTest(StripeTestCase):
         )
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, user)
+
+    def test_approve_sponsorship(self) -> None:
+        user = self.example_user("hamlet")
+        approve_sponsorship(user.realm, acting_user=user)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.plan_type, Realm.STANDARD_FREE)
+
+        expected_message = "Your organization's request for sponsored hosting has been approved! :tada:.\nYou have been upgraded to Zulip Cloud Standard, free of charge."
+        sender = UserProfile.objects.filter(email=settings.NOTIFICATION_BOT).first()
+        recipient_id = UserProfile.objects.filter(email="desdemona@zulip.com").first().recipient_id
+        message = Message.objects.filter(sender=sender.id).first()
+        self.assertEqual(message.content, expected_message)
+        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message.recipient_id, recipient_id)
 
     def test_get_discount_for_realm(self) -> None:
         user = self.example_user("hamlet")
