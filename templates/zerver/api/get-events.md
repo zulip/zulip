@@ -14,7 +14,7 @@ import sys
 import zulip
 
 # Pass the path to your zuliprc file here.
-client = zulip.Client(config_file="~/zuliprc")
+client = zulip.Client(config_file="~/.zuliprc")
 
 # If you already have a queue registered and thus, have a queue_id
 # on hand, you may use client.get_events() and pass in the above

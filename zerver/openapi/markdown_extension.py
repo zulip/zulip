@@ -31,7 +31,7 @@ PYTHON_CLIENT_CONFIG = """
 import zulip
 
 # Pass the path to your zuliprc file here.
-client = zulip.Client(config_file="~/zuliprc")
+client = zulip.Client(config_file="~/.zuliprc")
 
 """
 
@@ -41,7 +41,7 @@ PYTHON_CLIENT_ADMIN_CONFIG = """
 import zulip
 
 # The user for this zuliprc file must be an organization administrator
-client = zulip.Client(config_file="~/zuliprc-admin")
+client = zulip.Client(config_file="~/.zuliprc-admin")
 
 """
 

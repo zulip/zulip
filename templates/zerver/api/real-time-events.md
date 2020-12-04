@@ -37,7 +37,7 @@ import sys
 import zulip
 
 # Pass the path to your zuliprc file here.
-client = zulip.Client(config_file="~/zuliprc")
+client = zulip.Client(config_file="~/.zuliprc")
 
 # Print every message the current user would receive
 # This is a blocking call that will run forever
