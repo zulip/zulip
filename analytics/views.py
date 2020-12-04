@@ -1308,7 +1308,7 @@ def support(request: HttpRequest) -> HttpResponse:
         elif request.POST.get("status", None) is not None:
             status = request.POST.get("status")
             if status == "active":
-                do_send_realm_reactivation_email(realm)
+                do_send_realm_reactivation_email(realm, acting_user=request.user)
                 context[
                     "success_message"
                 ] = f"Realm reactivation email sent to admins of {realm.string_id}."

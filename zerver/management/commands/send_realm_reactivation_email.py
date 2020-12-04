@@ -17,5 +17,5 @@ class Command(ZulipBaseCommand):
         if not realm.deactivated:
             raise CommandError(f"The realm {realm.name} is already active.")
         print("Sending email to admins")
-        do_send_realm_reactivation_email(realm)
+        do_send_realm_reactivation_email(realm, acting_user=None)
         print("Done!")

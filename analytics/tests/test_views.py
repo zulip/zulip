@@ -826,7 +826,7 @@ class TestSupportEndpoint(ZulipTestCase):
             check_zulip_realm_query_result(result)
             MultiuseInvite.objects.all().delete()
 
-            do_send_realm_reactivation_email(get_realm("zulip"))
+            do_send_realm_reactivation_email(get_realm("zulip"), acting_user=None)
             result = self.client_get("/activity/support", {"q": "zulip"})
             check_realm_reactivation_link_query_result(result)
             check_zulip_realm_query_result(result)
@@ -999,7 +999,7 @@ class TestSupportEndpoint(ZulipTestCase):
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "status": "active"}
             )
-            m.assert_called_once_with(lear_realm)
+            m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
             self.assert_in_success_response(
                 ["Realm reactivation email sent to admins of lear"], result
             )
