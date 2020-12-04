@@ -881,7 +881,7 @@ class TestSupportEndpoint(ZulipTestCase):
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{iago.realm_id}", "plan_type": "2"}
             )
-            m.assert_called_once_with(get_realm("zulip"), 2)
+            m.assert_called_once_with(get_realm("zulip"), 2, acting_user=iago)
             self.assert_in_success_response(
                 ["Plan type of zulip changed from self hosted to limited"], result
             )

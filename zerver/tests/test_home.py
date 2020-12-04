@@ -768,7 +768,7 @@ class HomeTest(ZulipTestCase):
 
         # Don't show plans to guest users
         self.login("polonius")
-        do_change_plan_type(realm, Realm.LIMITED)
+        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
         result_html = self._get_home_page().content.decode("utf-8")
         self.assertNotIn("Plans", result_html)
 
@@ -778,11 +778,11 @@ class HomeTest(ZulipTestCase):
         self.assertIn("Plans", result_html)
 
         # Show plans link to no one, including admins, if SELF_HOSTED or STANDARD
-        do_change_plan_type(realm, Realm.SELF_HOSTED)
+        do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=None)
         result_html = self._get_home_page().content.decode("utf-8")
         self.assertNotIn("Plans", result_html)
 
-        do_change_plan_type(realm, Realm.STANDARD)
+        do_change_plan_type(realm, Realm.STANDARD, acting_user=None)
         result_html = self._get_home_page().content.decode("utf-8")
         self.assertNotIn("Plans", result_html)
 

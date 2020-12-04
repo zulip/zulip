@@ -1280,7 +1280,7 @@ def support(request: HttpRequest) -> HttpResponse:
         if request.POST.get("plan_type", None) is not None:
             new_plan_type = int(request.POST.get("plan_type"))
             current_plan_type = realm.plan_type
-            do_change_plan_type(realm, new_plan_type)
+            do_change_plan_type(realm, new_plan_type, acting_user=request.user)
             msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(new_plan_type)} "
             context["success_message"] = msg
         elif request.POST.get("discount", None) is not None:
@@ -1337,7 +1337,7 @@ def support(request: HttpRequest) -> HttpResponse:
                 context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
         elif request.POST.get("approve_sponsorship") is not None:
             if request.POST.get("approve_sponsorship") == "approve_sponsorship":
-                approve_sponsorship(realm)
+                approve_sponsorship(realm, acting_user=request.user)
                 context["success_message"] = f"Sponsorship approved for {realm.string_id}"
         elif request.POST.get("downgrade_method", None) is not None:
             downgrade_method = request.POST.get("downgrade_method")
