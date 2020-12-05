@@ -3477,7 +3477,8 @@ class TestTwoFactor(ZulipTestCase):
             self.assertIn('otp_device_id', self.client.session.keys())
 
     @mock.patch('two_factor.models.totp')
-    def login_with_2fa(self, email: str, password: str, mock_totp: mock.MagicMock) -> None:
+    def login_with_2fa(self, email: str, password: str, mock_totp: mock.MagicMock, *,
+                       submit_invalid_token_num: Optional[int]=None) -> HttpResponse:
         token = 123456
 
         def totp(*args: Any, **kwargs: Any) -> int:
@@ -3498,11 +3499,26 @@ class TestTwoFactor(ZulipTestCase):
                 'INFO:two_factor.gateways.fake:Fake SMS to +12125550100: "Your token is: 123456"'
             ])
 
-            second_step_data = {"token-otp_token": str(token),
+            if submit_invalid_token_num is None:
+                token_to_submit = token
+            else:
+                token_to_submit = token - 1  # Use an incorrect token
+
+            second_step_data = {"token-otp_token": str(token_to_submit),
                                 "two_factor_login_view-current_step": "token"}
-            result = self.client_post("/accounts/login/", second_step_data)
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result['Location'], 'http://zulip.testserver')
+
+            if submit_invalid_token_num is None:
+                result = self.client_post("/accounts/login/", second_step_data)
+                self.assertEqual(result.status_code, 302)
+                self.assertEqual(result['Location'], 'http://zulip.testserver')
+                return result
+
+        for i in range(0, submit_invalid_token_num):
+            # We don't care about the log output here so we just use assertLogs to suppress it.
+            with self.assertLogs('two_factor.gateways.fake', 'INFO'):
+                result = self.client_post("/accounts/login/", second_step_data)
+            self.assertEqual(result.status_code, 200)
+        return result
 
     def test_two_factor_login(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -3524,6 +3540,26 @@ class TestTwoFactor(ZulipTestCase):
             self.assertEqual(result['Location'], 'http://zulip.testserver')
 
             self.assert_length(queries, 3)
+
+    def test_two_factor_token_submissions_are_rate_limited(self) -> None:
+        """
+        Short tokens can be prone to brute-forcing and thus attempts
+        need to be rate limited.
+        """
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        password = initial_password(email)
+        self.create_default_device(user_profile)
+
+        add_ratelimit_rule(10, 2, domain='2fa_attempts_by_user')
+        with self.settings(
+                AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
+        ):
+            result = self.login_with_2fa(email, password, submit_invalid_token_num=3)
+            self.assert_in_response("Too many attempts. Try again in", result)
+
+        remove_ratelimit_rule(10, 2, domain='2fa_attempts_by_user')
 
     def test_deleting_device_clears_otp_middleware_cache(self) -> None:
         user_profile = self.example_user('hamlet')

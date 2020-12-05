@@ -368,6 +368,10 @@ RATE_LIMITING_RULES = {
         (3600, 2),  # 2 reset emails per hour
         (86400, 5),  # 5 per day
     ],
+    '2fa_attempts_by_user': [
+        (180, 5),
+        (3600, 40),
+    ],
 }
 
 # List of domains that, when applied to a request in a Tornado process,

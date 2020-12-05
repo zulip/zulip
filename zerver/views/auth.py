@@ -11,6 +11,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView
 from django.contrib.auth.views import logout_then_login as django_logout_then_login
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import redirect, render
 from django.template.response import SimpleTemplateResponse
@@ -23,6 +24,7 @@ from django_otp import user_has_device
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
+from typing_extensions import Protocol
 
 from confirmation.models import Confirmation, create_confirmation_link
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
@@ -38,6 +40,7 @@ from zerver.forms import (
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_error, json_success
@@ -631,12 +634,50 @@ def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> 
 
     context['deactivated_account_error'] = DEACTIVATED_ACCOUNT_ERROR
 
+def rate_limit_2fa_attempt_for_user(user_profile: UserProfile) -> None:
+    ratelimited, secs_to_freedom = RateLimitedUser(user_profile, domain="2fa_attempts_by_user").rate_limit()
+    if ratelimited:
+        raise ValidationError(_("Too many attempts. Try again in {} seconds.").format(int(secs_to_freedom)))
+
+class TwoFactorAuthenticationTokenFormProtocol(Protocol):
+    def clean(self) -> Dict[str, Any]:
+        ...
+
+    @property
+    def user(self) -> UserProfile:
+        ...
+
+class RateLimitedTwoFactorTokenFormMixin:
+    """
+    2fa tokens can be prone to brute-forcing and thus limitations need to be enforced
+    on how many times attempts can be made. django-two-factor-auth doesn't properly
+    ensure all device types are protected in this way, so it falls on us to ensure
+    not to leave any openings. The most straight-forward and reliable way is to
+    customize the forms that are used for processing submitted tokens and apply
+    rate limiting in the clean() method, which has to be called on every token submission
+    as it does the validation.
+    It might be possible to delete this once https://github.com/Bouke/django-two-factor-auth/issues/299
+    is resolved.
+    """
+    def clean(self: TwoFactorAuthenticationTokenFormProtocol) -> Dict[str, Any]:
+        user_profile = self.user
+        assert isinstance(user_profile, UserProfile)
+
+        rate_limit_2fa_attempt_for_user(user_profile)
+        return super().clean()  # type: ignore[misc] # mypy complains about super argument types otherwise
+
+class TwoFactorAuthenticationTokenForm(RateLimitedTwoFactorTokenFormMixin, AuthenticationTokenForm):
+    pass
+
+class TwoFactorBackupTokenForm(RateLimitedTwoFactorTokenFormMixin, BackupTokenForm):
+    pass
+
 class TwoFactorLoginView(BaseTwoFactorLoginView):
     extra_context: ExtraContext = None
     form_list = (
         ('auth', OurAuthenticationForm),
-        ('token', AuthenticationTokenForm),
-        ('backup', BackupTokenForm),
+        ('token', TwoFactorAuthenticationTokenForm),
+        ('backup', TwoFactorBackupTokenForm),
     )
 
     def __init__(self, extra_context: ExtraContext=None,
