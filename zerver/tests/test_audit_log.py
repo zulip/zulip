@@ -263,7 +263,7 @@ class TestRealmAuditLog(ZulipTestCase):
         realm = get_realm('zulip')
         user = self.example_user('hamlet')
         expected_old_value = realm.authentication_methods_dict()
-        auth_method_dict = {'Google': False, 'Email': False, 'GitHub': False, 'Apple': False, 'Dev': True, 'SAML': True, 'GitLab': False}
+        auth_method_dict = {'Google': False, 'Email': False, 'GitHub': False, 'Apple': False, 'Dev': True, 'SAML': True, 'GitLab': False, 'AmazonCognito': False}
 
         do_set_realm_authentication_methods(realm, auth_method_dict, acting_user=user)
         realm_audit_logs = RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,

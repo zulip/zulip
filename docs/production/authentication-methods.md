@@ -625,6 +625,32 @@ domain for your server).
 [apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
 [outgoing-email]: ../production/email.md
 
+## Amazon Cognito
+
+To set up Amazon Cognito authentication, you'll need to do the following:
+
+1. Visit https://console.aws.amazon.com/cognito/home and select "Manager User Pools".
+
+1. Choose an existing pool or create a new one following the Cognito Pool Tutorial
+ https://docs.aws.amazon.com/cognito/latest/developerguide/tutorial-create-user-pool.html
+
+1. Create an app and configure a pool domain. You should get a client ID and a client secret.
+
+1. Under "App client settings":
+   * Set the callback URL as  `<EXTERNAL_HOST>/complete/cognito/` where `<EXTERNAL_HOST>` is the full URL to the Zulip instance.
+   * Enable the "Authorization code grant" OAuth flow.
+   * Enable email, openid and profile OAuth scopes.
+
+1. Configure Amazon Cognito authentication in `/etc/zulip/settings.py`:
+   * `SOCIAL_AUTH_COGNITO_KEY`: Your client ID.
+   * `SOCIAL_AUTH_COGNITO_POOL_DOMAIN`: Your Cognito pool URL. e.g. https://example.auth.eu-west-2.amazoncognito.com
+
+1. Add the client secret to `/etc/zulip/zulip-secrets.conf` as
+  `social_auth_cognito_secret = <CLIENT_SECRET>`, where
+  `<CLIENT_SECRET>` is the client secret provided by Amazon above.
+
+
+
 ## Adding more authentication backends
 
 Adding an integration with any of the more than 100 authentication

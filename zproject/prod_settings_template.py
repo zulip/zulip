@@ -120,6 +120,7 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     # 'zproject.backends.GoogleAuthBackend',  # Google auth, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
     # 'zproject.backends.GitLabAuthBackend',  # GitLab auth, setup below
+    # 'zproject.backends.AmazonCognitoAuthBackend',  # Amazon Cognito auth, setup below
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
     # 'zproject.backends.AppleAuthBackend',  # Apple auth, setup below
     # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
@@ -322,6 +323,16 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # email address is "username@example.com", set SSO_APPEND_DOMAIN =
 # "example.com"), otherwise leave this as None.
 #SSO_APPEND_DOMAIN = None
+
+########
+# Amazon Cognito OAuth.
+#
+# Configure the below settings by following the instructions here:
+#
+#     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#amazon-cognito
+#
+#SOCIAL_AUTH_COGNITO_KEY = <your client ID from Cognito>
+#SOCIAL_AUTH_COGNITO_POOL_DOMAIN = "https://example.auth.eu-west-2.amazoncognito.com"
 
 ################
 # Miscellaneous settings.

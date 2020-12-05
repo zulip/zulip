@@ -190,6 +190,9 @@ SOCIAL_AUTH_APPLE_AUDIENCE = [SOCIAL_AUTH_APPLE_APP_ID, SOCIAL_AUTH_APPLE_SERVIC
 SOCIAL_AUTH_APPLE_KEY = 'KEYISKEY'
 SOCIAL_AUTH_APPLE_TEAM = 'TEAMSTRING'
 SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zerver/tests/fixtures/apple/private_key.pem")
+SOCIAL_AUTH_COGNITO_KEY = "key"
+SOCIAL_AUTH_COGNITO_SECRET = "secret"
+SOCIAL_AUTH_COGNITO_POOL_DOMAIN = "https://example.com"
 
 APPLE_JWK = get_from_file_if_exists("zerver/tests/fixtures/apple/jwk")
 APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists("zerver/tests/fixtures/apple/token_gen_private_key")

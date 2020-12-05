@@ -1053,6 +1053,8 @@ GOOGLE_OAUTH2_CLIENT_SECRET = get_secret('google_oauth2_client_secret')
 SOCIAL_AUTH_GOOGLE_KEY = SOCIAL_AUTH_GOOGLE_KEY or GOOGLE_OAUTH2_CLIENT_ID
 SOCIAL_AUTH_GOOGLE_SECRET = SOCIAL_AUTH_GOOGLE_SECRET or GOOGLE_OAUTH2_CLIENT_SECRET
 
+SOCIAL_AUTH_COGNITO_SECRET = get_secret('social_auth_cognito_secret')
+
 if PRODUCTION:
     SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = get_from_file_if_exists("/etc/zulip/saml/zulip-cert.crt")
     SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists("/etc/zulip/saml/zulip-private-key.key")

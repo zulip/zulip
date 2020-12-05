@@ -83,6 +83,22 @@ details worth understanding:
   ID as `social_auth_gitlab_key` and the Secret as
   `social_auth_gitlab_secret`.
 
+### Amazon Cognito
+
+* Register an OAuth application with [Amazon Cognito](https://console.aws.amazon.com/cognito/)
+    * Specify `http://localhost:9991/complete/cognito/` as the callback URL.
+    * Enable "Authorization code grant" OAuth Flows.
+    * Enable email, openid and profile OAuth Scopes.
+
+* In `dev_settings.py` set `EXTERNAL_HOST` to `localhost:9991` as Cognito will not let you set
+  the callback URL to a HTTP domain other than localhost, meaning the default `zulipdev.com:9991` will error.
+
+* In `dev-secrets.conf`, set `social_auth_cognito_key` to the Application
+  Client ID, `social_auth_cognito_secret` to the Secret and
+  `social_auth_cognito_pool_domain` to the domain.
+
+
+
 ### Apple
 
 * Visit https://developer.apple.com/account/resources/,
