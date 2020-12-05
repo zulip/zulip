@@ -30,6 +30,7 @@ exports.update_property = function (stream_id, property, value, other_values) {
             break;
         case "in_home_view":
             stream_muting.update_is_muted(sub, !value);
+            recent_topics.complete_rerender();
             break;
         case "desktop_notifications":
         case "audible_notifications":

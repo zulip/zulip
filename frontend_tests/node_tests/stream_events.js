@@ -21,7 +21,9 @@ const stream_color = set_global("stream_color", {});
 const stream_list = set_global("stream_list", {});
 const stream_muting = set_global("stream_muting", {});
 let subs = set_global("subs", {});
-
+set_global("recent_topics", {
+    complete_rerender: () => {},
+});
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
