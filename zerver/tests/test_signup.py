@@ -201,7 +201,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
     def test_deactivation_notice_when_realm_subdomain_is_changed(self) -> None:
         realm = get_realm("zulip")
-        do_change_realm_subdomain(realm, "new-subdomain-name")
+        do_change_realm_subdomain(realm, "new-subdomain-name", acting_user=None)
 
         result = self.client_get("/accounts/deactivated/")
         self.assertIn(
@@ -213,7 +213,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         self,
     ) -> None:
         realm = get_realm("zulip")
-        do_change_realm_subdomain(realm, "new-name-1")
+        do_change_realm_subdomain(realm, "new-name-1", acting_user=None)
 
         result = self.client_get("/accounts/deactivated/")
         self.assertIn(
@@ -222,7 +222,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         )
 
         realm = get_realm("new-name-1")
-        do_change_realm_subdomain(realm, "new-name-2")
+        do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
         result = self.client_get("/accounts/deactivated/")
         self.assertIn(
             'It has moved to <a href="http://new-name-2.testserver">http://new-name-2.testserver</a>.',
@@ -2881,7 +2881,7 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_using_old_subdomain_of_a_realm(self) -> None:
         realm = get_realm("zulip")
-        do_change_realm_subdomain(realm, "new-name")
+        do_change_realm_subdomain(realm, "new-name", acting_user=None)
 
         password = "test"
         email = "user1@test.com"
