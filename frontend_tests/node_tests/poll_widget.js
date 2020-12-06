@@ -227,8 +227,9 @@ run_test("activate another person poll", () => {
 
     assert.equal(widget_elem.html(), "widgets/poll_widget");
     assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
-    assert.equal(poll_question_header.text(), "What do you want?");
-
+    setTimeout(() => {
+        assert.equal(poll_question_header.text(), "What do you want?");
+    }, 50);
     {
         /* Testing data sent to server on adding option */
         poll_option_input.val("cool choice");
@@ -374,7 +375,9 @@ run_test("activate own poll", () => {
 
     assert.equal(widget_elem.html(), "widgets/poll_widget");
     assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
-    assert.equal(poll_question_header.text(), "Where to go?");
+    setTimeout(() => {
+        assert.equal(poll_question_header.text(), "Where to go?");
+    }, 50);
 
     {
         /* Testing data sent to server on editing question */
@@ -382,11 +385,15 @@ run_test("activate own poll", () => {
         out_data = undefined;
         show_submit = true;
         poll_question_submit.trigger("click");
-        assert.deepEqual(out_data, {type: "question", question: "Is it new?"});
+        setTimeout(() => {
+            assert.deepEqual(out_data, {type: "question", question: "Is it new?"});
+        }, 50);
 
         poll_option_input.val("");
         out_data = undefined;
         poll_question_submit.trigger("click");
-        assert.deepEqual(out_data, undefined);
+        setTimeout(() => {
+            assert.deepEqual(out_data, undefined);
+        }, 50);
     }
 });

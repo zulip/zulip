@@ -197,7 +197,7 @@ exports.activate = function (opts) {
     }
 
     function render_question() {
-        const question = poll_data.get_question();
+        const rendered_question = poll_data.get_question();
         const input_mode = poll_data.get_input_mode();
         const can_edit = is_my_poll && !input_mode;
         const has_question = question.trim() !== "";
@@ -206,7 +206,7 @@ exports.activate = function (opts) {
         const author_help = is_my_poll && !has_question;
 
         elem.find(".poll-question-header").toggle(!input_mode);
-        elem.find(".poll-question-header").html(question);
+        elem.find(".poll-question-header").html(rendered_question);
         elem.find(".poll-edit-question").toggle(can_edit);
         update_edit_controls();
 

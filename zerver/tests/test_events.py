@@ -565,6 +565,28 @@ class NormalActionsTest(BaseAction):
             state_change_expected=False,
         )
         check_submessage('events[0]', events[0])
+        events = self.verify_action(
+            lambda: do_add_submessage(
+                realm=cordelia.realm,
+                sender_id=cordelia.id,
+                message_id=message_id,
+                msg_type='widget',
+                content='{"type":"new_option","idx":4,"option":"option"}',
+            ),
+            state_change_expected=False,
+        )
+        check_submessage('events[0]', events[0])
+        events = self.verify_action(
+            lambda: do_add_submessage(
+                realm=cordelia.realm,
+                sender_id=cordelia.id,
+                message_id=message_id,
+                msg_type='widget',
+                content='{"type":"question","question":"google.com"}',
+            ),
+            state_change_expected=False,
+        )
+        check_submessage('events[0]', events[0])
 
     def test_remove_reaction(self) -> None:
         message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
