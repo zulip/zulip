@@ -7,7 +7,6 @@
 <title>Info</title>
 {% endblock %}
 
-
 {% block content %}
 <div class="container">
     <br>
@@ -18,10 +17,16 @@
         </center>
     </form>
 
-    {% if message %}
+    {% if error_message %}
+    <div class="alert alert-danger">
+        <center>
+            {{ error_message }}
+        </center>
+    </div>
+    {% elif success_message %}
     <div class="alert alert-success">
         <center>
-            {{ message }}
+            {{ success_message }}
         </center>
     </div>
     {% endif %}
