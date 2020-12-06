@@ -1298,7 +1298,7 @@ def support(request: HttpRequest) -> HttpResponse:
             except ValidationError as error:
                 context["error_message"] = error.message
             else:
-                do_change_realm_subdomain(realm, new_subdomain)
+                do_change_realm_subdomain(realm, new_subdomain, acting_user=request.user)
                 request.session[
                     "success_message"
                 ] = f"Subdomain changed from {old_subdomain} to {new_subdomain}"

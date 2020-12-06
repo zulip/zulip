@@ -194,13 +194,21 @@ class RealmTest(ZulipTestCase):
         hamlet_id = self.example_user("hamlet").id
         user = get_user_profile_by_id(hamlet_id)
         realm = get_realm("zulip")
-        do_change_realm_subdomain(realm, "newzulip")
+        iago = self.example_user("iago")
+        do_change_realm_subdomain(realm, "newzulip", acting_user=iago)
         user = get_user_profile_by_id(hamlet_id)
         self.assertEqual(user.realm.string_id, "newzulip")
 
         placeholder_realm = get_realm("zulip")
         self.assertTrue(placeholder_realm.deactivated)
         self.assertEqual(placeholder_realm.deactivated_redirect, user.realm.uri)
+
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED, acting_user=iago
+        ).last()
+        expected_extra_data = {"old_subdomain": "zulip", "new_subdomain": "newzulip"}
+        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.acting_user, iago)
 
     def test_do_deactivate_realm_clears_scheduled_jobs(self) -> None:
         user = self.example_user("hamlet")
