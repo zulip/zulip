@@ -2,6 +2,7 @@ import autosize from "autosize";
 import $ from "jquery";
 
 import * as fenced_code from "../shared/js/fenced_code";
+import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
 
 import * as channel from "./channel";
 import * as common from "./common";
@@ -71,20 +72,47 @@ export function set_focus(msg_type, opts) {
     }
 }
 
+function compose_not_subscribed_warning() {
+    const stream_name = compose_state.stream_name();
+    const sub = stream_data.get_sub(stream_name);
+    if (sub) {
+        const rendered_warning_text = render_compose_not_subscribed({
+            should_display_sub_button: sub.should_display_subscription_button,
+        });
+        $("#compose-send-status")
+            .removeClass(common.status_classes)
+            .addClass("home-error-bar")
+            .attr("stay", "true")
+            .stop(true)
+            .fadeTo(0, 1);
+        $("#compose-error-msg").html(rendered_warning_text);
+        $(".compose-send-status-close").hide();
+        const bad_input = $("#stream_message_recipient_stream");
+        if (bad_input !== undefined) {
+            bad_input.trigger("focus").trigger("select");
+        }
+    }
+}
 // Show the compose box.
 function show_box(msg_type, opts) {
+    const stream_name = compose_state.stream_name();
     if (msg_type === "stream") {
         $("#private-message").hide();
         $("#stream-message").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
+        if (stream_name && !stream_data.is_subscribed(stream_name)) {
+            compose_not_subscribed_warning();
+        }
     } else {
         $("#private-message").show();
         $("#stream-message").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
-    $("#compose-send-status").removeClass(common.status_classes).hide();
+    if ($("#compose-send-status").attr("stay") !== "true") {
+        $("#compose-send-status").removeClass(common.status_classes).hide();
+    }
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
