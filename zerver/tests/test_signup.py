@@ -556,12 +556,11 @@ class PasswordResetTest(ZulipTestCase):
         # If the domain doesn't match, we do generate an email
         with self.settings(LDAP_APPEND_DOMAIN="example.com"):
             email = self.example_email("hamlet")
-            with patch('logging.info') as mock_logging:
-                result = self.client_post('/accounts/password/reset/', {'email': email})
-                self.assertEqual(result.status_code, 302)
-                self.assertTrue(result["Location"].endswith(
-                    "/accounts/password/reset/done/"))
-                result = self.client_get(result["Location"])
+            result = self.client_post('/accounts/password/reset/', {'email': email})
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result["Location"].endswith(
+                "/accounts/password/reset/done/"))
+            result = self.client_get(result["Location"])
 
         body = self.get_reset_mail_body()
         self.assertIn('reset your password', body)

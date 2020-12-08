@@ -177,10 +177,8 @@ class GetCacheWithKeyDecoratorTest(ZulipTestCase):
             return
 
         hamlet = self.example_user('hamlet')
-        with patch('zerver.lib.cache.logger.warning') as mock_warn:
-            with self.assertRaises(NotFoundInCache):
-                get_user_function_with_good_cache_keys(hamlet.id)
-            mock_warn.assert_not_called()
+        with self.assertRaises(NotFoundInCache):
+            get_user_function_with_good_cache_keys(hamlet.id)
 
         cache_set(good_cache_key_function(hamlet.id), hamlet)
         result = get_user_function_with_good_cache_keys(hamlet.id)

@@ -424,8 +424,7 @@ class WorkerTest(ZulipTestCase):
             worker.setup()
             with patch('zerver.lib.actions.send_email'), \
                     patch('zerver.worker.queue_processors.send_future_email') \
-                    as send_mock, \
-                    patch('logging.info'):
+                    as send_mock:
                 worker.start()
                 self.assertEqual(send_mock.call_count, 2)
 

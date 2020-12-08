@@ -1674,8 +1674,7 @@ class StripeTest(StripeTestCase):
         self.assertIsNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.ENDED)
 
-    @patch("corporate.lib.stripe.billing_logger.info")
-    def test_downgrade_free_trial(self, mock_: Mock) -> None:
+    def test_downgrade_free_trial(self) -> None:
         user = self.example_user("hamlet")
 
         free_trial_end_date = self.now + timedelta(days=60)
@@ -1757,8 +1756,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(old_plan.next_invoice_date, None)
         self.assertEqual(old_plan.status, CustomerPlan.ENDED)
 
-    @patch("corporate.lib.stripe.billing_logger.info")
-    def test_deactivate_realm(self, mock_: Mock) -> None:
+    def test_deactivate_realm(self) -> None:
         user = self.example_user("hamlet")
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
@@ -1801,8 +1799,7 @@ class StripeTest(StripeTestCase):
             invoice_plans_as_needed(self.next_year)
         mocked.assert_not_called()
 
-    @patch("corporate.lib.stripe.billing_logger.info")
-    def test_reupgrade_by_billing_admin_after_realm_deactivation(self, mock_: Mock) -> None:
+    def test_reupgrade_by_billing_admin_after_realm_deactivation(self) -> None:
         user = self.example_user("hamlet")
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
