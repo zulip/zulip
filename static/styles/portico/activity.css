@@ -96,12 +96,12 @@ tr.admin td:first-child {
 
 .billing-method-form {
     position: relative;
-    top: -70px;
+    top: -30px;
 }
 
 .downgrade-plan-form {
     position: relative;
-    top: -115px;
+    top: -75px;
 }
 
 .downgrade-plan-method-select {
