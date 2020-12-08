@@ -314,6 +314,7 @@ class HostRequestMock:
 
 class MockPythonResponse:
     def __init__(self, text: str, status_code: int, headers: Optional[Dict[str, str]]=None) -> None:
+        self.content = text.encode()
         self.text = text
         self.status_code = status_code
         if headers is None:
