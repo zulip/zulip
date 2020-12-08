@@ -1720,6 +1720,10 @@ div.focused_table {
         }
     }
 
+    .extended_description {
+        display: none;
+    }
+
     .search_closed {
         overflow: visible;
         flex: 0; /* makes sure search icon is always visible */
@@ -1737,7 +1741,7 @@ div.focused_table {
        last element is either the narrow description (for stream narrows) or
        the "title" (for other narrows). The flex-grow property ensures these
        elements take up the entirety of the white space. */
-    > :nth-last-child(2) {
+    > .full-width {
         flex-grow: 1;
 
         /* We extend the clickable area for the search_closed icon over the
@@ -1745,9 +1749,25 @@ div.focused_table {
            selector makes it so mousing over that element also gives the user
            a visual cue about the results of clicking the element */
         cursor: pointer;
-        &:hover + .search_closed {
+        &:hover ~ .search_closed {
             color: hsl(0, 0%, 0%);
         }
+    }
+}
+
+.extended_narrow_description {
+    padding: 5px;
+    position: absolute;
+    overflow-wrap: anywhere;
+    background-color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(0, 0%, 88%);
+    width: calc(100% - 12px);
+    @media (max-width: 1165px) {
+        width: calc(100% - 94px);
+    }
+    @media (max-width: 775px) {
+        margin-left: 40px;
+        width: calc(100% - 133px);
     }
 }
 

@@ -13,6 +13,7 @@ body.night-mode {
     .app-main,
     .header-main,
     #message_view_header_underpadding,
+    .extended_narrow_description,
     .floating_recipient .message-header-wrapper,
     .column-middle,
     #compose,
@@ -39,6 +40,7 @@ body.night-mode {
 
     .column-left .left-sidebar,
     #settings_page .form-sidebar,
+    .extended_narrow_description,
     .stream_name_search_section,
     .column-right .right-sidebar {
         border-color: hsla(0, 0%, 0%, 0.2);
