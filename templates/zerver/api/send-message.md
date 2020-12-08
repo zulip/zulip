@@ -21,17 +21,17 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 # For stream messages
 curl -X POST {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d 'type=stream' \
-    -d 'to=Denmark' \
-    -d 'subject=Castle' \
-    -d 'content=I come not, friends, to steal away your hearts.'
+    --data-urlencode type=stream \
+    --data-urlencode to=Denmark \
+    --data-urlencode subject=Castle \
+    --data-urlencode 'content=I come not, friends, to steal away your hearts.'
 
 # For private messages
 curl -X POST {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d 'type=private' \
-    -d 'to=[9]' \
-    -d 'content=With mirth and laughter let old wrinkles come.'
+    --data-urlencode type=private \
+    --data-urlencode 'to=[9]' \
+    --data-urlencode 'content=With mirth and laughter let old wrinkles come.'
 ```
 
 {tab|zulip-send}
