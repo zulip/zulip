@@ -136,7 +136,7 @@ class OembedTestCase(ZulipTestCase):
 
 class OpenGraphParserTestCase(ZulipTestCase):
     def test_page_with_og(self) -> None:
-        html = """<html>
+        html = b"""<html>
           <head>
           <meta property="og:title" content="The Rock" />
           <meta property="og:type" content="video.movie" />
@@ -146,14 +146,14 @@ class OpenGraphParserTestCase(ZulipTestCase):
           </head>
         </html>"""
 
-        parser = OpenGraphParser(html)
+        parser = OpenGraphParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
         self.assertIn('title', result)
         self.assertEqual(result['title'], 'The Rock')
         self.assertEqual(result.get('description'), 'The Rock film')
 
     def test_page_with_evil_og_tags(self) -> None:
-        html = """<html>
+        html = b"""<html>
           <head>
           <meta property="og:title" content="The Rock" />
           <meta property="og:type" content="video.movie" />
@@ -165,7 +165,7 @@ class OpenGraphParserTestCase(ZulipTestCase):
           </head>
         </html>"""
 
-        parser = OpenGraphParser(html)
+        parser = OpenGraphParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
         self.assertIn('title', result)
         self.assertEqual(result['title'], 'The Rock')
@@ -173,9 +173,30 @@ class OpenGraphParserTestCase(ZulipTestCase):
         self.assertEqual(result.get('oembed'), None)
         self.assertEqual(result.get('html'), None)
 
+    def test_charset_in_header(self) -> None:
+        html = """<html>
+          <head>
+            <meta property="og:title" content="中文" />
+          </head>
+        </html>""".encode("big5")
+        parser = OpenGraphParser(html, "text/html; charset=Big5")
+        result = parser.extract_data()
+        self.assertEqual(result["title"], "中文")
+
+    def test_charset_in_meta(self) -> None:
+        html = """<html>
+          <head>
+            <meta content-type="text/html; charset=Big5" />
+            <meta property="og:title" content="中文" />
+          </head>
+        </html>""".encode("big5")
+        parser = OpenGraphParser(html, "text/html")
+        result = parser.extract_data()
+        self.assertEqual(result["title"], "中文")
+
 class GenericParserTestCase(ZulipTestCase):
     def test_parser(self) -> None:
-        html = """
+        html = b"""
           <html>
             <head><title>Test title</title></head>
             <body>
@@ -184,13 +205,13 @@ class GenericParserTestCase(ZulipTestCase):
             </body>
           </html>
         """
-        parser = GenericParser(html)
+        parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
         self.assertEqual(result.get('title'), 'Test title')
         self.assertEqual(result.get('description'), 'Description text')
 
     def test_extract_image(self) -> None:
-        html = """
+        html = b"""
           <html>
             <body>
                 <h1>Main header</h1>
@@ -202,14 +223,14 @@ class GenericParserTestCase(ZulipTestCase):
             </body>
           </html>
         """
-        parser = GenericParser(html)
+        parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
         self.assertEqual(result.get('title'), 'Main header')
         self.assertEqual(result.get('description'), 'Description text')
         self.assertEqual(result.get('image'), 'http://test.com/test.jpg')
 
     def test_extract_description(self) -> None:
-        html = """
+        html = b"""
           <html>
             <body>
                 <div>
@@ -220,22 +241,22 @@ class GenericParserTestCase(ZulipTestCase):
             </body>
           </html>
         """
-        parser = GenericParser(html)
+        parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
         self.assertEqual(result.get('description'), 'Description text')
 
-        html = """
+        html = b"""
           <html>
             <head><meta name="description" content="description 123"</head>
             <body></body>
           </html>
         """
-        parser = GenericParser(html)
+        parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
         self.assertEqual(result.get('description'), 'description 123')
 
-        html = "<html><body></body></html>"
-        parser = GenericParser(html)
+        html = b"<html><body></body></html>"
+        parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
         self.assertIsNone(result.get('description'))
 
