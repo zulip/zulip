@@ -22,9 +22,11 @@ What in the heck is a zcommand?
 
 exports.send = function (opts) {
     const command = opts.command;
+    const command_data = opts.command_data;
     const on_success = opts.on_success;
     const data = {
         command,
+        command_data: JSON.stringify(command_data),
     };
 
     channel.post({
@@ -35,8 +37,12 @@ exports.send = function (opts) {
                 on_success(data);
             }
         },
-        error() {
-            exports.tell_user("server did not respond");
+        error(xhr) {
+            if (xhr.responseText) {
+                exports.tell_user(JSON.parse(xhr.responseText).msg);
+            } else {
+                exports.tell_user("server did not respond");
+            }
         },
     });
 };
@@ -140,6 +146,47 @@ exports.enter_fixed_mode = function () {
     });
 };
 
+exports.digress = function (command_data) {
+    exports.send({
+        command: "/digress",
+        command_data,
+        on_success(data) {
+            if (data.msg) {
+                compose.compose_error(marked(data.msg));
+            } else {
+                let operators = [
+                    {operator: "stream", operand: command_data.new_stream},
+                    {operator: "topic", operand: command_data.new_topic},
+                ];
+                narrow.activate(operators);
+                feedback_widget.show({
+                    populate(container) {
+                        const rendered_msg = marked(
+                            i18n.t(
+                                "Switched to new topic #**" +
+                                    command_data.new_stream +
+                                    ">" +
+                                    command_data.new_topic +
+                                    "**",
+                            ),
+                        );
+                        container.html(rendered_msg);
+                    },
+                    on_undo() {
+                        operators = [
+                            {operator: "stream", operand: command_data.old_stream},
+                            {operator: "topic", operand: command_data.old_topic},
+                        ];
+                        narrow.activate(operators);
+                    },
+                    title_text: i18n.t("Digress"),
+                    undo_button_text: i18n.t("Go back"),
+                });
+            }
+        },
+    });
+};
+
 exports.process = function (message_content) {
     const content = message_content.trim();
 
@@ -184,6 +231,42 @@ exports.process = function (message_content) {
     if (content === "/settings") {
         hashchange.go_to_location("settings/your-account");
         return true;
+    }
+
+    if (content.indexOf("/digress") === 0) {
+        if (compose_state.get_message_type() !== "stream") {
+            // digress can be used only in streams
+            return true;
+        }
+
+        let param = content.slice(8);
+        param = param.trim();
+
+        // A valid param will now be of the form #**stream name>topic name**
+        const new_stream_name_start = param.indexOf("#**") + 3;
+        const new_topic_start = param.indexOf(">") + 1;
+        const new_topic_end = param.lastIndexOf("**");
+
+        if (
+            new_stream_name_start === 3 &&
+            new_topic_start > new_stream_name_start &&
+            new_topic_end > new_topic_start &&
+            param.endsWith("**")
+        ) {
+            const new_stream_name = param.slice(new_stream_name_start, new_topic_start - 1);
+            const new_topic = param.slice(new_topic_start, new_topic_end);
+
+            const old_stream_name = compose_state.stream_name();
+            const old_topic = compose_state.topic();
+
+            exports.digress({
+                old_stream: old_stream_name,
+                old_topic,
+                new_stream: new_stream_name,
+                new_topic,
+            });
+            return true;
+        }
     }
 
     // It is incredibly important here to return false

@@ -367,6 +367,10 @@ exports.slash_commands = [
         name: "day",
     },
     {
+        text: i18n.t("/digress #stream name>topic name (Shift conversation to another topic)"),
+        name: "digress",
+    },
+    {
         text: i18n.t("/fixed-width (Toggle fixed width mode)"),
         name: "fixed-width",
     },
