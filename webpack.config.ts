@@ -92,12 +92,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                     test: /\.css$/,
                     exclude: path.resolve(__dirname, "static/styles"),
                     use: [
-                        {
-                            loader: MiniCssExtractPlugin.loader,
-                            options: {
-                                hmr: !production,
-                            },
-                        },
+                        MiniCssExtractPlugin.loader,
                         cacheLoader,
                         {
                             loader: "css-loader",
@@ -112,12 +107,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                     test: /\.css$/,
                     include: path.resolve(__dirname, "static/styles"),
                     use: [
-                        {
-                            loader: MiniCssExtractPlugin.loader,
-                            options: {
-                                hmr: !production,
-                            },
-                        },
+                        MiniCssExtractPlugin.loader,
                         cacheLoader,
                         {
                             loader: "css-loader",
