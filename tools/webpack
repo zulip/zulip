@@ -12,9 +12,9 @@ STATIC_PATH = "static/"
 def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
     """Builds for production, writing the output to disk"""
 
-    webpack_args = ["node", "node_modules/.bin/webpack-cli", "-p"]
+    webpack_args = ["node", "node_modules/.bin/webpack-cli", "--mode=production"]
     if quiet:
-        webpack_args.append("--display=errors-only")
+        webpack_args += ["--stats=errors-only"]
     os.execvp(webpack_args[0], webpack_args)
 
 
@@ -24,7 +24,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     # This is our most dynamic configuration, which we use for our
     # dev server.  The key piece here is that we identify changes to
     # files as devs make edits and serve new assets on the fly.
-    webpack_args = ["node", "node_modules/.bin/webpack-dev-server"]
+    webpack_args = ["node", "node_modules/.bin/webpack-cli", "serve"]
     webpack_args += [
         # webpack-cli has a bug where it ignores --watch-poll with
         # multi-config, and we don't need the katex-cli part anyway.
