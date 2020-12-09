@@ -4,9 +4,9 @@ set -eo pipefail
 ZULIP_PATH="$(dirname "$0")/../.."
 ZULIP_SRV="/srv"
 YARN_PACKAGE_JSON="$ZULIP_SRV/zulip-yarn/package.json"
-node_version=12.19.0
+node_version=14.15.1
 yarn_version=1.22.10
-nvm_version=0.35.3
+nvm_version=0.37.2
 
 # This is a fix for the fact that nvm uses $HOME to determine which
 # user account's home directory to ~/.config to.  Ideally, we'd have a
