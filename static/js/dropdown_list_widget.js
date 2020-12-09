@@ -48,20 +48,22 @@ const DropdownListWidget = function (opts) {
     };
 
     const register_event_handlers = () => {
-        $(`#${opts.container_id} .dropdown-list-body`).on("click keypress", ".list_item", function (
-            e,
-        ) {
-            const setting_elem = $(this).closest(`.${opts.widget_name}_setting`);
-            if (e.type === "keypress") {
-                if (e.which === 13) {
-                    setting_elem.find(".dropdown-menu").dropdown("toggle");
-                } else {
-                    return;
+        $(`#${opts.container_id} .dropdown-list-body`).on(
+            "click keypress",
+            ".list_item",
+            function (e) {
+                const setting_elem = $(this).closest(`.${opts.widget_name}_setting`);
+                if (e.type === "keypress") {
+                    if (e.which === 13) {
+                        setting_elem.find(".dropdown-menu").dropdown("toggle");
+                    } else {
+                        return;
+                    }
                 }
-            }
-            const value = $(this).attr("data-value");
-            update(value);
-        });
+                const value = $(this).attr("data-value");
+                update(value);
+            },
+        );
         $(`#${opts.container_id} .dropdown_list_reset_button`).on("click", (e) => {
             update(opts.null_value);
             e.preventDefault();
