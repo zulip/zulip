@@ -1,13 +1,17 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import do_set_user_display_setting
+from zerver.lib.actions import do_set_user_display_setting, send_message_moved_breadcrumbs
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.streams import access_stream_by_name
+from zerver.lib.topic import user_message_exists_for_topic
 from zerver.models import UserProfile
 
 
-def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]:
+def process_zcommands(content: str,
+                      data: Optional[Dict[str, Any]],
+                      user_profile: UserProfile) -> Dict[str, Any]:
     def change_mode_setting(command: str, switch_command: str,
                             setting: str, setting_value: int) -> str:
         msg = 'Changed to {command} mode! To revert ' \
@@ -54,4 +58,46 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
                                             switch_command='fluid-width',
                                             setting='fluid_layout_width',
                                             setting_value=False))
+    elif command == 'digress':
+        data_keys = [
+            "old_stream",
+            "old_topic",
+            "new_stream",
+            "new_topic",
+        ]
+        if not data or not all(key in data for key in data_keys):
+            raise JsonableError(_('Invalid data.'))
+
+        if data["old_stream"] == data["new_stream"] and data["old_topic"] == data["new_topic"]:
+            return dict(msg=_('Cannot digress to the same thread.'))
+
+        (old_stream, ignored_old_stream_sub) = access_stream_by_name(
+            user_profile, data["old_stream"])
+
+        (new_stream, ignored_new_stream_sub) = access_stream_by_name(
+            user_profile, data["new_stream"])
+
+        old_topic_exists = user_message_exists_for_topic(
+            user_profile=user_profile,
+            recipient_id=old_stream.recipient_id,
+            topic_name=data["old_topic"],
+        )
+
+        if not old_topic_exists:
+            return dict(
+                msg=_('Old topic #**{}>{}** does not exist.').format(data["old_stream"], data["old_topic"])
+            )
+
+        old_thread_notification_string = _("{user} will be talking on the new topic: {new_location}")
+        new_thread_notification_string = _("{user} digressed this from old topic: {old_location}")
+        send_message_moved_breadcrumbs(user_profile,
+                                       old_stream,
+                                       data["old_topic"],
+                                       old_thread_notification_string,
+                                       True,
+                                       new_stream,
+                                       data["new_topic"],
+                                       new_thread_notification_string,
+                                       True)
+        return {}
     raise JsonableError(_('No such command: {}').format(command))
