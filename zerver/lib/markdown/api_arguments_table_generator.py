@@ -92,7 +92,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         table = []
         argument_template = """
 <div class="api-argument" id="parameter-{argument}">
-    <p class="api-argument-name"><strong>{argument}</strong> {required} {deprecated} <a href="#parameter-{argument}" class="api-argument-hover-link"><i class="fa fa-chain"></i></a></p>
+    <p class="api-argument-name"><strong>{argument}</strong> <span class="api-argument-datatype">{type}</span> {required} {deprecated} <a href="#parameter-{argument}" class="api-argument-hover-link"><i class="fa fa-chain"></i></a></p>
     <div class="api-example">
         <span class="api-argument-example-label">Example</span>: <code>{example}</code>
     </div>
@@ -112,6 +112,11 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             default = argument.get('schema', {}).get('default')
             if default is not None:
                 description += f'\nDefaults to `{json.dumps(default)}`.'
+            data_type = ""
+            if 'schema' in argument:
+                data_type = generate_data_type(argument['schema'])
+            else:
+                data_type = generate_data_type(argument['content']['application/json']['schema'])
 
             # TODO: OpenAPI allows indicating where the argument goes
             # (path, querystring, form data...).  We should document this detail.
@@ -146,9 +151,22 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 required=required_block,
                 deprecated=deprecated_block,
                 description=md_engine.convert(description),
+                type=data_type
             ))
 
         return table
 
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownArgumentsTableGenerator:
     return MarkdownArgumentsTableGenerator(kwargs)
+
+def generate_data_type(schema: Mapping[str, Any]) -> str:
+    data_type = ""
+    if 'oneOf' in schema:
+        for item in schema['oneOf']:
+            data_type = data_type + generate_data_type(item) + " or "
+        data_type = data_type[:-4]
+    elif 'items' in schema:
+        data_type = schema['type'] + " containing (" + generate_data_type(schema['items']) + ")"
+    else:
+        data_type = schema['type']
+    return data_type
