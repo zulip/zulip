@@ -47,7 +47,7 @@ from Zulip's main repositories.
 **Note about git pull**: You might be used to using `git pull` on other
 projects. With Zulip, because we don't use merge commits, you'll want to avoid
 it. Rather than using `git pull`, which by default is a shortcut for `git fetch
-&& git merge FETCH_HEAD` ([docs][gitbook-git-pull]), you should use `git fetch`
+&& git merge FETCH_HEAD` ([docs][gitbook-git-pull])`, you should use `git fetch`
 and then `git rebase`.
 
 First, [fetch][gitbook-fetch] changes from Zulip's upstream repository you

@@ -136,7 +136,7 @@ html {
 .help {
     .app-main {
         padding: 0;
-        margin-top: 59px;
+        margin-top: 0px;
     }
 
     /* Markdown processor generates lots of spurious <p></p> */
@@ -234,13 +234,14 @@ html {
             list-style-type: none;
             font-size: 0.95em;
             font-weight: 400;
-            line-height: 1.7;
+            line-height: 1.8;
 
             cursor: pointer;
 
             a {
                 color: inherit;
                 display: block;
+                padding: 1px 4px;
             }
         }
 
@@ -678,6 +679,30 @@ input.text-error {
 
 .portico-page-container .portico-header .dropdown-pill .realm-name {
     margin-left: -3px;
+}
+
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 5px;
+    overflow: hidden;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    background-color: #68b190;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 400px;
+}
+
+.skip-link:focus {
+    z-index: 5000;
+    transition: ease-out 2s;
+    top: -3px;
+    width: auto;
+    height: 25px;
+    outline: 5px auto #008296;
+    color: #ffffff;
 }
 
 .app {

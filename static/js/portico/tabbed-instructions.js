@@ -22,7 +22,7 @@ export function activate_correct_tab($codeSection) {
     const desktop_os = new Set(["mac", "linux", "windows"]);
     const $li = $codeSection.find("ul.nav li");
     const $blocks = $codeSection.find(".blocks div");
-
+    
     $li.each(function () {
         const language = this.dataset.language;
         $(this).removeClass("active");
