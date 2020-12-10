@@ -165,7 +165,7 @@ ALLOWED_HOSTS += REALM_HOSTS.values()
 class TwoFactorLoader(app_directories.Loader):
     def get_dirs(self) -> List[str]:
         dirs = super().get_dirs()
-        return [d for d in dirs if 'two_factor' in d]
+        return [os.path.join(DEPLOY_ROOT, 'templates')] + [d for d in dirs if 'two_factor' in d]
 
 MIDDLEWARE = (
     # With the exception of it's dependencies,
