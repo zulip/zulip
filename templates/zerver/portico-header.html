@@ -3,7 +3,9 @@
 
         <!-- "Skip To Main Content" link added to increase accesibility of the 
         documentation.It targets the .markdown class-->
+        {% if page_is_help_center or page_is_api_center %}
         <a class="skip-link " href="#skip-link-target" tabindex="0">Skip To Main Content</a>
+        {% endif %}
 
         <div class="float-left">
             {% if custom_logo_url %}
