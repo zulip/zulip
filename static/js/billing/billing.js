@@ -30,7 +30,13 @@ export function initialize() {
     });
 
     $("#change-plan-status").on("click", (e) => {
-        helpers.create_ajax_request("/json/billing/plan/change", "planchange");
+        helpers.create_ajax_request(
+            "/json/billing/plan",
+            "planchange",
+            undefined,
+            undefined,
+            "PATCH",
+        );
         e.preventDefault();
     });
 }

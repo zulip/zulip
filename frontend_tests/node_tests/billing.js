@@ -34,10 +34,12 @@ run_test("initialize", (override) => {
     });
 
     let create_ajax_request_called = false;
-    function card_change_ajax(url, form_name, stripe_token) {
+    function card_change_ajax(url, form_name, stripe_token, redirect_to, method) {
         assert.equal(url, "/json/billing/sources/change");
         assert.equal(form_name, "cardchange");
         assert.equal(stripe_token, "stripe_token");
+        assert.equal(redirect_to, undefined);
+        assert.equal(method, undefined);
         create_ajax_request_called = true;
     }
 
@@ -86,10 +88,12 @@ run_test("initialize", (override) => {
     });
 
     create_ajax_request_called = false;
-    function plan_change_ajax(url, form_name, stripe_token) {
-        assert.equal(url, "/json/billing/plan/change");
+    function plan_change_ajax(url, form_name, stripe_token, redirect_to, method) {
+        assert.equal(url, "/json/billing/plan");
         assert.equal(form_name, "planchange");
         assert.equal(stripe_token, undefined);
+        assert.equal(redirect_to, undefined);
+        assert.equal(method, "PATCH");
         create_ajax_request_called = true;
     }
 

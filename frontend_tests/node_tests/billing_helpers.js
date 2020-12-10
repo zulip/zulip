@@ -114,7 +114,7 @@ run_test("create_ajax_request", (override) => {
 
     $("#autopay-form").serializeArray = () => jquery("#autopay-form").serializeArray();
 
-    override($, "post", ({url, data, success, error}) => {
+    override($, "ajax", ({type, url, data, success, error}) => {
         assert.equal(state.form_input_section_hide, 1);
         assert.equal(state.form_error_hide, 1);
         assert.equal(state.form_loading_show, 1);
@@ -124,6 +124,7 @@ run_test("create_ajax_request", (override) => {
         assert.equal(state.free_trial_alert_message_show, 0);
         assert.equal(state.make_indicator, 1);
 
+        assert.equal(type, "PATCH");
         assert.equal(url, "/json/billing/upgrade");
 
         assert.equal(Object.keys(data).length, 8);
@@ -174,7 +175,13 @@ run_test("create_ajax_request", (override) => {
         assert.equal(state.free_trial_alert_message_show, 1);
     });
 
-    helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"});
+    helpers.create_ajax_request(
+        "/json/billing/upgrade",
+        "autopay",
+        {id: "stripe_token_id"},
+        undefined,
+        "PATCH",
+    );
 });
 
 run_test("format_money", () => {

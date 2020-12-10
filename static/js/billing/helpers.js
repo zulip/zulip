@@ -3,7 +3,13 @@ import $ from "jquery";
 import * as loading from "../loading";
 import {page_params} from "../page_params";
 
-export function create_ajax_request(url, form_name, stripe_token = null, redirect_to = "/billing") {
+export function create_ajax_request(
+    url,
+    form_name,
+    stripe_token = null,
+    redirect_to = "/billing",
+    type = "POST",
+) {
     const form = $(`#${CSS.escape(form_name)}-form`);
     const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
     const form_input_section = `#${CSS.escape(form_name)}-input-section`;
@@ -33,7 +39,8 @@ export function create_ajax_request(url, form_name, stripe_token = null, redirec
         data[item.name] = item.value;
     }
 
-    $.post({
+    $.ajax({
+        type,
         url,
         data,
         success() {
