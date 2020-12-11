@@ -571,7 +571,10 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
 
 def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
     token = result.store_data()
-    realm = get_realm(result.data_dict["subdomain"])
+    try:
+        realm = get_realm(result.data_dict["subdomain"])
+    except Realm.DoesNotExist:
+        raise JsonableError(_("Wrong subdomain"))
     subdomain_login_uri = (realm.uri
                            + reverse(log_into_subdomain, args=[token]))
     return redirect(subdomain_login_uri)
@@ -785,7 +788,10 @@ def dev_direct_login(
         return config_error(request, 'dev')
     email = request.POST['direct_email']
     subdomain = get_subdomain(request)
-    realm = get_realm(subdomain)
+    try:
+        realm = get_realm(subdomain)
+    except Realm.DoesNotExist:
+        raise JsonableError(_("Wrong subdomain"))
     user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
         return config_error(request, 'dev')
@@ -817,7 +823,10 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
     validate_login_email(username)
 
     subdomain = get_subdomain(request)
-    realm = get_realm(subdomain)
+    try:
+        realm = get_realm(subdomain)
+    except Realm.DoesNotExist:
+        raise JsonableError(_("Wrong subdomain"))
 
     return_data: Dict[str, bool] = {}
     user_profile = authenticate(dev_auth_username=username,
@@ -956,7 +965,10 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
 def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
                        password: str=REQ(default='')) -> HttpResponse:
     subdomain = get_subdomain(request)
-    realm = get_realm(subdomain)
+    try:
+        realm = get_realm(subdomain)
+    except Realm.DoesNotExist:
+        raise JsonableError(_("Wrong subdomain"))
     if password_auth_enabled(user_profile.realm):
         if not authenticate(request=request, username=user_profile.delivery_email, password=password,
                             realm=realm):
