@@ -253,7 +253,6 @@ exports.create = function ($container, list, opts) {
             meta.sorting_function = sorting_function;
         } else if (typeof sorting_function === "string") {
             if (typeof prop === "string") {
-                /* eslint-disable max-len */
                 meta.sorting_function = meta.generic_sorting_functions[sorting_function](prop);
             } else {
                 meta.sorting_function = meta.sorting_functions.get(sorting_function);

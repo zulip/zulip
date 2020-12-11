@@ -1,5 +1,7 @@
 "use strict";
 
+/* global $, navigate */
+
 const path = require("path");
 
 const commander = require("commander");
@@ -56,8 +58,8 @@ async function run() {
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message
         const marker = `#zfilt${options.messageId} .unread_marker`;
-        await page.evaluate((sel) => $(sel).remove(), marker); // eslint-disable-line no-undef
-        await page.evaluate(() => navigate.up()); // eslint-disable-line no-undef
+        await page.evaluate((sel) => $(sel).remove(), marker);
+        await page.evaluate(() => navigate.up());
         const messageBox = await page.$(messageSelector);
         const messageGroup = (await messageBox.$x(".."))[0];
         // Compute screenshot area, with some padding around the message group

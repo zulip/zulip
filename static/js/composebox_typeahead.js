@@ -1,7 +1,7 @@
 "use strict";
 
 const autosize = require("autosize");
-const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
+const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
 const moment = require("moment");
 
 const pygments_data = require("../generated/pygments_data.json");
@@ -750,7 +750,7 @@ const show_flatpickr = (element, callback, default_timestamp) => {
         enableTime: true,
         clickOpens: false,
         defaultDate: default_timestamp,
-        plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
+        plugins: [new ConfirmDatePlugin({})],
         positionElement: element,
         dateFormat: "Z",
         formatDate: (date) => {

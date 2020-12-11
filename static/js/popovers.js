@@ -1,7 +1,7 @@
 "use strict";
 
 const ClipboardJS = require("clipboard");
-const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
+const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
 const moment = require("moment");
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
@@ -587,7 +587,7 @@ exports.render_actions_remind_popover = function (element, id) {
             clickOpens: false,
             defaultDate: moment().format(),
             minDate: "today",
-            plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
+            plugins: [new ConfirmDatePlugin({})],
         });
         current_actions_popover_elem = elt;
     }
