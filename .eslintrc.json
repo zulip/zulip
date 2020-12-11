@@ -73,13 +73,6 @@
         "no-undef-init": "error",
         "no-unneeded-ternary": ["error", {"defaultAssignment": false}],
         "no-unused-expressions": "error",
-        "no-unused-vars": [
-            "error",
-            {
-                "vars": "local",
-                "varsIgnorePattern": "print_elapsed_time|check_duplicate_ids"
-            }
-        ],
         "no-use-before-define": ["error", {"functions": false}],
         "no-useless-concat": "error",
         "no-useless-constructor": "error",

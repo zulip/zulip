@@ -1,5 +1,6 @@
 "use strict";
 
+// eslint-disable-next-line no-unused-vars
 /* global __webpack_public_path__:writable */
 
 const t1 = performance.now();
