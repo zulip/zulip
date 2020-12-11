@@ -1,5 +1,5 @@
 You are using the **GitHub auth backend**, but it is not properly
-configured. Configuring GitHub auth is **optional** and is required only if you are working on an issue related to GitHub auth. To configure, please check the following:
+configured. To configure, please check the following:
 
 You have added `{{ root_domain_uri }}/complete/github/` as the callback URL
 in the OAuth application in GitHub. You can create OAuth apps from

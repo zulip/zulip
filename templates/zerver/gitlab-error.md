@@ -1,5 +1,5 @@
 You are using the **GitLab auth backend**, but it is not properly
-configured. Configuring GitLab auth is **optional** and is required only if you are working on an issue related to GitLab auth. To configure, please check the following:
+configured. To configure, please check the following:
 
 * You have added `{{ root_domain_uri }}/complete/gitlab/` as the callback
 URL in the OAuth application in GitLab. You can register OAuth apps at

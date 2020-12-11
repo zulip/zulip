@@ -1,5 +1,5 @@
 You are using the **Google auth backend**, but it is not properly
-configured. Configuring Google auth is **optional** and is required only if you are working on an issue related to Google auth. To configure, please check the following:
+configured. To configure, please check the following:
 
 * You have created a Google OAuth2 client and enabled the Identity Toolkit API.
 You can create OAuth2 apps at [the Google developer console](https://console.developers.google.com).

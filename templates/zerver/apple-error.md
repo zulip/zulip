@@ -1,5 +1,5 @@
 You are using the **Apple auth backend**, but it is not
-properly configured. Configuring Apple auth is **optional** and is required only if you are working on an issue related to Apple auth. To configure, please check the following:
+properly configured. To configure, please check the following:
 
 * You have registered `{{ root_domain_uri }}/complete/apple/`
   as the callback URL for your Services ID in Apple's developer console. You can
