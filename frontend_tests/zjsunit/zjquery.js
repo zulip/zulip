@@ -6,6 +6,9 @@ const noop = function () {};
 
 class Event {
     constructor(type, props) {
+        if (!(this instanceof Event)) {
+            return new Event(type, props);
+        }
         this.type = type;
         Object.assign(this, props);
     }
@@ -518,7 +521,7 @@ exports.make_zjquery = function (opts) {
         return res;
     };
 
-    zjquery.Event = (type, props) => new Event(type, props);
+    zjquery.Event = Event;
 
     fn.after = function (s) {
         return s;
