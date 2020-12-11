@@ -190,6 +190,33 @@ I'm a generic exception :(
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.id)
 
+    def test_jsonable_exception(self) -> None:
+        bot_user = self.example_user('outgoing_webhook_bot')
+        mock_event = self.mock_event(bot_user)
+        service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
+
+        # Widget content is being decoded twice, once in process_success_response along with response
+        # and again in check_messages leading to always cause an error
+        response = ResponseMock(200, orjson.dumps(dict(content='whatever', widget_content="test")))
+        expect_200 = mock.patch('requests.request', return_value=response)
+        expect_logging_exception = self.assertLogs(level="ERROR")
+        expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
+
+        with expect_200, expect_logging_exception, expect_fail as mock_fail:
+            do_rest_call('', None, mock_event, service_handler)
+        self.assertTrue(mock_fail.called)
+
+        bot_owner_notification = self.get_last_message()
+        self.assertEqual(bot_owner_notification.content,
+                         '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
+When trying to send a request to the webhook service, an exception of type JsonableError occurred:
+```
+Widgets: API programmer sent invalid JSON content
+```''')
+
+        assert bot_user.bot_owner is not None
+        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.id)
+
 class TestOutgoingWebhookMessaging(ZulipTestCase):
     def create_outgoing_bot(self, bot_owner: UserProfile) -> UserProfile:
         return self.create_test_bot(

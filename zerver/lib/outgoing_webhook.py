@@ -340,3 +340,10 @@ def do_rest_call(base_url: str,
         fail_with_message(event, response_message)
         notify_bot_owner(event, exception=e)
         return None
+
+    except JsonableError as e:
+        response_message = (e.msg)
+        logging.exception("Outhook trigger failed:", stack_info=True)
+        fail_with_message(event, response_message)
+        notify_bot_owner(event, exception=e)
+        return None
