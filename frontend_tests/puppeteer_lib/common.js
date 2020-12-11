@@ -435,7 +435,7 @@ class CommonUtils {
                 $(field_selector)
                     .trigger("focus")
                     .val(str)
-                    .trigger($.Event("keyup", {which: 0}));
+                    .trigger(new $.Event("keyup", {which: 0}));
 
                 // Trigger the typeahead.
                 // Reaching into the guts of Bootstrap Typeahead like this is not

@@ -299,7 +299,7 @@ exports.check_for_unsuspend = function () {
         watchdog_time = new_time;
         // Our app's JS wasn't running, which probably means the machine was
         // asleep.
-        $(document).trigger($.Event("unsuspend"));
+        $(document).trigger("unsuspend");
     }
     watchdog_time = new_time;
 };

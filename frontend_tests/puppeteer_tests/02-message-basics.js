@@ -255,8 +255,8 @@ async function test_search_venice(page) {
             .expectOne()
             .trigger("focus")
             .val("vEnI") // Must be case insensitive.
-            .trigger($.Event("input"))
-            .trigger($.Event("click"));
+            .trigger("input")
+            .trigger("click");
     });
 
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
@@ -267,7 +267,7 @@ async function test_search_venice(page) {
 
     // Clearing list gives back all the streams in the list
     await page.evaluate(() =>
-        $(".stream-list-filter").expectOne().trigger("focus").val("").trigger($.Event("input")),
+        $(".stream-list-filter").expectOne().trigger("focus").val("").trigger("input"),
     );
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {visible: true});
     await page.waitForSelector(await get_stream_li(page, "Venice"), {visible: true});
@@ -292,7 +292,7 @@ async function test_stream_search_filters_stream_list(page) {
 
     // Enter the search box and test highlighted suggestion
     await page.evaluate(() =>
-        $(".stream-list-filter").expectOne().trigger("focus").trigger($.Event("click")),
+        $(".stream-list-filter").expectOne().trigger("focus").trigger("click"),
     );
 
     await page.waitForSelector("#stream_filters .highlighted_stream", {visible: true});
@@ -327,7 +327,7 @@ async function test_stream_search_filters_stream_list(page) {
 
     // Search for brginning of "Verona".
     await page.evaluate(() =>
-        $(".stream-list-filter").expectOne().trigger("focus").val("ver").trigger($.Event("input")),
+        $(".stream-list-filter").expectOne().trigger("focus").val("ver").trigger("input"),
     );
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
     await page.click(await get_stream_li(page, "Verona"));
@@ -365,9 +365,7 @@ async function test_users_search(page) {
     await assert_in_list(page, "aaron");
 
     // Enter the search box and test selected suggestion navigation
-    await page.evaluate(() =>
-        $("#user_filter_icon").expectOne().trigger("focus").trigger($.Event("click")),
-    );
+    await page.evaluate(() => $("#user_filter_icon").expectOne().trigger("focus").trigger("click"));
     await page.waitForSelector("#user_presences .highlighted_user", {visible: true});
     await assert_selected(page, "Desdemona");
     await assert_not_selected(page, "Cordelia Lear");

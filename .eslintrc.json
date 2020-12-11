@@ -38,12 +38,7 @@
             }
         ],
         "import/unambiguous": "error",
-        "new-cap": [
-            "error",
-            {
-                "capIsNew": false
-            }
-        ],
+        "new-cap": "error",
         "no-alert": "error",
         "no-array-constructor": "error",
         "no-bitwise": "error",

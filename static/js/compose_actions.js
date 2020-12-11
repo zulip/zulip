@@ -119,7 +119,7 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     ui_util.change_tab_to("#message_feed_container");
     compose_fade.start_compose(msg_type);
     ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"), true);
-    $(document).trigger($.Event("compose_started.zulip", opts));
+    $(document).trigger(new $.Event("compose_started.zulip", opts));
     exports.update_placeholder_text();
 };
 
@@ -270,7 +270,7 @@ exports.cancel = function () {
     compose.abort_video_callbacks(undefined);
     compose_state.set_message_type(false);
     compose_pm_pill.clear();
-    $(document).trigger($.Event("compose_canceled.zulip"));
+    $(document).trigger("compose_canceled.zulip");
 };
 
 exports.respond_to_message = function (opts) {
