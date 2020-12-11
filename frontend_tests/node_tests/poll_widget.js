@@ -267,11 +267,7 @@ run_test("activate another person poll", () => {
         /* Testing data sent to server on voting */
         poll_vote_button.attr("data-key", "100,1");
         out_data = undefined;
-        poll_vote_button.trigger(
-            $.Event("click", {
-                target: poll_vote_button,
-            }),
-        );
+        poll_vote_button.trigger("click");
         assert.deepEqual(out_data, {type: "vote", key: "100,1", vote: 1});
     }
 
