@@ -571,6 +571,7 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
 
 def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
     token = result.store_data()
+    # realm = get_realm(result.data_dict["subdomain"])
     try:
         realm = get_realm(result.data_dict["subdomain"])
     except Realm.DoesNotExist:
@@ -787,11 +788,9 @@ def dev_direct_login(
         # an enabled DevAuthBackend.
         return config_error(request, 'dev')
     email = request.POST['direct_email']
-    subdomain = get_subdomain(request)
-    try:
-        realm = get_realm(subdomain)
-    except Realm.DoesNotExist:
-        raise JsonableError(_("Wrong subdomain"))
+    realm = get_realm_from_request(request)
+    if realm is None:
+        return json_error(_("Invalid subdomain"))
     user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
         return config_error(request, 'dev')
@@ -821,13 +820,9 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
     # this condition of Django so no need to check if LDAP backend is
     # enabled.
     validate_login_email(username)
-
-    subdomain = get_subdomain(request)
-    try:
-        realm = get_realm(subdomain)
-    except Realm.DoesNotExist:
-        raise JsonableError(_("Wrong subdomain"))
-
+    realm = get_realm_from_request(request)
+    if realm is None:
+        return json_error(_("Invalid subdomain"))
     return_data: Dict[str, bool] = {}
     user_profile = authenticate(dev_auth_username=username,
                                 realm=realm,
@@ -964,11 +959,9 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
 @has_request_variables
 def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
                        password: str=REQ(default='')) -> HttpResponse:
-    subdomain = get_subdomain(request)
-    try:
-        realm = get_realm(subdomain)
-    except Realm.DoesNotExist:
-        raise JsonableError(_("Wrong subdomain"))
+    realm = get_realm_from_request(request)
+    if realm is None:
+        return json_error(_("Invalid subdomain"))
     if password_auth_enabled(user_profile.realm):
         if not authenticate(request=request, username=user_profile.delivery_email, password=password,
                             realm=realm):
