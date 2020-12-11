@@ -109,7 +109,7 @@ const DropdownListWidget = function (opts) {
                 return;
             }
             e.preventDefault();
-            const custom_event = jQuery.Event("keydown.dropdown.data-api", {
+            const custom_event = new jQuery.Event("keydown.dropdown.data-api", {
                 keyCode: e.keyCode,
                 which: e.keyCode,
             });

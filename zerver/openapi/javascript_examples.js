@@ -13,7 +13,7 @@
   that the documented examples are all correct, runnable code.
 */
 
-const ExamplesHandler = function () {
+const examples_handler = function () {
     const config = {
         username: process.env.ZULIP_USERNAME,
         apiKey: process.env.ZULIP_API_KEY,
@@ -47,8 +47,8 @@ const ExamplesHandler = function () {
     };
 
     const main = async () => {
-        const Zulip = require("zulip-js");
-        const client = await Zulip(config);
+        const zulipInit = require("zulip-js");
+        const client = await zulipInit(config);
 
         await generate_validation_data(client, examples.send_message);
         await generate_validation_data(client, examples.create_user);
@@ -90,7 +90,7 @@ const ExamplesHandler = function () {
     };
 };
 
-const {main, add_example} = ExamplesHandler();
+const {main, add_example} = examples_handler();
 
 const send_test_message = async (client) => {
     const params = {

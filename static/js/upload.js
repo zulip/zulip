@@ -172,7 +172,7 @@ exports.upload_files = function (uppy, config, files) {
 };
 
 exports.setup_upload = function (config) {
-    const uppy = Uppy({
+    const uppy = new Uppy({
         debug: false,
         autoProceed: true,
         restrictions: {

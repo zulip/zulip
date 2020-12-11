@@ -46,7 +46,7 @@ client = zulip.Client(config_file="~/zuliprc-admin")
 """
 
 JS_CLIENT_CONFIG = """
-const Zulip = require('zulip-js');
+const zulipInit = require('zulip-js');
 
 // Pass the path to your zuliprc file here.
 const config = { zuliprc: 'zuliprc' };
@@ -54,7 +54,7 @@ const config = { zuliprc: 'zuliprc' };
 """
 
 JS_CLIENT_ADMIN_CONFIG = """
-const Zulip = require('zulip-js');
+const zulipInit = require('zulip-js');
 
 // The user for this zuliprc file must be an organization administrator.
 const config = { zuliprc: 'zuliprc-admin' };
@@ -156,7 +156,7 @@ def render_javascript_code_example(function: str, admin_config: bool=False,
     code_example.append('```js')
     code_example.extend(config)
     for snippet in snippets:
-        code_example.append("Zulip(config).then(async (client) => {")
+        code_example.append("zulipInit(config).then(async (client) => {")
         for line in snippet:
             result = re.search('const result.*=(.*);', line)
             if result:

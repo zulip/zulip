@@ -37,7 +37,7 @@ const createPasteEvent = function () {
     const clipboardData = new DataTransfer();
     const pasteEvent = new window.Event("paste");
     pasteEvent.clipboardData = clipboardData;
-    return $.Event(pasteEvent);
+    return new $.Event(pasteEvent);
 };
 
 run_test("paste_handler", () => {

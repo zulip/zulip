@@ -197,7 +197,7 @@ class MessageList {
             this.view.maybe_rerender();
         }
 
-        $(document).trigger($.Event("message_selected.zulip", opts));
+        $(document).trigger(new $.Event("message_selected.zulip", opts));
     }
 
     reselect_selected_id() {

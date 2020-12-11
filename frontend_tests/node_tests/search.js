@@ -208,7 +208,7 @@ run_test("initialize", () => {
     };
     search_query_box.val("test string");
     narrow_state.search_string = () => "ver";
-    search_query_box.trigger($.Event("blur", stub_event));
+    search_query_box.trigger(new $.Event("blur", stub_event));
     assert.equal(search_query_box.val(), "test string");
 
     searchbox.css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});

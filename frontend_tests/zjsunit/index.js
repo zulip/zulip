@@ -97,7 +97,7 @@ try {
         }
 
         namespace.restore();
-        Handlebars.HandlebarsEnvironment();
+        Handlebars.HandlebarsEnvironment.call(Handlebars);
     });
 } catch (error) {
     if (error.stack) {
