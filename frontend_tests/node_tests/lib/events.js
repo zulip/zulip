@@ -808,3 +808,208 @@ exports.fixtures = {
         status_text: "out to lunch",
     },
 };
+
+// Used for MLDCache tests.
+// Note: Always pass `flags: ["read"]` for the appropriate events.
+// So that the MLD object does not get destroyed in the
+// `id_info.local_select_id` check in narrow activation codepath.
+
+const alice = {
+    email: "alice@example.com",
+    user_id: 32,
+    full_name: "Alice Patel",
+};
+const mark = {
+    email: "mark@zulip.com",
+    user_id: 1005,
+    full_name: "Marky Mark",
+};
+const denmark = {
+    subscribed: false,
+    name: "Denmark",
+    stream_id: 101,
+};
+const denmark_topics = ["Copenhagen", "Aarhus"];
+const usa = {
+    subscribed: true,
+    name: "USA",
+    stream_id: 201,
+};
+const usa_topics = ["California", "Florida"];
+const operators_list_1 = [
+    [
+        {operator: "stream", operand: denmark.name},
+        {operator: "topic", operand: denmark_topics[0]},
+    ],
+    [
+        {operator: "stream", operand: denmark.name},
+        {operator: "topic", operand: denmark_topics[1]},
+    ],
+    [{operator: "stream", operand: denmark.name}],
+];
+const operators_list_2 = [
+    ...operators_list_1,
+    [
+        {operator: "stream", operand: usa.name},
+        {operator: "topic", operand: usa_topics[0]},
+    ],
+    [
+        {operator: "stream", operand: usa.name},
+        {operator: "topic", operand: usa_topics[1]},
+    ],
+    [{operator: "stream", operand: usa.name}],
+];
+const all_messages_1 = [
+    {
+        type: "stream",
+        content: "abc",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        stream_id: denmark.stream_id,
+        stream: denmark.name,
+        topic: denmark_topics[0],
+        display_recipient: denmark.name,
+        id: 100,
+    },
+    {
+        type: "stream",
+        content: "def",
+        sender_full_name: mark.full_name,
+        sender_id: mark.user_id,
+        stream_id: denmark.stream_id,
+        stream: denmark.name,
+        topic: denmark_topics[1],
+        display_recipient: denmark.name,
+        id: 101,
+    },
+    {
+        type: "stream",
+        content: "ghi",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        stream_id: denmark.stream_id,
+        stream: denmark.name,
+        topic: denmark_topics[1],
+        display_recipient: denmark.name,
+        id: 102,
+    },
+];
+const all_messages_2 = [
+    ...all_messages_1,
+    {
+        type: "stream",
+        content: "jkl",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        stream_id: usa.stream_id,
+        stream: usa.name,
+        topic: usa_topics[1],
+        display_recipient: usa.name,
+        id: 200,
+    },
+    {
+        type: "stream",
+        content: "mno",
+        sender_full_name: mark.full_name,
+        sender_id: mark.user_id,
+        stream_id: usa.stream_id,
+        stream: usa.name,
+        topic: usa_topics[1],
+        display_recipient: usa.name,
+        id: 201,
+    },
+    {
+        type: "stream",
+        content: "abc",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        stream_id: usa.stream_id,
+        stream: usa.name,
+        topic: usa_topics[0],
+        display_recipient: usa.name,
+        id: 202,
+    },
+];
+
+exports.set_up = {
+    users: {alice, mark},
+    streams: {denmark, usa},
+    topics: {denmark, usa},
+    operators_list: {operators_list_1, operators_list_2},
+    all_messages: {all_messages_1, all_messages_2},
+};
+
+const new_message = {
+    type: "stream",
+    content: "jkl",
+    sender_full_name: mark.full_name,
+    sender_id: mark.user_id,
+    stream_id: denmark.stream_id,
+    stream: denmark.name,
+    topic: denmark_topics[0],
+    display_recipient: denmark.name,
+    id: 103,
+};
+const delete_event_1 = {
+    id: 101,
+    type: "delete_message",
+    message_ids: [101],
+    message_type: "stream",
+    stream_id: denmark.stream_id,
+    topic: denmark_topics[1],
+};
+const delete_event_2 = {
+    ...delete_event_1,
+    id: 102,
+    message_ids: [102],
+};
+const update_event_1 = {
+    id: 104,
+    type: "update_message",
+    message_id: 102,
+    message_ids: [102],
+    content: "xyz",
+    rendered_content: "<p>xyz</p>",
+    orig_content: "ghi",
+    orig_rendered_content: "<p>ghi</p>",
+    flags: ["read"],
+};
+const update_event_2 = {
+    id: 105,
+    type: "update_message",
+    message_id: 101,
+    message_ids: [101, 102],
+    propagate_mode: "change_later",
+    stream_id: denmark.stream_id,
+    stream_name: denmark.stream_name,
+    subject: denmark_topics[0],
+    orig_subject: denmark_topics[1],
+    flags: ["read"],
+};
+const update_event_3 = {
+    id: 106,
+    type: "update_message",
+    message_id: 200,
+    message_ids: [200, 201],
+    propagate_mode: "change_later",
+    stream_name: denmark.stream_name,
+    new_stream_id: denmark.stream_id,
+    stream_id: usa.stream_id,
+    subject: denmark_topics[0],
+    orig_subject: usa_topics[1],
+    flags: ["read"],
+};
+
+exports.cache_fixtures = {
+    delete_messages_1: delete_event_1,
+    delete_messages_2: delete_event_2,
+    add_messages: {
+        id: 103,
+        type: "message",
+        flags: ["read"],
+        message: new_message,
+    },
+    update_message_1: update_event_1,
+    update_message_2: update_event_2,
+    update_message_3: update_event_3,
+};
