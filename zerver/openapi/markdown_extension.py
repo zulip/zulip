@@ -9,6 +9,7 @@ import inspect
 import json
 import re
 import shlex
+from textwrap import dedent
 from typing import Any, Dict, List, Mapping, Optional, Pattern, Tuple
 
 import markdown
@@ -46,18 +47,18 @@ client = zulip.Client(config_file="~/zuliprc-admin")
 """
 
 JS_CLIENT_CONFIG = """
-const zulipInit = require('zulip-js');
+const zulipInit = require("zulip-js");
 
 // Pass the path to your zuliprc file here.
-const config = { zuliprc: 'zuliprc' };
+const config = { zuliprc: "zuliprc" };
 
 """
 
 JS_CLIENT_ADMIN_CONFIG = """
-const zulipInit = require('zulip-js');
+const zulipInit = require("zulip-js");
 
 // The user for this zuliprc file must be an organization administrator.
-const config = { zuliprc: 'zuliprc-admin' };
+const config = { zuliprc: "zuliprc-admin" };
 
 """
 
@@ -134,16 +135,11 @@ def render_python_code_example(function: str, admin_config: bool=False,
 
 def render_javascript_code_example(function: str, admin_config: bool=False,
                                    **kwargs: Any) -> List[str]:
-    function_source_lines = []
+    pattern = fr'^add_example\(\s*"[^"]*",\s*{re.escape(json.dumps(function))},\s*\d+,\s*async \(client, console\) => \{{\n(.*?)^(?:\}}| *\}},\n)\);$'
     with open('zerver/openapi/javascript_examples.js') as f:
-        parsing = False
-        for line in f:
-            if line.startswith("}"):
-                parsing = False
-            if parsing:
-                function_source_lines.append(line.rstrip())
-            if line.startswith("add_example(") and function in line:
-                parsing = True
+        m = re.search(pattern, f.read(), re.M | re.S)
+    assert m is not None
+    function_source_lines = dedent(m.group(1)).splitlines()
 
     snippets = extract_code_example(function_source_lines, [], JS_EXAMPLE_REGEX)
 
@@ -155,16 +151,14 @@ def render_javascript_code_example(function: str, admin_config: bool=False,
     code_example = []
     code_example.append('```js')
     code_example.extend(config)
+    code_example.append("(async () => {")
+    code_example.append("    const client = await zulipInit(config);")
     for snippet in snippets:
-        code_example.append("zulipInit(config).then(async (client) => {")
+        code_example.append("")
         for line in snippet:
-            result = re.search('const result.*=(.*);', line)
-            if result:
-                line = f"    return{result.group(1)};"
             # Strip newlines
-            code_example.append(line.rstrip())
-        code_example.append("}).then(console.log).catch(console.err);")
-        code_example.append(" ")
+            code_example.append("    " + line.rstrip())
+    code_example.append("})();")
 
     code_example.append('```')
 
