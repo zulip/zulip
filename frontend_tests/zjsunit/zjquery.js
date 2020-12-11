@@ -112,7 +112,10 @@ exports.make_event_store = (selector) => {
 
         trigger($element, ev, data) {
             if (typeof ev === "string") {
-                ev = new Event(ev, data);
+                ev = new Event(ev);
+            }
+            if (!ev.target) {
+                ev.target = $element;
             }
             const func = on_functions.get(ev.type);
 
