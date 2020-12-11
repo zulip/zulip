@@ -11,7 +11,6 @@ declare namespace StackTraceGPS {
     };
 }
 
-// eslint-disable-next-line no-redeclare
 declare class StackTraceGPS {
     constructor(options?: StackTraceGPS.StackTraceGPSOptions);
     pinpoint(stackframe: StackFrame): Promise<StackFrame>;

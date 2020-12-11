@@ -15,6 +15,7 @@
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "unambiguous"
     },
+    "reportUnusedDisableDirectives": true,
     "rules": {
         "array-callback-return": "error",
         "arrow-body-style": "error",
