@@ -703,6 +703,22 @@ exports.initialize = function () {
         if (!$(e.target).is("a")) {
             e.stopPropagation();
         }
+
+        //area that should trigger response
+        if (!$(e.target).is("textarea, a, button, i, label, span, input, #below-compose-content")) {
+            if (document.getSelection().type === "Range") {
+                // Drags on the message (to copy message text) shouldn't trigger a reply.
+                return;
+            }
+            
+            //gets subject and recipiant of the draft 
+            current_msg_list.select_id(current_msg_list.selected_id());
+            compose_actions.respond_to_message({trigger: "message click"});
+            $("#compose-textarea").val(""); //makes the new message blank
+            e.stopPropagation();
+            popovers.hide_all();
+            //Should we return here? maybe delete above line instead? 
+        }
         // Still hide the popovers, however
         popovers.hide_all();
     }
