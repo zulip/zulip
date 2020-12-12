@@ -1248,6 +1248,21 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    new ClipboardJS(".view_lightbox");
+
+    $("body").on("click", ".view_lightbox", function (e) {
+        exports.hide_actions_popover();
+              
+        const message_id = $(e.currentTarget).data("message-id");
+        const row = current_msg_list.get_row(message_id);
+        const message = current_msg_list.get(rows.id(row));
+        var myWindow = window.open("", "Code block", "");
+        myWindow.document.write(message.content);
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     new ClipboardJS(".copy_mention_syntax");
 
     $("body").on("click", ".copy_mention_syntax", (e) => {
