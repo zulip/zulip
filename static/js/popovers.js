@@ -524,6 +524,9 @@ exports.toggle_actions_popover = function (element, id) {
             .replace(/\(/g, "%28")
             .replace(/\)/g, "%29");
 
+        const should_display_code_block = 
+            message.content.includes("<code>")
+
         const should_display_delete_option = message_edit.get_deletability(message);
         const args = {
             message_id: message.id,
@@ -544,6 +547,7 @@ exports.toggle_actions_popover = function (element, id) {
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
             should_display_edit_and_view_source,
             should_display_quote_and_reply,
+            should_display_code_block,
         };
 
         const ypos = elt.offset().top;
