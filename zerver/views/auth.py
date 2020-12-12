@@ -601,8 +601,11 @@ def redirect_to_misconfigured_ldap_notice(request: HttpResponse, error_type: int
 def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
     if realm and realm.deactivated:
+        context = {"deactivated_domain_name": realm.name}
+        if realm.deactivated_redirect is not None:
+            context["deactivated_redirect"] = realm.deactivated_redirect
         return render(request, "zerver/deactivated.html",
-                      context={"deactivated_domain_name": realm.name})
+                      context=context)
 
     return HttpResponseRedirect(reverse('login_page'))
 

@@ -19,6 +19,13 @@
                 <p>
                     {% trans %}
                     The organization you are trying to join, {{ deactivated_domain_name }}, has been deactivated.
+                    {% endtrans %}
+                    {% if deactivated_redirect %}
+                        {% trans %}
+                        It has moved to <a href="{{ deactivated_redirect }}">{{ deactivated_redirect }}</a>.
+                        {% endtrans %}
+                    {% endif %}
+                    {% trans %}
                     Please contact <a href="mailto:{{ support_email }}">{{ support_email }}</a> to reactivate
                     this group.
                     {% endtrans %}
