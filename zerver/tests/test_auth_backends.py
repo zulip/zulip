@@ -3175,6 +3175,16 @@ class JSONFetchAPIKeyTest(ZulipTestCase):
                                   dict(password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 400)
 
+    def test_invalid_subdomain(self) -> None:
+        username = 'hamlet'
+        user = self.example_user(username)
+        self.login_user(user)
+        with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
+            result = self.client_post("/json/fetch_api_key",
+                                      dict(username=username,
+                                           password=initial_password(user.delivery_email)))
+        self.assert_json_error(result, "Invalid subdomain", 400)
+
 class FetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -3280,6 +3290,13 @@ class DevFetchAPIKeyTest(ZulipTestCase):
             result = self.client_post("/api/v1/dev_fetch_api_key",
                                       dict(username=self.email))
             self.assert_json_error_contains(result, "DevAuthBackend not enabled.", 400)
+
+    def test_invalid_subdomain(self) -> None:
+        with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
+            result = self.client_post("/api/v1/dev_fetch_api_key",
+                                      dict(username=self.email,
+                                           password=initial_password(self.email)))
+            self.assert_json_error_contains(result, "Invalid subdomain", 400)
 
 class DevGetEmailsTest(ZulipTestCase):
     def test_success(self) -> None:
