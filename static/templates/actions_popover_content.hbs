@@ -94,4 +94,12 @@
     {{#if historical}}
     <li class="small">({{t "Message sent when you were not subscribed" }})</li>
     {{/if}}
+
+    {{#if should_display_code_block}}
+    <li>
+        <a href="#" class="view_lightbox" data-message-id="{{message_id}}" data-clipboard-text="{{ conversation_time_uri }}">
+            <i class="fa fa-code" aria-hidden="true"></i> {{t "View Code" }}
+        </a>
+    </li>
+    {{/if}}
 </ul>
