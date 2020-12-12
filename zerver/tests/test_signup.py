@@ -171,6 +171,16 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get('/accounts/deactivated/')
         self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
+        self.assertNotIn("It has moved to", result.content.decode())
+
+    def test_deactivation_notice_when_deactivated_and_deactivated_redirect_is_set(self) -> None:
+        realm = get_realm("zulip")
+        realm.deactivated = True
+        realm.deactivated_redirect = "http://example.zulipchat.com"
+        realm.save(update_fields=["deactivated", "deactivated_redirect"])
+
+        result = self.client_get('/accounts/deactivated/')
+        self.assertIn('It has moved to <a href="http://example.zulipchat.com">http://example.zulipchat.com</a>.', result.content.decode())
 
 class AddNewUserHistoryTest(ZulipTestCase):
     def test_add_new_user_history_race(self) -> None:
