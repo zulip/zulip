@@ -224,6 +224,18 @@ class EditMessageTest(ZulipTestCase):
         content = Message.objects.filter(id=msg_id).values_list('content', flat = True)[0]
         self.assertEqual(content, "(deleted)")
 
+    def test_edit_message_code(self) -> None:
+        self.login('hamlet')
+        msg_id = self.send_stream_message(self.example_user("hamlet"), "Scotland",
+                                          topic_name="editing", content="    code before edit")
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'content': '    code after edit',
+        })
+        self.assert_json_success(result)
+        content = Message.objects.filter(id=msg_id).values_list('content', flat = True)[0]
+        self.assertEqual(content, "    code after edit")
+
     def test_edit_message_history_disabled(self) -> None:
         user_profile = self.example_user("hamlet")
         do_set_realm_property(user_profile.realm, "allow_edit_history", False)
