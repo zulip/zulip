@@ -836,6 +836,11 @@ exports.process_hotkey = function (e, hotkey) {
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);
             return true;
+        case "delete":
+            if (message_edit.get_deletability(msg)) {
+                message_edit.delete_message(msg.id);
+            }
+            return true;
         case "compose_quote_reply": // > : respond to selected message with quote
             compose_actions.quote_and_reply({trigger: "hotkey"});
             return true;
