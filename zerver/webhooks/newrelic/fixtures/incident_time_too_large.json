@@ -6,5 +6,6 @@
     "condition_name": "Server Down",
     "timestamp": 160513393115100000,
     "current_state": "open",
+    "owner": "",
     "incident_url": "https://alerts.newrelic.com/accounts/2941966/incidents/1234"
 }
