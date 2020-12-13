@@ -705,7 +705,7 @@ exports.initialize = function () {
         }
 
         // Clicking on a draft as long is not a private message
-        // Will trigger reply behavior 
+        // Will trigger reply behavior
         // It will save the current message as a draft
         // And open up a new message with the same topic and recipient
         if (compose_state.get_message_type() != "private") {
@@ -714,8 +714,7 @@ exports.initialize = function () {
                     // Drags on the message (to copy message text) shouldn't trigger a reply.
                     return;
                 }
-                
-                // Gets subject and recipiant of the draft 
+                // Gets topic and recipiant of the draft
                 const current_topic = $("#stream_message_recipient_topic").val();
                 compose_actions.respond_to_message({trigger: "message click"});
                 $("#compose-textarea").val(""); // Makes the new message blank
