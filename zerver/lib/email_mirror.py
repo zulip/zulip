@@ -25,8 +25,10 @@ from zerver.lib.message import truncate_body, truncate_topic
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
+from zerver.lib.topic import messages_for_topic
 from zerver.lib.upload import upload_message_file
 from zerver.models import (
+    MAX_TOPIC_NAME_LENGTH,
     Message,
     MissedMessageEmailAddress,
     Realm,
@@ -177,6 +179,11 @@ class ZulipEmailForwardUserError(ZulipEmailForwardError):
     pass
 
 def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) -> None:
+    if (len(topic) > MAX_TOPIC_NAME_LENGTH):
+        if not (messages_for_topic(stream.recipient_id, topic).filter(
+                date_sent__gt = timezone_now() - timedelta(days=7)).exists()):
+            content = 'Subject: {}\n\n{}'.format(topic, content)
+
     internal_send_stream_message(
         stream.realm,
         sender,

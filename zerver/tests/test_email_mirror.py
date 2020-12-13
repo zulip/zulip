@@ -35,6 +35,7 @@ from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, most_recent_usermessage
 from zerver.models import (
+    MAX_TOPIC_NAME_LENGTH,
     MissedMessageEmailAddress,
     Recipient,
     UserProfile,
@@ -203,6 +204,49 @@ class TestFilterFooter(ZulipTestCase):
         result = filter_footer(text)
         # Multiple possible footers, don't strip
         self.assertEqual(result, text)
+
+class TestStreamEmailTruncation(ZulipTestCase):
+    def test_stream_email_message_with_topic_length_equal_max_length(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login('hamlet')
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        stream_to_address = encode_email_address(stream)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestStreamEmailWithTrucnatedTopic Body')
+
+        incoming_valid_message['Subject'] = 'X' * MAX_TOPIC_NAME_LENGTH
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.topic_name(), incoming_valid_message['Subject'][:MAX_TOPIC_NAME_LENGTH+1])
+        self.assertEqual(message.content, "TestStreamEmailWithTrucnatedTopic Body")
+
+    def test_stream_email_message_with_topic_length_greater_max_length(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login('hamlet')
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        stream_to_address = encode_email_address(stream)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content('TestStreamEmailWithTrucnatedTopic Body')
+
+        incoming_valid_message['Subject'] = 'X' * (MAX_TOPIC_NAME_LENGTH + 10)
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.topic_name(), incoming_valid_message['Subject'][:MAX_TOPIC_NAME_LENGTH-3]+'...')
+        self.assertEqual(message.content, 'Subject: {}\n\nTestStreamEmailWithTrucnatedTopic Body'.format(incoming_valid_message['Subject']))
 
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
     def test_receive_stream_email_messages_success(self) -> None:
