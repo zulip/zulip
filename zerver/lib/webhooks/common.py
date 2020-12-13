@@ -14,6 +14,7 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """
@@ -167,8 +168,7 @@ def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
     Returns a datetime representing the time."""
     try:
         # timestamps are in milliseconds so divide by 1000
-        return datetime.fromtimestamp((milliseconds) / 1000)
-    except ValueError:
-        raise JsonableError(_("The {} webhook expects time in milleseconds.").format(webhook))
-    except TypeError:
+        seconds = milliseconds / 1000
+        return timestamp_to_datetime(seconds)
+    except (ValueError, TypeError):
         raise JsonableError(_("The {} webhook expects time in milleseconds.").format(webhook))
