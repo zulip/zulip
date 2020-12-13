@@ -708,7 +708,7 @@ exports.initialize = function () {
         // Will trigger reply behavior
         // It will save the current message as a draft
         // And open up a new message with the same topic and recipient
-        if (compose_state.get_message_type() != "private") {
+        if (compose_state.get_message_type() !== "private") {
             if (!$(e.target).is("textarea, a, button, i, label, span, input, #below-compose-content")) {
                 if (document.getSelection().type === "Range") {
                     // Drags on the message (to copy message text) shouldn't trigger a reply.
