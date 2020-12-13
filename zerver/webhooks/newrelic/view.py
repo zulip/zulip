@@ -17,7 +17,7 @@ OPEN_TEMPLATE = """
 ```
 """.strip()
 
-DEFAULT_TEMPLATE = """[Incident]({incident_url}) **{status}** for condition: **{condition_name}**""".strip()
+DEFAULT_TEMPLATE = """[Incident]({incident_url}) **{status}** {owner}for condition: **{condition_name}**""".strip()
 
 TOPIC_TEMPLATE = """{policy_name} ({incident_id})""".strip()
 
@@ -36,6 +36,7 @@ def api_newrelic_webhook(
         "incident_acknowledge_url": payload.get('incident_acknowledge_url', 'https://alerts.newrelic.com'),
         "status": payload.get('current_state', 'None'),
         "iso_timestamp": '',
+        "owner": payload.get('owner', ''),
     }
 
     unix_time = payload.get('timestamp', None)
@@ -43,6 +44,10 @@ def api_newrelic_webhook(
         return json_error(_("The newrelic webhook requires timestamp in milliseconds"))
 
     info['iso_timestamp'] = unix_milliseconds_to_timestamp(unix_time, "newrelic")
+
+    # Add formatting to the owner field if owner is present
+    if info['owner'] != '':
+        info['owner'] = 'by **{}** '.format(info['owner'])
 
     # These are the three promised current_state values
     if 'open' in info['status']:
