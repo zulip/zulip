@@ -704,20 +704,24 @@ exports.initialize = function () {
             e.stopPropagation();
         }
 
-        //area that should trigger response
-        if (!$(e.target).is("textarea, a, button, i, label, span, input, #below-compose-content")) {
-            if (document.getSelection().type === "Range") {
-                // Drags on the message (to copy message text) shouldn't trigger a reply.
-                return;
+        // Clicking on a draft as long is not a private message
+        // Will trigger reply behavior 
+        // It will save the current message as a draft
+        // And open up a new message with the same topic and recipient
+        if (compose_state.get_message_type() != "private") {
+            if (!$(e.target).is("textarea, a, button, i, label, span, input, #below-compose-content")) {
+                if (document.getSelection().type === "Range") {
+                    // Drags on the message (to copy message text) shouldn't trigger a reply.
+                    return;
+                }
+                
+                // Gets subject and recipiant of the draft 
+                const current_topic = $("#stream_message_recipient_topic").val();
+                compose_actions.respond_to_message({trigger: "message click"});
+                $("#compose-textarea").val(""); // Makes the new message blank
+                $("#stream_message_recipient_topic").val(current_topic);
+                e.stopPropagation();
             }
-            
-            //gets subject and recipiant of the draft 
-            current_msg_list.select_id(current_msg_list.selected_id());
-            compose_actions.respond_to_message({trigger: "message click"});
-            $("#compose-textarea").val(""); //makes the new message blank
-            e.stopPropagation();
-            popovers.hide_all();
-            //Should we return here? maybe delete above line instead? 
         }
         // Still hide the popovers, however
         popovers.hide_all();

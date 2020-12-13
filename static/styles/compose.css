@@ -62,7 +62,7 @@
 .message_comp {
     display: none;
     padding: 10px 10px 8px 5px;
-    /*makes message area clickable*/
+    /* Makes message area look clickable */
     cursor: pointer;
 }
 
