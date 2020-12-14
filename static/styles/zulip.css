@@ -68,7 +68,7 @@ a {
 
 code,
 pre {
-    font-family: Menlo, Consolas, "Courier New", monospace;
+    font-family: Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 .no-select {
