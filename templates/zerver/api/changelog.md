@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 36**
+
+* [`POST /users`](/api/create-user): Restricted access to organization
+  administrators with the `can_create_users` permission.
+
 **Feature level 35**
 
 * The peer_add and peer_remove subscription events now have plural

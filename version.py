@@ -28,7 +28,7 @@ DESKTOP_WARNING_VERSION = "5.2.0"
 #
 # Changes should be accompanied by documentation explaining what the
 # new level means in templates/zerver/api/changelog.md.
-API_FEATURE_LEVEL = 35
+API_FEATURE_LEVEL = 36
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
