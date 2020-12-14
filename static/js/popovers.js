@@ -1249,7 +1249,7 @@ exports.register_click_handlers = function () {
 
     new ClipboardJS(".view_lightbox");
 
-    $("body").on("click", ".view_lightbox", function (e) {
+    $("body").on("click", ".view_lightbox", (e) => {
         exports.hide_actions_popover();
 
         const message_id = $(e.currentTarget).data("message-id");
@@ -1259,7 +1259,7 @@ exports.register_click_handlers = function () {
         let code_str = "";
         let code_start = message.content.indexOf('<div class="codehilite"><pre>')
         let code_end = 0
-        let myWindow = window.open("", "_blank", "");
+        const myWindow = window.open("", "_blank", "");
         while(code_start !== -1) {
             code_end = message.content.indexOf("</pre></div>", code_start) + 11;
             code_str = message.content.slice(code_start, code_end)
