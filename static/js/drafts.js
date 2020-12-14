@@ -143,7 +143,7 @@ exports.update_draft = function () {
 
     const draft_id = $("#compose-textarea").data("draft-id");
 
-    if (draft_id !== undefined) {
+    if (draft_id !== undefined && draft_id !== null) {
         // We don't save multiple drafts of the same message;
         // just update the existing draft.
         draft_model.editDraft(draft_id, draft);

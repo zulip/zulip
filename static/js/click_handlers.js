@@ -723,6 +723,7 @@ exports.initialize = function () {
                 compose_actions.respond_to_message({trigger: "message click"});
                 $("#compose-textarea").val(""); // Makes the new message blank
                 $("#stream_message_recipient_topic").val(current_topic);
+                $("#compose-textarea").data("draft-id", null); //Doesn't overwrite draft
                 e.stopPropagation();
             }
         }
