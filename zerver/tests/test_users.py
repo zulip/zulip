@@ -12,6 +12,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
     create_users,
+    do_change_can_create_users,
     do_change_user_role,
     do_create_user,
     do_deactivate_user,
@@ -841,6 +842,23 @@ class AdminCreateUserTest(ZulipTestCase):
         realm = admin.realm
         self.login_user(admin)
         do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        valid_params = dict(
+            email='romeo@zulip.net',
+            password='xxxx',
+            full_name='Romeo Montague',
+        )
+
+        self.assertEqual(admin.can_create_users, False)
+        result = self.client_post("/json/users", valid_params)
+        self.assert_json_error(result, "User not authorized for this query")
+
+        do_change_can_create_users(admin, True)
+        # can_create_users is insufficient without being a realm administrator:
+        do_change_user_role(admin, UserProfile.ROLE_MEMBER)
+        result = self.client_post("/json/users", valid_params)
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         result = self.client_post("/json/users", {})
         self.assert_json_error(result, "Missing 'email' argument")
@@ -882,11 +900,6 @@ class AdminCreateUserTest(ZulipTestCase):
                                "Email 'romeo@not-zulip.com' not allowed in this organization")
 
         RealmDomain.objects.create(realm=get_realm('zulip'), domain='zulip.net')
-        valid_params = dict(
-            email='romeo@zulip.net',
-            password='xxxx',
-            full_name='Romeo Montague',
-        )
         # Check can't use a bad password with zxcvbn enabled
         with self.settings(PASSWORD_MIN_LENGTH=6, PASSWORD_MIN_GUESSES=1000):
             result = self.client_post("/json/users", valid_params)

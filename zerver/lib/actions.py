@@ -3613,6 +3613,10 @@ def do_change_can_forge_sender(user_profile: UserProfile, value: bool) -> None:
     user_profile.can_forge_sender = value
     user_profile.save(update_fields=["can_forge_sender"])
 
+def do_change_can_create_users(user_profile: UserProfile, value: bool) -> None:
+    user_profile.can_create_users = value
+    user_profile.save(update_fields=["can_create_users"])
+
 def do_change_stream_invite_only(stream: Stream, invite_only: bool,
                                  history_public_to_subscribers: Optional[bool]=None) -> None:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
