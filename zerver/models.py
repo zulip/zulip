@@ -985,6 +985,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Users with this flag set are allowed to forge messages as sent by another
     # user and to send to private streams; also used for Zephyr/Jabber mirroring.
     can_forge_sender: bool = models.BooleanField(default=False, db_index=True)
+    # Users with this flag set can create other users via API.
+    can_create_users: bool = models.BooleanField(default=False, db_index=True)
 
     ### Notifications settings. ###
 

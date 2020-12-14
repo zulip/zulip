@@ -4179,7 +4179,7 @@ paths:
       operationId: create_user
       tags: ["users"]
       description: |
-        {!api-admin-only.md!}
+        {!can-create-users-only.md!}
 
         Create a new user account via the API.
 
