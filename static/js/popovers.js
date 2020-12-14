@@ -1256,8 +1256,17 @@ exports.register_click_handlers = function () {
         const message_id = $(e.currentTarget).data("message-id");
         const row = current_msg_list.get_row(message_id);
         const message = current_msg_list.get(rows.id(row));
+
+        var code_str = "";
+        var code_start = message.content.indexOf('<div class="codehilite"><pre>')
+        var code_end = 0
         var myWindow = window.open("", "_blank", "");
-        myWindow.document.write(message.content);
+        while(code_start != -1) {
+            code_end = message.content.indexOf("</pre></div>", code_start) + 11;
+            code_str = message.content.substring(code_start, code_end)
+            code_start = message.content.indexOf('<div class="codehilite"><pre>', code_end)
+            myWindow.document.write(code_str);
+        }
 
         e.stopPropagation();
         e.preventDefault();
