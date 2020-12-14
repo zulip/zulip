@@ -211,6 +211,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     navbar_logo_url = compute_navbar_logo_url(page_params)
 
+    guests_enabled = realm.invite_required
+
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
                                'page_params': page_params,
@@ -224,6 +226,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'is_owner': user_permission_info.is_realm_owner,
                                'is_admin': user_permission_info.is_realm_admin,
                                'is_guest': user_permission_info.is_guest,
+                               'guests_enabled': guests_enabled,
                                'color_scheme': user_permission_info.color_scheme,
                                'navbar_logo_url': navbar_logo_url,
                                'show_webathena': user_permission_info.show_webathena,
