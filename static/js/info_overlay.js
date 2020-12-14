@@ -1,10 +1,13 @@
 "use strict";
 
+const markdown = require("./markdown");
+
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
 exports.toggler = undefined;
 
 exports.set_up_toggler = function () {
+    exports.render_markdown();
     const opts = {
         selected: 0,
         child_wants_focus: true,
@@ -77,6 +80,19 @@ exports.maybe_show_keyboard_shortcuts = function () {
         return;
     }
     exports.show("keyboard-shortcuts");
+};
+
+exports.render_markdown = () => {
+    let unrendered_text;
+    let obj;
+    $.each($(".apply_markdown"), (id, element) => {
+        unrendered_text = element.textContent;
+        obj = {
+            raw_content: unrendered_text,
+        };
+        markdown.apply_markdown(obj);
+        $(element).next().append(obj.content);
+    });
 };
 
 window.info_overlay = exports;
