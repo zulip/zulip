@@ -524,8 +524,7 @@ exports.toggle_actions_popover = function (element, id) {
             .replace(/\(/g, "%28")
             .replace(/\)/g, "%29");
 
-        const should_display_code_block = 
-            message.content.includes("<code>")
+        const should_display_code_block = message.content.includes("<code>")
 
         const should_display_delete_option = message_edit.get_deletability(message);
         const args = {
@@ -1252,20 +1251,19 @@ exports.register_click_handlers = function () {
 
     $("body").on("click", ".view_lightbox", function (e) {
         exports.hide_actions_popover();
-              
+
         const message_id = $(e.currentTarget).data("message-id");
         const row = current_msg_list.get_row(message_id);
         const message = current_msg_list.get(rows.id(row));
 
-        var code_str = "";
-        var code_start = message.content.indexOf('<div class="codehilite"><pre>')
-        var code_end = 0
-        var myWindow = window.open("", "_blank", "");
-        while(code_start != -1) {
+        let code_str = "";
+        let code_start = message.content.indexOf('<div class="codehilite"><pre>')
+        let code_end = 0
+        let myWindow = window.open("", "_blank", "");
+        while(code_start !== -1) {
             code_end = message.content.indexOf("</pre></div>", code_start) + 11;
-            code_str = message.content.substring(code_start, code_end)
-            code_start = 
-                message.content.indexOf('<div class="codehilite"><pre>', code_end)
+            code_str = message.content.slice(code_start, code_end)
+            code_start = message.content.indexOf('<div class="codehilite"><pre>', code_end)
             myWindow.document.write(code_str);
         }
 
