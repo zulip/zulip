@@ -524,7 +524,10 @@ exports.toggle_actions_popover = function (element, id) {
             .replace(/\(/g, "%28")
             .replace(/\)/g, "%29");
 
-        const should_display_code_block = message.content.includes("<code>");
+        var should_display_code_block = false
+        if (message.content !== undefined) {
+            should_display_code_block = message.content.includes("<code>")
+        }            
 
         const should_display_delete_option = message_edit.get_deletability(message);
         const args = {
