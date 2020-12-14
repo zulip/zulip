@@ -1264,7 +1264,8 @@ exports.register_click_handlers = function () {
         while(code_start != -1) {
             code_end = message.content.indexOf("</pre></div>", code_start) + 11;
             code_str = message.content.substring(code_start, code_end)
-            code_start = message.content.indexOf('<div class="codehilite"><pre>', code_end)
+            code_start = 
+                message.content.indexOf('<div class="codehilite"><pre>', code_end)
             myWindow.document.write(code_str);
         }
 
