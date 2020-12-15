@@ -56,7 +56,7 @@
         {{#if can_set_away}}
         <li>
             <a tabindex="0" class="set_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as unavailable{{/tr}}
+                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}set yourself as unavailable{{/tr}}
             </a>
         </li>
         {{/if}}
@@ -71,6 +71,7 @@
             <a tabindex="0" class="update_status_text">
                 <i class="fa fa-comments" aria-hidden="true"></i>
                 {{#if status_text}}
+                       
                     {{#tr this}}Edit status message{{/tr}}
                 {{else}}
                     {{#tr this}}Set a status message{{/tr}}

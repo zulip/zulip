@@ -44,7 +44,7 @@ from zilencer.models import (
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> RemoteZulipServer:
     if not isinstance(entity, RemoteZulipServer):
-        raise JsonableError(err_("Must validate with valid Zulip server API key"))
+        raise JsonableError(err_("must validate with valid Zulip server API key"))
     return entity
 
 def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer],
