@@ -598,7 +598,7 @@ class PermissionTest(ZulipTestCase):
             'Biography': 'long text data',
             'Favorite food': 'short text data',
             'Favorite editor': 'vim',
-            'Birthday': '1909-3-5',
+            'Birthday': '1909-03-05',
             'Favorite website': 'https://zulip.com',
             'Mentor': [cordelia.id],
             'GitHub': 'timabbott',

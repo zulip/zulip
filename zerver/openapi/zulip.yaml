@@ -4133,7 +4133,7 @@ paths:
                                       "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
                                       "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
                                     },
-                                  "5": {"value": "1900-1-1"},
+                                  "5": {"value": "1900-01-01"},
                                   "7": {"value": "[11]"},
                                   "6": {"value": "https://blog.zulig.org"},
                                   "1":
@@ -4488,7 +4488,7 @@ paths:
                         "user_id": 5,
                         "profile_data":
                           {
-                            "5": {"value": "2000-1-1"},
+                            "5": {"value": "2000-01-01"},
                             "4": {"value": "emacs"},
                             "7": {"value": "[10]"},
                             "1":
@@ -5538,7 +5538,7 @@ paths:
                                     "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
                                     "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
                                   },
-                                "5": {"value": "1900-1-1"},
+                                "5": {"value": "1900-01-01"},
                                 "7": {"value": "[11]"},
                                 "6": {"value": "https://blog.zulig.org"},
                                 "1":

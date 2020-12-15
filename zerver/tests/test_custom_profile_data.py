@@ -504,6 +504,8 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         field_name = "Birthday"
         self.assert_error_update_invalid_value(field_name, "a-b-c",
                                                f"{field_name} is not a date")
+        self.assert_error_update_invalid_value(field_name, "1909-3-5",
+                                               f"{field_name} is not a date")
         self.assert_error_update_invalid_value(field_name, 123,
                                                f"{field_name} is not a string")
 
@@ -526,7 +528,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             ('Biography', '~~short~~ **long** text data'),
             ('Favorite food', 'long short text data'),
             ('Favorite editor', 'vim'),
-            ('Birthday', '1909-3-5'),
+            ('Birthday', '1909-03-05'),
             ('Favorite website', 'https://zulip.com'),
             ('Mentor', [self.example_user("cordelia").id]),
             ('GitHub', 'zulip-mobile'),
