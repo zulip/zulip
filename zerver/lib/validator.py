@@ -92,7 +92,8 @@ def check_date(var_name: str, val: object) -> str:
     if not isinstance(val, str):
         raise ValidationError(_('{var_name} is not a string').format(var_name=var_name))
     try:
-        datetime.strptime(val, '%Y-%m-%d')
+        if datetime.strptime(val, '%Y-%m-%d').strftime('%Y-%m-%d') != val:
+            raise ValidationError(_('{var_name} is not a date').format(var_name=var_name))
     except ValueError:
         raise ValidationError(_('{var_name} is not a date').format(var_name=var_name))
     return val
