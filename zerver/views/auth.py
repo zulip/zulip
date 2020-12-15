@@ -94,7 +94,7 @@ def create_preregistration_user(email: str, request: HttpRequest, realm_creation
     if not realm_creation:
         try:
             realm = get_realm(get_subdomain(request))
-        except Realm.DoesNotExist:
+        except realm.DoesNotExist:
             pass
     return PreregistrationUser.objects.create(
         email=email,
@@ -153,7 +153,7 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
         multiuse_obj = None
         try:
             realm = get_realm(get_subdomain(request))
-        except Realm.DoesNotExist:
+        except realm.DoesNotExist:
             realm = None
         invited_as = PreregistrationUser.INVITE_AS['MEMBER']
 
@@ -178,7 +178,7 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
                 prereg_user.full_name_validated = full_name_validated
                 update_fields.extend(["full_name", "full_name_validated"])
             prereg_user.save(update_fields=update_fields)
-        except PreregistrationUser.DoesNotExist:
+        except preregistrationUser.DoesNotExist:
             prereg_user = create_preregistration_user(
                 email, request,
                 password_required=password_required,
@@ -343,14 +343,14 @@ def create_response_for_otp_flow(key: str, otp: str, user_profile: UserProfile,
 @has_request_variables
 def remote_user_sso(
     request: HttpRequest,
-    mobile_flow_otp: Optional[str] = REQ(default=None),
+    mobile_flow_otp: Optional[str] =  REQ(default=None),
     desktop_flow_otp: Optional[str] = REQ(default=None),
     next: str = REQ(default="/"),
 ) -> HttpResponse:
     subdomain = get_subdomain(request)
     try:
         realm: Optional[Realm] = get_realm(subdomain)
-    except Realm.DoesNotExist:
+    except realm.DoesNotExist:
         realm = None
 
     if not auth_enabled_helper([ZulipRemoteUserBackend.auth_backend_name], realm):
@@ -421,7 +421,7 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
 
     try:
         realm = get_realm(subdomain)
-    except Realm.DoesNotExist:
+    except realm.DoesNotExist:
         raise JsonableError(_("Wrong subdomain"))
 
     user_profile = authenticate(username=email,
@@ -615,7 +615,7 @@ def redirect_to_deactivation_notice() -> HttpResponse:
 def add_dev_login_context(realm: Optional[Realm], context: Dict[str, Any]) -> None:
     users = get_dev_users(realm)
     context['current_realm'] = realm
-    context['all_realms'] = Realm.objects.all()
+    context['all_realms'] = realm.objects.all()
 
     def sort(lst: List[UserProfile]) -> List[UserProfile]:
         return sorted(lst, key=lambda u: u.delivery_email)
@@ -707,7 +707,7 @@ def login_page(
         if 'new_realm' in request.POST:
             try:
                 realm = get_realm(request.POST['new_realm'])
-            except Realm.DoesNotExist:
+            except realm.DoesNotExist:
                 realm = None
 
         add_dev_login_context(realm, extra_context)
@@ -899,8 +899,8 @@ def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
     """Returns which authentication methods are enabled on the server"""
     subdomain = get_subdomain(request)
     try:
-        realm = Realm.objects.get(string_id=subdomain)
-    except Realm.DoesNotExist:
+        realm = realm.objects.get(string_id=subdomain)
+    except realm.DoesNotExist:
         # If not the root subdomain, this is an error
         if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain"))
