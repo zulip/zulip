@@ -655,9 +655,10 @@ RESULT_STORAGE_STORES_UNSAFE = True
 ################################### AWS S3 settings ############################
 
 if not IS_LOCAL_STORAGE:
-    from zproject.configured_settings import S3_AUTH_UPLOADS_BUCKET, S3_REGION
+    from zproject.configured_settings import S3_AUTH_UPLOADS_BUCKET, S3_ENDPOINT_URL, S3_REGION
 
     TC_AWS_REGION = S3_REGION  # AWS Region
+    TC_AWS_ENDPOINT = S3_ENDPOINT_URL
 
     TC_AWS_STORAGE_BUCKET = S3_AUTH_UPLOADS_BUCKET  # S3 bucket for Storage
     TC_AWS_STORAGE_ROOT_PATH = 'thumbnails'  # S3 path prefix for Storage bucket
