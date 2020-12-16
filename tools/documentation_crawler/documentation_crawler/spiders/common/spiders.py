@@ -74,11 +74,14 @@ class BaseDocumentationSpider(scrapy.Spider):
             # homepage, there's no need to check those (which can
             # cause errors when chat.zulip.org is being updated).
             return True
-        if "zulip.readthedocs" in url or "zulip.com" in url or "zulip.org" in url or "github.com/zulip/zulip/" in url:
+        if "zulip.readthedocs" in url or "zulip.com" in url or "zulip.org" in url:
             # We want CI to check any links to Zulip sites.
             return False
         if (len(url) > 4 and url[:4] == "file") or ("localhost" in url):
             # We also want CI to check any links to built documentation.
+            return False
+        if url.startswith(ZULIP_SERVER_GITHUB_FILE_URL_PREFIX) or url.startswith(ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX):
+            # We can verify these links directly in the local git repo without making any requests to GitHub servers.
             return False
         if 'github.com/zulip' in url:
             # We want to check these links but due to rate limiting from GitHub, these checks often
