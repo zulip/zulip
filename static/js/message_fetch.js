@@ -443,37 +443,39 @@ exports.initialize = function () {
         cont: load_more,
     });
 
-    // In addition to the algorithm above, which is designed to ensure
-    // that we fetch all message history eventually starting with the
-    // first unread message, we also need to ensure that the Recent
-    // Topics page contains the very most recent threads on page load.
-    //
-    // Long term, we'll want to replace this with something that's
-    // more performant (i.e. avoids this unnecessary extra fetch the
-    // results of which are basically discarded) and better represents
-    // more than a few hundred messages' history, but this strategy
-    // allows "Recent Topics" to always show current data (with gaps)
-    // on page load; the data will be complete once the algorithm
-    // above catched up to present.
-    //
-    // (Users will see a weird artifact where Recent Topics has a gap
-    // between E.g. 6 days ago and 37 days ago while the catchup
-    // process runs, so this strategy still results in problematic
-    // visual artifacts shortly after page load; just more forgiveable
-    // ones).
-    //
-    // This MessageList is defined similarly to home_message_list,
-    // without a `table_name` attached.
-    const recent_topics_message_list = new message_list.MessageList({
-        filter: new Filter([{operator: "in", operand: "home"}]),
-        excludes_muted_topics: true,
-    });
-    exports.load_messages({
-        anchor: "newest",
-        num_before: consts.recent_topics_initial_fetch_size,
-        num_after: 0,
-        msg_list: recent_topics_message_list,
-    });
+    if (!page_params.is_web_public_visitor) {
+        // In addition to the algorithm above, which is designed to ensure
+        // that we fetch all message history eventually starting with the
+        // first unread message, we also need to ensure that the Recent
+        // Topics page contains the very most recent threads on page load.
+        //
+        // Long term, we'll want to replace this with something that's
+        // more performant (i.e. avoids this unnecessary extra fetch the
+        // results of which are basically discarded) and better represents
+        // more than a few hundred messages' history, but this strategy
+        // allows "Recent Topics" to always show current data (with gaps)
+        // on page load; the data will be complete once the algorithm
+        // above catched up to present.
+        //
+        // (Users will see a weird artifact where Recent Topics has a gap
+        // between E.g. 6 days ago and 37 days ago while the catchup
+        // process runs, so this strategy still results in problematic
+        // visual artifacts shortly after page load; just more forgiveable
+        // ones).
+        //
+        // This MessageList is defined similarly to home_message_list,
+        // without a `table_name` attached.
+        const recent_topics_message_list = new message_list.MessageList({
+            filter: new Filter([{operator: "in", operand: "home"}]),
+            excludes_muted_topics: true,
+        });
+        exports.load_messages({
+            anchor: "newest",
+            num_before: consts.recent_topics_initial_fetch_size,
+            num_after: 0,
+            msg_list: recent_topics_message_list,
+        });
+    }
 };
 
 window.message_fetch = exports;
