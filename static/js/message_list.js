@@ -311,9 +311,9 @@ class MessageList {
     }
 
     hide_edit_message(row) {
-        row.find(".message_content, .status-message, .message_controls").show();
+        row.find(".message_edit").slideUp();
+        row.find(".message_content, .status-message, .message_controls").fadeIn(1000);
         row.find(".message_edit_form").empty();
-        row.find(".message_edit").hide();
         row.trigger("mouseleave");
     }
 
