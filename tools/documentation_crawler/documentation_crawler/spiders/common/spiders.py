@@ -45,8 +45,8 @@ VNU_IGNORE_REGEX = re.compile(r'|'.join(VNU_IGNORE))
 
 DEPLOY_ROOT = os.path.abspath(os.path.join(__file__, "../../../../../.."))
 
-GITHUB_FILE_URL_PREFIX = "https://github.com/zulip/zulip/blob/master"
-GITHUB_DIRECTORY_URL_PREFIX = "https://github.com/zulip/zulip/tree/master"
+ZULIP_SERVER_GITHUB_FILE_URL_PREFIX = "https://github.com/zulip/zulip/blob/master"
+ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX = "https://github.com/zulip/zulip/tree/master"
 
 class BaseDocumentationSpider(scrapy.Spider):
     name: Optional[str] = None
@@ -132,16 +132,16 @@ class BaseDocumentationSpider(scrapy.Spider):
             callback = self.check_existing
             method = 'HEAD'
 
-            if url.startswith(GITHUB_FILE_URL_PREFIX):
-                file_path = url.replace(GITHUB_FILE_URL_PREFIX, DEPLOY_ROOT)
+            if url.startswith(ZULIP_SERVER_GITHUB_FILE_URL_PREFIX):
+                file_path = url.replace(ZULIP_SERVER_GITHUB_FILE_URL_PREFIX, DEPLOY_ROOT)
                 hash_index = file_path.find("#")
                 if hash_index != -1:
                     file_path = file_path[:hash_index]
                 if not os.path.isfile(file_path):
                     self.logger.error("There is no local file associated with the GitHub URL: %s", url)
                 return
-            elif url.startswith(GITHUB_DIRECTORY_URL_PREFIX):
-                dir_path = url.replace(GITHUB_DIRECTORY_URL_PREFIX, DEPLOY_ROOT)
+            elif url.startswith(ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX):
+                dir_path = url.replace(ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX, DEPLOY_ROOT)
                 if not os.path.isdir(dir_path):
                     self.logger.error("There is no local directory associated with the GitHub URL: %s", url)
                 return
