@@ -566,20 +566,7 @@ When reporting your issue, please include the following information:
 The output of `tools/diagnose` run inside the Vagrant guest is also
 usually helpful.
 
-#### Vagrant Gem Not found(for Ubuntu/Debian based System)
-If you get an error like
-```
-Traceback (most recent call last):
-2: from /usr/bin/vagrant:23:in <main>'
-    1: from /usr/lib/ruby/2.7.0/rubygems.rb:294:in activate_bin_path'
-/usr/lib/ruby/2.7.0/rubygems.rb:275:in `find_spec_for_exe': can't find gem vagrant (>= 0.a) with executable vagrant (Gem::GemNotFoundException)
-```
-Then vagrant wasn't installed properly on your system.This happens if you have
- some old installation of vagrant through ruby/gems.For solving this issue, 
- you should remove all the old installation of vagrant.For removing old instances of vagarant
- , run `dpkg --list | grep vagrant` and remove all the packages listed
-  using `sudo apt remove --purge <package_name>`. After you have successfully removed all old instances,
-   head to the [https://releases.hashicorp.com/vagrant/](url) and download the .deb file for the latest version of Vagrant listed there. The package name will be listed as `vagrant_2.2.14_x86_64.deb`. Note that `2.2.14` refers to the version, you might replace it with the latest version available. After you have downloaded the file, go to the directory where you have downloaded the .deb file,open up the terminal in that directory and install it using `sudo apt install ./vagrant_2.2.14_x86_64.deb` . Once this finishes , you have successfully installed vagrant on your machine and you can check it by running `vagrant --version`.
+
 
 #### Vagrant guest doesn't show (zulip-py3-venv) at start of prompt
 
@@ -1052,3 +1039,13 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
 [set-up-git]: ../git/setup.md
 [ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+
+#### Vagrant Gem Not found(for Ubuntu/Debian based System)
+If you get an error like
+```
+Traceback (most recent call last):
+2: from /usr/bin/vagrant:23:in <main>'
+    1: from /usr/lib/ruby/2.7.0/rubygems.rb:294:in activate_bin_path'
+/usr/lib/ruby/2.7.0/rubygems.rb:275:in `find_spec_for_exe': can't find gem vagrant (>= 0.a) with executable vagrant (Gem::GemNotFoundException)
+```
+You may get an error like this while running any vagrant command, e.g `vagrant up`, `vagrant ssh`.It means that vagrant is not installed properly. This happens if you have some old installations of vagrant through ruby/gems.For solving this issue, you should remove all the old installations of vagrant.For removing old instances of vagarant, run `dpkg --list | grep vagrant` and remove all the packages listed using `sudo apt remove --purge <package_name>`. After you have successfully removed all old instances, head to the [https://releases.hashicorp.com/vagrant/](url) and download the .deb file for the latest version of Vagrant listed there. The package name will be listed as `vagrant_2.2.14_x86_64.deb`. Note that `2.2.14` refers to the version; you might replace it with the latest version available. After you have downloaded the file, go to the directory where you have downloaded the .deb file,open up the terminal in that directory and install it using `sudo apt install ./vagrant_2.2.14_x86_64.deb` . Once this finishes, you have successfully installed vagrant on your machine and you can check it by running `vagrant --version`.
