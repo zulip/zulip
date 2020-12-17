@@ -536,6 +536,23 @@ strong {
         background-color: hsla(0, 0%, 7%, 0.8);
         padding: 3px 5px;
     }
+
+    /*
+    Since hover and click are activated together on touchscreen
+    devices, the hover state persists until the next click, creating
+    awkward UI where the tooltip sticks around forever :(.
+
+    To resolve this, we just hide the tooltip for touch-events on
+    touch-enabled devices resolving the above problem.  This means
+    that tooltips will never appear on touchscreen devices, but that's
+    probably a reasoanble tradeoff here.
+
+    Source: https://drafts.csswg.org/mediaqueries-4/#mf-interaction
+    */
+
+    @media (hover: none) {
+        visibility: hidden !important;
+    }
 }
 
 .buddy_list_tooltip_content {
