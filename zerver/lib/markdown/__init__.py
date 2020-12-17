@@ -1625,9 +1625,65 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
 
 
 class AutoLink(CompiledPattern):
+    """AutoLink takes care of linkifying link-format strings directly
+    present in the message (i.e. without markdown link syntax).  In
+    some hardcoded cases, it will rewrite the label to what the user
+    probably wanted if they'd taken the time to do so.
+    """
+
+    # Ideally, we'd use a dynamic commit prefix length based on the
+    # size of the repository, like Git itself does, but we're
+    # shortening Git commit IDs without looking at the corresponding
+    # repository.  It's not essential that the shortenings are
+    # globally unique as they're just shorthand, but 12 characters is
+    # the minimum to be unique for projects with about 1M commits.
+    COMMIT_ID_PREFIX_LENGTH = 12
+
+    def shorten_links(self, href: str) -> Optional[str]:
+        parts = urllib.parse.urlparse(href)
+        scheme, netloc, path, params, query, fragment = parts
+        if scheme == "https" and netloc in ["github.com"]:
+            # Split the path to extract our 4 variables.
+
+            # To do it cleanly without multiple if branches based on which of these
+            # variables are present, we here add a list of ["", "", ""...]
+            # to the result of path.split, which at worst can be []. We also remove
+            # the first empty string we'd get from "/foo/bar".split("/").
+
+            # Example path: "/foo/bar" output: ["foo", "bar", "", "", ""]
+            #         path: ""         output: ["", "", "", "", ""]
+            organisation, repository, artifact, value, remaining_path = (
+                path.split("/", 5)[1:] + [""] * 5
+            )[:5]
+
+            # Decide what type of links to shorten.
+            if not organisation or not repository or not artifact or not value:
+                return None
+            repo_short_text = "{}/{}".format(organisation, repository)
+
+            if fragment or remaining_path:
+                # We only intend to shorten links for the basic issue, PR, and commit ones.
+                return None
+
+            if netloc == "github.com":
+                return self.shorten_github_links(artifact, repo_short_text, value)
+        return None
+
+    def shorten_github_links(
+        self, artifact: str, repo_short_text: str, value: str
+    ) -> Optional[str]:
+        if artifact in ["pull", "issues"]:
+            return "{}#{}".format(repo_short_text, value)
+        if artifact == "commit":
+            return "{}@{}".format(repo_short_text, value[0 : self.COMMIT_ID_PREFIX_LENGTH])
+        return None
+
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group("url")
         db_data = self.md.zulip_db_data
+        shortened_text = self.shorten_links(url)
+        if shortened_text is not None:
+            return url_to_a(db_data, url, shortened_text)
         return url_to_a(db_data, url)
 
 
