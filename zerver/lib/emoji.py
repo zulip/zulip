@@ -23,6 +23,7 @@ if not os.path.exists(emoji_codes_path):  # nocoverage
 with open(emoji_codes_path, "rb") as fp:
     emoji_codes = orjson.loads(fp.read())
 
+all_emoji_names = emoji_codes["names"]
 name_to_codepoint = emoji_codes["name_to_codepoint"]
 codepoint_to_name = emoji_codes["codepoint_to_name"]
 EMOTICON_CONVERSIONS = emoji_codes["emoticon_conversions"]
@@ -107,10 +108,12 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str]=None)
 
 def check_valid_emoji_name(emoji_name: str) -> None:
     if emoji_name:
-        if re.match(r'^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
-            return
-        raise JsonableError(_("Invalid characters in emoji name"))
-    raise JsonableError(_("Emoji name is missing"))
+        if not re.match(r'^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
+            raise JsonableError(_("Invalid characters in emoji name"))
+        elif emoji_name in all_emoji_names:
+            raise JsonableError(_("Default emoji exists with similar name"))
+    else:
+        raise JsonableError(_("Emoji name is missing"))
 
 def get_emoji_url(emoji_file_name: str, realm_id: int) -> str:
     return upload_backend.get_emoji_url(emoji_file_name, realm_id)
