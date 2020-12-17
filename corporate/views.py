@@ -305,7 +305,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
             )
             licenses = last_ledger_entry.licenses
-            licenses_used = get_latest_seat_count(user.realm)
+            seat_count = get_latest_seat_count(user.realm)
+
             # Should do this in javascript, using the user's timezone
             renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
                 dt=start_of_next_billing_cycle(plan, now)
@@ -326,7 +327,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 automanage_licenses=plan.automanage_licenses,
                 switch_to_annual_at_end_of_cycle=switch_to_annual_at_end_of_cycle,
                 licenses=licenses,
-                licenses_used=licenses_used,
+                seat_count=seat_count,
                 renewal_date=renewal_date,
                 renewal_amount=f"{renewal_cents / 100.:,.2f}",
                 payment_method=payment_method,
