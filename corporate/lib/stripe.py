@@ -71,6 +71,26 @@ def unsign_string(signed_string: str, salt: str) -> str:
     return signer.unsign(signed_string)
 
 
+def validate_licenses(charge_automatically: bool, licenses: Optional[int], seat_count: int) -> None:
+    min_licenses = seat_count
+    max_licenses = None
+    if not charge_automatically:
+        min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
+        max_licenses = MAX_INVOICED_LICENSES
+
+    if licenses is None or licenses < min_licenses:
+        raise BillingError(
+            "not enough licenses", _("You must invoice for at least {} users.").format(min_licenses)
+        )
+
+    if max_licenses is not None and licenses > max_licenses:
+        message = _(
+            "Invoices with more than {} licenses can't be processed from this page. To complete "
+            "the upgrade, please contact {}."
+        ).format(max_licenses, settings.ZULIP_ADMINISTRATOR)
+        raise BillingError("too many licenses", message)
+
+
 # Be extremely careful changing this function. Historical billing periods
 # are not stored anywhere, and are just computed on the fly using this
 # function. Any change you make here should return the same value (or be

@@ -1363,7 +1363,7 @@ class StripeTest(StripeTestCase):
         # Invoice with licenses < MIN_INVOICED_LICENSES
         check_min_licenses_error(True, MIN_INVOICED_LICENSES - 1, MIN_INVOICED_LICENSES)
         # Invoice with licenses < seat count
-        with patch("corporate.views.MIN_INVOICED_LICENSES", 3):
+        with patch("corporate.lib.stripe.MIN_INVOICED_LICENSES", 3):
             check_min_licenses_error(True, 4, self.seat_count)
         # Invoice with not setting licenses
         check_min_licenses_error(True, None, MIN_INVOICED_LICENSES)

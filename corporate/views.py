@@ -14,7 +14,6 @@ from django.utils.translation import gettext as _
 
 from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
-    MAX_INVOICED_LICENSES,
     MIN_INVOICED_LICENSES,
     STRIPE_PUBLISHABLE_KEY,
     BillingError,
@@ -31,6 +30,7 @@ from corporate.lib.stripe import (
     stripe_get_customer,
     unsign_string,
     update_sponsorship_status,
+    validate_licenses,
 )
 from corporate.models import (
     CustomerPlan,
@@ -78,27 +78,13 @@ def check_upgrade_parameters(
     if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:  # nocoverage
         raise BillingError("unknown license_management")
 
+    charge_automatically = False
     if billing_modality == "charge_automatically":
+        charge_automatically = True
         if not has_stripe_token:
             raise BillingError("autopay with no card")
 
-    min_licenses = seat_count
-    max_licenses = None
-    if billing_modality == "send_invoice":
-        min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
-        max_licenses = MAX_INVOICED_LICENSES
-
-    if licenses is None or licenses < min_licenses:
-        raise BillingError(
-            "not enough licenses", _("You must invoice for at least {} users.").format(min_licenses)
-        )
-
-    if max_licenses is not None and licenses > max_licenses:
-        message = _(
-            "Invoices with more than {} licenses can't be processed from this page. To complete "
-            "the upgrade, please contact {}."
-        ).format(max_licenses, settings.ZULIP_ADMINISTRATOR)
-        raise BillingError("too many licenses", message)
+    validate_licenses(charge_automatically, licenses, seat_count)
 
 
 # Should only be called if the customer is being charged automatically
