@@ -25,7 +25,7 @@ from zerver.lib.test_fixtures import update_test_databases_if_required
 
 def set_up_django(external_host: str) -> None:
     os.environ['FULL_STACK_ZULIP_TEST'] = '1'
-    os.environ['EXTERNAL_HOST'] = external_host
+    os.environ['TEST_EXTERNAL_HOST'] = external_host
     os.environ["LOCAL_UPLOADS_DIR"] = get_or_create_dev_uuid_var_path(
         'test-backend/test_uploads')
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
