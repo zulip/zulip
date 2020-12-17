@@ -4038,6 +4038,65 @@ paths:
                             "msg": "You don't have permission to delete this message",
                             "result": "error",
                           }
+  /bot_storage:
+    get:
+      operationId: get_storage
+      description: |
+        Get Bot/User storage, where storage here refers to a small dict assigned
+        to Bot/User.
+
+        'GET {{ api_url }}/v1/get_storage'
+      parameters:
+        - name: storage
+          in: path
+          schema:
+            type: array
+          example: {"entry 1": "value 1"}
+          required: false
+      responses:
+        "200":
+          description: Success
+          schema:
+          type: object
+          required:
+          - msg
+          - result
+          - storage
+          properties:
+            msg:
+              type: string
+            result:
+              type: string
+            storage:
+              type: array
+
+    put:
+      operationId: update_storage
+      description: |
+        return Bot/User storage, where storage here refers to a small dict assigned
+        to Bot/User.
+
+        'PUT {{ api_url }}/v1/get_storage'
+      parameters:
+        - name: storage
+          in: path
+          schema:
+            type: array
+          example: {"entry 1": "value 1"}
+          required: true
+      responses:
+        "200":
+          description: Success
+          schema:
+          type: object
+          required:
+          - msg
+          - result
+          properties:
+            msg:
+              type: string
+            result:
+              type: string
   /user_uploads:
     post:
       operationId: upload_file
