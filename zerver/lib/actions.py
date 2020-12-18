@@ -5285,19 +5285,19 @@ def do_update_message_flags(
         if flag != "starred":
             raise JsonableError(_("Invalid message(s)"))
         # Validate that the user could have read the relevant message
-        message = access_message(
-            user_profile, messages[0], lock_message=False, lock_usermessage=False
-        )[0]
-
-        # OK, this is a message that you legitimately have access
-        # to via narrowing to the stream it is on, even though you
-        # didn't actually receive it.  So we create a historical,
-        # read UserMessage message row for you to star.
-        UserMessage.objects.create(
-            user_profile=user_profile,
-            message=message,
-            flags=UserMessage.flags.historical | UserMessage.flags.read,
-        )
+        with transaction.atomic():
+            message = access_message(
+                user_profile, messages[0], lock_message=True, lock_usermessage=False
+            )[0]
+            # OK, this is a message that you legitimately have access
+            # to via narrowing to the stream it is on, even though you
+            # didn't actually receive it.  So we create a historical,
+            # read UserMessage message row for you to star.
+            UserMessage.objects.update_or_create(
+                user_profile=user_profile,
+                message=message,
+                flags=UserMessage.flags.historical | UserMessage.flags.read,
+            )
 
     if operation == "add":
         count = msgs.update(flags=F("flags").bitor(flagattr))
