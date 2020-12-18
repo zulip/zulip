@@ -80,7 +80,7 @@ def process_user(user_dict: Dict[str, Any], realm_id: int, team_name: str,
 
     role = UserProfile.ROLE_MEMBER
     if is_team_admin(user_dict):
-        role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        role = UserProfile.ROLE_REALM_OWNER
 
     if user_dict["is_mirror_dummy"]:
         is_active = False
