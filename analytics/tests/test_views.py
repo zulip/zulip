@@ -745,12 +745,16 @@ class TestSupportEndpoint(ZulipTestCase):
         realm_id = lear_realm.id
         lear_realm = get_realm('new-name')
         self.assertEqual(lear_realm.id, realm_id)
-        self.assertFalse(Realm.objects.filter(string_id='lear').exists())
+        self.assertTrue(Realm.objects.filter(string_id='lear').exists())
+        self.assertTrue(Realm.objects.filter(string_id='lear')[0].deactivated)
 
         result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "new-name"})
         self.assert_in_success_response(["Subdomain unavailable. Please choose a different one."], result)
 
         result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "zulip"})
+        self.assert_in_success_response(["Subdomain unavailable. Please choose a different one."], result)
+
+        result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "lear"})
         self.assert_in_success_response(["Subdomain unavailable. Please choose a different one."], result)
 
     def test_downgrade_realm(self) -> None:

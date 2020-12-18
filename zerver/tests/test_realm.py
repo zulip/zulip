@@ -184,9 +184,10 @@ class RealmTest(ZulipTestCase):
         do_change_realm_subdomain(realm, "newzulip")
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(user.realm.string_id, "newzulip")
-        # This doesn't use a cache right now, but may later.
-        with self.assertRaises(Realm.DoesNotExist):
-            get_realm("zulip")
+
+        placeholder_realm = get_realm("zulip")
+        self.assertTrue(placeholder_realm.deactivated)
+        self.assertEqual(placeholder_realm.deactivated_redirect, user.realm.uri)
 
     def test_do_deactivate_realm_clears_scheduled_jobs(self) -> None:
         user = self.example_user('hamlet')
