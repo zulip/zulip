@@ -101,7 +101,14 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <div class="input-box no-validation">
                     <input type='hidden' name='key' value='{{ key }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
-                    <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
+                    <label for="id_email" class="inline-block label-title">{{ _('Email') }} 
+                        <span class="email-vis-tooltip">
+                            <span class="fa fa-question-circle"></span>
+                            <span class="email-vis-tooltip-text">
+                                Only Administrators in the Zulip organization will be able to see this email address.
+                            </span>
+                        </span>
+                    </label>
                     <div id="id_email">{{ email }}</div>
                 </div>
 

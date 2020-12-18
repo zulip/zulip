@@ -657,6 +657,31 @@ html {
     }
 }
 
+
+.email-vis-tooltip:hover .email-vis-tooltip-text{
+    visibility: visible;
+}
+
+.email-vis-tooltip {
+    position: relative;
+    display: inline-block;
+    border-radius: 100%; 
+}
+
+.email-vis-tooltip .email-vis-tooltip-text {
+    visibility: hidden;
+    width: max-content;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    text-align: center;
+    padding: 2px 10px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    font-weight: 300;
+}
+
+
 .confirm-email-change-page .white-box {
     max-width: 500px;
 }
