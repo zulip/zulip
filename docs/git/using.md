@@ -321,6 +321,11 @@ to the appropriate issue. Once your commit is merged into zulip/master, GitHub
 will automatically close the referenced issue. See [Closing issues via commit
 messages][github-help-closing-issues] for details.
 
+Note in particular that GitHub's regular expressions for this feature
+are sloppy, so phrases like `Partially fixes #1234` will automatically
+close the issue.  Phrases like `Fixes part of #1234` are a good
+alternative.
+
 Make as many commits as you need to to address the issue or implement your feature.
 
 ## Push your commits to GitHub
