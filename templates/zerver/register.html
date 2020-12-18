@@ -101,11 +101,20 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <div class="input-box no-validation">
                     <input type='hidden' name='key' value='{{ key }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
-                    <label for="id_email" class="inline-block label-title">{{ _('Email') }} 
+                    <label for="id_email" class="inline-block label-title">
+                        {{ _('Email') }}
                         <span class="email-vis-tooltip">
-                            <span class="fa fa-question-circle"></span>
+                            <span class="fa fa-question-circle-o"></span>
                             <span class="email-vis-tooltip-text">
-                                Only Administrators in the Zulip organization will be able to see this email address.
+                                {% if EMAIL_ADDRESS_VISIBILITY == "1" %}
+                                All the admins, members and guests will be able to see this email address.
+                                {% elif EMAIL_ADDRESS_VISIBILITY == "3" %}
+                                Only admins will be able to see this email address.
+                                {% elif EMAIL_ADDRESS_VISIBILITY == "4" %}
+                                Nobody will be able to see this email address.
+                                {% else %}
+                                Everyone will be able to see this email address.
+                                {% endif %}
                             </span>
                         </span>
                     </label>
