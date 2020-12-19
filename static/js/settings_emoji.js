@@ -183,6 +183,16 @@ exports.set_up = function () {
                 emoji[obj.name] = obj.value;
             }
 
+            if (emoji.name === "") {
+                ui_report.message(
+                    i18n.t("Failed: You must provide a name to the emoji."),
+                    emoji_status,
+                    "alert-error",
+                );
+                $("#admin_emoji_submit").prop("disabled", false);
+                return;
+            }
+
             for (const [i, file] of Array.prototype.entries.call($("#emoji_file_input")[0].files)) {
                 formData.append("file-" + i, file);
             }
