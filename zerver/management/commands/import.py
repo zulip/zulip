@@ -4,6 +4,7 @@ import subprocess
 from typing import Any
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 
@@ -25,6 +26,10 @@ import a database dump from one or more JSON files."""
         parser.add_argument('--import-into-nonempty',
                             action="store_true",
                             help='Import into an existing nonempty database.')
+
+        parser.add_argument('--allow-reserved-subdomain',
+                            action="store_true",
+                            help='Allow use of reserved subdomains')
 
         parser.add_argument('subdomain', metavar='<subdomain>',
                             help="Subdomain")
@@ -55,7 +60,15 @@ import a database dump from one or more JSON files."""
         elif options["import_into_nonempty"]:
             print("NOTE: The argument 'import_into_nonempty' is now the default behavior.")
 
-        check_subdomain_available(subdomain, from_management_command=True)
+        allow_reserved_subdomain = False
+
+        if options["allow_reserved_subdomain"]:
+            allow_reserved_subdomain = True
+
+        try:
+            check_subdomain_available(subdomain, allow_reserved_subdomain)
+        except ValidationError:
+            raise CommandError("Subdomain reserved: pass --allow-reserved-subdomain to use.")
 
         paths = []
         for path in options['export_paths']:
