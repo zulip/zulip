@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
-from django.contrib.auth.views import INTERNAL_RESET_URL_TOKEN
+from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
@@ -344,7 +344,7 @@ class PasswordResetTest(ZulipTestCase):
             email, url_pattern=settings.EXTERNAL_HOST + r"(\S\S+)")
         result = self.client_get(password_reset_url)
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.endswith(f'/{INTERNAL_RESET_URL_TOKEN}/'))
+        self.assertTrue(result.url.endswith(f'/{PasswordResetConfirmView.reset_url_token}/'))
 
         final_reset_url = result.url
         result = self.client_get(final_reset_url)
@@ -681,7 +681,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 72)
+        self.assertEqual(len(queries), 70)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
@@ -961,7 +961,7 @@ class InviteUserTest(InviteUserBase):
         #       the large number of queries), so I just
         #       use an approximate equality check.
         actual_count = len(queries)
-        expected_count = 281
+        expected_count = 251
         if abs(actual_count - expected_count) > 1:
             raise AssertionError(f'''
                 Unexpected number of queries:
