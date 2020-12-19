@@ -160,14 +160,11 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     prior_mention_user_ids: Set[int] = set()
     mention_user_ids: Set[int] = set()
     mention_data: Optional[MentionData] = None
-    if content is not None:
-        leading_space = len(content) - len(content.lstrip(' '))
-        content = content.strip()
+    if content is not None:        
+        content = content.rstrip()
         if content == "":
             content = "(deleted)"
-        content = truncate_body(content)
-        if leading_space >= 4:
-            content = " " * leading_space + content
+        content = truncate_body(content)        
 
         mention_data = MentionData(
             realm_id=user_profile.realm.id,
