@@ -17,7 +17,7 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.markdown import MentionData
-from zerver.lib.message import access_message, truncate_body
+from zerver.lib.message import access_message, normalize_body
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import get_stream_by_id
@@ -161,10 +161,9 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     mention_user_ids: Set[int] = set()
     mention_data: Optional[MentionData] = None
     if content is not None:
-        content = content.strip()
-        if content == "":
+        if content.rstrip() == "":
             content = "(deleted)"
-        content = truncate_body(content)
+        content = normalize_body(content)
 
         mention_data = MentionData(
             realm_id=user_profile.realm.id,
