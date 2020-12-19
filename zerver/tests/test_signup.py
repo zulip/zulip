@@ -2634,13 +2634,29 @@ class RealmCreationTest(ZulipTestCase):
         self.assert_not_in_success_response(["unavailable"], result)
 
     def test_subdomain_check_management_command(self) -> None:
-        # Short names should work
-        check_subdomain_available('aa', from_management_command=True)
-        # So should reserved ones
-        check_subdomain_available('zulip', from_management_command=True)
-        # malformed names should still not
+        # Short names should not work, even with the flag
         with self.assertRaises(ValidationError):
-            check_subdomain_available('-ba_d-', from_management_command=True)
+            check_subdomain_available('aa')
+        with self.assertRaises(ValidationError):
+            check_subdomain_available('aa', allow_reserved_subdomain=True)
+
+        # Malformed names should never work
+        with self.assertRaises(ValidationError):
+            check_subdomain_available('-ba_d-')
+        with self.assertRaises(ValidationError):
+            check_subdomain_available('-ba_d-', allow_reserved_subdomain=True)
+
+        with patch('zerver.lib.name_restrictions.is_reserved_subdomain', return_value = False):
+            # Existing realms should never work even if they are not reserved keywords
+            with self.assertRaises(ValidationError):
+                check_subdomain_available('zulip')
+            with self.assertRaises(ValidationError):
+                check_subdomain_available('zulip', allow_reserved_subdomain=True)
+
+        # Reserved ones should only work with the flag
+        with self.assertRaises(ValidationError):
+            check_subdomain_available('stream')
+        check_subdomain_available('stream', allow_reserved_subdomain=True)
 
 class UserSignUpTest(InviteUserBase):
 
