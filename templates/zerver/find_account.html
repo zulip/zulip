@@ -40,7 +40,7 @@
                             <input type="text" autofocus id="emails" name="emails" required />
                             <label for="emails">{{ _('Email addresses') }}</label>
                         </div>
-                        <button type="submit">{{ _('Find accounts') }}</button>
+                        <button type="submit" id="submit_button">{{ _('Find accounts') }}</button>
                     </div>
                     <div><i>{{ form.emails.help_text }}</i></div>
                 </form>
@@ -50,6 +50,40 @@
                     <div class="alert alert-error">{{ error }}</div>
                     {% endfor %}
                 {% endif %}
+                <div class="alert alert-error invalid-error-text" id="invalid_emails_text">Enter a valid email address</div>
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+                <script id="button_logic">
+                    $(document).ready(function(){
+                        $("#emails").on("change", function(){
+                            validateEmails(document.getElementById("emails").value);
+                        });
+                    });
+
+                    function validateEmails(val){
+                        if (val && validate(val.split(","))) {
+                            document.getElementById("submit_button").disabled = false;
+                            document.getElementById("submit_button").className = "";
+                            document.getElementById("invalid_emails_text").className = "alert alert-error invalid-error-text";
+                        } else {
+                            document.getElementById("submit_button").disabled = true;
+                            document.getElementById("submit_button").className = "disabled-submit-button";
+                            document.getElementById("invalid_emails_text").className = "alert alert-error";
+                        }
+                    }
+
+                    function validate(emailList){
+                        var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                        var valid = true;
+
+                        emailList.forEach(function(element) {
+                            if (!re.test(element.trim())) {
+                                valid = false;
+                            }
+                        });
+
+                        return valid;
+                    }
+                </script>
             </div>
             {% endif %}
         </div>

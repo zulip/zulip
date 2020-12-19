@@ -50,6 +50,15 @@ html {
     font-size: 0.8em;
 }
 
+.disabled-submit-button {
+    background-color: hsl(0, 0%, 50%) !important;
+    cursor: not-allowed;
+}
+
+.invalid-error-text {
+    display: none;
+}
+
 .app-main {
     .login-page-header {
         font-size: 1.5em;

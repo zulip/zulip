@@ -1,6 +1,5 @@
 import logging
 import smtplib
-import urllib
 from typing import Dict, List, Optional
 from urllib.parse import urlencode
 
@@ -618,26 +617,12 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 )
                 send_email('zerver/emails/find_team', to_user_ids=[user.id], context=context,
                            from_address=FromAddress.SUPPORT)
-
-            # Note: Show all the emails in the result otherwise this
-            # feature can be used to ascertain which email addresses
-            # are associated with Zulip.
-            data = urllib.parse.urlencode({'emails': ','.join(emails)})
-            return redirect(add_query_to_redirect_url(url, data))
     else:
         form = FindMyTeamForm()
-        result = request.GET.get('emails')
-        # The below validation is perhaps unnecessary, in that we
-        # shouldn't get able to get here with an invalid email unless
-        # the user hand-edits the URLs.
-        if result:
-            for email in result.split(','):
-                try:
-                    validators.validate_email(email)
-                    emails.append(email)
-                except ValidationError:
-                    pass
 
+    # Note: Show all the emails in the result otherwise this
+    # feature can be used to ascertain which email addresses
+    # are associated with Zulip.
     return render(request,
                   'zerver/find_account.html',
                   context={'form': form, 'current_url': lambda: url,
