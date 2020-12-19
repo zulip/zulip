@@ -894,12 +894,19 @@ This error is caused by a
 [bug](https://www.virtualbox.org/ticket/19004) in recent versions of
 the VirtualBox Guest Additions for Linux on Windows hosts.  It has not
 been fixed upstream as of this writing, but you may be able to work
-around it by removing the plugin that upgrades Guest Additions:
+around it by downgrading VirtualBox Guest Additions to 6.0.4.  To do
+this, create a `~/.zulip-vagrant-config` file and add this line:
 
 ```
-vagrant destroy
-vagrant plugin uninstall vagrant-vbguest
-vagrant up --provider=virtualbox
+VBOXADD_VERSION 6.0.4
+```
+
+Then run these commands (yes, reload is needed twice):
+
+```
+vagrant plugin install vagrant-vbguest
+vagrant reload
+vagrant reload --provision
 ```
 
 ### Specifying an Ubuntu mirror
