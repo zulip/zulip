@@ -697,7 +697,7 @@ def do_set_realm_property(realm: Realm, name: str, value: Any,
 
         user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
         for user_profile in user_profiles:
-            user_profile.email = get_display_email_address(user_profile, realm)
+            user_profile.email = get_display_email_address(user_profile)
             # TODO: Design a bulk event for this or force-reload all clients
             send_user_email_update_event(user_profile)
         UserProfile.objects.bulk_update(user_profiles, ['email'])
