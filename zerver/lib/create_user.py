@@ -1,3 +1,4 @@
+import secrets
 from typing import Optional
 
 import orjson
@@ -51,6 +52,9 @@ def get_display_email_address(user_profile: UserProfile, realm: Realm) -> str:
         return f"user{user_profile.id}@{get_fake_email_domain()}"
     return user_profile.delivery_email
 
+def get_temporary_dummy_email_address() -> str:
+    return f"user.tmp.{secrets.token_hex(16)}@{get_fake_email_domain()}"
+
 def get_role_for_new_user(invited_as: int, realm_creation: bool=False) -> int:
     if realm_creation or invited_as == PreregistrationUser.INVITE_AS['REALM_OWNER']:
         return UserProfile.ROLE_REALM_OWNER
@@ -100,6 +104,12 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
     if user_profile.email_address_is_realm_public():
         # If emails are visible to everyone, we can set this here and save a DB query
         user_profile.email = get_display_email_address(user_profile, realm)
+    else:
+        # Even though this state is transient and the .email field will be set to a proper value
+        # soon, we should avoid creating anomalous UserProfiles in the database, so we generate
+        # a random dummy email to populate this attribute.
+        user_profile.email = get_temporary_dummy_email_address()
+
     user_profile.set_password(password)
     user_profile.api_key = generate_api_key()
     return user_profile
