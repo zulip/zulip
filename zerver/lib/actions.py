@@ -100,8 +100,8 @@ from zerver.lib.message import (
     MessageDict,
     access_message,
     get_last_message_id,
+    normalize_body,
     render_markdown,
-    truncate_body,
     truncate_topic,
     update_first_visible_message_id,
     wildcard_mention_allowed,
@@ -2333,13 +2333,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
     """
     stream = None
 
-    message_content = message_content_raw.rstrip()
-    if len(message_content) == 0:
-        raise JsonableError(_("Message must not be empty"))
-    if '\x00' in message_content:
-        raise JsonableError(_("Message must not contain null bytes"))
-
-    message_content = truncate_body(message_content)
+    message_content = normalize_body(message_content_raw)
 
     if realm is None:
         realm = sender.realm

@@ -264,7 +264,7 @@ class DraftCreationTests(ZulipTestCase):
         }]
         self.create_and_check_drafts_for_error(
             draft_dicts,
-            "Content must not contain null bytes"
+            "Message must not contain null bytes"
         )
 
         draft_dicts = [{

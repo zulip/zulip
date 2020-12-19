@@ -8,7 +8,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.actions import recipient_for_user_profiles
 from zerver.lib.addressee import get_user_profiles_by_ids
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import truncate_body, truncate_topic
+from zerver.lib.message import normalize_body, truncate_topic
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_id
@@ -48,9 +48,7 @@ def further_validated_draft_dict(draft_dict: Dict[str, Any],
     validated" draft dict. It will have a slightly different set of keys the values
     for which can be used to directly create a Draft object. """
 
-    content = truncate_body(draft_dict["content"])
-    if "\x00" in content:
-        raise JsonableError(_("Content must not contain null bytes"))
+    content = normalize_body(draft_dict["content"])
 
     timestamp = draft_dict.get("timestamp", time.time())
     timestamp = round(timestamp, 6)

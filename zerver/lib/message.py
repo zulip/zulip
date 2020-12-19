@@ -89,7 +89,12 @@ def truncate_content(content: str, max_length: int, truncation_message: str) -> 
         content = content[:max_length - len(truncation_message)] + truncation_message
     return content
 
-def truncate_body(body: str) -> str:
+def normalize_body(body: str) -> str:
+    body = body.rstrip()
+    if len(body) == 0:
+        raise JsonableError(_("Message must not be empty"))
+    if '\x00' in body:
+        raise JsonableError(_("Message must not contain null bytes"))
     return truncate_content(body, MAX_MESSAGE_LENGTH, "\n[message truncated]")
 
 def truncate_topic(topic: str) -> str:
