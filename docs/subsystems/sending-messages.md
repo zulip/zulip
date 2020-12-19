@@ -51,15 +51,16 @@ This section details the ways in which it is different:
 * There is significant custom code inside the `process_message_event`
 function in `zerver/tornado/event_queue.py`.  This custom code has a
 number of purposes:
-   * Triggering email and mobile push notifications for any users who
+   * Triggering [email and mobile push
+     notifications](../subsystems/notifications.md) for any users who
      do not have active clients and have settings of the form "push
      notifications when offline".  In order to avoid doing any real
      computational work inside the Tornado codebase, this logic aims
      to just do the check for whether a notification should be
      generated, and then put an event into an appropriate
-     [queue](../subsystems/queuing.md) to actually send the
-     message.  See `maybe_enqueue_notifications` and related code for
-     this part of the logic.
+     [queue](../subsystems/queuing.md) to actually send the message.
+     See `maybe_enqueue_notifications` and related code for this part
+     of the logic.
    * Splicing user-dependent data (E.g. `flags` such as when the user
    was `mentioned`) into the events.
    * Handling the [local echo details](#local-echo).
@@ -373,11 +374,12 @@ it’ll arrive in the couple hundred milliseconds one would expect if
 the extra 4500 inactive subscribers didn’t exist.
 
 There are a few details that require special care with this system:
-* Email and mobile push notifications.  We need to make sure these are
-  still correctly delivered to soft-deactivated users; making this
-  work required careful work for those code paths that assumed a
-  `UserMessage` row would always exist for a message that triggers a
-  notification to a given user.
+* [Email and mobile push
+  notifications](../subsystems/notifications.md).  We need to make
+  sure these are still correctly delivered to soft-deactivated users;
+  making this work required careful work for those code paths that
+  assumed a `UserMessage` row would always exist for a message that
+  triggers a notification to a given user.
 * Digest emails, which use the `UserMessage` table extensively to
   determine what has happened in streams the user can see.  We can use
   the user's subscriptions to construct what messages they should have
