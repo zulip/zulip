@@ -2,6 +2,7 @@ from typing import Optional
 
 import orjson
 from django.contrib.auth.models import UserManager
+from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.hotspots import copy_hotpots
@@ -103,6 +104,7 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
     user_profile.api_key = generate_api_key()
     return user_profile
 
+@transaction.atomic(savepoint=False)
 def create_user(email: str,
                 password: Optional[str],
                 realm: Realm,
