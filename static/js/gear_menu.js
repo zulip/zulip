@@ -7,7 +7,7 @@ menu function.  In this comment I try to help
 you know where to look for relevant code.
 
 The module that you're reading now doesn't
-actually doesn't do much of the work.
+actually do much of the work.
 
 Our gear menu has these choices:
 

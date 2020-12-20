@@ -83,7 +83,7 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     return []
 
 
-def copy_hotpots(source_profile: UserProfile, target_profile: UserProfile) -> None:
+def copy_hotspots(source_profile: UserProfile, target_profile: UserProfile) -> None:
     for userhotspot in frozenset(UserHotspot.objects.filter(user=source_profile)):
         UserHotspot.objects.create(
             user=target_profile, hotspot=userhotspot.hotspot, timestamp=userhotspot.timestamp
