@@ -205,10 +205,10 @@ def access_stream_for_send_message(sender: UserProfile,
         # It is private, but your are subscribed
         return
 
-    if sender.is_api_super_user:
+    if sender.can_forge_sender:
         return
 
-    if (forwarder_user_profile is not None and forwarder_user_profile.is_api_super_user):
+    if (forwarder_user_profile is not None and forwarder_user_profile.can_forge_sender):
         return
 
     if sender.is_bot and (sender.bot_owner is not None and

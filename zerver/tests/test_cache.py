@@ -260,17 +260,17 @@ class BotCacheKeyTest(ZulipTestCase):
         self.assertEqual(user_profile, bot_profile)
 
         # Flip the setting and save:
-        flipped_setting = not bot_profile.is_api_super_user
-        bot_profile.is_api_super_user = flipped_setting
+        flipped_setting = not bot_profile.can_forge_sender
+        bot_profile.can_forge_sender = flipped_setting
         bot_profile.save()
 
         # The .save() should have deleted cache keys, so if we fetch again,
-        # the returned objects should have is_api_super_user set correctly.
+        # the returned objects should have can_forge_sender set correctly.
         bot_profile2 = get_system_bot(settings.EMAIL_GATEWAY_BOT)
-        self.assertEqual(bot_profile2.is_api_super_user, flipped_setting)
+        self.assertEqual(bot_profile2.can_forge_sender, flipped_setting)
 
         user_profile2 = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
-        self.assertEqual(user_profile2.is_api_super_user, flipped_setting)
+        self.assertEqual(user_profile2.can_forge_sender, flipped_setting)
 
 def get_user_email(user: UserProfile) -> str:
     return user.email  # nocoverage

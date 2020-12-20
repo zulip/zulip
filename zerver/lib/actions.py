@@ -3617,9 +3617,9 @@ def do_change_user_role(user_profile: UserProfile, value: int, acting_user: Opti
                  person=dict(user_id=user_profile.id, role=user_profile.role))
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
-def do_change_is_api_super_user(user_profile: UserProfile, value: bool) -> None:
-    user_profile.is_api_super_user = value
-    user_profile.save(update_fields=["is_api_super_user"])
+def do_change_can_forge_sender(user_profile: UserProfile, value: bool) -> None:
+    user_profile.can_forge_sender = value
+    user_profile.save(update_fields=["can_forge_sender"])
 
 def do_change_stream_invite_only(stream: Stream, invite_only: bool,
                                  history_public_to_subscribers: Optional[bool]=None) -> None:
@@ -5677,7 +5677,7 @@ def do_get_streams(
 ) -> List[Dict[str, Any]]:
     # This function is only used by API clients now.
 
-    if include_all_active and not user_profile.is_api_super_user:
+    if include_all_active and not user_profile.can_forge_sender:
         raise JsonableError(_("User not authorized for this query"))
 
     include_public = include_public and user_profile.can_access_public_streams()

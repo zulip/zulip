@@ -186,14 +186,14 @@ strength allowed is controlled by two settings in
     non-administrator user can, with a few exceptions (e.g. a bot cannot
     log in to the web application, register for mobile push
     notifications, or create other bots).
-  * API super user bots can send messages that appear to have been sent by
+  * Bots with the `can_forge_sender` permission can send messages that appear to have been sent by
     another user. They also have the ability to see the names of all
     streams, including private streams.  This is important for implementing
     integrations like the Jabber, IRC, and Zephyr mirrors.
 
-    API super user bots cannot be created by Zulip users, including
+    These bots cannot be created by Zulip users, including
     organization owners. They can only be created on the command
-    line (via `manage.py change_user_role api_super_user`).
+    line (via `manage.py change_user_role can_forge_sender`).
 
 ## User-uploaded content
 
