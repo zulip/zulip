@@ -137,13 +137,13 @@ while True:
                     logger.warning("In recovery; sleeping")
                 time.sleep(5)
 
-            logger.info("process_fts_updates: listening for search index updates")
+            logger.debug("process_fts_updates: listening for search index updates")
 
             cursor.execute("LISTEN fts_update_log;")
             # Catch up on any historical columns
             while True:
                 rows_updated = update_fts_columns(cursor)
-                notice = f"Processed {rows_updated} rows catching up"
+                notice = f"process_fts_updates: Processed {rows_updated} rows catching up"
                 if rows_updated > 0:
                     logger.info(notice)
                 else:
