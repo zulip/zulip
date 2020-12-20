@@ -627,12 +627,6 @@ class Realm(models.Model):
     def presence_disabled(self) -> bool:
         return self.is_zephyr_mirror_realm
 
-    class Meta:
-        permissions = (
-            ('administer', "Administer a realm"),
-            ('api_super_user', "Can send messages as other users for mirroring"),
-        )
-
 def realm_post_delete_handler(sender: Any, **kwargs: Any) -> None:
     # This would be better as a functools.partial, but for some reason
     # Django doesn't call it even when it's registered as a post_delete handler.
