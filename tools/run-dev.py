@@ -50,7 +50,7 @@ parser.add_argument('--interface',
                     help='Set the IP or hostname for the proxy to listen on')
 parser.add_argument('--no-clear-memcached',
                     action='store_false', dest='clear_memcached',
-                    help='Do not clear memcached')
+                    help='Do not clear memcached on startup')
 parser.add_argument('--streamlined',
                     action="store_true",
                     help='Avoid thumbor, etc.')
@@ -109,7 +109,6 @@ os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 subprocess.check_call('./tools/clean-repo')
 
 if options.clear_memcached:
-    print("Clearing memcached ...")
     subprocess.check_call('./scripts/setup/flush-memcached')
 
 # Set up a new process group, so that we can later kill run{server,tornado}
