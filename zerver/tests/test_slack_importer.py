@@ -355,7 +355,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[3]['realm'], 1)
         self.assertEqual(zerver_userprofile[3]['full_name'], 'Matt Perry')
         self.assertEqual(zerver_userprofile[3]['is_mirror_dummy'], True)
-        self.assertEqual(zerver_userprofile[3]['is_api_super_user'], False)
+        self.assertEqual(zerver_userprofile[3]['can_forge_sender'], False)
 
         self.assertEqual(zerver_userprofile[4]['id'], test_slack_user_id_to_zulip_user_id['U8VAHEVUY'])
         self.assertEqual(zerver_userprofile[4]['role'], UserProfile.ROLE_GUEST)

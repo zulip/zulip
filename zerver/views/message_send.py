@@ -205,13 +205,13 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
     forged = forged_str is not None and forged_str in ["yes", "true"]
 
     client = request.client
-    is_super_user = request.user.is_api_super_user
-    if forged and not is_super_user:
+    can_forge_sender = request.user.can_forge_sender
+    if forged and not can_forge_sender:
         return json_error(_("User not authorized for this query"))
 
     realm = None
     if realm_str and realm_str != user_profile.realm.string_id:
-        if not is_super_user:
+        if not can_forge_sender:
             # The email gateway bot needs to be able to send messages in
             # any realm.
             return json_error(_("User not authorized for this query"))
@@ -236,7 +236,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
         # same-realm constraint.
         if "sender" not in request.POST:
             return json_error(_("Missing sender"))
-        if message_type_name != "private" and not is_super_user:
+        if message_type_name != "private" and not can_forge_sender:
             return json_error(_("User not authorized for this query"))
 
         # For now, mirroring only works with recipient emails, not for
