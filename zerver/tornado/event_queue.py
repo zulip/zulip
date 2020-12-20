@@ -471,8 +471,9 @@ def dump_event_queues(port: int) -> None:
             orjson.dumps([(qid, client.to_dict()) for (qid, client) in clients.items()])
         )
 
-    logging.info('Tornado %d dumped %d event queues in %.3fs',
-                 port, len(clients), time.time() - start)
+    if len(clients) > 0 or settings.PRODUCTION:
+        logging.info('Tornado %d dumped %d event queues in %.3fs',
+                     port, len(clients), time.time() - start)
 
 def load_event_queues(port: int) -> None:
     global clients
@@ -498,8 +499,9 @@ def load_event_queues(port: int) -> None:
 
         add_to_client_dicts(client)
 
-    logging.info('Tornado %d loaded %d event queues in %.3fs',
-                 port, len(clients), time.time() - start)
+    if len(clients) > 0 or settings.PRODUCTION:
+        logging.info('Tornado %d loaded %d event queues in %.3fs',
+                     port, len(clients), time.time() - start)
 
 def send_restart_events(immediate: bool=False) -> None:
     event: Dict[str, Any] = dict(type='restart', server_generation=settings.SERVER_GENERATION)
