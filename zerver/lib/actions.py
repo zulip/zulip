@@ -92,7 +92,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
-from zerver.lib.hotspots import get_next_hotspots
+from zerver.lib.hotspots import INTRO_HOTSPOTS, get_next_hotspots
 from zerver.lib.i18n import get_language_name
 from zerver.lib.markdown import MentionData, topic_links
 from zerver.lib.markdown import version as markdown_version
@@ -6431,6 +6431,14 @@ def do_unmute_topic(user_profile: UserProfile, stream: Stream, topic: str) -> No
 
 def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
     UserHotspot.objects.get_or_create(user=user, hotspot=hotspot)
+    event = dict(type="hotspots", hotspots=get_next_hotspots(user))
+    send_event(user.realm, event, [user.id])
+
+
+def do_reset_tutorial_hotspots(user: UserProfile) -> None:
+    user.tutorial_status = UserProfile.TUTORIAL_STARTED
+    user.save(update_fields=["tutorial_status"])
+    UserHotspot.objects.filter(user=user, hotspot__in=INTRO_HOTSPOTS.keys()).delete()
     event = dict(type="hotspots", hotspots=get_next_hotspots(user))
     send_event(user.realm, event, [user.id])
 

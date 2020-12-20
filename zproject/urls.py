@@ -57,7 +57,7 @@ from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_d
 from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
 from zerver.views.home import accounts_accept_terms, desktop_home, home
-from zerver.views.hotspots import mark_hotspot_as_read
+from zerver.views.hotspots import mark_hotspot_as_read, reset_tutorial_hotspots
 from zerver.views.invite import (
     generate_multiuse_invite_backend,
     get_user_invites,
@@ -391,14 +391,12 @@ v1_api_and_json_patterns = [
     ),
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
     # users/me/hotspots -> zerver.views.hotspots
+    #
+    # These endpoints are low priority for documentation as they
+    # are a part of the webapp-specific tutorial.
+    rest_path("users/me/hotspots", POST=(mark_hotspot_as_read, {"intentionally_undocumented"})),
     rest_path(
-        "users/me/hotspots",
-        POST=(
-            mark_hotspot_as_read,
-            # This endpoint is low priority for documentation as
-            # it is part of the webapp-specific tutorial.
-            {"intentionally_undocumented"},
-        ),
+        "users/me/hotspots/reset", POST=(reset_tutorial_hotspots, {"intentionally_undocumented"})
     ),
     # users/me/tutorial_status -> zerver.views.tutorial
     rest_path(
