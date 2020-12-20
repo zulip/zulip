@@ -85,7 +85,7 @@ class Command(BaseCommand):
             # We pass display_num_errors=False, since Django will
             # likely display similar output anyway.
             self.check(display_num_errors=False)
-            print(f"Tornado server is running at http://{addr}:{port}/")
+            print(f"Tornado server (re)started on port {port}")
 
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()
