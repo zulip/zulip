@@ -95,7 +95,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from scripts.lib.zulip_tools import CYAN, ENDC, FAIL, WARNING
+from scripts.lib.zulip_tools import CYAN, ENDC, FAIL
 
 proxy_port = base_port
 django_port = base_port + 1
@@ -340,9 +340,10 @@ def shutdown_handler(*args: Any, **kwargs: Any) -> None:
         io_loop.stop()
 
 def print_listeners() -> None:
-    print("\nZulip services will listen on ports:")
+    external_host = os.getenv('EXTERNAL_HOST', 'localhost')
+    print(f"\nStarting Zulip on {CYAN}http://{external_host}:{proxy_port}/{ENDC}.  Internal ports:")
     ports = [
-        (proxy_port, CYAN + 'web proxy' + ENDC),
+        (proxy_port, 'Development server proxy (connect here)'),
         (django_port, 'Django'),
         (tornado_port, 'Tornado'),
     ]
@@ -356,9 +357,6 @@ def print_listeners() -> None:
     for port, label in ports:
         print(f'   {port}: {label}')
     print()
-
-    proxy_warning = f"Only the proxy port ({proxy_port}) is exposed."
-    print(WARNING + "Note to Vagrant users: " + ENDC + proxy_warning + '\n')
 
 children = []
 
