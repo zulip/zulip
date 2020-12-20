@@ -22,6 +22,7 @@ link:  Help center
 info:  Keyboard shortcuts
 info:  Message formatting
 info:  Search operators
+hotspot:  Restart tutorial
 ---
 link:  Desktop & mobile apps
 link:  Integrations
@@ -70,6 +71,8 @@ using a click handler in static/js/click_handlers.js.
 The click handler uses "[data-overlay-trigger]" as
 the selector and then calls hash_change.go_to_location.
 
+The "hotspot" item uses a click handler in static/js/hotspots.js
+to call a server API endpoint which restarts the tutorial.
 */
 
 // We want to remember how far we were scrolled on each 'tab'.

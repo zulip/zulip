@@ -5,6 +5,7 @@ import render_hotspot_overlay from "../templates/hotspot_overlay.hbs";
 import render_intro_reply_hotspot from "../templates/intro_reply_hotspot.hbs";
 
 import * as channel from "./channel";
+import * as gear_menu from "./gear_menu";
 import * as popovers from "./popovers";
 
 // popover orientations
@@ -69,6 +70,15 @@ export function post_hotspot_as_read(hotspot_name) {
     channel.post({
         url: "/json/users/me/hotspots",
         data: {hotspot: JSON.stringify(hotspot_name)},
+        error(err) {
+            blueslip.error(err.responseText);
+        },
+    });
+}
+
+function reset_tutorial_hotspots() {
+    channel.post({
+        url: "/json/users/me/hotspots/reset",
         error(err) {
             blueslip.error(err.responseText);
         },
@@ -285,4 +295,11 @@ export function load_new(new_hotspots) {
 
 export function initialize() {
     load_new(page_params.hotspots);
+
+    $("body").on("click", "#restart_tutorial", (e) => {
+        e.stopPropagation();
+        page_params.hotspots = [];
+        reset_tutorial_hotspots();
+        gear_menu.close();
+    });
 }
