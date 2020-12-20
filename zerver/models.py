@@ -988,9 +988,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # like native Zulip messages (with a name + avatar, etc.).
     is_mirror_dummy: bool = models.BooleanField(default=False)
 
-    # API super users are allowed to forge messages as sent by another
+    # Users with this flag set are allowed to forge messages as sent by another
     # user and to send to private streams; also used for Zephyr/Jabber mirroring.
-    is_api_super_user: bool = models.BooleanField(default=False, db_index=True)
+    can_forge_sender: bool = models.BooleanField(default=False, db_index=True)
 
     ### Notifications settings. ###
 

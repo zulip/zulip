@@ -3962,7 +3962,7 @@ class GetStreamsTest(ZulipTestCase):
             we just "knight" Hamlet for testing expediency.
         '''
         super_user = self.example_user('hamlet')
-        super_user.is_api_super_user = True
+        super_user.can_forge_sender = True
         super_user.save()
 
         result = self.api_get(super_user, url, data)
