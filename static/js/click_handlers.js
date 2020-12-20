@@ -921,6 +921,7 @@ exports.initialize = function () {
 
         hotspots.post_hotspot_as_read("intro_reply");
         hotspots.close_hotspot_icon($("#hotspot_intro_reply_icon"));
+        $("#hotspot_intro_reply_icon").remove();
     });
 
     // stop propagation
