@@ -435,7 +435,7 @@ li,
     outline-color: hsl(0, 0%, 73%);
     height: 18px;
     width: 10px;
-    padding: 6px 6px;
+    padding: 7px 3px 0px 12px;
     display: block;
     /* The below two avoids the padded element from displaying
     it's own border and background color */
