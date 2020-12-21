@@ -22,7 +22,7 @@ zrequire("hash_util");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
-const actual_pygments_data = Object.assign({}, pygments_data);
+const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
 const {LazySet} = zrequire("lazy_set");

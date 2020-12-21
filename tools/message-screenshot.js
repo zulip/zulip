@@ -63,7 +63,7 @@ async function run() {
         const messageBox = await page.$(messageSelector);
         const messageGroup = (await messageBox.$x(".."))[0];
         // Compute screenshot area, with some padding around the message group
-        const clip = Object.assign({}, await messageGroup.boundingBox());
+        const clip = {...(await messageGroup.boundingBox())};
         clip.y -= 5;
         clip.x -= 5;
         clip.width += 10;

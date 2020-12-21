@@ -596,13 +596,10 @@ exports.signup_notifications_stream_widget = null;
 exports.init_dropdown_widgets = () => {
     const streams = stream_data.get_streams_for_settings_page();
     const notification_stream_options = {
-        data: streams.map((x) => {
-            const item = {
-                name: x.name,
-                value: x.stream_id.toString(),
-            };
-            return item;
-        }),
+        data: streams.map((x) => ({
+            name: x.name,
+            value: x.stream_id.toString(),
+        })),
         on_update: () => {
             exports.save_discard_widget_status_handler($("#org-notifications"));
         },
@@ -610,24 +607,16 @@ exports.init_dropdown_widgets = () => {
         render_text: (x) => `#${x}`,
         null_value: -1,
     };
-    exports.notifications_stream_widget = dropdown_list_widget(
-        Object.assign(
-            {
-                widget_name: "realm_notifications_stream_id",
-                value: page_params.realm_notifications_stream_id,
-            },
-            notification_stream_options,
-        ),
-    );
-    exports.signup_notifications_stream_widget = dropdown_list_widget(
-        Object.assign(
-            {
-                widget_name: "realm_signup_notifications_stream_id",
-                value: page_params.realm_signup_notifications_stream_id,
-            },
-            notification_stream_options,
-        ),
-    );
+    exports.notifications_stream_widget = dropdown_list_widget({
+        widget_name: "realm_notifications_stream_id",
+        value: page_params.realm_notifications_stream_id,
+        ...notification_stream_options,
+    });
+    exports.signup_notifications_stream_widget = dropdown_list_widget({
+        widget_name: "realm_signup_notifications_stream_id",
+        value: page_params.realm_signup_notifications_stream_id,
+        ...notification_stream_options,
+    });
     exports.default_code_language_widget = dropdown_list_widget({
         widget_name: "realm_default_code_block_language",
         data: Object.keys(pygments_data.langs).map((x) => ({

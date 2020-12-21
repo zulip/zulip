@@ -102,14 +102,13 @@ exports.build_page = function () {
         upgrade_text_for_wide_organization_logo:
             page_params.upgrade_text_for_wide_organization_logo,
         realm_default_external_accounts: page_params.realm_default_external_accounts,
+        admin_settings_label,
+        msg_edit_limit_dropdown_values: settings_config.msg_edit_limit_dropdown_values,
+        msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
+        bot_creation_policy_values: settings_bots.bot_creation_policy_values,
+        email_address_visibility_values: settings_config.email_address_visibility_values,
+        ...settings_org.get_organization_settings_options(),
     };
-
-    options.admin_settings_label = admin_settings_label;
-    options.msg_edit_limit_dropdown_values = settings_config.msg_edit_limit_dropdown_values;
-    options.msg_delete_limit_dropdown_values = settings_config.msg_delete_limit_dropdown_values;
-    options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
-    options.email_address_visibility_values = settings_config.email_address_visibility_values;
-    Object.assign(options, settings_org.get_organization_settings_options());
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
         // If no night mode logo is specified but a day mode one is,

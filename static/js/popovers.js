@@ -412,13 +412,12 @@ function fetch_group_members(member_ids) {
     return member_ids
         .map((m) => people.get_by_user_id(m))
         .filter((m) => m !== undefined)
-        .map((p) =>
-            Object.assign({}, p, {
-                user_circle_class: buddy_data.get_user_circle_class(p.user_id),
-                is_active: people.is_active_user_for_popover(p.user_id),
-                user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
-            }),
-        );
+        .map((p) => ({
+            ...p,
+            user_circle_class: buddy_data.get_user_circle_class(p.user_id),
+            is_active: people.is_active_user_for_popover(p.user_id),
+            user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
+        }));
 }
 
 function sort_group_members(members) {

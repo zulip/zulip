@@ -5,14 +5,12 @@ const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
 const DropdownListWidget = function (opts) {
     const init = () => {
         // Run basic sanity checks on opts, and set up sane defaults.
-        opts = Object.assign(
-            {
-                null_value: null,
-                render_text: (item_name) => item_name,
-                on_update: () => {},
-            },
-            opts,
-        );
+        opts = {
+            null_value: null,
+            render_text: (item_name) => item_name,
+            on_update: () => {},
+            ...opts,
+        };
         opts.container_id = `${opts.widget_name}_widget`;
         opts.value_id = `id_${opts.widget_name}`;
         if (opts.value === undefined) {
