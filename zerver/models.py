@@ -1056,7 +1056,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # changes to them will require a migration of RealmAuditLog.
     ROLE_REALM_OWNER = 100
     ROLE_REALM_ADMINISTRATOR = 200
-    # ROLE_MODERATOR = 300
+    ROLE_MODERATOR = 300
     ROLE_MEMBER = 400
     ROLE_GUEST = 600
     role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
