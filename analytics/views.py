@@ -559,7 +559,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                     analytics_realmcount
                 WHERE
                     property = 'realm_active_humans::day'
-                    AND end_time > now() - interval '25 hours'
+                    AND end_time = %(realm_active_humans_end_time)s
             ) as _14day_active_humans_table ON realm.id = _14day_active_humans_table.realm_id
             LEFT OUTER JOIN (
                 SELECT
@@ -569,7 +569,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                     analytics_realmcount
                 WHERE
                     property = '7day_actives::day'
-                    AND end_time > now() - interval '25 hours'
+                    AND end_time = %(seven_day_actives_end_time)s
             ) as wau_table ON realm.id = wau_table.realm_id
             LEFT OUTER JOIN (
                 SELECT
@@ -579,7 +579,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                     analytics_realmcount
                 WHERE
                     property = '1day_actives::day'
-                    AND end_time > now() - interval '25 hours'
+                    AND end_time = %(one_day_actives_end_time)s
             ) as dau_table ON realm.id = dau_table.realm_id
             LEFT OUTER JOIN (
                 SELECT
@@ -590,7 +590,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                 WHERE
                     property = 'active_users_audit:is_bot:day'
                     AND subgroup = 'false'
-                    AND end_time > now() - interval '25 hours'
+                    AND end_time = %(active_users_audit_end_time)s
             ) as user_count_table ON realm.id = user_count_table.realm_id
             LEFT OUTER JOIN (
                 SELECT
@@ -601,7 +601,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                 WHERE
                     property = 'active_users_audit:is_bot:day'
                     AND subgroup = 'true'
-                    AND end_time > now() - interval '25 hours'
+                    AND end_time = %(active_users_audit_end_time)s
             ) as bot_count_table ON realm.id = bot_count_table.realm_id
         WHERE
             _14day_active_humans IS NOT NULL
@@ -612,7 +612,12 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     ''')
 
     cursor = connection.cursor()
-    cursor.execute(query)
+    cursor.execute(query, {
+        'realm_active_humans_end_time': COUNT_STATS['realm_active_humans::day'].last_successful_fill(),
+        'seven_day_actives_end_time':  COUNT_STATS['7day_actives::day'].last_successful_fill(),
+        'one_day_actives_end_time': COUNT_STATS['1day_actives::day'].last_successful_fill(),
+        'active_users_audit_end_time': COUNT_STATS['active_users_audit:is_bot:day'].last_successful_fill(),
+    })
     rows = dictfetchall(cursor)
     cursor.close()
 
