@@ -26,7 +26,7 @@ const ls = {
         return {
             data,
             __valid: true,
-            expires: new Date().getTime() + expires,
+            expires: Date.now() + expires,
         };
     },
 

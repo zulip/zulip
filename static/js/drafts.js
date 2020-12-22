@@ -23,7 +23,7 @@ const draft_model = (function () {
     ls.version = 1;
 
     function getTimestamp() {
-        return new Date().getTime();
+        return Date.now();
     }
 
     function get() {

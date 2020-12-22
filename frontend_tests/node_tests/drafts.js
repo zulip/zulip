@@ -54,7 +54,7 @@ function stub_timestamp(timestamp, func) {
     function fake_time() {
         return timestamp;
     }
-    with_field(Date.prototype, "getTime", fake_time, func);
+    with_field(Date, "now", fake_time, func);
 }
 
 const legacy_draft = {

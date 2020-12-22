@@ -33,7 +33,7 @@ const animate = {
             return;
         }
 
-        if (meta.hide_me_time < new Date().getTime() && !meta.alert_hover_state) {
+        if (meta.hide_me_time < Date.now() && !meta.alert_hover_state) {
             animate.fadeOut();
             return;
         }
@@ -89,7 +89,7 @@ function set_up_handlers() {
         meta.alert_hover_state = false;
         // add at least 2000ms but if more than that exists just keep the
         // current amount.
-        meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
+        meta.hide_me_time = Math.max(meta.hide_me_time, Date.now() + 2000);
     });
 
     meta.$container.on("click", ".exit-me", () => {
@@ -128,7 +128,7 @@ exports.show = function (opts) {
     meta.undo = opts.on_undo;
 
     // add a four second delay before closing up.
-    meta.hide_me_time = new Date().getTime() + 4000;
+    meta.hide_me_time = Date.now() + 4000;
 
     meta.$container.find(".feedback_title").text(opts.title_text);
     meta.$container.find(".feedback_undo").text(opts.undo_button_text);
