@@ -8,7 +8,7 @@ from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
-from analytics.models import FillState, RealmCount, UserCount, last_successful_fill
+from analytics.models import FillState, RealmCount, UserCount
 from analytics.views import rewrite_client_arrays, sort_by_totals, sort_client_labels
 from corporate.lib.stripe import add_months, update_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
@@ -805,19 +805,6 @@ class TestSupportEndpoint(ZulipTestCase):
             m.assert_not_called()
 
 class TestGetChartDataHelpers(ZulipTestCase):
-    # last_successful_fill is in analytics/models.py, but get_chart_data is
-    # the only function that uses it at the moment
-    def test_last_successful_fill(self) -> None:
-        self.assertIsNone(last_successful_fill('non-existant'))
-        a_time = datetime(2016, 3, 14, 19, tzinfo=timezone.utc)
-        one_hour_before = datetime(2016, 3, 14, 18, tzinfo=timezone.utc)
-        fillstate = FillState.objects.create(property='property', end_time=a_time,
-                                             state=FillState.DONE)
-        self.assertEqual(last_successful_fill('property'), a_time)
-        fillstate.state = FillState.STARTED
-        fillstate.save()
-        self.assertEqual(last_successful_fill('property'), one_hour_before)
-
     def test_sort_by_totals(self) -> None:
         empty: List[int] = []
         value_arrays = {'c': [0, 1], 'a': [9], 'b': [1, 1, 1], 'd': empty}

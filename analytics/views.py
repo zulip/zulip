@@ -35,7 +35,6 @@ from analytics.models import (
     StreamCount,
     UserCount,
     installation_epoch,
-    last_successful_fill,
 )
 from confirmation.models import Confirmation, _properties, confirmation_url
 from confirmation.settings import STATUS_ACTIVE
@@ -308,7 +307,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
             else:
                 start = realm.date_created
         if end is None:
-            end = max(last_successful_fill(stat.property) or
+            end = max(stat.last_successful_fill() or
                       datetime.min.replace(tzinfo=timezone.utc) for stat in stats)
 
         if start > end and (timezone_now() - start > MAX_TIME_FOR_FULL_ANALYTICS_GENERATION):
