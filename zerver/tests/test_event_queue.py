@@ -798,6 +798,43 @@ class FileReloadLogicTest(ZulipTestCase):
             )
 
 
+class PruneInternalDataTest(ZulipTestCase):
+    def test_prune_internal_data(self) -> None:
+        user_profile = self.example_user("hamlet")
+        queue_data = dict(
+            all_public_streams=True,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=["message"],
+            last_connection_time=time.time(),
+            queue_timeout=600,
+            realm_id=user_profile.realm.id,
+            user_profile_id=user_profile.id,
+        )
+        client = allocate_client_descriptor(queue_data)
+        self.assertTrue(client.event_queue.empty())
+
+        self.send_stream_message(
+            self.example_user("iago"), "Denmark", content="@**King Hamlet** what's up?"
+        )
+        self.send_stream_message(
+            self.example_user("iago"), "Denmark", content="@**all** what's up?"
+        )
+        self.send_personal_message(self.example_user("iago"), user_profile)
+
+        events = client.event_queue.contents()
+        self.assertEqual(len(events), 3)
+        self.assertFalse("internal_data" in events[0])
+        self.assertFalse("internal_data" in events[1])
+        self.assertFalse("internal_data" in events[2])
+
+        events = client.event_queue.contents(include_internal_data=True)
+        self.assertTrue("internal_data" in events[0])
+        self.assertTrue("internal_data" in events[1])
+        self.assertTrue("internal_data" in events[2])
+
+
 class EventQueueTest(ZulipTestCase):
     def get_client_descriptor(self) -> ClientDescriptor:
         hamlet = self.example_user("hamlet")

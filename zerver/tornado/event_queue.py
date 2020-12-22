@@ -344,7 +344,7 @@ class EventQueue:
             self.newest_pruned_id = self.queue[0]["id"]
             self.pop()
 
-    def contents(self) -> List[Dict[str, Any]]:
+    def contents(self, include_internal_data: bool = False) -> List[Dict[str, Any]]:
         contents: List[Dict[str, Any]] = []
         virtual_id_map: Dict[str, Dict[str, Any]] = {}
         for event_type in self.virtual_events:
@@ -365,7 +365,21 @@ class EventQueue:
 
         self.virtual_events = {}
         self.queue = deque(contents)
-        return contents
+
+        if include_internal_data:
+            return contents
+        return prune_internal_data(contents)
+
+
+def prune_internal_data(events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Prunes the internal_data data structures, which are not intended to
+    be exposed to API clients.
+    """
+    events = copy.deepcopy(events)
+    for event in events:
+        if event["type"] == "message" and "internal_data" in event:
+            del event["internal_data"]
+    return events
 
 
 # maps queue ids to client descriptors
@@ -630,7 +644,6 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
         if not client.event_queue.empty() or dont_block:
             response: Dict[str, Any] = dict(
                 events=client.event_queue.contents(),
-                handler_id=handler_id,
             )
             if orig_queue_id is None:
                 response["queue_id"] = queue_id
@@ -702,7 +715,7 @@ def missedmessage_hook(
     if not last_for_client:
         return
 
-    for event in client.event_queue.contents():
+    for event in client.event_queue.contents(include_internal_data=True):
         if event["type"] != "message":
             continue
         assert "flags" in event
@@ -712,10 +725,10 @@ def missedmessage_hook(
         mentioned = "mentioned" in flags and "read" not in flags
         private_message = event["message"]["type"] == "private"
         # stream_push_notify is set in process_message_event.
-        stream_push_notify = event.get("stream_push_notify", False)
-        stream_email_notify = event.get("stream_email_notify", False)
+        stream_push_notify = event.get("internal_data", {}).get("stream_push_notify", False)
+        stream_email_notify = event.get("internal_data", {}).get("stream_email_notify", False)
         wildcard_mention_notify = (
-            event.get("wildcard_mention_notify", False)
+            event.get("internal_data", {}).get("wildcard_mention_notify", False)
             and "read" not in flags
             and "wildcard_mentioned" in flags
         )
@@ -732,8 +745,8 @@ def missedmessage_hook(
         message_id = event["message"]["id"]
         # Pass on the information on whether a push or email notification was already sent.
         already_notified = dict(
-            push_notified=event.get("push_notified", False),
-            email_notified=event.get("email_notified", False),
+            push_notified=event.get("internal_data", {}).get("push_notified", False),
+            email_notified=event.get("internal_data", {}).get("email_notified", False),
         )
         maybe_enqueue_notifications(
             user_profile_id,
@@ -937,7 +950,9 @@ def process_message_event(
             )
             always_push_notify = user_data.get("always_push_notify", False)
             stream_name = event_template.get("stream_name")
-            result = maybe_enqueue_notifications(
+
+            result: Dict[str, Any] = {}
+            result["internal_data"] = maybe_enqueue_notifications(
                 user_profile_id,
                 message_id,
                 private_message,
@@ -950,9 +965,9 @@ def process_message_event(
                 idle,
                 {},
             )
-            result["stream_push_notify"] = stream_push_notify
-            result["stream_email_notify"] = stream_email_notify
-            result["wildcard_mention_notify"] = wildcard_mention_notify
+            result["internal_data"]["stream_push_notify"] = stream_push_notify
+            result["internal_data"]["stream_email_notify"] = stream_email_notify
+            result["internal_data"]["wildcard_mention_notify"] = wildcard_mention_notify
             extra_user_data[user_profile_id] = result
 
     for client_data in send_to_clients.values():
