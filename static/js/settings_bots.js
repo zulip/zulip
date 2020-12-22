@@ -97,11 +97,9 @@ exports.render_bots = function () {
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
     }
 
-    if (exports.can_create_new_bots()) {
-        if (!user_owns_an_active_bot) {
-            focus_tab.add_a_new_bot_tab();
-            return;
-        }
+    if (exports.can_create_new_bots() && !user_owns_an_active_bot) {
+        focus_tab.add_a_new_bot_tab();
+        return;
     }
 
     if ($("#bots_lists_navbar .add-a-new-bot-tab").hasClass("active")) {

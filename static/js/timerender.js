@@ -95,13 +95,15 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
 
     if (days < 90) {
         return i18n.t("__days__ days ago", {days});
-    } else if (days > 90 && days < 365) {
-        if (current_date.getFullYear() === last_active_date.getFullYear()) {
-            // Online more than 90 days ago, in the same year
-            return i18n.t("__last_active_date__", {
-                last_active_date: last_active_date.toString("MMM\u00A0dd"),
-            });
-        }
+    } else if (
+        days > 90 &&
+        days < 365 &&
+        current_date.getFullYear() === last_active_date.getFullYear()
+    ) {
+        // Online more than 90 days ago, in the same year
+        return i18n.t("__last_active_date__", {
+            last_active_date: last_active_date.toString("MMM\u00A0dd"),
+        });
     }
     return i18n.t("__last_active_date__", {
         last_active_date: last_active_date.toString("MMM\u00A0dd,\u00A0yyyy"),

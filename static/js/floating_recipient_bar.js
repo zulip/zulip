@@ -58,15 +58,17 @@ exports.first_visible_message = function (bar) {
         // Important: This will break if we ever have things that are
         // not message rows inside a recipient_row block.
         message = message.next(".message_row");
-        if (message.length > 0 && result) {
+        if (
+            message.length > 0 &&
+            result &&
             // Before returning a result, we check whether the next
             // message's top is actually below the bottom of the
             // floating recipient bar; this is different from the
             // bottom of our current message because there may be a
             // between-messages date separator row in between.
-            if (top_offset(message) < frb_bottom - date_bar_height_offset) {
-                result = message;
-            }
+            top_offset(message) < frb_bottom - date_bar_height_offset
+        ) {
+            result = message;
         }
         if (result) {
             return result;

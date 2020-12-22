@@ -559,18 +559,14 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
-    if (event_name === "up_arrow") {
-        if (list_util.inside_list(e)) {
-            list_util.go_up(e);
-            return true;
-        }
+    if (event_name === "up_arrow" && list_util.inside_list(e)) {
+        list_util.go_up(e);
+        return true;
     }
 
-    if (event_name === "down_arrow") {
-        if (list_util.inside_list(e)) {
-            list_util.go_down(e);
-            return true;
-        }
+    if (event_name === "down_arrow" && list_util.inside_list(e)) {
+        list_util.go_down(e);
+        return true;
     }
 
     if (menu_dropdown_hotkeys.has(event_name)) {
@@ -618,11 +614,9 @@ exports.process_hotkey = function (e, hotkey) {
     // The next two sections date back to 00445c84 and are Mac/Chrome-specific,
     // and they should possibly be eliminated in favor of keeping standard
     // browser behavior.
-    if (event_name === "backspace") {
-        if ($("#compose-send-button").is(":focus")) {
-            // Ignore Backspace; don't navigate back a page.
-            return true;
-        }
+    if (event_name === "backspace" && $("#compose-send-button").is(":focus")) {
+        // Ignore Backspace; don't navigate back a page.
+        return true;
     }
 
     if (event_name === "narrow_to_compose_target") {

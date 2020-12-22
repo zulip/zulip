@@ -95,23 +95,22 @@ $(() => {
 
     // Code in this block will be executed when the user visits /register
     // i.e. accounts_home.html is rendered.
-    if ($("[data-page-id='accounts-home']").length > 0) {
-        if (window.location.hash.slice(0, 1) === "#") {
-            document.email_form.action += window.location.hash;
-        }
+    if (
+        $("[data-page-id='accounts-home']").length > 0 &&
+        window.location.hash.slice(0, 1) === "#"
+    ) {
+        document.email_form.action += window.location.hash;
     }
 
     // Code in this block will be executed when the user is at login page
     // i.e. login.html is rendered.
-    if ($("[data-page-id='login-page']").length > 0) {
-        if (window.location.hash.slice(0, 1) === "#") {
-            /* We append the location.hash to the formaction so that URL can be
-            preserved after user is logged in. See this:
-            https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
-            const email_formaction = $("#login_form").attr("action");
-            $("#login_form").attr("action", email_formaction + "/" + window.location.hash);
-            $(".social_login_form input[name='next']").attr("value", "/" + window.location.hash);
-        }
+    if ($("[data-page-id='login-page']").length > 0 && window.location.hash.slice(0, 1) === "#") {
+        /* We append the location.hash to the formaction so that URL can be
+        preserved after user is logged in. See this:
+        https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
+        const email_formaction = $("#login_form").attr("action");
+        $("#login_form").attr("action", email_formaction + "/" + window.location.hash);
+        $(".social_login_form input[name='next']").attr("value", "/" + window.location.hash);
     }
 
     $("#send_confirm").validate({

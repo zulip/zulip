@@ -702,16 +702,17 @@ exports.get_search_result = function (base_query, query) {
         }
     }
 
-    if (!page_params.search_pills_enabled) {
+    if (
+        !page_params.search_pills_enabled &&
         // This is unique to the legacy search system.  With pills
         // it is difficult to "suggest" a subset of operators,
         // and there's a more natural mechanism under that paradigm,
         // where the user just deletes one or more pills.  So you
         // won't see this is in the new code.
-        if (attacher.result.length < max_items) {
-            const subset_suggestions = get_operator_subset_suggestions(search_operators);
-            attacher.concat(subset_suggestions);
-        }
+        attacher.result.length < max_items
+    ) {
+        const subset_suggestions = get_operator_subset_suggestions(search_operators);
+        attacher.concat(subset_suggestions);
     }
 
     return attacher.result.slice(0, max_items);
