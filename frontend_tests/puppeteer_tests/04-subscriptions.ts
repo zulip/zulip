@@ -173,9 +173,9 @@ async function create_stream(page: Page): Promise<void> {
     assert.strictEqual(stream_name, "Puppeteer");
     assert.strictEqual(stream_description, "Everything Puppeteer");
 
-    // Assert subscriber count becomes 5(scotland(+4), cordelia(+1), othello(-1), Desdemona(+1)).
+    // Assert subscriber count becomes 6(scotland(+5), cordelia(+1), othello(-1), Desdemona(+1)).
     await page.waitForFunction(
-        (subscriber_count_selector: string) => $(subscriber_count_selector).text().trim() === "5",
+        (subscriber_count_selector: string) => $(subscriber_count_selector).text().trim() === "6",
         {},
         subscriber_count_selector,
     );

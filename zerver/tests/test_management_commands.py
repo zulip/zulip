@@ -523,7 +523,7 @@ class TestExport(ZulipTestCase):
                 call("\033[94mExporting realm\033[0m: zulip"),
                 call("\n\033[94mMessage content:\033[0m\nOutbox emoji for export\n"),
                 call(
-                    "\033[94mNumber of users that reacted outbox:\033[0m 2 / 8 total non-guest users\n"
+                    "\033[94mNumber of users that reacted outbox:\033[0m 2 / 9 total non-guest users\n"
                 ),
             ],
         )

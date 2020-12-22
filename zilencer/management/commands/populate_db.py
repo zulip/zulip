@@ -348,6 +348,7 @@ class Command(BaseCommand):
                 ("aaron", "AARON@zulip.com"),
                 ("Polonius", "polonius@zulip.com"),
                 ("Desdemona", "desdemona@zulip.com"),
+                ("शिव", "shiva@zulip.com"),
             ]
 
             # For testing really large batches:
@@ -444,6 +445,9 @@ class Command(BaseCommand):
             desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
             do_change_user_role(desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
+            shiva = get_user_by_delivery_email("shiva@zulip.com", zulip_realm)
+            do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None)
+
             guest_user = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
             guest_user.role = UserProfile.ROLE_GUEST
             guest_user.save(update_fields=["role"])
@@ -533,6 +537,7 @@ class Command(BaseCommand):
                     "ZOE@zulip.com": ["Verona", "Denmark", "Scotland", "Venice", "Rome"],
                     "polonius@zulip.com": ["Verona"],
                     "desdemona@zulip.com": ["Verona", "Denmark", "Venice"],
+                    "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
                 }
 
                 for profile in profiles:
