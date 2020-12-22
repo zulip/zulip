@@ -120,6 +120,8 @@ class TestRealmAuditLog(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=acting_user)
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
+        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=acting_user)
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
         old_values_seen = set()
         new_values_seen = set()
         for event in RealmAuditLog.objects.filter(
@@ -143,6 +145,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 UserProfile.ROLE_MEMBER,
                 UserProfile.ROLE_REALM_ADMINISTRATOR,
                 UserProfile.ROLE_REALM_OWNER,
+                UserProfile.ROLE_MODERATOR,
             },
         )
         self.assertEqual(old_values_seen, new_values_seen)

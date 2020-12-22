@@ -342,6 +342,7 @@ def realm_user_count_by_role(realm: Realm) -> Dict[str, Any]:
     human_counts = {
         str(UserProfile.ROLE_REALM_ADMINISTRATOR): 0,
         str(UserProfile.ROLE_REALM_OWNER): 0,
+        str(UserProfile.ROLE_MODERATOR): 0,
         str(UserProfile.ROLE_MEMBER): 0,
         str(UserProfile.ROLE_GUEST): 0,
     }
