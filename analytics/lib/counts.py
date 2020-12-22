@@ -46,6 +46,12 @@ class CountStat:
     DAY = 'day'
     FREQUENCIES = frozenset([HOUR, DAY])
 
+    @property
+    def time_increment(self) -> timedelta:
+        if self.frequency == CountStat.HOUR:
+            return timedelta(hours=1)
+        return timedelta(days=1)
+
     def __init__(self, property: str, data_collector: 'DataCollector', frequency: str,
                  interval: Optional[timedelta]=None) -> None:
         self.property = property
@@ -56,10 +62,8 @@ class CountStat:
         self.frequency = frequency
         if interval is not None:
             self.interval = interval
-        elif frequency == CountStat.HOUR:
-            self.interval = timedelta(hours=1)
-        else:  # frequency == CountStat.DAY
-            self.interval = timedelta(days=1)
+        else:
+            self.interval = self.time_increment
 
     def __str__(self) -> str:
         return f"<CountStat: {self.property}>"
@@ -93,13 +97,6 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
     # the CountStat object passed in needs to have come from
     # E.g. get_count_stats(realm), i.e. have the realm_id already
     # entered into the SQL query defined by the CountState object.
-    if stat.frequency == CountStat.HOUR:
-        time_increment = timedelta(hours=1)
-    elif stat.frequency == CountStat.DAY:
-        time_increment = timedelta(days=1)
-    else:
-        raise AssertionError(f"Unknown frequency: {stat.frequency}")
-
     verify_UTC(fill_to_time)
     if floor_to_hour(fill_to_time) != fill_to_time:
         raise ValueError(f"fill_to_time must be on an hour boundary: {fill_to_time}")
@@ -114,7 +111,7 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
     elif fill_state.state == FillState.STARTED:
         logger.info("UNDO START %s %s", stat.property, fill_state.end_time)
         do_delete_counts_at_hour(stat, fill_state.end_time)
-        currently_filled = fill_state.end_time - time_increment
+        currently_filled = fill_state.end_time - stat.time_increment
         do_update_fill_state(fill_state, currently_filled, FillState.DONE)
         logger.info("UNDO DONE %s", stat.property)
     elif fill_state.state == FillState.DONE:
@@ -131,7 +128,7 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
                 return
             fill_to_time = min(fill_to_time, dependency_fill_time)
 
-    currently_filled = currently_filled + time_increment
+    currently_filled = currently_filled + stat.time_increment
     while currently_filled <= fill_to_time:
         logger.info("START %s %s", stat.property, currently_filled)
         start = time.time()
@@ -139,7 +136,7 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
         do_fill_count_stat_at_hour(stat, currently_filled, realm)
         do_update_fill_state(fill_state, currently_filled, FillState.DONE)
         end = time.time()
-        currently_filled = currently_filled + time_increment
+        currently_filled = currently_filled + stat.time_increment
         logger.info("DONE %s (%dms)", stat.property, (end-start)*1000)
 
 def do_update_fill_state(fill_state: FillState, end_time: datetime, state: int) -> None:
