@@ -81,7 +81,7 @@ const ls = {
 
         if (old && old.__valid) {
             const data = callback(old.data);
-            this.setData(v2, name, data, Infinity);
+            this.setData(v2, name, data, Number.POSITIVE_INFINITY);
 
             return data;
         }
@@ -94,7 +94,7 @@ const ls = {
 const localstorage = function () {
     const _data = {
         VERSION: 1,
-        expires: Infinity,
+        expires: Number.POSITIVE_INFINITY,
         expiresIsGlobal: false,
     };
 
@@ -127,7 +127,7 @@ const localstorage = function () {
                 // make sure to return it back to Infinity to not impose
                 // constraints on the next key.
                 if (!_data.expiresIsGlobal) {
-                    _data.expires = Infinity;
+                    _data.expires = Number.POSITIVE_INFINITY;
                 }
 
                 return true;

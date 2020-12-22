@@ -646,7 +646,7 @@ exports.process_hotkey = function (e, hotkey) {
         } else if (event_name === "page_down") {
             // so that it always goes to the end of the text box.
             const height = $(":focus")[0].scrollHeight;
-            $(":focus").caret(Infinity).animate({scrollTop: height}, "fast");
+            $(":focus").caret(Number.POSITIVE_INFINITY).animate({scrollTop: height}, "fast");
             return true;
         } else if (event_name === "search_with_k") {
             // Do nothing; this allows one to use Ctrl+K inside compose.

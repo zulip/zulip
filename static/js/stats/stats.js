@@ -10,7 +10,7 @@ const font_14pt = {
     color: "#000000",
 };
 
-let last_full_update = Infinity;
+let last_full_update = Number.POSITIVE_INFINITY;
 
 // TODO: should take a dict of arrays and do it for all keys
 function partial_sums(array) {
