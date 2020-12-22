@@ -17,7 +17,6 @@ from analytics.models import (
     StreamCount,
     UserCount,
     installation_epoch,
-    last_successful_fill,
 )
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, floor_to_hour, verify_UTC
@@ -67,6 +66,14 @@ class CountStat:
 
     def __str__(self) -> str:
         return f"<CountStat: {self.property}>"
+
+    def last_successful_fill(self) -> Optional[datetime]:
+        fillstate = FillState.objects.filter(property=self.property).first()
+        if fillstate is None:
+            return None
+        if fillstate.state == FillState.DONE:
+            return fillstate.end_time
+        return fillstate.end_time - timedelta(hours=1)
 
 class LoggingCountStat(CountStat):
     def __init__(self, property: str, output_table: Type[BaseCount], frequency: str) -> None:
@@ -121,7 +128,7 @@ def process_count_stat(stat: CountStat, fill_to_time: datetime,
 
     if isinstance(stat, DependentCountStat):
         for dependency in stat.dependencies:
-            dependency_fill_time = last_successful_fill(dependency)
+            dependency_fill_time = COUNT_STATS[dependency].last_successful_fill()
             if dependency_fill_time is None:
                 logger.warning("DependentCountStat %s run before dependency %s.",
                                stat.property, dependency)
