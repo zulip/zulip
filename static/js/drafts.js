@@ -473,30 +473,28 @@ exports.drafts_handle_events = function (e, event_key) {
 
     const focused_draft_id = row_with_focus().data("draft-id");
     // Allows user to delete drafts with Backspace
-    if (event_key === "backspace" || event_key === "delete") {
-        if (focused_draft_id !== undefined) {
-            const draft_row = row_with_focus();
-            const next_draft_row = row_after_focus();
-            const prev_draft_row = row_before_focus();
-            let draft_to_be_focused_id;
+    if ((event_key === "backspace" || event_key === "delete") && focused_draft_id !== undefined) {
+        const draft_row = row_with_focus();
+        const next_draft_row = row_after_focus();
+        const prev_draft_row = row_before_focus();
+        let draft_to_be_focused_id;
 
-            // Try to get the next draft in the list and 'focus' it
-            // Use previous draft as a fallback
-            if (next_draft_row[0] !== undefined) {
-                draft_to_be_focused_id = next_draft_row.data("draft-id");
-            } else if (prev_draft_row[0] !== undefined) {
-                draft_to_be_focused_id = prev_draft_row.data("draft-id");
-            }
-
-            const new_focus_element = document.querySelectorAll(
-                '[data-draft-id="' + draft_to_be_focused_id + '"]',
-            );
-            if (new_focus_element[0] !== undefined) {
-                activate_element(new_focus_element[0].children[0]);
-            }
-
-            remove_draft(draft_row);
+        // Try to get the next draft in the list and 'focus' it
+        // Use previous draft as a fallback
+        if (next_draft_row[0] !== undefined) {
+            draft_to_be_focused_id = next_draft_row.data("draft-id");
+        } else if (prev_draft_row[0] !== undefined) {
+            draft_to_be_focused_id = prev_draft_row.data("draft-id");
         }
+
+        const new_focus_element = document.querySelectorAll(
+            '[data-draft-id="' + draft_to_be_focused_id + '"]',
+        );
+        if (new_focus_element[0] !== undefined) {
+            activate_element(new_focus_element[0].children[0]);
+        }
+
+        remove_draft(draft_row);
     }
 
     // This handles when pressing Enter while looking at drafts.

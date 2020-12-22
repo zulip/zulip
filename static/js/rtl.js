@@ -114,21 +114,19 @@ exports.get_direction = function (str) {
         // Extracting high and low surrogates and putting them together.
         // See https://en.wikipedia.org/wiki/UTF-16#Description or section 3 of https://tools.ietf.org/html/rfc2781.
         let ch = str.charCodeAt(i);
-        if (ch >= 0xd800 && ch < 0xe000) {
-            // 0xd800 <= ch < 0xe000
-            // ch is inside surrogate range.
+        if (ch >= 0xd800 && ch < 0xdc00) {
+            // 0xd800 <= ch < 0xdc00
+            // ch is inside high surrogate range.
             // If it made a surrogate pair with the next character, put them together.
             // Otherwise, ignore the encoding error and leave it as it is.
-            if (ch < 0xdc00) {
-                const ch2 = i + 1 < str.length ? str.charCodeAt(i + 1) : 0;
-                if (ch2 >= 0xdc00 && ch2 < 0xe000) {
-                    // 0xdc00 <= ch2 < 0xe000
-                    // ch = ch & 0x3ff;
-                    ch -= 0xd800;
-                    // ch = 0x10000 | (ch << 10) | (ch2 & 0x3ff);
-                    ch = 0x10000 + ch * 0x400 + (ch2 - 0xdc00);
-                    i += 1;
-                }
+            const ch2 = i + 1 < str.length ? str.charCodeAt(i + 1) : 0;
+            if (ch2 >= 0xdc00 && ch2 < 0xe000) {
+                // 0xdc00 <= ch2 < 0xe000
+                // ch = ch & 0x3ff;
+                ch -= 0xd800;
+                // ch = 0x10000 | (ch << 10) | (ch2 & 0x3ff);
+                ch = 0x10000 + ch * 0x400 + (ch2 - 0xdc00);
+                i += 1;
             }
         }
 
@@ -145,10 +143,8 @@ exports.get_direction = function (str) {
             if (isolations === 0) {
                 return "rtl";
             }
-        } else if (bidi_class === "L") {
-            if (isolations === 0) {
-                return "ltr";
-            }
+        } else if (bidi_class === "L" && isolations === 0) {
+            return "ltr";
         }
     }
     return "ltr";

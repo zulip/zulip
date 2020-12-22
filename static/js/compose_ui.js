@@ -19,13 +19,15 @@ exports.smart_insert = function (textarea, syntax) {
     const before_str = textarea.val().slice(0, pos);
     const after_str = textarea.val().slice(pos);
 
-    if (pos > 0) {
+    if (
+        pos > 0 &&
         // If there isn't space either at the end of the content
         // before the insert or (unlikely) at the start of the syntax,
         // add one.
-        if (!is_space(before_str.slice(-1)) && !is_space(syntax[0])) {
-            syntax = " " + syntax;
-        }
+        !is_space(before_str.slice(-1)) &&
+        !is_space(syntax[0])
+    ) {
+        syntax = " " + syntax;
     }
 
     // If there isn't whitespace either at the end of the syntax or the

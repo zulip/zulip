@@ -343,11 +343,9 @@ exports.update_settings_for_unsubscribed = function (sub) {
 };
 
 function triage_stream(query, sub) {
-    if (query.subscribed_only) {
+    if (query.subscribed_only && !sub.subscribed) {
         // reject non-subscribed streams
-        if (!sub.subscribed) {
-            return "rejected";
-        }
+        return "rejected";
     }
 
     const search_terms = search_util.get_search_terms(query.input);

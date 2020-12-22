@@ -227,12 +227,13 @@ function handle_keydown(e) {
 function handle_keyup(e) {
     const code = e.keyCode || e.which;
 
-    if (code === 13 || (code === 9 && !e.shiftKey)) {
+    if (
         // Enter key or Tab key
-        if (nextFocus) {
-            nextFocus.trigger("focus");
-            nextFocus = false;
-        }
+        (code === 13 || (code === 9 && !e.shiftKey)) &&
+        nextFocus
+    ) {
+        nextFocus.trigger("focus");
+        nextFocus = false;
     }
 }
 

@@ -124,16 +124,12 @@ exports.update_info_from_event = function (user_id, info, server_timestamp) {
     raw.server_timestamp = server_timestamp;
 
     for (const rec of Object.values(info)) {
-        if (rec.status === "active") {
-            if (rec.timestamp > (raw.active_timestamp || 0)) {
-                raw.active_timestamp = rec.timestamp;
-            }
+        if (rec.status === "active" && rec.timestamp > (raw.active_timestamp || 0)) {
+            raw.active_timestamp = rec.timestamp;
         }
 
-        if (rec.status === "idle") {
-            if (rec.timestamp > (raw.idle_timestamp || 0)) {
-                raw.idle_timestamp = rec.timestamp;
-            }
+        if (rec.status === "idle" && rec.timestamp > (raw.idle_timestamp || 0)) {
+            raw.idle_timestamp = rec.timestamp;
         }
     }
 

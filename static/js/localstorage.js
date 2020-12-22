@@ -35,14 +35,14 @@ const ls = {
         let data = localStorage.getItem(key);
         data = ls.parseJSON(data);
 
-        if (data) {
-            if (data.__valid) {
-                // JSON forms of data with `Infinity` turns into `null`,
-                // so if null then it hasn't expired since nothing was specified.
-                if (!ls.isExpired(data.expires) || data.expires === null) {
-                    return data;
-                }
-            }
+        if (
+            data &&
+            data.__valid &&
+            // JSON forms of data with `Infinity` turns into `null`,
+            // so if null then it hasn't expired since nothing was specified.
+            (!ls.isExpired(data.expires) || data.expires === null)
+        ) {
+            return data;
         }
 
         return undefined;

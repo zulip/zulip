@@ -150,37 +150,35 @@ function do_hashchange_overlay(old_hash) {
     //
     // In most situations we skip by this logic and load
     // the new overlay.
-    if (coming_from_overlay) {
-        if (base === old_base) {
-            if (base === "streams") {
-                subs.change_state(section);
-                return;
-            }
-
-            if (base === "settings") {
-                if (!section) {
-                    // We may be on a really old browser or somebody
-                    // hand-typed a hash.
-                    blueslip.warn("missing section for settings");
-                }
-                settings_panel_menu.normal_settings.activate_section_or_default(section);
-                return;
-            }
-
-            if (base === "organization") {
-                if (!section) {
-                    // We may be on a really old browser or somebody
-                    // hand-typed a hash.
-                    blueslip.warn("missing section for organization");
-                }
-                settings_panel_menu.org_settings.activate_section_or_default(section);
-                return;
-            }
-
-            // TODO: handle other cases like internal settings
-            //       changes.
+    if (coming_from_overlay && base === old_base) {
+        if (base === "streams") {
+            subs.change_state(section);
             return;
         }
+
+        if (base === "settings") {
+            if (!section) {
+                // We may be on a really old browser or somebody
+                // hand-typed a hash.
+                blueslip.warn("missing section for settings");
+            }
+            settings_panel_menu.normal_settings.activate_section_or_default(section);
+            return;
+        }
+
+        if (base === "organization") {
+            if (!section) {
+                // We may be on a really old browser or somebody
+                // hand-typed a hash.
+                blueslip.warn("missing section for organization");
+            }
+            settings_panel_menu.org_settings.activate_section_or_default(section);
+            return;
+        }
+
+        // TODO: handle other cases like internal settings
+        //       changes.
+        return;
     }
 
     // It's not super likely that an overlay is already open,

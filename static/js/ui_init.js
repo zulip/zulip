@@ -74,10 +74,8 @@ exports.initialize_kitchen_sink_stuff = function () {
             if (message_viewport.at_top()) {
                 navigate.up();
             }
-        } else if (delta > 0) {
-            if (message_viewport.at_bottom()) {
-                navigate.down();
-            }
+        } else if (delta > 0 && message_viewport.at_bottom()) {
+            navigate.down();
         }
 
         message_viewport.set_last_movement_direction(delta);

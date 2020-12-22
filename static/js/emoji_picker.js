@@ -512,30 +512,32 @@ exports.navigate = function (event_name, e) {
 function process_keypress(e) {
     const is_filter_focused = $(".emoji-popover-filter").is(":focus");
     const pressed_key = e.which;
-    if (!is_filter_focused && pressed_key !== 58) {
+    if (
+        !is_filter_focused &&
         // ':' => 58, is a hotkey for toggling reactions popover.
-        if ((pressed_key >= 32 && pressed_key <= 126) || pressed_key === 8) {
-            // Handle only printable characters or Backspace.
-            e.preventDefault();
-            e.stopPropagation();
+        pressed_key !== 58 &&
+        ((pressed_key >= 32 && pressed_key <= 126) || pressed_key === 8)
+    ) {
+        // Handle only printable characters or Backspace.
+        e.preventDefault();
+        e.stopPropagation();
 
-            const emoji_filter = $(".emoji-popover-filter");
-            const old_query = emoji_filter.val();
-            let new_query = "";
+        const emoji_filter = $(".emoji-popover-filter");
+        const old_query = emoji_filter.val();
+        let new_query = "";
 
-            if (pressed_key === 8) {
-                // Handles Backspace.
-                new_query = old_query.slice(0, -1);
-            } else {
-                // Handles any printable character.
-                const key_str = String.fromCharCode(e.which);
-                new_query = old_query + key_str;
-            }
-
-            emoji_filter.val(new_query);
-            change_focus_to_filter();
-            filter_emojis();
+        if (pressed_key === 8) {
+            // Handles Backspace.
+            new_query = old_query.slice(0, -1);
+        } else {
+            // Handles any printable character.
+            const key_str = String.fromCharCode(e.which);
+            new_query = old_query + key_str;
         }
+
+        emoji_filter.val(new_query);
+        change_focus_to_filter();
+        filter_emojis();
     }
 }
 

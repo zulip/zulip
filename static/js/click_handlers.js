@@ -46,10 +46,8 @@ exports.initialize = function () {
                 // Later we check whether after MS_DELAY the user is still
                 // long touching the same message as it can be possible that
                 // user touched another message within MS_DELAY period.
-                if (meta.touchdown === true && !meta.invalid) {
-                    if (id === meta.current_target) {
-                        $(this).trigger("longtap");
-                    }
+                if (meta.touchdown === true && !meta.invalid && id === meta.current_target) {
+                    $(this).trigger("longtap");
                 }
             }, MS_DELAY);
         });

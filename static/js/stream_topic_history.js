@@ -154,12 +154,10 @@ class PerStreamHistory {
 
             const existing = this.topics.get(topic_name);
 
-            if (existing) {
-                if (!existing.historical) {
-                    // Trust out local data more, since it
-                    // maintains counts.
-                    continue;
-                }
+            if (existing && !existing.historical) {
+                // Trust out local data more, since it
+                // maintains counts.
+                continue;
             }
 
             // If we get here, we are either finding out about
