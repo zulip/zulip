@@ -2126,19 +2126,26 @@ def notify_reaction_update(
     # Update the cached message since new reaction is added.
     update_to_dict_cache([message])
 
-    # Recipients for message update events, including reactions, are
-    # everyone who got the original message.  This means reactions
-    # won't live-update in preview narrows, but it's the right
-    # performance tradeoff, since otherwise we'd need to send all
-    # reactions to public stream messages to every browser for every
-    # client in the organization, which doesn't scale.
-    #
-    # However, to ensure that reactions do live-update for any user
-    # who has actually participated in reacting to a message, we add a
-    # "historical" UserMessage row for any user who reacts to message,
-    # subscribing them to future notifications.
-    ums = UserMessage.objects.filter(message=message.id)
-    send_event(user_profile.realm, event, [um.user_profile_id for um in ums])
+    # Recipients for stream message update events, including reactions, are
+    # everyone who is subscribed to the stream the message belongs to.
+    # Credit goes to Steve Howell who helped me creating this patch.
+
+    # The user ids to send the event to.
+    user_ids: Union[Iterable[int], Iterable[Mapping[str, Any]]]
+
+    if message.recipient.type == Recipient.STREAM:
+        # Get the id of the stream the message belongs to.
+        stream_id: int = message.recipient.type_id
+        # Get all active subscriptions to this stream.
+        subscriptions: QuerySet[Subscription] = get_active_subscriptions_for_stream_id(stream_id)
+        # Extract the relevant user ids.
+        user_ids = subscriptions.filter(user_profile__is_active=True).values_list(
+            "user_profile__id", flat=True
+        )
+    else:
+        user_ids = [um.user_profile_id for um in UserMessage.objects.filter(message=message.id)]
+
+    send_event(user_profile.realm, event, user_ids)
 
 
 def do_add_reaction(
