@@ -15,7 +15,7 @@ $(() => {
         page_params.needs_tutorial = false;
     }
 
-    page_params.page_load_time = new Date().getTime();
+    page_params.page_load_time = Date.now();
 
     // Display loading indicator.  This disappears after the first
     // get_events completes.

@@ -11,9 +11,9 @@
     to the console along with the name "foo". */
 
 export function print_elapsed_time(name, fun) {
-    const t0 = new Date().getTime();
+    const t0 = Date.now();
     const out = fun();
-    const t1 = new Date().getTime();
+    const t1 = Date.now();
     console.log(name + ": " + (t1 - t0) + " ms");
     return out;
 }

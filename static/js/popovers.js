@@ -1260,7 +1260,7 @@ exports.register_click_handlers = function () {
                 return;
             }
 
-            const date = new Date().getTime();
+            const date = Date.now();
 
             // only run `popovers.hide_all()` if the last scroll was more
             // than 250ms ago.

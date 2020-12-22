@@ -758,7 +758,7 @@ exports.save_message_row_edit = function (row) {
         // Settings these attributes causes a "SAVING" notice to
         // briefly appear where "EDITED" would normally appear until
         // the message is acknowledged by the server.
-        message.local_edit_timestamp = Math.round(new Date().getTime() / 1000);
+        message.local_edit_timestamp = Math.round(Date.now() / 1000);
 
         echo.edit_locally(message, currently_echoing_messages.get(message_id));
 
