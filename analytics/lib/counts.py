@@ -73,7 +73,7 @@ class CountStat:
             return None
         if fillstate.state == FillState.DONE:
             return fillstate.end_time
-        return fillstate.end_time - timedelta(hours=1)
+        return fillstate.end_time - self.time_increment
 
 class LoggingCountStat(CountStat):
     def __init__(self, property: str, output_table: Type[BaseCount], frequency: str) -> None:

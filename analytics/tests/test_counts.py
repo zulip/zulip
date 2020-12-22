@@ -1010,12 +1010,19 @@ class TestCountStats(AnalyticsTestCase):
 
         a_time = datetime(2016, 3, 14, 19, tzinfo=timezone.utc)
         one_hour_before = datetime(2016, 3, 14, 18, tzinfo=timezone.utc)
+        one_day_before = datetime(2016, 3, 13, 19, tzinfo=timezone.utc)
+
         fillstate = FillState.objects.create(property=COUNT_STATS["messages_sent:is_bot:hour"].property,
                                              end_time=a_time, state=FillState.DONE)
         self.assertEqual(COUNT_STATS["messages_sent:is_bot:hour"].last_successful_fill(), a_time)
+
         fillstate.state = FillState.STARTED
-        fillstate.save()
+        fillstate.save(update_fields=["state"])
         self.assertEqual(COUNT_STATS["messages_sent:is_bot:hour"].last_successful_fill(), one_hour_before)
+
+        fillstate.property = COUNT_STATS["7day_actives::day"].property
+        fillstate.save(update_fields=["property"])
+        self.assertEqual(COUNT_STATS["7day_actives::day"].last_successful_fill(), one_day_before)
 
 class TestDoAggregateToSummaryTable(AnalyticsTestCase):
     # do_aggregate_to_summary_table is mostly tested by the end to end
