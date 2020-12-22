@@ -320,7 +320,7 @@ exports.broadcast_mentions = function () {
 
         // Always sort above, under the assumption that names will
         // be longer and only contain "all" as a substring.
-        pm_recipient_count: Infinity,
+        pm_recipient_count: Number.POSITIVE_INFINITY,
 
         full_name: mention,
         is_broadcast: true,

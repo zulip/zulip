@@ -463,7 +463,7 @@ exports.navigate = function (event_name, e) {
             // goes to beginning) with something reasonable and
             // consistent (cursor goes to the end of the filter
             // string).
-            $(".emoji-popover-filter").trigger("focus").caret(Infinity);
+            $(".emoji-popover-filter").trigger("focus").caret(Number.POSITIVE_INFINITY);
             ui.get_scroll_element($emoji_map).scrollTop(0);
             ui.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
             current_section = 0;
