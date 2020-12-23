@@ -100,11 +100,9 @@ There are a few ways to see your translations in the Zulip UI:
   prioritization (mostly copied from the Django docs):
 
   1. It looks for the language code as a URL prefix (e.g. `/de/login/`).
-  2. It looks for the `LANGUAGE_SESSION_KEY` key in the current user's
-     session (the Zulip language UI option ends up setting this).
-  3. It looks for the cookie named 'django_language'. You can set a
+  1. It looks for the cookie named 'django_language'. You can set a
      different name through the `LANGUAGE_COOKIE_NAME` setting.
-  4. It looks for the `Accept-Language` HTTP header in the HTTP request
+  1. It looks for the `Accept-Language` HTTP header in the HTTP request
      (this is how browsers tell Zulip about the OS/browser language).
 
 * Using an HTTP client library like `requests`, `cURL` or `urllib`,
