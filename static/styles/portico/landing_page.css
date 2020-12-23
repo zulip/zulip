@@ -1998,13 +1998,6 @@ nav {
     margin-top: 20px;
 }
 
-.portico-landing.hello .call-to-action-bottom .atlassian-migration {
-    margin-top: 60px;
-    text-align: center;
-    font-size: 1.3rem;
-    font-weight: 300;
-}
-
 .portico-landing.hello .call-to-action-bottom .zulip-octopus {
     margin: 130px auto 0 auto;
     width: 32px;
@@ -2307,12 +2300,6 @@ nav {
 
 .portico-landing.why-page .bg-pycon.security {
     background-image: url(../../images/landing-page/security.jpg);
-}
-
-.portico-landing.why-page .bg-pycon.atlassian {
-    background-size: 300px;
-    background-image: url(../../images/landing-page/atlassian.jpg);
-    background-repeat: repeat-x;
 }
 
 .portico-landing.why-page .bg-pycon.why-zulip {
