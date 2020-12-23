@@ -1169,6 +1169,12 @@ exports.initialize = function () {
         },
     );
 
+    $(".compose_drafts_button").tooltip();
+    $(".compose_mobile_button").tooltip();
+    $(".compose_stream_button").tooltip();
+    $(".compose_private_button").tooltip();
+    $(".compose_reply_button").tooltip();
+
     // Click event binding for "Attach files" button
     // Triggers a click on a hidden file input field
 
