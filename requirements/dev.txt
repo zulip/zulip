@@ -355,9 +355,6 @@ httplib2==0.18.1 \
     --hash=sha256:8af66c1c52c7ffe1aa5dc4bcd7c769885254b0756e6e69f953c7f0ab49a70ba3 \
     --hash=sha256:ca2914b015b6247791c4866782fa6042f495b94401a0f0bd3e1d6e0ba2236782 \
     # via -r requirements/common.in
-hypchat==0.21 \
-    --hash=sha256:ef37a9cd8103bb13ad772b28ba9223ca9d4278371e374450c3ea2918df70a8e9 \
-    # via -r requirements/common.in
 hyper==0.7.0 \
     --hash=sha256:069514f54231fb7b5df2fb910a114663a83306d5296f588fffcb0a9be19407fc \
     --hash=sha256:12c82eacd122a659673484c1ea0d34576430afbe5aa6b8f63fe37fcb06a2458c \
@@ -915,7 +912,7 @@ python-binary-memcached==0.30.1 \
 python-dateutil==2.8.1 \
     --hash=sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c \
     --hash=sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a \
-    # via -r requirements/common.in, arrow, botocore, hypchat, moto
+    # via -r requirements/common.in, arrow, botocore, moto
 python-debian==0.1.38 \
     --hash=sha256:a1f89336d7675a56cdd92fa90cd8c00b9178dabcc6d3e08a397e80eca2b855f3 \
     --hash=sha256:a352bb5f9ef19b0272078f516ee0ec42b05e90ac85651d87c10e7041550dcc1d \
@@ -1043,7 +1040,7 @@ requests-oauthlib==1.3.0 \
 requests[security]==2.25.0 \
     --hash=sha256:7f1a0b932f4a60a1a65caa4263921bb7d9ee911957e0ae4a23a6dd08185ad5f8 \
     --hash=sha256:e786fa28d8c9154e6a4de5d46a1d921b8749f8b74e28bde23768e5e16eece998 \
-    # via -r requirements/common.in, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, semgrep, social-auth-core, sphinx, stripe, twilio, zulip
+    # via -r requirements/common.in, docker, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, semgrep, social-auth-core, sphinx, stripe, twilio, zulip
 responses==0.12.0 \
     --hash=sha256:0de50fbf600adf5ef9f0821b85cc537acca98d66bc7776755924476775c1989c \
     --hash=sha256:e80d5276011a4b79ecb62c5f82ba07aa23fb31ecbc95ee7cad6de250a3c97444 \
@@ -1117,7 +1114,7 @@ sh==1.14.1 \
 six==1.15.0 \
     --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced \
-    # via argon2-cffi, automat, aws-sam-translator, cfn-lint, cryptography, django-bitfield, docker, ecdsa, hypchat, isodate, jsonschema, junit-xml, libthumbor, moto, openapi-core, openapi-schema-validator, openapi-spec-validator, parsel, pip-tools, protego, pyopenssl, python-binary-memcached, python-dateutil, python-debian, python-jose, qrcode, responses, social-auth-app-django, social-auth-core, talon, traitlets, twilio, w3lib, websocket-client, zulip
+    # via argon2-cffi, automat, aws-sam-translator, cfn-lint, cryptography, django-bitfield, docker, ecdsa, isodate, jsonschema, junit-xml, libthumbor, moto, openapi-core, openapi-schema-validator, openapi-spec-validator, parsel, pip-tools, protego, pyopenssl, python-binary-memcached, python-dateutil, python-debian, python-jose, qrcode, responses, social-auth-app-django, social-auth-core, talon, traitlets, twilio, w3lib, websocket-client, zulip
 snakeviz==2.1.0 \
     --hash=sha256:8ce375b18ae4a749516d7e6c6fbbf8be6177c53974f53534d8eadb646cd279b1 \
     --hash=sha256:92ad876fb6a201a7e23a6b85ea96d9643a51e285667c253a8653643804f7cb68 \

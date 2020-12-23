@@ -7,7 +7,7 @@ message is about.
 |---|---|---
 | Zulip | Stream | Topic
 | Email | Mailing list | Subject line
-| Slack/IRC/HipChat | Channel/Room | -
+| Slack/IRC | Channel/Room | -
 
 Messages with the same stream and topic are shown together as a
 conversational thread. Here is what it looks like in Zulip.
