@@ -29,6 +29,7 @@ from corporate.lib.stripe import (
     start_of_next_billing_cycle,
     stripe_get_customer,
     unsign_string,
+    update_license_ledger_for_manual_plan,
     update_sponsorship_status,
     validate_licenses,
 )
@@ -305,6 +306,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
             )
             licenses = last_ledger_entry.licenses
+            licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
             seat_count = get_latest_seat_count(user.realm)
 
             # Should do this in javascript, using the user's timezone
@@ -327,6 +329,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 automanage_licenses=plan.automanage_licenses,
                 switch_to_annual_at_end_of_cycle=switch_to_annual_at_end_of_cycle,
                 licenses=licenses,
+                licenses_at_next_renewal=licenses_at_next_renewal,
                 seat_count=seat_count,
                 renewal_date=renewal_date,
                 renewal_amount=f"{renewal_cents / 100.:,.2f}",
@@ -358,6 +361,10 @@ def update_plan(
         ),
         default=None,
     ),
+    licenses: Optional[int] = REQ("licenses", json_validator=check_int, default=None),
+    licenses_at_next_renewal: Optional[int] = REQ(
+        "licenses_at_next_renewal", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
     plan = get_current_plan_by_realm(user.realm)
     assert plan is not None  # for mypy
@@ -386,6 +393,60 @@ def update_plan(
         elif status == CustomerPlan.ENDED:
             assert plan.status == CustomerPlan.FREE_TRIAL
             downgrade_now_without_creating_additional_invoices(user.realm)
+        return json_success()
+
+    if licenses is not None:
+        if plan.automanage_licenses:
+            return json_error(
+                _(
+                    "Unable to update licenses manually. Your plan is on automatic license management."
+                )
+            )
+        if last_ledger_entry.licenses == licenses:
+            return json_error(
+                _(
+                    "Your plan is already on {licenses} licenses in the current billing period."
+                ).format(licenses=licenses)
+            )
+        if last_ledger_entry.licenses > licenses:
+            return json_error(
+                _("You cannot decrease the licenses in the current billing period.").format(
+                    licenses=licenses
+                )
+            )
+        try:
+            validate_licenses(
+                plan.charge_automatically, licenses, get_latest_seat_count(user.realm)
+            )
+        except BillingError as e:
+            return json_error(e.message, data={"error_description": e.description})
+        update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
+        return json_success()
+
+    if licenses_at_next_renewal is not None:
+        if plan.automanage_licenses:
+            return json_error(
+                _(
+                    "Unable to update licenses manually. Your plan is on automatic license management."
+                )
+            )
+        if last_ledger_entry.licenses_at_next_renewal == licenses_at_next_renewal:
+            return json_error(
+                _(
+                    "Your plan is already scheduled to renew with {licenses_at_next_renewal} licenses."
+                ).format(licenses_at_next_renewal=licenses_at_next_renewal)
+            )
+        try:
+            validate_licenses(
+                plan.charge_automatically,
+                licenses_at_next_renewal,
+                get_latest_seat_count(user.realm),
+            )
+        except BillingError as e:
+            return json_error(e.message, data={"error_description": e.description})
+        update_license_ledger_for_manual_plan(
+            plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
+        )
         return json_success()
 
     return json_error(_("Nothing to change."))

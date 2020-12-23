@@ -182,6 +182,7 @@
 
     #sponsorship-loading,
     #planchange-loading,
+    #licensechange-loading,
     #cardchange-loading,
     #invoice-loading,
     #autopay-loading {
@@ -192,6 +193,7 @@
 
     #sponsorship-success,
     #planchange-success,
+    #licensechange-success,
     #cardchange-success,
     #invoice-success,
     #autopay-success {
@@ -201,6 +203,7 @@
 
     #sponsorship-error,
     #planchange-error,
+    #licensechange-error,
     #cardchange-error,
     #invoice-error,
     #autopay-error {
@@ -231,6 +234,7 @@
 
     #sponsorship_loading_indicator,
     #planchange_loading_indicator,
+    #licensechange_loading_indicator,
     #cardchange_loading_indicator,
     #invoice_loading_indicator,
     #autopay_loading_indicator {
@@ -239,6 +243,7 @@
 
     #sponsorship_loading_indicator_box_container,
     #planchange_loading_indicator_box_container,
+    #licensechange_loading_indicator_box_container,
     #cardchange_loading_indicator_box_container,
     #invoice_loading_indicator_box_container,
     #autopay_loading_indicator_box_container {
@@ -248,18 +253,20 @@
 
     #sponsorship_loading_indicator_box,
     #planchange_loading_indicator_box,
+    #licensechange_loading_indicator_box,
     #cardchange_loading_indicator_box,
     #invoice_loading_indicator_box,
     #autopay_loading_indicator_box {
         position: relative;
         left: -50%;
         top: -41px;
-        z-index: 1;
+        z-index: 10;
         border-radius: 6px;
     }
 
     #sponsorship_loading_indicator .loading_indicator_text,
     #planchange_loading_indicator .loading_indicator_text,
+    #licensechange_loading_indicator .loading_indicator_text,
     #cardchange_loading_indicator .loading_indicator_text,
     #invoice_loading_indicator .loading_indicator_text,
     #autopay_loading_indicator .loading_indicator_text {
