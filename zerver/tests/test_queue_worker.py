@@ -27,7 +27,6 @@ from zerver.worker.queue_processors import (
     LoopQueueProcessingWorker,
     MissedMessageWorker,
     QueueProcessingWorker,
-    WorkerTimeoutException,
     get_active_worker_queues,
 )
 
@@ -303,11 +302,9 @@ class WorkerTest(ZulipTestCase):
 
         self.assertEqual(mock_mirror_email.call_count, 3)
 
-    @patch('zerver.lib.rate_limiter.logger.warning')
     @patch('zerver.worker.queue_processors.mirror_email')
     @override_settings(RATE_LIMITING_MIRROR_REALM_RULES=[(10, 2)])
-    def test_mirror_worker_rate_limiting(self, mock_mirror_email: MagicMock,
-                                         mock_warn: MagicMock) -> None:
+    def test_mirror_worker_rate_limiting(self, mock_mirror_email: MagicMock) -> None:
         fake_client = self.FakeClient()
         realm = get_realm('zulip')
         RateLimitedRealmMirror(realm).clear_history()
@@ -360,13 +357,11 @@ class WorkerTest(ZulipTestCase):
                 # If RateLimiterLockingException is thrown, we rate-limit the new message:
                 with patch('zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit',
                            side_effect=RateLimiterLockingException):
-                    fake_client.enqueue('email_mirror', data[0])
-                    worker.start()
-                    self.assertEqual(mock_mirror_email.call_count, 4)
-                    mock_warn.assert_called_with(
-                        "Deadlock trying to incr_ratelimit for %s",
-                        f"RateLimitedRealmMirror:{realm.string_id}",
-                    )
+                    with self.assertLogs('zerver.lib.rate_limiter', 'WARNING') as mock_warn:
+                        fake_client.enqueue('email_mirror', data[0])
+                        worker.start()
+                        self.assertEqual(mock_mirror_email.call_count, 4)
+                        self.assertEqual(mock_warn.output, ['WARNING:zerver.lib.rate_limiter:Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:zulip'])
         self.assertEqual(warn_logs.output, [
             'WARNING:zerver.worker.queue_processors:MirrorWorker: Rejecting an email from: None to realm: Zulip Dev - rate limited.'
         ] * 5)
@@ -397,8 +392,9 @@ class WorkerTest(ZulipTestCase):
                        side_effect=smtplib.SMTPServerDisconnected), \
                     mock_queue_publish('zerver.lib.queue.queue_json_publish',
                                        side_effect=fake_publish), \
-                    patch('logging.exception'):
+                    self.assertLogs(level="ERROR") as m:
                 worker.start()
+                self.assertIn("failed due to exception SMTPServerDisconnected", m.output[0])
 
         self.assertEqual(data['failed_tries'], 1 + MAX_REQUEST_RETRIES)
 
@@ -451,12 +447,10 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(lambda: fake_client):
             worker = UnreliableWorker()
             worker.setup()
-            with patch('logging.exception') as logging_exception_mock:
+            with self.assertLogs(level='ERROR') as m:
                 worker.start()
-                logging_exception_mock.assert_called_once_with(
-                    "Problem handling data on queue %s", "unreliable_worker",
-                    stack_info=True,
-                )
+                self.assertEqual(m.records[0].message, 'Problem handling data on queue unreliable_worker')
+                self.assertIn(m.records[0].stack_info, m.output[0])
 
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
         with open(fn) as f:
@@ -488,12 +482,10 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(lambda: fake_client):
             loopworker = UnreliableLoopWorker()
             loopworker.setup()
-            with patch('logging.exception') as logging_exception_mock:
+            with self.assertLogs(level='ERROR') as m:
                 loopworker.start()
-                logging_exception_mock.assert_called_once_with(
-                    "Problem handling data on queue %s", "unreliable_loopworker",
-                    stack_info=True,
-                )
+                self.assertEqual(m.records[0].message, 'Problem handling data on queue unreliable_loopworker')
+                self.assertIn(m.records[0].stack_info, m.output[0])
 
         self.assertEqual(processed, ['good', 'fine'])
         with open(fn) as f:
@@ -530,12 +522,10 @@ class WorkerTest(ZulipTestCase):
             worker = TimeoutWorker()
             worker.setup()
             worker.ENABLE_TIMEOUTS = True
-            with patch('logging.exception') as logging_exception_mock:
+            with self.assertLogs(level='ERROR') as m:
                 worker.start()
-                logging_exception_mock.assert_called_once_with(
-                    "%s in queue %s", str(WorkerTimeoutException(1, 1)), "timeout_worker",
-                    stack_info=True,
-                )
+                self.assertEqual(m.records[0].message, 'Timed out after 1 seconds processing 1 events in queue timeout_worker')
+                self.assertIn(m.records[0].stack_info, m.output[0])
 
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
         with open(fn) as f:

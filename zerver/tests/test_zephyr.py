@@ -41,9 +41,6 @@ class ZephyrTest(ZulipTestCase):
         def mirror_mock() -> Any:
             return self.settings(PERSONAL_ZMIRROR_SERVER='server')
 
-        def logging_mock() -> Any:
-            return patch('logging.exception')
-
         cred = dict(cname=dict(nameString=['starnine']))
 
         with ccache_mock(side_effect=KeyError('foo')):
@@ -53,11 +50,11 @@ class ZephyrTest(ZulipTestCase):
         with \
                 ccache_mock(return_value=b'1234'), \
                 ssh_mock(side_effect=subprocess.CalledProcessError(1, [])), \
-                logging_mock() as log:
+                self.assertLogs(level='ERROR') as log:
             result = post("zephyr", cred=cred)
 
         self.assert_json_error(result, 'We were unable to setup mirroring for you')
-        log.assert_called_with("Error updating the user's ccache", stack_info=True)
+        self.assertIn("Error updating the user's ccache", log.output[0])
 
         with ccache_mock(return_value=b'1234'), mirror_mock(), ssh_mock() as ssh:
             result = post("zephyr", cred=cred)
