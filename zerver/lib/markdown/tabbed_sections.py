@@ -52,10 +52,6 @@ TAB_DISPLAY_NAMES = {
     'desktop': 'Desktop',
     'mobile': 'Mobile',
 
-    'cloud': 'HipChat Cloud',
-    'server': 'HipChat Server or Data Center',
-    'stride': 'Stride',
-
     'mm-default': 'Default installation',
     'mm-docker': 'Docker',
     'mm-gitlab-omnibus': 'GitLab Omnibus',

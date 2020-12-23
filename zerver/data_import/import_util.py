@@ -170,8 +170,8 @@ def build_public_stream_subscriptions(
         zerver_recipient: List[ZerverFieldsT],
         zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
     '''
-    This function is only used for HipChat now, but it may apply to
-    future conversions.  We often don't get full subscriber data in
+    This function was only used for HipChat, but it may apply to
+    future conversions.  We often did't get full subscriber data in
     the HipChat export, so this function just autosubscribes all
     users to every public stream.  This returns a list of Subscription
     dicts.
@@ -298,8 +298,8 @@ def build_recipients(zerver_userprofile: Iterable[ZerverFieldsT],
                      zerver_stream: Iterable[ZerverFieldsT],
                      zerver_huddle: Iterable[ZerverFieldsT] = []) -> List[ZerverFieldsT]:
     '''
-    As of this writing, we only use this in the HipChat
-    conversion.  The Slack and Gitter conversions do it more
+    This function was only used HipChat import, this function may be
+    required for future conversions. The Slack and Gitter conversions do it more
     tightly integrated with creating other objects.
     '''
 

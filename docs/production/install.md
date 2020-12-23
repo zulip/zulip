@@ -78,7 +78,6 @@ backup][zulip-backups] or importing your data from [Slack][slack-import],
 or another Zulip server, you should stop here
 and return to the import instructions.
 
-[hipchat-import]: https://zulip.com/help/import-from-hipchat
 [slack-import]: https://zulip.com/help/import-from-slack
 [zulip-backups]: ../production/export-and-import.html#backups
 

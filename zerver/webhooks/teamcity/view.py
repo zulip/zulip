@@ -51,7 +51,7 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     message = payload.get('build')
     if message is None:
-        # Ignore third-party specific (e.g. Slack/HipChat) payload formats
+        # Ignore third-party specific (e.g. Slack) payload formats
         # and notify the bot owner
         message = MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE.format(
             bot_name=user_profile.full_name,

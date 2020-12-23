@@ -1,7 +1,7 @@
 There are a lot of team chat apps. So why did we build Zulip?
 
 We talk about Slack in the discussion below, but the problems apply equally
-to other apps with Slack’s conversation model, including HipChat, IRC,
+to other apps with Slack’s conversation model, including IRC,
 Mattermost, Discord, Spark, and others.
 
 ## Reading busy Slack channels is extremely inefficient.

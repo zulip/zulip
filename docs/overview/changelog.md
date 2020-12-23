@@ -27,6 +27,7 @@ in bursts.
 
 #### Full feature changelog
 
+- Removed HipChat import tool.
 - Added support for moving topics to private streams.
 - Added support for subscribing another stream's membership to a stream.
 - Added RealmAuditLog for most settings state changes in Zulip; this
