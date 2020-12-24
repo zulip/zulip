@@ -378,6 +378,30 @@ def webhook_view(
     return _wrapped_view_func
 
 
+def zulip_redirect_to_login(
+    request: HttpRequest,
+    login_url: Optional[str] = None,
+    redirect_field_name: str = REDIRECT_FIELD_NAME,
+) -> HttpResponseRedirect:
+    path = request.build_absolute_uri()
+    resolved_login_url = resolve_url(login_url or settings.LOGIN_URL)
+    # If the login URL is the same scheme and net location then just
+    # use the path as the "next" url.
+    login_scheme, login_netloc = urllib.parse.urlparse(resolved_login_url)[:2]
+    current_scheme, current_netloc = urllib.parse.urlparse(path)[:2]
+    if (not login_scheme or login_scheme == current_scheme) and (
+        not login_netloc or login_netloc == current_netloc
+    ):
+        path = request.get_full_path()
+
+    # TODO: Restore testing for this case; it was removed when
+    # we enabled web-public stream testing on /.
+    if path == "/":  # nocoverage
+        # Don't add ?next=/, to keep our URLs clean
+        return HttpResponseRedirect(resolved_login_url)
+    return redirect_to_login(path, resolved_login_url, redirect_field_name)
+
+
 # From Django 2.2, modified to pass the request rather than just the
 # user into test_func; this is useful so that we can revalidate the
 # subdomain matches the user's realm.  It is likely that we could make
@@ -399,23 +423,7 @@ def user_passes_test(
         def _wrapped_view(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
             if test_func(request):
                 return view_func(request, *args, **kwargs)
-            path = request.build_absolute_uri()
-            resolved_login_url = resolve_url(login_url or settings.LOGIN_URL)
-            # If the login URL is the same scheme and net location then just
-            # use the path as the "next" url.
-            login_scheme, login_netloc = urllib.parse.urlparse(resolved_login_url)[:2]
-            current_scheme, current_netloc = urllib.parse.urlparse(path)[:2]
-            if (not login_scheme or login_scheme == current_scheme) and (
-                not login_netloc or login_netloc == current_netloc
-            ):
-                path = request.get_full_path()
-
-            # TODO: Restore testing for this case; it was removed when
-            # we enabled web-public stream testing on /.
-            if path == "/":  # nocoverage
-                # Don't add ?next=/, to keep our URLs clean
-                return HttpResponseRedirect(resolved_login_url)
-            return redirect_to_login(path, resolved_login_url, redirect_field_name)
+            return zulip_redirect_to_login(request, login_url, redirect_field_name)
 
         return cast(ViewFuncT, _wrapped_view)  # https://github.com/python/mypy/issues/1927
 
