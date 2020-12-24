@@ -51,6 +51,9 @@ export function should_show_notifications(ls) {
     }
 
     return (
+        // Spectators cannot receive desktop notifications, so never
+        // request permissions to send them.
+        !page_params.is_spectator &&
         // notifications *basically* don't work on any mobile platforms, so don't
         // event show the banners. This prevents trying to access things that
         // don't exist like `Notification.permission`.
