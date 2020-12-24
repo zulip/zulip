@@ -44,7 +44,9 @@ function should_show_notifications(ls) {
         // if permission has not been granted yet.
         !notifications.granted_desktop_notifications_permission() &&
         // if permission is allowed to be requested (e.g. not in "denied" state).
-        notifications.permission_state() !== "denied"
+        notifications.permission_state() !== "denied" &&
+        // it doesn't make sense to ask web_public_visitors for notifications access
+        !page_params.is_web_public_visitor
     );
 }
 
