@@ -394,9 +394,7 @@ def zulip_redirect_to_login(
     ):
         path = request.get_full_path()
 
-    # TODO: Restore testing for this case; it was removed when
-    # we enabled web-public stream testing on /.
-    if path == "/":  # nocoverage
+    if path == "/":
         # Don't add ?next=/, to keep our URLs clean
         return HttpResponseRedirect(resolved_login_url)
     return redirect_to_login(path, resolved_login_url, redirect_field_name)

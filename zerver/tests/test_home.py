@@ -293,7 +293,7 @@ class HomeTest(ZulipTestCase):
         # Redirect to login on first request.
         result = self.client_get("/")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/accounts/login/?next=/")
+        self.assertEqual(result.url, "/login/")
 
         # Tell server that user wants to login anonymously
         # Redirects to load webapp.

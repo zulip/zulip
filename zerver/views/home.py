@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.utils.cache import patch_cache_control
 
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import redirect_to_login, web_public_view, zulip_login_required
+from zerver.decorator import web_public_view, zulip_login_required, zulip_redirect_to_login
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.home import (
@@ -181,7 +181,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         prefers_web_public_view = request.session.get("prefers_web_public_view")
         # For users who haven't clicked "Anonymous login" we redirect them to login page.
         if not prefers_web_public_view:
-            return redirect_to_login(next="/")
+            return zulip_redirect_to_login(request, settings.HOME_NOT_LOGGED_IN)
 
     update_last_reminder(user_profile)
 
