@@ -1319,9 +1319,14 @@ typing_start_event = event_dict_type(
     required_keys=[
         ("type", Equals("typing")),
         ("op", Equals("start")),
+        ("message_type", str),
         ("sender", typing_person_type),
+    ],
+    optional_keys=[
         ("recipients", ListType(typing_person_type)),
-    ]
+        ("stream_id", int),
+        ("topic", str),
+    ],
 )
 check_typing_start = make_checker(typing_start_event)
 
@@ -1329,9 +1334,14 @@ typing_stop_event = event_dict_type(
     required_keys=[
         ("type", Equals("typing")),
         ("op", Equals("stop")),
+        ("message_type", str),
         ("sender", typing_person_type),
+    ],
+    optional_keys=[
         ("recipients", ListType(typing_person_type)),
-    ]
+        ("stream_id", int),
+        ("topic", str),
+    ],
 )
 check_typing_stop = make_checker(typing_stop_event)
 

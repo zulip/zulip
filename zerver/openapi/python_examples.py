@@ -1186,6 +1186,7 @@ def set_typing_status(client: Client) -> None:
         "to": [user_id1, user_id2],
     }
     result = client.set_typing_status(request)
+
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/typing", "post", "200")
@@ -1200,6 +1201,41 @@ def set_typing_status(client: Client) -> None:
         "to": [user_id1, user_id2],
     }
     result = client.set_typing_status(request)
+
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/typing", "post", "200")
+
+    # {code_example|start}
+    # The user has started to type in topic "typing status" of stream "Denmark"
+    stream_id = client.get_stream_id("Denmark")["stream_id"]
+    topic = "typing status"
+
+    request = {
+        "type": "stream",
+        "op": "start",
+        "to": [stream_id],
+        "topic": topic,
+    }
+    result = client.set_typing_status(request)
+
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/typing", "post", "200")
+
+    # {code_example|start}
+    # The user has finished typing in topic "typing status" of stream "Denmark"
+    stream_id = client.get_stream_id("Denmark")["stream_id"]
+    topic = "typing status"
+
+    request = {
+        "type": "stream",
+        "op": "stop",
+        "to": [stream_id],
+        "topic": topic,
+    }
+    result = client.set_typing_status(request)
+
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/typing", "post", "200")

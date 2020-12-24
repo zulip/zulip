@@ -132,6 +132,7 @@ from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
     get_stream_subscriptions_for_users,
     get_subscribed_stream_ids_for_user,
+    get_user_ids_for_streams,
     num_subscribers_for_stream_id,
     subscriber_ids_with_stream_history_access,
 )
@@ -2227,6 +2228,7 @@ def do_send_typing_notification(
     ]
     event = dict(
         type="typing",
+        message_type="private",
         op=operator,
         sender=sender_dict,
         recipients=recipient_dicts,
@@ -2268,6 +2270,26 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
         recipient_user_profiles=user_profiles,
         operator=operator,
     )
+
+
+def do_send_stream_typing_notification(
+    sender: UserProfile, operator: str, stream: Stream, topic: str
+) -> None:
+
+    sender_dict = {"user_id": sender.id, "email": sender.email}
+
+    event = dict(
+        type="typing",
+        message_type="stream",
+        op=operator,
+        sender=sender_dict,
+        stream_id=stream.id,
+        topic=topic,
+    )
+
+    user_ids_to_notify = get_user_ids_for_streams({stream.id})[stream.id]
+
+    send_event(sender.realm, event, user_ids_to_notify)
 
 
 def ensure_stream(

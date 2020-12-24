@@ -204,6 +204,11 @@ class ClientDescriptor:
             return False
         if event["type"] == "message":
             return self.narrow_filter(event)
+        if event["type"] == "typing" and "stream_id" in event:
+            # Typing notifications for stream messages are only
+            # delivered if the stream_typing_notifications
+            # client_capability is enabled, for backwards compatibility.
+            return self.stream_typing_notifications
         return True
 
     # TODO: Refactor so we don't need this function

@@ -19,7 +19,7 @@ class TypingValidateOperatorTest(ZulipTestCase):
         result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_error(result, "Missing 'op' argument")
 
-    def test_invalid_parameter(self) -> None:
+    def test_invalid_parameter_pm(self) -> None:
         """
         Sending typing notification with invalid value for op parameter fails
         """
@@ -29,6 +29,14 @@ class TypingValidateOperatorTest(ZulipTestCase):
             op="foo",
         )
         result = self.api_post(sender, "/api/v1/typing", params)
+        self.assert_json_error(result, "Invalid op")
+
+    def test_invalid_parameter_stream(self) -> None:
+        sender = self.example_user("hamlet")
+
+        result = self.api_post(
+            sender, "/api/v1/typing", {"op": "foo", "stream_id": 1, "topic": "topic"}
+        )
         self.assert_json_error(result, "Invalid op")
 
 
@@ -44,14 +52,24 @@ class TypingMessagetypeTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid type")
 
 
-class TypingValidateUsersTest(ZulipTestCase):
-    def test_empty_array(self) -> None:
+class TypingValidateToArgumentsTest(ZulipTestCase):
+    def test_empty_to_array_pms(self) -> None:
         """
-        Sending typing notification without recipient fails
+        Sending pms typing notification without recipient fails
         """
         sender = self.example_user("hamlet")
         result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": "[]"})
-        self.assert_json_error(result, "Missing parameter: 'to' (recipient)")
+        self.assert_json_error(result, "Empty 'to' list")
+
+    def test_empty_to_array_stream(self) -> None:
+        """
+        Sending stream typing notification without recipient fails
+        """
+        sender = self.example_user("hamlet")
+        result = self.api_post(
+            sender, "/api/v1/typing", {"type": "stream", "op": "start", "to": "[]"}
+        )
+        self.assert_json_error(result, "Empty 'to' list")
 
     def test_missing_recipient(self) -> None:
         """
@@ -79,8 +97,44 @@ class TypingValidateUsersTest(ZulipTestCase):
         result = self.api_post(sender, "/api/v1/typing", {"op": "start", "to": invalid})
         self.assert_json_error(result, "Invalid user ID 9999999")
 
+    def test_send_multiple_stream_ids(self) -> None:
+        sender = self.example_user("hamlet")
 
-class TypingHappyPathTest(ZulipTestCase):
+        result = self.api_post(
+            sender, "/api/v1/typing", {"type": "stream", "op": "stop", "to": "[1, 2, 3]"}
+        )
+        self.assert_json_error(result, "Cannot send to multiple streams")
+
+    def test_includes_stream_id_but_not_topic(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_id = self.get_stream_id("general")
+
+        result = self.api_post(
+            sender,
+            "/api/v1/typing",
+            {"type": "stream", "op": "start", "to": orjson.dumps([stream_id]).decode()},
+        )
+        self.assert_json_error(result, "Missing topic")
+
+    def test_stream_doesnt_exist(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_id = self.INVALID_STREAM_ID
+        topic = "some topic"
+
+        result = self.api_post(
+            sender,
+            "/api/v1/typing",
+            {
+                "type": "stream",
+                "op": "start",
+                "to": orjson.dumps([stream_id]).decode(),
+                "topic": topic,
+            },
+        )
+        self.assert_json_error(result, "Invalid stream id")
+
+
+class TypingHappyPathTestPMs(ZulipTestCase):
     def test_start_to_single_recipient(self) -> None:
         sender = self.example_user("hamlet")
         recipient_user = self.example_user("othello")
@@ -290,3 +344,77 @@ class TypingHappyPathTest(ZulipTestCase):
         self.assertEqual(event["sender"]["email"], sender.email)
         self.assertEqual(event["type"], "typing")
         self.assertEqual(event["op"], "stop")
+
+
+class TypingHappyPathTestStreams(ZulipTestCase):
+    def test_start(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_name = self.get_streams(sender)[0]
+        stream_id = self.get_stream_id(stream_name)
+        topic = "Some topic"
+
+        expected_user_ids = {
+            user_profile.id
+            for user_profile in self.users_subscribed_to_stream(stream_name, sender.realm)
+        }
+
+        params = dict(
+            type="stream",
+            op="start",
+            to=orjson.dumps([stream_id]).decode(),
+            topic=topic,
+        )
+
+        events: List[Mapping[str, Any]] = []
+        with queries_captured() as queries:
+            with tornado_redirected_to_list(events):
+                result = self.api_post(sender, "/api/v1/typing", params)
+        self.assert_json_success(result)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(len(queries), 5)
+
+        event = events[0]["event"]
+        event_user_ids = set(events[0]["users"])
+
+        self.assertEqual(expected_user_ids, event_user_ids)
+        self.assertEqual(sender.email, event["sender"]["email"])
+        self.assertEqual(stream_id, event["stream_id"])
+        self.assertEqual(topic, event["topic"])
+        self.assertEqual("typing", event["type"])
+        self.assertEqual("start", event["op"])
+
+    def test_stop(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_name = self.get_streams(sender)[0]
+        stream_id = self.get_stream_id(stream_name)
+        topic = "Some topic"
+
+        expected_user_ids = {
+            user_profile.id
+            for user_profile in self.users_subscribed_to_stream(stream_name, sender.realm)
+        }
+
+        params = dict(
+            type="stream",
+            op="stop",
+            to=orjson.dumps([stream_id]).decode(),
+            topic=topic,
+        )
+
+        events: List[Mapping[str, Any]] = []
+        with queries_captured() as queries:
+            with tornado_redirected_to_list(events):
+                result = self.api_post(sender, "/api/v1/typing", params)
+        self.assert_json_success(result)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(len(queries), 5)
+
+        event = events[0]["event"]
+        event_user_ids = set(events[0]["users"])
+
+        self.assertEqual(expected_user_ids, event_user_ids)
+        self.assertEqual(sender.email, event["sender"]["email"])
+        self.assertEqual(stream_id, event["stream_id"])
+        self.assertEqual(topic, event["topic"])
+        self.assertEqual("typing", event["type"])
+        self.assertEqual("stop", event["op"])

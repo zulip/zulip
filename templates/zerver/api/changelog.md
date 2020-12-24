@@ -10,6 +10,18 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 58**
+
+* [`POST /register`](/api/register-queue): Added the new
+  `stream_typing_notifications` property to supported
+  `client_capabilities`.
+* [`GET /events`](/api/get-events): Extended format for `typing`
+  events to support typing notifications in stream messages. These new
+  events are only sent to clients with `client_capabilities`
+  showing support for `stream_typing_notifications`.
+* [`POST /set-typing-status`](/api/set-typing-status): Added support
+  for sending typing notifications for stream messages.
+
 **Feature level 57**
 
 * [`PATCH /realm/filters/{filter_id}`](/api/update-linkifier): New

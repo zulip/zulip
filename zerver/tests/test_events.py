@@ -76,6 +76,7 @@ from zerver.lib.actions import (
     do_rename_stream,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
+    do_send_stream_typing_notification,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
@@ -707,6 +708,60 @@ class NormalActionsTest(BaseAction):
             state_change_expected=False,
         )
         check_typing_stop("events[0]", events[0])
+
+    def test_stream_typing_events(self) -> None:
+        stream = get_stream("Denmark", self.user_profile.realm)
+        topic = "streams typing"
+
+        events = self.verify_action(
+            lambda: do_send_stream_typing_notification(
+                self.user_profile,
+                "start",
+                stream,
+                topic,
+            ),
+            state_change_expected=False,
+        )
+        check_typing_start("events[0]", events[0])
+
+        events = self.verify_action(
+            lambda: do_send_stream_typing_notification(
+                self.user_profile,
+                "stop",
+                stream,
+                topic,
+            ),
+            state_change_expected=False,
+        )
+        check_typing_stop("events[0]", events[0])
+
+        # Having client_capability `stream_typing_notification=False`
+        # shouldn't produce any events.
+        events = self.verify_action(
+            lambda: do_send_stream_typing_notification(
+                self.user_profile,
+                "start",
+                stream,
+                topic,
+            ),
+            state_change_expected=False,
+            stream_typing_notifications=False,
+            num_events=0,
+        )
+        self.assertEqual(events, [])
+
+        events = self.verify_action(
+            lambda: do_send_stream_typing_notification(
+                self.user_profile,
+                "stop",
+                stream,
+                topic,
+            ),
+            state_change_expected=False,
+            stream_typing_notifications=False,
+            num_events=0,
+        )
+        self.assertEqual(events, [])
 
     def test_custom_profile_fields_events(self) -> None:
         realm = self.user_profile.realm

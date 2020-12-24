@@ -17,7 +17,7 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 {tab|curl}
 
-{generate_code_example(curl)|/typing:post|example}
+{generate_code_example(curl, exclude=["topic"])|/typing:post|example}
 
 {end_tabs}
 

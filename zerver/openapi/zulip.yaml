@@ -1934,8 +1934,16 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent when a user starts typing a private or group private message. Sent
-                                to all clients for users who would receive the message being typed.
+                                Event sent when a user starts typing a message.
+
+                                Sent to all clients for users who would receive the
+                                message being typed, with the additional rule that typing
+                                notifications for stream messages are only sent to clients
+                                that included `stream_typing_notifications` in their
+                                `client_capabilities` when registering the event queue.
+
+                                **Changes**: Typing notifications for stream messages are new in
+                                Zulip 4.0 (feature level 58).
 
                                 See the [typing endpoint docs](/api/set-typing-status) for more details.
                               properties:
@@ -1950,6 +1958,17 @@ paths:
                                   type: string
                                   enum:
                                     - start
+                                message_type:
+                                  type: string
+                                  description: |
+                                    Type of message being composed.  Must be "stream" or "private",
+                                    as with sending a message.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 58).  Previously,
+                                    all typing notifications were implicitly private `private`.
+                                  enum:
+                                    - private
+                                    - stream
                                 sender:
                                   additionalProperties: false
                                   type: object
@@ -1967,6 +1986,8 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
+                                    Only present if `message_type` is `private`.
+
                                     Array of dictionaries describing the set of users who would be recipients
                                     of the message being typed.  Each dictionary contains details on one
                                     one of the recipients users; the sending user is guaranteed to appear
@@ -1985,6 +2006,24 @@ paths:
                                         type: string
                                         description: |
                                           The Zulip display email address for the user.
+                                stream_id:
+                                  type: integer
+                                  description: |
+                                    Only present if `message_type` is `stream`.
+
+                                    The unique ID of the stream to which message is being typed.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 58).  Previously,
+                                    typing notifications were only for private messages.
+                                topic:
+                                  type: string
+                                  description: |
+                                    Only present if `message_type` is `stream`.
+
+                                    Topic within the stream where the message is being typed.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 58).  Previously,
+                                    typing notifications were only for private messages.
                               example:
                                 {
                                   "type": "typing",
@@ -2010,9 +2049,16 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent when a user stops typing a private or group private message. Sent
-                                to all clients for users who would receive the message that was
-                                previously being typed.
+                                Event sent when a user stops typing a message.
+
+                                Sent to all clients for users who would receive the message
+                                that was previously being typed, with the additional rule
+                                that typing notifications for stream messages are only sent to
+                                clients that included `stream_typing_notifications` in their
+                                `client_capabilities` when registering the event queue.
+
+                                **Changes**: Typing notifications for stream messages are new in
+                                Zulip 4.0 (feature level 58).
 
                                 See the [typing endpoint docs](/api/set-typing-status) for more details.
                               properties:
@@ -2027,6 +2073,17 @@ paths:
                                   type: string
                                   enum:
                                     - stop
+                                message_type:
+                                  type: string
+                                  description: |
+                                    Type of message being composed.  Must be "stream" or "private",
+                                    as with sending a message.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 58).  Previously,
+                                    all typing notifications were implicitly private `private`.
+                                  enum:
+                                    - private
+                                    - stream
                                 sender:
                                   additionalProperties: false
                                   type: object
@@ -2045,6 +2102,8 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
+                                    Only present for typing notifications for (group) private messages.
+
                                     Array of dictionaries describing the set of users who would be recipients
                                     of the message that stopped being typed.  Each dictionary contains
                                     details on one one of the recipients users; the sending user is
@@ -2063,6 +2122,24 @@ paths:
                                         type: string
                                         description: |
                                           The Zulip display email address for the user.
+                                stream_id:
+                                  type: integer
+                                  description: |
+                                    Only present if `message_type` is `stream`.
+
+                                    The unique ID of the stream to which message is being typed.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 58).  Previously,
+                                    typing notifications were only for private messages.
+                                topic:
+                                  type: string
+                                  description: |
+                                    Only present if `message_type` is `stream`.
+
+                                    Topic within the stream where the message is being typed.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 58).  Previously,
+                                    typing notifications were only for private messages.
                               example:
                                 {
                                   "type": "typing",
@@ -6888,6 +6965,10 @@ paths:
 
             * `stream_typing_notifications`: Boolean for whether the client
               supports stream typing notifications.
+
+              New in Zulip 4.0 (feature level 58).  This capability is
+              for backwards-compatibility; it will be required in a
+              future server release.
           content:
             application/json:
               schema:
@@ -9743,11 +9824,10 @@ paths:
 
         Clients implementing Zulip's typing notifications protocol should work as follows:
 
-        * Send a request to this endpoint with `op="start"` when a user starts typing
-          a private message or group private message, and also every
-          `TYPING_STARTED_WAIT_PERIOD=10` seconds that the user continues to actively type
-          or otherwise interact with the compose UI (E.g. interacting with the compose box
-          emoji picker).
+        * Send a request to this endpoint with `op="start"` when a user starts typing a message,
+          and also every `TYPING_STARTED_WAIT_PERIOD=10` seconds that the user continues to
+          actively type or otherwise interact with the compose UI (E.g. interacting with the
+          compose box emoji picker).
         * Send a request to this endpoint with `op="stop"` when a user pauses using the
           compose UI for at least `TYPING_STOPPED_WAIT_PERIOD=5` seconds or cancels
           the compose action (if it had previously sent a "start" operation for that
@@ -9757,6 +9837,9 @@ paths:
         * Continue displaying "Sender is typing" until they receive an `op="stop"` event
           from the [events API](/api/get-events) or `TYPING_STARTED_EXPIRY_PERIOD=15`
           seconds have passed without a new `op="start"` event for that conversation.
+        * Clients that support displaying stream typing notifications (new in Zulip 4.0)
+          should indicate they support processing stream typing events via the
+          `stream_typing_notifications` in the `client_capabilities` parameter to `/register`.
 
         This protocol is designed to allow the server-side typing notifications implementation
         to be stateless while being resilient; network failures cannot result in a user being
@@ -9774,6 +9857,7 @@ paths:
             type: string
             enum:
               - private
+              - stream
             default: private
           example: private
         - name: op
@@ -9790,10 +9874,12 @@ paths:
         - name: to
           in: query
           description: |
-            The user_ids of the recipients of the message being typed. Typing
-            notifications are only supported for private messages. Send a
-            JSON-encoded list of user_ids. (Use a list even if there is only one
+            For 'private' type it is the user_ids of the recipients of the message being typed.
+            Send a JSON-encoded list of user_ids. (Use a list even if there is only one
             recipient.)
+
+            For 'stream' type it is a single element list containing ID of stream in
+            which the message being typed.
 
             **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
             list of email addresses.  Support for the email address-based format was
@@ -9805,7 +9891,14 @@ paths:
                 items:
                   type: integer
               example: [9, 10]
-          required: true
+        - name: topic
+          in: query
+          description: |
+            Topic to which message is being typed. Required for the 'stream' type.
+            Ignored in case of 'private' type.
+          schema:
+            type: string
+          example: typing notifications
       responses:
         "200":
           description: Success.
@@ -9813,6 +9906,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JsonSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Cannot send to multiple streams",
+                        "result": "error",
+                      }
 
   /user_groups/create:
     post:
