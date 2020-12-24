@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.utils.cache import patch_cache_control
 
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import web_public_view, zulip_login_required, zulip_redirect_to_login
+from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.home import (
@@ -116,20 +116,25 @@ def compute_navbar_logo_url(page_params: Dict[str, Any]) -> str:
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    if not settings.ROOT_DOMAIN_LANDING_PAGE:
-        return home_real(request)
-
+    subdomain = get_subdomain(request)
     # If settings.ROOT_DOMAIN_LANDING_PAGE, sends the user the landing
     # page, not the login form, on the root domain
+    if settings.ROOT_DOMAIN_LANDING_PAGE and subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+        return hello_view(request)
 
-    subdomain = get_subdomain(request)
-    if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-        return home_real(request)
+    # It doesn't matter if the realm is web public or not if
+    # user doesn't wants to login anonymously. We redirect
+    # user to login page in both cases anyway. Plus, we
+    # avoid a database query by checking prefers_web_public_view
+    # first.
+    if (
+        request.POST.get("prefers_web_public_view") == "true"
+        or request.session.get("prefers_web_public_view")
+    ) and get_valid_realm_from_request(request).is_web_public():
+        return web_public_view(home_real)(request)
+    return zulip_login_required(home_real)(request)
 
-    return hello_view(request)
 
-
-@web_public_view
 def home_real(request: HttpRequest) -> HttpResponse:
     # Before we do any real work, check if the app is banned.
     client_user_agent = request.META.get("HTTP_USER_AGENT", "")
@@ -177,11 +182,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
             # prompt by a modern browser on reload.
             redirect_to = get_safe_redirect_to(request.POST.get("next"), realm.uri)
             return redirect(redirect_to)
-
-        prefers_web_public_view = request.session.get("prefers_web_public_view")
-        # For users who haven't clicked "Anonymous login" we redirect them to login page.
-        if not prefers_web_public_view:
-            return zulip_redirect_to_login(request, settings.HOME_NOT_LOGGED_IN)
 
     update_last_reminder(user_profile)
 
