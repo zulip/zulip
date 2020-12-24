@@ -852,6 +852,19 @@ class Realm(models.Model):
     def presence_disabled(self) -> bool:
         return self.is_zephyr_mirror_realm
 
+    def has_web_public_streams(self) -> bool:
+        """
+        If any of the streams in the realm is web
+        public, then the realm is web public.
+        """
+        if self.plan_type == Realm.LIMITED:
+            # We don't enable web public streams feature
+            # for realms on LIMITED plan to avoid spamming
+            # behaviour.
+            return False
+
+        return Stream.objects.filter(realm=self, is_web_public=True).exists()
+
 
 post_save.connect(flush_realm, sender=Realm)
 
