@@ -3,9 +3,8 @@ import secrets
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
-from django.urls import reverse
 from django.utils.cache import patch_cache_control
 
 from zerver.context_processors import get_valid_realm_from_request
@@ -177,7 +176,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             # We redirect here to avoid "Confirm form resubmission"
             # prompt by a modern browser on reload.
             redirect_to = get_safe_redirect_to(request.POST.get("next"), realm.uri)
-            return HttpResponseRedirect(redirect_to)
+            return redirect(redirect_to)
 
         prefers_web_public_view = request.session.get("prefers_web_public_view")
         # For users who haven't clicked "Anonymous login" we redirect them to login page.
@@ -268,4 +267,4 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
 @zulip_login_required
 def desktop_home(request: HttpRequest) -> HttpResponse:
-    return HttpResponseRedirect(reverse(home))
+    return redirect(home)
