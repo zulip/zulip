@@ -29,6 +29,7 @@ from zerver.models import (
     Message,
     Realm,
     ScheduledEmail,
+    Stream,
     UserMessage,
     UserProfile,
     get_realm,
@@ -771,6 +772,25 @@ class RealmTest(ZulipTestCase):
         req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
+
+    def test_realm_is_web_public(self) -> None:
+        realm = get_realm("zulip")
+        # By default "Rome" is web_public in zulip realm
+        rome = Stream.objects.get(name="Rome")
+        self.assertEqual(rome.is_web_public, True)
+        self.assertEqual(realm.is_web_public(), True)
+
+        # Convert Rome to a public stream
+        rome.is_web_public = False
+        rome.save()
+        self.assertEqual(Stream.objects.filter(realm=realm, is_web_public=True).count(), 0)
+        self.assertEqual(realm.is_web_public(), False)
+
+        # Restore state
+        rome.is_web_public = True
+        rome.save()
+        self.assertEqual(Stream.objects.filter(realm=realm, is_web_public=True).count(), 1)
+        self.assertEqual(realm.is_web_public(), True)
 
 
 class RealmAPITest(ZulipTestCase):

@@ -680,6 +680,13 @@ class Realm(models.Model):
     def presence_disabled(self) -> bool:
         return self.is_zephyr_mirror_realm
 
+    def is_web_public(self) -> bool:
+        """
+        If any of the streams in the realm is web
+        public, then the realm is web public.
+        """
+        return Stream.objects.filter(realm=self, is_web_public=True).exists()
+
 
 def realm_post_delete_handler(sender: Any, **kwargs: Any) -> None:
     # This would be better as a functools.partial, but for some reason
