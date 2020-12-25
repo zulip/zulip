@@ -1018,6 +1018,7 @@ exports.initialize_compose_typeahead = function (selector) {
         items: exports.max_num_items,
         dropup: true,
         fixed: true,
+        shift: true,
         // Performance note: We have trivial matcher/sorters to do
         // matching and sorting inside the `source` field to avoid
         // O(n) behavior in the number of users in the organization
@@ -1077,6 +1078,7 @@ exports.initialize = function () {
         },
         items: 3,
         fixed: true,
+        shift: true,
         highlighter(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
@@ -1095,6 +1097,7 @@ exports.initialize = function () {
         },
         items: 3,
         fixed: true,
+        shift: true,
         highlighter(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
@@ -1112,6 +1115,7 @@ exports.initialize = function () {
         items: exports.max_num_items,
         dropup: true,
         fixed: true,
+        shift: true,
         highlighter(item) {
             return typeahead_helper.render_person_or_user_group(item);
         },

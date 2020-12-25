@@ -69,10 +69,19 @@
  *   so that the `Backspace` key is free to interact with the other elements.
  *
  *   Our custom changes include all mentions of `helpOnEmptyStrings` and `hideOnEmpty`.
+ * 
+ * 6. Positioning typeahead:
+ *
+ *   This adds support for typeaheads to follow the cursor when a
+ *   custom selection is triggered. If `this.shift` value returns false,
+ *   we fall back to our original typeahead style of being static.
+ *
+ *   As of now, this custom change includes mentioning of a user/group
+ *   or a stream topic within the Compose box.
  * ============================================================ */
 
 !function($){
-
+  const getCaretCoordinates = require("textarea-caret");
   "use strict"; // jshint ;_;
 
 
@@ -93,6 +102,7 @@
     this.shown = false
     this.dropup = this.options.dropup
     this.fixed = this.options.fixed || false;
+    this.shift = this.options.shift
     this.automated = this.options.automated || this.automated;
     this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
     this.on_move = this.options.on_move;
@@ -152,6 +162,43 @@
     return false;
   }
 
+  , getTypeaheadStyle: function(top_pos, left_pos) {
+
+    function has_scrollbar(element) {
+      if (element.clientHeight < element.scrollHeight) {
+        return true;
+      }
+      return false;
+    }
+
+    function return_css_object(top_pos, left_pos) {
+
+      const caret_coordinates = getCaretCoordinates(this.$element[0], this.$element[0].selectionEnd);
+      const container_width = this.$container.outerWidth(true);
+      const input_width = this.$element.outerWidth(true);
+
+      // Top Coordinates
+      caret_coordinates.top += top_pos;
+      if (has_scrollbar(this.$element[0])) {
+        caret_coordinates.top -= this.$element.scrollTop();
+      }
+
+      // Left Coordinates
+      if (caret_coordinates.left + container_width >= input_width) {
+        caret_coordinates.left = input_width - container_width + this.$element.offset().left;
+      } else {
+        caret_coordinates.left = left_pos + caret_coordinates.left;
+      }
+
+      return { top: caret_coordinates.top, left: caret_coordinates.left };
+    }
+
+    if (this.shift) {
+      return return_css_object.apply(this, [top_pos, left_pos]);
+    }
+    return { top: top_pos, left: left_pos };
+  }  
+
   , show: function () {
       var pos;
 
@@ -174,10 +221,7 @@
         top_pos = pos.top - this.$container.outerHeight()
       }
 
-      this.$container.css({
-        top: top_pos
-       , left: pos.left
-      })
+      this.$container.css(this.getTypeaheadStyle(top_pos , pos.left));
 
       var header_text = this.header();
       if (header_text) {
@@ -452,6 +496,7 @@
   , minLength: 1
   , stopAdvance: false
   , dropup: false
+  , shift : false
   , advanceKeyCodes: []
   }
 
