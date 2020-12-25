@@ -211,5 +211,10 @@ run_test("billing_template", () => {
     assert(document.querySelector("#licensechange_loading_indicator"));
     assert(document.querySelector("#licensechange-success"));
 
+    assert(document.querySelector("#planchange-error"));
+    assert(document.querySelector("#planchange-loading"));
+    assert(document.querySelector("#planchange_loading_indicator"));
+    assert(document.querySelector("#planchange-success"));
+
     assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
 });
