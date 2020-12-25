@@ -2810,11 +2810,12 @@ class LicenseLedgerTest(StripeTestCase):
         self.assertFalse(LicenseLedger.objects.exists())
         # Test plan not automanaged
         self.local_upgrade(self.seat_count + 1, False, CustomerPlan.ANNUAL, "token")
+        plan = CustomerPlan.objects.get()
         self.assertEqual(LicenseLedger.objects.count(), 1)
+        self.assertEqual(plan.licenses(), self.seat_count + 1)
         update_license_ledger_if_needed(realm, self.now)
         self.assertEqual(LicenseLedger.objects.count(), 1)
         # Test no active plan
-        plan = CustomerPlan.objects.get()
         plan.automanage_licenses = True
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["automanage_licenses", "status"])
@@ -2831,20 +2832,25 @@ class LicenseLedgerTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
         plan = CustomerPlan.objects.first()
+        self.assertEqual(plan.licenses(), self.seat_count)
         # Simple increase
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=23):
             update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+            self.assertEqual(plan.licenses(), 23)
         # Decrease
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
             update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+            self.assertEqual(plan.licenses(), 23)
         # Increase, but not past high watermark
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=21):
             update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+            self.assertEqual(plan.licenses(), 23)
         # Increase, but after renewal date, and below last year's high watermark
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=22):
             update_license_ledger_for_automanaged_plan(
                 realm, plan, self.next_year + timedelta(seconds=1)
             )
+            self.assertEqual(plan.licenses(), 22)
 
         ledger_entries = list(
             LicenseLedger.objects.values_list(

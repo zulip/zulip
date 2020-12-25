@@ -88,6 +88,9 @@ class CustomerPlan(models.Model):
             self.NEVER_STARTED: "Never started",
         }[self.status]
 
+    def licenses(self) -> int:
+        return LicenseLedger.objects.filter(plan=self).order_by("id").last().licenses
+
 
 def get_current_plan_by_customer(customer: Customer) -> Optional[CustomerPlan]:
     return CustomerPlan.objects.filter(
