@@ -163,10 +163,10 @@ def generate_data_type(schema: Mapping[str, Any]) -> str:
     data_type = ""
     if 'oneOf' in schema:
         for item in schema['oneOf']:
-            data_type = data_type + generate_data_type(item) + " or "
-        data_type = data_type[:-4]
+            data_type = data_type + generate_data_type(item) + " | "
+        data_type = data_type[:-3]
     elif 'items' in schema:
-        data_type = schema['type'] + " containing (" + generate_data_type(schema['items']) + ")"
+        data_type = "(" + generate_data_type(schema['items']) + ")[]"
     else:
         data_type = schema['type']
     return data_type
