@@ -117,7 +117,7 @@ EXTERNAL_HOST = 'zulip.example.com'
 # initial realm and user.
 AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     'zproject.backends.EmailAuthBackend',  # Email and password; just requires SMTP setup
-    # 'zproject.backends.FacebookAuthBackend', # Facebook auth, setup below
+    # 'zproject.backends.FacebookAuthBackend',  # Facebook auth, setup below
     # 'zproject.backends.GoogleAuthBackend',  # Google auth, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
     # 'zproject.backends.GitLabAuthBackend',  # GitLab auth, setup below
@@ -324,7 +324,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #      b) In the 'Facebook Login' settings:
 #          - Ensure 'Client OAuth Login' is enabled,
 #          - ensure 'Web OAuth Login' is enabled,
-#          - add to 'Valid OAuth Redirect URIs': https://zulip.example.com/complete/facebook-oauth2 (replacing zulip.example.com with your domain name).
+#          - add to 'Valid OAuth Redirect URIs': https://zulip.example.com/complete/facebook (replacing zulip.example.com with your domain name).
 # (2) Enter the App ID as SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY here,
 # (3) Put the App Secret in zulip-secrets.conf as 'facebook_oauth2_secret'.
 # (4) Uncomment SOCIAL_AUTH_FACEBOOK_OAUTH2_SCOPE and SOCIAL_AUTH_FACEBOOK_OAUTH2_PROFILE_EXTRA_PARAMS

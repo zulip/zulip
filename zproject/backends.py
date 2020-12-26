@@ -1511,7 +1511,7 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
 @external_auth_method
 class FacebookAuthBackend(SocialAuthMixin, FacebookOAuth2):
     sort_order = 60
-    name = "facebook-oauth2"
+    name = "facebook"
     auth_backend_name = "Facebook"
     display_icon = "/static/images/landing-page/logos/facebook-icon.png"
 
