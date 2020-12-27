@@ -55,6 +55,12 @@ $alert-error-red: hsl(0, 80%, 40%);
     max-height: 100%;
     overflow-y: auto;
     overscroll-behavior: contain;
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    scrollbar-width: none; /* Firefox */
+
+    &::-webkit-scrollbar {
+        display: none; /* Google Chrome */
+    }
 
     .stacktrace {
         @extend .alert-display, .alert-animations;
