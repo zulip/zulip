@@ -199,8 +199,9 @@ $alert-error-red: hsl(0, 80%, 40%);
             cursor: pointer;
 
             &::after {
-                padding: 10px;
+                padding-right: 10px;
                 content: "\d7";
+                font-size: 0.9em;
             }
         }
     }
