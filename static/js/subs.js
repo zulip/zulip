@@ -976,6 +976,8 @@ export function sub_or_unsub(sub, from_stream_popover, stream_row) {
         ajaxUnsubscribe(sub, stream_row);
     } else {
         ajaxSubscribe(sub.name, sub.color, stream_row);
+        $("#empty_narrow_message").show();
+        $("#nonsubbed_stream_narrow_message").hide();
     }
 }
 
