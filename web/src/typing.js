@@ -8,6 +8,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as stream_data from "./stream_data";
 import {user_settings} from "./user_settings";
 
 // This module handles the outbound side of typing indicators.
@@ -22,13 +23,10 @@ const typing_started_wait_period = page_params.server_typing_started_wait_period
 // do we send a 'stop' notification.
 const typing_stopped_wait_period = page_params.server_typing_stopped_wait_period_milliseconds;
 
-function send_typing_notification_ajax(user_ids_array, operation) {
+function send_typing_notification_ajax(data) {
     channel.post({
         url: "/json/typing",
-        data: {
-            to: JSON.stringify(user_ids_array),
-            op: operation,
-        },
+        data,
         success() {},
         error(xhr) {
             if (xhr.readyState !== 0) {
@@ -36,6 +34,33 @@ function send_typing_notification_ajax(user_ids_array, operation) {
             }
         },
     });
+}
+
+function send_direct_message_typing_notification(user_ids_array, operation) {
+    const data = {
+        to: JSON.stringify(user_ids_array),
+        op: operation,
+    };
+    send_typing_notification_ajax(data);
+}
+
+function send_stream_typing_notification(stream_id, topic, operation) {
+    const data = {
+        type: "stream",
+        to: JSON.stringify(stream_id),
+        topic,
+        op: operation,
+    };
+    send_typing_notification_ajax(data);
+}
+
+function send_typing_notification_based_on_message_type(to, operation) {
+    const message_type = to.stream_id ? "stream" : "direct";
+    if (message_type === "direct" && user_settings.send_private_typing_notifications) {
+        send_direct_message_typing_notification(to, operation);
+    } else if (message_type === "stream" && user_settings.send_stream_typing_notifications) {
+        send_stream_typing_notification(to.stream_id, to.topic, operation);
+    }
 }
 
 function get_user_ids_array() {
@@ -60,19 +85,27 @@ function get_current_time() {
     return Date.now();
 }
 
-function notify_server_start(user_ids_array) {
-    if (user_settings.send_private_typing_notifications) {
-        send_typing_notification_ajax(user_ids_array, "start");
-    }
+function notify_server_start(to) {
+    send_typing_notification_based_on_message_type(to, "start");
 }
 
-function notify_server_stop(user_ids_array) {
-    if (user_settings.send_private_typing_notifications) {
-        send_typing_notification_ajax(user_ids_array, "stop");
-    }
+function notify_server_stop(to) {
+    send_typing_notification_based_on_message_type(to, "stop");
 }
 
-export const get_recipient = get_user_ids_array;
+export function get_recipient() {
+    const message_type = compose_state.get_message_type();
+    if (message_type === "private") {
+        return get_user_ids_array();
+    }
+    if (message_type === "stream") {
+        const stream_name = compose_state.stream_name();
+        const stream_id = stream_data.get_stream_id(stream_name);
+        const topic = compose_state.topic();
+        return {stream_id, topic};
+    }
+    return null;
+}
 
 export function initialize() {
     const worker = {
