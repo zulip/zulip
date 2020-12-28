@@ -1337,6 +1337,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_provisional_member(self) -> bool:
+        if self.is_moderator:
+            return False
         diff = (timezone_now() - self.date_joined).days
         if diff < self.realm.waiting_period_threshold:
             return True
@@ -1378,6 +1380,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             # We need to be careful to not accidentally change
             # ROLE_REALM_ADMINISTRATOR to ROLE_MEMBER here.
             self.role = UserProfile.ROLE_MEMBER
+
+    @property
+    def is_moderator(self) -> bool:
+        return self.role == UserProfile.ROLE_MODERATOR
 
     @property
     def is_incoming_webhook(self) -> bool:
