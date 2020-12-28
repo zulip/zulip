@@ -74,10 +74,6 @@ export function maybe_ping_server(worker, recipient) {
  * rate, and keeps a timer to send a "stopped typing" notice when the user
  * hasn't typed for a few seconds.
  *
- * Zulip supports typing notifications only for PMs (both 1:1 and group); so
- * composing a stream message should be treated like composing no message at
- * all.
- *
  * Call with `new_recipient` of `null` when the user actively stops
  * composing a message.  If the user switches from one set of recipients to
  * another, there's no need to call with `null` in between; the
@@ -88,9 +84,11 @@ export function maybe_ping_server(worker, recipient) {
  *
  * @param {*} worker Callbacks for reaching the real world.  See typing.js
  *   for implementations.
- * @param {*} new_recipient The users the PM being composed is addressed to,
- *   as a sorted array of user IDs; or `null` if no PM is being composed
- *   anymore.
+ * @param {*} new_recipient Depends on type of message being composed. If
+ *   * Private message: The users the PM being composed is addressed to,
+ *     as a sorted array of user IDs
+ *   * Stream message: An Object containing the stream_id and topic
+ *   * No meesage is being composed: `null`
  */
 export function update(worker, new_recipient) {
     const current_recipient = state.current_recipient;

@@ -7,6 +7,7 @@ const {run_test} = require("../zjsunit/test");
 
 const typing = zrequire("typing");
 const compose_pm_pill = zrequire("compose_pm_pill");
+const compose_state = zrequire("compose_state");
 const typing_status = zrequire("../shared/js/typing_status");
 
 function make_time(secs) {
@@ -264,6 +265,7 @@ run_test("basics", ({override_rewire}) => {
     // and typing_status.state.current_recipient are the same
 
     override_rewire(compose_pm_pill, "get_user_ids_string", () => "1,2,3");
+    override_rewire(compose_state, "get_message_type", () => "private");
     typing_status.state.current_recipient = typing.get_recipient();
 
     const call_count = {
