@@ -4734,6 +4734,8 @@ def do_update_message(user_profile: UserProfile, message: Message,
             orig_topic_name=orig_topic_name,
             topic_name=topic_name,
             new_stream=new_stream,
+            edit_history_event=edit_history_event,
+            last_edit_time=timestamp
         )
         changed_messages += messages_list
 
