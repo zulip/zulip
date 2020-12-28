@@ -7,7 +7,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0304_remove_default_status_of_default_private_streams'),
+        ('zerver', '0309_userprofile_can_create_users'),
     ]
 
     operations = [
