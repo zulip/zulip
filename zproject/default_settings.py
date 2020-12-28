@@ -67,9 +67,7 @@ SOCIAL_AUTH_GOOGLE_KEY = get_secret('social_auth_google_key', development_only=T
 SOCIAL_AUTH_FACEBOOK_KEY: Optional[str] = None
 SOCIAL_AUTH_FACEBOOK_SECRET = get_secret('facebook_secret')
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
-SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
-  'fields': 'id, name, email'
-}
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'fields': 'id, name, email'}
 # SAML:
 SOCIAL_AUTH_SAML_SP_ENTITY_ID: Optional[str] = None
 SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ''
