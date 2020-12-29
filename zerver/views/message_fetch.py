@@ -204,7 +204,10 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        if operand == 'private':
+        if operand == 'muted':
+            conditions = exclude_muting_conditions(self.user_profile, [])
+            return query.where(and_(*conditions))
+        elif operand == 'private':
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == 'starred':

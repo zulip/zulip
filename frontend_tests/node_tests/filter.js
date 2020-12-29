@@ -320,6 +320,16 @@ run_test("can_mark_messages_read", () => {
     assert_not_mark_read_with_has_operands(is_private);
     assert_not_mark_read_when_searching(is_private);
 
+    const is_muted = [{operator: "is", operand: "muted"}];
+    const is_muted_negated = [{operator: "is", operand: "muted", negated: true}];
+    filter = new Filter(is_muted);
+    assert(filter.can_mark_messages_read());
+    assert_not_mark_read_with_is_operands(is_muted);
+    assert_not_mark_read_with_has_operands(is_muted);
+    assert_not_mark_read_when_searching(is_muted);
+    filter = new Filter(is_muted_negated);
+    assert(!filter.can_mark_messages_read());
+
     const in_all = [{operator: "in", operand: "all"}];
     filter = new Filter(in_all);
     assert(filter.can_mark_messages_read());
@@ -600,6 +610,12 @@ run_test("predicate_basics", () => {
     assert(predicate({}));
 
     const unknown_stream_id = 999;
+    predicate = get_predicate([["is", "muted"]]);
+    assert(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
+    assert(predicate({type: "private"}));
+    page_params.narrow_stream = "kiosk";
+    assert(predicate({stream: "kiosk"}));
+    
     predicate = get_predicate([["in", "home"]]);
     assert(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
     assert(predicate({type: "private"}));
@@ -1043,6 +1059,10 @@ run_test("describe", () => {
     string = "message ID 99";
     assert.equal(Filter.describe(narrow), string);
 
+    narrow = [{operator: "is", operand: "muted"}];
+    string = "messages muted";
+    assert.equal(Filter.describe(narrow), string);
+
     narrow = [{operator: "in", operand: "home"}];
     string = "messages in home";
     assert.equal(Filter.describe(narrow), string);
@@ -1342,6 +1362,7 @@ run_test("navbar_helpers", () => {
 
     const in_home = [{operator: "in", operand: "home"}];
     const in_all = [{operator: "in", operand: "all"}];
+    const is_muted = [{operator: "is", operand: "muted"}];
     const is_starred = [{operator: "is", operand: "starred"}];
     const is_private = [{operator: "is", operand: "private"}];
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
@@ -1374,6 +1395,13 @@ run_test("navbar_helpers", () => {
             icon: "star",
             title: "translated: Starred messages",
             redirect_url_with_search: "/#narrow/is/starred",
+        },
+        {
+            operator: is_muted,
+            is_common_narrow: true,
+            icon: "home",
+            title: "translated: Muted messages",
+            redirect_url_with_search: "#",
         },
         {
             operator: in_home,
