@@ -175,13 +175,22 @@ exports.set_up = function () {
             e.preventDefault();
             e.stopPropagation();
             const emoji_status = $("#admin-emoji-status");
-            $("#admin_emoji_submit").prop("disabled", true);
             const emoji = {};
             const formData = new FormData();
 
             for (const obj of $(this).serializeArray()) {
                 emoji[obj.name] = obj.value;
             }
+
+            if (emoji.name.trim() === "") {
+                ui_report.message(
+                    i18n.t("Failed: Emoji name is required."),
+                    emoji_status,
+                    "alert-error",
+                );
+                return;
+            }
+            $("#admin_emoji_submit").prop("disabled", true);
 
             for (const [i, file] of Array.prototype.entries.call($("#emoji_file_input")[0].files)) {
                 formData.append("file-" + i, file);
