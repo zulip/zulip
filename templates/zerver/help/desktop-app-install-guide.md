@@ -8,35 +8,37 @@ To install the latest stable release (recommended for most users),
 find your operating system below.  If you're interested in an early
 look at the newest features, consider the [beta releases](#install-a-beta-release).
 
+[LR]: https://github.com/zulip/zulip-desktop/releases
+
 ## Install the latest release
 
 {start_tabs}
 {tab|mac}
 
-#### Disk image (recommended)
-<!-- TODO why zip? -->
+#### DMG or zip:
 
-1. Download [Zulip for macOS](https://zulip.com/apps/mac).
-1. Open the file, and drag the app into the `Applications` folder.
+1. Download [Zulip-x.x.x.dmg][LR] or [Zulip-x.x.x-mac.zip][LR]
+2. Open or unzip the file and drag the app into the `Applications` folder
+3. Done! The app will update automatically
 
-The app will update automatically to future versions.
+#### Using Homebrew:
 
-#### Homebrew
-
-1. Run `brew cask install zulip` in Terminal.
-1. Run Zulip from `Applications`. <!-- TODO fact check -->
-
-The app will update automatically to future versions. `brew upgrade` will
-also work, if you prefer.
+1. Run `brew cask install zulip` in your terminal
+2. The app will be installed in your `Applications`
+3. Done! The app will update automatically (you can also use `brew update && brew upgrade zulip`)
 
 {tab|windows}
 
-#### Web installer (recommended)
+#### Installer (recommended):
 
-1. Download and run [Zulip for Windows](https://zulip.com/apps/windows).
-1. Run Zulip from the Start menu.
+1. Download [Zulip-Web-Setup-x.x.x.exe][LR]
+2. Run the installer, wait until it finishes
+3. Done! The app will update automatically
 
-The app will update automatically to future versions.
+#### Portable:
+
+1. Download [zulip-x.x.x-arch.nsis.7z][LR]  [*here arch = ia32 (32-bit), x64 (64-bit)*]
+2. Extract the zip wherever you want (e.g. a flash drive) and run the app from there
 
 #### Offline installer (for isolated networks)
 
@@ -51,45 +53,37 @@ to future versions. <!-- TODO fact check -->
 
 {tab|linux}
 
-#### apt (Ubuntu or Debian 8+)
+#### Ubuntu, Debian 8+ (deb package):
 
-1. Enter the following commands into a terminal:
+1. Download [Zulip-x.x.x-amd64.deb][LR]
+2. Double click and install, or run `dpkg -i Zulip-x.x.x-amd64.deb` in the terminal
+3. Start the app with your app launcher or by running `zulip` in a terminal
+4. Done! The app will NOT update automatically, but you can still check for updates
 
-        sudo apt-key adv --keyserver pool.sks-keyservers.net --recv 69AD12704E71A4803DCA3A682424BE5AE9BD10D9
-        echo "deb https://dl.bintray.com/zulip/debian/ stable main" | \
-        sudo tee -a /etc/apt/sources.list.d/zulip.list
-        sudo apt update
-        sudo apt install zulip
+**Other distros (Fedora, CentOS, Arch Linux etc)** :
+1. Download Zulip-x.x.x-x86_64.AppImage[LR]
+2. Make it executable using chmod a+x Zulip-x.x.x-x86_64.AppImage
+3. Start the app with your app launcher
 
-    These commands set up the Zulip Desktop apt repository and its signing
-    key, and then install the Zulip client.
+**You can also use `apt-get` (recommended)**:
 
-1. Run Zulip from your app launcher, or with `zulip` from a terminal.
+* First download our signing key to make sure the deb you download is correct:
 
-The app will be updated automatically to future versions when you do a
-regular software update on your system, e.g. with
-`sudo apt update && sudo apt upgrade`.
+```
+sudo apt-key adv --keyserver pool.sks-keyservers.net --recv 69AD12704E71A4803DCA3A682424BE5AE9BD10D9
+```
 
-#### AppImage (recommended for all other distros)
+* Add the repo to your apt source list :
+```
+echo "deb https://dl.bintray.com/zulip/debian/ beta main" |
+  sudo tee -a /etc/apt/sources.list.d/zulip.list
+```
 
-1. Download [Zulip for Linux](https://zulip.com/apps/linux).
-2. Make the file executable, with
-   `chmod a+x Zulip-x.x.x-x86_64.AppImage` from a terminal (replace
-   `x.x.x` with the actual name of the downloaded file).
-3. Run the file from your app launcher, or from a terminal.
-
-No installer is necessary; this file is the Zulip app. The app will update
-automatically to future versions.
-
-#### Snap
-
-1. Make sure [snapd](https://docs.snapcraft.io/core/install) is installed.
-
-2. Execute following command to install Zulip:
-
-        sudo snap install zulip
-
-3. Run Zulip from your app launcher, or with `zulip` from a terminal.
+* Now install the client :
+```
+sudo apt-get update
+sudo apt-get install zulip
+```
 
 <!-- TODO why dpkg? -->
 
@@ -119,6 +113,9 @@ sudo sed -i s/stable/beta/ /etc/apt/sources.list.d/zulip.list
 sudo apt update
 sudo apt install zulip
 ```
+**Note:** If you download from the [releases page](https://github.com/zulip/zulip-desktop/releases), be careful what version you pick. Releases that end with `-beta` are beta releases and the rest are stable.
+- **beta:** these releases are the right balance between getting new features early while staying away from nasty bugs.
+- **stable:** these releases are more thoroughly tested; they receive new features later, but there's a lower chance that things will go wrong.
 
 [latest]: https://github.com/zulip/zulip-desktop/releases/latest
 [release-list]: https://github.com/zulip/zulip-desktop/releases
@@ -127,3 +124,4 @@ sudo apt install zulip
 
 * [Connect through a proxy](/help/connect-through-a-proxy)
 * [Use a custom certificate](/help/custom-certificates)
+
