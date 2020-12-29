@@ -12,7 +12,7 @@ from django.contrib.sessions.models import Session
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
-from django.db.models import F, Max
+from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
@@ -849,19 +849,6 @@ class Command(BaseCommand):
 
                 # Now subscribe everyone to these streams
                 subscribe_users_to_streams(zulip_realm, zulip_stream_dict)
-
-            if not options["test_suite"]:
-                # Update pointer of each user to point to the last message in their
-                # UserMessage rows with sender_id=user_profile_id.
-                users = list(
-                    UserMessage.objects.filter(message__sender_id=F("user_profile_id"))
-                    .values("user_profile_id")
-                    .annotate(pointer=Max("message_id"))
-                )
-                for user in users:
-                    UserProfile.objects.filter(id=user["user_profile_id"]).update(
-                        pointer=user["pointer"]
-                    )
 
             create_user_groups()
 
