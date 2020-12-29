@@ -4,7 +4,7 @@
 
 "use strict";
 
-type RecipientUserIds = number[];
+type RecipientUserIds = $ReadOnlyArray<number>;
 
 type Worker = {|
   get_current_time: () => number, // as ms since epoch
