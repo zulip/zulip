@@ -66,6 +66,7 @@
 * [Message a stream by email](/help/message-a-stream-by-email)
 * [Start a new topic](/help/start-a-new-topic)
 * [Change the topic of a message](/help/change-the-topic-of-a-message)
+* [Highlight messages](/help/highlight-messages)
 * [Rename a topic](/help/rename-a-topic)
 * [Manage inactive streams](/help/manage-inactive-streams)
 
