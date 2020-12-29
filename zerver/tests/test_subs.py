@@ -21,6 +21,7 @@ from zerver.lib.actions import (
     do_add_streams_to_default_stream_group,
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
+    do_change_notification_settings,
     do_change_plan_type,
     do_change_stream_post_policy,
     do_change_subscription_property,
@@ -42,6 +43,7 @@ from zerver.lib.actions import (
     get_stream,
     lookup_default_stream_groups,
     round_to_2_significant_digits,
+    send_notification_when_user_unsubscribes,
     validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.message import aggregate_unread_data, get_raw_unread_data
@@ -83,6 +85,7 @@ from zerver.models import (
     get_client,
     get_default_stream_groups,
     get_realm,
+    get_system_bot,
     get_user,
     get_user_profile_by_id_in_realm,
 )
@@ -1554,7 +1557,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=18,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -1571,7 +1574,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=18,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -1626,7 +1629,7 @@ class StreamAdminTest(ZulipTestCase):
         You can remove others from private streams you're a stream administrator of.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=18,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
             is_stream_admin=True,
@@ -3646,6 +3649,8 @@ class SubscriptionAPITest(ZulipTestCase):
         user5 = self.example_user("AARON")
         guest = self.example_user("polonius")
 
+        do_change_notification_settings(user3, "enable_notification_on_unsubscribe_stream", True)
+
         stream1 = self.make_stream("stream1")
         stream2 = self.make_stream("stream2")
         stream3 = self.make_stream("stream3")
@@ -3672,8 +3677,8 @@ class SubscriptionAPITest(ZulipTestCase):
                         get_client("website"),
                     )
 
-        self.assert_length(query_count, 28)
-        self.assert_length(cache_count, 4)
+        self.assert_length(query_count, 49)
+        self.assert_length(cache_count, 14)
 
         peer_events = [e for e in events if e["event"].get("op") == "peer_remove"]
 
@@ -3706,6 +3711,17 @@ class SubscriptionAPITest(ZulipTestCase):
                 ("stream2,stream3", {user2.id}, {user1.id, user3.id, user4.id, user5.id}),
             ],
         )
+        with mock.patch("zerver.lib.actions.internal_send_private_message") as m:
+            expected_content = "@**Cordelia Lear**,@**Othello, the Moor of Venice** unsubscribed from #**private_stream**"
+            send_notification_when_user_unsubscribes(
+                {private.id: private},
+                {private.id: set(peer_events[0]["event"]["user_ids"])},
+                {private.id: set(peer_events[0]["users"])},
+            )
+
+            m.assert_called_once_with(
+                get_system_bot(settings.NOTIFICATION_BOT), user3, expected_content
+            )
 
     def test_bulk_subscribe_MIT(self) -> None:
         mit_user = self.mit_user("starnine")

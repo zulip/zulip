@@ -1118,6 +1118,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     message_content_in_email_notifications: bool = models.BooleanField(default=True)
     enable_offline_push_notifications: bool = models.BooleanField(default=True)
     enable_online_push_notifications: bool = models.BooleanField(default=True)
+    enable_notification_on_unsubscribe_stream: bool = models.BooleanField(default=False)
 
     DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
     DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2
@@ -1291,6 +1292,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         desktop_icon_count_display=int,
         realm_name_in_notifications=bool,
         presence_enabled=bool,
+        enable_notification_on_unsubscribe_stream=bool,
     )
 
     ROLE_ID_TO_NAME_MAP = {

@@ -243,6 +243,9 @@ def json_change_notify_settings(
     enable_online_push_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
     enable_digest_emails: Optional[bool] = REQ(validator=check_bool, default=None),
     enable_login_emails: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_notification_on_unsubscribe_stream: Optional[bool] = REQ(
+        validator=check_bool, default=None
+    ),
     message_content_in_email_notifications: Optional[bool] = REQ(
         validator=check_bool, default=None
     ),

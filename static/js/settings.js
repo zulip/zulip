@@ -56,6 +56,9 @@ function setup_settings_label() {
             "Include organization name in subject of missed message emails",
         ),
         presence_enabled: i18n.t("Display my availability to other users when online"),
+        enable_notification_on_unsubscribe_stream: i18n.t(
+            "Notify me via a private message when any user unsubscribes from a private stream",
+        ),
 
         // display settings
         dense_mode: i18n.t("Dense mode"),

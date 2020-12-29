@@ -312,6 +312,7 @@ const pm_mention_notification_settings = [
     "enable_offline_push_notifications",
     "enable_offline_email_notifications",
 ];
+const stream_unsubscribe_notification_settings = ["enable_notification_on_unsubscribe_stream"];
 
 const desktop_notification_settings = ["pm_content_in_desktop_notifications"];
 
@@ -337,6 +338,7 @@ const other_notification_settings = desktop_notification_settings.concat(
 export const all_notification_settings = other_notification_settings.concat(
     pm_mention_notification_settings,
     stream_notification_settings,
+    stream_unsubscribe_notification_settings,
 );
 
 export function get_notifications_table_row_data(notify_settings) {
@@ -379,6 +381,7 @@ export const all_notifications = () => ({
         mobile_notification_settings,
         email_notification_settings,
         presence_notification_settings,
+        stream_unsubscribe_notification_settings,
     },
     show_push_notifications_tooltip: {
         push_notifications: !page_params.realm_push_notifications_enabled,

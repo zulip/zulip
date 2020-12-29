@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 45**
+
+* [`PATCH /settings/notifications`](/api/update-notification-settings):
+  Add `enable_notification_on_unsubscribe_stream` setting. This
+  setting is used to enable notification via private message if a
+  user unsubscribes from a private stream.
+
 **Feature level 44**
 
 * [`POST /register`](/api/register-queue): extended the `unread_msgs`

@@ -81,6 +81,7 @@
 * [Change notification sound](/help/change-notification-sound)
 * [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
 * [Test mobile notifications](/help/test-mobile-notifications)
+* [Enable notification when a user unsubscribes](/help/enable-notification-when-user-unsubscribes)
 
 ## Tools & customization
 * [Bots and integrations](/help/bots-and-integrations)

@@ -6573,6 +6573,14 @@ paths:
                           The current value of this global notification setting for the user.
                           See [update-notification-settings](/api/update-notification-settings)
                           for details on notification settings.
+                      enable_notification_on_unsubscribe_stream:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `fetch_event_types`.
+
+                          The current value of this global notification setting for the user.
+                          See [update-notification-settings](/api/update-notification-settings)
+                          for details on notification settings.
                       enable_offline_email_notifications:
                         type: boolean
                         description: |
@@ -7960,6 +7968,13 @@ paths:
           in: query
           description: |
             Enable email notifications for new logins to account.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_notification_on_unsubscribe_stream
+          in: query
+          description: |
+            Enable notification via private message if someone unsubscribe from private stream
           schema:
             type: boolean
           example: true

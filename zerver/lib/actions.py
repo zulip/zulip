@@ -3491,10 +3491,44 @@ def send_peer_subscriber_events(
             send_event(realm, event, peer_user_ids)
 
 
+def send_notification_when_user_unsubscribes(
+    stream_dict: Dict[int, Stream],
+    altered_user_dict: Dict[int, Set[int]],
+    private_peer_dict: Dict[int, Set[int]],
+    acting_user: Optional[UserProfile] = None,
+    removing_someone_else: Optional[bool] = None,
+) -> None:
+    private_stream_ids = [
+        stream_id for stream_id in altered_user_dict if stream_dict[stream_id].invite_only
+    ]
+    for stream_id in private_stream_ids:
+        altered_user_ids = altered_user_dict[stream_id]
+        peer_user_ids = private_peer_dict[stream_id] - altered_user_ids
+        if acting_user and removing_someone_else:
+            peer_user_ids = peer_user_ids - {acting_user.id}
+        if peer_user_ids and altered_user_ids:
+            peer_user_profiles_with_enabled_notifications = UserProfile.objects.filter(
+                id__in=peer_user_ids, enable_notification_on_unsubscribe_stream=True
+            )
+            altered_user_profiles = UserProfile.objects.filter(id__in=altered_user_ids)
+
+            for peer in peer_user_profiles_with_enabled_notifications:
+
+                affected_users = ",".join(
+                    [("@**" + user.full_name + "**") for user in altered_user_profiles]
+                )
+                content = f"{affected_users} unsubscribed from #**{stream_dict[stream_id].name}**"
+                internal_send_private_message(
+                    get_system_bot(settings.NOTIFICATION_BOT), peer, content
+                )
+
+
 def send_peer_remove_events(
     realm: Realm,
     streams: List[Stream],
     altered_user_dict: Dict[int, Set[int]],
+    acting_user: Optional[UserProfile] = None,
+    removing_someone_else: Optional[bool] = None,
 ) -> None:
     private_streams = [stream for stream in streams if stream.invite_only]
 
@@ -3503,7 +3537,9 @@ def send_peer_remove_events(
         private_streams=private_streams,
     )
     stream_dict = {stream.id: stream for stream in streams}
-
+    send_notification_when_user_unsubscribes(
+        stream_dict, altered_user_dict, private_peer_dict, acting_user, removing_someone_else
+    )
     send_peer_subscriber_events(
         op="peer_remove",
         realm=realm,
@@ -3544,6 +3580,7 @@ def bulk_remove_subscriptions(
     streams: Iterable[Stream],
     acting_client: Client,
     acting_user: Optional[UserProfile] = None,
+    removing_someone_else: Optional[bool] = None,
 ) -> SubAndRemovedT:
 
     users = list(users)
@@ -3635,6 +3672,8 @@ def bulk_remove_subscriptions(
         realm=our_realm,
         streams=streams,
         altered_user_dict=altered_user_dict,
+        acting_user=acting_user,
+        removing_someone_else=removing_someone_else,
     )
 
     new_vacant_streams = set(occupied_streams_before) - set(occupied_streams_after)

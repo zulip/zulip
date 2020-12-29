@@ -51,6 +51,13 @@
             <h3 class="inline-block">{{t "Other notification settings" }}</h3>
             <div class="alert-notification" id="other-notify-settings-status"></div>
 
+            {{#each notification_settings.stream_unsubscribe_notification_settings}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../page_params this)
+              label=(lookup ../settings_label this)}}
+            {{/each}}
+
             <h5>{{t "Desktop" }}</h5>
 
             <p><a id="send_test_notification">{{t "Send test notification" }}</a></p>

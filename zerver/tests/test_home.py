@@ -65,6 +65,7 @@ class HomeTest(ZulipTestCase):
         "enable_desktop_notifications",
         "enable_digest_emails",
         "enable_login_emails",
+        "enable_notification_on_unsubscribe_stream",
         "enable_offline_email_notifications",
         "enable_offline_push_notifications",
         "enable_online_push_notifications",

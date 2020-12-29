@@ -405,7 +405,11 @@ def remove_subscriptions_backend(
 
     result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(
-        people_to_unsub, streams, request.client, acting_user=user_profile
+        people_to_unsub,
+        streams,
+        request.client,
+        acting_user=user_profile,
+        removing_someone_else=removing_someone_else,
     )
 
     for (subscriber, removed_stream) in removed:
