@@ -42,6 +42,7 @@ from corporate.lib.stripe import (
     unsign_string,
     update_billing_method_of_current_plan,
     update_license_ledger_for_automanaged_plan,
+    update_license_ledger_for_manual_plan,
     update_license_ledger_if_needed,
     update_or_create_stripe_customer,
     update_sponsorship_status,
@@ -2881,6 +2882,65 @@ class LicenseLedgerTest(StripeTestCase):
                 (False, self.next_year + timedelta(seconds=1), 22, 22),
             ],
         )
+
+    def test_update_license_ledger_for_manual_plan(self) -> None:
+        realm = get_realm("zulip")
+
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            self.local_upgrade(self.seat_count + 1, False, CustomerPlan.ANNUAL, "token")
+
+        plan = get_current_plan_by_realm(realm)
+        assert plan is not None
+
+        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
+            update_license_ledger_for_manual_plan(plan, self.now, licenses=self.seat_count + 3)
+            self.assertEqual(plan.licenses(), self.seat_count + 3)
+            self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count + 3)
+
+        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
+            with self.assertRaises(AssertionError):
+                update_license_ledger_for_manual_plan(plan, self.now, licenses=self.seat_count)
+
+        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
+            update_license_ledger_for_manual_plan(
+                plan, self.now, licenses_at_next_renewal=self.seat_count
+            )
+            self.assertEqual(plan.licenses(), self.seat_count + 3)
+            self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
+
+        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
+            with self.assertRaises(AssertionError):
+                update_license_ledger_for_manual_plan(
+                    plan, self.now, licenses_at_next_renewal=self.seat_count - 1
+                )
+
+        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
+            update_license_ledger_for_manual_plan(plan, self.now, licenses=self.seat_count + 10)
+            self.assertEqual(plan.licenses(), self.seat_count + 10)
+            self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count + 10)
+
+        make_end_of_cycle_updates_if_needed(plan, self.next_year)
+        self.assertEqual(plan.licenses(), self.seat_count + 10)
+
+        ledger_entries = list(
+            LicenseLedger.objects.values_list(
+                "is_renewal", "event_time", "licenses", "licenses_at_next_renewal"
+            ).order_by("id")
+        )
+
+        self.assertEqual(
+            ledger_entries,
+            [
+                (True, self.now, self.seat_count + 1, self.seat_count + 1),
+                (False, self.now, self.seat_count + 3, self.seat_count + 3),
+                (False, self.now, self.seat_count + 3, self.seat_count),
+                (False, self.now, self.seat_count + 10, self.seat_count + 10),
+                (True, self.next_year, self.seat_count + 10, self.seat_count + 10),
+            ],
+        )
+
+        with self.assertRaises(AssertionError):
+            update_license_ledger_for_manual_plan(plan, self.now)
 
     def test_user_changes(self) -> None:
         self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
