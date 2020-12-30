@@ -35,6 +35,7 @@ export function initialize() {
             "planchange",
             undefined,
             undefined,
+            undefined,
             "PATCH",
         );
         e.preventDefault();

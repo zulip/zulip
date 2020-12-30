@@ -127,15 +127,16 @@ run_test("create_ajax_request", (override) => {
         assert.equal(type, "PATCH");
         assert.equal(url, "/json/billing/upgrade");
 
-        assert.equal(Object.keys(data).length, 8);
+        assert.equal(Object.keys(data).length, 7);
         assert.equal(data.stripe_token, "stripe_token_id");
         assert.equal(data.seat_count, "{{ seat_count }}");
         assert.equal(data.signed_seat_count, "{{ signed_seat_count }}");
         assert.equal(data.salt, "{{ salt }}");
         assert.equal(data.billing_modality, "charge_automatically");
         assert.equal(data.schedule, "monthly");
-        assert.equal(data.license_management, "automatic");
         assert.equal(data.licenses, "");
+
+        assert(!("license_management" in data));
 
         history.pushState = (state_object, title, path) => {
             state.pushState += 1;
@@ -179,6 +180,7 @@ run_test("create_ajax_request", (override) => {
         "/json/billing/upgrade",
         "autopay",
         {id: "stripe_token_id"},
+        ["license_management"],
         undefined,
         "PATCH",
     );

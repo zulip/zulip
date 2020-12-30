@@ -49,7 +49,13 @@ export const initialize = () => {
             return;
         }
         e.preventDefault();
-        helpers.create_ajax_request("/json/billing/sponsorship", "sponsorship", undefined, "/");
+        helpers.create_ajax_request(
+            "/json/billing/sponsorship",
+            "sponsorship",
+            undefined,
+            undefined,
+            "/",
+        );
     });
 
     const prices = {};
