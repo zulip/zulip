@@ -204,6 +204,5 @@ class TestReport(ZulipTestCase):
         with self.assertLogs(level='WARNING') as warn_logs:
             result = self.client_post("/report/csp_violations", fixture_data, content_type="application/json")
         self.assert_json_success(result)
-        self.assertEqual(warn_logs.output, [
-            "WARNING:root:CSP Violation in Document(''). Blocked URI(''), Original Policy(''), Violated Directive(''), Effective Directive(''), Disposition(''), Referrer(''), Status Code(''), Script Sample('')"
-        ])
+        self.assertEqual(1, len(warn_logs.output))
+        self.assertTrue(warn_logs.output[0].startswith("WARNING:root:CSP Violation"))

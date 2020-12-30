@@ -232,6 +232,23 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'max_file_upload_size_mib': settings.MAX_FILE_UPLOAD_SIZE,
                                })
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
+
+    connect_src = "'self'"
+    if settings.DEVELOPMENT:
+        # Required for webpack-dev-server hot module replacement
+        connect_src = "http://localhost:9994/ ws://localhost:9994/ " + connect_src
+
+    response['Content-Security-Policy-Report-Only'] = (
+        "default-src 'self'; "
+        f"script-src 'nonce-{csp_nonce}' 'unsafe-inline' 'unsafe-eval' 'strict-dynamic' 'self'; "
+        f"connect-src {connect_src};"
+        "img-src 'self' data: blob: https:;"
+        "frame-src  https:; "
+        "style-src 'unsafe-inline' 'self'; "
+        "base-uri 'none'; "
+        "report-uri /report/csp_violations"
+    )
+
     return response
 
 @zulip_login_required
