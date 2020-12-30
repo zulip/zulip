@@ -4110,6 +4110,7 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
+                  
   /user_uploads:
     post:
       operationId: upload_file
