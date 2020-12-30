@@ -4038,6 +4038,78 @@ paths:
                             "msg": "You don't have permission to delete this message",
                             "result": "error",
                           }
+
+  /bot_storage:
+    get:
+      operationId: get_storage
+      tags: ["users"]
+      parameters:
+        - name: keys
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      storage:
+                        type: object
+                        additionalProperties:
+                          type: string
+    put:
+      operationId: update_storage
+      tags: ["users"]
+      parameters:
+        - name: storage
+          in: query
+          required: true
+          schema:
+            type: object
+            items:
+              type: string
+              additionalProperties: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+
+    delete:
+      operationId: remove_storage
+      tags: ["users"]
+      parameters:
+        - name: keys
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
   /user_uploads:
     post:
       operationId: upload_file

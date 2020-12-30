@@ -267,7 +267,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/users/me/profile_data',
 
         #### Should be documented as part of interactive bots documentation
-        '/bot_storage',
         '/submessage',
         '/zcommand',
 
