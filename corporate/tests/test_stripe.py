@@ -1811,6 +1811,17 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plan.licenses(), self.seat_count)
         self.assertEqual(plan.licenses_at_next_renewal(), None)
 
+        with patch("corporate.views.timezone_now", return_value=self.now):
+            mock_customer = Mock(email=user.delivery_email, default_source=None)
+            with patch("corporate.views.stripe_get_customer", return_value=mock_customer):
+                response = self.client_get("/billing/")
+                self.assert_in_success_response([
+                    "Your plan will be downgraded to <strong>Zulip Limited</strong> on "
+                    "<strong>January 2, 2013</strong>",
+                    "You plan is scheduled for downgrade on <strong>January 2, 2013</strong>",
+                    "Cancel downgrade",
+                ], response)
+
         # Verify that we still write LicenseLedger rows during the remaining
         # part of the cycle
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
