@@ -1,8 +1,15 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const XDate = require("xdate");
 
-set_global("$", global.make_zjquery());
+const {stub_templates} = require("../zjsunit/handlebars");
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+set_global("$", make_zjquery());
 
 zrequire("localstorage");
 zrequire("drafts");
@@ -47,7 +54,7 @@ function stub_timestamp(timestamp, func) {
     function fake_time() {
         return timestamp;
     }
-    with_field(Date.prototype, "getTime", fake_time, func);
+    with_field(Date, "now", fake_time, func);
 }
 
 const legacy_draft = {
@@ -141,22 +148,22 @@ run_test("draft_model", () => {
 
 run_test("snapshot_message", () => {
     function stub_draft(draft) {
-        global.compose_state.get_message_type = function () {
+        compose_state.get_message_type = function () {
             return draft.type;
         };
-        global.compose_state.composing = function () {
-            return !!draft.type;
+        compose_state.composing = function () {
+            return Boolean(draft.type);
         };
-        global.compose_state.message_content = function () {
+        compose_state.message_content = function () {
             return draft.content;
         };
-        global.compose_state.private_message_recipient = function () {
+        compose_state.private_message_recipient = function () {
             return draft.private_message_recipient;
         };
-        global.compose_state.stream_name = function () {
+        compose_state.stream_name = function () {
             return draft.stream;
         };
-        global.compose_state.topic = function () {
+        compose_state.topic = function () {
             return draft.topic;
         };
     }
@@ -175,7 +182,7 @@ run_test("snapshot_message", () => {
 });
 
 run_test("initialize", () => {
-    global.window.addEventListener = function (event_name, f) {
+    window.addEventListener = function (event_name, f) {
         assert.equal(event_name, "beforeunload");
         let called = false;
         drafts.update_draft = function () {
@@ -303,7 +310,7 @@ run_test("format_drafts", (override) => {
         return stub_render_now(time, new XDate(1549958107000));
     };
 
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "draft_table_body");
         // Tests formatting and sorting of drafts
         assert.deepEqual(data.drafts, expected);

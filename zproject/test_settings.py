@@ -15,8 +15,7 @@ import os
 # transmitting the value of EXTERNAL_HOST to dev_settings.py so that
 # it can be set there, at the right place in the settings.py flow.
 # Ick.
-if os.getenv("EXTERNAL_HOST") is None:
-    os.environ["EXTERNAL_HOST"] = "testserver"
+os.environ["EXTERNAL_HOST"] = os.getenv("TEST_EXTERNAL_HOST", "testserver")
 
 from .settings import *  # noqa: F401,F403 isort: skip
 from .test_extra_settings import *  # noqa: F401,F403 isort: skip

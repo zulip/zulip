@@ -40,8 +40,8 @@ VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 CONTINUOUS_INTEGRATION = 'GITHUB_ACTIONS' in os.environ or 'CIRCLECI' in os.environ
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
-    print(FAIL + "Error: No Zulip git repository present!" + ENDC)
-    print("To setup the Zulip development environment, you should clone the code")
+    print(FAIL + "Error: No Zulip Git repository present!" + ENDC)
+    print("To set up the Zulip development environment, you should clone the code")
     print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
 
@@ -89,19 +89,19 @@ distro_info = parse_os_release()
 vendor = distro_info['ID']
 os_version = distro_info['VERSION_ID']
 if vendor == "debian" and os_version == "10":  # buster
-    POSTGRES_VERSION = "11"
+    POSTGRESQL_VERSION = "11"
 elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
-    POSTGRES_VERSION = "10"
+    POSTGRESQL_VERSION = "10"
 elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
-    POSTGRES_VERSION = "11"
+    POSTGRESQL_VERSION = "11"
 elif vendor == "ubuntu" and os_version == "20.04":  # focal
-    POSTGRES_VERSION = "12"
+    POSTGRESQL_VERSION = "12"
 elif vendor == "fedora" and os_version == "29":
-    POSTGRES_VERSION = "10"
+    POSTGRESQL_VERSION = "10"
 elif vendor == "rhel" and os_version.startswith("7."):
-    POSTGRES_VERSION = "10"
+    POSTGRESQL_VERSION = "10"
 elif vendor == "centos" and os_version == "7":
-    POSTGRES_VERSION = "10"
+    POSTGRESQL_VERSION = "10"
 else:
     logging.critical("Unsupported platform: %s %s", vendor, os_version)
     sys.exit(1)
@@ -159,14 +159,14 @@ COMMON_YUM_DEPENDENCIES = [
 
 BUILD_PGROONGA_FROM_SOURCE = False
 if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in []:
-    # For platforms without a pgroonga release, we need to build it
+    # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
     SYSTEM_DEPENDENCIES = [
         *UBUNTU_COMMON_APT_DEPENDENCIES,
-        f"postgresql-{POSTGRES_VERSION}",
-        # Dependency for building pgroonga from source
-        f"postgresql-server-dev-{POSTGRES_VERSION}",
+        f"postgresql-{POSTGRESQL_VERSION}",
+        # Dependency for building PGroonga from source
+        f"postgresql-server-dev-{POSTGRESQL_VERSION}",
         "libgroonga-dev",
         "libmsgpack-dev",
         "clang-9",
@@ -176,26 +176,26 @@ if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version 
 elif "debian" in os_families():
     SYSTEM_DEPENDENCIES = [
         *UBUNTU_COMMON_APT_DEPENDENCIES,
-        f"postgresql-{POSTGRES_VERSION}",
-        f"postgresql-{POSTGRES_VERSION}-pgroonga",
+        f"postgresql-{POSTGRESQL_VERSION}",
+        f"postgresql-{POSTGRESQL_VERSION}-pgdg-pgroonga",
         *VENV_DEPENDENCIES,
     ]
 elif "rhel" in os_families():
     SYSTEM_DEPENDENCIES = [
         *COMMON_YUM_DEPENDENCIES,
-        f"postgresql{POSTGRES_VERSION}-server",
-        f"postgresql{POSTGRES_VERSION}",
-        f"postgresql{POSTGRES_VERSION}-devel",
-        f"postgresql{POSTGRES_VERSION}-pgroonga",
+        f"postgresql{POSTGRESQL_VERSION}-server",
+        f"postgresql{POSTGRESQL_VERSION}",
+        f"postgresql{POSTGRESQL_VERSION}-devel",
+        f"postgresql{POSTGRESQL_VERSION}-pgdg-pgroonga",
         *VENV_DEPENDENCIES,
     ]
 elif "fedora" in os_families():
     SYSTEM_DEPENDENCIES = [
         *COMMON_YUM_DEPENDENCIES,
-        f"postgresql{POSTGRES_VERSION}-server",
-        f"postgresql{POSTGRES_VERSION}",
-        f"postgresql{POSTGRES_VERSION}-devel",
-        # Needed to build pgroonga from source
+        f"postgresql{POSTGRESQL_VERSION}-server",
+        f"postgresql{POSTGRESQL_VERSION}",
+        f"postgresql{POSTGRESQL_VERSION}-devel",
+        # Needed to build PGroonga from source
         "groonga-devel",
         "msgpack-devel",
         *VENV_DEPENDENCIES,
@@ -203,9 +203,9 @@ elif "fedora" in os_families():
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():
-    TSEARCH_STOPWORDS_PATH = f"/usr/pgsql-{POSTGRES_VERSION}/share/tsearch_data/"
+    TSEARCH_STOPWORDS_PATH = f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/"
 else:
-    TSEARCH_STOPWORDS_PATH = f"/usr/share/postgresql/{POSTGRES_VERSION}/tsearch_data/"
+    TSEARCH_STOPWORDS_PATH = f"/usr/share/postgresql/{POSTGRESQL_VERSION}/tsearch_data/"
 REPO_STOPWORDS_PATH = os.path.join(
     ZULIP_PATH,
     "puppet",
@@ -227,7 +227,7 @@ def install_system_deps() -> None:
     else:
         raise AssertionError("Invalid vendor")
 
-    # For some platforms, there aren't published pgroonga
+    # For some platforms, there aren't published PGroonga
     # packages available, so we build them from source.
     if BUILD_PGROONGA_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-pgroonga"])
@@ -277,16 +277,16 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         run_as_root(["python36", "-m", "ensurepip"])
         # `python36` is not aliased to `python3` by default
         run_as_root(["ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
-    postgres_dir = f'pgsql-{POSTGRES_VERSION}'
+    postgresql_dir = f'pgsql-{POSTGRESQL_VERSION}'
     for cmd in ['pg_config', 'pg_isready', 'psql']:
-        # Our tooling expects these postgres scripts to be at
+        # Our tooling expects these PostgreSQL scripts to be at
         # well-known paths.  There's an argument for eventually
         # making our tooling auto-detect, but this is simpler.
-        run_as_root(["ln", "-nsf", f"/usr/{postgres_dir}/bin/{cmd}",
+        run_as_root(["ln", "-nsf", f"/usr/{postgresql_dir}/bin/{cmd}",
                      f"/usr/bin/{cmd}"])
 
-    # From here, we do the first-time setup/initialization for the postgres database.
-    pg_datadir = f"/var/lib/pgsql/{POSTGRES_VERSION}/data"
+    # From here, we do the first-time setup/initialization for the PostgreSQL database.
+    pg_datadir = f"/var/lib/pgsql/{POSTGRESQL_VERSION}/data"
     pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
 
     # We can't just check if the file exists with os.path, since the
@@ -296,20 +296,20 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         # Skip setup if it has been applied previously
         return
 
-    run_as_root([f"/usr/{postgres_dir}/bin/postgresql-{POSTGRES_VERSION}-setup", "initdb"],
+    run_as_root([f"/usr/{postgresql_dir}/bin/postgresql-{POSTGRESQL_VERSION}-setup", "initdb"],
                 sudo_args = ['-H'])
     # Use vendored pg_hba.conf, which enables password authentication.
     run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
-    # Later steps will ensure postgres is started
+    # Later steps will ensure PostgreSQL is started
 
     # Link in tsearch data files
     overwrite_symlink(
         "/usr/share/myspell/en_US.dic",
-        f"/usr/pgsql-{POSTGRES_VERSION}/share/tsearch_data/en_us.dict",
+        f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.dict",
     )
     overwrite_symlink(
         "/usr/share/myspell/en_US.aff",
-        f"/usr/pgsql-{POSTGRES_VERSION}/share/tsearch_data/en_us.affix",
+        f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.affix",
     )
 
 def main(options: argparse.Namespace) -> "NoReturn":
@@ -324,14 +324,17 @@ def main(options: argparse.Namespace) -> "NoReturn":
     for apt_depedency in SYSTEM_DEPENDENCIES:
         sha_sum.update(apt_depedency.encode('utf8'))
     if "debian" in os_families():
-        sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
+        with open('scripts/lib/setup-apt-repo', 'rb') as fb:
+            sha_sum.update(fb.read())
     else:
         # hash the content of setup-yum-repo*
-        sha_sum.update(open('scripts/lib/setup-yum-repo', 'rb').read())
+        with open('scripts/lib/setup-yum-repo', 'rb') as fb:
+            sha_sum.update(fb.read())
 
-    # hash the content of build-pgroonga if pgroonga is built from source
+    # hash the content of build-pgroonga if PGroonga is built from source
     if BUILD_PGROONGA_FROM_SOURCE:
-        sha_sum.update(open('scripts/lib/build-pgroonga', 'rb').read())
+        with open('scripts/lib/build-pgroonga', 'rb') as fb:
+            sha_sum.update(fb.read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
@@ -381,6 +384,8 @@ def main(options: argparse.Namespace) -> "NoReturn":
 
     # Install shellcheck.
     run_as_root(["tools/setup/install-shellcheck"])
+    # Install shfmt.
+    run_as_root(["tools/setup/install-shfmt"])
 
     setup_venvs.main()
 
@@ -394,7 +399,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
     elif "fedora" in os_families():
         # These platforms don't enable and start services on
         # installing their package, so we do that here.
-        for service in [f"postgresql-{POSTGRES_VERSION}", "rabbitmq-server", "memcached", "redis"]:
+        for service in [f"postgresql-{POSTGRESQL_VERSION}", "rabbitmq-server", "memcached", "redis"]:
             run_as_root(["systemctl", "enable", service], sudo_args = ['-H'])
             run_as_root(["systemctl", "start", service], sudo_args = ['-H'])
 
@@ -406,7 +411,8 @@ def main(options: argparse.Namespace) -> "NoReturn":
     # process inside the virtualenv.
     activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
     provision_inner = os.path.join(ZULIP_PATH, "tools", "lib", "provision_inner.py")
-    exec(open(activate_this).read(), dict(__file__=activate_this))
+    with open(activate_this) as f:
+        exec(f.read(), dict(__file__=activate_this))
     os.execvp(
         provision_inner,
         [

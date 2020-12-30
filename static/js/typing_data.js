@@ -9,7 +9,7 @@ const typist_dct = new Map();
 const inbound_timer_dict = new Map();
 
 function to_int(s) {
-    return parseInt(s, 10);
+    return Number.parseInt(s, 10);
 }
 
 function get_key(group) {

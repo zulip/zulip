@@ -1,22 +1,22 @@
 "use strict";
 
+const {strict: assert} = require("assert");
 const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const template = fs.readFileSync("templates/analytics/realm_details.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
-let jquery_init;
-global.$ = (f) => {
-    jquery_init = f;
-};
-zrequire("support", "js/analytics/support");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("scrub_realm", () => {
-    jquery_init();
+    zrequire("support", "js/analytics/support");
     const click_handler = $("body").get_on_handler("click", ".scrub-realm-button");
 
     const fake_this = $.create("fake-.scrub-realm-button");

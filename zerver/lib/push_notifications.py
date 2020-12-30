@@ -1,5 +1,4 @@
 import base64
-import binascii
 import logging
 import re
 import time
@@ -45,10 +44,10 @@ DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data: str) -> str:
-    return binascii.hexlify(base64.b64decode(data)).decode('utf-8')
+    return base64.b64decode(data).hex()
 
 def hex_to_b64(data: str) -> str:
-    return base64.b64encode(binascii.unhexlify(data)).decode()
+    return base64.b64encode(bytes.fromhex(data)).decode()
 
 #
 # Sending to APNs, for iOS
@@ -504,7 +503,7 @@ def get_gcm_alert(message: Message) -> str:
 
 def get_mobile_push_content(rendered_content: str) -> str:
     def get_text(elem: lxml.html.HtmlElement) -> str:
-        # Convert default emojis to their unicode equivalent.
+        # Convert default emojis to their Unicode equivalent.
         classes = elem.get("class", "")
         if "emoji" in classes:
             match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
@@ -571,9 +570,9 @@ def get_mobile_push_content(rendered_content: str) -> str:
     return plain_text
 
 def truncate_content(content: str) -> Tuple[str, bool]:
-    # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
+    # We use Unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
     # of three dots as this saves two extra characters for textual
-    # content. This function will need to be updated to handle unicode
+    # content. This function will need to be updated to handle Unicode
     # combining characters and tags when we start supporting themself.
     if len(content) <= 200:
         return content, False

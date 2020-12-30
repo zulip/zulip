@@ -1,10 +1,15 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 const noop = function () {};
 
 set_global("document", {});
 set_global("addEventListener", noop);
-global.stub_out_jquery();
+stub_out_jquery();
 
 zrequire("message_store");
 zrequire("server_events_dispatch");
@@ -72,15 +77,15 @@ const setup = function () {
     server_events.home_view_loaded();
     set_global("message_events", {
         insert_new_messages() {
-            throw Error("insert error");
+            throw new Error("insert error");
         },
         update_messages() {
-            throw Error("update error");
+            throw new Error("update error");
         },
     });
     set_global("stream_events", {
         update_property() {
-            throw Error("subs update error");
+            throw new Error("subs update error");
         },
     });
 };
@@ -89,7 +94,7 @@ run_test("event_dispatch_error", () => {
     setup();
 
     const data = {events: [{type: "stream", op: "update", id: 1, other: "thing"}]};
-    global.channel.get = function (options) {
+    channel.get = function (options) {
         options.success(data);
     };
 
@@ -109,7 +114,7 @@ run_test("event_new_message_error", () => {
     setup();
 
     const data = {events: [{type: "message", id: 1, other: "thing", message: {}}]};
-    global.channel.get = function (options) {
+    channel.get = function (options) {
         options.success(data);
     };
 
@@ -125,7 +130,7 @@ run_test("event_new_message_error", () => {
 run_test("event_edit_message_error", () => {
     setup();
     const data = {events: [{type: "update_message", id: 1, other: "thing"}]};
-    global.channel.get = function (options) {
+    channel.get = function (options) {
         options.success(data);
     };
     blueslip.expect("error", "Failed to update messages\nupdate error");

@@ -120,7 +120,7 @@ function set_stream_message_retention_setting_dropdown(stream) {
 
 function get_stream_id(target) {
     const row = $(target).closest(".stream-row, .subscription_settings");
-    return parseInt(row.attr("data-stream-id"), 10);
+    return Number.parseInt(row.attr("data-stream-id"), 10);
 }
 
 function get_sub_for_target(target) {
@@ -495,9 +495,11 @@ function change_stream_privacy(e) {
     const stream_id = $(e.target).data("stream-id");
     const sub = stream_data.get_sub_by_id(stream_id);
     const data = {};
+    const stream_privacy_status = $(".stream-privacy-status");
+    stream_privacy_status.hide();
 
     const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
-    const stream_post_policy = parseInt(
+    const stream_post_policy = Number.parseInt(
         $("#stream_privacy_modal input[name=stream-post-policy]:checked").val(),
         10,
     );
@@ -532,7 +534,7 @@ function change_stream_privacy(e) {
         "#stream_privacy_modal select[name=stream_message_retention_setting]",
     ).val();
     if (message_retention_days === "retain_for_period") {
-        message_retention_days = parseInt(
+        message_retention_days = Number.parseInt(
             $("#stream_privacy_modal input[name=stream-message-retention-days]").val(),
             10,
         );
@@ -560,7 +562,8 @@ function change_stream_privacy(e) {
             $("#stream_privacy_modal").remove();
             // The rest will be done by update stream event we will get.
         },
-        error() {
+        error(xhr) {
+            ui_report.error(i18n.t("Failed"), xhr, stream_privacy_status);
             $("#change-stream-privacy-button").text(i18n.t("Try again"));
         },
     });
@@ -752,7 +755,7 @@ exports.initialize = function () {
         e.preventDefault();
 
         const list_entry = $(e.target).closest("tr");
-        const target_user_id = parseInt(list_entry.attr("data-subscriber-id"), 10);
+        const target_user_id = Number.parseInt(list_entry.attr("data-subscriber-id"), 10);
 
         const sub = get_sub_for_target(e.target);
         if (!sub) {
@@ -781,14 +784,6 @@ exports.initialize = function () {
         }
 
         exports.remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
-    });
-
-    $("#subscriptions_table").on("click", ".stream_subscription_info .view_user_profile", (e) => {
-        const user_id = parseInt($(e.target).attr("data-id"), 10);
-        const user = people.get_by_user_id(user_id);
-        popovers.show_user_profile(user);
-        e.stopPropagation();
-        e.preventDefault();
     });
 
     // This handler isn't part of the normal edit interface; it's the convenient

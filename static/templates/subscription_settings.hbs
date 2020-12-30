@@ -22,7 +22,9 @@
                     <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}}title="{{t 'Toggle subscription'}} (S)" {{else}}disabled="disabled"{{/if}}>
                         {{#if subscribed }}{{#tr oneself }}Unsubscribe{{/tr}}{{else}}{{#tr oneself }}Subscribe{{/tr}}{{/if}}</button>
                 </div>
-                <a href="{{preview_url}}" class="button small rounded" id="preview-stream-button" role="button" title="{{t 'View stream'}} (V)" {{#unless should_display_preview_button }}style="display: none"{{/unless}}>{{t "View stream"}}</a>
+                <a href="{{preview_url}}" class="button small rounded" id="preview-stream-button" role="button" title="{{t 'View stream'}} (V)" {{#unless should_display_preview_button }}style="display: none"{{/unless}}>
+                    <i class="fa fa-eye"></i>
+                </a>
             </div>
         </div>
         <div class="stream-description">

@@ -150,9 +150,9 @@ class MessageList {
         };
 
         const convert_id = (str_id) => {
-            const id = parseFloat(str_id);
-            if (isNaN(id)) {
-                throw new Error("Bad message id " + str_id);
+            const id = Number.parseFloat(str_id);
+            if (Number.isNaN(id)) {
+                throw new TypeError("Bad message id " + str_id);
             }
             return id;
         };
@@ -197,7 +197,7 @@ class MessageList {
             this.view.maybe_rerender();
         }
 
-        $(document).trigger($.Event("message_selected.zulip", opts));
+        $(document).trigger(new $.Event("message_selected.zulip", opts));
     }
 
     reselect_selected_id() {
@@ -295,8 +295,8 @@ class MessageList {
         return render_info;
     }
 
-    remove_and_rerender(messages) {
-        this.data.remove(messages);
+    remove_and_rerender(message_ids) {
+        this.data.remove(message_ids);
         this.rerender();
     }
 
@@ -399,11 +399,10 @@ class MessageList {
     }
 
     change_message_id(old_id, new_id) {
-        const opts = {
-            is_current_list: () => current_msg_list === this,
-            rerender_view: () => this.rerender_view(),
-        };
-        this.data.change_message_id(old_id, new_id, opts);
+        const require_rerender = this.data.change_message_id(old_id, new_id);
+        if (require_rerender) {
+            this.rerender_view();
+        }
     }
 
     get_last_message_sent_by_me() {

@@ -9,6 +9,9 @@
 
 const rewiremock = require("rewiremock/node");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 const markdown_config = zrequire("markdown_config");
 
 set_global("page_params", {});

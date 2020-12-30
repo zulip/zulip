@@ -6,7 +6,7 @@ import zerver.views.report
 import zerver.views.streams
 import zerver.views.tutorial
 
-# Future endpoints should add to urls.py, which includes these legacy urls
+# Future endpoints should add to urls.py, which includes these legacy URLs
 
 legacy_urls = [
     # These are json format views used by the web client.  They require a logged in browser.

@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 zrequire("Filter", "js/filter");
 zrequire("FetchStatus", "js/fetch_status");
 zrequire("MessageListData", "js/message_list_data");

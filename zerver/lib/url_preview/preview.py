@@ -91,12 +91,16 @@ def get_link_embed_data(url: str,
 
     response = requests.get(mark_sanitized(url), stream=True, headers=HEADERS, timeout=TIMEOUT)
     if response.ok:
-        og_data = OpenGraphParser(response.text).extract_data()
+        og_data = OpenGraphParser(
+            response.content, response.headers.get("Content-Type")
+        ).extract_data()
         for key in ['title', 'description', 'image']:
             if not data.get(key) and og_data.get(key):
                 data[key] = og_data[key]
 
-        generic_data = GenericParser(response.text).extract_data() or {}
+        generic_data = GenericParser(
+            response.content, response.headers.get("Content-Type")
+        ).extract_data() or {}
         for key in ['title', 'description', 'image']:
             if not data.get(key) and generic_data.get(key):
                 data[key] = generic_data[key]

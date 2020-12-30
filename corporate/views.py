@@ -142,7 +142,7 @@ def upgrade(request: HttpRequest, user: UserProfile,
         return json_error(e.message, data={'error_description': e.description})
     except Exception:
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
-        error_message = BillingError.CONTACT_SUPPORT
+        error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
         error_description = "uncaught exception during upgrade"
         return json_error(error_message, data={'error_description': error_description})
     else:

@@ -6,13 +6,11 @@ import secrets
 import shutil
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-import boto3
 import orjson
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Max
 from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
@@ -29,10 +27,11 @@ from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
+from zerver.lib.message import get_last_message_id
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import BadImageError, guess_type, sanitize_name
+from zerver.lib.upload import BadImageError, get_bucket, guess_type, sanitize_name
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
     AlertWord,
@@ -171,10 +170,7 @@ def create_subscription_events(data: TableData, realm_id: int) -> None:
     """
     all_subscription_logs = []
 
-    # from bulk_add_subscriptions in lib/actions
-    event_last_message_id = Message.objects.aggregate(Max('id'))['id__max']
-    if event_last_message_id is None:
-        event_last_message_id = -1
+    event_last_message_id = get_last_message_id()
     event_time = timezone_now()
 
     recipient_id_to_stream_id = {
@@ -358,8 +354,8 @@ def idseq(model_class: Any) -> str:
 def allocate_ids(model_class: Any, count: int) -> List[int]:
     """
     Increases the sequence number for a given table by the amount of objects being
-    imported into that table. Hence, this gives a reserved range of ids to import the
-    converted slack objects into the tables.
+    imported into that table. Hence, this gives a reserved range of IDs to import the
+    converted Slack objects into the tables.
     """
     conn = connection.cursor()
     sequence = idseq(model_class)
@@ -659,8 +655,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = session.resource('s3').Bucket(bucket_name)
+        bucket = get_bucket(bucket_name)
 
     count = 0
     for record in records:
@@ -1033,7 +1028,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     import_uploads(realm, os.path.join(import_dir, "uploads"), processes)
 
     # We need to have this check as the emoji files are only present in the data
-    # importer from slack
+    # importer from Slack
     # For Zulip export, this doesn't exist
     if os.path.exists(os.path.join(import_dir, "emoji")):
         import_uploads(realm, os.path.join(import_dir, "emoji"), processes, processing_emojis=True)
@@ -1201,7 +1196,7 @@ def import_message_data(realm: Realm,
         re_map_foreign_keys(data, 'zerver_message', 'recipient', related_table="recipient")
         re_map_foreign_keys(data, 'zerver_message', 'sending_client', related_table='client')
         fix_datetime_fields(data, 'zerver_message')
-        # Parser to update message content with the updated attachment urls
+        # Parser to update message content with the updated attachment URLs
         fix_upload_links(data, 'zerver_message')
 
         # We already create mappings for zerver_message ids

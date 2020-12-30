@@ -15,14 +15,14 @@ class MarkdownReturnValuesTableGenerator(Extension):
     def __init__(self, configs: Mapping[str, Any] = {}) -> None:
         self.config: Dict[str, Any] = {}
 
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
-        md.preprocessors.add(
-            'generate_return_values', APIReturnValuesTablePreprocessor(md, self.getConfigs()), '_begin',
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
+        md.preprocessors.register(
+            APIReturnValuesTablePreprocessor(md, self.getConfigs()), 'generate_return_values', 510
         )
 
 
 class APIReturnValuesTablePreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
 
     def run(self, lines: List[str]) -> List[str]:

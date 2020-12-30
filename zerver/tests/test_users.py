@@ -5,14 +5,19 @@ from unittest import mock
 
 import orjson
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
     create_users,
+    do_change_can_create_users,
     do_change_user_role,
     do_create_user,
     do_deactivate_user,
+    do_delete_user,
+    do_invite_users,
     do_reactivate_user,
     do_set_realm_property,
     get_emails_from_user_ids,
@@ -26,6 +31,7 @@ from zerver.lib.send_email import clear_scheduled_emails, deliver_email, send_fu
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    cache_tries_captured,
     get_subscription,
     get_test_image_file,
     queries_captured,
@@ -39,10 +45,14 @@ from zerver.lib.users import access_user_by_id, get_accounts_for_email, user_ids
 from zerver.models import (
     CustomProfileField,
     InvalidFakeEmailDomain,
+    Message,
+    PreregistrationUser,
     Realm,
     RealmDomain,
     Recipient,
     ScheduledEmail,
+    Stream,
+    Subscription,
     UserHotspot,
     UserProfile,
     check_valid_user_ids,
@@ -242,7 +252,7 @@ class PermissionTest(ZulipTestCase):
         self.login_user(user)
 
         # First, verify client_gravatar works normally
-        result = self.client_get('/json/users?client_gravatar=true')
+        result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
@@ -265,7 +275,7 @@ class PermissionTest(ZulipTestCase):
         # is automatically disabled for the user.
         do_set_realm_property(user.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
-        result = self.client_get('/json/users?client_gravatar=true')
+        result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
@@ -293,7 +303,7 @@ class PermissionTest(ZulipTestCase):
         # delivery_email is sent for admins.
         admin.refresh_from_db()
         self.login_user(admin)
-        result = self.client_get('/json/users?client_gravatar=true')
+        result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()['members']
         hamlet = find_dict(members, 'user_id', user.id)
@@ -589,7 +599,7 @@ class PermissionTest(ZulipTestCase):
             'Biography': 'long text data',
             'Favorite food': 'short text data',
             'Favorite editor': 'vim',
-            'Birthday': '1909-3-5',
+            'Birthday': '1909-03-05',
             'Favorite website': 'https://zulip.com',
             'Mentor': [cordelia.id],
             'GitHub': 'timabbott',
@@ -715,6 +725,71 @@ class PermissionTest(ZulipTestCase):
                                    {'profile_data': orjson.dumps(new_profile_data).decode()})
         self.assert_json_error(result, 'Insufficient permission')
 
+class QueryCountTest(ZulipTestCase):
+    def test_create_user_with_multiple_streams(self) -> None:
+        # add_new_user_history needs messages to be current
+        Message.objects.all().update(date_sent=timezone_now())
+
+        ContentType.objects.clear_cache()
+
+        # This just focuses on making sure we don't too many
+        # queries/cache tries or send too many events.
+        realm = get_realm("zulip")
+
+        self.make_stream("private_stream1", invite_only=True)
+        self.make_stream("private_stream2", invite_only=True)
+
+        stream_names = [
+            "Denmark",
+            "Scotland",
+            "Verona",
+            "private_stream1",
+            "private_stream2",
+        ]
+        streams = [
+            get_stream(stream_name, realm)
+            for stream_name in stream_names
+        ]
+
+        do_invite_users(
+            user_profile=self.example_user("hamlet"),
+            invitee_emails=["fred@zulip.com"],
+            streams=streams,
+        )
+
+        prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
+
+        events: List[Mapping[str, Any]] = []
+
+        with queries_captured() as queries:
+            with cache_tries_captured() as cache_tries:
+                with tornado_redirected_to_list(events):
+                    fred = do_create_user(
+                        email="fred@zulip.com",
+                        password="password",
+                        realm=realm,
+                        full_name="Fred Flintstone",
+                        prereg_user=prereg_user,
+                    )
+
+        self.assert_length(queries, 70)
+        self.assert_length(cache_tries, 20)
+        self.assert_length(events, 7)
+
+        peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
+
+        notifications = set()
+        for event in peer_add_events:
+            stream_ids = event["event"]["stream_ids"]
+            stream_names = sorted(
+                Stream.objects.get(id=stream_id).name
+                for stream_id in stream_ids
+            )
+            self.assertTrue(event["event"]["user_ids"], {fred.id})
+            notifications.add(",".join(stream_names))
+
+        self.assertEqual(notifications, {"Denmark,Scotland,Verona", "private_stream1", "private_stream2"})
+
 class BulkCreateUserTest(ZulipTestCase):
     def test_create_users(self) -> None:
         realm = get_realm('zulip')
@@ -722,7 +797,7 @@ class BulkCreateUserTest(ZulipTestCase):
         realm.save()
 
         name_list = [
-            ('Fred Flinstone', 'fred@zulip.com'),
+            ('Fred Flintstone', 'fred@zulip.com'),
             ('Lisa Simpson', 'lisa@zulip.com'),
         ]
 
@@ -767,6 +842,23 @@ class AdminCreateUserTest(ZulipTestCase):
         realm = admin.realm
         self.login_user(admin)
         do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        valid_params = dict(
+            email='romeo@zulip.net',
+            password='xxxx',
+            full_name='Romeo Montague',
+        )
+
+        self.assertEqual(admin.can_create_users, False)
+        result = self.client_post("/json/users", valid_params)
+        self.assert_json_error(result, "User not authorized for this query")
+
+        do_change_can_create_users(admin, True)
+        # can_create_users is insufficient without being a realm administrator:
+        do_change_user_role(admin, UserProfile.ROLE_MEMBER)
+        result = self.client_post("/json/users", valid_params)
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         result = self.client_post("/json/users", {})
         self.assert_json_error(result, "Missing 'email' argument")
@@ -808,11 +900,6 @@ class AdminCreateUserTest(ZulipTestCase):
                                "Email 'romeo@not-zulip.com' not allowed in this organization")
 
         RealmDomain.objects.create(realm=get_realm('zulip'), domain='zulip.net')
-        valid_params = dict(
-            email='romeo@zulip.net',
-            password='xxxx',
-            full_name='Romeo Montague',
-        )
         # Check can't use a bad password with zxcvbn enabled
         with self.settings(PASSWORD_MIN_LENGTH=6, PASSWORD_MIN_GUESSES=1000):
             result = self.client_post("/json/users", valid_params)
@@ -1142,7 +1229,7 @@ class UserProfileTest(ZulipTestCase):
         with queries_captured() as queries:
             result = orjson.loads(self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content)
 
-        self.assert_length(queries, 7)
+        self.assert_length(queries, 6)
         self.assertTrue(result['is_subscribed'])
 
         # Logging in with a Guest user.
@@ -1183,7 +1270,7 @@ class ActivateTest(ZulipTestCase):
     def test_api_with_nonexistent_user(self) -> None:
         self.login('iago')
 
-        # Organization Administrator cannot deactivate organization owner.
+        # Organization administrator cannot deactivate organization owner.
         result = self.client_delete(f'/json/users/{self.example_user("desdemona").id}')
         self.assert_json_error(result, 'Must be an organization owner')
 
@@ -1594,7 +1681,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertTrue(result['is_owner'])
         self.assertFalse(result['is_guest'])
 
-        # Tests the GET ../users/{id} api endpoint.
+        # Tests the GET ../users/{id} API endpoint.
         user = self.example_user('hamlet')
         result = orjson.loads(self.client_get(f'/json/users/{user.id}').content)
         self.assertEqual(result['user']['email'], user.email)
@@ -1605,10 +1692,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['user']['is_admin'])
         self.assertFalse(result['user']['is_owner'])
 
-        result = orjson.loads(self.client_get(f'/json/users/{user.id}?include_custom_profile_fields=true').content)
+        result = orjson.loads(self.client_get(f"/json/users/{user.id}", {"include_custom_profile_fields": "true"}).content)
 
         self.assertIn('profile_data', result['user'])
-        result = self.client_get(f'/json/users/{30}?')
+        result = self.client_get("/json/users/30")
         self.assert_json_error(result, "No such user")
 
         bot = self.example_user("default_bot")
@@ -1630,6 +1717,65 @@ class GetProfileTest(ZulipTestCase):
             my_user['avatar_url'],
             avatar_url(hamlet),
         )
+
+class DeleteUserTest(ZulipTestCase):
+    def test_do_delete_user(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+        hamlet = self.example_user('hamlet')
+        hamlet_personal_recipient = hamlet.recipient
+        hamlet_user_id = hamlet.id
+
+        self.send_personal_message(cordelia, hamlet)
+        self.send_personal_message(hamlet, cordelia)
+
+        personal_message_ids_to_hamlet = Message.objects.filter(recipient=hamlet_personal_recipient) \
+            .values_list('id', flat=True)
+        self.assertTrue(len(personal_message_ids_to_hamlet) > 0)
+        self.assertTrue(Message.objects.filter(sender=hamlet).exists())
+
+        huddle_message_ids_from_cordelia = [
+            self.send_huddle_message(
+                cordelia,
+                [hamlet, othello]
+            )
+            for i in range(3)
+        ]
+        huddle_message_ids_from_hamlet = [
+            self.send_huddle_message(
+                hamlet,
+                [cordelia, othello]
+            )
+            for i in range(3)
+        ]
+
+        huddle_with_hamlet_recipient_ids = list(
+            Subscription.objects.filter(user_profile=hamlet, recipient__type=Recipient.HUDDLE)
+            .values_list('recipient_id', flat=True)
+        )
+        self.assertTrue(len(huddle_with_hamlet_recipient_ids) > 0)
+
+        do_delete_user(hamlet)
+
+        replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
+
+        self.assertEqual(replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@{realm.uri}")
+        self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
+
+        self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 0)
+        # Huddle messages from hamlet should have been deleted, but messages of other participants should
+        # be kept.
+        self.assertEqual(Message.objects.filter(id__in=huddle_message_ids_from_hamlet).count(), 0)
+        self.assertEqual(Message.objects.filter(id__in=huddle_message_ids_from_cordelia).count(), 3)
+
+        self.assertEqual(Message.objects.filter(sender_id=hamlet_user_id).count(), 0)
+
+        # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
+        # in a correct state.
+        for recipient_id in huddle_with_hamlet_recipient_ids:
+            self.assertTrue(Subscription.objects.filter(user_profile=replacement_dummy_user,
+                                                        recipient_id=recipient_id).exists())
 
 class FakeEmailDomainTest(ZulipTestCase):
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain")

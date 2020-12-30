@@ -242,7 +242,7 @@ the areas mentioned above are not your main strength.
 
 As a data point, in Summer 2017, we had 4 students working on the
 React Native mobile app (1 focused primarily on visual design), 1 on
-the Electron Desktop app, 2 on bots/integrations, 1 on webapp visual
+the Electron desktop app, 2 on bots/integrations, 1 on webapp visual
 design, 2 on our development tooling and automated testing
 infrastructure, and the remaining 4 on various other parts of the
 backend and core webapp.
@@ -298,7 +298,7 @@ CSS](https://github.com/zulip/zulip/).
   would be great to demonstrate as part of an application.  The
   [Zulip integration writing guide](../documentation/integrations.md)
   and
-  [integration documentation](https://chat.zulip.org/integrations/)
+  [integration documentation](https://zulip.com/integrations/)
   are useful materials for learning about how things currently work,
   and
   [the integrations label on GitHub](https://github.com/zulip/zulip/labels/area%3A%20integrations)
@@ -307,7 +307,7 @@ CSS](https://github.com/zulip/zulip/).
 
 - Build a meta-integration that converts the Slack incoming webhook
   API to post messages into Zulip. Zulip has several dozen native
-  integrations (https://chat.zulip.org/integrations/), but Slack has a
+  integrations (https://zulip.com/integrations/), but Slack has a
   ton more.  We should build an interface to make all of Slack’s
   numerous third-party integrations work with Zulip as well, by
   basically building a Zulip incoming webhook interface that accepts
@@ -348,7 +348,7 @@ CSS](https://github.com/zulip/zulip/).
   (likely part 1) is
   [here](../subsystems/custom-apps.md).
   **Skills recommended**: Python and JavaScript/CSS, plus devops
-  skills (Linux deployment, Docker, puppet etc.) are all useful here.
+  skills (Linux deployment, Docker, Puppet etc.) are all useful here.
   Experience writing tools using various popular APIs is helpful for
   being able to make good choices.  Experts: Steve Howell.
 
@@ -454,7 +454,7 @@ Expert: Tommy Ip, Tim Abbott.
   adding [mypy](../testing/mypy.md) stubs
   for Django in mypy to make our type checking more powerful.  Read
   [our mypy blog post](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/)
-  for details on how mypy works and is integrated into zulip.  This
+  for details on how mypy works and is integrated into Zulip.  This
   specific project is ideal for a strong contributor interested in
   type systems.
 

@@ -322,35 +322,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         stat3 = DependentCountStat('stat3', sql_data_collector(RealmCount, query, None),
                                    CountStat.HOUR,
                                    dependencies=['stat1', 'stat2'])
-        hour = [installation_epoch() + i*self.HOUR for i in range(5)]
 
-        # test when one dependency has been run, and the other hasn't
-        process_count_stat(stat1, hour[2])
-        process_count_stat(stat3, hour[1])
-        self.assertTableState(InstallationCount, ['property', 'end_time'],
-                              [['stat1', hour[1]], ['stat1', hour[2]]])
-        self.assertFillStateEquals(stat3, hour[0])
-
-        # test that we don't fill past the fill_to_time argument, even if
-        # dependencies have later last_successful_fill
-        process_count_stat(stat2, hour[3])
-        process_count_stat(stat3, hour[1])
-        self.assertTableState(InstallationCount, ['property', 'end_time'],
-                              [['stat1', hour[1]], ['stat1', hour[2]],
-                               ['stat2', hour[1]], ['stat2', hour[2]], ['stat2', hour[3]],
-                               ['stat3', hour[1]]])
-        self.assertFillStateEquals(stat3, hour[1])
-
-        # test that we don't fill past the dependency last_successful_fill times,
-        # even if fill_to_time is later
-        process_count_stat(stat3, hour[4])
-        self.assertTableState(InstallationCount, ['property', 'end_time'],
-                              [['stat1', hour[1]], ['stat1', hour[2]],
-                               ['stat2', hour[1]], ['stat2', hour[2]], ['stat2', hour[3]],
-                               ['stat3', hour[1]], ['stat3', hour[2]]])
-        self.assertFillStateEquals(stat3, hour[2])
-
-        # test daily dependent stat with hourly dependencies
         query = lambda kwargs: SQL("""
             INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
             VALUES ({default_realm_id}, 1, {property}, %(time_end)s)
@@ -361,13 +333,51 @@ class TestProcessCountStat(AnalyticsTestCase):
         stat4 = DependentCountStat('stat4', sql_data_collector(RealmCount, query, None),
                                    CountStat.DAY,
                                    dependencies=['stat1', 'stat2'])
-        hour24 = installation_epoch() + 24*self.HOUR
-        hour25 = installation_epoch() + 25*self.HOUR
-        process_count_stat(stat1, hour25)
-        process_count_stat(stat2, hour25)
-        process_count_stat(stat4, hour25)
-        self.assertEqual(InstallationCount.objects.filter(property='stat4').count(), 1)
-        self.assertFillStateEquals(stat4, hour24)
+
+        dummy_count_stats = {
+            "stat1": stat1,
+            "stat2": stat2,
+            "stat3": stat3,
+            "stat4": stat4,
+
+        }
+        with mock.patch("analytics.lib.counts.COUNT_STATS", dummy_count_stats):
+            hour = [installation_epoch() + i*self.HOUR for i in range(5)]
+
+            # test when one dependency has been run, and the other hasn't
+            process_count_stat(stat1, hour[2])
+            process_count_stat(stat3, hour[1])
+            self.assertTableState(InstallationCount, ['property', 'end_time'],
+                                  [['stat1', hour[1]], ['stat1', hour[2]]])
+            self.assertFillStateEquals(stat3, hour[0])
+
+            # test that we don't fill past the fill_to_time argument, even if
+            # dependencies have later last_successful_fill
+            process_count_stat(stat2, hour[3])
+            process_count_stat(stat3, hour[1])
+            self.assertTableState(InstallationCount, ['property', 'end_time'],
+                                  [['stat1', hour[1]], ['stat1', hour[2]],
+                                  ['stat2', hour[1]], ['stat2', hour[2]], ['stat2', hour[3]],
+                                  ['stat3', hour[1]]])
+            self.assertFillStateEquals(stat3, hour[1])
+
+            # test that we don't fill past the dependency last_successful_fill times,
+            # even if fill_to_time is later
+            process_count_stat(stat3, hour[4])
+            self.assertTableState(InstallationCount, ['property', 'end_time'],
+                                  [['stat1', hour[1]], ['stat1', hour[2]],
+                                  ['stat2', hour[1]], ['stat2', hour[2]], ['stat2', hour[3]],
+                                  ['stat3', hour[1]], ['stat3', hour[2]]])
+            self.assertFillStateEquals(stat3, hour[2])
+
+            # test daily dependent stat with hourly dependencies
+            hour24 = installation_epoch() + 24*self.HOUR
+            hour25 = installation_epoch() + 25*self.HOUR
+            process_count_stat(stat1, hour25)
+            process_count_stat(stat2, hour25)
+            process_count_stat(stat4, hour25)
+            self.assertEqual(InstallationCount.objects.filter(property='stat4').count(), 1)
+            self.assertFillStateEquals(stat4, hour24)
 
 class TestCountStats(AnalyticsTestCase):
     def setUp(self) -> None:
@@ -995,6 +1005,25 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(InstallationCount, ['value'], [])
         self.assertTableState(StreamCount, [], [])
 
+    def test_last_successful_fill(self) -> None:
+        self.assertIsNone(COUNT_STATS["messages_sent:is_bot:hour"].last_successful_fill())
+
+        a_time = datetime(2016, 3, 14, 19, tzinfo=timezone.utc)
+        one_hour_before = datetime(2016, 3, 14, 18, tzinfo=timezone.utc)
+        one_day_before = datetime(2016, 3, 13, 19, tzinfo=timezone.utc)
+
+        fillstate = FillState.objects.create(property=COUNT_STATS["messages_sent:is_bot:hour"].property,
+                                             end_time=a_time, state=FillState.DONE)
+        self.assertEqual(COUNT_STATS["messages_sent:is_bot:hour"].last_successful_fill(), a_time)
+
+        fillstate.state = FillState.STARTED
+        fillstate.save(update_fields=["state"])
+        self.assertEqual(COUNT_STATS["messages_sent:is_bot:hour"].last_successful_fill(), one_hour_before)
+
+        fillstate.property = COUNT_STATS["7day_actives::day"].property
+        fillstate.save(update_fields=["property"])
+        self.assertEqual(COUNT_STATS["7day_actives::day"].last_successful_fill(), one_day_before)
+
 class TestDoAggregateToSummaryTable(AnalyticsTestCase):
     # do_aggregate_to_summary_table is mostly tested by the end to end
     # nature of the tests in TestCountStats. But want to highlight one
@@ -1178,7 +1207,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         self.send_stream_message(user1, stream.name)
         self.send_stream_message(user1, stream.name)
-        do_mark_stream_messages_as_read(user2, client, stream)
+        do_mark_stream_messages_as_read(user2, stream.recipient_id)
         self.assertEqual(3, UserCount.objects.filter(property=read_count_property)
                          .aggregate(Sum('value'))['value__sum'])
         self.assertEqual(2, UserCount.objects.filter(property=interactions_property)

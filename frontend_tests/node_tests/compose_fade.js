@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 zrequire("stream_data");
 const people = zrequire("people");
 zrequire("compose_fade");
@@ -38,7 +43,7 @@ run_test("set_focused_recipient", () => {
     stream_data.add_sub(sub);
     stream_data.set_subscribers(sub, [me.user_id, alice.user_id]);
 
-    global.$ = function (selector) {
+    set_global("$", (selector) => {
         switch (selector) {
             case "#stream_message_recipient_stream":
                 return {
@@ -55,7 +60,7 @@ run_test("set_focused_recipient", () => {
             default:
                 throw new Error(`Unknown selector ${selector}`);
         }
-    };
+    });
 
     compose_fade.set_focused_recipient("stream");
 

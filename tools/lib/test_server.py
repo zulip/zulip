@@ -25,7 +25,7 @@ from zerver.lib.test_fixtures import update_test_databases_if_required
 
 def set_up_django(external_host: str) -> None:
     os.environ['FULL_STACK_ZULIP_TEST'] = '1'
-    os.environ['EXTERNAL_HOST'] = external_host
+    os.environ['TEST_EXTERNAL_HOST'] = external_host
     os.environ["LOCAL_UPLOADS_DIR"] = get_or_create_dev_uuid_var_path(
         'test-backend/test_uploads')
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
@@ -46,7 +46,7 @@ def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> 
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
         # Note that zulipdev.com is mapped via DNS to 127.0.0.1.
         return requests.get('http://zulipdev.com:9981/accounts/home').status_code == 200
-    except Exception:
+    except requests.RequestException:
         return False
 
 @contextmanager
@@ -93,6 +93,7 @@ def test_server_running(force: bool=False, external_host: str='testserver',
     finally:
         assert_server_running(server, log_file)
         server.terminate()
+        server.wait()
 
 if __name__ == '__main__':
     # The code below is for testing this module works

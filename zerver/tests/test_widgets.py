@@ -101,7 +101,7 @@ class WidgetContentTestCase(ZulipTestCase):
             self.assertEqual(get_widget_data(content=message), (None, None))
 
         # Add a positive check for context
-        self.assertEqual(get_widget_data(content='/tictactoe'), ('tictactoe', None))
+        self.assertEqual(get_widget_data(content='/todo'), ('todo', None))
 
     def test_explicit_widget_content(self) -> None:
         # Users can send widget_content directly on messages
@@ -146,14 +146,13 @@ class WidgetContentTestCase(ZulipTestCase):
         self.assertEqual(submessage.msg_type, 'widget')
         self.assertEqual(orjson.loads(submessage.content), expected_submessage_content)
 
-    def test_tictactoe(self) -> None:
-        # The tictactoe widget is mostly useful as a code sample,
-        # and it also helps us get test coverage that could apply
+    def test_todo(self) -> None:
+        # This also helps us get test coverage that could apply
         # to future widgets.
 
         sender = self.example_user('cordelia')
         stream_name = 'Verona'
-        content = '/tictactoe'
+        content = '/todo'
 
         payload = dict(
             type="stream",
@@ -169,7 +168,7 @@ class WidgetContentTestCase(ZulipTestCase):
         self.assertEqual(message.content, content)
 
         expected_submessage_content = dict(
-            widget_type="tictactoe",
+            widget_type="todo",
             extra_data=None,
         )
 

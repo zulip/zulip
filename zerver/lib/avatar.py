@@ -29,7 +29,7 @@ def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool=False) -> str:
     DEPRECATED: We should start using
                 get_avatar_field to populate users,
                 particularly for codepaths where the
-                client can compute gravatar URLS
+                client can compute gravatar URLs
                 on the client side.
     '''
     url = _get_unversioned_avatar_url(

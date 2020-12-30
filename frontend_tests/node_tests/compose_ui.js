@@ -1,6 +1,12 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const autosize = require("autosize");
+
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("compose_ui");
 const people = zrequire("people");
@@ -12,7 +18,7 @@ set_global("document", {
     },
 });
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 const alice = {
     email: "alice@zulip.com",

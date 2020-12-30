@@ -144,7 +144,7 @@ def make_zoom_video_call(request: HttpRequest, user: UserProfile) -> HttpRespons
 @require_POST
 @has_request_variables
 def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
-    data = json.loads(request.body.decode("utf-8"))
+    data = json.loads(request.body)
     payload = data["payload"]
     if payload["user_data_retention"] == "false":
         requests.post(
@@ -162,7 +162,7 @@ def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
 
 
 def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    # https://docs.bigbluebutton.org/dev/api.html#create for reference on the api calls
+    # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
     password = b32encode(secrets.token_bytes(7))[:10].decode()
@@ -190,16 +190,16 @@ def join_bigbluebutton(request: HttpRequest, meeting_id: str = REQ(validator=che
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
         return json_error(_("Big Blue Button is not configured."))
     else:
-        response = requests.get(
-            add_query_to_redirect_url(settings.BIG_BLUE_BUTTON_URL + "api/create", urlencode({
-                "meetingID": meeting_id,
-                "moderatorPW": password,
-                "attendeePW": password + "a",
-                "checksum": checksum
-            })))
         try:
+            response = requests.get(
+                add_query_to_redirect_url(settings.BIG_BLUE_BUTTON_URL + "api/create", urlencode({
+                    "meetingID": meeting_id,
+                    "moderatorPW": password,
+                    "attendeePW": password + "a",
+                    "checksum": checksum
+                })))
             response.raise_for_status()
-        except Exception:
+        except requests.RequestException:
             return json_error(_("Error connecting to the Big Blue Button server."))
 
         payload = ElementTree.fromstring(response.text)

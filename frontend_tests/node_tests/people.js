@@ -1,8 +1,13 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
 const moment = require("moment-timezone");
 const rewiremock = require("rewiremock/node");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 const people = rewiremock.proxy(() => zrequire("people"), {
     "moment-timezone": () => moment("20130208T080910"),
@@ -35,7 +40,7 @@ const me = {
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-    timezone: "US/Pacific",
+    timezone: "America/Los_Angeles",
     is_admin: false,
     is_guest: false,
     is_bot: false,
@@ -387,22 +392,22 @@ run_test("bot_custom_profile_data", () => {
 
 run_test("user_timezone", () => {
     const expected_pref = {
-        timezone: "US/Pacific",
+        timezone: "America/Los_Angeles",
         format: "H:mm",
     };
 
-    global.page_params.twenty_four_hour_time = true;
+    page_params.twenty_four_hour_time = true;
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
 
     expected_pref.format = "h:mm A";
-    global.page_params.twenty_four_hour_time = false;
+    page_params.twenty_four_hour_time = false;
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
 
-    global.page_params.twenty_four_hour_time = true;
+    page_params.twenty_four_hour_time = true;
     assert.equal(people.get_user_time(me.user_id), "0:09");
 
     expected_pref.format = "h:mm A";
-    global.page_params.twenty_four_hour_time = false;
+    page_params.twenty_four_hour_time = false;
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
 });
 
@@ -630,7 +635,7 @@ run_test("message_methods", () => {
                     value: "Field value",
                 },
             },
-            timezone: "US/Pacific",
+            timezone: "America/Los_Angeles",
             user_id: 30,
         },
     ]);
@@ -749,7 +754,7 @@ run_test("extract_people_from_message", () => {
 
     // Get line coverage
     people.__Rewire__("report_late_add", () => {
-        throw Error("unexpected late add");
+        throw new Error("unexpected late add");
     });
 
     message = {
@@ -878,14 +883,14 @@ run_test("updates", () => {
     const all_people = get_all_persons();
     assert.equal(all_people.length, 2);
 
-    person = all_people.filter((p) => p.email === new_email)[0];
+    person = all_people.find((p) => p.email === new_email);
     assert.equal(person.full_name, "Foo Barson");
 
     // Test shim where we can still retrieve user info using the
     // old email.
     blueslip.expect(
         "warn",
-        "Obsolete email passed to get_by_email: " + "FOO@example.com new email = bar@example.com",
+        "Obsolete email passed to get_by_email: FOO@example.com new email = bar@example.com",
     );
     person = people.get_by_email(old_email);
     assert.equal(person.user_id, user_id);
@@ -999,9 +1004,9 @@ run_test("initialize", () => {
     const fetched_retiree = people.get_by_user_id(15);
     assert.equal(fetched_retiree.full_name, "Retiree");
 
-    assert.equal(global.page_params.realm_users, undefined);
-    assert.equal(global.page_params.cross_realm_bots, undefined);
-    assert.equal(global.page_params.realm_non_active_users, undefined);
+    assert.equal(page_params.realm_users, undefined);
+    assert.equal(page_params.cross_realm_bots, undefined);
+    assert.equal(page_params.realm_non_active_users, undefined);
 });
 
 run_test("filter_for_user_settings_search", () => {

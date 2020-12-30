@@ -82,7 +82,7 @@ def relative_to_full_url(base_url: str, content: str) -> str:
         fragment = lxml.html.fromstring(new_content)
 
     fragment.make_links_absolute(base_url)
-    content = lxml.html.tostring(fragment).decode("utf-8")
+    content = lxml.html.tostring(fragment, encoding="unicode")
 
     return content
 
@@ -115,7 +115,7 @@ def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
         del realm_emoji.attrib['class']
         realm_emoji.set('style', 'height: 20px;')
 
-    content = lxml.html.tostring(fragment).decode('utf-8')
+    content = lxml.html.tostring(fragment, encoding="unicode")
     return content
 
 def fix_spoilers_in_html(content: str, language: str) -> str:
@@ -141,7 +141,7 @@ def fix_spoilers_in_html(content: str, language: str) -> str:
         header_content.append(span_elem)
         header.drop_tag()
         spoiler_content.drop_tree()
-    content = lxml.html.tostring(fragment).decode("utf-8")
+    content = lxml.html.tostring(fragment, encoding="unicode")
     return content
 
 def fix_spoilers_in_text(content: str, language: str) -> str:
@@ -343,7 +343,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     Send a reminder email to a user if she's missed some PMs by being offline.
 
     The email will have its reply to address set to a limited used email
-    address that will send a zulip message to the correct recipient. This
+    address that will send a Zulip message to the correct recipient. This
     allows the user to respond to missed PMs, huddles, and @-mentions directly
     from the email.
 
@@ -557,13 +557,6 @@ def handle_missedmessage_emails(user_profile_id: int,
             list(unique_messages.values()),
             message_count_by_bucket[bucket_tup],
         )
-
-def log_digest_event(msg: str) -> None:
-    import logging
-    import time
-    logging.Formatter.converter = time.gmtime
-    logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
-    logging.info(msg)
 
 def followup_day2_email_delay(user: UserProfile) -> timedelta:
     days_to_delay = 2

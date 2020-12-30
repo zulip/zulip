@@ -15,7 +15,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured
+from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import LEGACY_PREV_TOPIC, TOPIC_NAME
 from zerver.models import Message, Stream, UserMessage, UserProfile
 
@@ -37,13 +37,14 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(msg.content, content)
 
         '''
-        Next, we will make sure we properly cached the
-        messages.  We still have to do 2 queries to
-        hydrate sender/recipient info, but we won't need
-        to hit the zerver_message table.
+        We assume our caller just edited a message.
+
+        Next, we will make sure we properly cached the messages.  We still have
+        to do a query to hydrate recipient info, but we won't need to hit the
+        zerver_message table.
         '''
 
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             (fetch_message_dict,) = messages_for_ids(
                 message_ids = [msg.id],
                 user_message_flags={msg_id: []},
@@ -53,7 +54,7 @@ class EditMessageTest(ZulipTestCase):
                 allow_edit_history=True,
             )
 
-        self.assertEqual(len(queries), 2)
+        self.assert_length(queries, 1)
         for query in queries:
             self.assertNotIn('message', query['sql'])
 
@@ -249,8 +250,7 @@ class EditMessageTest(ZulipTestCase):
         messages_result = self.client_get("/json/messages",
                                           {"anchor": msg_id_1, "num_before": 0, "num_after": 10})
         self.assert_json_success(messages_result)
-        json_messages = orjson.loads(
-            messages_result.content.decode('utf-8'))
+        json_messages = orjson.loads(messages_result.content)
         for msg in json_messages['messages']:
             self.assertNotIn("edit_history", msg)
 
@@ -271,8 +271,7 @@ class EditMessageTest(ZulipTestCase):
 
         message_edit_history_1 = self.client_get(
             "/json/messages/" + str(msg_id_1) + "/history")
-        json_response_1 = orjson.loads(
-            message_edit_history_1.content.decode('utf-8'))
+        json_response_1 = orjson.loads(message_edit_history_1.content)
         message_history_1 = json_response_1['message_history']
 
         # Check content of message after edit.
@@ -307,8 +306,7 @@ class EditMessageTest(ZulipTestCase):
 
         message_edit_history_2 = self.client_get(
             "/json/messages/" + str(msg_id_2) + "/history")
-        json_response_2 = orjson.loads(
-            message_edit_history_2.content.decode('utf-8'))
+        json_response_2 = orjson.loads(message_edit_history_2.content)
         message_history_2 = json_response_2['message_history']
 
         self.assertEqual(message_history_2[0]['rendered_content'],
@@ -342,8 +340,7 @@ class EditMessageTest(ZulipTestCase):
 
         message_edit_history_1 = self.client_get(
             "/json/messages/" + str(msg_id_1) + "/history")
-        json_response_1 = orjson.loads(
-            message_edit_history_1.content.decode('utf-8'))
+        json_response_1 = orjson.loads(message_edit_history_1.content)
         message_history_1 = json_response_1['message_history']
 
         # Check content of message after edit.
@@ -469,7 +466,7 @@ class EditMessageTest(ZulipTestCase):
         # correct filled-out fields
         message_edit_history = self.client_get("/json/messages/" + str(msg_id) + "/history")
 
-        json_response = orjson.loads(message_edit_history.content.decode('utf-8'))
+        json_response = orjson.loads(message_edit_history.content)
 
         # We reverse the message history view output so that the IDs line up with the above.
         message_history = list(reversed(json_response['message_history']))
@@ -956,14 +953,15 @@ class EditMessageTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test")
 
-        with queries_captured() as queries:
+        with queries_captured() as queries, cache_tries_captured() as cache_tries:
             result = self.client_patch("/json/messages/" + str(msg_id), {
                 'message_id': msg_id,
                 'stream_id': new_stream.id,
                 'propagate_mode': 'change_all',
                 'topic': 'new topic',
             })
-        self.assertEqual(len(queries), 51)
+        self.assertEqual(len(queries), 47)
+        self.assertEqual(len(cache_tries), 11)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)

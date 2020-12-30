@@ -20,8 +20,12 @@ sanity_check.check_venv(__file__)
 import orjson
 from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
-INDEX_JS = 'frontend_tests/zjsunit/index.js'
-NODE_COVERAGE_PATH = 'var/node-coverage/coverage-final.json'
+INDEX_JS = os.path.join(ROOT_DIR, 'frontend_tests/zjsunit/index.js')
+NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, 'var/node-coverage/coverage-final.json')
+
+# Ideally, we wouldn't need this line, but it seems to be required to
+# avoid problems finding node_modules when running `cd tools; ./test-js-with-node`.
+os.chdir(ROOT_DIR)
 
 USAGE = '''
     tools/test-js-with-node                      - to run all tests
@@ -49,6 +53,7 @@ EXEMPT_FILES = {
     'static/js/copy_and_paste.js',
     'static/js/csrf.js',
     'static/js/debug.js',
+    'static/js/desktop_integration.js',
     'static/js/drafts.js',
     'static/js/echo.js',
     'static/js/emoji_picker.js',
@@ -141,7 +146,6 @@ EXEMPT_FILES = {
     'static/js/subs.js',
     'static/js/message_view_header.js',
     'static/js/templates.js',
-    'static/js/tictactoe_widget.js',
     'static/js/timerender.js',
     'static/js/todo_widget.js',
     'static/js/topic_list.js',
@@ -230,7 +234,7 @@ def run_tests_via_node_js() -> int:
     if individual_files:
         files = individual_files
     else:
-        files = sorted(glob.glob("frontend_tests/node_tests/*.js"))
+        files = sorted(glob.glob(os.path.join(ROOT_DIR, "frontend_tests/node_tests/*.js")))
 
     node_tests_cmd += clean_files(files)
     if options.coverage:

@@ -1,5 +1,4 @@
 import hashlib
-from typing import Text
 from unittest.mock import patch
 
 from django.conf import settings
@@ -18,7 +17,7 @@ from zerver.models import UserProfile
 # from zerver.lib.upload (which would pretty annoying, but would be a
 # pain) and just using the current version, which doesn't work
 # since we rearranged the avatars in Zulip 1.6.
-def patched_user_avatar_path(user_profile: UserProfile) -> Text:
+def patched_user_avatar_path(user_profile: UserProfile) -> str:
     email = user_profile.email
     user_key = email.lower() + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)

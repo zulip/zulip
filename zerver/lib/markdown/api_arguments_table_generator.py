@@ -21,14 +21,14 @@ class MarkdownArgumentsTableGenerator(Extension):
         for key, value in configs.items():
             self.setConfig(key, value)
 
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
-        md.preprocessors.add(
-            'generate_api_arguments', APIArgumentsTablePreprocessor(md, self.getConfigs()), '_begin',
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
+        md.preprocessors.register(
+            APIArgumentsTablePreprocessor(md, self.getConfigs()), 'generate_api_arguments', 505
         )
 
 
 class APIArgumentsTablePreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
         self.base_path = config['base_path']
 

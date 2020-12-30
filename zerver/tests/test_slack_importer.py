@@ -1,5 +1,6 @@
 import os
 import shutil
+from io import BytesIO
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 from unittest import mock
 from unittest.mock import ANY, call
@@ -57,10 +58,10 @@ class MockResponse:
         return self.json_data
 
 # This method will be used by the mock to replace requests.get
-def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> MockResponse:
-    if args[0] == 'https://slack.com/api/users.list?token=xoxp-valid-token':
+def mocked_requests_get(*args: str) -> MockResponse:
+    if args == ("https://slack.com/api/users.list", {"token": "xoxp-valid-token"}):
         return MockResponse({"ok": True, "members": "user_data"}, 200)
-    elif args[0] == 'https://slack.com/api/users.list?token=xoxp-invalid-token':
+    elif args == ("https://slack.com/api/users.list", {"token": "xoxp-invalid-token"}):
         return MockResponse({"ok": False, "error": "invalid_auth"}, 200)
     else:
         return MockResponse(None, 404)
@@ -309,7 +310,7 @@ class SlackImporter(ZulipTestCase):
         cpf_name.remove('phone')
         cpf_name.remove('skype')
         for name in cpf_name:
-            self.assertTrue(name.startswith('slack custom field '))
+            self.assertTrue(name.startswith('Slack custom field '))
 
         self.assertEqual(len(customprofilefield_value), 6)
         self.assertEqual(customprofilefield_value[0]['field'], 0)
@@ -354,7 +355,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[3]['realm'], 1)
         self.assertEqual(zerver_userprofile[3]['full_name'], 'Matt Perry')
         self.assertEqual(zerver_userprofile[3]['is_mirror_dummy'], True)
-        self.assertEqual(zerver_userprofile[3]['is_api_super_user'], False)
+        self.assertEqual(zerver_userprofile[3]['can_forge_sender'], False)
 
         self.assertEqual(zerver_userprofile[4]['id'], test_slack_user_id_to_zulip_user_id['U8VAHEVUY'])
         self.assertEqual(zerver_userprofile[4]['role'], UserProfile.ROLE_GUEST)
@@ -460,7 +461,7 @@ class SlackImporter(ZulipTestCase):
         self.assertDictEqual(test_added_mpims, added_mpims)
         self.assertDictEqual(test_dm_members, dm_members)
 
-        # We can't do an assertDictEqual since during the construction of Personal
+        # We can't do an assertDictEqual since during the construction of personal
         # recipients, slack_user_id_to_zulip_user_id are iterated in different order in Python 3.5 and 3.6.
         self.assertEqual(set(slack_recipient_name_to_zulip_recipient_id.keys()), slack_recipient_names)
         self.assertEqual(set(slack_recipient_name_to_zulip_recipient_id.values()), set(range(11)))
@@ -654,10 +655,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[5]['has_link'], False)
         self.assertEqual(zerver_message[7]['has_link'], False)
 
-        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], 'imported from slack')
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], 'imported from Slack')
         self.assertEqual(zerver_message[3]['content'], '/me added bot')
         self.assertEqual(zerver_message[4]['recipient'], slack_recipient_name_to_zulip_recipient_id['general'])
-        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], 'imported from slack')
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], 'imported from Slack')
         self.assertEqual(zerver_message[1]['recipient'], slack_recipient_name_to_zulip_recipient_id['random'])
         self.assertEqual(zerver_message[5]['recipient'], slack_recipient_name_to_zulip_recipient_id['mpdm-user9--user2--user10-1'])
         self.assertEqual(zerver_message[6]['recipient'], slack_recipient_name_to_zulip_recipient_id['mpdm-user6--user7--user4-1'])
@@ -755,7 +756,7 @@ class SlackImporter(ZulipTestCase):
 
         test_realm_subdomain = 'test-slack-import'
         output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-slack-importer-data")
-        token = 'valid-token'
+        token = 'xoxp-valid-token'
 
         # If the test fails, the 'output_dir' would not be deleted and hence it would give an
         # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'
@@ -767,7 +768,8 @@ class SlackImporter(ZulipTestCase):
         user_data_fixture = orjson.loads(self.fixture_data('user_data.json', type='slack_fixtures'))
         team_info_fixture = orjson.loads(self.fixture_data('team_info.json', type='slack_fixtures'))
         mock_get_slack_api_data.side_effect = [user_data_fixture['members'], {}, team_info_fixture["team"]]
-        mock_requests_get.return_value.raw = get_test_image_file("img.png")
+        with get_test_image_file("img.png") as f:
+            mock_requests_get.return_value.raw = BytesIO(f.read())
 
         with self.assertLogs(level="INFO"):
             do_convert_data(test_slack_zip_file, output_dir, token)

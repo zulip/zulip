@@ -70,14 +70,10 @@ exports.initialize_kitchen_sink_stuff = function () {
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
 
-        if (delta < 0) {
-            if (message_viewport.at_top()) {
-                navigate.up();
-            }
-        } else if (delta > 0) {
-            if (message_viewport.at_bottom()) {
-                navigate.down();
-            }
+        if (delta < 0 && message_viewport.at_top()) {
+            navigate.up();
+        } else if (delta > 0 && message_viewport.at_bottom()) {
+            navigate.down();
         }
 
         message_viewport.set_last_movement_direction(delta);
@@ -275,7 +271,7 @@ exports.initialize_kitchen_sink_stuff = function () {
 
     // We disable animations here because they can cause the tooltip
     // to change shape while fading away in weird way.
-    $("#keyboard-icon").tooltip({animation: false});
+    $("#keyboard-icon").tooltip({placement: "left", animation: false});
 
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();

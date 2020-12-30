@@ -2,6 +2,7 @@ import base64
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import urllib
 from contextlib import contextmanager
@@ -81,7 +82,7 @@ if settings.ZILENCER_ENABLED:
 class UploadSerializeMixin(SerializeMixin):
     """
     We cannot use override_settings to change upload directory because
-    because settings.LOCAL_UPLOADS_DIR is used in url pattern and urls
+    because settings.LOCAL_UPLOADS_DIR is used in URL pattern and URLs
     are compiled only once. Otherwise using a different upload directory
     for conflicting test cases would have provided better performance
     while providing the required isolation.
@@ -116,7 +117,7 @@ class ZulipTestCase(TestCase):
         flush_per_request_caches()
         translation.activate(settings.LANGUAGE_CODE)
 
-        # Clean up after using fakeldap in ldap tests:
+        # Clean up after using fakeldap in LDAP tests:
         if hasattr(self, 'mock_ldap') and hasattr(self, 'mock_initialize'):
             if self.mock_ldap is not None:
                 self.mock_ldap.reset()
@@ -191,8 +192,8 @@ Output:
 
     def extract_api_suffix_url(self, url: str) -> Tuple[str, Dict[str, Any]]:
         """
-        Function that extracts the url after `/api/v1` or `/json` and also
-        returns the query data in the url, if there is any.
+        Function that extracts the URL after `/api/v1` or `/json` and also
+        returns the query data in the URL, if there is any.
         """
         url_split = url.split('?')
         data: Dict[str, Any] = {}
@@ -228,7 +229,7 @@ Output:
             json_url = True
         url, query_data = self.extract_api_suffix_url(url)
         if len(query_data) != 0:
-            # In some cases the query parameters are defined in the url itself. In such cases
+            # In some cases the query parameters are defined in the URL itself. In such cases
             # The `data` argument of our function is not used. Hence get `data` argument
             # from url.
             data = query_data
@@ -458,10 +459,19 @@ Output:
            and not for a logged-out web-public visitor."""
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
-        # It is important to check `is_web_public_guest` to verify
+        # It is important to check `is_web_public_visitor` to verify
         # that we treated this request as a normal logged-in session,
         # not as a web-public visitor.
-        self.assertEqual(page_params['is_web_public_guest'], False)
+        self.assertEqual(page_params['is_web_public_visitor'], False)
+
+    def check_rendered_web_public_visitor(self, result: HttpResponse) -> None:
+        """Verifies that a visit of / was a 200 that rendered page_params
+           for a logged-out web-public visitor."""
+        self.assertEqual(result.status_code, 200)
+        page_params = self._get_page_params(result)
+        # It is important to check `is_web_public_visitor` to verify
+        # that we treated this request to render for a `web_public_visitor`
+        self.assertEqual(page_params['is_web_public_visitor'], True)
 
     def login_with_return(self, email: str, password: Optional[str]=None,
                           **kwargs: Any) -> HttpResponse:
@@ -745,7 +755,7 @@ Output:
         """
         try:
             json = orjson.loads(result.content)
-        except Exception:  # nocoverage
+        except orjson.JSONDecodeError:  # nocoverage
             json = {'msg': "Error parsing JSON in response!"}
         self.assertEqual(result.status_code, 200, json['msg'])
         self.assertEqual(json.get("result"), "success")
@@ -758,7 +768,7 @@ Output:
     def get_json_error(self, result: HttpResponse, status_code: int=400) -> Dict[str, Any]:
         try:
             json = orjson.loads(result.content)
-        except Exception:  # nocoverage
+        except orjson.JSONDecodeError:  # nocoverage
             json = {'msg': "Error parsing JSON in response!"}
         self.assertEqual(result.status_code, status_code, msg=json.get('msg'))
         self.assertEqual(json.get("result"), "error")
@@ -813,7 +823,8 @@ Output:
             os.path.dirname(__file__),
             f"../webhooks/{type}/fixtures/{action}.{file_type}",
         )
-        return open(fn).read()
+        with open(fn) as f:
+            return f.read()
 
     def fixture_file_name(self, file_name: str, type: str='') -> str:
         return os.path.join(
@@ -823,7 +834,8 @@ Output:
 
     def fixture_data(self, file_name: str, type: str='') -> str:
         fn = self.fixture_file_name(file_name, type)
-        return open(fn).read()
+        with open(fn) as f:
+            return f.read()
 
     def make_stream(self, stream_name: str, realm: Optional[Realm]=None,
                     invite_only: bool=False,
@@ -868,12 +880,12 @@ Output:
 
     # Subscribe to a stream directly
     def subscribe(self, user_profile: UserProfile, stream_name: str) -> Stream:
+        realm = user_profile.realm
         try:
             stream = get_stream(stream_name, user_profile.realm)
-            from_stream_creation = False
         except Stream.DoesNotExist:
-            stream, from_stream_creation = create_stream_if_needed(user_profile.realm, stream_name)
-        bulk_add_subscriptions([stream], [user_profile], from_stream_creation=from_stream_creation)
+            stream, from_stream_creation = create_stream_if_needed(realm, stream_name)
+        bulk_add_subscriptions(realm, [stream], [user_profile])
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:
@@ -970,7 +982,7 @@ Output:
         '''
         with \
                 self.settings(ERROR_BOT=None), \
-                mock.patch('zerver.lib.markdown.timeout', side_effect=KeyError('foo')), \
+                mock.patch('zerver.lib.markdown.timeout', side_effect=subprocess.CalledProcessError(1, [])), \
                 mock.patch('zerver.lib.markdown.markdown_logger'):
             yield
 
@@ -1015,13 +1027,13 @@ Output:
 
         for dn, attrs in directory.items():
             if 'uid' in attrs:
-                # Generate a password for the ldap account:
+                # Generate a password for the LDAP account:
                 attrs['userPassword'] = [self.ldap_password(attrs['uid'][0])]
 
             # Load binary attributes. If in "directory", an attribute as its value
             # has a string starting with "file:", the rest of the string is assumed
             # to be a path to the file from which binary data should be loaded,
-            # as the actual value of the attribute in ldap.
+            # as the actual value of the attribute in LDAP.
             for attr, value in attrs.items():
                 if isinstance(value, str) and value.startswith("file:"):
                     with open(value[5:], 'rb') as f:
@@ -1053,9 +1065,9 @@ Output:
 
     def ldap_username(self, username: str) -> str:
         """
-        Maps zulip username to the name of the corresponding ldap user
+        Maps Zulip username to the name of the corresponding LDAP user
         in our test directory at zerver/tests/fixtures/ldap/directory.json,
-        if the ldap user exists.
+        if the LDAP user exists.
         """
         return self.example_user_ldap_username_map[username]
 
@@ -1067,7 +1079,7 @@ class WebhookTestCase(ZulipTestCase):
     Common for all webhooks tests
 
     Override below class attributes and run send_and_test_message
-    If you create your url in uncommon way you can override build_webhook_url method
+    If you create your URL in uncommon way you can override build_webhook_url method
     In case that you need modify body or create it without using fixture you can also override get_body method
     """
     STREAM_NAME: Optional[str] = None

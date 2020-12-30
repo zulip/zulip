@@ -57,7 +57,7 @@ function get_display_name(contributor) {
 
 // TODO (for v2 of /team contributors):
 //   - Make tab header responsive.
-//   - Display full name instead of github username.
+//   - Display full name instead of GitHub username.
 export default function render_tabs() {
     const template = _.template($("#contributors-template").html());
     const total_tab_html = _.chain(contributors_list)

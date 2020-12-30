@@ -132,7 +132,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
         # The previous function call should have cached the result correctly, so now
         # no database queries should happen:
-        with queries_captured() as queries_two:
+        with queries_captured(keep_cache_warm=True) as queries_two:
             result_two = get_user_function_with_good_cache_keys(hamlet.id)
 
         self.assertEqual(result_two, hamlet)
@@ -156,7 +156,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
         self.assertEqual(result, None)
         self.assert_length(queries, 1)
 
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             result_two = get_user_function_can_return_none(last_user_id + 1)
 
         self.assertEqual(result_two, None)
@@ -260,17 +260,17 @@ class BotCacheKeyTest(ZulipTestCase):
         self.assertEqual(user_profile, bot_profile)
 
         # Flip the setting and save:
-        flipped_setting = not bot_profile.is_api_super_user
-        bot_profile.is_api_super_user = flipped_setting
+        flipped_setting = not bot_profile.can_forge_sender
+        bot_profile.can_forge_sender = flipped_setting
         bot_profile.save()
 
         # The .save() should have deleted cache keys, so if we fetch again,
-        # the returned objects should have is_api_super_user set correctly.
+        # the returned objects should have can_forge_sender set correctly.
         bot_profile2 = get_system_bot(settings.EMAIL_GATEWAY_BOT)
-        self.assertEqual(bot_profile2.is_api_super_user, flipped_setting)
+        self.assertEqual(bot_profile2.can_forge_sender, flipped_setting)
 
         user_profile2 = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
-        self.assertEqual(user_profile2.is_api_super_user, flipped_setting)
+        self.assertEqual(user_profile2.can_forge_sender, flipped_setting)
 
 def get_user_email(user: UserProfile) -> str:
     return user.email  # nocoverage

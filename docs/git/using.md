@@ -57,7 +57,7 @@ configured in the step above:
 $ git fetch upstream
 ```
 
-Next, checkout your `master` branch and [rebase][gitbook-git-rebase] it on top
+Next, check out your `master` branch and [rebase][gitbook-git-rebase] it on top
 of `upstream/master`:
 
 ```
@@ -320,6 +320,11 @@ When you submit your pull request, GitHub will detect and link this reference
 to the appropriate issue. Once your commit is merged into zulip/master, GitHub
 will automatically close the referenced issue. See [Closing issues via commit
 messages][github-help-closing-issues] for details.
+
+Note in particular that GitHub's regular expressions for this feature
+are sloppy, so phrases like `Partially fixes #1234` will automatically
+close the issue.  Phrases like `Fixes part of #1234` are a good
+alternative.
 
 Make as many commits as you need to to address the issue or implement your feature.
 

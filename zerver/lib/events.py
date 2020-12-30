@@ -81,13 +81,17 @@ def always_want(msg_type: str) -> bool:
     '''
     return True
 
-def fetch_initial_state_data(user_profile: Optional[UserProfile],
-                             event_types: Optional[Iterable[str]],
-                             queue_id: Optional[str], client_gravatar: bool,
-                             user_avatar_url_field_optional: bool,
-                             realm: Realm,
-                             slim_presence: bool = False,
-                             include_subscribers: bool = True) -> Dict[str, Any]:
+def fetch_initial_state_data(
+    user_profile: Optional[UserProfile],
+    event_types: Optional[Iterable[str]],
+    queue_id: Optional[str],
+    client_gravatar: bool,
+    user_avatar_url_field_optional: bool,
+    realm: Realm,
+    slim_presence: bool = False,
+    include_subscribers: bool = True,
+    include_streams: bool = True,
+) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     webapp's `page_params` and `/api/v1/register` (for mobile/terminal
     apps).  Can also fetch a subset as determined by `event_types`.
@@ -117,7 +121,9 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
     if want('custom_profile_fields'):
         fields = custom_profile_fields_for_realm(realm.id)
         state['custom_profile_fields'] = [f.as_dict() for f in fields]
-        state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES_DICT
+        state['custom_profile_field_types'] = {
+            item[4]: {"id": item[0], "name": str(item[1])} for item in CustomProfileField.ALL_FIELD_TYPES
+        }
 
     if want('hotspots'):
         # Even if we offered special hotspots for guests without an
@@ -351,10 +357,18 @@ def fetch_initial_state_data(user_profile: Optional[UserProfile],
         state['starred_messages'] = [] if user_profile is None else get_starred_message_ids(user_profile)
 
     if want('stream'):
-        if user_profile is not None:
-            state['streams'] = do_get_streams(user_profile)
-        else:
-            state['streams'] = get_web_public_streams(realm)
+        if include_streams:
+            # The webapp doesn't use the data from here; instead,
+            # it uses data from state["subscriptions"] and other
+            # places.
+            if user_profile is not None:
+                state['streams'] = do_get_streams(user_profile)
+            else:
+                # TODO: This line isn't used by the webapp because it
+                # gets these data via the `subscriptions` key; it will
+                # be used when the mobile apps support logged-out
+                # access.
+                state['streams'] = get_web_public_streams(realm)  # nocoverage
         state['stream_name_max_length'] = Stream.MAX_NAME_LENGTH
         state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):
@@ -592,12 +606,16 @@ def apply_event(state: Dict[str, Any],
 
                     # Add stream to never_subscribed (if not invite_only)
                     state['never_subscribed'].append(stream_data)
-                state['streams'].append(stream)
-            state['streams'].sort(key=lambda elt: elt["name"])
+                if 'streams' in state:
+                    state['streams'].append(stream)
+
+            if 'streams' in state:
+                state['streams'].sort(key=lambda elt: elt["name"])
 
         if event['op'] == 'delete':
             deleted_stream_ids = {stream['stream_id'] for stream in event['streams']}
-            state['streams'] = [s for s in state['streams'] if s['stream_id'] not in deleted_stream_ids]
+            if 'streams' in state:
+                state['streams'] = [s for s in state['streams'] if s['stream_id'] not in deleted_stream_ids]
             state['never_subscribed'] = [stream for stream in state['never_subscribed'] if
                                          stream['stream_id'] not in deleted_stream_ids]
 
@@ -610,18 +628,14 @@ def apply_event(state: Dict[str, Any],
                     if event['property'] == "description":
                         obj['rendered_description'] = event['rendered_description']
             # Also update the pure streams data
-            for stream in state['streams']:
-                if stream['name'].lower() == event['name'].lower():
-                    prop = event['property']
-                    if prop in stream:
-                        stream[prop] = event['value']
-                        if prop == 'description':
-                            stream['rendered_description'] = event['rendered_description']
-        elif event['op'] == "occupy":
-            state['streams'] += event['streams']
-        elif event['op'] == "vacate":
-            stream_ids = [s["stream_id"] for s in event['streams']]
-            state['streams'] = [s for s in state['streams'] if s["stream_id"] not in stream_ids]
+            if 'streams' in state:
+                for stream in state['streams']:
+                    if stream['name'].lower() == event['name'].lower():
+                        prop = event['property']
+                        if prop in stream:
+                            stream[prop] = event['value']
+                            if prop == 'description':
+                                stream['rendered_description'] = event['rendered_description']
     elif event['type'] == 'default_streams':
         state['realm_default_streams'] = event['default_streams']
     elif event['type'] == 'default_stream_groups':
@@ -712,23 +726,21 @@ def apply_event(state: Dict[str, Any],
                 if sub['name'].lower() == event['name'].lower():
                     sub[event['property']] = event['value']
         elif event['op'] == 'peer_add':
-            stream_id = event['stream_id']
-            user_id = event['user_id']
-            for sub in state['subscriptions']:
-                if (sub['stream_id'] == stream_id and
-                        user_id not in sub['subscribers']):
-                    sub['subscribers'].append(user_id)
-            for sub in state['never_subscribed']:
-                if (sub['stream_id'] == stream_id and
-                        user_id not in sub['subscribers']):
-                    sub['subscribers'].append(user_id)
+            stream_ids = set(event["stream_ids"])
+            user_ids = set(event["user_ids"])
+            for sub_dict in [state["subscriptions"], state['unsubscribed'], state["never_subscribed"]]:
+                for sub in sub_dict:
+                    if sub["stream_id"] in stream_ids:
+                        subscribers = set(sub["subscribers"]) | user_ids
+                        sub["subscribers"] = sorted(list(subscribers))
         elif event['op'] == 'peer_remove':
-            stream_id = event['stream_id']
-            user_id = event['user_id']
-            for sub in state['subscriptions']:
-                if (sub['stream_id'] == stream_id and
-                        user_id in sub['subscribers']):
-                    sub['subscribers'].remove(user_id)
+            stream_ids = set(event["stream_ids"])
+            user_ids = set(event["user_ids"])
+            for sub_dict in [state["subscriptions"], state['unsubscribed'], state['never_subscribed']]:
+                for sub in sub_dict:
+                    if sub["stream_id"] in stream_ids:
+                        subscribers = set(sub["subscribers"]) - user_ids
+                        sub["subscribers"] = sorted(list(subscribers))
     elif event['type'] == "presence":
         if slim_presence:
             user_key = str(event['user_id'])
@@ -901,17 +913,21 @@ def apply_event(state: Dict[str, Any],
     else:
         raise AssertionError("Unexpected event type {}".format(event['type']))
 
-def do_events_register(user_profile: UserProfile, user_client: Client,
-                       apply_markdown: bool = True,
-                       client_gravatar: bool = False,
-                       slim_presence: bool = False,
-                       event_types: Optional[Iterable[str]] = None,
-                       queue_lifespan_secs: int = 0,
-                       all_public_streams: bool = False,
-                       include_subscribers: bool = True,
-                       client_capabilities: Dict[str, bool] = {},
-                       narrow: Iterable[Sequence[str]] = [],
-                       fetch_event_types: Optional[Iterable[str]] = None) -> Dict[str, Any]:
+def do_events_register(
+    user_profile: UserProfile,
+    user_client: Client,
+    apply_markdown: bool = True,
+    client_gravatar: bool = False,
+    slim_presence: bool = False,
+    event_types: Optional[Iterable[str]] = None,
+    queue_lifespan_secs: int = 0,
+    all_public_streams: bool = False,
+    include_subscribers: bool = True,
+    include_streams: bool = True,
+    client_capabilities: Dict[str, bool] = {},
+    narrow: Iterable[Sequence[str]] = [],
+    fetch_event_types: Optional[Iterable[str]] = None
+) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
@@ -947,12 +963,17 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
     # Fill up the UserMessage rows if a soft-deactivated user has returned
     reactivate_user_if_soft_deactivated(user_profile)
 
-    ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
-                                   client_gravatar=client_gravatar,
-                                   user_avatar_url_field_optional=user_avatar_url_field_optional,
-                                   realm=user_profile.realm,
-                                   slim_presence=slim_presence,
-                                   include_subscribers=include_subscribers)
+    ret = fetch_initial_state_data(
+        user_profile,
+        event_types_set,
+        queue_id,
+        client_gravatar=client_gravatar,
+        user_avatar_url_field_optional=user_avatar_url_field_optional,
+        realm=user_profile.realm,
+        slim_presence=slim_presence,
+        include_subscribers=include_subscribers,
+        include_streams=include_streams,
+    )
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)

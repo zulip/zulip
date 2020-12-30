@@ -13,6 +13,7 @@ from django.core.management.commands import compilemessages
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
 from django.utils.translation.trans_real import to_language
+from pyuca import Collator
 
 
 class Command(compilemessages.Command):
@@ -45,7 +46,8 @@ class Command(compilemessages.Command):
                 del lang_info['name_local']
                 lang_list.append(lang_info)
 
-            lang_list.sort(key=lambda lang: lang['name'])
+            collator = Collator()
+            lang_list.sort(key=lambda lang: collator.sort_key(lang['name']))
 
         with open(output_path, 'wb') as output_file:
             output_file.write(
@@ -63,21 +65,15 @@ class Command(compilemessages.Command):
         return f"{locale_path}/{locale}/translations.json"
 
     def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
-        lang_name_re = re.compile(r'"Language-Team: (.*?) \(')
-        with open(po_filename) as reader:
-            result = lang_name_re.search(reader.read())
-            if result:
-                try:
-                    return result.group(1)
-                except Exception:
-                    print(f"Problem in parsing {po_filename}")
-                    raise
-            else:
-                raise Exception(f"Unknown language {locale}")
+        try:
+            team = polib.pofile(po_filename).metadata["Language-Team"]
+            return team[:team.rindex(" (")]
+        except (KeyError, ValueError):
+            raise Exception(f"Unknown language {locale}")
 
     def get_locales(self) -> List[str]:
-        output = check_output(['git', 'ls-files', 'locale'])
-        tracked_files = output.decode().split()
+        output = check_output(['git', 'ls-files', 'locale'], universal_newlines=True)
+        tracked_files = output.split()
         regex = re.compile(r'locale/(\w+)/LC_MESSAGES/django.po')
         locales = ['en']
         for tracked_file in tracked_files:

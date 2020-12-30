@@ -124,10 +124,10 @@ exports.robust_uri_decode = function (str) {
     let end = str.length;
     while (end > 0) {
         try {
-            return decodeURIComponent(str.substring(0, end));
-        } catch (e) {
-            if (!(e instanceof URIError)) {
-                throw e;
+            return decodeURIComponent(str.slice(0, end));
+        } catch (error) {
+            if (!(error instanceof URIError)) {
+                throw error;
             }
             end -= 1;
         }
@@ -143,7 +143,7 @@ exports.make_strcmp = function () {
     try {
         const collator = new Intl.Collator();
         return collator.compare;
-    } catch (e) {
+    } catch {
         // continue regardless of error
     }
 
@@ -219,7 +219,7 @@ exports.is_mobile = function () {
 };
 
 function to_int(s) {
-    return parseInt(s, 10);
+    return Number.parseInt(s, 10);
 }
 
 exports.sorted_ids = function (ids) {
@@ -283,7 +283,7 @@ exports.convert_message_topic = function (message) {
 
 exports.clean_user_content_links = function (html) {
     const content = new DOMParser().parseFromString(html, "text/html").body;
-    for (const elt of content.getElementsByTagName("a")) {
+    for (const elt of content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
         // rel="opener noreferrer".  This ensures that external links
         // never replace the Zulip webapp while also protecting

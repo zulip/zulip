@@ -125,6 +125,24 @@ def capture_event(event_info: EventInfo) -> Iterator[None]:
     event_info.populate(m.call_args_list)
 
 @contextmanager
+def cache_tries_captured() -> Iterator[List[Tuple[str, Union[str, List[str]], Optional[str]]]]:
+    cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
+
+    orig_get = cache.cache_get
+    orig_get_many = cache.cache_get_many
+
+    def my_cache_get(key: str, cache_name: Optional[str]=None) -> Optional[Dict[str, Any]]:
+        cache_queries.append(('get', key, cache_name))
+        return orig_get(key, cache_name)
+
+    def my_cache_get_many(keys: List[str], cache_name: Optional[str]=None) -> Dict[str, Any]:  # nocoverage -- simulated code doesn't use this
+        cache_queries.append(('getmany', keys, cache_name))
+        return orig_get_many(keys, cache_name)
+
+    with mock.patch.multiple(cache, cache_get=my_cache_get, cache_get_many=my_cache_get_many):
+        yield cache_queries
+
+@contextmanager
 def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], Optional[str]]]]:
     cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
 
@@ -136,16 +154,11 @@ def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], O
         cache_queries.append(('getmany', keys, cache_name))
         return {}
 
-    old_get = cache.cache_get
-    old_get_many = cache.cache_get_many
-    cache.cache_get = my_cache_get
-    cache.cache_get_many = my_cache_get_many
-    yield cache_queries
-    cache.cache_get = old_get
-    cache.cache_get_many = old_get_many
+    with mock.patch.multiple(cache, cache_get=my_cache_get, cache_get_many=my_cache_get_many):
+        yield cache_queries
 
 @contextmanager
-def queries_captured(include_savepoints: bool=False) -> Generator[
+def queries_captured(include_savepoints: bool=False, keep_cache_warm: bool=False) -> Generator[
         List[Dict[str, Union[str, bytes]]], None, None]:
     '''
     Allow a user to capture just the queries executed during
@@ -158,8 +171,6 @@ def queries_captured(include_savepoints: bool=False) -> Generator[
                         action: Callable[[str, ParamsT], None],
                         sql: Query,
                         params: ParamsT) -> None:
-        cache = get_cache_backend(None)
-        cache.clear()
         start = time.time()
         try:
             return action(sql, params)
@@ -180,6 +191,9 @@ def queries_captured(include_savepoints: bool=False) -> Generator[
                            params: Iterable[Params]) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # nocoverage -- doesn't actually get used in tests
 
+    if not keep_cache_warm:
+        cache = get_cache_backend(None)
+        cache.clear()
     with mock.patch.multiple(TimeTrackingCursor, execute=cursor_execute, executemany=cursor_executemany):
         yield queries
 
@@ -300,6 +314,7 @@ class HostRequestMock:
 
 class MockPythonResponse:
     def __init__(self, text: str, status_code: int, headers: Optional[Dict[str, str]]=None) -> None:
+        self.content = text.encode()
         self.text = text
         self.status_code = status_code
         if headers is None:
@@ -472,7 +487,7 @@ def use_s3_backend(method: FuncT) -> FuncT:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
     return new_method
 
-def create_s3_buckets(*bucket_names: Tuple[str]) -> List[ServiceResource]:
+def create_s3_buckets(*bucket_names: str) -> List[ServiceResource]:
     session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
     s3 = session.resource('s3')
     buckets = [s3.create_bucket(Bucket=name) for name in bucket_names]

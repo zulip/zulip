@@ -12,7 +12,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import HttpRequest
 from django.urls import reverse
-from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
@@ -50,7 +49,7 @@ DEACTIVATED_ACCOUNT_ERROR = "Your account is no longer active. " + \
                             "Please contact your organization administrator to reactivate it."
 PASSWORD_TOO_WEAK_ERROR = "The password is too weak."
 AUTHENTICATION_RATE_LIMITED_ERROR = "You're making too many attempts to sign in. " + \
-                                    "Try again in %s seconds or contact your organization administrator " + \
+                                    "Try again in {} seconds or contact your organization administrator " + \
                                     "for help."
 
 def email_is_not_mit_mailing_list(email: str) -> None:
@@ -227,7 +226,7 @@ class LoggingSetPasswordForm(SetPasswordForm):
 def generate_password_reset_url(user_profile: UserProfile,
                                 token_generator: PasswordResetTokenGenerator) -> str:
     token = token_generator.make_token(user_profile)
-    uid = urlsafe_base64_encode(force_bytes(user_profile.id))
+    uid = urlsafe_base64_encode(str(user_profile.id).encode())
     endpoint = reverse('password_reset_confirm',
                        kwargs=dict(uidb64=uid, token=token))
     return f"{user_profile.realm.uri}{endpoint}"
@@ -350,8 +349,9 @@ class OurAuthenticationForm(AuthenticationForm):
                 self.user_cache = authenticate(request=self.request, username=username, password=password,
                                                realm=realm, return_data=return_data)
             except RateLimited as e:
-                secs_to_freedom = int(float(str(e)))
-                raise ValidationError(AUTHENTICATION_RATE_LIMITED_ERROR % (secs_to_freedom,))
+                assert e.secs_to_freedom is not None
+                secs_to_freedom = int(e.secs_to_freedom)
+                raise ValidationError(AUTHENTICATION_RATE_LIMITED_ERROR.format(secs_to_freedom))
 
             if return_data.get("inactive_realm"):
                 raise AssertionError("Programming error: inactive realm in authentication form")

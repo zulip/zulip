@@ -45,7 +45,7 @@ export function init() {
 init();
 
 function split_to_ints(lst) {
-    return lst.split(",").map((s) => parseInt(s, 10));
+    return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
 
 export function get_by_user_id(user_id, ignore_missing) {
@@ -648,7 +648,7 @@ export function small_avatar_url(message) {
     let person;
     if (message.sender_id) {
         // We should always have message.sender_id, except for in the
-        // tutorial, where it's ok to fall back to the url in the fake
+        // tutorial, where it's ok to fall back to the URL in the fake
         // messages.
         person = get_by_user_id(message.sender_id);
     }
@@ -1298,7 +1298,7 @@ export function is_my_user_id(user_id) {
 
     if (typeof user_id !== "number") {
         blueslip.error("user_id is a string in my_user_id: " + user_id);
-        user_id = parseInt(user_id, 10);
+        user_id = Number.parseInt(user_id, 10);
     }
 
     return user_id === my_user_id;

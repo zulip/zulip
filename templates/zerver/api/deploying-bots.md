@@ -25,8 +25,8 @@ The Zulip Botserver is for people who want to
 * run multiple bots at once.
 
 The Zulip Botserver is a Python (Flask) server that implements Zulip's
-Outgoing Webhooks API.  You can of course write your own servers using
-the Outgoing Webhooks API, but the Botserver is designed to make it
+outgoing webhooks API.  You can of course write your own servers using
+the outgoing webhooks API, but the Botserver is designed to make it
 easy for a novice Python programmer to write a new bot and deploy it
 in production.
 
@@ -55,7 +55,7 @@ Botserver interaction are:
     }
     ```
 
-    This url is configured in the Zulip web-app in your Bot User's settings.
+    This URL is configured in the Zulip web-app in your Bot User's settings.
 
 1. The Botserver searches for a bot to handle the message.
 
@@ -223,7 +223,7 @@ Botserver with SSL using an `nginx` or `Apache` reverse proxy and
 
 ### Troubleshooting
 
-1. Make sure the API key you're using is for an [Outgoing webhook
+1. Make sure the API key you're using is for an [outgoing webhook
    bot](/api/outgoing-webhooks) and you've
    correctly configured the URL for your Botserver.
 

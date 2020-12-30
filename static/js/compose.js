@@ -10,6 +10,7 @@ const render_compose_private_stream_alert = require("../templates/compose_privat
 
 const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");
+const settings_config = require("./settings_config");
 const util = require("./util");
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -183,13 +184,14 @@ exports.abort_xhr = function () {
 };
 
 exports.zoom_token_callbacks = new Map();
-exports.zoom_xhrs = new Map();
+exports.video_call_xhrs = new Map();
 
-exports.abort_zoom = function (edit_message_id) {
+exports.abort_video_callbacks = function (edit_message_id) {
     const key = edit_message_id || "";
     exports.zoom_token_callbacks.delete(key);
-    if (exports.zoom_xhrs.has(key)) {
-        exports.zoom_xhrs.get(key).abort();
+    if (exports.video_call_xhrs.has(key)) {
+        exports.video_call_xhrs.get(key).abort();
+        exports.video_call_xhrs.delete(key);
     }
 };
 
@@ -423,7 +425,7 @@ exports.do_post_send_tasks = function () {
     exports.clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
-    $(document).trigger($.Event("compose_finished.zulip"));
+    $(document).trigger("compose_finished.zulip");
 };
 
 exports.update_email = function (user_id, new_email) {
@@ -481,14 +483,66 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
     return result;
 }
 
+exports.wildcard_mention_allowed = function () {
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_everyone.code
+    ) {
+        return true;
+    }
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.nobody.code
+    ) {
+        return false;
+    }
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_stream_admins_only.code
+    ) {
+        // TODO: Check the user's stream-level role once stream-level admins exist.
+        return page_params.is_admin;
+    }
+    // TODO: Uncomment when we add support for stream-level administrators.
+    // if (
+    //     page_params.realm_wildcard_mention_policy ===
+    //     settings_config.wildcard_mention_policy_values.by_admins_only.code
+    // ) {
+    //     return page_params.is_admin;
+    // }
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_full_members.code
+    ) {
+        if (page_params.is_admin) {
+            return true;
+        }
+        const person = people.get_by_user_id(page_params.user_id);
+        const current_datetime = new Date(Date.now());
+        const person_date_joined = new Date(person.date_joined);
+        const days = (current_datetime - person_date_joined) / 1000 / 86400;
+
+        return days >= page_params.realm_waiting_period_threshold && !page_params.is_guest;
+    }
+    return !page_params.is_guest;
+};
+
 function validate_stream_message_mentions(stream_id) {
     const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
 
-    // check if wildcard_mention has any mention and henceforth execute the warning message.
+    // If the user is attempting to do a wildcard mention in a large
+    // stream, check if they permission to do so.
     if (
         wildcard_mention !== null &&
         stream_count > exports.wildcard_mention_large_stream_threshold
     ) {
+        if (!exports.wildcard_mention_allowed()) {
+            compose_error(
+                i18n.t("You do not have permission to use wildcard mentions in this stream."),
+            );
+            return false;
+        }
+
         if (
             user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false
@@ -541,6 +595,11 @@ function validate_stream_message_post_policy(sub) {
 
     if (stream_post_policy === stream_post_permission_type.admins.code) {
         compose_error(i18n.t("Only organization admins are allowed to post to this stream."));
+        return false;
+    }
+
+    if (page_params.is_guest && stream_post_policy !== stream_post_permission_type.everyone.code) {
+        compose_error(i18n.t("Guests are not allowed to post to this stream."));
         return false;
     }
 
@@ -765,7 +824,7 @@ exports.handle_keydown = function (event, textarea) {
             // Ctrl + L: Insert a link to selected text
             wrap_text_with_markdown("[", "](url)");
             const position = textarea.caret();
-            const txt = document.getElementById(textarea[0].id);
+            const txt = textarea[0];
 
             // Include selected text in between [] parentheses and insert '(url)'
             // where "url" should be automatically selected.
@@ -972,7 +1031,7 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         const existing_invites_area = $("#compose_invite_users .compose_invite_user");
 
         const existing_invites = Array.from($(existing_invites_area), (user_row) =>
-            parseInt($(user_row).data("user-id"), 10),
+            Number.parseInt($(user_row).data("user-id"), 10),
         );
 
         if (!existing_invites.includes(user_id)) {
@@ -1056,8 +1115,8 @@ exports.initialize = function () {
 
         const invite_row = $(event.target).parents(".compose_invite_user");
 
-        const user_id = parseInt($(invite_row).data("user-id"), 10);
-        const stream_id = parseInt($(invite_row).data("stream-id"), 10);
+        const user_id = Number.parseInt($(invite_row).data("user-id"), 10);
+        const stream_id = Number.parseInt($(invite_row).data("stream-id"), 10);
 
         function success() {
             const all_invites = $("#compose_invite_users");
@@ -1132,7 +1191,6 @@ exports.initialize = function () {
         }
 
         let video_call_link;
-        const video_call_id = util.random_int(100000000000000, 999999999999999);
         const available_providers = page_params.realm_available_video_chat_providers;
         const show_video_chat_button = exports.compute_show_video_chat_button();
 
@@ -1144,20 +1202,20 @@ exports.initialize = function () {
             available_providers.zoom &&
             page_params.realm_video_chat_provider === available_providers.zoom.id
         ) {
-            exports.abort_zoom(edit_message_id);
+            exports.abort_video_callbacks(edit_message_id);
             const key = edit_message_id || "";
 
             const make_zoom_call = () => {
-                exports.zoom_xhrs.set(
+                exports.video_call_xhrs.set(
                     key,
                     channel.post({
                         url: "/json/calls/zoom/create",
                         success(res) {
-                            exports.zoom_xhrs.delete(key);
+                            exports.video_call_xhrs.delete(key);
                             insert_video_call_url(res.url, target_textarea);
                         },
                         error(xhr, status) {
-                            exports.zoom_xhrs.delete(key);
+                            exports.video_call_xhrs.delete(key);
                             if (
                                 status === "error" &&
                                 xhr.responseJSON &&
@@ -1196,6 +1254,7 @@ exports.initialize = function () {
                 },
             });
         } else {
+            const video_call_id = util.random_int(100000000000000, 999999999999999);
             video_call_link = page_params.jitsi_server_url + "/" + video_call_id;
             insert_video_call_url(video_call_link, target_textarea);
         }

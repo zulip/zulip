@@ -190,10 +190,10 @@ exports.activate = function (raw_operators, opts) {
     // These two narrowing operators specify what message should be
     // selected and should be the center of the narrow.
     if (filter.has_operator("near")) {
-        id_info.target_id = parseInt(filter.operands("near")[0], 10);
+        id_info.target_id = Number.parseInt(filter.operands("near")[0], 10);
     }
     if (filter.has_operator("id")) {
-        id_info.target_id = parseInt(filter.operands("id")[0], 10);
+        id_info.target_id = Number.parseInt(filter.operands("id")[0], 10);
     }
 
     if (opts.then_select_id > 0) {
@@ -859,10 +859,10 @@ exports.deactivate = function () {
 };
 
 exports.restore_home_state = function () {
-    // If we click on the All Messages link while already at All Messages, unnarrow.
-    // If we click on the All Messages link from another nav pane, just go
+    // If we click on the All messages link while already at All messages, unnarrow.
+    // If we click on the All messages link from another nav pane, just go
     // back to the state you were in (possibly still narrowed) before
-    // you left the All Messages pane.
+    // you left the All messages pane.
     if (!overlays.is_active()) {
         exports.deactivate();
     }

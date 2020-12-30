@@ -30,15 +30,15 @@ class Command(ZulipBaseCommand):
     * Sessions (everyone will need to log in again post-export)
     * Users' passwords and API keys (users will need to use SSO or reset password)
     * Mobile tokens for APNS/GCM (users will need to reconnect their mobile devices)
-    * ScheduledEmail (Not relevant on a new server)
-    * RemoteZulipServer (Unlikely to be migrated)
+    * ScheduledEmail (not relevant on a new server)
+    * RemoteZulipServer (unlikely to be migrated)
     * third_party_api_results cache (this means rerending all old
       messages could be expensive)
 
     Things that will break as a result of the export:
     * Passwords will not be transferred.  They will all need to go
       through the password reset flow to obtain a new password (unless
-      they intend to only use e.g. Google Auth).
+      they intend to only use e.g. Google auth).
     * Users will need to log out and re-log in to the Zulip desktop and
       mobile apps.  The apps now all have an option on the login page
       where you can specify which Zulip server to use; your users
@@ -144,8 +144,16 @@ class Command(ZulipBaseCommand):
 
             print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
 
-            user_count = UserProfile.objects.filter(realm_id=realm.id).count()
-            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total users\n")
+            user_count = UserProfile.objects.filter(
+                realm_id=realm.id,
+                is_active=True,
+                is_bot=False,
+            ).exclude(
+                # We exclude guests, because they're not a priority for
+                # looking at whether most users are being exported.
+                role=UserProfile.ROLE_GUEST,
+            ).count()
+            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total non-guest users\n")
 
             proceed = input("Continue? [y/N] ")
             if proceed.lower() not in ('y', 'yes'):
@@ -165,7 +173,8 @@ class Command(ZulipBaseCommand):
 
         tarball_path = output_dir.rstrip("/") + ".tar.gz"
         try:
-            os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
+            with open(tarball_path, "x"):
+                pass
         except FileExistsError:
             raise CommandError(f"Refusing to overwrite existing tarball: {tarball_path}. Aborting...")
 

@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 zrequire("typing_data");
 
 run_test("basics", () => {
@@ -83,8 +88,8 @@ run_test("timers", () => {
         typing_data.clear_inbound_timer(stub_group);
     }
 
-    global.patch_builtin("setTimeout", set_timeout);
-    global.patch_builtin("clearTimeout", clear_timeout);
+    set_global("setTimeout", set_timeout);
+    set_global("clearTimeout", clear_timeout);
 
     // first time, we set
     kickstart();

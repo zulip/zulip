@@ -15,12 +15,10 @@ fi
 cd /home/zulip/deployments/current
 BACKLOG="$(./manage.py print_email_delivery_backlog)"
 
-if [ "$BACKLOG" -gt 0 ] && [ "$BACKLOG" -lt 10 ]
-then
+if [ "$BACKLOG" -gt 0 ] && [ "$BACKLOG" -lt 10 ]; then
     echo "backlog of $BACKLOG"
     exit 1
-elif [ "$BACKLOG" -ge 10 ]
-then
+elif [ "$BACKLOG" -ge 10 ]; then
     echo "backlog of $BACKLOG"
     exit 2
 else

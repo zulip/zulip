@@ -2,6 +2,11 @@
 
 const rewiremock = require("rewiremock/node");
 
+const {stub_templates} = require("../zjsunit/handlebars");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 /*
     This test suite is designed to find errors
     in our initialization sequence.  It doesn't
@@ -71,7 +76,7 @@ for (const mod of ignore_modules) {
 }
 
 util.is_mobile = () => false;
-global.stub_templates(() => "some-html");
+stub_templates(() => "some-html");
 ui.get_scroll_element = (element) => element;
 
 zrequire("alert_words");
@@ -104,7 +109,9 @@ zrequire("narrow");
 zrequire("search_suggestion");
 zrequire("search");
 zrequire("tutorial");
-zrequire("notifications");
+rewiremock.proxy(() => zrequire("notifications"), {
+    "../../static/js/favicon": {},
+});
 zrequire("pm_conversations");
 zrequire("pm_list");
 zrequire("list_cursor");
@@ -126,7 +133,7 @@ const ui_init = rewiremock.proxy(() => zrequire("ui_init"), {
     },
 });
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 const document_stub = $.create("document-stub");
 document.to_$ = () => document_stub;

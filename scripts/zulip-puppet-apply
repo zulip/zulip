@@ -11,7 +11,7 @@ from lib.zulip_tools import assert_running_as_root, parse_os_release
 assert_running_as_root()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-parser = argparse.ArgumentParser(description="Run puppet")
+parser = argparse.ArgumentParser(description="Run Puppet")
 parser.add_argument('--force', '-f', action="store_true",
                     help="Do not prompt with proposed changes")
 parser.add_argument('--noop', action="store_true",
@@ -32,7 +32,7 @@ Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
 for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
     puppet_config += f"include {pclass}\n"
 
-# We use the puppet configuration from the same Zulip checkout as this script
+# We use the Puppet configuration from the same Zulip checkout as this script
 scripts_path = os.path.join(BASE_DIR, "scripts")
 puppet_module_path = os.path.join(BASE_DIR, "puppet")
 puppet_cmd = ["puppet", "apply", f"--modulepath={puppet_module_path}", "-e", puppet_config]
@@ -40,12 +40,12 @@ if args.noop:
     puppet_cmd += ["--noop"]
 puppet_cmd += extra_args
 
-# Set the scripts path to be a factor so it can be used by puppet code
+# Set the scripts path to be a factor so it can be used by Puppet code
 puppet_env = os.environ.copy()
 puppet_env["FACTER_zulip_conf_path"] = args.config
 puppet_env["FACTER_zulip_scripts_path"] = scripts_path
 
-# This is to suppress puppet warnings with ruby 2.7.
+# This is to suppress Puppet warnings with ruby 2.7.
 if (distro_info['ID'], distro_info['VERSION_ID']) in [('ubuntu', '20.04')]:
     puppet_env["RUBYOPT"] = "-W0"
 

@@ -6,7 +6,7 @@ if [ ! -d /srv/zulip-py3-venv ] || [ ! -d /srv/zulip-thumbor-venv ]; then
     ./tools/setup/setup_venvs.py
 fi
 
-compile_requirements () {
+compile_requirements() {
     source="$1"
     output="$2"
 

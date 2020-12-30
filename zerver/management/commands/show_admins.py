@@ -30,5 +30,4 @@ class Command(ZulipBaseCommand):
         else:
             raise CommandError('There are no admins for this realm!')
 
-        print('\nYou can use the "knight" management command to make more users admins.')
-        print('\nOr with the --revoke argument, remove admin status from users.')
+        print('\nYou can use the "change_user_role" management command to adjust roles.')

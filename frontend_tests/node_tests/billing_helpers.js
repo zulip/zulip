@@ -1,15 +1,20 @@
 "use strict";
 
+const {strict: assert} = require("assert");
 const fs = require("fs");
 
-const JQuery = require("jquery");
+const jQueryFactory = require("jquery");
 const {JSDOM} = require("jsdom");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
-const jquery = JQuery(dom.window);
+const jquery = jQueryFactory(dom.window);
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("page_params", {});
 set_global("loading", {});
 set_global("history", {});
@@ -264,6 +269,12 @@ run_test("set_tab", () => {
         assert.equal(val, 0);
     };
 
+    let hash_change_handler;
+    window.addEventListener = (event, handler) => {
+        assert.equal(event, "hashchange");
+        hash_change_handler = handler;
+    };
+
     helpers.set_tab("upgrade");
     assert.equal(state.show_tab_billing, 1);
     assert.equal(state.scrollTop, 1);
@@ -272,7 +283,6 @@ run_test("set_tab", () => {
     click_handler.call({hash: "#payment-method"});
     assert.equal(location.hash, "#payment-method");
 
-    const hash_change_handler = window.onhashchange;
     hash_change_handler();
     assert.equal(state.show_tab_payment_method, 1);
     assert.equal(state.scrollTop, 2);

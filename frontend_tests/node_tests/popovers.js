@@ -1,8 +1,15 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const rewiremock = require("rewiremock/node");
 
-set_global("$", global.make_zjquery());
+const {stub_templates} = require("../zjsunit/handlebars");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+set_global("$", make_zjquery());
 
 zrequire("hash_util");
 zrequire("narrow");
@@ -62,7 +69,7 @@ const me = {
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-    timezone: "US/Pacific",
+    timezone: "America/Los_Angeles",
 };
 
 const target = $.create("click target");
@@ -139,7 +146,7 @@ run_test("sender_hover", (override) => {
         return {};
     };
 
-    global.stub_templates((fn, opts) => {
+    stub_templates((fn, opts) => {
         switch (fn) {
             case "no_arrow_popover":
                 assert.deepEqual(opts, {
@@ -181,7 +188,7 @@ run_test("sender_hover", (override) => {
                 return "content-html";
 
             default:
-                throw Error("unrecognized template: " + fn);
+                throw new Error("unrecognized template: " + fn);
         }
     });
 
@@ -237,7 +244,7 @@ run_test("actions_popover", (override) => {
         };
     };
 
-    global.stub_templates((fn, opts) => {
+    stub_templates((fn, opts) => {
         // TODO: Test all the properties of the popover
         switch (fn) {
             case "actions_popover_content":
@@ -247,7 +254,7 @@ run_test("actions_popover", (override) => {
                 );
                 return "actions-content";
             default:
-                throw Error("unrecognized template: " + fn);
+                throw new Error("unrecognized template: " + fn);
         }
     });
 

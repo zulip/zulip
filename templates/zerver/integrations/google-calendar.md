@@ -14,7 +14,7 @@ to your `~/` directory.
 
 Next, install the latest Google API Client for Python by following the
 instructions on the
-[Google Website](https://developers.google.com/api-client-library/python/start/installation).
+[Google website](https://developers.google.com/api-client-library/python/start/installation).
 
 Then go to your **Zulip Settings** by clicking on the cog in the top
 right corner, and then clicking on **Settings**.
@@ -46,7 +46,7 @@ There are two optional flags that you can specify when running this
 script:
 
 * `--calendar`: This flag specifies the calendar to watch from the
-  user’s Google Account. By default, this flag is set to a user’s
+  user’s Google account. By default, this flag is set to a user’s
   primary or default calendar. To specify a calendar, you need the
   calendar ID which can be obtained by going to Google Calendar and
   clicking on the wedge next to the calendar’s name. Click on settings

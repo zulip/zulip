@@ -8,7 +8,7 @@ from django.db import connection
 from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
-from sqlalchemy.sql import and_, column, select, table
+from sqlalchemy.sql import Select, and_, column, select, table
 from sqlalchemy.sql.elements import ClauseElement
 
 from analytics.lib.counts import COUNT_STATS
@@ -54,7 +54,6 @@ from zerver.views.message_fetch import (
     LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperator,
     NarrowBuilder,
-    Query,
     exclude_muting_conditions,
     find_first_unread_anchor,
     get_messages_backend,
@@ -454,7 +453,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='stream', operand='non-web-public-stream')
         builder = NarrowBuilder(self.user_profile, column('id'), self.realm, True)
 
-        def _build_query(term: Dict[str, Any]) -> Query:
+        def _build_query(term: Dict[str, Any]) -> Select:
             return builder.add_term(self.raw_query, term)
 
         self.assertRaises(BadNarrowOperator, _build_query, term)
@@ -467,7 +466,7 @@ class NarrowBuilderTest(ZulipTestCase):
             self.assertEqual(actual_params, params)
         self.assertIn(where_clause, get_sqlalchemy_sql(query))
 
-    def _build_query(self, term: Dict[str, Any]) -> Query:
+    def _build_query(self, term: Dict[str, Any]) -> Select:
         return self.builder.add_term(self.raw_query, term)
 
 class NarrowLibraryTest(ZulipTestCase):
@@ -1614,7 +1613,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_get_messages_with_narrow_stream_mit_unicode_regex(self) -> None:
         """
-        A request for old messages for a user in the mit.edu relam with unicode
+        A request for old messages for a user in the mit.edu relam with Unicode
         stream name should be correctly escaped in the database query.
         """
         user = self.mit_user('starnine')
@@ -1648,7 +1647,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_get_messages_with_narrow_topic_mit_unicode_regex(self) -> None:
         """
-        A request for old messages for a user in the mit.edu realm with unicode
+        A request for old messages for a user in the mit.edu realm with Unicode
         topic name should be correctly escaped in the database query.
         """
         mit_user_profile = self.mit_user("starnine")
@@ -1875,7 +1874,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
 
-        # Test searching in messages with unicode characters
+        # Test searching in messages with Unicode characters
         narrow = [
             dict(operator='search', operand='日本'),
         ]
@@ -1910,7 +1909,7 @@ class GetOldMessagesTest(ZulipTestCase):
             english_message['match_content'],
             '<p>I want to go to <span class="highlight">日本</span>!</p>')
 
-        # Multiple search operands with unicode
+        # Multiple search operands with Unicode
         multi_search_narrow = [
             dict(operator='search', operand='ちは'),
             dict(operator='search', operand='今日は'),
@@ -2032,13 +2031,9 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(
             english_message[MATCH_TOPIC],
             'english')
-        self.assertIn(
+        self.assertEqual(
             english_message['match_content'],
-            # NOTE: The whitespace here is off due to a pgroonga bug.
-            # This bug is a pgroonga regression and according to one of
-            # the author, this should be fixed in its next release.
-            ['<p>I want to go to <span class="highlight">日本</span>!</p>',  # This is correct.
-             '<p>I want to go to<span class="highlight"> 日本</span>!</p>'])
+            '<p>I want to go to <span class="highlight">日本</span>!</p>')
 
         # Should not crash when multiple search operands are present
         multi_search_narrow = [
@@ -2056,7 +2051,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(multi_search_result['messages'][0]['match_content'],
                          '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>')
 
-        # Multiple search operands with unicode
+        # Multiple search operands with Unicode
         multi_search_narrow = [
             dict(operator='search', operand='朝は'),
             dict(operator='search', operand='べました'),
@@ -2082,7 +2077,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com"><span class="highlight">https://google.com</span></a></p>')
 
-        # Search operands with HTML Special Characters
+        # Search operands with HTML special characters
         special_search_narrow = [
             dict(operator='search', operand='butter'),
         ]
@@ -2526,7 +2521,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.exercise_bad_narrow_operand_using_dict_api('search', [''], error_msg)
 
     # The exercise_bad_narrow_operand helper method uses legacy tuple format to
-    # test bad narrow, this method uses the current dict api format
+    # test bad narrow, this method uses the current dict API format
     def exercise_bad_narrow_operand_using_dict_api(self, operator: str,
                                                    operands: Sequence[Any],
                                                    error_msg: str) -> None:
@@ -2672,6 +2667,90 @@ class GetOldMessagesTest(ZulipTestCase):
             {msg['id'] for msg in messages},
             {unsub_message_id, muted_message_id, first_message_id, extra_message_id},
         )
+
+    def test_parse_anchor_value(self) -> None:
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+
+        # Send the first message to Hamlet
+        first_message_id = self.send_personal_message(cordelia, hamlet)
+
+        # Send another message
+        self.send_personal_message(cordelia, hamlet)
+
+        user_profile = hamlet
+
+        # Check if the anchor value in response is correct for different
+        # values of anchor parameter in request
+
+        # With anchor input as first_unread, see if response anchor
+        # value is same as the id of first unread message of Hamlet
+        query_params = dict(
+            anchor="first_unread",
+            num_before=10,
+            num_after=10,
+            narrow='[]',
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        payload = get_messages_backend(request, user_profile)
+        result = orjson.loads(payload.content)
+        self.assertEqual(result['anchor'], first_message_id)
+
+        # With anchor input as oldest, see if response anchor value is 0
+        query_params = dict(
+            anchor="oldest",
+            num_before=10,
+            num_after=10,
+            narrow='[]',
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        payload = get_messages_backend(request, user_profile)
+        result = orjson.loads(payload.content)
+        self.assertEqual(result['anchor'], 0)
+
+        # With anchor input as newest, see if response
+        # anchor value is LARGER_THAN_MAX_MESSAGE_ID
+        query_params = dict(
+            anchor="newest",
+            num_before=10,
+            num_after=10,
+            narrow='[]',
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        payload = get_messages_backend(request, user_profile)
+        result = orjson.loads(payload.content)
+        self.assertEqual(result['anchor'], LARGER_THAN_MAX_MESSAGE_ID)
+
+        # With anchor input negative, see if
+        # response anchor value is clamped to 0
+        query_params = dict(
+            anchor="-1",
+            num_before=10,
+            num_after=10,
+            narrow='[]',
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        payload = get_messages_backend(request, user_profile)
+        result = orjson.loads(payload.content)
+        self.assertEqual(result['anchor'], 0)
+
+        # With anchor input more than LARGER_THAN_MAX_MESSAGE_ID,
+        # see if response anchor value is clamped down to LARGER_THAN_MAX_MESSAGE_ID
+        query_params = dict(
+            anchor="10000000000000001",
+            num_before=10,
+            num_after=10,
+            narrow='[]',
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        payload = get_messages_backend(request, user_profile)
+        result = orjson.loads(payload.content)
+        self.assertEqual(result['anchor'], LARGER_THAN_MAX_MESSAGE_ID)
 
     def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -3240,7 +3319,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         msg_contents = ["Link: foo.org",
                         "Image: https://www.google.com/images/srpr/logo4w.png",
                         "Image: https://www.google.com/images/srpr/logo4w.pdf",
-                        "[Google Link](https://www.google.com/images/srpr/logo4w.png)"]
+                        "[Google link](https://www.google.com/images/srpr/logo4w.png)"]
         for msg_content in msg_contents:
             msg_ids.append(self.send_stream_message(self.example_user('hamlet'),
                                                     'Denmark', content=msg_content))
@@ -3249,7 +3328,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
 
         self.update_message(msgs[0], 'https://www.google.com/images/srpr/logo4w.png')
         self.assertTrue(msgs[0].has_image)
-        self.update_message(msgs[0], 'No Image Again')
+        self.update_message(msgs[0], 'No image again')
         self.assertFalse(msgs[0].has_image)
 
     def test_has_attachment(self) -> None:
@@ -3263,7 +3342,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         msg_id = self.send_stream_message(hamlet, "Denmark", body, "test")
         msg = Message.objects.get(id=msg_id)
         self.assertTrue(msg.has_attachment)
-        self.update_message(msg, 'No Attachments')
+        self.update_message(msg, 'No attachments')
         self.assertFalse(msg.has_attachment)
         self.update_message(msg, body)
         self.assertTrue(msg.has_attachment)

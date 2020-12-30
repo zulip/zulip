@@ -1,9 +1,10 @@
 class zulip_ops::app_frontend {
   include zulip::app_frontend_base
-  include zulip::memcached
-  include zulip::rabbit
+  include zulip::profile::memcached
+  include zulip::profile::rabbitmq
   include zulip::postfix_localmail
   include zulip::static_asset_compiler
+  include zulip_ops::app_frontend_monitoring
   $app_packages = [# Needed for the ssh tunnel to the redis server
     'autossh',
   ]
@@ -16,22 +17,6 @@ class zulip_ops::app_frontend {
     group  => 'root',
     mode   => '0644',
     source => 'puppet:///modules/zulip/logrotate/zulip',
-  }
-
-  file { '/etc/log2zulip.conf':
-    ensure => file,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip_ops/log2zulip.conf',
-  }
-
-  file { '/etc/log2zulip.zuliprc':
-    ensure => file,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0600',
-    source => 'puppet:///modules/zulip_ops/log2zulip.zuliprc',
   }
 
   file { '/etc/supervisor/conf.d/redis_tunnel.conf':
@@ -60,26 +45,5 @@ class zulip_ops::app_frontend {
     group  => 'root',
     mode   => '0644',
     source => 'puppet:///modules/zulip_ops/cron.d/fetch-contributor-data',
-  }
-
-  # Enable some munin plugins
-  $munin_plugins = [
-    'rabbitmq_connections',
-    'rabbitmq_consumers',
-    'rabbitmq_messages',
-    'rabbitmq_messages_unacknowledged',
-    'rabbitmq_messages_uncommitted',
-    'rabbitmq_queue_memory',
-    'zulip_send_receive_timing',
-  ]
-  zulip_ops::munin_plugin { $munin_plugins: }
-
-  file { '/etc/cron.d/rabbitmq-monitoring':
-    ensure  => file,
-    require => Package[rabbitmq-server],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip/cron.d/rabbitmq-monitoring',
   }
 }

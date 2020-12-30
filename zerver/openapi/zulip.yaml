@@ -44,29 +44,54 @@ paths:
       operationId: fetch_api_key
       tags: ["authentication"]
       description: |
-        Given a username and password, fetch the user's API key.
+        This API endpoint is used by clients such as the Zulip mobile and
+        terminal apps to implement password-based authentication.  Given the
+        user's Zulip login credentials, it returns a Zulip API key that the client
+        can use to make requests requests as the user.
 
-        Used to authenticate the mobile and terminal apps when the server
-        has EmailAuthBackend or LDAPAuthBackend enabled.
+        This endpoint is only useful for Zulip servers/organizations with
+        EmailAuthBackend or LDAPAuthBackend enabled.
+
+        The Zulip mobile apps also support SSO/social authentication (GitHub
+        auth, Google auth, SAML, etc.) that does not use this endpoint.  Instead,
+        the mobile apps reuse the web login flow passing the `mobile_flow_otp` in
+        a webview, and the credentials are returned to the app (encrypted) via a redirect
+        to a `zulip://` URL.
+
+        !!! warn ""
+            **Note:** If you signed up using passwordless authentication and
+            never had a password, you can [reset your password](/help/change-your-password).
+
+            See the [API keys](/api/api-keys) documentation for
+            more details on how to download API key manually.
+
+        In a [Zulip development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
+        see also [the unauthenticated variant](/api/dev-fetch-api-key).
       parameters:
         - name: username
           in: query
           description: |
             The username to be used for authentication (typically, the email
-            address, but it could be an LDAP username).
+            address, but depending on configuration, it could be an LDAP username).
+
+            See the `require_email_format_usernames` parameter documented in
+            [GET /server_settings](/api/get-server-settings) for details.
           schema:
             type: string
+          example: iago@zulip.com
           required: true
         - name: password
           in: query
           schema:
             type: string
+          example: abcd1234
           description: |
             The user's Zulip password (or LDAP password, if LDAP authentication is in use).
           required: true
+      security: []
       responses:
         "200":
-          description: The credentials needed to use the Zulip API.
+          description: Valid credentials the client can use to access the Zulip API.
           content:
             application/json:
               schema:
@@ -292,7 +317,7 @@ paths:
                                         avatar_url:
                                           type: string
                                           description: |
-                                            The url of the new avatar URL for the user.
+                                            The URL of the new avatar for the user.
                                         avatar_source:
                                           type: string
                                           description: |
@@ -589,8 +614,8 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to other users when a user has been subscribed to a
-                                stream. Sent to all users if the stream is public or to only
+                                Event sent to other users when users have been subscribed to
+                                streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
                               properties:
                                 id:
@@ -603,14 +628,18 @@ paths:
                                   type: string
                                   enum:
                                     - peer_add
-                                stream_id:
-                                  type: integer
+                                stream_ids:
+                                  type: array
                                   description: |
-                                    The ID of the stream to which the user has subscribed.
-                                user_id:
-                                  type: integer
+                                    The IDs of the streams to which the user has subscribed.
+                                  items:
+                                    type: integer
+                                user_ids:
+                                  type: array
                                   description: |
-                                    The ID of the user who subscribed.
+                                    The IDs of the users who subscribed.
+                                  items:
+                                    type: integer
                               additionalProperties: false
                               example:
                                 {
@@ -622,8 +651,8 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to other users when a user has been unsubscribed
-                                from a stream. Sent to all users if the stream is public or to only
+                                Event sent to other users when users have been unsubscribed
+                                from streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
                               properties:
                                 id:
@@ -636,15 +665,19 @@ paths:
                                   type: string
                                   enum:
                                     - peer_remove
-                                stream_id:
-                                  type: integer
+                                stream_ids:
+                                  type: array
                                   description: |
-                                    The ID of the stream from which the user has been
+                                    The IDs of the streams from which the users have been
                                     unsubscribed from.
-                                user_id:
-                                  type: integer
+                                  items:
+                                    type: integer
+                                user_ids:
+                                  type: array
                                   description: |
-                                    The ID of the user who has been unsubscribed.
+                                    The IDs of the users who have been unsubscribed.
+                                  items:
+                                    type: integer
                               additionalProperties: false
                               example:
                                 {
@@ -973,104 +1006,6 @@ paths:
                                       },
                                     ],
                                   "id": 0,
-                                }
-                            - type: object
-                              description: |
-                                Event sent to all users who can see a stream exists when a stream
-                                that previously had no subscribers
-                                gains its first subscriber (typically when a deactivated stream
-                                is reactivated).  It works very similarly to `create` events.
-
-                                We expect to change how stream deactivation/reactivation is
-                                represented in the future.
-                              properties:
-                                id:
-                                  type: integer
-                                type:
-                                  type: string
-                                  enum:
-                                    - stream
-                                op:
-                                  type: string
-                                  enum:
-                                    - occupy
-                                streams:
-                                  type: array
-                                  description: |
-                                    Array of stream objects, each contatining
-                                    details about the newly occupied streams.
-                                  items:
-                                    $ref: "#/components/schemas/BasicStream"
-                              additionalProperties: false
-                              example:
-                                {
-                                  "type": "stream",
-                                  "op": "occupy",
-                                  "streams":
-                                    [
-                                      {
-                                        "name": "test_stream",
-                                        "stream_id": 11,
-                                        "description": "",
-                                        "rendered_description": "",
-                                        "invite_only": false,
-                                        "is_web_public": false,
-                                        "stream_post_policy": 1,
-                                        "history_public_to_subscribers": true,
-                                        "first_message_id": null,
-                                        "message_retention_days": null,
-                                        "is_announcement_only": false,
-                                      },
-                                    ],
-                                  "id": 0,
-                                }
-                            - type: object
-                              description: |
-                                Event sent to all users who can see a stream exists when a stream no
-                                longer has any users (which deactivates the stream).
-
-                                We expect to change how stream deactivation/reactivation is
-                                represented in the future.
-                              properties:
-                                id:
-                                  type: integer
-                                type:
-                                  type: string
-                                  enum:
-                                    - stream
-                                op:
-                                  type: string
-                                  enum:
-                                    - vacate
-                                streams:
-                                  type: array
-                                  description: |
-                                    Array of stream objects, each containing
-                                    details about a now-empty stream.
-                                  items:
-                                    $ref: "#/components/schemas/BasicStream"
-                              additionalProperties: false
-                              example:
-                                {
-                                  "type": "stream",
-                                  "op": "vacate",
-                                  "streams":
-                                    [
-                                      {
-                                        "name": "test_stream",
-                                        "stream_id": 11,
-                                        "description": "",
-                                        "rendered_description": "",
-                                        "invite_only": false,
-                                        "is_web_public": false,
-                                        "stream_post_policy": 1,
-                                        "history_public_to_subscribers": true,
-                                        "first_message_id": null,
-                                        "message_retention_days": null,
-                                        "is_announcement_only": false,
-                                      },
-                                    ],
-                                  "id": 2,
                                 }
                             - type: object
                               description: |
@@ -2401,7 +2336,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the
-                                set of configured [Linkifiers](/help/add-a-custom-linkification-filter)
+                                set of configured [linkifiers](/help/add-a-custom-linkification-filter)
                                 for the organization has changed.
 
                                 Processing this event is important to doing Markdown local echo
@@ -2425,7 +2360,7 @@ paths:
                                     An array of tuples, where each tuple describes a linkifier.
                                     The first element of the tuple is a
                                     string regex pattern which represents the pattern that should
-                                    be linkified on matching. The second element is the url with which the
+                                    be linkified on matching. The second element is the URL with which the
                                     pattern matching string should be linkified with and the third element
                                     is the ID of the realm filter.
                               example:
@@ -3166,7 +3101,7 @@ paths:
         supported by Zulip's powerful full-text search backend.
 
         When a narrow is not specified, it can be used to fetch a user's
-        message history (We recommend paginating to 1000 messages at a time).
+        message history. (We recommend paginating to 1000 messages at a time.)
 
         In either case, you specify an `anchor` message (or ask the server to
         calculate the first unread message for you and use that as the
@@ -4198,7 +4133,7 @@ paths:
                                       "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
                                       "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
                                     },
-                                  "5": {"value": "1900-1-1"},
+                                  "5": {"value": "1900-01-01"},
                                   "7": {"value": "[11]"},
                                   "6": {"value": "https://blog.zulig.org"},
                                   "1":
@@ -4244,7 +4179,7 @@ paths:
       operationId: create_user
       tags: ["users"]
       description: |
-        {!api-admin-only.md!}
+        {!can-create-users-only.md!}
 
         Create a new user account via the API.
 
@@ -4444,7 +4379,7 @@ paths:
                       avatar_version:
                         type: integer
                         description: |
-                          Version for the the user's avatar.  Used for cache-busting requests
+                          Version for the user's avatar.  Used for cache-busting requests
                           for the user's avatar.  Clients generally shouldn't need to use this;
                           most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
 
@@ -4553,7 +4488,7 @@ paths:
                         "user_id": 5,
                         "profile_data":
                           {
-                            "5": {"value": "2000-1-1"},
+                            "5": {"value": "2000-01-01"},
                             "4": {"value": "emacs"},
                             "7": {"value": "[10]"},
                             "1":
@@ -4754,7 +4689,7 @@ paths:
         - name: subscriptions
           in: query
           description: |
-            A list of dictionaries containing the the key `name` and value
+            A list of dictionaries containing the key `name` and value
             specifying the name of the stream to subscribe. If the stream does not
             exist a new stream is created. The description of the stream created can
             be specified by setting the dictionary key `description` with an
@@ -4765,7 +4700,7 @@ paths:
                 type: array
                 items:
                   type: object
-              example: [{"name": "Verona", "description": "Italian City"}]
+              example: [{"name": "Verona", "description": "Italian city"}]
           required: true
         - $ref: "#/components/parameters/Principals"
         - name: authorization_errors_fatal
@@ -5506,7 +5441,7 @@ paths:
                                     *`email_notifications`: Whether to trigger an email notification for all
                                     messages sent to the stream.
 
-                                    *`in_home_view`: Whether to mute the stream (Legacy property)
+                                    *`in_home_view`: Whether to mute the stream (legacy property)
 
                                     *`wildcard_mentions_notify`: whether wildcard mentions trigger notifications
                                     as though they were personal mentions in this stream.
@@ -5603,7 +5538,7 @@ paths:
                                     "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
                                     "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
                                   },
-                                "5": {"value": "1900-1-1"},
+                                "5": {"value": "1900-01-01"},
                                 "7": {"value": "[11]"},
                                 "6": {"value": "https://blog.zulig.org"},
                                 "1":
@@ -6130,11 +6065,11 @@ paths:
                           Present if `realm_filters` is present in `fetch_event_types`.
 
                           An array of tuples (fixed-length arrays) where each tuple describes
-                          a single realm filter ([Linkifier](/help/add-a-custom-linkification-filter).
+                          a single realm filter ([linkifier](/help/add-a-custom-linkification-filter).
                           The first element of the tuple is a string regex pattern which represents
                           the pattern that should be linkified on matching.
 
-                          The second element is the url with which the
+                          The second element is the URL with which the
                           pattern matching string should be linkified with and the third element
                           is the id of the realm filter.
                       realm_user_groups:
@@ -6327,7 +6262,7 @@ paths:
                                 sender_id:
                                   type: integer
                                   description: |
-                                    The user id of the the other participant in a PM conversation.
+                                    The user id of the other participant in a PM conversation.
                                 message_ids:
                                   type: array
                                   description: |
@@ -6965,7 +6900,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Members whose accounts have been created at least this many days ago
-                          will be treated as [Full Members](/help/restrict-permissions-of-new-members)
+                          will be treated as [full members](/help/restrict-permissions-of-new-members)
                           for the purpose of settings that restrict access to new members.
                       realm_digest_weekday:
                         type: integer
@@ -7061,7 +6996,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The url of the organization's [profile icon](/help/create-your-organization-profile).
+                          The URL of the organization's [profile icon](/help/create-your-organization-profile).
                       realm_icon_source:
                         type: string
                         description: |
@@ -7085,7 +7020,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The url of the organization's wide logo configured in the
+                          The URL of the organization's wide logo configured in the
                           [organization profile](/help/create-your-organization-profile).
                       realm_logo_source:
                         type: string
@@ -7104,7 +7039,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The url of the organization's night theme wide-format logo configured in the
+                          The URL of the organization's night theme wide-format logo configured in the
                           [organization profile](/help/create-your-organization-profile).
                       realm_night_logo_source:
                         type: string
@@ -7285,7 +7220,7 @@ paths:
                             url_pattern:
                               type: string
                               description: |
-                                The regex pattern of  the url of a profile page
+                                The regex pattern of the URL of a profile page
                                 on the external site.
                       jitsi_server_url:
                         type: string
@@ -7438,7 +7373,7 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          The url of the avatar URL for the current user at 100x100
+                          The URL of the avatar for the current user at 100x100
                           resolution.  See also `avatar_url_medium`.
                       can_create_streams:
                         type: boolean
@@ -7607,7 +7542,7 @@ paths:
                             type: boolean
                           dev:
                             description: |
-                              Whether the user can authenticate using development api key.
+                              Whether the user can authenticate using development API key.
                             type: boolean
                           email:
                             description: |
@@ -7615,35 +7550,35 @@ paths:
                             type: boolean
                           ldap:
                             description: |
-                              Whether the user can authenticate using ldap.
+                              Whether the user can authenticate using LDAP.
                             type: boolean
                           remoteuser:
                             description: |
-                              Whether the user can authenticate using remoteuser.
+                              Whether the user can authenticate using REMOTE_USER.
                             type: boolean
                           github:
                             description: |
-                              Whether the user can authenticate using their github account.
+                              Whether the user can authenticate using their GitHub account.
                             type: boolean
                           azuread:
                             description: |
-                              Whether the user can authenticate using their azuread account.
+                              Whether the user can authenticate using their Azure Active Directory account.
                             type: boolean
                           gitlab:
                             description: |
-                              Whether the user can authenticate using their gitlab account.
+                              Whether the user can authenticate using their GitLab account.
                             type: boolean
                           apple:
                             description: |
-                              Whether the user can authenticate using their apple account.
+                              Whether the user can authenticate using their Apple account.
                             type: boolean
                           google:
                             description: |
-                              Whether the user can authenticate using their google account.
+                              Whether the user can authenticate using their Google account.
                             type: boolean
                           saml:
                             description: |
-                              Whether the user can authenticate using saml.
+                              Whether the user can authenticate using SAML.
                             type: boolean
                       external_authentication_methods:
                         type: array
@@ -8339,7 +8274,7 @@ paths:
             The user_ids of the recipients of the message being typed. Typing
             notifications are only supported for private messages. Send a
             JSON-encoded list of user_ids. (Use a list even if there is only one
-            recipient.).
+            recipient.)
 
             **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
             list of email addresses.  Support for the email address-based format was
@@ -8570,7 +8505,7 @@ paths:
                             members:
                               type: array
                               description: |
-                                The integer User IDs of the user group members.
+                                The integer user IDs of the user group members.
                               items:
                                 type: integer
                             name:
@@ -8638,7 +8573,7 @@ paths:
       operationId: zulip_outgoing_webhooks
       tags: ["webhooks"]
       description: |
-        Outgoing Webhooks allows to build or set up Zulip integrations which are
+        Outgoing webhooks allows to build or set up Zulip integrations which are
         notified when certain types of messages are sent in Zulip.
       responses:
         "200":
@@ -8702,7 +8637,7 @@ paths:
                               The content/body of the message rendered in HTML.
                 example:
                   {
-                    "data": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
+                    "data": "@**Outgoing webhook test** Zulip is the world\u2019s most productive group chat!",
                     "trigger": "mention",
                     "token": "xvOzfurIutdRRVLzpXrIIHXJvNfaJLJ0",
                     "message":
@@ -8716,10 +8651,10 @@ paths:
                         "topic_links": [],
                         "sender_full_name": "Iago",
                         "avatar_url": "https://secure.gravatar.com/avatar/1f4f1575bf002ae562fea8fc4b861b09?d=identicon&version=1",
-                        "rendered_content": "<p><span class=\"user-mention\" data-user-id=\"25\">@Outgoing Webhook Test</span> Zulip is the world\u2019s most productive group chat!</p>",
+                        "rendered_content": "<p><span class=\"user-mention\" data-user-id=\"25\">@Outgoing webhook test</span> Zulip is the world\u2019s most productive group chat!</p>",
                         "sender_id": 5,
                         "stream_id": 5,
-                        "content": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
+                        "content": "@**Outgoing webhook test** Zulip is the world\u2019s most productive group chat!",
                         "display_recipient": "Verona",
                         "type": "stream",
                         "id": 112,
@@ -8735,7 +8670,7 @@ paths:
       tags: ["streams"]
       operationId: create_big_blue_button_video_call
       description: |
-        Create a video call url for a Big Blue Button video call.
+        Create a video call URL for a Big Blue Button video call.
         Requires Big Blue Button to be configured on the Zulip server.
       responses:
         "200":
@@ -8751,7 +8686,7 @@ paths:
                       msg: {}
                       url:
                         description: |
-                          The url for the Big Blue Button video call.
+                          The URL for the Big Blue Button video call.
                         type: string
                         example: "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22"
                     example:
@@ -9026,7 +8961,7 @@ components:
                   base_url:
                     type: string
                     description: |
-                      The url the outgoing webhook is configured to post to.
+                      The URL the outgoing webhook is configured to post to.
                   token:
                     type: string
                     description: |
@@ -9250,7 +9185,7 @@ components:
           type: string
           nullable: true
           description: |
-            The url of the export. Null if there's no url.
+            The URL of the export. `null` if there's no URL.
         pending:
           type: boolean
           description: |
@@ -9540,7 +9475,7 @@ components:
             within the namespace of the `reaction_type`.
 
             For example, for `unicode_emoji`, this will be an encoding of the
-            unicode codepoint.
+            Unicode codepoint.
         emoji_name:
           type: string
           description: |
@@ -9550,7 +9485,7 @@ components:
           description: |
             One of the following values:
 
-            * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode
+            * `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
               codepoint).
             * `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
               (`emoji_code` will be its ID).
@@ -9872,13 +9807,17 @@ components:
           type: string
           nullable: true
           description: |
-            URL for the the user's avatar.  Will be `null` if the `client_gravatar`
+            URL for the user's avatar.  Will be `null` if the `client_gravatar`
             query parameter was set to `True` and the user's avatar is hosted by
             the Gravatar provider (i.e. the user has never uploaded an avatar).
+
+            **Changes**: In Zulip 3.0 (feature level 18), if the client has the
+            `user_avatar_url_field_optional` capability, this will be missing at
+            the server's sole discretion.
         avatar_version:
           type: integer
           description: |
-            Version for the the user's avatar.  Used for cache-busting requests
+            Version for the user's avatar.  Used for cache-busting requests
             for the user's avatar.  Clients generally shouldn't need to use this;
             most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
         full_name:
@@ -10414,7 +10353,7 @@ components:
         from the streams specified in the `subscriptions` parameter. If
         not provided, then the requesting user/bot is subscribed.
 
-        **Changes**: The integer format is new in Zulip 3.0 (Feature level 9).
+        **Changes**: The integer format is new in Zulip 3.0 (feature level 9).
       content:
         application/json:
           schema:
@@ -10432,7 +10371,7 @@ components:
         it should pass this parameter using the value the server provided
         for the existing reaction for specificity.  Supported values:
 
-        * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode codepoint).
+        * `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode codepoint).
         * `realm_emoji`: Custom emoji. (`emoji_code` will be its ID).
         * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
            namespace the `zulip` emoji.

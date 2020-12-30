@@ -33,8 +33,10 @@ from django.db import models, transaction
 from django.db.models import CASCADE, Manager, Q, Sum
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save
+from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -170,12 +172,14 @@ def clear_supported_auth_backends_cache() -> None:
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
+    MAX_REALM_REDIRECT_URL_LENGTH = 128
 
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
     AUTHENTICATION_FLAGS = ['Google', 'Email', 'GitHub', 'LDAP', 'Dev',
                             'RemoteUser', 'AzureAD', 'SAML', 'GitLab', 'Apple']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
+    WILDCARD_MENTION_THRESHOLD = 15
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name='ID')
 
@@ -190,6 +194,9 @@ class Realm(models.Model):
 
     date_created: datetime.datetime = models.DateTimeField(default=timezone_now)
     deactivated: bool = models.BooleanField(default=False)
+
+    # Redirect URL if the Realm has moved to another server
+    deactivated_redirect = models.URLField(max_length=MAX_REALM_REDIRECT_URL_LENGTH, null=True)
 
     # See RealmDomain for the domains that apply for a given organization.
     emails_restricted_to_domains: bool = models.BooleanField(default=False)
@@ -323,7 +330,7 @@ class Realm(models.Model):
 
     DEFAULT_NOTIFICATION_STREAM_NAME = 'general'
     INITIAL_PRIVATE_STREAM_NAME = 'core team'
-    STREAM_EVENTS_NOTIFICATION_TOPIC = _('stream events')
+    STREAM_EVENTS_NOTIFICATION_TOPIC = ugettext_lazy('stream events')
     notifications_stream: Optional["Stream"] = models.ForeignKey(
         "Stream", related_name="+", null=True, blank=True, on_delete=CASCADE,
     )
@@ -349,7 +356,7 @@ class Realm(models.Model):
     COMMUNITY = 2
     org_type: int = models.PositiveSmallIntegerField(default=CORPORATE)
 
-    UPGRADE_TEXT_STANDARD = _("Available on Zulip Standard. Upgrade to access.")
+    UPGRADE_TEXT_STANDARD = ugettext_lazy("Available on Zulip Standard. Upgrade to access.")
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
@@ -620,13 +627,13 @@ class Realm(models.Model):
     def presence_disabled(self) -> bool:
         return self.is_zephyr_mirror_realm
 
-    class Meta:
-        permissions = (
-            ('administer', "Administer a realm"),
-            ('api_super_user', "Can send messages as other users for mirroring"),
-        )
+def realm_post_delete_handler(sender: Any, **kwargs: Any) -> None:
+    # This would be better as a functools.partial, but for some reason
+    # Django doesn't call it even when it's registered as a post_delete handler.
+    flush_realm(sender, from_deletion=True, **kwargs)
 
 post_save.connect(flush_realm, sender=Realm)
+post_delete.connect(realm_post_delete_handler, sender=Realm)
 
 def get_realm(string_id: str) -> Realm:
     return Realm.objects.get(string_id=string_id)
@@ -687,7 +694,7 @@ class RealmEmoji(models.Model):
         # The second part of the regex (negative lookbehind) disallows names
         # ending with one of the punctuation characters.
         RegexValidator(regex=r'^[0-9a-z.\-_]+(?<![.\-_])$',
-                       message=_("Invalid characters in emoji name"))])
+                       message=ugettext_lazy("Invalid characters in emoji name"))])
 
     # The basename of the custom emoji's filename; see PATH_ID_TEMPLATE for the full path.
     file_name: Optional[str] = models.TextField(db_index=True, null=True, blank=True)
@@ -743,7 +750,7 @@ post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 def filter_pattern_validator(value: str) -> None:
     regex = re.compile(r'^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$')
-    error_msg = _('Invalid filter pattern.  Valid characters are %s.') % (
+    error_msg = _('Invalid filter pattern.  Valid characters are {}.').format(
         '[ a-zA-Z_#=/:+!-]',)
 
     if not regex.match(str(value)):
@@ -975,9 +982,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # like native Zulip messages (with a name + avatar, etc.).
     is_mirror_dummy: bool = models.BooleanField(default=False)
 
-    # API super users are allowed to forge messages as sent by another
+    # Users with this flag set are allowed to forge messages as sent by another
     # user and to send to private streams; also used for Zephyr/Jabber mirroring.
-    is_api_super_user: bool = models.BooleanField(default=False, db_index=True)
+    can_forge_sender: bool = models.BooleanField(default=False, db_index=True)
+    # Users with this flag set can create other users via API.
+    can_create_users: bool = models.BooleanField(default=False, db_index=True)
 
     ### Notifications settings. ###
 
@@ -1154,10 +1163,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
 
     ROLE_ID_TO_NAME_MAP = {
-        ROLE_REALM_OWNER: _("Organization owner"),
-        ROLE_REALM_ADMINISTRATOR: _("Organization administrator"),
-        ROLE_MEMBER: _("Member"),
-        ROLE_GUEST: _("Guest"),
+        ROLE_REALM_OWNER: ugettext_lazy("Organization owner"),
+        ROLE_REALM_ADMINISTRATOR: ugettext_lazy("Organization administrator"),
+        ROLE_MEMBER: ugettext_lazy("Member"),
+        ROLE_GUEST: ugettext_lazy("Guest"),
     }
 
     def get_role_name(self) -> str:
@@ -1933,7 +1942,7 @@ class Draft(models.Model):
     def __str__(self) -> str:
         return f"<{self.__class__.__name__}: {self.user_profile.email} / {self.id} / {self.last_edit_time}>"
 
-    def to_dict(self) -> Dict[str, Any]:  # nocoverage  # Will be added in a later commit.
+    def to_dict(self) -> Dict[str, Any]:
         if self.recipient is None:
             _type = ""
             to = []
@@ -1951,11 +1960,12 @@ class Draft(models.Model):
                     if not r["id"] == self.user_profile_id:
                         to.append(r["id"])
         return {
+            "id": self.id,
             "type": _type,
             "to": to,
             "topic": self.topic,
             "content": self.content,
-            "timestamp": self.last_edit_time.timestamp(),
+            "timestamp": int(self.last_edit_time.timestamp()),
         }
 
 class AbstractReaction(models.Model):
@@ -1975,9 +1985,9 @@ class AbstractReaction(models.Model):
     UNICODE_EMOJI       = 'unicode_emoji'
     REALM_EMOJI         = 'realm_emoji'
     ZULIP_EXTRA_EMOJI   = 'zulip_extra_emoji'
-    REACTION_TYPES      = ((UNICODE_EMOJI, _("Unicode emoji")),
-                           (REALM_EMOJI, _("Custom emoji")),
-                           (ZULIP_EXTRA_EMOJI, _("Zulip extra emoji")))
+    REACTION_TYPES      = ((UNICODE_EMOJI, ugettext_lazy("Unicode emoji")),
+                           (REALM_EMOJI, ugettext_lazy("Custom emoji")),
+                           (ZULIP_EXTRA_EMOJI, ugettext_lazy("Zulip extra emoji")))
     reaction_type: str = models.CharField(default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30)
 
     # A string that uniquely identifies a particular emoji.  The format varies
@@ -2321,7 +2331,6 @@ class Subscription(models.Model):
     # * "is_muted" often needs to be copied to not "in_home_view" for
     #   backwards-compatibility.
     API_FIELDS = [
-        "active",
         "color",
         "is_muted",
         "pin_to_top",
@@ -2488,7 +2497,7 @@ def is_cross_realm_bot_email(email: str) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
 
 # The Huddle class represents a group of individuals who have had a
-# Group Private Message conversation together.  The actual membership
+# group private message conversation together.  The actual membership
 # of the Huddle is stored in the Subscription table just like with
 # Streams, and a hash of that list is stored in the huddle_hash field
 # below, to support efficiently mapping from a set of users to the
@@ -2803,6 +2812,7 @@ class AbstractRealmAuditLog(models.Model):
     USER_DEFAULT_REGISTER_STREAM_CHANGED = 130
     USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED = 131
     USER_NOTIFICATION_SETTINGS_CHANGED = 132
+    USER_DIGEST_EMAIL_CREATED = 133
 
     REALM_DEACTIVATED = 201
     REALM_REACTIVATED = 202
@@ -2904,14 +2914,14 @@ def check_valid_user_ids(realm_id: int, val: object,
         try:
             user_profile = get_user_profile_by_id_in_realm(user_id, realm)
         except UserProfile.DoesNotExist:
-            raise ValidationError(_('Invalid user ID: %d') % (user_id))
+            raise ValidationError(_('Invalid user ID: {}').format(user_id))
 
         if not allow_deactivated:
             if not user_profile.is_active:
-                raise ValidationError(_('User with ID %d is deactivated') % (user_id))
+                raise ValidationError(_('User with ID {} is deactivated').format(user_id))
 
         if (user_profile.is_bot):
-            raise ValidationError(_('User with ID %d is a bot') % (user_id))
+            raise ValidationError(_('User with ID {} is a bot').format(user_id))
 
     return user_ids
 
@@ -2942,10 +2952,10 @@ class CustomProfileField(models.Model):
     # and value argument. i.e. CHOICE require field_data, USER require
     # realm as argument.
     CHOICE_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
-        (CHOICE, str(_('List of options')), validate_choice_field, str, "CHOICE"),
+        (CHOICE, ugettext_lazy('List of options'), validate_choice_field, str, "CHOICE"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
-        (USER, str(_('Person picker')), check_valid_user_ids, ast.literal_eval, "USER"),
+        (USER, ugettext_lazy('Person picker'), check_valid_user_ids, ast.literal_eval, "USER"),
     ]
 
     CHOICE_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
@@ -2957,21 +2967,18 @@ class CustomProfileField(models.Model):
 
     FIELD_TYPE_DATA: List[FieldElement] = [
         # Type, Display Name, Validator, Converter, Keyword
-        (SHORT_TEXT, str(_('Short text')), check_short_string, str, "SHORT_TEXT"),
-        (LONG_TEXT, str(_('Long text')), check_long_string, str, "LONG_TEXT"),
-        (DATE, str(_('Date picker')), check_date, str, "DATE"),
-        (URL, str(_('Link')), check_url, str, "URL"),
-        (EXTERNAL_ACCOUNT, str(_('External account')), check_short_string, str, "EXTERNAL_ACCOUNT"),
+        (SHORT_TEXT, ugettext_lazy('Short text'), check_short_string, str, "SHORT_TEXT"),
+        (LONG_TEXT, ugettext_lazy('Long text'), check_long_string, str, "LONG_TEXT"),
+        (DATE, ugettext_lazy('Date picker'), check_date, str, "DATE"),
+        (URL, ugettext_lazy('Link'), check_url, str, "URL"),
+        (EXTERNAL_ACCOUNT, ugettext_lazy('External account'), check_short_string, str, "EXTERNAL_ACCOUNT"),
     ]
 
     ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *CHOICE_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
 
     FIELD_VALIDATORS: Dict[int, Validator[Union[int, str, List[int]]]] = {item[0]: item[2] for item in FIELD_TYPE_DATA}
     FIELD_CONVERTERS: Dict[int, Callable[[Any], Any]] = {item[0]: item[3] for item in ALL_FIELD_TYPES}
-    FIELD_TYPE_CHOICES: List[Tuple[int, str]] = [(item[0], item[1]) for item in ALL_FIELD_TYPES]
-    FIELD_TYPE_CHOICES_DICT: Dict[str, Dict[str, Union[str, int]]] = {
-        item[4]: {"id": item[0], "name": item[1]} for item in ALL_FIELD_TYPES
-    }
+    FIELD_TYPE_CHOICES: List[Tuple[int, Promise]] = [(item[0], item[1]) for item in ALL_FIELD_TYPES]
 
     field_type: int = models.PositiveSmallIntegerField(
         choices=FIELD_TYPE_CHOICES, default=SHORT_TEXT,
@@ -3026,7 +3033,7 @@ class CustomProfileFieldValue(models.Model):
         return f"<CustomProfileFieldValue: {self.user_profile} {self.field} {self.value}>"
 
 # Interfaces for services
-# They provide additional functionality like parsing message to obtain query url, data to be sent to url,
+# They provide additional functionality like parsing message to obtain query URL, data to be sent to URL,
 # and parsing the response.
 GENERIC_INTERFACE = 'GenericService'
 SLACK_INTERFACE = 'SlackOutgoingWebhookService'

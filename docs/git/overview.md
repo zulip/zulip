@@ -51,8 +51,8 @@ Finally, install the [Zulip developer environment][zulip-rtd-dev-overview], and 
 ***
 
 The following sections will help you be awesome with Zulip and Git/GitHub in a
-rebased-based workflow. Read through it if you're new to git, to a rebase-based
-git workflow, or if you'd like a git refresher.
+rebased-based workflow. Read through it if you're new to Git, to a rebase-based
+Git workflow, or if you'd like a Git refresher.
 
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
 [github-rebase-pr]: https://github.com/edx/edx-platform/wiki/How-to-Rebase-a-Pull-Request

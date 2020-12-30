@@ -1,6 +1,12 @@
 "use strict";
 
-set_global("$", global.make_zjquery());
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+set_global("$", make_zjquery());
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -107,7 +113,7 @@ run_test("updates", () => {
 
     let user_id;
     let full_name;
-    global.message_live_update.update_user_full_name = function (user_id_arg, full_name_arg) {
+    message_live_update.update_user_full_name = function (user_id_arg, full_name_arg) {
         user_id = user_id_arg;
         full_name = full_name_arg;
     };
@@ -123,7 +129,7 @@ run_test("updates", () => {
         user_id: me.user_id,
         role: settings_config.user_role_values.member.code,
     });
-    assert(!global.page_params.is_admin);
+    assert(!page_params.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
     assert.equal(people.my_full_name(), "Me V2");
@@ -141,7 +147,7 @@ run_test("updates", () => {
     assert.equal(person.full_name, "Me V2");
 
     let avatar_url;
-    global.message_live_update.update_avatar = function (user_id_arg, avatar_url_arg) {
+    message_live_update.update_avatar = function (user_id_arg, avatar_url_arg) {
         user_id = user_id_arg;
         avatar_url = avatar_url_arg;
     };

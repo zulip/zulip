@@ -47,6 +47,10 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     email = 'iago@zulip.com'  # Iago is an admin
     realm = get_realm('zulip')
     user = get_user(email, realm)
+    # Required to test can_create_users endpoints.
+    user.can_create_users = True
+    user.save(update_fields=["can_create_users"])
+
     api_key = get_api_key(user)
     site = 'http://zulip.zulipdev.com:9981'
     client = Client(

@@ -8,7 +8,9 @@
 import inspect
 import json
 import re
-from typing import Any, Dict, List, Optional, Pattern, Tuple
+import shlex
+from textwrap import dedent
+from typing import Any, Dict, List, Mapping, Optional, Pattern, Tuple
 
 import markdown
 from django.conf import settings
@@ -45,18 +47,18 @@ client = zulip.Client(config_file="~/zuliprc-admin")
 """
 
 JS_CLIENT_CONFIG = """
-const Zulip = require('zulip-js');
+const zulipInit = require("zulip-js");
 
 // Pass the path to your zuliprc file here.
-const config = { zuliprc: 'zuliprc' };
+const config = { zuliprc: "zuliprc" };
 
 """
 
 JS_CLIENT_ADMIN_CONFIG = """
-const Zulip = require('zulip-js');
+const zulipInit = require("zulip-js");
 
 // The user for this zuliprc file must be an organization administrator.
-const config = { zuliprc: 'zuliprc-admin' };
+const config = { zuliprc: "zuliprc-admin" };
 
 """
 
@@ -133,16 +135,11 @@ def render_python_code_example(function: str, admin_config: bool=False,
 
 def render_javascript_code_example(function: str, admin_config: bool=False,
                                    **kwargs: Any) -> List[str]:
-    function_source_lines = []
+    pattern = fr'^add_example\(\s*"[^"]*",\s*{re.escape(json.dumps(function))},\s*\d+,\s*async \(client, console\) => \{{\n(.*?)^(?:\}}| *\}},\n)\);$'
     with open('zerver/openapi/javascript_examples.js') as f:
-        parsing = False
-        for line in f:
-            if line.startswith("}"):
-                parsing = False
-            if parsing:
-                function_source_lines.append(line.rstrip())
-            if line.startswith("add_example(") and function in line:
-                parsing = True
+        m = re.search(pattern, f.read(), re.M | re.S)
+    assert m is not None
+    function_source_lines = dedent(m.group(1)).splitlines()
 
     snippets = extract_code_example(function_source_lines, [], JS_EXAMPLE_REGEX)
 
@@ -154,16 +151,14 @@ def render_javascript_code_example(function: str, admin_config: bool=False,
     code_example = []
     code_example.append('```js')
     code_example.extend(config)
+    code_example.append("(async () => {")
+    code_example.append("    const client = await zulipInit(config);")
     for snippet in snippets:
-        code_example.append("Zulip(config).then(async (client) => {")
+        code_example.append("")
         for line in snippet:
-            result = re.search('const result.*=(.*);', line)
-            if result:
-                line = f"    return{result.group(1)};"
             # Strip newlines
-            code_example.append(line.rstrip())
-        code_example.append("}).then(console.log).catch(console.err);")
-        code_example.append(" ")
+            code_example.append("    " + line.rstrip())
+    code_example.append("})();")
 
     code_example.append('```')
 
@@ -213,7 +208,7 @@ cURL example."""
         # We currently don't have any non-JSON encoded arrays.
         assert(jsonify)
         if curl_argument:
-            return f"    --data-urlencode {param_name}='{ordered_ex_val_str}'"
+            return "    --data-urlencode " + shlex.quote(f"{param_name}={ordered_ex_val_str}")
         return ordered_ex_val_str  # nocoverage
     else:
         example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
@@ -222,7 +217,7 @@ cURL example."""
         if jsonify:
             example_value = json.dumps(example_value)
         if curl_argument:
-            return f"    -d '{param_name}={example_value}'"
+            return "    --data-urlencode " + shlex.quote(f"{param_name}={example_value}")
         return example_value
 
 def generate_curl_example(endpoint: str, method: str,
@@ -258,9 +253,9 @@ def generate_curl_example(endpoint: str, method: str,
 
     curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method,
                                                             api_url)]
-    lines.append(" ".join(curl_first_line_parts))
+    lines.append(" ".join(map(shlex.quote, curl_first_line_parts)))
 
-    insecure_operations = ['/dev_fetch_api_key:post']
+    insecure_operations = ['/dev_fetch_api_key:post', '/fetch_api_key:post']
     if operation_security is None:
         if global_security == [{'basicAuth': []}]:
             authentication_required = True
@@ -277,7 +272,7 @@ def generate_curl_example(endpoint: str, method: str,
         raise AssertionError("Unhandled securityScheme. Please update the code to handle this scheme.")
 
     if authentication_required:
-        lines.append(f"    -u {auth_email}:{auth_api_key}")
+        lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
 
     for param in operation_params:
         if param["in"] == "path":
@@ -297,7 +292,7 @@ def generate_curl_example(endpoint: str, method: str,
     if "requestBody" in operation_entry:
         properties = operation_entry["requestBody"]["content"]["multipart/form-data"]["schema"]["properties"]
         for key, property in properties.items():
-            lines.append('    -F "{}=@{}"'.format(key, property["example"]))
+            lines.append('    -F ' + shlex.quote('{}=@{}'.format(key, property["example"])))
 
     for i in range(1, len(lines)-1):
         lines[i] = lines[i] + " \\"
@@ -348,16 +343,16 @@ class APIMarkdownExtension(Extension):
             ],
         }
 
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
-        md.preprocessors.add(
-            'generate_code_example', APICodeExamplesPreprocessor(md, self.getConfigs()), '_begin',
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
+        md.preprocessors.register(
+            APICodeExamplesPreprocessor(md, self.getConfigs()), 'generate_code_example', 525
         )
-        md.preprocessors.add(
-            'generate_api_description', APIDescriptionPreprocessor(md, self.getConfigs()), '_begin',
+        md.preprocessors.register(
+            APIDescriptionPreprocessor(md, self.getConfigs()), 'generate_api_description', 530
         )
 
 class APICodeExamplesPreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
         self.api_url = config['api_url']
 
@@ -415,7 +410,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
         return fixture
 
 class APIDescriptionPreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
         self.api_url = config['api_url']
 

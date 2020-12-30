@@ -14,8 +14,11 @@ APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-co
 apt-get update
 
 if [ -f /etc/os-release ]; then
-    os_info="$(. /etc/os-release; printf '%s\n' "$VERSION_CODENAME")"
-    { read -r os_version_codename || true; } <<< "$os_info"
+    os_info="$(
+        . /etc/os-release
+        printf '%s\n' "$VERSION_CODENAME"
+    )"
+    { read -r os_version_codename || true; } <<<"$os_info"
 fi
 
 if ! apt-get dist-upgrade -y "${APT_OPTIONS[@]}"; then
@@ -23,9 +26,9 @@ if ! apt-get dist-upgrade -y "${APT_OPTIONS[@]}"; then
     apt-get dist-upgrade -y "${APT_OPTIONS[@]}"
 fi
 
-# Pin to postgresql 10 on Bionic, so we can test upgrading it
+# Pin to PostgreSQL 10 on Bionic, so we can test upgrading it
 if [ "$os_version_codename" = "bionic" ]; then
-    export POSTGRES_VERSION=10
+    export POSTGRESQL_VERSION=10
 fi
 
 # Install Zulip

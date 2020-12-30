@@ -78,7 +78,7 @@ async function navigation_tests(page) {
     await navigate_to(page, verona_narrow, "message_feed_container");
 
     // Hardcoded this instead of using `navigate_to`
-    // as puppeteer cannot click hidden elements.
+    // as Puppeteer cannot click hidden elements.
     await page.evaluate(() => $("a[href='#message_feed_container]'").click());
     await wait_for_tab(page, "message_feed_container");
 

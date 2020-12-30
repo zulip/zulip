@@ -33,7 +33,7 @@ CALLED_TEST_FUNCTIONS: Set[str] = set()
 FuncT = TypeVar("FuncT", bound=Callable[..., object])
 
 def openapi_test_function(endpoint: str) -> Callable[[FuncT], FuncT]:
-    """This decorator is used to register an openapi test function with
+    """This decorator is used to register an OpenAPI test function with
     its endpoint. Example usage:
 
     @openapi_test_function("/messages/render:post")

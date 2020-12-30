@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 zrequire("unread");
 zrequire("stream_data");
 zrequire("stream_topic_history");
@@ -318,7 +323,7 @@ run_test("server_history_end_to_end", () => {
     // Try getting server history for a second time.
 
     channel.get = () => {
-        throw Error("We should not get more data.");
+        throw new Error("We should not get more data.");
     };
 
     on_success_called = false;

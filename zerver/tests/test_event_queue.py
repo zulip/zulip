@@ -197,7 +197,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             all_public_streams=True,
             apply_markdown=True,
             client_gravatar=True,
-            client_type_name='home grown api program',
+            client_type_name='home grown API program',
             event_types=['message'],
             last_connection_time=time.time(),
             queue_timeout=0,
@@ -441,7 +441,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                                         'email_notifications': False})
 
         self.assertTrue(client_descriptor.event_queue.empty())
-        do_mute_topic(user_profile, stream, sub.recipient, "mutingtest")
+        do_mute_topic(user_profile, stream, "mutingtest")
         msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
                                           content="what's up everyone?", topic_name="mutingtest")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:

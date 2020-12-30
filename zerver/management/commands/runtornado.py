@@ -30,7 +30,7 @@ from zerver.tornado.event_queue import (
 from zerver.tornado.sharding import notify_tornado_queue_name
 
 if settings.USING_RABBITMQ:
-    from zerver.lib.queue import get_queue_client
+    from zerver.lib.queue import TornadoQueueClient, get_queue_client
 
 
 def handle_callback_exception(callback: Callable[..., Any]) -> None:
@@ -85,14 +85,15 @@ class Command(BaseCommand):
             # We pass display_num_errors=False, since Django will
             # likely display similar output anyway.
             self.check(display_num_errors=False)
-            print(f"Tornado server is running at http://{addr}:{port}/")
+            print(f"Tornado server (re)started on port {port}")
 
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()
+                assert isinstance(queue_client, TornadoQueueClient)
                 # Process notifications received via RabbitMQ
                 queue_name = notify_tornado_queue_name(port)
-                queue_client.register_json_consumer(queue_name,
-                                                    get_wrapped_process_notification(queue_name))
+                queue_client.start_json_consumer(queue_name,
+                                                 get_wrapped_process_notification(queue_name))
 
             try:
                 # Application is an instance of Django's standard wsgi handler.

@@ -5,7 +5,7 @@ from django.db import migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-# Imported to avoid needing to duplicate redis-related code.
+# Imported to avoid needing to duplicate Redis-related code.
 from zerver.lib.redis_utils import get_redis_client
 
 
@@ -28,25 +28,23 @@ def move_missed_message_addresses_to_database(apps: StateApps, schema_editor: Da
             redis_client.delete(key)
             continue
 
-        result = redis_client.hmget(key, 'user_profile_id', 'recipient_id', 'subject')
-        if not all(val is not None for val in result):
+        user_profile_id, recipient_id, subject_b = redis_client.hmget(
+            key, 'user_profile_id', 'recipient_id', 'subject'
+        )
+        if user_profile_id is None or recipient_id is None or subject_b is None:
             # Missing data, skip this key; this should never happen
             redis_client.delete(key)
             continue
 
-        user_profile_id: bytes
-        recipient_id: bytes
-        subject_id: bytes
-        user_profile_id, recipient_id, subject_b = result
         topic_name = subject_b.decode('utf-8')
 
         # The data model for missed-message emails has changed in two
-        # key ways: We're moving it from redis to the database for
+        # key ways: We're moving it from Redis to the database for
         # better persistence, and also replacing the stream + topic
         # (as the reply location) with a message to reply to.  Because
-        # the redis data structure only had stream/topic pairs, we use
+        # the Redis data structure only had stream/topic pairs, we use
         # the following migration logic to find the latest message in
-        # the thread indicated by the redis data (if it exists).
+        # the thread indicated by the Redis data (if it exists).
         try:
             user_profile = UserProfile.objects.get(id=user_profile_id)
             recipient = Recipient.objects.get(id=recipient_id)
@@ -75,19 +73,19 @@ def move_missed_message_addresses_to_database(apps: StateApps, schema_editor: Da
 
         # The timestamp will be set to the default (now) which means
         # the address will take longer to expire than it would have in
-        # redis, but this small issue is probably worth the simplicity
+        # Redis, but this small issue is probably worth the simplicity
         # of not having to figure out the precise timestamp.
         MissedMessageEmailAddress.objects.create(message=message,
                                                  user_profile=user_profile,
                                                  email_token=generate_missed_message_token())
         # We successfully transferred this missed-message email's data
-        # to the database, so this message can be deleted from redis.
+        # to the database, so this message can be deleted from Redis.
         redis_client.delete(key)
 
 class Migration(migrations.Migration):
-    # Atomicity is not feasible here, since we're doing operations on redis too.
-    # It's better to be non-atomic on both redis and database, than atomic
-    # on the database and not on redis.
+    # Atomicity is not feasible here, since we're doing operations on Redis too.
+    # It's better to be non-atomic on both Redis and database, than atomic
+    # on the database and not on Redis.
     atomic = False
 
     dependencies = [

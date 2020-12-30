@@ -59,7 +59,7 @@ INLINE_MIME_TYPES = [
     # image/svg+xml, text/html, or text/xml.
 ]
 
-# Performance Note:
+# Performance note:
 #
 # For writing files to S3, the file could either be stored in RAM
 # (if it is less than 2.5MiB or so) or an actual temporary file on disk.
@@ -80,7 +80,7 @@ class RealmUploadQuotaError(JsonableError):
 def sanitize_name(value: str) -> str:
     """
     Sanitizes a value to be safe to store in a Linux filesystem, in
-    S3, and in a URL.  So unicode is allowed, but not special
+    S3, and in a URL.  So Unicode is allowed, but not special
     characters other than ".", "-", and "_".
 
     This implementation is based on django.utils.text.slugify; it is
@@ -153,19 +153,22 @@ def resize_logo(image_data: bytes) -> bytes:
 def resize_gif(im: GifImageFile, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
     frames = []
     duration_info = []
+    disposals = []
     # If 'loop' info is not set then loop for infinite number of times.
     loop = im.info.get("loop", 0)
     for frame_num in range(0, im.n_frames):
         im.seek(frame_num)
-        new_frame = Image.new("RGBA", im.size)
+        new_frame = im.copy()
         new_frame.paste(im, (0, 0), im.convert("RGBA"))
-        new_frame = ImageOps.fit(new_frame, (size, size), Image.ANTIALIAS)
+        new_frame = ImageOps.pad(new_frame, (size, size), Image.ANTIALIAS)
         frames.append(new_frame)
         duration_info.append(im.info['duration'])
+        disposals.append(im.disposal_method)
     out = io.BytesIO()
-    frames[0].save(out, save_all=True, optimize=True,
+    frames[0].save(out, save_all=True, optimize=False,
                    format="GIF", append_images=frames[1:],
                    duration=duration_info,
+                   disposal=disposals,
                    loop=loop)
     return out.getvalue()
 
@@ -264,10 +267,13 @@ class ZulipUploadBackend:
 
 ### S3
 
-def get_bucket(session: Session, bucket_name: str) -> ServiceResource:
+def get_bucket(bucket_name: str, session: Optional[Session]=None) -> ServiceResource:
     # See https://github.com/python/typeshed/issues/2706
     # for why this return type is a `ServiceResource`.
-    bucket = session.resource('s3').Bucket(bucket_name)
+    if session is None:
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+    bucket = session.resource('s3', region_name=settings.S3_REGION,
+                              endpoint_url=settings.S3_ENDPOINT_URL).Bucket(bucket_name)
     return bucket
 
 def upload_image_to_s3(
@@ -321,7 +327,9 @@ def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Opti
 
 def get_signed_upload_url(path: str) -> str:
     client = boto3.client('s3', aws_access_key_id=settings.S3_KEY,
-                          aws_secret_access_key=settings.S3_SECRET_KEY)
+                          aws_secret_access_key=settings.S3_SECRET_KEY,
+                          region_name=settings.S3_REGION,
+                          endpoint_url=settings.S3_ENDPOINT_URL)
     return client.generate_presigned_url(ClientMethod='get_object',
                                          Params={
                                              'Bucket': settings.S3_AUTH_UPLOADS_BUCKET,
@@ -333,12 +341,12 @@ class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:
         self.session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
 
-        self.avatar_bucket = get_bucket(self.session, settings.S3_AVATAR_BUCKET)
+        self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET, self.session)
         network_location = urllib.parse.urlparse(
             self.avatar_bucket.meta.client.meta.endpoint_url).netloc
         self.avatar_bucket_url = f"https://{self.avatar_bucket.name}.{network_location}"
 
-        self.uploads_bucket = get_bucket(self.session, settings.S3_AUTH_UPLOADS_BUCKET)
+        self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
 
     def delete_file_from_s3(self, path_id: str, bucket: ServiceResource) -> bool:
         key = bucket.Object(path_id)
@@ -596,7 +604,9 @@ class S3UploadBackend(ZulipUploadBackend):
         session = botocore.session.get_session()
         config = Config(signature_version=botocore.UNSIGNED)
 
-        public_url = session.create_client('s3', config=config).generate_presigned_url(
+        public_url = session.create_client('s3', region_name=settings.S3_REGION,
+                                           endpoint_url=settings.S3_ENDPOINT_URL,
+                                           config=config).generate_presigned_url(
             'get_object',
             Params={
                 'Bucket': self.avatar_bucket.name,

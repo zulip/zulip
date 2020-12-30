@@ -24,7 +24,7 @@
 
     {{#unless msg/locally_echoed}}
     <div class="star_container {{#if msg/starred}}{{else}}empty-star{{/if}}">
-        <i role="button" tabindex="0" class="star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}} (*)"></i>
+        <i role="button" tabindex="0" class="star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}} (Ctrl + s)"></i>
     </div>
     {{/unless}}
 

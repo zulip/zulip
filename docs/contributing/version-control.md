@@ -158,7 +158,9 @@ automatically catch common mistakes in the commit message itself.
     message](https://help.github.com/en/articles/closing-issues-via-commit-messages)
     so that the issue is automatically closed when your code is merged.
     Zulip's preferred style for this is to have the final paragraph of
-    the commit message read e.g. "Fixes: \#123."
+    the commit message read e.g. "Fixes: \#123.".
+-   Avoid `Partially fixes #1234`; GitHub's regular expressions ignore
+    the "partially" and close the issue. `Fixes part of #1234` is a good alternative.
 -   Any paragraph content in the commit message should be line-wrapped
     to about 68 characters per line, but no more than 70, so that your
     commit message will be reasonably readable in `git log` in a normal

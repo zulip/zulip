@@ -4,7 +4,6 @@ exports.initialize = () => {
     helpers.set_tab("upgrade");
 
     const add_card_handler = StripeCheckout.configure({
-        // eslint-disable-line no-undef
         key: $("#autopay-form").data("key"),
         image: "/static/images/logo/zulip-icon-128x128.png",
         locale: "auto",

@@ -15,7 +15,7 @@ def run(command: List[str]) -> None:
     subprocess.check_call(command)
 
 def check_output(command: List[str]) -> str:
-    return subprocess.check_output(command).decode('ascii')
+    return subprocess.check_output(command, universal_newlines=True)
 
 def get_git_branch() -> str:
     command = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']

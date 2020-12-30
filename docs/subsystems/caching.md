@@ -215,6 +215,13 @@ More full-stack test suites like `test-js-with-puppeteer` or `test-api`
 use a similar strategy (set a random `KEY_PREFIX` at the start of the
 test run).
 
+### Manual testing and memcached
+
+Zulip's development environment will automatically flush (delete all
+keys in) `memcached` when provisioning and when starting `run-dev.py`.
+You can run the server with that behavior disabled using
+`tools/run-dev.py --no-clear-memcached`.
+
 ### Performance
 
 One thing be careful about with memcached queries is to avoid doing

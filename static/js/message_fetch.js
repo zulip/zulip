@@ -11,6 +11,7 @@ const consts = {
     narrow_after: 50,
     num_before_home_anchor: 200,
     num_after_home_anchor: 200,
+    recent_topics_initial_fetch_size: 400,
     backward_batch_size: 100,
     forward_batch_size: 100,
     catch_up_batch_size: 1000,
@@ -130,8 +131,8 @@ function get_messages_success(data, opts) {
 // or convert the emails string to user IDs directly into the Filter code
 // because doing so breaks the app in various modules that expect emails string.
 function handle_operators_supporting_id_based_api(data) {
-    const operators_supporting_ids = ["pm-with"];
-    const operators_supporting_id = ["sender", "group-pm-with", "stream"];
+    const operators_supporting_ids = new Set(["pm-with"]);
+    const operators_supporting_id = new Set(["sender", "group-pm-with", "stream"]);
 
     if (data.narrow === undefined) {
         return data;
@@ -139,11 +140,11 @@ function handle_operators_supporting_id_based_api(data) {
 
     data.narrow = JSON.parse(data.narrow);
     data.narrow = data.narrow.map((filter) => {
-        if (operators_supporting_ids.includes(filter.operator)) {
+        if (operators_supporting_ids.has(filter.operator)) {
             filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
         }
 
-        if (operators_supporting_id.includes(filter.operator)) {
+        if (operators_supporting_id.has(filter.operator)) {
             if (filter.operator === "stream") {
                 const stream_id = stream_data.get_stream_id(filter.operand);
                 if (stream_id !== undefined) {
@@ -177,15 +178,27 @@ exports.load_messages = function (opts) {
     }
     let data = {anchor: opts.anchor, num_before: opts.num_before, num_after: opts.num_after};
 
-    if (opts.msg_list.narrowed && narrow_state.active()) {
-        let operators = narrow_state.public_operators();
+    // This block is a hack; structurally, we want to set
+    //   data.narrow = opts.msg_list.data.filter.public_operators()
+    //
+    // But support for the message_list.all sharing of data with
+    // home_msg_list and the (hacky) page_params.narrow feature
+    // requires a somewhat ugly bundle of conditionals.
+    if (opts.msg_list === home_msg_list) {
+        if (page_params.narrow_stream !== undefined) {
+            data.narrow = JSON.stringify(page_params.narrow);
+        }
+        // Otherwise, we don't pass narrow for home_msg_list; this is
+        // required because it shares its data with all_msg_list, and
+        // so we need the server to send us message history from muted
+        // streams and topics even though home_msg_list's in:home
+        // operators will filter those.
+    } else {
+        let operators = opts.msg_list.data.filter.public_operators();
         if (page_params.narrow !== undefined) {
             operators = operators.concat(page_params.narrow);
         }
         data.narrow = JSON.stringify(operators);
-    }
-    if (opts.msg_list === home_msg_list && page_params.narrow_stream !== undefined) {
-        data.narrow = JSON.stringify(page_params.narrow);
     }
 
     let update_loading_indicator = opts.msg_list === current_msg_list;
@@ -235,6 +248,7 @@ exports.load_messages = function (opts) {
                 // retry or display a connection error.
                 //
                 // FIXME: Warn the user when this has happened?
+                message_scroll.hide_indicators();
                 const data = {
                     messages: [],
                 };
@@ -425,6 +439,38 @@ exports.initialize = function () {
         num_after: consts.num_after_home_anchor,
         msg_list: home_msg_list,
         cont: load_more,
+    });
+
+    // In addition to the algorithm above, which is designed to ensure
+    // that we fetch all message history eventually starting with the
+    // first unread message, we also need to ensure that the Recent
+    // Topics page contains the very most recent threads on page load.
+    //
+    // Long term, we'll want to replace this with something that's
+    // more performant (i.e. avoids this unnecessary extra fetch the
+    // results of which are basically discarded) and better represents
+    // more than a few hundred messages' history, but this strategy
+    // allows "Recent Topics" to always show current data (with gaps)
+    // on page load; the data will be complete once the algorithm
+    // above catched up to present.
+    //
+    // (Users will see a weird artifact where Recent Topics has a gap
+    // between E.g. 6 days ago and 37 days ago while the catchup
+    // process runs, so this strategy still results in problematic
+    // visual artifacts shortly after page load; just more forgiveable
+    // ones).
+    //
+    // This MessageList is defined similarly to home_message_list,
+    // without a `table_name` attached.
+    const recent_topics_message_list = new message_list.MessageList({
+        filter: new Filter([{operator: "in", operand: "home"}]),
+        muting_enabled: true,
+    });
+    exports.load_messages({
+        anchor: "newest",
+        num_before: consts.recent_topics_initial_fetch_size,
+        num_after: 0,
+        msg_list: recent_topics_message_list,
     });
 };
 

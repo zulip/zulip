@@ -276,7 +276,7 @@ exports.reify_message_id = function (local_id, server_id) {
     message.id = server_id;
     message.locally_echoed = false;
 
-    const opts = {old_id: parseFloat(local_id), new_id: server_id};
+    const opts = {old_id: Number.parseFloat(local_id), new_id: server_id};
 
     message_store.reify_message_id(opts);
     notifications.reify_message_id(opts);
@@ -362,7 +362,7 @@ exports.message_send_error = function (message_id, error_response) {
 function abort_message(message) {
     // Remove in all lists in which it exists
     for (const msg_list of [message_list.all, home_msg_list, current_msg_list]) {
-        msg_list.remove_and_rerender([message]);
+        msg_list.remove_and_rerender([message.id]);
     }
 }
 

@@ -82,9 +82,9 @@ exports.alphabetic_sort = (prop) =>
 
 exports.numeric_sort = (prop) =>
     function (a, b) {
-        if (parseFloat(a[prop]) > parseFloat(b[prop])) {
+        if (Number.parseFloat(a[prop]) > Number.parseFloat(b[prop])) {
             return 1;
-        } else if (parseFloat(a[prop]) === parseFloat(b[prop])) {
+        } else if (Number.parseFloat(a[prop]) === Number.parseFloat(b[prop])) {
             return 0;
         }
 
@@ -253,7 +253,6 @@ exports.create = function ($container, list, opts) {
             meta.sorting_function = sorting_function;
         } else if (typeof sorting_function === "string") {
             if (typeof prop === "string") {
-                /* eslint-disable max-len */
                 meta.sorting_function = meta.generic_sorting_functions[sorting_function](prop);
             } else {
                 meta.sorting_function = meta.sorting_functions.get(sorting_function);

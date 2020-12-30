@@ -247,36 +247,6 @@
         }
     }
 
-    /* CSS for message content widgets */
-    table.tictactoe {
-        width: 80px;
-        margin-left: 0;
-    }
-
-    td.tictactoe {
-        width: 15px;
-        border: none;
-        padding: 2px;
-    }
-
-    button.tictactoe-square {
-        background-color: hsl(156, 30%, 62%);
-        width: 40px;
-        height: 40px;
-        border: none;
-        border-radius: 3px;
-        font-size: 25px;
-        color: hsl(0, 0%, 100%);
-    }
-
-    button.tictactoe-square:hover {
-        background-color: hsl(155, 5%, 53%);
-    }
-
-    button.tictactoe-square:disabled {
-        background-color: hsl(156, 33%, 81%);
-    }
-
     /* embedded link previews */
     .message_inline_image_title {
         font-weight: bold;
@@ -456,28 +426,14 @@
         }
     }
 
-    /* TODO: Consolidate with .copy_message */
     /* Style copy-to-clipboard button inside codeblocks */
     .copy_codeblock {
         visibility: hidden;
-        outline-color: hsl(0, 0%, 73%);
-        height: 18px;
-        width: 10px;
-        padding: 6px 6px;
         /* Having absolute positioning here ensures that the element
         doesn't scroll along with the code div in narrow windows */
         position: absolute;
-        right: 0;
+        right: 2px;
         margin-top: -6px;
-        display: block;
-        /* The below two avoids the padded element from displaying
-        it's own border and background color */
-        border: none;
-        background-clip: content-box;
-    }
-
-    .copy_codeblock:hover svg path {
-        fill: hsl(200, 100%, 40%);
     }
 
     .code_external_link {
@@ -485,7 +441,7 @@
         position: absolute;
         right: 23px;
         margin-top: -2px;
-        font-size: 1.2em;
+        font-size: 1.4em;
         /* The default icon and on-hover colors are inherited from <a> tag.
         so we set our own to match the copy-to-clipbord icon */
         color: hsl(0, 0%, 47%);
@@ -577,22 +533,26 @@ pre {
     white-space: inherit;
 }
 
-/* Ensure the horizontal scrollbar is visible on Mac */
-pre::-webkit-scrollbar {
-    height: 8px;
+/* Both the horizontal scrollbar in <pre/> as well as
+   vertical scrollbar in the <textarea/> is styled similarly. */
+#message_edit_form textarea,
+pre {
+    /* Ensure the horizontal scrollbar is visible on Mac */
+    &::-webkit-scrollbar {
+        height: 8px;
+        width: 10px;
+        background-color: hsla(0, 0%, 0%, 0.05);
+    }
 
-    background-color: hsla(0, 0%, 0%, 0.05);
-}
+    &::-webkit-scrollbar-thumb {
+        background-color: hsla(0, 0%, 0%, 0.3);
+        border-radius: 20px;
+        transition: all 0.2s ease;
+    }
 
-pre::-webkit-scrollbar-thumb {
-    background-color: hsla(0, 0%, 0%, 0.3);
-    border-radius: 20px;
-
-    transition: all 0.2s ease;
-}
-
-pre::-webkit-scrollbar-thumb:hover {
-    background-color: hsla(0, 0%, 0%, 0.6);
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: hsla(0, 0%, 0%, 0.6);
+    }
 }
 
 pre code {
@@ -604,12 +564,10 @@ pre code {
    to look more like a normal link */
 a code {
     color: hsl(200, 100%, 40%);
-    border-color: hsl(200, 100%, 40%);
 }
 
 a:hover code {
     color: hsl(200, 100%, 25%);
-    border-color: hsl(200, 100%, 25%);
 }
 
 /* Search highlight used in both topics and rendered_markdown */

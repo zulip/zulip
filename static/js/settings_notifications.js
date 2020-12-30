@@ -83,8 +83,7 @@ function change_notification_setting(setting, setting_data, status_element) {
 
 function update_desktop_icon_count_display() {
     $("#desktop_icon_count_display").val(page_params.desktop_icon_count_display);
-    const count = unread.get_notifiable_count();
-    notifications.update_title_count(count);
+    unread_ui.update_unread_counts();
 }
 
 exports.set_enable_digest_emails_visibility = function () {

@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 const FetchStatus = zrequire("fetch_status");
 set_global("message_scroll", {
     hide_loading_older: () => {},

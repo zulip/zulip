@@ -15,10 +15,10 @@ Zulip in production
    security-model
    authentication-methods
    export-and-import
-   postgres
+   postgresql
    upload-backends
    ssl-certificates
    email
    deployment
    email-gateway
-   zoom-configuration
+   video-calls

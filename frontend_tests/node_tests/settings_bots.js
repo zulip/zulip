@@ -1,6 +1,12 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const rewiremock = require("rewiremock/node");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("page_params", {
     realm_uri: "https://chat.example.com",
@@ -25,7 +31,7 @@ const bot_data_params = {
 
 set_global("avatar", {});
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 zrequire("bot_data");
 zrequire("people");
@@ -116,7 +122,7 @@ function test_create_bot_type_input_box_toggle(f) {
 }
 
 function set_up() {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 
     // bunch of stubs
 

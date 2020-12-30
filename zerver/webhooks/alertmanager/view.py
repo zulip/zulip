@@ -10,7 +10,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@webhook_view('AlertManager')
+@webhook_view('Alertmanager')
 @has_request_variables
 def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
                              payload: Dict[str, Any] = REQ(argument_type='body')) -> HttpResponse:

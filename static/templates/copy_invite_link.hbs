@@ -1,0 +1,8 @@
+{{t "Link:" }}
+<a href="{{ invite_link }}" id="multiuse_invite_link">{{ invite_link }}</a>
+&nbsp;
+<a class="btn pull-right copy_button_base" data-toggle="tooltip"
+  title="{{t "Copy link" }}" aria-label="{{t "Copy link" }}"
+  id='copy_generated_invite_link' data-clipboard-text="{{ invite_link }}">
+    {{> copy_to_clipboard_svg }}
+</a>

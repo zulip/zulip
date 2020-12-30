@@ -36,9 +36,9 @@ function convert_from_raw(digits, part_length, raw) {
 }
 
 /** Isolate initiator characters. */
-const i_chars = [0x2066, 0x2067, 0x2068];
+const i_chars = new Set([0x2066, 0x2067, 0x2068]);
 /** Pop directional isolate character. */
-const pdi_chars = [0x2069];
+const pdi_chars = new Set([0x2069]);
 /** The digits that are used for base conversions from base 92. */
 const digits =
     '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&()*+,-./:;<=>?@[]^_`{|}~';
@@ -86,10 +86,10 @@ const lr_ranges = convert_from_raw(
  * @returns {'I' | 'PDI' | 'R' | 'L' | 'Other'}
  */
 function get_bidi_class(ch) {
-    if (i_chars.includes(ch)) {
+    if (i_chars.has(ch)) {
         return "I"; // LRI, RLI, FSI
     }
-    if (pdi_chars.includes(ch)) {
+    if (pdi_chars.has(ch)) {
         return "PDI";
     }
     let i = util.lower_bound(rl_ranges, ch);
@@ -114,21 +114,19 @@ exports.get_direction = function (str) {
         // Extracting high and low surrogates and putting them together.
         // See https://en.wikipedia.org/wiki/UTF-16#Description or section 3 of https://tools.ietf.org/html/rfc2781.
         let ch = str.charCodeAt(i);
-        if (ch >= 0xd800 && ch < 0xe000) {
-            // 0xd800 <= ch < 0xe000
-            // ch is inside surrogate range.
+        if (ch >= 0xd800 && ch < 0xdc00) {
+            // 0xd800 <= ch < 0xdc00
+            // ch is inside high surrogate range.
             // If it made a surrogate pair with the next character, put them together.
             // Otherwise, ignore the encoding error and leave it as it is.
-            if (ch < 0xdc00) {
-                const ch2 = i + 1 < str.length ? str.charCodeAt(i + 1) : 0;
-                if (ch2 >= 0xdc00 && ch2 < 0xe000) {
-                    // 0xdc00 <= ch2 < 0xe000
-                    // ch = ch & 0x3ff;
-                    ch -= 0xd800;
-                    // ch = 0x10000 | (ch << 10) | (ch2 & 0x3ff);
-                    ch = 0x10000 + ch * 0x400 + (ch2 - 0xdc00);
-                    i += 1;
-                }
+            const ch2 = i + 1 < str.length ? str.charCodeAt(i + 1) : 0;
+            if (ch2 >= 0xdc00 && ch2 < 0xe000) {
+                // 0xdc00 <= ch2 < 0xe000
+                // ch = ch & 0x3ff;
+                ch -= 0xd800;
+                // ch = 0x10000 | (ch << 10) | (ch2 & 0x3ff);
+                ch = 0x10000 + ch * 0x400 + (ch2 - 0xdc00);
+                i += 1;
             }
         }
 
@@ -145,10 +143,8 @@ exports.get_direction = function (str) {
             if (isolations === 0) {
                 return "rtl";
             }
-        } else if (bidi_class === "L") {
-            if (isolations === 0) {
-                return "ltr";
-            }
+        } else if (bidi_class === "L" && isolations === 0) {
+            return "ltr";
         }
     }
     return "ltr";
@@ -158,7 +154,7 @@ exports.set_rtl_class_for_textarea = function (textarea) {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     let text = textarea.val();
     if (text.startsWith("```quote")) {
-        text = text.substr(8);
+        text = text.slice(8);
     }
     if (exports.get_direction(text) === "rtl") {
         textarea.addClass("rtl");

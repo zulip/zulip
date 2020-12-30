@@ -85,7 +85,7 @@ class HomeTest(ZulipTestCase):
         "is_admin",
         "is_guest",
         "is_owner",
-        "is_web_public_guest",
+        "is_web_public_visitor",
         "jitsi_server_url",
         "language_list",
         "language_list_dbl_col",
@@ -103,6 +103,7 @@ class HomeTest(ZulipTestCase):
         "narrow_stream",
         "needs_tutorial",
         "never_subscribed",
+        "no_event_queue",
         "notification_sound",
         "password_min_guesses",
         "password_min_length",
@@ -233,10 +234,6 @@ class HomeTest(ZulipTestCase):
             'data-params',
         ]
 
-        # Verify fails if logged-out
-        result = self.client_get('/')
-        self.assertEqual(result.status_code, 302)
-
         self.login('hamlet')
 
         # Create bot for realm_bots testing. Must be done before fetching home_page.
@@ -255,7 +252,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(result["Cache-Control"].split(", ")),
                          {"must-revalidate", "no-store", "no-cache"})
 
-        self.assert_length(queries, 42)
+        self.assert_length(queries, 39)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode('utf-8')
@@ -290,6 +287,20 @@ class HomeTest(ZulipTestCase):
         realm_bots_actual_keys = sorted(str(key) for key in page_params['realm_bots'][0].keys())
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
+    def test_logged_out_home(self) -> None:
+        result = self.client_get('/')
+        self.assertEqual(result.status_code, 200)
+
+        page_params = self._get_page_params(result)
+        actual_keys = sorted(str(k) for k in page_params.keys())
+        removed_keys = [
+            'last_event_id',
+            'narrow',
+            'narrow_stream',
+        ]
+        expected_keys = [i for i in self.expected_page_params_keys if i not in removed_keys]
+        self.assertEqual(actual_keys, expected_keys)
+
     def test_home_under_2fa_without_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
             self.login('iago')
@@ -321,7 +332,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 39)
+            self.assert_length(queries, 36)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user('hamlet')
@@ -352,7 +363,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 37)
+        self.assert_length(queries2, 34)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
@@ -905,7 +916,7 @@ class HomeTest(ZulipTestCase):
         with self.assertLogs(logger_string, level='INFO') as info_log:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_log.output, [
-            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
             f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
 
@@ -930,7 +941,7 @@ class HomeTest(ZulipTestCase):
         with self.assertLogs(logger_string, level='INFO') as info_log:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_log.output, [
-            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
             f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
 
@@ -959,7 +970,7 @@ class HomeTest(ZulipTestCase):
         with self.assertLogs(logger_string, level='INFO') as info_log:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_log.output, [
-            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
             f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
 

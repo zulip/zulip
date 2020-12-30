@@ -856,6 +856,7 @@ form#add_new_subscription {
             max-width: 260px;
 
             .stream-name-editable {
+                line-height: 1em;
                 display: block;
                 max-width: 20ch;
                 overflow: hidden;
@@ -1111,12 +1112,6 @@ ul.grey-box {
     .search-container {
         text-align: center;
     }
-
-    .subscriber_list_settings input {
-        float: left;
-        margin: 0 5px 0 0;
-        width: calc(50% - 45px);
-    }
 }
 
 /* Note that this block has settings_page CSS as well, and thus needs
@@ -1182,15 +1177,6 @@ ul.grey-box {
             height: calc(100% - 20px);
             -webkit-overflow-scrolling: touch;
         }
-    }
-}
-
-@media (max-width: 367px) {
-    #subscription_overlay .subscription_settings .button-group {
-        margin-top: 10px;
-        float: none;
-        display: inline-block;
-        vertical-align: top;
     }
 }
 

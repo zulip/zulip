@@ -155,7 +155,7 @@ function report_error(msg, stack, opts) {
         error() {
             if (opts.show_ui_msg && ui_report !== undefined) {
                 ui_report.message(
-                    "Oops.  It seems something has gone wrong. " + "Please try reloading the page.",
+                    "Oops.  It seems something has gone wrong. Please try reloading the page.",
                     $("#home-error"),
                     "alert-error",
                 );
@@ -237,7 +237,7 @@ exports.warn = function blueslip_warn(msg, more_info) {
 
 exports.error = function blueslip_error(msg, more_info, stack) {
     if (stack === undefined) {
-        stack = Error().stack;
+        stack = new Error("dummy").stack;
     }
     const args = build_arg_list(msg, more_info);
     logger.error(...args);

@@ -1,8 +1,15 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {stub_templates} = require("../zjsunit/handlebars");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 zrequire("poll_widget");
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 const people = zrequire("people");
 
@@ -136,7 +143,7 @@ run_test("PollData my question", () => {
 
 run_test("activate another person poll", () => {
     people.is_my_user_id = return_false;
-    global.stub_templates((template_name) => {
+    stub_templates((template_name) => {
         if (template_name === "widgets/poll_widget") {
             return "widgets/poll_widget";
         }
@@ -260,11 +267,7 @@ run_test("activate another person poll", () => {
         /* Testing data sent to server on voting */
         poll_vote_button.attr("data-key", "100,1");
         out_data = undefined;
-        poll_vote_button.trigger(
-            $.Event("click", {
-                target: poll_vote_button,
-            }),
-        );
+        poll_vote_button.trigger("click");
         assert.deepEqual(out_data, {type: "vote", key: "100,1", vote: 1});
     }
 
@@ -285,7 +288,7 @@ run_test("activate own poll", () => {
     $.clear_all_elements();
 
     people.is_my_user_id = return_true;
-    global.stub_templates((template_name) => {
+    stub_templates((template_name) => {
         if (template_name === "widgets/poll_widget") {
             return "widgets/poll_widget";
         }

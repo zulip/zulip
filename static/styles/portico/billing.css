@@ -143,7 +143,7 @@
     }
 
     .stripe-button-el:active,
-    .stripe-button-el:not(:disabled):active {
+    .stripe-button-el:enabled:active {
         background-color: hsl(169, 70%, 32%);
         span {
             background: 0;
@@ -273,11 +273,11 @@
     }
 }
 
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
+input[name="licenses"]::-webkit-outer-spin-button,
+input[name="licenses"]::-webkit-inner-spin-button {
     appearance: none;
     margin: 0;
 }
-input[type="number"] {
+input[name="licenses"] {
     appearance: textfield;
 }

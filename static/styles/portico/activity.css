@@ -76,7 +76,7 @@ tr.admin td:first-child {
 
 .support-plan-type-form {
     position: relative;
-    top: -25px;
+    top: -10px;
 }
 
 .sponsorship-pending-form {
@@ -86,7 +86,7 @@ tr.admin td:first-child {
 
 .current-plan-details {
     position: relative;
-    top: -50px;
+    top: -15px;
 }
 
 .approve-sponsorship-form {
@@ -96,12 +96,12 @@ tr.admin td:first-child {
 
 .billing-method-form {
     position: relative;
-    top: -70px;
+    top: -30px;
 }
 
 .downgrade-plan-form {
     position: relative;
-    top: -115px;
+    top: -75px;
 }
 
 .downgrade-plan-method-select {
@@ -120,7 +120,7 @@ tr.admin td:first-child {
 
 .support-submit-button {
     position: relative;
-    top: -5px;
+    top: -3px;
     border-color: hsl(0, 0%, 83%);
     border-radius: 2px;
 }

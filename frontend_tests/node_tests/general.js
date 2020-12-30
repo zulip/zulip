@@ -2,8 +2,23 @@
 
 // This is a general tour of how to write node tests that
 // may also give you some quick insight on how the Zulip
-// browser app is constructed.  Let's start with testing
+// browser app is constructed.
+
+// The statements below are pretty typical for most node
+// tests. The reason we need these helpers will hopefully
+// become clear as you keep reading.
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+// Let's start with testing
 // a function from util.js.
+//
+// We will use our special zrequire helper to import the
+// code from util. We use zrequire instead of require,
+// because it has some magic to clear state when we move
+// on to the next test.
 //
 // The most basic unit tests load up code, call functions,
 // and assert truths:
@@ -56,12 +71,18 @@ const denmark_stream = {
 // Some quick housekeeping:  Let's clear page_params, which is a data
 // structure that the server sends down to us when the app starts.  We
 // prefer to test with a clean slate.
+//
+// We use both set_global and zrequire here for test isolation.
+//
+// We also introduce the run_test helper, which mostly just causes
+// a line of output to go to the console. It does a little more than
+// that, which we will see later.
 
 set_global("page_params", {});
 
 zrequire("stream_data");
 
-run_test("stream_data", () => {
+run_test("verify stream_data persists stream color", () => {
     assert.equal(stream_data.get_sub_by_name("Denmark"), undefined);
     stream_data.add_sub(denmark_stream);
     const sub = stream_data.get_sub_by_name("Denmark");
@@ -320,6 +341,11 @@ run_test("add_user_event", () => {
    to put some stub objects into the global namespace (as
    opposed to using the "real" code).
 
+   This is where we see a little extra benefit from the
+   run_test wrapper.  It passes us in an object that we
+   can use to override data, and that works within the
+   scope of the function.
+
 */
 
 set_global("activity", {});
@@ -369,7 +395,7 @@ run_test("update_user_event", (override) => {
    that happen during an event.  This concept is called "mocking",
    and you can find libraries to help do mocking.  Here we will
    just build our own lightweight mocking system, which is almost
-   trivially easy to do in a language like Javascript.
+   trivially easy to do in a language like JavaScript.
 
 */
 
@@ -641,7 +667,7 @@ function make_jquery_helper() {
             case "#stream_filters":
                 return stream_filters;
             default:
-                throw Error("unknown selector: " + selector);
+                throw new Error("unknown selector: " + selector);
         }
     }
 

@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {with_stub} = require("../zjsunit/stub");
+const {run_test} = require("../zjsunit/test");
 // These unit tests for static/js/message_list.js emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
@@ -7,9 +12,8 @@
 const noop = function () {};
 
 set_global("Filter", noop);
-global.stub_out_jquery();
+stub_out_jquery();
 set_global("document", null);
-set_global("current_msg_list", {});
 set_global("narrow_state", {});
 set_global("stream_data", {});
 
@@ -70,7 +74,7 @@ run_test("basics", () => {
 
     assert.deepEqual(list.all_messages(), messages);
 
-    global.$.Event = function (ev) {
+    $.Event = function (ev) {
         assert.equal(ev, "message_selected.zulip");
     };
     list.select_id(50);
@@ -113,7 +117,7 @@ run_test("basics", () => {
 
     list.view.clear_table = function () {};
 
-    list.remove_and_rerender([{id: 60}]);
+    list.remove_and_rerender([60]);
     const removed = list.all_messages().filter((msg) => msg.id !== 60);
     assert.deepEqual(list.all_messages(), removed);
 
@@ -309,7 +313,7 @@ run_test("bookend", (override) => {
     override("stream_data.is_subscribed", () => true);
     override("stream_data.get_sub", () => ({invite_only: false}));
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         const bookend = stub.get_args("content", "subscribed", "show_button");
@@ -322,7 +326,7 @@ run_test("bookend", (override) => {
     list.last_message_historical = false;
     override("stream_data.is_subscribed", () => false);
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         const bookend = stub.get_args("content", "subscribed", "show_button");
@@ -337,7 +341,7 @@ run_test("bookend", (override) => {
 
     override("stream_data.get_sub", () => ({invite_only: true}));
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         const bookend = stub.get_args("content", "subscribed", "show_button");
@@ -349,7 +353,7 @@ run_test("bookend", (override) => {
     expected = "translated: You are not subscribed to stream IceCream";
     list.last_message_historical = true;
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         const bookend = stub.get_args("content", "subscribed", "show_button");
@@ -408,9 +412,10 @@ run_test("add_remove_rerender", () => {
     list.add_messages(messages);
     assert.equal(list.num_items(), 3);
 
-    global.with_stub((stub) => {
+    with_stub((stub) => {
         list.rerender = stub.f;
-        list.remove_and_rerender(messages);
+        const message_ids = messages.map((msg) => msg.id);
+        list.remove_and_rerender(message_ids);
         assert.equal(stub.num_calls, 1);
         assert.equal(list.num_items(), 0);
     });

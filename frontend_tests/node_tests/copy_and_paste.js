@@ -1,13 +1,16 @@
 "use strict";
 
-global.stub_out_jquery();
+const {strict: assert} = require("assert");
+
+const {JSDOM} = require("jsdom");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {
     development_environment: true,
 });
 set_global("compose_ui", {});
-
-const {JSDOM} = require("jsdom");
 
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 const {DOMParser, document} = window;
@@ -34,7 +37,7 @@ const createPasteEvent = function () {
     const clipboardData = new DataTransfer();
     const pasteEvent = new window.Event("paste");
     pasteEvent.clipboardData = clipboardData;
-    return $.Event(pasteEvent);
+    return new $.Event(pasteEvent);
 };
 
 run_test("paste_handler", () => {

@@ -8,18 +8,20 @@ TEMP=$(getopt -o f --long force -- "$@")
 eval set -- "$TEMP"
 
 # extract options.
-while true ; do
+while true; do
     case "$1" in
-        -f|--force)
-            FORCEARG="--force";
-            shift;;
+        -f | --force)
+            FORCEARG="--force"
+            shift
+            ;;
         --)
-            shift;
-            break;;
+            shift
+            break
+            ;;
     esac
 done
 
-function run {
+function run() {
     echo '----'
     printf 'Running'
     printf ' %q' "$@"

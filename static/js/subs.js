@@ -40,7 +40,7 @@ exports.settings_button_for_sub = function (sub) {
 };
 
 function get_row_data(row) {
-    const row_id = parseInt(row.attr("data-stream-id"), 10);
+    const row_id = Number.parseInt(row.attr("data-stream-id"), 10);
     if (row_id) {
         const row_object = stream_data.get_sub_by_id(row_id);
         return {
@@ -53,7 +53,7 @@ function get_row_data(row) {
 
 exports.get_active_data = function () {
     const active_row = $("div.stream-row.active");
-    const valid_active_id = parseInt(active_row.attr("data-stream-id"), 10);
+    const valid_active_id = Number.parseInt(active_row.attr("data-stream-id"), 10);
     const active_tabs = $(".subscriptions-container").find("div.ind-tab.selected");
     return {
         row: active_row,
@@ -64,7 +64,7 @@ exports.get_active_data = function () {
 
 function get_hash_safe() {
     if (typeof window !== "undefined" && typeof window.location.hash === "string") {
-        return window.location.hash.substr(1);
+        return window.location.hash.slice(1);
     }
 
     return "";
@@ -94,13 +94,13 @@ function should_list_all_streams() {
 // this finds the stream that is actively open in the settings and focused in
 // the left side.
 exports.active_stream = function () {
-    const hash_components = window.location.hash.substr(1).split(/\//);
+    const hash_components = window.location.hash.slice(1).split(/\//);
 
     // if the string casted to a number is valid, and another component
     // after exists then it's a stream name/id pair.
-    if (typeof parseFloat(hash_components[1]) === "number" && hash_components[2]) {
+    if (typeof Number.parseFloat(hash_components[1]) === "number" && hash_components[2]) {
         return {
-            id: parseFloat(hash_components[1]),
+            id: Number.parseFloat(hash_components[1]),
             name: hash_components[2],
         };
     }
@@ -306,7 +306,7 @@ exports.update_settings_for_subscribed = function (sub) {
 exports.show_active_stream_in_left_panel = function () {
     const selected_row = get_hash_safe().split(/\//)[1];
 
-    if (parseFloat(selected_row)) {
+    if (Number.parseFloat(selected_row)) {
         const sub_row = exports.row_for_stream_id(selected_row);
         sub_row.addClass("active");
     }
@@ -343,11 +343,9 @@ exports.update_settings_for_unsubscribed = function (sub) {
 };
 
 function triage_stream(query, sub) {
-    if (query.subscribed_only) {
+    if (query.subscribed_only && !sub.subscribed) {
         // reject non-subscribed streams
-        if (!sub.subscribed) {
-            return "rejected";
-        }
+        return "rejected";
     }
 
     const search_terms = search_util.get_search_terms(query.input);
@@ -421,7 +419,7 @@ exports.filter_table = function (query) {
     exports.show_active_stream_in_left_panel();
 
     function stream_id_for_row(row) {
-        return parseInt($(row).attr("data-stream-id"), 10);
+        return Number.parseInt($(row).attr("data-stream-id"), 10);
     }
 
     const widgets = new Map();
@@ -543,7 +541,7 @@ exports.setup_page = function (callback) {
     // so it's too risky a change for now.
     //
     // The history behind setting up the page from scratch every
-    // time we go into "Manage Streams" is that we used to have
+    // time we go into "Manage streams" is that we used to have
     // some live-update issues, so being able to re-launch the
     // streams page is kind of a workaround for those bugs, since
     // we will re-populate the widget.
@@ -694,7 +692,7 @@ exports.change_state = function (section) {
 
     // if the section is a valid number.
     if (/\d+/.test(section)) {
-        const stream_id = parseInt(section, 10);
+        const stream_id = Number.parseInt(section, 10);
         // Guest users can not access unsubscribed streams
         // So redirect guest users to 'subscribed' tab
         // for any unsubscribed stream settings hash

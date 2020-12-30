@@ -1,8 +1,14 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const rewiremock = require("rewiremock/node");
 
-set_global("$", global.make_zjquery());
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+set_global("$", make_zjquery());
 set_global("document", {
     location: {},
 });
@@ -17,8 +23,8 @@ set_global("bridge", false);
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
-global.document.location.protocol = "https:";
-global.document.location.host = "foo.com";
+document.location.protocol = "https:";
+document.location.host = "foo.com";
 
 zrequire("compose_ui");
 zrequire("compose_state");
@@ -266,12 +272,12 @@ run_test("upload_files", () => {
     uppy.addFile = (file) => {
         assert.equal(file.name, "budapest.png");
         add_file_counter += 1;
-        throw Error();
+        throw new Error("some error");
     };
     upload.upload_files(uppy, config, files);
     assert.equal(add_file_counter, 1);
 
-    global.patch_builtin("setTimeout", (func) => {
+    set_global("setTimeout", (func) => {
         func();
     });
     hide_upload_status_called = false;
@@ -356,7 +362,7 @@ run_test("uppy_config", () => {
 });
 
 run_test("file_input", () => {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 
     upload.setup_upload({mode: "compose"});
 
@@ -379,7 +385,7 @@ run_test("file_input", () => {
 });
 
 run_test("file_drop", () => {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 
     upload.setup_upload({mode: "compose"});
 
@@ -419,7 +425,7 @@ run_test("file_drop", () => {
 });
 
 run_test("copy_paste", () => {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 
     upload.setup_upload({mode: "compose"});
 
@@ -460,7 +466,7 @@ run_test("copy_paste", () => {
 });
 
 run_test("uppy_events", () => {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
     const callbacks = {};
     let uppy_cancel_all_called = false;
     let state = {};
@@ -540,7 +546,7 @@ run_test("uppy_events", () => {
     assert.equal(compose_ui_autosize_textarea_called, false);
 
     const on_complete_callback = callbacks.complete;
-    global.patch_builtin("setTimeout", (func) => {
+    set_global("setTimeout", (func) => {
         func();
     });
     let hide_upload_status_called = false;

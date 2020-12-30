@@ -142,26 +142,44 @@ exports.process_reaction_click = function (message_id, local_id) {
     update_ui_and_send_reaction_ajax(message_id, reaction_info);
 };
 
-function full_name(user_id) {
-    if (user_id === page_params.user_id) {
-        return "You (click to remove)";
-    }
-    return people.get_by_user_id(user_id).full_name;
-}
-
 function generate_title(emoji_name, user_ids) {
-    const i = user_ids.indexOf(page_params.user_id);
-    if (i !== -1) {
-        // Move current user's id to start of list
-        user_ids.splice(i, 1);
-        user_ids.unshift(page_params.user_id);
+    const usernames = user_ids
+        .filter((user_id) => user_id !== page_params.user_id)
+        .map((user_id) => people.get_by_user_id(user_id).full_name);
+    const current_user_reacted = user_ids.length !== usernames.length;
+
+    const context = {
+        emoji_name: ":" + emoji_name + ":",
+    };
+
+    if (user_ids.length === 1) {
+        if (current_user_reacted) {
+            return i18n.t("You (click to remove) reacted with __emoji_name__", context);
+        }
+        context.username = usernames[0];
+        return i18n.t("__username__ reacted with __emoji_name__", context);
     }
-    const reacted_with_string = " reacted with :" + emoji_name + ":";
-    const user_names = user_ids.map(full_name);
-    if (user_names.length === 1) {
-        return user_names[0] + reacted_with_string;
+
+    if (user_ids.length === 2 && current_user_reacted) {
+        context.other_username = usernames[0];
+        return i18n.t(
+            "You (click to remove) and __other_username__ reacted with __emoji_name__",
+            context,
+        );
     }
-    return _.initial(user_names).join(", ") + " and " + _.last(user_names) + reacted_with_string;
+
+    context.comma_separated_usernames = _.initial(usernames).join(", ");
+    context.last_username = _.last(usernames);
+    if (current_user_reacted) {
+        return i18n.t(
+            "You (click to remove), __comma_separated_usernames__ and __last_username__ reacted with __emoji_name__",
+            context,
+        );
+    }
+    return i18n.t(
+        "__comma_separated_usernames__ and __last_username__ reacted with __emoji_name__",
+        context,
+    );
 }
 
 // Add a tooltip showing who reacted to a message.
@@ -295,7 +313,12 @@ exports.view.insert_new_reaction = function (opts) {
 
     if (opts.reaction_type !== "unicode_emoji") {
         context.is_realm_emoji = true;
-        context.url = emoji.all_realm_emojis.get(emoji_code).emoji_url;
+        const emoji_info = emoji.all_realm_emojis.get(emoji_code);
+        if (!emoji_info) {
+            blueslip.error(`Cannot find/insert realm emoji for code '${emoji_code}'.`);
+            return;
+        }
+        context.url = emoji_info.emoji_url;
     }
 
     context.count = 1;
@@ -499,7 +522,12 @@ exports.add_clean_reaction = function (opts) {
 
     if (r.reaction_type !== "unicode_emoji") {
         r.is_realm_emoji = true;
-        r.url = emoji.all_realm_emojis.get(r.emoji_code).emoji_url;
+        const emoji_info = emoji.all_realm_emojis.get(r.emoji_code);
+        if (!emoji_info) {
+            blueslip.error(`Cannot find/add realm emoji for code '${r.emoji_code}'.`);
+            return;
+        }
+        r.url = emoji_info.emoji_url;
     }
 
     opts.message.clean_reactions.set(opts.local_id, r);

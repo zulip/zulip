@@ -5,7 +5,6 @@ import pwd
 import signal
 import subprocess
 import sys
-import traceback
 from typing import Any, Callable, Generator, List, Sequence
 from urllib.parse import urlunparse
 
@@ -51,7 +50,7 @@ parser.add_argument('--interface',
                     help='Set the IP or hostname for the proxy to listen on')
 parser.add_argument('--no-clear-memcached',
                     action='store_false', dest='clear_memcached',
-                    help='Do not clear memcached')
+                    help='Do not clear memcached on startup')
 parser.add_argument('--streamlined',
                     action="store_true",
                     help='Avoid thumbor, etc.')
@@ -86,7 +85,7 @@ base_port = 9991
 if options.test:
     base_port = 9981
     settings_module = "zproject.test_settings"
-    # Don't auto-reload when running puppeteer tests
+    # Don't auto-reload when running Puppeteer tests
     runserver_args = ['--noreload']
 else:
     settings_module = "zproject.settings"
@@ -96,7 +95,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from scripts.lib.zulip_tools import CYAN, ENDC, FAIL, WARNING
+from scripts.lib.zulip_tools import CYAN, ENDC, FAIL
 
 proxy_port = base_port
 django_port = base_port + 1
@@ -110,7 +109,6 @@ os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 subprocess.check_call('./tools/clean-repo')
 
 if options.clear_memcached:
-    print("Clearing memcached ...")
     subprocess.check_call('./scripts/setup/flush-memcached')
 
 # Set up a new process group, so that we can later kill run{server,tornado}
@@ -134,7 +132,7 @@ with open(pid_file_path, 'w+') as f:
 
 def server_processes() -> List[List[str]]:
     main_cmds = [
-        ['./manage.py', 'runserver',
+        ['./manage.py', 'rundjangoserver',
          *manage_args, *runserver_args, f'127.0.0.1:{django_port}'],
         ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado',
          *manage_args, f'127.0.0.1:{tornado_port}'],
@@ -160,11 +158,11 @@ def server_processes() -> List[List[str]]:
 def do_one_time_webpack_compile() -> None:
     # We just need to compile webpack assets once at startup, not run a daemon,
     # in test mode.  Additionally, webpack-dev-server doesn't support running 2
-    # copies on the same system, so this model lets us run the puppeteer tests
+    # copies on the same system, so this model lets us run the Puppeteer tests
     # with a running development server.
     subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
 
-def start_webpack_watcher() -> None:
+def start_webpack_watcher() -> "subprocess.Popen[bytes]":
     webpack_cmd = ['./tools/webpack', '--watch', f'--port={webpack_port}']
     if options.minify:
         webpack_cmd.append('--minify')
@@ -176,7 +174,7 @@ def start_webpack_watcher() -> None:
         webpack_cmd.append(f"--host={options.interface}")
     else:
         webpack_cmd.append("--host=0.0.0.0")
-    subprocess.Popen(webpack_cmd)
+    return subprocess.Popen(webpack_cmd)
 
 def transform_url(protocol: str, path: str, query: str, target_port: int, target_host: str) -> str:
     # generate url with target host
@@ -342,9 +340,10 @@ def shutdown_handler(*args: Any, **kwargs: Any) -> None:
         io_loop.stop()
 
 def print_listeners() -> None:
-    print("\nZulip services will listen on ports:")
+    external_host = os.getenv('EXTERNAL_HOST', 'localhost')
+    print(f"\nStarting Zulip on {CYAN}http://{external_host}:{proxy_port}/{ENDC}.  Internal ports:")
     ports = [
-        (proxy_port, CYAN + 'web proxy' + ENDC),
+        (proxy_port, 'Development server proxy (connect here)'),
         (django_port, 'Django'),
         (tornado_port, 'Tornado'),
     ]
@@ -359,18 +358,17 @@ def print_listeners() -> None:
         print(f'   {port}: {label}')
     print()
 
-    proxy_warning = f"Only the proxy port ({proxy_port}) is exposed."
-    print(WARNING + "Note to Vagrant users: " + ENDC + proxy_warning + '\n')
-
-if options.test:
-    do_one_time_webpack_compile()
-else:
-    start_webpack_watcher()
-
-for cmd in server_processes():
-    subprocess.Popen(cmd)
+children = []
 
 try:
+    if options.test:
+        do_one_time_webpack_compile()
+    else:
+        children.append(start_webpack_watcher())
+
+    for cmd in server_processes():
+        children.append(subprocess.Popen(cmd))
+
     app = Application(enable_logging=options.enable_tornado_logging)
     try:
         app.listen(proxy_port, address=options.interface)
@@ -385,12 +383,13 @@ try:
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)
     ioloop.start()
-except Exception:
-    # Print the traceback before we get SIGTERM and die.
-    traceback.print_exc()
-    raise
 finally:
-    # Kill everything in our process group.
-    os.killpg(0, signal.SIGTERM)
+    for child in children:
+        child.terminate()
+
+    print("Waiting for children to stop...")
+    for child in children:
+        child.wait()
+
     # Remove pid file when development server closed correctly.
     os.remove(pid_file_path)

@@ -1,5 +1,13 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
+const markdown_assert = require("../zjsunit/markdown_assert");
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 zrequire("hash_util");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
@@ -54,7 +62,7 @@ fenced_code.initialize(pygments_data);
 const doc = "";
 set_global("document", doc);
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 const cordelia = {
     full_name: "Cordelia Lear",
@@ -129,12 +137,11 @@ const amp_group = {
     members: [],
 };
 
-global.user_groups.add(hamletcharacters);
-global.user_groups.add(backend);
-global.user_groups.add(edgecase_group);
-global.user_groups.add(amp_group);
+user_groups.add(hamletcharacters);
+user_groups.add(backend);
+user_groups.add(edgecase_group);
+user_groups.add(amp_group);
 
-const stream_data = global.stream_data;
 const denmark = {
     subscribed: false,
     color: "blue",
@@ -184,14 +191,12 @@ stream_data.add_sub(amp_stream);
 run_test("fenced_block_defaults", () => {
     const input = "\n```\nfenced code\n```\n\nand then after\n";
     const expected =
-        '\n\n<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\n\nand then after\n\n';
+        '\n\n<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\nand then after\n\n';
     const output = fenced_code.process_fenced_code(input);
     assert.equal(output, expected);
 });
 
 markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
-
-const markdown_data = global.read_fixture_data("markdown_test_cases.json");
 
 run_test("markdown_detection", () => {
     const no_markup = [
@@ -223,11 +228,11 @@ run_test("markdown_detection", () => {
         "https://zulip.com/image.jpg too",
         "Contains a zulip.com/foo.jpeg file",
         "Contains a https://zulip.com/image.png file",
-        "twitter url https://twitter.com/jacobian/status/407886996565016579",
+        "Twitter URL https://twitter.com/jacobian/status/407886996565016579",
         "https://twitter.com/jacobian/status/407886996565016579",
         "then https://twitter.com/jacobian/status/407886996565016579",
-        "twitter url http://twitter.com/jacobian/status/407886996565016579",
-        "youtube url https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
+        "Twitter URL http://twitter.com/jacobian/status/407886996565016579",
+        "YouTube URL https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
     ];
 
     no_markup.forEach((content) => {
@@ -240,7 +245,7 @@ run_test("markdown_detection", () => {
 });
 
 run_test("marked_shared", () => {
-    const tests = markdown_data.regular_tests;
+    const tests = markdown_test_cases.regular_tests;
 
     tests.forEach((test) => {
         // Ignore tests if specified
@@ -254,12 +259,12 @@ run_test("marked_shared", () => {
         const output = message.content;
         const error_message = `Failure in test: ${test.name}`;
         if (test.marked_expected_output) {
-            global.markdown_assert.notEqual(test.expected_output, output, error_message);
-            global.markdown_assert.equal(test.marked_expected_output, output, error_message);
+            markdown_assert.notEqual(test.expected_output, output, error_message);
+            markdown_assert.equal(test.marked_expected_output, output, error_message);
         } else if (test.backend_only_rendering) {
             assert.equal(markdown.contains_backend_only_syntax(test.input), true);
         } else {
-            global.markdown_assert.equal(test.expected_output, output, error_message);
+            markdown_assert.equal(test.expected_output, output, error_message);
         }
     });
 });
@@ -294,13 +299,13 @@ run_test("marked", () => {
         {
             input: "\n```\nfenced code\n```\n\nand then after\n",
             expected:
-                '<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\n<p>and then after</p>',
+                '<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n<p>and then after</p>',
         },
         {
             input:
                 "\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n",
             expected:
-                '<div class="codehilite"><pre><span></span><code>    fenced code trailing whitespace\n</code></pre></div>\n\n\n<p>and then after</p>',
+                '<div class="codehilite"><pre><span></span><code>    fenced code trailing whitespace\n</code></pre></div>\n<p>and then after</p>',
         },
         {
             input: "* a\n* list \n* here",
@@ -309,12 +314,12 @@ run_test("marked", () => {
         {
             input: "\n```c#\nfenced code special\n```\n\nand then after\n",
             expected:
-                '<div class="codehilite" data-code-language="C#"><pre><span></span><code>fenced code special\n</code></pre></div>\n\n\n<p>and then after</p>',
+                '<div class="codehilite" data-code-language="C#"><pre><span></span><code>fenced code special\n</code></pre></div>\n<p>and then after</p>',
         },
         {
             input: "\n```vb.net\nfenced code dot\n```\n\nand then after\n",
             expected:
-                '<div class="codehilite" data-code-language="VB.net"><pre><span></span><code>fenced code dot\n</code></pre></div>\n\n\n<p>and then after</p>',
+                '<div class="codehilite" data-code-language="VB.net"><pre><span></span><code>fenced code dot\n</code></pre></div>\n<p>and then after</p>',
         },
         {
             input: "Some text first\n* a\n* list \n* here\n\nand then after",
@@ -364,12 +369,12 @@ run_test("marked", () => {
         {
             input: "This is a #**Denmark>some topic** stream_topic link",
             expected:
-                '<p>This is a <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark > some topic</a> stream_topic link</p>',
+                '<p>This is a <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> stream_topic link</p>',
         },
         {
             input: "This has two links: #**Denmark>some topic** and #**social>other topic**.",
             expected:
-                '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark > some topic</a> and <a class="stream-topic" data-stream-id="2" href="/#narrow/stream/2-social/topic/other.20topic">#social > other topic</a>.</p>',
+                '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="/#narrow/stream/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> and <a class="stream-topic" data-stream-id="2" href="/#narrow/stream/2-social/topic/other.20topic">#social &gt; other topic</a>.</p>',
         },
         {
             input: "This is not a #**Denmark>** stream_topic link",
@@ -386,7 +391,7 @@ run_test("marked", () => {
                 '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span> message</p>',
         },
         {
-            input: "\ud83d\udca9",
+            input: "\uD83D\uDCA9",
             expected:
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
@@ -475,7 +480,7 @@ run_test("marked", () => {
                 '<p><span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
             translate_emoticons: true,
         },
-        // Test HTML Escape in Custom Zulip Rules
+        // Test HTML escaping in custom Zulip rules
         {
             input: "@**<h1>The Rogue One</h1>**",
             expected: "<p>@**&lt;h1&gt;The Rogue One&lt;/h1&gt;**</p>",
@@ -512,7 +517,7 @@ run_test("marked", () => {
         {
             input: "#**Bobby <h1>Tables</h1>**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/stream/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 > Tables&lt;/h1&gt;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/stream/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 &gt; Tables&lt;/h1&gt;</a></p>',
         },
         {
             input: "#**& &amp; &amp;amp;**",
@@ -522,7 +527,7 @@ run_test("marked", () => {
         {
             input: "#**& &amp; &amp;amp;>& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/stream/5-.26-.26.20.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; > &amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/stream/5-.26-.26.20.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
         },
     ];
 
@@ -676,19 +681,19 @@ run_test("python_to_js_filter", () => {
     // to update_realm_filter_rules.
     markdown.update_realm_filter_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
     let actual_value = marked.InlineLexer.rules.zulip.realm_filters;
-    let expected_value = [/\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g];
+    let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
     markdown.update_realm_filter_rules([
-        ["#cf(?P<contest>[0-9]+)(?P<problem>[A-Z][0-9A-Z]*)", "http://google.com"],
+        ["#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)", "http://google.com"],
     ]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
-    expected_value = [/#cf([0-9]+)([A-Z][0-9A-Z]*)(?![\w])/g];
+    expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
     blueslip.expect(
         "error",
-        "python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group",
+        "python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
     );
     markdown.update_realm_filter_rules([["!@#@(!#&((!&(@#(", "http://google.com"]]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
@@ -746,7 +751,7 @@ run_test("translate_emoticons_to_names", () => {
 });
 
 run_test("missing unicode emojis", () => {
-    const message = {raw_content: "\u{1f6b2}"};
+    const message = {raw_content: "\u{1F6B2}"};
 
     markdown.apply_markdown(message);
     assert.equal(
@@ -764,5 +769,5 @@ run_test("missing unicode emojis", () => {
         markdown.apply_markdown(message);
     });
 
-    assert.equal(message.content, "<p>\u{1f6b2}</p>");
+    assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });

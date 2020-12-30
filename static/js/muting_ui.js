@@ -4,7 +4,7 @@ const render_muted_topic_ui_row = require("../templates/muted_topic_ui_row.hbs")
 const render_topic_muted = require("../templates/topic_muted.hbs");
 
 function timestamp_ms() {
-    return new Date().getTime();
+    return Date.now();
 }
 
 let last_topic_update = 0;
@@ -85,7 +85,7 @@ exports.set_up_muted_topics_ui = function () {
         filter: {
             element: $search_input,
             predicate(item, value) {
-                return item.topic.toLocaleLowerCase().indexOf(value) >= 0;
+                return item.topic.toLocaleLowerCase().includes(value);
             },
             onupdate() {
                 ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));

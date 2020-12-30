@@ -1,5 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 const noop = function () {};
 const return_false = function () {
     return false;
@@ -14,7 +20,7 @@ set_global("document", {
 
 set_global("page_params", {});
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 set_global("compose_pm_pill", {});
 
@@ -37,8 +43,6 @@ const get_focus_area = compose_actions._get_focus_area;
 const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
-
-const compose_state = global.compose_state;
 
 compose_state.private_message_recipient = (function () {
     let recipient;
@@ -123,7 +127,7 @@ run_test("start", () => {
     compose_actions.clear_textarea = noop;
 
     // Start stream message
-    global.narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = function () {
         const opts = {};
         opts.stream = "stream1";
         opts.topic = "topic1";
@@ -150,7 +154,7 @@ run_test("start", () => {
     };
     stream_data.add_sub(denmark);
 
-    global.narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = function () {
         const opts = {};
         opts.trigger = "new topic button";
         return opts;
@@ -161,7 +165,7 @@ run_test("start", () => {
     assert.equal($("#stream_message_recipient_stream").val(), "Denmark");
     assert.equal($("#stream_message_recipient_topic").val(), "");
 
-    global.narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = function () {
         const opts = {};
         opts.trigger = "compose_hotkey";
         return opts;
@@ -188,7 +192,7 @@ run_test("start", () => {
     stream_data.clear_subscriptions();
 
     // Start PM
-    global.narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = function () {
         const opts = {};
         opts.private_message_recipient = "foo@example.com";
         return opts;

@@ -1,4 +1,3 @@
-import json
 import subprocess
 from argparse import ArgumentParser
 from typing import Any
@@ -68,15 +67,15 @@ class Command(ZulipBaseCommand):
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/register"
         try:
             response = requests.post(registration_url, params=request)
-        except Exception:
+        except requests.RequestException:
             raise CommandError(
                 "Network error connecting to push notifications service "
                 f"({settings.PUSH_NOTIFICATION_BOUNCER_URL})",
             )
         try:
             response.raise_for_status()
-        except Exception:
-            content_dict = json.loads(response.content.decode("utf-8"))
+        except requests.HTTPError:
+            content_dict = response.json()
             raise CommandError("Error: " + content_dict['msg'])
 
         if response.json()['created']:

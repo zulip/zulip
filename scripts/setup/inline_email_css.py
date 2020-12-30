@@ -50,7 +50,7 @@ def inline_template(template_source_name: str) -> None:
     # template, since we'll end up with 2 copipes of those tags.
     # Thus, we strip this stuff out if the template extends
     # another template.
-    if template_name != 'email_base_default':
+    if template_name not in ['email_base_default', 'macros']:
         output = strip_unnecesary_tags(output)
 
     if ('zerver/emails/compiled/email_base_default.html' in output or

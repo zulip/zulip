@@ -106,9 +106,9 @@ There are dozens of useful management commands under
 
 * `./manage.py help`: Lists all available management commands.
 * `./manage.py dbshell`: If you're more comfortable with raw SQL than
-  Python, this will open a Postgres SQL shell connected to the Zulip
+  Python, this will open a PostgreSQL SQL shell connected to the Zulip
   server's database.  Beware of changing data; editing data directly
-  with SQL will often not behave correctly because Postgres doesn't
+  with SQL will often not behave correctly because PostgreSQL doesn't
   know to flush Zulip's caches or notify browsers of changes.
 * `./manage.py send_custom_email`: Can be used to send an email to a set
   of users.  The `--help` documents how to run it from a `manage.py
@@ -117,11 +117,10 @@ There are dozens of useful management commands under
 * `./manage.py send_password_reset_email`: Sends password reset email(s)
   to one or more users.
 * `./manage.py change_user_email`: Change a user's email address.
-* `./manage.py knight`: Can toggle whether a user is an administrator
+* `./manage.py change_user_role`: Can change are user's role
   (easier done [via the
-  UI](https://zulip.com/help/change-a-users-role)) or create an
-  API super user bot (with `--permission=api_super_user`), which are
-  needed for some content mirroring integrations.
+  UI](https://zulip.com/help/change-a-users-role)) or give bots the
+  `can_forge_sender` permission, which is needed for certain special API features.
 * `./manage.py export_single_user` does a limited version of the [main
   export tools](../production/export-and-import.md) containing just
   the messages accessible by a single user.

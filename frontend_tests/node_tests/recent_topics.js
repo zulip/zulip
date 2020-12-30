@@ -1,11 +1,18 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {stub_templates} = require("../zjsunit/handlebars");
+const {reset_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 zrequire("message_util");
 
 const noop = () => {};
 set_global(
     "$",
-    global.make_zjquery({
+    make_zjquery({
         silent: true,
     }),
 );
@@ -305,7 +312,7 @@ run_test("test_recent_topics_launch", () => {
         search_val: "",
     };
 
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         if (template_name === "recent_topics_table") {
             assert.deepEqual(data, expected);
         } else if (template_name === "recent_topics_filters") {
@@ -338,7 +345,7 @@ run_test("test_filter_all", () => {
     };
     let row_data;
     let i;
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         if (template_name === "recent_topic_row") {
             // All the row will be processed.
             i -= 1;
@@ -394,12 +401,12 @@ run_test("test_filter_unread", () => {
 
     rt = reset_module("recent_topics");
 
-    global.stub_templates(() => "<recent_topics table stub>");
+    stub_templates(() => "<recent_topics table stub>");
     rt.process_messages(messages);
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 
     $("#recent_topics_filter_buttons").removeClass("btn-recent-selected");
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "recent_topics_filters");
         assert.equal(data.filter_unread, expected.filter_unread);
         assert.equal(data.filter_participated, expected.filter_participated);
@@ -409,7 +416,7 @@ run_test("test_filter_unread", () => {
     rt.set_filter("unread");
     rt.update_filters_view();
 
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         if (template_name === "recent_topic_row") {
             // All the row will be processed.
             assert.deepEqual(data, row_data[i]);
@@ -457,7 +464,7 @@ run_test("test_filter_participated", () => {
     let i = 0;
 
     rt = reset_module("recent_topics");
-    global.stub_templates(() => "<recent_topics table stub>");
+    stub_templates(() => "<recent_topics table stub>");
     rt.process_messages(messages);
     assert.equal(rt.inplace_rerender("1:topic-4"), true);
 
@@ -469,7 +476,7 @@ run_test("test_filter_participated", () => {
     rt.set_filter("muted");
 
     $("#recent_topics_filter_buttons").removeClass("btn-recent-selected");
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "recent_topics_filters");
         assert.equal(data.filter_unread, expected.filter_unread);
         assert.equal(data.filter_participated, expected.filter_participated);
@@ -478,7 +485,7 @@ run_test("test_filter_participated", () => {
     rt.set_filter("participated");
     rt.update_filters_view();
 
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         if (template_name === "recent_topic_row") {
             // All the row will be processed.
             assert.deepEqual(data, row_data[i]);
@@ -497,7 +504,7 @@ run_test("test_filter_participated", () => {
 run_test("test_update_unread_count", () => {
     rt = reset_module("recent_topics");
     rt.set_filter("all");
-    global.stub_templates(() => "<recent_topics table stub>");
+    stub_templates(() => "<recent_topics table stub>");
     rt.process_messages(messages);
 
     // update a message
@@ -506,7 +513,7 @@ run_test("test_update_unread_count", () => {
 });
 
 // template rendering is tested in test_recent_topics_launch.
-global.stub_templates(() => "<recent_topics table stub>");
+stub_templates(() => "<recent_topics table stub>");
 
 run_test("basic assertions", () => {
     rt = reset_module("recent_topics");

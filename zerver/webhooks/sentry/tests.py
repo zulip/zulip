@@ -82,6 +82,40 @@ Traceback:
 ```"""
         self.check_webhook("event_for_exception_python", expected_topic, expected_message)
 
+    def test_webhook_event_for_exception_python(self) -> None:
+        expected_topic = "ValueError: new sentry error."
+        expected_message = """
+**New exception:** [ValueError: new sentry error.](https://sentry.io/organizations/bar-foundation/issues/1972208801/events/c916dccfd58e41dcabaebef0091f0736/)
+```quote
+**level:** error
+**timestamp:** 2020-10-21 23:25:11
+**filename:** trigger-exception.py
+```
+
+Traceback:
+```python3
+
+
+     if __name__ == "__main__":
+         sentry_sdk.init(dsn=DSN_SECRET)
+         try:
+--->         raise ValueError("new sentry error.")
+         except Exception as e:
+             sentry_sdk.capture_exception(e)
+```"""
+        self.check_webhook("webhook_event_for_exception_python", expected_topic, expected_message)
+
+    def test_webhook_event_for_exception_javascript(self) -> None:
+        expected_topic = 'TypeError: can\'t access property "bar", x.foo is undefined'
+        expected_message = """
+**New exception:** [TypeError: can't access property "bar", x.foo is undefined](https://sentry.io/organizations/foo-bar-org/issues/1982047746/events/f3bf5fc4e354451db9e885a69b2a2b51/)
+```quote
+**level:** error
+**timestamp:** 2020-10-26 16:39:54
+**filename:** None
+```"""
+        self.check_webhook("webhook_event_for_exception_javascript", expected_topic, expected_message)
+
     def test_event_for_message_golang(self) -> None:
         expected_topic = "A test message event from golang."
         expected_message = """

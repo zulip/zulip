@@ -13,7 +13,7 @@ LINK_REGEX = r"""
                   ([a-z0-9]+([\-\.]{1}[a-z0-9]+)*)(\.)                         # domain name
                       ([a-z]{2,63}(:[0-9]{1,5})?)                              # domain
                   (\/[^>]*)?                                                   # path
-              (\|)?(?:\|([^>]+))?                                # char after pipe (for slack links)
+              (\|)?(?:\|([^>]+))?                                # char after pipe (for Slack links)
               (>)
               """
 
@@ -32,7 +32,7 @@ SLACK_USERMENTION_REGEX = r"""
                            (>)                   # ends with '>'
                            """
 # Slack doesn't have mid-word message-formatting like Zulip.
-# Hence, ~stri~ke doesn't format the word in slack, but ~~stri~~ke
+# Hence, ~stri~ke doesn't format the word in Slack, but ~~stri~~ke
 # formats the word in Zulip
 SLACK_STRIKETHROUGH_REGEX = r"""
                              (^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters

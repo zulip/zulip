@@ -1,6 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
+
+const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {
     is_admin: false,
@@ -8,10 +13,8 @@ set_global("page_params", {
     is_guest: false,
 });
 
-set_global("$", () => {});
-
 set_global("document", null);
-global.stub_out_jquery();
+stub_out_jquery();
 
 zrequire("color_data");
 zrequire("hash_util");
@@ -95,7 +98,7 @@ run_test("basics", () => {
     assert(!stream_data.get_invite_only("unknown"));
 
     assert.equal(stream_data.get_color("social"), "red");
-    assert.equal(stream_data.get_color("unknown"), global.stream_color.default_color);
+    assert.equal(stream_data.get_color("unknown"), stream_color.default_color);
 
     assert.equal(stream_data.get_name("denMARK"), "Denmark");
     assert.equal(stream_data.get_name("unknown Stream"), "unknown Stream");
@@ -422,7 +425,7 @@ run_test("admin_options", () => {
     }
 
     // non-admins can't do anything
-    global.page_params.is_admin = false;
+    page_params.is_admin = false;
     let sub = make_sub();
     stream_data.update_calculated_fields(sub);
     assert(!sub.is_realm_admin);
@@ -432,7 +435,7 @@ run_test("admin_options", () => {
     assert.equal(sub.color, "blue");
 
     // the remaining cases are for admin users
-    global.page_params.is_admin = true;
+    page_params.is_admin = true;
 
     // admins can make public streams become private
     sub = make_sub();
@@ -525,7 +528,7 @@ run_test("stream_settings", () => {
     // For guest user only retrieve subscribed streams
     sub_rows = stream_data.get_updated_unsorted_subs();
     assert.equal(sub_rows.length, 3);
-    global.page_params.is_guest = true;
+    page_params.is_guest = true;
     sub_rows = stream_data.get_updated_unsorted_subs();
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");
@@ -567,7 +570,7 @@ run_test("default_stream_names", () => {
     stream_data.add_sub(general);
 
     const names = stream_data.get_non_default_stream_names();
-    assert.deepEqual(names.sort(), ["private", "public"]);
+    assert.deepEqual(names.sort(), ["public"]);
 
     const default_stream_ids = stream_data.get_default_stream_ids();
     assert.deepEqual(default_stream_ids.sort(), [announce.stream_id, general.stream_id]);
@@ -923,10 +926,10 @@ run_test("initialize", () => {
     initialize();
     assert(!stream_data.is_filtering_inactives());
 
-    const stream_names = stream_data.get_streams_for_admin().map((elem) => elem.name);
-    assert(stream_names.includes("subscriptions"));
-    assert(stream_names.includes("unsubscribed"));
-    assert(stream_names.includes("never_subscribed"));
+    const stream_names = new Set(stream_data.get_streams_for_admin().map((elem) => elem.name));
+    assert(stream_names.has("subscriptions"));
+    assert(stream_names.has("unsubscribed"));
+    assert(stream_names.has("never_subscribed"));
     assert.equal(stream_data.get_notifications_stream(), "");
 
     // Simulate a private stream the user isn't subscribed to

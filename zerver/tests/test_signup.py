@@ -5,6 +5,7 @@ import time
 import urllib
 from typing import Any, List, Optional, Sequence
 from unittest.mock import MagicMock, patch
+from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
@@ -65,6 +66,7 @@ from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     avatar_disk_path,
+    cache_tries_captured,
     find_key_by_email,
     get_test_image_file,
     load_subdomain_token,
@@ -169,6 +171,16 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get('/accounts/deactivated/')
         self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
+        self.assertNotIn("It has moved to", result.content.decode())
+
+    def test_deactivation_notice_when_deactivated_and_deactivated_redirect_is_set(self) -> None:
+        realm = get_realm("zulip")
+        realm.deactivated = True
+        realm.deactivated_redirect = "http://example.zulipchat.com"
+        realm.save(update_fields=["deactivated", "deactivated_redirect"])
+
+        result = self.client_get('/accounts/deactivated/')
+        self.assertIn('It has moved to <a href="http://example.zulipchat.com">http://example.zulipchat.com</a>.', result.content.decode())
 
 class AddNewUserHistoryTest(ZulipTestCase):
     def test_add_new_user_history_race(self) -> None:
@@ -510,7 +522,7 @@ class PasswordResetTest(ZulipTestCase):
                                                 'zproject.backends.EmailAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_ldap_and_email_auth(self) -> None:
-        """If both email and ldap auth backends are enabled, limit password
+        """If both email and LDAP auth backends are enabled, limit password
            reset to users outside the LDAP domain"""
         # If the domain matches, we don't generate an email
         with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
@@ -646,10 +658,17 @@ class LoginTest(ZulipTestCase):
         flush_per_request_caches()
         ContentType.objects.clear_cache()
 
-        with queries_captured() as queries:
+        with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 78)
+        self.assertEqual(len(queries), 72)
+
+        # We can probably avoid a couple cache hits here, but there doesn't
+        # seem to be any O(N) behavior.  Some of the cache hits are related
+        # to sending messages, such as getting the welcome bot, looking up
+        # the alert words for a realm, etc.
+        self.assertEqual(len(cache_tries), 15)
+
         user_profile = self.nonreg_user('test')
         self.assert_logged_in_user_id(user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -896,7 +915,10 @@ class InviteUserTest(InviteUserBase):
         realm.save()
 
         with queries_captured() as queries:
-            result = try_invite()
+            with cache_tries_captured() as cache_tries:
+                result = try_invite()
+
+        self.assert_json_success(result)
 
         # TODO: Fix large query count here.
         #
@@ -907,7 +929,7 @@ class InviteUserTest(InviteUserBase):
         #       the large number of queries), so I just
         #       use an approximate equality check.
         actual_count = len(queries)
-        expected_count = 312
+        expected_count = 281
         if abs(actual_count - expected_count) > 1:
             raise AssertionError(f'''
                 Unexpected number of queries:
@@ -916,7 +938,13 @@ class InviteUserTest(InviteUserBase):
                 actual: {actual_count}
                 ''')
 
-        self.assert_json_success(result)
+        # Almost all of these cache hits are to re-fetch each one of the
+        # invitees.  These happen inside our queue processor for sending
+        # confirmation emails, so they are somewhat difficult to avoid.
+        #
+        # TODO: Mock the call to queue_json_publish, so we can measure the
+        # queue impact separately from the user-perceived impact.
+        self.assert_length(cache_tries, 32)
 
         # Next get line coverage on bumping a realm's max_invites.
         realm.date_created = timezone_now()
@@ -1524,7 +1552,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(ScheduledEmail.objects.filter(type=ScheduledEmail.INVITATION_REMINDER).count(), 1)
 
     # make sure users can't take a valid confirmation key from another
-    # pathway and use it with the invitation url route
+    # pathway and use it with the invitation URL route
     def test_confirmation_key_of_wrong_type(self) -> None:
         email = self.nonreg_email("alice")
         realm = get_realm('zulip')
@@ -1643,8 +1671,8 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         url = "/accounts/register/"
         response = self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('login') + '?email=' +
-                         urllib.parse.quote_plus(email))
+        self.assertEqual(response.url, reverse('login') + '?' +
+                         urlencode({"email": email}))
 
 class InvitationsTestCase(InviteUserBase):
     def test_do_get_user_invites(self) -> None:
@@ -3099,8 +3127,10 @@ class UserSignUpTest(InviteUserBase):
 
         zulip_path_id = avatar_disk_path(hamlet_in_zulip)
         lear_path_id = avatar_disk_path(hamlet_in_lear)
-        zulip_avatar_bits = open(zulip_path_id, 'rb').read()
-        lear_avatar_bits = open(lear_path_id, 'rb').read()
+        with open(zulip_path_id, 'rb') as f:
+            zulip_avatar_bits = f.read()
+        with open(lear_path_id, 'rb') as f:
+            lear_avatar_bits = f.read()
 
         self.assertTrue(len(zulip_avatar_bits) > 500)
         self.assertEqual(zulip_avatar_bits, lear_avatar_bits)
@@ -3613,15 +3643,15 @@ class UserSignUpTest(InviteUserBase):
                                                    HTTP_HOST=subdomain + ".testserver")
             self.assertEqual(result.status_code, 302)
             # We get redirected back to the login page because emails matching LDAP_APPEND_DOMAIN,
-            # aren't allowed to create non-ldap accounts.
+            # aren't allowed to create non-LDAP accounts.
             self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
             self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
             self.assertEqual(debug_log.output, [
-                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: newuser. Input username: newuser@zulip.com'
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: newuser. Input username: newuser@zulip.com'
             ])
 
-        # If the email is outside of LDAP_APPEND_DOMAIN, we successfully create a non-ldap account,
-        # with the password managed in the zulip database.
+        # If the email is outside of LDAP_APPEND_DOMAIN, we successfully create a non-LDAP account,
+        # with the password managed in the Zulip database.
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='example.com',
@@ -3739,7 +3769,7 @@ class UserSignUpTest(InviteUserBase):
                                                        # Pass HTTP_HOST for the target subdomain
                                                        HTTP_HOST=subdomain + ".testserver")
             self.assertEqual(debug_log.output, [
-                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: nonexistent@zulip.com. Input username: nonexistent@zulip.com'
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: nonexistent@zulip.com. Input username: nonexistent@zulip.com'
             ])
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "http://zulip.testserver/")
@@ -3764,7 +3794,7 @@ class UserSignUpTest(InviteUserBase):
                 # Invite user.
                 self.login('iago')
             self.assertEqual(debug_log.output, [
-                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No ldap user matching django_to_ldap_username result: iago. Input username: iago@zulip.com'
+                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: iago. Input username: iago@zulip.com'
             ])
             response = self.invite(invitee_emails='newuser@zulip.com',
                                    stream_names=streams,
@@ -4065,7 +4095,7 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/')
 
-            result = self.client_get("/en/login/?next=/upgrade/")
+            result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
@@ -4077,7 +4107,7 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/')
 
-            result = self.client_get("/en/login/?next=/upgrade/")
+            result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
@@ -4089,7 +4119,7 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/')
 
-            result = self.client_get("/en/login/?next=/upgrade/")
+            result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
@@ -4158,7 +4188,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 0)
 
         # Just for coverage on perhaps-unnecessary validation code.
-        result = self.client_get('/accounts/find/?emails=invalid')
+        result = self.client_get("/accounts/find/", {"emails": "invalid"})
         self.assertEqual(result.status_code, 200)
 
     def test_find_team_zero_emails(self) -> None:
@@ -4334,7 +4364,7 @@ class RealmRedirectTest(ZulipTestCase):
         self.assert_in_success_response(["We couldn&#39;t find that Zulip organization."], result)
 
     def test_realm_redirect_with_next_param(self) -> None:
-        result = self.client_get("/accounts/go/?next=billing")
+        result = self.client_get("/accounts/go/", {"next": "billing"})
         self.assert_in_success_response(["Enter your organization's Zulip URL", 'action="/accounts/go/?next=billing"'], result)
 
         result = self.client_post("/accounts/go/?next=billing", {"subdomain": "lear"})

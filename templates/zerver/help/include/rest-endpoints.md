@@ -69,4 +69,6 @@
 * [Delete an event queue](/api/delete-queue)
 
 #### Specialty endpoints
-* [Fetch a development API key](/api/dev-fetch-api-key)
+
+* [Fetch an API key (production)](/api/fetch-api-key)
+* [Fetch an API key (development only)](/api/dev-fetch-api-key)

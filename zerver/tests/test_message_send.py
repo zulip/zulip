@@ -3,6 +3,7 @@ from typing import Any, Optional, Set
 from unittest import mock
 
 import orjson
+import pytz
 from django.conf import settings
 from django.db.models import Q
 from django.http import HttpResponse
@@ -14,7 +15,7 @@ from zerver.lib.actions import (
     build_message_send_dict,
     check_message,
     check_send_stream_message,
-    do_change_is_api_super_user,
+    do_change_can_forge_sender,
     do_change_stream_post_policy,
     do_create_user,
     do_deactivate_user,
@@ -44,7 +45,6 @@ from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
-from zerver.lib.timezone import get_timezone
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
@@ -194,6 +194,10 @@ class MessagePOSTTest(ZulipTestCase):
                                      'Test topic', 'Test message by notification bot')
         self.assertEqual(self.get_last_message().content, 'Test message by notification bot')
 
+        guest_profile = self.example_user("polonius")
+        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
+        self._send_and_verify_message(guest_profile, stream_name, "Only organization administrators can send to this stream.")
+
     def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:
         """
         Sending messages to streams which new members cannot create and post to.
@@ -258,6 +262,10 @@ class MessagePOSTTest(ZulipTestCase):
                                      'Test topic', 'Test message by notification bot')
         self.assertEqual(self.get_last_message().content, 'Test message by notification bot')
 
+        guest_profile = self.example_user("polonius")
+        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
+        self._send_and_verify_message(guest_profile, stream_name, "Guests cannot send to this stream.")
+
     def test_api_message_with_default_to(self) -> None:
         """
         Sending messages without a to field should be sent to the default
@@ -315,7 +323,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "to": othello.email})
         self.assert_json_success(result)
-        message_id = orjson.loads(result.content.decode())['id']
+        message_id = orjson.loads(result.content)['id']
 
         recent_conversations = get_recent_private_conversations(user_profile)
         self.assertEqual(len(recent_conversations), 1)
@@ -330,7 +338,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "to": user_profile.email})
         self.assert_json_success(result)
-        self_message_id = orjson.loads(result.content.decode())['id']
+        self_message_id = orjson.loads(result.content)['id']
 
         recent_conversations = get_recent_private_conversations(user_profile)
         self.assertEqual(len(recent_conversations), 2)
@@ -669,7 +677,7 @@ class MessagePOSTTest(ZulipTestCase):
         user = self.example_user("default_bot")
         password = "test_password"
         user.set_password(password)
-        user.is_api_super_user = True
+        user.can_forge_sender = True
         user.save()
         result = self.api_post(user,
                                "/api/v1/messages", {"type": "stream",
@@ -678,7 +686,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                     "content": "Test message",
                                                     "topic": "Test topic",
                                                     "realm_str": "non-existing"})
-        user.is_api_super_user = False
+        user.can_forge_sender = False
         user.save()
         self.assert_json_error(result, "Unknown organization 'non-existing'")
 
@@ -757,7 +765,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         email = "irc-bot@zulip.testserver"
         user = get_user(email, get_realm('zulip'))
-        user.is_api_super_user = True
+        user.can_forge_sender = True
         user.save()
         user = get_user(email, get_realm('zulip'))
         self.subscribe(user, "IRCland")
@@ -796,7 +804,7 @@ class MessagePOSTTest(ZulipTestCase):
         msg = self.get_last_message()
         self.assertEqual(int(datetime_to_timestamp(msg.date_sent)), int(fake_timestamp))
 
-    def test_unsubscribed_api_super_user(self) -> None:
+    def test_unsubscribed_can_forge_sender(self) -> None:
         reset_emails_in_zulip_realm()
 
         cordelia = self.example_user('cordelia')
@@ -805,7 +813,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         self.unsubscribe(cordelia, stream_name)
 
-        # As long as Cordelia is a super_user, she can send messages
+        # As long as Cordelia cam_forge_sender, she can send messages
         # to ANY stream, even one she is not unsubscribed to, and
         # she can do it for herself or on behalf of a mirrored user.
 
@@ -823,13 +831,13 @@ class MessagePOSTTest(ZulipTestCase):
             if forged:
                 payload['sender'] = sender_email
 
-            cordelia.is_api_super_user = False
+            cordelia.can_forge_sender = False
             cordelia.save()
 
             result = self.api_post(cordelia, "/api/v1/messages", payload)
             self.assert_json_error_contains(result, 'authorized')
 
-            cordelia.is_api_super_user = True
+            cordelia.can_forge_sender = True
             cordelia.save()
 
             result = self.api_post(cordelia, "/api/v1/messages", payload)
@@ -1005,7 +1013,7 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, 'Test message 6')
-        local_tz = get_timezone(tz_guess)
+        local_tz = pytz.timezone(tz_guess)
         utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))
         self.assertEqual(message.scheduled_timestamp,
                          convert_to_UTC(utz_defer_until))
@@ -1021,7 +1029,7 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, 'Test message 7')
-        local_tz = get_timezone(user.timezone)
+        local_tz = pytz.timezone(user.timezone)
         utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))
         self.assertEqual(message.scheduled_timestamp,
                          convert_to_UTC(utz_defer_until))
@@ -1186,7 +1194,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 14)
+        self.assert_length(queries, 12)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user('iago')
@@ -1317,11 +1325,113 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertEqual(user_message.message.content, content)
         self.assertTrue(user_message.flags.mentioned)
 
+    def send_and_verify_wildcard_mention_message(self,
+                                                 sender_name: str,
+                                                 test_fails: bool=False,
+                                                 sub_count: int=16) -> None:
+        sender = self.example_user(sender_name)
+        content = "@**all** test wildcard mention"
+        with mock.patch(
+            "zerver.lib.message.num_subscribers_for_stream_id", return_value=sub_count
+        ):
+            if not test_fails:
+                msg_id = self.send_stream_message(sender, "test_stream", content)
+                result = self.api_get(sender, '/json/messages/' + str(msg_id))
+                self.assert_json_success(result)
+
+            else:
+                with self.assertRaisesRegex(JsonableError,
+                                            "You do not have permission to use wildcard mentions in this stream."):
+                    self.send_stream_message(sender, "test_stream", content)
+
+    def test_wildcard_mention_restrictions(self) -> None:
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        polonius = self.example_user("polonius")
+        realm = cordelia.realm
+
+        stream_name = "test_stream"
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(iago, stream_name)
+        self.subscribe(polonius, stream_name)
+
+        do_set_realm_property(
+            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_EVERYONE
+        )
+        self.send_and_verify_wildcard_mention_message("polonius")
+
+        do_set_realm_property(
+            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_MEMBERS
+        )
+        self.send_and_verify_wildcard_mention_message("polonius", test_fails=True)
+        # There is no restriction on small streams.
+        self.send_and_verify_wildcard_mention_message("polonius", sub_count=10)
+        self.send_and_verify_wildcard_mention_message("cordelia")
+
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 10)
+        iago.date_joined = timezone_now()
+        iago.save()
+        cordelia.date_joined = timezone_now()
+        cordelia.save()
+        self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
+        # Administrators can use wildcard mentions even if they are new.
+        self.send_and_verify_wildcard_mention_message("iago")
+
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.save()
+        self.send_and_verify_wildcard_mention_message("cordelia")
+
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS
+        )
+        # TODO: Change this when we implement stream administrators
+        self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
+        # There is no restriction on small streams.
+        self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_wildcard_mention_message("iago")
+
+        cordelia.date_joined = timezone_now()
+        cordelia.save()
+        do_set_realm_property(
+            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS
+        )
+        self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
+        # There is no restriction on small streams.
+        self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_wildcard_mention_message("iago")
+
+        do_set_realm_property(
+            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY
+        )
+        self.send_and_verify_wildcard_mention_message("iago", test_fails=True)
+        self.send_and_verify_wildcard_mention_message("iago", sub_count=10)
+
+    def test_invalid_wildcard_mention_policy(self) -> None:
+        cordelia = self.example_user("cordelia")
+        self.login_user(cordelia)
+
+        self.subscribe(cordelia, "test_stream")
+        do_set_realm_property(cordelia.realm, "wildcard_mention_policy", 10)
+        content = "@**all** test wildcard mention"
+        with mock.patch(
+            "zerver.lib.message.num_subscribers_for_stream_id", return_value=16
+        ):
+            with self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"):
+                self.send_stream_message(cordelia, "test_stream", content)
+
     def test_stream_message_mirroring(self) -> None:
         user = self.mit_user('starnine')
         self.subscribe(user, 'Verona')
 
-        do_change_is_api_super_user(user, True)
+        do_change_can_forge_sender(user, True)
         result = self.api_post(user, "/api/v1/messages", {"type": "stream",
                                                           "to": "Verona",
                                                           "sender": self.mit_email("sipbtest"),
@@ -1332,7 +1442,7 @@ class StreamMessagesTest(ZulipTestCase):
                                subdomain="zephyr")
         self.assert_json_success(result)
 
-        do_change_is_api_super_user(user, False)
+        do_change_can_forge_sender(user, False)
         result = self.api_post(user, "/api/v1/messages", {"type": "stream",
                                                           "to": "Verona",
                                                           "sender": self.mit_email("sipbtest"),
@@ -1680,7 +1790,7 @@ class InternalPrepTest(ZulipTestCase):
             recipient_user=recipient_user,
             content=content)
         assert result is not None
-        message = result['message']
+        message = result.message
         self.assertIn('message was too long', message.content)
 
         # Simulate sending a message to somebody not in the
@@ -1890,7 +2000,7 @@ class CheckMessageTest(ZulipTestCase):
         message_content = 'whatever'
         addressee = Addressee.for_stream_name(stream_name, topic_name)
         ret = check_message(sender, client, addressee, message_content)
-        self.assertEqual(ret['message'].sender.id, sender.id)
+        self.assertEqual(ret.message.sender.id, sender.id)
 
     def test_guest_user_can_send_message(self) -> None:
         # Guest users can write to web_public streams.
@@ -1909,7 +2019,7 @@ class CheckMessageTest(ZulipTestCase):
         message_content = 'whatever'
         addressee = Addressee.for_stream_name(rome_stream.name, topic_name)
         ret = check_message(sender, client, addressee, message_content)
-        self.assertEqual(ret['message'].sender.id, sender.id)
+        self.assertEqual(ret.message.sender.id, sender.id)
 
     def test_bot_pm_feature(self) -> None:
         """We send a PM to a bot's owner if their bot sends a message to
@@ -1959,7 +2069,7 @@ class CheckMessageTest(ZulipTestCase):
 
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 2)
-        self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
+        self.assertEqual(ret.message.sender.email, 'othello-bot@zulip.com')
         self.assertIn("does not have any subscribers", most_recent_message(parent).content)
 
     def test_bot_pm_error_handling(self) -> None:

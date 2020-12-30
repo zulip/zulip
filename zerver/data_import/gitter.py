@@ -39,10 +39,10 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
                                                              Dict[str, int]]:
     """
     Returns:
-    1. realm, Converted Realm data
-    2. avatars, which is list to map avatars to zulip avatar records.json
-    3. user_map, which is a dictionary to map from gitter user id to zulip user id
-    4. stream_map, which is a dictionary to map from gitter rooms to zulip stream id
+    1. realm, converted realm data
+    2. avatars, which is list to map avatars to Zulip avatar records.json
+    3. user_map, which is a dictionary to map from Gitter user id to Zulip user id
+    4. stream_map, which is a dictionary to map from Gitter rooms to Zulip stream id
     """
     NOW = float(timezone_now().timestamp())
     zerver_realm: List[ZerverFieldsT] = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Gitter')
@@ -68,8 +68,8 @@ def build_userprofile(timestamp: Any, domain_name: str,
     """
     Returns:
     1. zerver_userprofile, which is a list of user profile
-    2. avatar_list, which is list to map avatars to zulip avatars records.json
-    3. added_users, which is a dictionary to map from gitter user id to zulip id
+    2. avatar_list, which is list to map avatars to Zulip avatars records.json
+    3. added_users, which is a dictionary to map from Gitter user id to Zulip id
     """
     logging.info('######### IMPORTING USERS STARTED #########\n')
     zerver_userprofile = []
@@ -122,7 +122,7 @@ def build_stream_map(timestamp: Any,
     Returns:
     1. stream, which is the list of streams
     2. defaultstreams, which is the list of default streams
-    3. stream_map, which is a dictionary to map from gitter rooms to zulip stream id
+    3. stream_map, which is a dictionary to map from Gitter rooms to Zulip stream id
     """
     logging.info('######### IMPORTING STREAM STARTED #########\n')
     stream_id = 0
@@ -130,7 +130,7 @@ def build_stream_map(timestamp: Any,
 
     # Default stream when no "room" field is present
     stream.append(build_stream(timestamp, realm_id, 'from gitter',
-                               "Imported from gitter", stream_id))
+                               "Imported from Gitter", stream_id))
     defaultstream = build_defaultstream(realm_id=realm_id, stream_id=stream_id,
                                         defaultstream_id=0)
     stream_id += 1
@@ -218,7 +218,7 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
             mentioned_user_ids = get_usermentions(message, user_map,
                                                   user_short_name_to_full_name)
             rendered_content = None
-            topic_name = 'imported from gitter' + (f' room {message["room"]}' if 'room' in message else '')
+            topic_name = 'imported from Gitter' + (f' room {message["room"]}' if 'room' in message else '')
             user_id = user_map[message['fromUser']['id']]
             recipient_id = stream_map[message['room']] if 'room' in message else 0
             zulip_message = build_message(topic_name, float(message_time), message_id, message['text'],
@@ -277,7 +277,7 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
     if os.listdir(output_dir):
         raise Exception("Output directory should be empty!")
 
-    # Read data from the gitter file
+    # Read data from the Gitter file
     with open(gitter_data_file, "rb") as fp:
         gitter_data = orjson.loads(fp.read())
 

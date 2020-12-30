@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Any, Dict, List
+from typing import Any, List
 
 import markdown
 from markdown_include.include import IncludePreprocessor, MarkdownInclude
@@ -11,11 +11,11 @@ INC_SYNTAX = re.compile(r'\{!\s*(.+?)\s*!\}')
 
 
 class MarkdownIncludeCustom(MarkdownInclude):
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
-        md.preprocessors.add(
-            'include_wrapper',
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
+        md.preprocessors.register(
             IncludeCustomPreprocessor(md, self.getConfigs()),
-            '_begin',
+            'include_wrapper',
+            500,
         )
 
 class IncludeCustomPreprocessor(IncludePreprocessor):

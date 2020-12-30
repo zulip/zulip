@@ -1,6 +1,12 @@
 "use strict";
 
-set_global("$", global.make_zjquery());
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+set_global("$", make_zjquery());
 const window_stub = $.create("window-stub");
 set_global("to_$", () => window_stub);
 $(window).idle = () => {};
@@ -690,9 +696,9 @@ run_test("initialize", () => {
     channel.post = function (payload) {
         payload.success({});
     };
-    global.server_events = {
+    set_global("server_events", {
         check_for_unsuspend() {},
-    };
+    });
 
     let scroll_handler_started;
     buddy_list.start_scroll_handler = () => {
@@ -719,7 +725,7 @@ run_test("initialize", () => {
             presences: {},
         });
     };
-    global.setInterval = (func) => func();
+    set_global("setInterval", (func) => func());
 
     $(window).off("focus");
     activity.initialize();
@@ -762,9 +768,9 @@ run_test("electron_bridge", () => {
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
 });
 
-run_test("test_send_or_receive_no_presence_for_web_public_guest", () => {
+run_test("test_send_or_receive_no_presence_for_web_public_visitor", () => {
     set_global("page_params", {
-        is_web_public_guest: true,
+        is_web_public_visitor: true,
     });
     activity.send_presence_to_server();
 });

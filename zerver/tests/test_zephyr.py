@@ -1,3 +1,4 @@
+import subprocess
 from typing import Any
 from unittest.mock import patch
 
@@ -51,7 +52,7 @@ class ZephyrTest(ZulipTestCase):
 
         with \
                 ccache_mock(return_value=b'1234'), \
-                ssh_mock(side_effect=KeyError('foo')), \
+                ssh_mock(side_effect=subprocess.CalledProcessError(1, [])), \
                 logging_mock() as log:
             result = post("zephyr", cred=cred)
 
@@ -66,10 +67,7 @@ class ZephyrTest(ZulipTestCase):
             'ssh',
             'server',
             '--',
-            '/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache',
-            'starnine',
-            api_key,
-            'MTIzNA=='])
+            f'/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache starnine {api_key} MTIzNA=='])
 
         # Accounts whose Kerberos usernames are known not to match their
         # zephyr accounts are hardcoded, and should be handled properly.
@@ -92,7 +90,4 @@ class ZephyrTest(ZulipTestCase):
             'ssh',
             'server',
             '--',
-            '/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache',
-            'starnine',
-            api_key,
-            'MTIzNA=='])
+            f'/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache starnine {api_key} MTIzNA=='])

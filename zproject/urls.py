@@ -82,6 +82,7 @@ from zerver.views.message_flags import (
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.muting import update_muted_topic
 from zerver.views.portico import (
+    app_download_link_redirect,
     apps_view,
     hello_view,
     landing_view,
@@ -511,7 +512,7 @@ v1_api_and_json_patterns = [
     rest_path('streams',
               GET=get_streams_backend),
 
-    # GET returns `stream_id`, stream name should be encoded in the url query (in `stream` param)
+    # GET returns `stream_id`, stream name should be encoded in the URL query (in `stream` param)
     rest_path('get_stream_id',
               GET=json_get_stream_id),
 
@@ -591,7 +592,7 @@ v1_api_and_json_patterns = [
 integrations_view = IntegrationView.as_view()
 
 # These views serve pages (HTML). As such, their internationalization
-# must depend on the url.
+# must depend on the URL.
 #
 # If you're adding a new page to the website (as opposed to a new
 # endpoint for use by code), you should add it here.
@@ -685,12 +686,12 @@ i18n_urls = [
     # Go to organization subdomain
     path('accounts/go/', realm_redirect, name='realm_redirect'),
 
-    # Realm Creation
+    # Realm creation
     path('new/', create_realm),
     path('new/<creation_key>',
          create_realm, name='create_realm'),
 
-    # Realm Reactivation
+    # Realm reactivation
     path('reactivate/<confirmation_key>', realm_reactivation,
          name='realm_reactivation'),
 
@@ -728,6 +729,7 @@ i18n_urls = [
     path('features/', landing_view, {'template_name': 'zerver/features.html'}),
     path('plans/', plans_view, name='plans'),
     path('apps/', apps_view),
+    path('apps/download/<platform>', app_download_link_redirect),
     path('apps/<platform>', apps_view),
     path('team/', team_view),
     path('history/', landing_view, {'template_name': 'zerver/history.html'}),
@@ -741,7 +743,6 @@ i18n_urls = [
     path('for/working-groups-and-communities/', landing_view,
          {'template_name': 'zerver/for-working-groups-and-communities.html'}),
     path('security/', landing_view, {'template_name': 'zerver/security.html'}),
-    path('atlassian/', landing_view, {'template_name': 'zerver/atlassian.html'}),
 
     # Terms of Service and privacy pages.
     path('terms/', terms_view),
@@ -759,7 +760,7 @@ urls += [
 
 # user_uploads -> zerver.views.upload.serve_file_backend
 #
-# This url is an exception to the url naming schemes for endpoints. It
+# This URL is an exception to the URL naming schemes for endpoints. It
 # supports both API and session cookie authentication, using a single
 # URL for both (not 'api/v1/' or 'json/' prefix). This is required to
 # easily support the mobile apps fetching uploaded files without
@@ -788,13 +789,13 @@ urls += [
                    {'override_api_url_scheme'})),
 ]
 
-# This url serves as a way to receive CSP violation reports from the users.
+# This URL serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
 urls += [
     path('report/csp_violations', report_csp_violations),
 ]
 
-# This url serves as a way to provide backward compatibility to messages
+# This URL serves as a way to provide backward compatibility to messages
 # rendered at the time Zulip used camo for doing http -> https conversion for
 # such links with images previews. Now thumbor can be used for serving such
 # images.
@@ -804,7 +805,7 @@ urls += [
 ]
 
 # Incoming webhook URLs
-# We don't create urls for particular git integrations here
+# We don't create URLs for particular Git integrations here
 # because of generic one below
 for incoming_webhook in WEBHOOK_INTEGRATIONS:
     if incoming_webhook.url_object:
@@ -890,7 +891,7 @@ urls += [
     path('api/<slug:article>', api_documentation_view),
 ]
 
-# Two Factor urls
+# Two-factor URLs
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
     urls += [path('', include(tf_urls)),
              path('', include(tf_twilio_urls))]
@@ -899,7 +900,7 @@ if settings.DEVELOPMENT:
     urls += dev_urls.urls
     i18n_urls += dev_urls.i18n_urls
 
-# The sequence is important; if i18n urls don't come first then
-# reverse url mapping points to i18n urls which causes the frontend
+# The sequence is important; if i18n URLs don't come first then
+# reverse URL mapping points to i18n URLs which causes the frontend
 # tests to fail
 urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls

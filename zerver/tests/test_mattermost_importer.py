@@ -93,7 +93,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["full_name"], "Harry Potter")
         self.assertEqual(user["id"], 1)
         self.assertEqual(user["is_active"], True)
-        self.assertEqual(user["role"], UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.assertEqual(user["role"], UserProfile.ROLE_REALM_OWNER)
         self.assertEqual(user["is_mirror_dummy"], False)
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "harry")
@@ -670,7 +670,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(len(huddle_messages), 3)
         self.assertEqual(len(set(huddle_recipients)), 1)
         self.assertEqual(huddle_messages[0].sender.email, "ginny@zulip.com")
-        self.assertEqual(huddle_messages[0].content, "Who is going to Hogesmead this weekend?\n\n")
+        self.assertEqual(huddle_messages[0].content, "Who is going to Hogsmeade this weekend?\n\n")
 
         personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by("date_sent")
         personal_recipients = personal_messages.values_list("recipient", flat=True)

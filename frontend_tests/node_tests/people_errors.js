@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 const people = zrequire("people");
 
 const return_false = function () {
@@ -16,7 +21,7 @@ const me = {
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-    timezone: "US/Pacific",
+    timezone: "America/Los_Angeles",
 };
 
 people.init();

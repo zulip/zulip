@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
         ('auth', '0001_initial'),
     ]
 
-    if settings.POSTGRES_MISSING_DICTIONARIES:
+    if settings.POSTGRESQL_MISSING_DICTIONARIES:
         fts_sql = """
 CREATE TEXT SEARCH CONFIGURATION zulip.english_us_search (COPY=pg_catalog.english);
 """

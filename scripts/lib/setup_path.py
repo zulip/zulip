@@ -11,7 +11,8 @@ def setup_path() -> None:
         venv = os.path.join(BASE_DIR, "zulip-py3-venv")
         activate_this = os.path.join(venv, "bin", "activate_this.py")
         activate_locals = dict(__file__=activate_this)
-        exec(open(activate_this).read(), activate_locals)
+        with open(activate_this) as f:
+            exec(f.read(), activate_locals)
         # Check that the python version running this function
         # is same as python version that created the virtualenv.
         python_version = "python{}.{}".format(*sys.version_info[:2])
