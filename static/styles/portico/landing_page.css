@@ -2567,7 +2567,7 @@ nav {
     display: inline-block;
     vertical-align: bottom;
     margin: 0;
-    width: 300px;
+    width: 325px;
     height: 500px;
 
     box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
@@ -2642,8 +2642,7 @@ nav {
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: 150px;
-
+    height: 170px;
     background-color: hsl(0, 0%, 93%);
 }
 
@@ -2654,7 +2653,7 @@ nav {
     top: 4px;
     left: -3px;
 
-    font-size: 2rem;
+    font-size: 1.4rem;
     font-weight: 300;
     color: hsl(0, 0%, 53%);
 }
@@ -2663,7 +2662,7 @@ nav {
     display: inline-block;
     margin-right: 2px;
 
-    font-size: 3.5em;
+    font-size: 2.5em;
     font-weight: 600;
     line-height: 0.8;
 }
@@ -2672,8 +2671,7 @@ nav {
     display: inline-block;
     vertical-align: top;
     margin-left: 15px;
-    margin-top: 4px;
-
+    margin-top: -7px;
     font-size: 0.9em;
     font-weight: 400;
     color: hsl(0, 0%, 53%);
@@ -2682,7 +2680,7 @@ nav {
 }
 
 .pricing-model .pricing-container .bottom .button {
-    margin-top: 20px;
+    margin-top: 35px;
     display: block;
     text-align: center;
 
