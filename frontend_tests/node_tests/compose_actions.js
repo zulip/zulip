@@ -358,9 +358,7 @@ test("quote_and_reply", ({override}) => {
         reply_type: "personal",
     };
 
-    $("#compose-textarea").caret = (pos) => {
-        assert.equal(pos, 0);
-    };
+    $("#compose-textarea").caret = noop;
 
     replaced = false;
     expected_replacement =

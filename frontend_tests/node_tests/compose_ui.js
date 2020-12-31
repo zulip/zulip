@@ -291,12 +291,12 @@ run_test("quote_and_reply", ({override}) => {
     };
 
     $("#compose-textarea").caret = function (arg) {
-        if (arg === 0) {
-            textarea_caret_pos = 0;
-            return this;
-        }
         if (arg === undefined) {
             return textarea_caret_pos;
+        }
+        if (typeof arg === "number") {
+            textarea_caret_pos = arg;
+            return this;
         }
         if (typeof arg !== "string") {
             console.info(arg);
@@ -327,15 +327,82 @@ run_test("quote_and_reply", ({override}) => {
         return content;
     }
 
+    function reset_test_state() {
+        // Reset `raw_content` property of `selected_message`.
+        delete selected_message.raw_content;
+
+        // Reset compose-box state.
+        textarea_val = "";
+        textarea_caret_pos = 0;
+        $("#compose-textarea").trigger("blur");
+    }
+
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
     compose_actions.quote_and_reply();
-    assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%hello there");
+    assert.equal(get_compose_content_with_caret(), "hello \n[Quoting…]\n%there");
 
     success_function({
         raw_content: "Testing caret position",
     });
     assert.equal(
         get_compose_content_with_caret(),
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting caret position\n```\nhello there%",
+        "hello \ntranslated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting caret position\n```\n%there",
+    );
+
+    reset_test_state();
+
+    // If the caret is initially positioned at 0, it should not
+    // add a newline before the quoted message.
+    set_compose_content_with_caret("%hello there");
+    compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%hello there");
+
+    success_function({
+        raw_content: "Testing with caret initially positioned at 0.",
+    });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with caret initially positioned at 0.\n```\n%hello there",
+    );
+
+    override(compose_actions, "respond_to_message", () => {
+        // Reset compose state to replicate the re-opening of compose-box.
+        textarea_val = "";
+        textarea_caret_pos = 0;
+        $("#compose-textarea").trigger("focus");
+    });
+
+    reset_test_state();
+
+    // If the compose-box is close, or open with no content while
+    // quoting a message, the quoted message should be placed
+    // at the beginning of compose-box.
+    compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%");
+
+    success_function({
+        raw_content: "Testing with compose-box closed initially.",
+    });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with compose-box closed initially.\n```\n%",
+    );
+
+    reset_test_state();
+
+    // If the compose-box is already open while quoting a message,
+    // but contains content like `\n\n  \n` (only whitespaces and
+    // newlines), the compose-box should re-open and thus the quoted
+    // message should start from the beginning of compose-box.
+    set_compose_content_with_caret("  \n\n \n %");
+    compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%");
+
+    success_function({
+        raw_content: "Testing with compose-box containing whitespaces and newlines only.",
+    });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with compose-box containing whitespaces and newlines only.\n```\n%",
     );
 });
