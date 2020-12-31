@@ -458,20 +458,18 @@ export function quote_and_reply(opts) {
         // are prone to glitches where you select the
         // text, plus it's a complicated codepath that
         // can have other unintended consequences.)
-        //
-        // Note also that we always put the quoted text
-        // above the current text, which explains us
-        // moving the caret below.  I think this is what
-        // most users will want, and it's consistent with
-        // the behavior we had on FF before this change
-        // (which may have been an accident of
-        // implementation).  If we change this decision,
-        // we'll need to make `insert_syntax_and_focus`
-        // smarter about newlines.
-        textarea.caret(0);
+
+        if (textarea.caret() !== 0) {
+            // Insert a newline before quoted message if there is
+            // already some content in the compose box and quoted
+            // message is not being inserted at the beginning.
+            textarea.caret("\n");
+        }
     } else {
         respond_to_message(opts);
     }
+
+    const prev_caret = textarea.caret();
 
     compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
 
@@ -493,6 +491,8 @@ export function quote_and_reply(opts) {
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
         compose_ui.replace_syntax("[Quoting…]", content, textarea);
         compose_ui.autosize_textarea($("#compose-textarea"));
+        // Update textarea caret to point to the new line after quoted message.
+        textarea.caret(prev_caret + content.length + 1);
     }
 
     if (message && message.raw_content) {
