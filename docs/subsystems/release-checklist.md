@@ -51,6 +51,10 @@ preparing a new release.
 * Post the release by [editing the latest tag on
   GitHub](https://github.com/zulip/zulip/tags); use the text from
   `changelog.md` for the release notes.
+
+  **Note:** This will trigger the [GitHub action](https://github.com/zulip/zulip/blob/master/tools/oneclickapps/README.md)
+  for updating DigitalOcean one-click app image. The action uses the latest release
+  tarball published on `zulip.org` for creating the image.
 * Update the [Docker image](https://github.com/zulip/docker-zulip) and
   do a release of that.
 * Update the image of DigitalOcean one click app using
