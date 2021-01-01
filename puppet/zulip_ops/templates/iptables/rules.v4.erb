@@ -32,15 +32,19 @@
 # FIXME: do something better here.
 -A INPUT -p udp -j ACCEPT
 <% else -%>
-# Accept incoming traffic on TCP ports 22 (SSH), 25 (SMTP), 80 (HTTP), 443 (HTTPS), and 5432 (Postgres)
--A INPUT -p tcp --dport   22 -j ACCEPT
--A INPUT -p tcp --dport   25 -j ACCEPT
--A INPUT -p tcp --dport   80 -j ACCEPT
--A INPUT -p tcp --dport  443 -j ACCEPT
--A INPUT -p tcp --dport 5432 -j ACCEPT
 
-# Accept incoming UDP traffic on port 8125 (statsd)
--A INPUT -p udp --dport 8125 -j ACCEPT
+# Accept incoming traffic on TCP ports:
+-A INPUT -p tcp --dport ssh        -j ACCEPT
+-A INPUT -p tcp --dport smtp       -j ACCEPT
+-A INPUT -p tcp --dport http       -j ACCEPT
+-A INPUT -p tcp --dport https      -j ACCEPT
+-A INPUT -p tcp --dport postgresql -j ACCEPT
+
+#                       Smokescreen proxy
+-A INPUT -p tcp --dport 4750       -j ACCEPT
+
+#                       statsd
+-A INPUT -p udp --dport 8125       -j ACCEPT
 <% end -%>
 
 # Drop everything else

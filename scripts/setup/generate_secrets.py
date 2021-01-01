@@ -88,7 +88,7 @@ def generate_secrets(development: bool = False) -> None:
             add_secret(name, random_token())
 
     # These secrets are exclusive to a Zulip development environment.
-    # We use postgres peer authentication by default in production,
+    # We use PostgreSQL peer authentication by default in production,
     # and initial_password_salt is used to generate passwords for the
     # test/development database users.  See `manage.py
     # print_initial_password`.
@@ -124,7 +124,7 @@ def generate_secrets(development: bool = False) -> None:
             if settings.MEMCACHED_LOCATION == "127.0.0.1:11211":
                 add_secret("memcached_password", random_token())
 
-        # Password for authentication to redis.
+        # Password for authentication to Redis.
         if need_secret("redis_password"):
             # We defer importing settings unless we need it, because
             # importing settings is expensive (mostly because of

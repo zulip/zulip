@@ -1,13 +1,17 @@
-from typing import Any
+import cgi
+from typing import Any, Optional
 
 
 class BaseParser:
-    def __init__(self, html_source: str) -> None:
+    def __init__(self, html_source: bytes, content_type: Optional[str]) -> None:
         # We import BeautifulSoup here, because it's not used by most
         # processes in production, and bs4 is big enough that
         # importing it adds 10s of milliseconds to manage.py startup.
         from bs4 import BeautifulSoup
-        self._soup = BeautifulSoup(html_source, "lxml")
+        charset = None
+        if content_type is not None:
+            charset = cgi.parse_header(content_type)[1].get("charset")
+        self._soup = BeautifulSoup(html_source, "lxml", from_encoding=charset)
 
     def extract_data(self) -> Any:
         raise NotImplementedError()

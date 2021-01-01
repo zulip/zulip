@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
 
 // The data structures here may be different for
@@ -48,33 +53,33 @@ run_test("get_emoji_matcher", () => {
 
 run_test("triage", () => {
     const alice = {name: "alice"};
-    const Alicia = {name: "Alicia"};
+    const alicia = {name: "Alicia"};
     const steve = {name: "steve"};
-    const Stephanie = {name: "Stephanie"};
+    const stephanie = {name: "Stephanie"};
 
-    const names = [alice, Alicia, steve, Stephanie];
+    const names = [alice, alicia, steve, stephanie];
 
     assert.deepEqual(
         typeahead.triage("a", names, (r) => r.name),
         {
-            matches: [alice, Alicia],
-            rest: [steve, Stephanie],
+            matches: [alice, alicia],
+            rest: [steve, stephanie],
         },
     );
 
     assert.deepEqual(
         typeahead.triage("A", names, (r) => r.name),
         {
-            matches: [Alicia, alice],
-            rest: [steve, Stephanie],
+            matches: [alicia, alice],
+            rest: [steve, stephanie],
         },
     );
 
     assert.deepEqual(
         typeahead.triage("S", names, (r) => r.name),
         {
-            matches: [Stephanie, steve],
-            rest: [alice, Alicia],
+            matches: [stephanie, steve],
+            rest: [alice, alicia],
         },
     );
 
@@ -82,7 +87,7 @@ run_test("triage", () => {
         typeahead.triage("fred", names, (r) => r.name),
         {
             matches: [],
-            rest: [alice, Alicia, steve, Stephanie],
+            rest: [alice, alicia, steve, stephanie],
         },
     );
 });

@@ -85,6 +85,6 @@ def get_web_public_topics_backend(request: HttpRequest, stream_id: int) -> HttpR
     if not stream.is_web_public:
         return json_success(dict(topics=[]))
 
-    result = get_topic_history_for_public_stream(recipient=stream.recipient)
+    result = get_topic_history_for_public_stream(recipient_id=stream.recipient_id)
 
     return json_success(dict(topics=result))

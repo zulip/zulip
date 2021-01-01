@@ -23,7 +23,7 @@ from sentry_sdk.integrations.logging import ignore_logger
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
-from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, RateLimited
+from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
@@ -390,7 +390,7 @@ class RateLimitMiddleware(MiddlewareMixin):
         # The limit on the action that was requested is the minimum of the limits that get applied:
         limit = min(result.entity.max_api_calls() for result in rate_limit_results)
         response['X-RateLimit-Limit'] = str(limit)
-        # Same principle applies to remaining api calls:
+        # Same principle applies to remaining API calls:
         remaining_api_calls = min(result.remaining for result in rate_limit_results)
         response['X-RateLimit-Remaining'] = str(remaining_api_calls)
 
@@ -407,20 +407,6 @@ class RateLimitMiddleware(MiddlewareMixin):
             self.set_response_headers(response, request._ratelimits_applied)
 
         return response
-
-    def process_exception(self, request: HttpRequest,
-                          exception: Exception) -> Optional[HttpResponse]:
-        if isinstance(exception, RateLimited):
-            # secs_to_freedom is passed to RateLimited when raising
-            secs_to_freedom = float(str(exception))
-            resp = json_error(
-                _("API usage exceeded rate limit"),
-                data={'retry-after': secs_to_freedom},
-                status=429,
-            )
-            resp['Retry-After'] = secs_to_freedom
-            return resp
-        return None
 
 class FlushDisplayRecipientCache(MiddlewareMixin):
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:

@@ -1,6 +1,11 @@
 "use strict";
 
-global.stub_out_jquery();
+const {strict: assert} = require("assert");
+
+const {stub_templates} = require("../zjsunit/handlebars");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("ui", {
     get_content_element: (element) => element,
@@ -16,7 +21,7 @@ set_global("location", {
 
 zrequire("subs");
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("hash_util", {
     by_stream_uri: () => {},
 });
@@ -89,7 +94,7 @@ run_test("filter_table", () => {
 
     let populated_subs;
 
-    global.stub_templates((fn, data) => {
+    stub_templates((fn, data) => {
         assert.equal(fn, "subscriptions");
         populated_subs = data.subscriptions;
     });

@@ -38,4 +38,4 @@ class Command(BaseCommand):
 
         do_delete_old_unclaimed_attachments(delta_weeks)
         print("")
-        print("Unclaimed Files deleted.")
+        print("Unclaimed files deleted.")

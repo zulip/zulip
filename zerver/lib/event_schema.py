@@ -1184,8 +1184,8 @@ subscription_peer_add_event = event_dict_type(
     required_keys=[
         ("type", Equals("subscription")),
         ("op", Equals("peer_add")),
-        ("user_id", int),
-        ("stream_id", int),
+        ("user_ids", ListType(int)),
+        ("stream_ids", ListType(int)),
     ]
 )
 check_subscription_peer_add = make_checker(subscription_peer_add_event)
@@ -1194,8 +1194,8 @@ subscription_peer_remove_event = event_dict_type(
     required_keys=[
         ("type", Equals("subscription")),
         ("op", Equals("peer_remove")),
-        ("user_id", int),
-        ("stream_id", int),
+        ("user_ids", ListType(int)),
+        ("stream_ids", ListType(int)),
     ]
 )
 check_subscription_peer_remove = make_checker(subscription_peer_remove_event)

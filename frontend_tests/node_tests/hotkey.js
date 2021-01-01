@@ -1,5 +1,12 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
+const {with_stub} = require("../zjsunit/stub");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 // Important note on these tests:
 //
 // The way the Zulip hotkey tests work is as follows.  First, we set
@@ -25,7 +32,7 @@ set_global("overlays", {});
 
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 
@@ -78,8 +85,8 @@ function return_false() {
 }
 
 function stubbing(func_name_to_stub, test_function) {
-    global.with_overrides((override) => {
-        global.with_stub((stub) => {
+    with_overrides((override) => {
+        with_stub((stub) => {
             override(func_name_to_stub, stub.f);
             test_function(stub);
         });
@@ -152,7 +159,7 @@ run_test("mappings", () => {
     assert.equal(map_down(219, true, true, false), undefined); // Shift + Ctrl + [
 
     // Cmd tests for MacOS
-    global.navigator.platform = "MacIntel";
+    navigator.platform = "MacIntel";
     assert.equal(map_down(219, false, true, false).name, "escape"); // Ctrl + [
     assert.equal(map_down(219, false, false, true), undefined); // Cmd + [
     assert.equal(map_down(67, false, true, true).name, "copy_with_c"); // Ctrl + C
@@ -164,7 +171,7 @@ run_test("mappings", () => {
     assert.equal(map_down(190, false, false, true).name, "narrow_to_compose_target"); // Cmd + .
     assert.equal(map_down(190, false, true, false), undefined); // Ctrl + .
     // Reset platform
-    global.navigator.platform = "";
+    navigator.platform = "";
 });
 
 run_test("basic_chars", () => {
@@ -174,13 +181,13 @@ run_test("basic_chars", () => {
         };
         try {
             return hotkey.process_keypress(e);
-        } catch (err) {
+        } catch (error) {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
             // add a newline to separate from other console output.
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
-            throw err;
+            throw error;
         }
     }
 
@@ -307,10 +314,10 @@ run_test("basic_chars", () => {
     const message_view_only_keys = "@+>RjJkKsSuvi:GM";
 
     // Check that they do nothing without a selected message
-    global.current_msg_list.empty = return_true;
+    current_msg_list.empty = return_true;
     assert_unmapped(message_view_only_keys);
 
-    global.current_msg_list.empty = return_false;
+    current_msg_list.empty = return_false;
 
     // Check that they do nothing while in the settings overlay
     overlays.settings_open = return_true;
@@ -344,9 +351,9 @@ run_test("basic_chars", () => {
     overlays.is_active = return_false;
     assert_mapping("v", "lightbox.show_from_selected_message");
 
-    global.emoji_picker.reactions_popped = return_true;
+    emoji_picker.reactions_popped = return_true;
     assert_mapping(":", "emoji_picker.navigate", true);
-    global.emoji_picker.reactions_popped = return_false;
+    emoji_picker.reactions_popped = return_false;
 
     assert_mapping("G", "navigate.to_end");
     assert_mapping("M", "muting_ui.toggle_mute");
@@ -356,9 +363,9 @@ run_test("basic_chars", () => {
     assert_mapping("n", "narrow.narrow_to_next_topic");
     assert_mapping("p", "narrow.narrow_to_next_pm_string");
 
-    global.current_msg_list.empty = return_true;
+    current_msg_list.empty = return_true;
     assert_mapping("n", "narrow.narrow_to_next_topic");
-    global.current_msg_list.empty = return_false;
+    current_msg_list.empty = return_false;
 });
 
 run_test("motion_keys", () => {
@@ -384,13 +391,13 @@ run_test("motion_keys", () => {
 
         try {
             return hotkey.process_keydown(e);
-        } catch (err) {
+        } catch (error) {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
             // add a newline to separate from other console output.
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
-            throw err;
+            throw error;
         }
     }
 
@@ -405,7 +412,7 @@ run_test("motion_keys", () => {
     }
 
     list_util.inside_list = return_false;
-    global.current_msg_list.empty = return_true;
+    current_msg_list.empty = return_true;
     overlays.settings_open = return_false;
     overlays.streams_open = return_false;
     overlays.lightbox_open = return_false;
@@ -418,12 +425,12 @@ run_test("motion_keys", () => {
     assert_unmapped("spacebar");
     assert_unmapped("up_arrow");
 
-    global.list_util.inside_list = return_true;
+    list_util.inside_list = return_true;
     assert_mapping("up_arrow", "list_util.go_up");
     assert_mapping("down_arrow", "list_util.go_down");
     list_util.inside_list = return_false;
 
-    global.current_msg_list.empty = return_false;
+    current_msg_list.empty = return_false;
     assert_mapping("down_arrow", "navigate.down");
     assert_mapping("end", "navigate.to_end");
     assert_mapping("home", "navigate.to_home");

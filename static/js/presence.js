@@ -124,16 +124,12 @@ exports.update_info_from_event = function (user_id, info, server_timestamp) {
     raw.server_timestamp = server_timestamp;
 
     for (const rec of Object.values(info)) {
-        if (rec.status === "active") {
-            if (rec.timestamp > (raw.active_timestamp || 0)) {
-                raw.active_timestamp = rec.timestamp;
-            }
+        if (rec.status === "active" && rec.timestamp > (raw.active_timestamp || 0)) {
+            raw.active_timestamp = rec.timestamp;
         }
 
-        if (rec.status === "idle") {
-            if (rec.timestamp > (raw.idle_timestamp || 0)) {
-                raw.idle_timestamp = rec.timestamp;
-            }
+        if (rec.status === "idle" && rec.timestamp > (raw.idle_timestamp || 0)) {
+            raw.idle_timestamp = rec.timestamp;
         }
     }
 
@@ -157,7 +153,7 @@ exports.set_info = function (presences, server_timestamp) {
     raw_info.clear();
     exports.presence_info.clear();
     for (const [user_id_str, info] of Object.entries(presences)) {
-        const user_id = parseInt(user_id_str, 10);
+        const user_id = Number.parseInt(user_id_str, 10);
 
         // Note: In contrast with all other state updates received
         // receive from the server, presence data is updated via a

@@ -315,9 +315,9 @@ exports.slug_to_name = function (slug) {
     GitHub conversations.  We migrated to modern slugs in
     early 2018.
     */
-    const m = /^([\d]+)(-.*)?/.exec(slug);
+    const m = /^(\d+)(-.*)?/.exec(slug);
     if (m) {
-        const stream_id = parseInt(m[1], 10);
+        const stream_id = Number.parseInt(m[1], 10);
         const sub = subs_by_stream_id.get(stream_id);
         if (sub) {
             return sub.name;
@@ -346,10 +346,7 @@ exports.delete_sub = function (stream_id) {
 
 exports.get_non_default_stream_names = function () {
     let subs = Array.from(stream_info.values());
-    subs = subs.filter(
-        (sub) =>
-            !exports.is_default_stream_id(sub.stream_id) && (sub.subscribed || !sub.invite_only),
-    );
+    subs = subs.filter((sub) => !exports.is_default_stream_id(sub.stream_id) && !sub.invite_only);
     const names = subs.map((sub) => sub.name);
     return names;
 };

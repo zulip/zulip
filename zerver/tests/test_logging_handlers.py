@@ -63,7 +63,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         """A random exception passes happily through AdminNotifyHandler"""
         handler = self.get_admin_zulip_handler()
         try:
-            raise Exception("Testing Error!")
+            raise Exception("Testing error!")
         except Exception:
             exc_info = sys.exc_info()
         record = self.logger.makeRecord('name', logging.ERROR, 'function', 16,
@@ -162,7 +162,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
         # Now simulate a DisallowedHost exception
         def get_host_error() -> None:
-            raise Exception("Get Host Failure!")
+            raise Exception("Get host failure!")
         orig_get_host = record.request.get_host
         record.request.get_host = get_host_error
         report = self.run_handler(record)

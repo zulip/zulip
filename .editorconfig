@@ -3,15 +3,15 @@ root = true
 [*]
 end_of_line = lf
 charset = utf-8
+indent_size = 4
 indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[*.{sh,py,pyi,xml,css,hbs,html}]
-indent_size = 4
+binary_next_line = true  # for shfmt
+switch_case_indent = true  # for shfmt
 
 [{*.{js,json,ts},check-openapi}]
-indent_size = 4
 max_line_length = 100
 
 [*.{py,pyi}]

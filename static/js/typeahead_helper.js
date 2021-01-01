@@ -131,7 +131,7 @@ exports.clear_rendered_stream = function (stream_id) {
 
 exports.render_stream = function (stream) {
     let desc = stream.description;
-    const short_desc = desc.substring(0, 35);
+    const short_desc = desc.slice(0, 35);
 
     if (desc !== short_desc) {
         desc = short_desc + "...";

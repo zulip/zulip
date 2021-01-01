@@ -110,15 +110,6 @@ GENERATE_STRIPE_FIXTURES = False
 # This is overridden in test_settings.py for the test suites
 BAN_CONSOLE_OUTPUT = False
 
-# Google Compute Engine has an /etc/boto.cfg that is "nicely
-# configured" to work with GCE's storage service.  However, their
-# configuration is super aggressive broken, in that it means importing
-# boto in a virtualenv that doesn't contain the GCE tools crashes.
-#
-# By using our own path for BOTO_CONFIG, we can cause boto to not
-# process /etc/boto.cfg.
-os.environ['BOTO_CONFIG'] = '/etc/zulip/boto.cfg'
-
 # These are the settings that we will check that the user has filled in for
 # production deployments before starting the app.  It consists of a series
 # of pairs of (setting name, default value that it must be changed from)
@@ -193,7 +184,7 @@ MIDDLEWARE = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     # Make sure 2FA middlewares come after authentication middleware.
-    'django_otp.middleware.OTPMiddleware',  # Required by Two Factor auth.
+    'django_otp.middleware.OTPMiddleware',  # Required by two factor auth.
     'two_factor.middleware.threadlocals.ThreadLocals',  # Required by Twilio
     # Needs to be after CommonMiddleware, which sets Content-Length
     'zerver.middleware.FinalizeOpenGraphDescription',
@@ -255,7 +246,7 @@ SILENCED_SYSTEM_CHECKS = [
 ########################################################################
 
 # Zulip's Django configuration supports 4 different ways to do
-# postgres authentication:
+# PostgreSQL authentication:
 #
 # * The development environment uses the `local_database_password`
 #   secret from `zulip-secrets.conf` to authenticate with a local
@@ -264,18 +255,18 @@ SILENCED_SYSTEM_CHECKS = [
 #
 # The remaining 3 options are for production use:
 #
-# * Using postgres' "peer" authentication to authenticate to a
+# * Using PostgreSQL's "peer" authentication to authenticate to a
 #   database on the local system using one's user ID (processes
 #   running as user `zulip` on the system are automatically
 #   authenticated as database user `zulip`).  This is the default in
 #   production.  We don't use this in the development environment,
 #   because it requires the developer's user to be called `zulip`.
 #
-# * Using password authentication with a remote postgres server using
+# * Using password authentication with a remote PostgreSQL server using
 #   the `REMOTE_POSTGRES_HOST` setting and the password from the
 #   `postgres_password` secret.
 #
-# * Using passwordless authentication with a remote postgres server
+# * Using passwordless authentication with a remote PostgreSQL server
 #   using the `REMOTE_POSTGRES_HOST` setting and a client certificate
 #   under `/home/zulip/.postgresql/`.
 #
@@ -317,7 +308,7 @@ elif REMOTE_POSTGRES_HOST != '':
     else:
         DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
 
-POSTGRES_MISSING_DICTIONARIES = bool(get_config('postgresql', 'missing_dictionaries', None))
+POSTGRESQL_MISSING_DICTIONARIES = bool(get_config('postgresql', 'missing_dictionaries', None))
 
 ########################################################################
 # RABBITMQ CONFIGURATION
@@ -411,7 +402,7 @@ if PRODUCTION:
     SESSION_COOKIE_NAME = "__Host-sessionid"
     CSRF_COOKIE_NAME = "__Host-csrftoken"
 
-# Prevent Javascript from reading the CSRF token from cookies.  Our code gets
+# Prevent JavaScript from reading the CSRF token from cookies.  Our code gets
 # the token from the DOM, which means malicious code could too.  But hiding the
 # cookie will slow down some attackers.
 CSRF_COOKIE_HTTPONLY = True
@@ -676,7 +667,7 @@ SLOW_QUERIES_LOG_PATH = zulip_path("/var/log/zulip/slow_queries.log")
 JSON_PERSISTENT_QUEUE_FILENAME_PATTERN = zulip_path("/home/zulip/tornado/event_queues%s.json")
 EMAIL_LOG_PATH = zulip_path("/var/log/zulip/send_email.log")
 EMAIL_MIRROR_LOG_PATH = zulip_path("/var/log/zulip/email_mirror.log")
-EMAIL_DELIVERER_LOG_PATH = zulip_path("/var/log/zulip/email-deliverer.log")
+EMAIL_DELIVERER_LOG_PATH = zulip_path("/var/log/zulip/email_deliverer.log")
 EMAIL_CONTENT_LOG_PATH = zulip_path("/var/log/zulip/email_content.log")
 LDAP_LOG_PATH = zulip_path("/var/log/zulip/ldap.log")
 LDAP_SYNC_LOG_PATH = zulip_path("/var/log/zulip/sync_ldap_user_data.log")
@@ -1056,7 +1047,7 @@ SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 
 SOCIAL_AUTH_GOOGLE_SECRET = get_secret('social_auth_google_secret')
 # Fallback to google-oauth settings in case social auth settings for
-# google are missing; this is for backwards-compatibility with older
+# Google are missing; this is for backwards-compatibility with older
 # Zulip versions where /etc/zulip/settings.py has not been migrated yet.
 GOOGLE_OAUTH2_CLIENT_SECRET = get_secret('google_oauth2_client_secret')
 SOCIAL_AUTH_GOOGLE_KEY = SOCIAL_AUTH_GOOGLE_KEY or GOOGLE_OAUTH2_CLIENT_ID
@@ -1116,6 +1107,11 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_TIMEOUT = 15
+
+if DEVELOPMENT:
+    EMAIL_HOST = get_secret('email_host', '')
+    EMAIL_PORT = int(get_secret('email_port', '25'))
+    EMAIL_HOST_USER = get_secret('email_host_user', '')
 
 EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')

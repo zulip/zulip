@@ -406,11 +406,13 @@ ENABLE_FILE_LINKS = False
 LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 #S3_AUTH_UPLOADS_BUCKET = ""
 #S3_AVATAR_BUCKET = ""
-#S3_REGION = ""
+#S3_REGION = None
+#S3_ENDPOINT_URL = None
 
-# Maximum allowed size of uploaded files, in megabytes.  DO NOT SET
-# ABOVE 80MB.  The file upload implementation doesn't support chunked
-# uploads, so browsers will crash if you try uploading larger files.
+# Maximum allowed size of uploaded files, in megabytes.  This value is
+# capped at 80MB in the nginx configuration, because the file upload
+# implementation doesn't use chunked uploads, and browsers may crash
+# with larger uploads.
 # Set MAX_FILE_UPLOAD_SIZE to 0 to disable file uploads completely
 # (including hiding upload-related options from UI).
 MAX_FILE_UPLOAD_SIZE = 25
@@ -434,7 +436,7 @@ ENABLE_GRAVATAR = True
 # and uncomment the following line.
 #DEFAULT_AVATAR_URI = '/local-static/default-avatar.png'
 
-# To access an external postgres database you should define the host name in
+# To access an external PostgreSQL database you should define the host name in
 # REMOTE_POSTGRES_HOST, port in REMOTE_POSTGRES_PORT, password in the secrets file in the
 # property postgres_password, and the SSL connection mode in REMOTE_POSTGRES_SSLMODE
 # Valid values for REMOTE_POSTGRES_SSLMODE are documented in the
@@ -471,10 +473,10 @@ ENABLE_GRAVATAR = True
 ################
 # Email gateway integration.
 #
-# The Email gateway integration supports sending messages into Zulip
+# The email gateway integration supports sending messages into Zulip
 # by sending an email.
 # For details, see the documentation:
-#   https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
+#   https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 EMAIL_GATEWAY_PATTERN = ""
 
 # If you are using polling, edit the IMAP settings below:
@@ -488,16 +490,6 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 # The IMAP folder name to check for emails. All emails sent to EMAIL_GATEWAY_PATTERN above
 # must be delivered to this folder
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
-
-
-########
-# Zoom integration.
-#
-# Zulip supports using Zoom as a video calling provider. To learn more about
-# configuring Zoom, see:
-# https://zulip.readthedocs.io/en/latest/production/zoom-configuration.html
-#
-#VIDEO_ZOOM_CLIENT_ID = <your Zoom Client ID>
 
 
 ################
@@ -609,11 +601,11 @@ CAMO_URI = '/external_content/'
 
 # RabbitMQ configuration
 #
-# By default, Zulip connects to rabbitmq running locally on the machine,
+# By default, Zulip connects to RabbitMQ running locally on the machine,
 # but Zulip also supports connecting to RabbitMQ over the network;
 # to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
 # RABBITMQ_HOST = "127.0.0.1"
-# To use another rabbitmq user than the default 'zulip', set RABBITMQ_USERNAME here.
+# To use another RabbitMQ user than the default 'zulip', set RABBITMQ_USERNAME here.
 # RABBITMQ_USERNAME = 'zulip'
 
 # Memcached configuration
@@ -629,14 +621,14 @@ CAMO_URI = '/external_content/'
 
 # Redis configuration
 #
-# By default, Zulip connects to redis running locally on the machine,
-# but Zulip also supports connecting to redis over the network;
+# By default, Zulip connects to Redis running locally on the machine,
+# but Zulip also supports connecting to Redis over the network;
 # to use a remote Redis instance, set REDIS_HOST here.
 # REDIS_HOST = '127.0.0.1'
-# For a different redis port set the REDIS_PORT here.
+# For a different Redis port set the REDIS_PORT here.
 # REDIS_PORT = 6379
 # If you set redis_password in zulip-secrets.conf, Zulip will use that password
-# to connect to the redis server.
+# to connect to the Redis server.
 
 # Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
@@ -652,6 +644,14 @@ CAMO_URI = '/external_content/'
 # previews should be thumbnailed by thumbor, which saves bandwidth but
 # can modify the image's appearance.
 #THUMBNAIL_IMAGES = True
+
+################
+# Video call integrations.
+#
+# Controls the Zoom video call integration.  See:
+# https://zulip.readthedocs.io/en/latest/production/video-calls.html
+#
+#VIDEO_ZOOM_CLIENT_ID = <your Zoom Client ID>
 
 # Controls the Jitsi Meet video call integration.  By default, the
 # integration uses the SaaS https://meet.jit.si server.  You can specify

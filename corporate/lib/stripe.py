@@ -15,6 +15,7 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy
 
 from corporate.models import (
     Customer,
@@ -143,14 +144,14 @@ def get_idempotency_key(ledger_entry: LicenseLedger) -> Optional[str]:
 
 class BillingError(Exception):
     # error messages
-    CONTACT_SUPPORT = _("Something went wrong. Please contact {email}.").format(
-        email=settings.ZULIP_ADMINISTRATOR,
-    )
-    TRY_RELOADING = _("Something went wrong. Please reload the page.")
+    CONTACT_SUPPORT = ugettext_lazy("Something went wrong. Please contact {email}.")
+    TRY_RELOADING = ugettext_lazy("Something went wrong. Please reload the page.")
 
     # description is used only for tests
-    def __init__(self, description: str, message: str=CONTACT_SUPPORT) -> None:
+    def __init__(self, description: str, message: Optional[str] = None) -> None:
         self.description = description
+        if message is None:
+            message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
         self.message = message
 
 class StripeCardError(BillingError):
@@ -158,6 +159,11 @@ class StripeCardError(BillingError):
 
 class StripeConnectionError(BillingError):
     pass
+
+class InvalidBillingSchedule(Exception):
+    def __init__(self, billing_schedule: int) -> None:
+        self.message = f"Unknown billing_schedule: {billing_schedule}"
+        super().__init__(self.message)
 
 def catch_stripe_errors(func: CallableT) -> CallableT:
     @wraps(func)
@@ -188,7 +194,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
                 raise StripeConnectionError(
                     'stripe connection error',
                     _("Something went wrong. Please wait a few seconds and try again."))
-            raise BillingError('other stripe error', BillingError.CONTACT_SUPPORT)
+            raise BillingError('other stripe error')
     return cast(CallableT, wrapped)
 
 @catch_stripe_errors
@@ -324,6 +330,25 @@ def update_or_create_stripe_customer(user: UserProfile, stripe_token: Optional[s
         do_replace_payment_source(user, stripe_token)
     return customer
 
+def calculate_discounted_price_per_license(original_price_per_license: int, discount: Decimal) -> int:
+    # There are no fractional cents in Stripe, so round down to nearest integer.
+    return int(float(original_price_per_license * (1 - discount / 100)) + .00001)
+
+def get_price_per_license(tier: int, billing_schedule: int, discount: Optional[Decimal]=None) -> int:
+    # TODO use variables to account for Zulip Plus
+    assert(tier == CustomerPlan.STANDARD)
+
+    price_per_license: Optional[int] = None
+    if billing_schedule == CustomerPlan.ANNUAL:
+        price_per_license = 8000
+    elif billing_schedule == CustomerPlan.MONTHLY:
+        price_per_license = 800
+    else:  # nocoverage
+        raise InvalidBillingSchedule(billing_schedule)
+    if discount is not None:
+        price_per_license = calculate_discounted_price_per_license(price_per_license, discount)
+    return price_per_license
+
 def compute_plan_parameters(
         automanage_licenses: bool, billing_schedule: int,
         discount: Optional[Decimal],
@@ -333,17 +358,14 @@ def compute_plan_parameters(
     # TODO talk about leapseconds?
     billing_cycle_anchor = timezone_now().replace(microsecond=0)
     if billing_schedule == CustomerPlan.ANNUAL:
-        # TODO use variables to account for Zulip Plus
-        price_per_license = 8000
         period_end = add_months(billing_cycle_anchor, 12)
     elif billing_schedule == CustomerPlan.MONTHLY:
-        price_per_license = 800
         period_end = add_months(billing_cycle_anchor, 1)
-    else:
-        raise AssertionError(f'Unknown billing_schedule: {billing_schedule}')
-    if discount is not None:
-        # There are no fractional cents in Stripe, so round down to nearest integer.
-        price_per_license = int(float(price_per_license * (1 - discount / 100)) + .00001)
+    else:  # nocoverage
+        raise InvalidBillingSchedule(billing_schedule)
+
+    price_per_license = get_price_per_license(CustomerPlan.STANDARD, billing_schedule, discount)
+
     next_invoice_date = period_end
     if automanage_licenses:
         next_invoice_date = add_months(billing_cycle_anchor, 1)
@@ -373,7 +395,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
         billing_logger.warning(
             "Customer %s trying to upgrade, but has an active subscription", customer,
         )
-        raise BillingError('subscribing with existing subscription', BillingError.TRY_RELOADING)
+        raise BillingError('subscribing with existing subscription', str(BillingError.TRY_RELOADING))
 
     billing_cycle_anchor, next_invoice_date, period_end, price_per_license = compute_plan_parameters(
         automanage_licenses, billing_schedule, customer.default_discount, free_trial)
@@ -567,6 +589,11 @@ def invoice_plans_as_needed(event_time: datetime=timezone_now()) -> None:
 
 def attach_discount_to_realm(realm: Realm, discount: Decimal) -> None:
     Customer.objects.update_or_create(realm=realm, defaults={'default_discount': discount})
+    plan = get_current_plan_by_realm(realm)
+    if plan is not None:
+        plan.price_per_license = get_price_per_license(plan.tier, plan.billing_schedule, discount)
+        plan.discount = discount
+        plan.save(update_fields=["price_per_license", "discount"])
 
 def update_sponsorship_status(realm: Realm, sponsorship_pending: bool) -> None:
     customer, _ = Customer.objects.get_or_create(realm=realm)

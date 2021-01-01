@@ -1,18 +1,19 @@
 "use strict";
 
-const noop = () => {};
+const {strict: assert} = require("assert");
 const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+const noop = () => {};
 const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
-let jquery_init;
-global.$ = (f) => {
-    jquery_init = f;
-};
 set_global("helpers", {
     set_tab: noop,
 });
@@ -20,8 +21,7 @@ set_global("StripeCheckout", {
     configure: noop,
 });
 
-zrequire("billing", "js/billing/billing");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("initialize", () => {
     let token_func;
@@ -70,7 +70,7 @@ run_test("initialize", () => {
     $("#payment-method").data = (key) =>
         document.querySelector("#payment-method").getAttribute("data-" + key);
 
-    jquery_init();
+    zrequire("billing", "js/billing/billing");
 
     assert(set_tab_called);
     assert(stripe_checkout_configure_called);

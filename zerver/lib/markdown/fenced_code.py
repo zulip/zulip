@@ -76,12 +76,14 @@ Dependencies:
 
 """
 import re
-from typing import Any, Dict, Iterable, List, Mapping, MutableSequence, Optional
+from typing import Any, Iterable, List, Mapping, MutableSequence, Optional, Sequence
 
-import markdown
+import lxml.html
 from django.utils.html import escape
-from lxml import etree
+from markdown import Markdown
+from markdown.extensions import Extension
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+from markdown.preprocessors import Preprocessor
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 
@@ -137,7 +139,7 @@ CODE_VALIDATORS = {
     'curl': validate_curl_content,
 }
 
-class FencedCodeExtension(markdown.Extension):
+class FencedCodeExtension(Extension):
     def __init__(self, config: Mapping[str, Any] = {}) -> None:
         self.config = {
             'run_content_validators': [
@@ -149,7 +151,7 @@ class FencedCodeExtension(markdown.Extension):
         for key, value in config.items():
             self.setConfig(key, value)
 
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
+    def extendMarkdown(self, md: Markdown) -> None:
         """ Add FencedBlockPreprocessor to the Markdown instance. """
         md.registerExtension(self)
         processor = FencedBlockPreprocessor(
@@ -321,13 +323,13 @@ class TexHandler(BaseHandler):
         self.processor.pop()
 
 
-class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
-    def __init__(self, md: markdown.Markdown, run_content_validators: bool=False) -> None:
-        markdown.preprocessors.Preprocessor.__init__(self, md)
+class FencedBlockPreprocessor(Preprocessor):
+    def __init__(self, md: Markdown, run_content_validators: bool=False) -> None:
+        super().__init__(md)
 
         self.checked_for_codehilite = False
         self.run_content_validators = run_content_validators
-        self.codehilite_conf: Dict[str, List[Any]] = {}
+        self.codehilite_conf: Mapping[str, Sequence[Any]] = {}
 
     def push(self, handler: BaseHandler) -> None:
         self.handlers.append(handler)
@@ -391,7 +393,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                                    lang=(lang or None),
                                    noclasses=self.codehilite_conf['noclasses'][0])
 
-            code = highliter.hilite()
+            code = highliter.hilite().rstrip('\n')
         else:
             code = CODE_WRAP.format(langclass, self._escape(text))
 
@@ -402,8 +404,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         # Unfortunately, the pygments API doesn't offer a way to add
         # this, so we need to do it in a post-processing step.
         if lang:
-            parsed_code = etree.HTML(code)
-            div_tag = parsed_code[0][0]
+            div_tag = lxml.html.fromstring(code)
 
             # For the value of our data element, we get the lexer
             # subclass name instead of directly using the language,
@@ -416,26 +417,19 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 # still tag it with the user's data-code-language
                 # value, since this allows hooking up a "playground"
                 # for custom "languages" that aren't known to Pygments.
-                #
-                # The escaping isn't strictly necessary, in that the
-                # characters allowed for language values should all be
-                # safe, but doing escaping here makes it easy to
-                # reason about.
-                code_language = self._escape(lang)
+                code_language = lang
 
             div_tag.attrib['data-code-language'] = code_language
-            # lxml implicitly converts tags like <span></span> into <span/>.
-            # Specifying method="c14n" when converting to string prevents that.
-            code = etree.tostring(div_tag, method="c14n").decode()
+            code = lxml.html.tostring(div_tag, encoding="unicode")
         return code
 
     def format_quote(self, text: str) -> str:
-        paragraphs = text.split("\n\n")
+        paragraphs = text.split("\n")
         quoted_paragraphs = []
         for paragraph in paragraphs:
             lines = paragraph.split("\n")
-            quoted_paragraphs.append("\n".join("> " + line for line in lines if line != ''))
-        return "\n\n".join(quoted_paragraphs)
+            quoted_paragraphs.append("\n".join("> " + line for line in lines))
+        return "\n".join(quoted_paragraphs)
 
     def format_spoiler(self, header: str, text: str) -> str:
         output = []

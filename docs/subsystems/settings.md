@@ -53,7 +53,7 @@ In a production environment, we have:
   `zproject/prod_settings_template.py`) is the main system
   administrator-facing settings file for Zulip.  It contains all the
   server-specific settings, such as how to send outgoing email, the
-  hostname of the Postgres database, etc., but does not contain any
+  hostname of the PostgreSQL database, etc., but does not contain any
   secrets (e.g. passwords, secret API keys, cryptographic keys, etc.).
   The way we generally do settings that can be controlled with shell
   access to a Zulip server is to put a default in

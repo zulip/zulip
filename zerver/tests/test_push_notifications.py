@@ -869,6 +869,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         # Now, delete the message the normal way
         do_delete_messages(user_profile.realm, [message])
 
+        # This mock.patch() should be assertNoLogs once that feature
+        # is added to Python.
         with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
                 mock.patch('logging.error') as mock_logging_error, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
@@ -1092,7 +1094,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         with self.assertLogs(logger_string, level='INFO') as info_logs:
             do_soft_deactivate_users([self.user_profile])
         self.assertEqual(info_logs.output, [
-            f"INFO:{logger_string}:Soft Deactivated user {self.user_profile.id}",
+            f"INFO:{logger_string}:Soft deactivated user {self.user_profile.id}",
             f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process"
         ])
         sender = self.example_user('iago')
@@ -1648,11 +1650,11 @@ class Result:
 
 class TestSendToPushBouncer(ZulipTestCase):
     @mock.patch('requests.request', return_value=Result(status=500))
-    @mock.patch('logging.warning')
-    def test_500_error(self, mock_request: mock.MagicMock, mock_warning: mock.MagicMock) -> None:
-        with self.assertRaises(PushNotificationBouncerRetryLaterError):
-            result, failed = send_to_push_bouncer('register', 'register', {'data': 'true'})
-        mock_warning.assert_called_once()
+    def test_500_error(self, mock_request: mock.MagicMock) -> None:
+        with self.assertLogs(level="WARNING") as m:
+            with self.assertRaises(PushNotificationBouncerRetryLaterError):
+                send_to_push_bouncer('register', 'register', {'data': 'true'})
+            self.assertEqual(m.output, ["WARNING:root:Received 500 from push notification bouncer"])
 
     @mock.patch('requests.request', return_value=Result(status=400))
     def test_400_error(self, mock_request: mock.MagicMock) -> None:
@@ -1998,7 +2000,7 @@ class TestClearOnRead(ZulipTestCase):
                 UserMessage.flags.active_mobile_push_notification))
 
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as mock_publish:
-            do_mark_stream_messages_as_read(hamlet, self.client, stream)
+            do_mark_stream_messages_as_read(hamlet, stream.recipient_id)
             queue_items = [c[0][1] for c in mock_publish.call_args_list]
             groups = [item['message_ids'] for item in queue_items]
 

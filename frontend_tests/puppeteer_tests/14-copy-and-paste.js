@@ -24,7 +24,7 @@ async function copy_messages(page, start_message, end_message) {
             $("#copytempdiv").remove();
 
             // emulate copy event
-            $("body").trigger($.Event("keydown", {which: 67, ctrlKey: true}));
+            $("body").trigger(new $.Event("keydown", {which: 67, ctrlKey: true}));
 
             // find temp div with copied text
             const temp_div = $("#copytempdiv");

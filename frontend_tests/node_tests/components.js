@@ -1,6 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 zrequire("keydown_util");
 zrequire("components");
@@ -106,7 +111,7 @@ run_test("basics", () => {
                 case ".ind-tab":
                     return ind_tab;
                 default:
-                    throw Error("unknown selector: " + sel);
+                    throw new Error("unknown selector: " + sel);
             }
         };
 
@@ -131,7 +136,7 @@ run_test("basics", () => {
             case "<div class='ind-tab' data-tab-key='search-operators' data-tab-id='2' tabindex='0'>translated: Search operators</div>":
                 return make_tab(2);
             default:
-                throw Error("unknown selector: " + sel);
+                throw new Error("unknown selector: " + sel);
         }
     });
 

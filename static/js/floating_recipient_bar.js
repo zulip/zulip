@@ -20,7 +20,7 @@ exports.first_visible_message = function (bar) {
     const frb_top = frb_bottom - 25;
     let result;
 
-    for (let i = 0; i < messages.length; i += 1) {
+    for (const message_element of messages) {
         // The details of this comparison function are sensitive, since we're
         // balancing between three possible bugs:
         //
@@ -47,7 +47,7 @@ exports.first_visible_message = function (bar) {
         // message_viewport.scrollTop() to set precise scrolling
         // positions determines the value for date_bar_height_offset.
 
-        let message = $(messages[i]);
+        let message = $(message_element);
         const message_bottom = top_offset(message) + message.safeOuterHeight();
         const date_bar_height_offset = 10;
 
@@ -58,15 +58,17 @@ exports.first_visible_message = function (bar) {
         // Important: This will break if we ever have things that are
         // not message rows inside a recipient_row block.
         message = message.next(".message_row");
-        if (message.length > 0 && result) {
+        if (
+            message.length > 0 &&
+            result &&
             // Before returning a result, we check whether the next
             // message's top is actually below the bottom of the
             // floating recipient bar; this is different from the
             // bottom of our current message because there may be a
             // between-messages date separator row in between.
-            if (top_offset(message) < frb_bottom - date_bar_height_offset) {
-                result = message;
-            }
+            top_offset(message) < frb_bottom - date_bar_height_offset
+        ) {
+            result = message;
         }
         if (result) {
             return result;

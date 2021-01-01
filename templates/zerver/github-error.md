@@ -1,7 +1,7 @@
-You are using the **GitHub auth backend**, but it is not properly
-configured. Please check the following:
+You are attempting to use the **GitHub auth backend**, but it is not
+properly configured. To configure, please check the following:
 
-You have added `{{ root_domain_uri }}/complete/github/` as the callback URL
+* You have added `{{ root_domain_uri }}/complete/github/` as the callback URL
 in the OAuth application in GitHub. You can create OAuth apps from
 [GitHub's developer site](https://github.com/settings/developers).
 

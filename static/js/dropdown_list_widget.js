@@ -5,14 +5,12 @@ const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
 const DropdownListWidget = function (opts) {
     const init = () => {
         // Run basic sanity checks on opts, and set up sane defaults.
-        opts = Object.assign(
-            {
-                null_value: null,
-                render_text: (item_name) => item_name,
-                on_update: () => {},
-            },
-            opts,
-        );
+        opts = {
+            null_value: null,
+            render_text: (item_name) => item_name,
+            on_update: () => {},
+            ...opts,
+        };
         opts.container_id = `${opts.widget_name}_widget`;
         opts.value_id = `id_${opts.widget_name}`;
         if (opts.value === undefined) {
@@ -30,7 +28,7 @@ const DropdownListWidget = function (opts) {
         if (!value || value === opts.null_value) {
             elem.text(opts.default_text);
             elem.addClass("text-warning");
-            elem.closest(".input-group").find(".dropdown_list_reset_button:not([disabled])").hide();
+            elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").hide();
             return;
         }
 
@@ -39,7 +37,7 @@ const DropdownListWidget = function (opts) {
         const text = opts.render_text(item.name);
         elem.text(text);
         elem.removeClass("text-warning");
-        elem.closest(".input-group").find(".dropdown_list_reset_button:not([disabled])").show();
+        elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").show();
     };
 
     const update = (value) => {
@@ -48,20 +46,22 @@ const DropdownListWidget = function (opts) {
     };
 
     const register_event_handlers = () => {
-        $(`#${opts.container_id} .dropdown-list-body`).on("click keypress", ".list_item", function (
-            e,
-        ) {
-            const setting_elem = $(this).closest(`.${opts.widget_name}_setting`);
-            if (e.type === "keypress") {
-                if (e.which === 13) {
-                    setting_elem.find(".dropdown-menu").dropdown("toggle");
-                } else {
-                    return;
+        $(`#${opts.container_id} .dropdown-list-body`).on(
+            "click keypress",
+            ".list_item",
+            function (e) {
+                const setting_elem = $(this).closest(`.${opts.widget_name}_setting`);
+                if (e.type === "keypress") {
+                    if (e.which === 13) {
+                        setting_elem.find(".dropdown-menu").dropdown("toggle");
+                    } else {
+                        return;
+                    }
                 }
-            }
-            const value = $(this).attr("data-value");
-            update(value);
-        });
+                const value = $(this).attr("data-value");
+                update(value);
+            },
+        );
         $(`#${opts.container_id} .dropdown_list_reset_button`).on("click", (e) => {
             update(opts.null_value);
             e.preventDefault();
@@ -107,7 +107,7 @@ const DropdownListWidget = function (opts) {
                 return;
             }
             e.preventDefault();
-            const custom_event = jQuery.Event("keydown.dropdown.data-api", {
+            const custom_event = new jQuery.Event("keydown.dropdown.data-api", {
                 keyCode: e.keyCode,
                 which: e.keyCode,
             });

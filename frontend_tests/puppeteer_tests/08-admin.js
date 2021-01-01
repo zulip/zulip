@@ -239,7 +239,7 @@ async function get_suggestions(page, str) {
         $(".create_default_stream")
             .trigger("focus")
             .val(str)
-            .trigger($.Event("keyup", {which: 0}));
+            .trigger(new $.Event("keyup", {which: 0}));
     }, str);
 }
 

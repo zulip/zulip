@@ -1,7 +1,14 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const {JSDOM} = require("jsdom");
 const rewiremock = require("rewiremock/node");
+
+const {stub_templates} = require("../zjsunit/handlebars");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
 
 const events = require("./lib/events");
 
@@ -9,7 +16,7 @@ set_global("bridge", false);
 
 const noop = function () {};
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("DOMParser", new JSDOM().window.DOMParser);
 set_global("compose_actions", {
     update_placeholder_text: noop,
@@ -22,9 +29,6 @@ const _navigator = {
 };
 
 const _document = {
-    getElementById() {
-        return $("#compose-textarea");
-    },
     execCommand() {
         return false;
     },
@@ -66,8 +70,8 @@ set_global("ui_util", {});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
-global.document.location.protocol = "https:";
-global.document.location.host = "foo.com";
+document.location.protocol = "https:";
+document.location.host = "foo.com";
 
 zrequire("zcommand");
 zrequire("compose_ui");
@@ -88,6 +92,7 @@ rewiremock.proxy(() => zrequire("compose"), {
 });
 zrequire("upload");
 zrequire("server_events_dispatch");
+const settings_config = zrequire("settings_config");
 
 people.small_avatar_url_for_person = function () {
     return "http://example.com/example.png";
@@ -106,7 +111,7 @@ function stub_out_video_calls() {
 
 function reset_jquery() {
     // Avoid leaks.
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 }
 
 const new_user = {
@@ -153,7 +158,7 @@ run_test("validate_stream_message_address_info", () => {
 
     sub.subscribed = false;
     stream_data.add_sub(sub);
-    global.stub_templates((template_name) => {
+    stub_templates((template_name) => {
         assert.equal(template_name, "compose_not_subscribed");
         return "compose_not_subscribed_stub";
     });
@@ -199,7 +204,7 @@ run_test("validate_stream_message_address_info", () => {
 
 run_test("validate", () => {
     function initialize_pm_pill() {
-        set_global("$", global.make_zjquery());
+        set_global("$", make_zjquery());
 
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
@@ -217,7 +222,7 @@ run_test("validate", () => {
 
         $("#zephyr-mirror-error").is = noop;
 
-        global.stub_templates((fn) => {
+        stub_templates((fn) => {
             assert.equal(fn, "input_pill");
             return "<div>pill-html</div>";
         });
@@ -327,6 +332,48 @@ run_test("get_invalid_recipient_emails", () => {
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
 
+run_test("test_wildcard_mention_allowed", () => {
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_everyone.code;
+    page_params.is_guest = true;
+    page_params.is_admin = false;
+    assert(compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.nobody.code;
+    page_params.is_admin = true;
+    assert(!compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_members.code;
+    page_params.is_guest = true;
+    page_params.is_admin = false;
+    assert(!compose.wildcard_mention_allowed());
+
+    page_params.is_guest = false;
+    assert(compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_stream_admins_only.code;
+    page_params.is_admin = false;
+    assert(!compose.wildcard_mention_allowed());
+
+    // TODO: Add a by_admins_only case when we implement stream-level administrators.
+
+    page_params.is_admin = true;
+    assert(compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_full_members.code;
+    const person = people.get_by_user_id(page_params.user_id);
+    person.date_joined = new Date(Date.now());
+    page_params.realm_waiting_period_threshold = 10;
+
+    assert(compose.wildcard_mention_allowed());
+    page_params.is_admin = false;
+    assert(!compose.wildcard_mention_allowed());
+});
+
 run_test("validate_stream_message", () => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
@@ -348,7 +395,7 @@ run_test("validate_stream_message", () => {
         assert.equal(stream_id, 101);
         return 16;
     };
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "compose_all_everyone");
         assert.equal(data.count, 16);
         return "compose_all_everyone_stub";
@@ -357,15 +404,28 @@ run_test("validate_stream_message", () => {
     $("#compose-all-everyone").append = function (data) {
         compose_content = data;
     };
+
+    compose.wildcard_mention_allowed = function () {
+        return true;
+    };
     compose_state.message_content("Hey @**all**");
     assert(!compose.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert(!$("#compose-send-status").visible());
     assert.equal(compose_content, "compose_all_everyone_stub");
     assert($("#compose-all-everyone").visible());
+
+    compose.wildcard_mention_allowed = function () {
+        return false;
+    };
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("You do not have permission to use wildcard mentions in this stream."),
+    );
 });
 
-run_test("test_validate_stream_message_post_policy", () => {
+run_test("test_validate_stream_message_post_policy_admin_only", () => {
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
@@ -387,9 +447,45 @@ run_test("test_validate_stream_message_post_policy", () => {
         i18n.t("Only organization admins are allowed to post to this stream."),
     );
 
-    // reset compose_state.stream_name to 'social' again so that any tests occurung after this
+    // Reset error message.
+    compose_state.stream_name("social");
+
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+
+    compose_state.topic("subject102");
+    compose_state.stream_name("stream102");
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("Only organization admins are allowed to post to this stream."),
+    );
+});
+
+run_test("test_validate_stream_message_post_policy_full_members_only", () => {
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+    const sub = {
+        stream_id: 103,
+        name: "stream103",
+        subscribed: true,
+        stream_post_policy: stream_data.stream_post_policy_values.non_new_members.code,
+    };
+
+    compose_state.topic("subject103");
+    compose_state.stream_name("stream103");
+    stream_data.add_sub(sub);
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("Guests are not allowed to post to this stream."),
+    );
+
+    // reset compose_state.stream_name to 'social' again so that any tests occurring after this
     // do not reproduce this error.
     compose_state.stream_name("social");
+    // Reset page_params
+    page_params.is_guest = false;
 });
 
 run_test("markdown_rtl", () => {
@@ -446,19 +542,20 @@ run_test("markdown_shortcuts", () => {
     let compose_value = $("#compose_textarea").val();
     let selected_word = "";
 
-    global.document.queryCommandEnabled = function () {
+    document.queryCommandEnabled = function () {
         return queryCommandEnabled;
     };
-    global.document.execCommand = function (cmd, bool, markdown) {
+    document.execCommand = function (cmd, bool, markdown) {
         const compose_textarea = $("#compose-textarea");
         const value = compose_textarea.val();
         $("#compose-textarea").val(
-            value.substring(0, compose_textarea.range().start) +
+            value.slice(0, compose_textarea.range().start) +
                 markdown +
-                value.substring(compose_textarea.range().end, value.length),
+                value.slice(compose_textarea.range().end),
         );
     };
 
+    $("#compose-textarea")[0] = {};
     $("#compose-textarea").range = function () {
         return {
             start: range_start,
@@ -467,7 +564,7 @@ run_test("markdown_shortcuts", () => {
             range: noop,
             text: $("#compose-textarea")
                 .val()
-                .substring(range_start, range_length + range_start),
+                .slice(range_start, range_length + range_start),
         };
     };
     $("#compose-textarea").caret = noop;
@@ -629,14 +726,14 @@ run_test("send_message", () => {
         return stub_state;
     }
 
-    global.patch_builtin("setTimeout", (func) => {
+    set_global("setTimeout", (func) => {
         func();
     });
-    global.server_events = {
+    set_global("server_events", {
         assert_get_events_running() {
             stub_state.get_events_running_called += 1;
         },
-    };
+    });
 
     // Tests start here.
     (function test_message_send_success_codepath() {
@@ -692,7 +789,7 @@ run_test("send_message", () => {
 
         // Setting message content with a host server link and we will assert
         // later that this has been converted to a relative link.
-        $("#compose-textarea").val("[foobar]" + "(https://foo.com/user_uploads/123456)");
+        $("#compose-textarea").val("[foobar](https://foo.com/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
         $("#compose-send-button").prop("disabled", true);
@@ -893,7 +990,7 @@ run_test("warn_if_private_stream_is_linked", () => {
     const checks = [
         (function () {
             let called;
-            global.stub_templates((template_name, context) => {
+            stub_templates((template_name, context) => {
                 called = true;
                 assert.equal(template_name, "compose_private_stream_alert");
                 assert.equal(context.stream_name, "Denmark");
@@ -948,8 +1045,8 @@ run_test("initialize", () => {
     });
     $("#compose #attach_files").addClass("notdisplayed");
 
-    global.document = "document-stub";
-    global.csrf_token = "fake-csrf-token";
+    set_global("document", "document-stub");
+    set_global("csrf_token", "fake-csrf-token");
 
     page_params.max_file_upload_size_mib = 512;
 
@@ -1000,13 +1097,13 @@ run_test("initialize", () => {
     function set_up_compose_start_mock(expected_opts) {
         compose_actions_start_checked = false;
 
-        global.compose_actions = {
+        set_global("compose_actions", {
             start(msg_type, opts) {
                 assert.equal(msg_type, "stream");
                 assert.deepEqual(opts, expected_opts);
                 compose_actions_start_checked = true;
             },
-        };
+        });
     }
 
     (function test_page_params_narrow_path() {
@@ -1055,7 +1152,7 @@ run_test("update_fade", () => {
     let set_focused_recipient_checked = false;
     let update_all_called = false;
 
-    global.compose_fade = {
+    set_global("compose_fade", {
         set_focused_recipient(msg_type) {
             assert.equal(msg_type, "private");
             set_focused_recipient_checked = true;
@@ -1063,7 +1160,7 @@ run_test("update_fade", () => {
         update_all() {
             update_all_called = true;
         },
-    };
+    });
 
     compose_state.set_message_type(false);
     keyup_handler_func();
@@ -1188,7 +1285,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
 
         (function () {
             let called;
-            global.stub_templates((template_name, context) => {
+            stub_templates((template_name, context) => {
                 called = true;
                 assert.equal(template_name, "compose_invite_users");
                 assert.equal(context.user_id, 34);
@@ -1249,7 +1346,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
 
     // Now try to mention the same person again. The template should
     // not render.
-    global.stub_templates(noop);
+    stub_templates(noop);
     compose.warn_if_mentioning_unsubscribed_user(mentioned);
     assert.equal($("#compose_invite_users").visible(), true);
     assert(looked_for_existing);
@@ -1458,13 +1555,34 @@ run_test("on_events", () => {
         assert(compose_file_input_clicked);
     })();
 
-    (function test_video_link_compose_clicked() {
-        page_params.jitsi_server_url = "https://meet.jit.si";
-
-        let syntax_to_insert;
+    (function test_no_provider_video_link_compose_clicked() {
         let called = false;
 
         const textarea = $.create("target-stub");
+
+        const ev = {
+            preventDefault: noop,
+            target: {
+                to_$: () => textarea,
+            },
+        };
+
+        compose_ui.insert_syntax_and_focus = function () {
+            called = true;
+        };
+
+        const handler = $("body").get_on_handler("click", ".video_link");
+        $("#compose-textarea").val("");
+
+        handler(ev);
+        assert(!called);
+    })();
+
+    (function test_jitsi_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const textarea = $.create("jitsi-target-stub");
 
         const ev = {
             preventDefault: noop,
@@ -1481,24 +1599,45 @@ run_test("on_events", () => {
         const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
 
-        handler(ev);
-        assert(!called);
-
         page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.jitsi_meet.id;
-        handler(ev);
-
-        // video link ids consist of 15 random digits
-        let video_link_regex = /\[translated: Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
-        assert.match(syntax_to_insert, video_link_regex);
 
         page_params.jitsi_server_url = null;
-        called = false;
         handler(ev);
         assert(!called);
+
+        page_params.jitsi_server_url = "https://meet.jit.si";
+        handler(ev);
+        // video link ids consist of 15 random digits
+        const video_link_regex = /\[translated: Click to join video call]\(https:\/\/meet.jit.si\/\d{15}\)/;
+        assert(called);
+        assert.match(syntax_to_insert, video_link_regex);
+    })();
+
+    (function test_zoom_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const textarea = $.create("zoom-target-stub");
+
+        const ev = {
+            preventDefault: noop,
+            target: {
+                to_$: () => textarea,
+            },
+        };
+
+        compose_ui.insert_syntax_and_focus = function (syntax) {
+            syntax_to_insert = syntax;
+            called = true;
+        };
+
+        const handler = $("body").get_on_handler("click", ".video_link");
+        $("#compose-textarea").val("");
 
         page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.zoom.id;
+        page_params.has_zoom_token = false;
 
         window.open = function (url) {
             assert(url.endsWith("/calls/zoom/register"));
@@ -1511,11 +1650,35 @@ run_test("on_events", () => {
         channel.post = function (payload) {
             assert.equal(payload.url, "/json/calls/zoom/create");
             payload.success({url: "example.zoom.com"});
+            return {abort: () => {}};
         };
 
         handler(ev);
-        video_link_regex = /\[translated: Click to join video call\]\(example\.zoom\.com\)/;
+        const video_link_regex = /\[translated: Click to join video call]\(example\.zoom\.com\)/;
+        assert(called);
         assert.match(syntax_to_insert, video_link_regex);
+    })();
+
+    (function test_bbb_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const textarea = $.create("bbb-target-stub");
+
+        const ev = {
+            preventDefault: noop,
+            target: {
+                to_$: () => textarea,
+            },
+        };
+
+        compose_ui.insert_syntax_and_focus = function (syntax) {
+            syntax_to_insert = syntax;
+            called = true;
+        };
+
+        const handler = $("body").get_on_handler("click", ".video_link");
+        $("#compose-textarea").val("");
 
         page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.big_blue_button.id;
@@ -1529,7 +1692,8 @@ run_test("on_events", () => {
         };
 
         handler(ev);
-        video_link_regex = /\[translated: Click to join video call\]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
+        const video_link_regex = /\[translated: Click to join video call]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
+        assert(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
 
@@ -1686,15 +1850,13 @@ run_test("create_message_object", () => {
         "#compose-textarea": "burrito",
     };
 
-    global.$ = function (selector) {
-        return {
-            val() {
-                return page[selector];
-            },
-        };
-    };
+    set_global("$", (selector) => ({
+        val() {
+            return page[selector];
+        },
+    }));
 
-    global.compose_state.get_message_type = function () {
+    compose_state.get_message_type = function () {
         return "stream";
     };
 
@@ -1711,7 +1873,7 @@ run_test("create_message_object", () => {
     assert.equal(message.topic, "lunch");
     assert.equal(message.content, "burrito");
 
-    global.compose_state.get_message_type = function () {
+    compose_state.get_message_type = function () {
         return "private";
     };
     compose_state.private_message_recipient = function () {
@@ -1731,7 +1893,7 @@ run_test("create_message_object", () => {
 });
 
 run_test("nonexistent_stream_reply_error", () => {
-    set_global("$", global.make_zjquery());
+    set_global("$", make_zjquery());
 
     const actions = [];
     $("#nonexistent_stream_reply_error").show = () => {
@@ -1771,11 +1933,14 @@ run_test("test_video_chat_button_toggle", () => {
     stub_out_video_calls();
     page_params.realm_video_chat_provider =
         page_params.realm_available_video_chat_providers.jitsi_meet.id;
+    page_params.jitsi_server_url = null;
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), false);
 
     reset_jquery();
     stub_out_video_calls();
+    page_params.realm_video_chat_provider =
+        page_params.realm_available_video_chat_providers.jitsi_meet.id;
     page_params.jitsi_server_url = "https://meet.jit.si";
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), true);

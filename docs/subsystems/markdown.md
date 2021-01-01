@@ -137,8 +137,8 @@ Important considerations for any changes are:
 Zulip's Markdown processor's rendering supports a number of features
 that depend on realm-specific or user-specific data.  For example, the
 realm could have
-[Linkifiers](https://zulip.com/help/add-a-custom-linkification-filter)
-or [Custom emoji](https://zulip.com/help/add-custom-emoji)
+[linkifiers](https://zulip.com/help/add-a-custom-linkification-filter)
+or [custom emoji](https://zulip.com/help/add-custom-emoji)
 configured, and Zulip supports mentions for streams, users, and user
 groups (which depend on data like users' names, IDs, etc.).
 
@@ -248,7 +248,7 @@ accurate.
   `http://google.com`, and not `https://zulip.com/google.com` which
   is the default behavior.
 
-* Set `title=`(the url) on every link tag.
+* Set `title=`(the URL) on every link tag.
 
 * Disable link-by-reference syntax,
   `[foo][bar]` ... `[bar]: https://google.com`.

@@ -44,7 +44,7 @@ def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
     elif status in neutral_status:
         emoji = ':arrows_counterclockwise:'
 
-    # If the service is not one of the following, the url is of the repository home, not the individual
+    # If the service is not one of the following, the URL is of the repository home, not the individual
     # commit itself.
     commit_url = repository.split('@')[1]
     if 'github' in repository:

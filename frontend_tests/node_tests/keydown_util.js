@@ -1,6 +1,10 @@
 "use strict";
 
-set_global("$", global.make_zjquery());
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+set_global("$", make_zjquery());
 
 zrequire("keydown_util");
 
@@ -10,7 +14,7 @@ run_test("test_early_returns", () => {
         elem: stub,
         handlers: {
             left_arrow: () => {
-                throw Error("do not dispatch this with alt key");
+                throw new Error("do not dispatch this with alt key");
             },
         },
     };

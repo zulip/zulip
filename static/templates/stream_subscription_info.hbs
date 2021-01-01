@@ -2,12 +2,12 @@
     {{#if @first}}
     {{t "Successfully subscribed users:" }}
     {{/if}}
-    <a data-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
+    <a data-user-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
 {{/each}}
 <br>
 {{#each already_subscribed_users}}
     {{#if @first}}
     {{t "Already subscribed users:" }}
     {{/if}}
-    <a data-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
+    <a data-user-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
 {{/each}}

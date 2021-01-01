@@ -84,7 +84,7 @@ EXEMPT_OPENAPI_NAMES = [
     "realm_filters_event",
     # bots, delivery_email, profile_data
     "realm_user_add_event",
-    # openapi is incomplete
+    # OpenAPI is incomplete
     "realm_update_dict_event",
     # is_mirror_dummy
     "reaction_add_event",
@@ -200,7 +200,7 @@ def validate_openapi_against_event_schema() -> None:
         name += "_event"
 
         if not hasattr(event_schema, name):
-            print("NEED SCHEMA to match openapi", name)
+            print("NEED SCHEMA to match OpenAPI", name)
             continue
 
         openapi_type = from_openapi(sub_node)

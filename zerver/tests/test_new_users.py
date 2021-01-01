@@ -1,6 +1,7 @@
 import datetime
 from unittest import mock
 
+import pytz
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
@@ -8,7 +9,6 @@ from django.test import override_settings
 from zerver.lib.actions import do_change_notification_settings, notify_new_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timezone import get_timezone
 from zerver.models import Realm, Recipient, Stream
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
 
@@ -28,8 +28,7 @@ class SendLoginEmailTest(ZulipTestCase):
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.assertTrue(settings.SEND_LOGIN_EMAILS)
             # we don't use the self.login method since we spoof the user-agent
-            utc = get_timezone('utc')
-            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
+            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
 
             user = self.example_user('hamlet')
             user.timezone = 'US/Pacific'
@@ -42,8 +41,8 @@ class SendLoginEmailTest(ZulipTestCase):
                 password=password,
             )
             firefox_windows = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
-            user_tz = get_timezone(user.timezone)
-            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
+            user_tz = pytz.timezone(user.timezone)
+            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
             reference_time = mock_time.astimezone(user_tz).strftime('%A, %B %d, %Y at %I:%M%p %Z')
             with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
                 self.client_post("/accounts/login/",
@@ -96,8 +95,7 @@ class SendLoginEmailTest(ZulipTestCase):
     @override_settings(SEND_LOGIN_EMAILS=True)
     def test_enable_login_emails_user_setting(self) -> None:
         user = self.example_user('hamlet')
-        utc = get_timezone('utc')
-        mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
+        mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
 
         user.timezone = 'US/Pacific'
         user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)

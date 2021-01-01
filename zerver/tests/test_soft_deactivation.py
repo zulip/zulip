@@ -43,7 +43,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
 
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_deactivate_user(user)
-        self.assertEqual(m.output, [f"INFO:{logger_string}:Soft Deactivated user {user.id}"])
+        self.assertEqual(m.output, [f"INFO:{logger_string}:Soft deactivated user {user.id}"])
 
         user.refresh_from_db()
         self.assertTrue(user.long_term_idle)
@@ -66,7 +66,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
 
         log_output = []
         for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft Deactivated user {user.id}")
+            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
         log_output.append(f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process")
 
         self.assertEqual(m.output, log_output)
@@ -119,7 +119,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
 
         log_output = []
         for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft Deactivated user {user.id}")
+            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
         log_output.append(f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process")
 
         self.assertEqual(m.output, log_output)
@@ -179,7 +179,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
 
         log_output = []
         for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft Deactivated user {user.id}")
+            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
         log_output.append(f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process")
 
         self.assertEqual(m.output, log_output)
@@ -237,7 +237,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
 
         log_output = []
         for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft Deactivated user {user.id}")
+            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
         log_output.append(f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process")
         log_output.append(f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users")
         self.assertEqual(set(m.output), set(log_output))
@@ -307,7 +307,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         with self.assertLogs(logger_string, level='INFO') as info_logs:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_logs.output, [
-            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
             f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
 
@@ -357,7 +357,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         with self.assertLogs(logger_string, level='INFO') as info_logs:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_logs.output, [
-            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
             f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
 
@@ -464,7 +464,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         with self.assertLogs(logger_string, level='INFO') as info_logs:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_logs.output, [
-            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
             f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
         send_fake_message('Test Message 10', stream)
@@ -524,7 +524,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         with self.assertLogs(logger_string, level='INFO') as info_logs:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_logs.output, [
-            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
             f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
 
@@ -573,7 +573,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         with self.assertLogs(logger_string, level='INFO') as info_logs:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(info_logs.output, [
-            f'INFO:{logger_string}:Soft Deactivated user {long_term_idle_user.id}',
+            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
             f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
         ])
 

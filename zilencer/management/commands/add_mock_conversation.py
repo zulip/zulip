@@ -37,7 +37,8 @@ From image editing program:
 """
 
     def set_avatar(self, user: UserProfile, filename: str) -> None:
-        upload_avatar_image(open(filename, 'rb'), user, user)
+        with open(filename, 'rb') as f:
+            upload_avatar_image(f, user, user)
         do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER, acting_user=None)
 
     def add_message_formatting_conversation(self) -> None:
@@ -53,7 +54,7 @@ From image editing program:
                                      bot_type=UserProfile.DEFAULT_BOT, acting_user=None)
         self.set_avatar(twitter_bot, 'static/images/features/twitter.png')
 
-        bulk_add_subscriptions([stream], list(UserProfile.objects.filter(realm=realm)))
+        bulk_add_subscriptions(realm, [stream], list(UserProfile.objects.filter(realm=realm)))
 
         staged_messages: List[Dict[str, Any]] = [
             {'sender': starr,

@@ -118,7 +118,7 @@ def main() -> None:
     with open(args.output_file_path, 'w') as f:
         writer = csv.writer(f, dialect='excel')
     writer.writerows(output_data)
-    # The CSV file exported by google sheets doesn't have a newline
+    # The CSV file exported by Google Sheets doesn't have a newline
     # character in the end. So we also strip the last newline character
     # so that round-trip conversion test passes.
     line_sep_len = len(os.linesep)

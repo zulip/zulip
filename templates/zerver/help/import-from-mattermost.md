@@ -109,7 +109,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
         exported_emoji/ export.json
     ```
 
-3. Exit your shell on the Gitlab Omnibus server.
+3. Exit your shell on the GitLab Omnibus server.
 
     `exit`
 

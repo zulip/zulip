@@ -1,4 +1,5 @@
 import importlib
+from datetime import datetime
 from typing import Any, Callable, Dict, Optional, Union
 from urllib.parse import unquote
 
@@ -13,6 +14,7 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """
@@ -25,7 +27,7 @@ Contact {support_email} if you need help debugging!
 """
 
 INVALID_JSON_MESSAGE = """
-Hi there! It looks like you tried to setup the Zulip {webhook_name} integration,
+Hi there! It looks like you tried to set up the Zulip {webhook_name} integration,
 but didn't correctly configure the webhook to send data in the JSON format
 that this integration expects!
 """
@@ -158,3 +160,15 @@ def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict
             event_type = filename
         return {http_header_key: event_type}
     return fixture_to_headers
+
+def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
+    """If an integration requires time input in unix milliseconds, this helper
+    checks to ensure correct type and will catch any errors related to type or
+    value and raise a JsonableError.
+    Returns a datetime representing the time."""
+    try:
+        # timestamps are in milliseconds so divide by 1000
+        seconds = milliseconds / 1000
+        return timestamp_to_datetime(seconds)
+    except (ValueError, TypeError):
+        raise JsonableError(_("The {} webhook expects time in milleseconds.").format(webhook))

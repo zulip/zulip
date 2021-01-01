@@ -8,7 +8,7 @@ sequences work.
 You need to be a bit careful here, since
 you're dealing with a big singleton, but
 for data imports that's usually easy to
-manage.  See hipchat.py for example usage.
+manage.
 '''
 
 def _seq() -> Callable[[], int]:

@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from typing import Callable, Iterator, List, Optional, Union
 
@@ -42,6 +43,10 @@ VNU_IGNORE = [
 ]
 VNU_IGNORE_REGEX = re.compile(r'|'.join(VNU_IGNORE))
 
+DEPLOY_ROOT = os.path.abspath(os.path.join(__file__, "../../../../../.."))
+
+ZULIP_SERVER_GITHUB_FILE_URL_PREFIX = "https://github.com/zulip/zulip/blob/master"
+ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX = "https://github.com/zulip/zulip/tree/master"
 
 class BaseDocumentationSpider(scrapy.Spider):
     name: Optional[str] = None
@@ -63,11 +68,20 @@ class BaseDocumentationSpider(scrapy.Spider):
         self.log(response)
 
     def _is_external_link(self, url: str) -> bool:
+        if url.startswith("https://chat.zulip.org"):
+            # Since most chat.zulip.org URLs will be links to specific
+            # logged-in content that the spider cannot verify, or the
+            # homepage, there's no need to check those (which can
+            # cause errors when chat.zulip.org is being updated).
+            return True
         if "zulip.readthedocs" in url or "zulip.com" in url or "zulip.org" in url:
             # We want CI to check any links to Zulip sites.
             return False
         if (len(url) > 4 and url[:4] == "file") or ("localhost" in url):
             # We also want CI to check any links to built documentation.
+            return False
+        if url.startswith(ZULIP_SERVER_GITHUB_FILE_URL_PREFIX) or url.startswith(ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX):
+            # We can verify these links directly in the local git repo without making any requests to GitHub servers.
             return False
         if 'github.com/zulip' in url:
             # We want to check these links but due to rate limiting from GitHub, these checks often
@@ -107,12 +121,33 @@ class BaseDocumentationSpider(scrapy.Spider):
         return callback
 
     def _make_requests(self, url: str) -> Iterator[Request]:
+        # These URLs are for Zulip's webapp, which with recent changes
+        # can be accessible without login an account.  While we do
+        # crawl documentation served by the webapp (E.g. /help/), we
+        # don't want to crawl the webapp itself, so we exclude these.
+        if url in ['http://localhost:9981/', 'http://localhost:9981'] or url.startswith('http://localhost:9981/#') or url.startswith('http://localhost:9981#'):
+            return
+
         callback: Callable[[Response], Optional[Iterator[Request]]] = self.parse
         dont_filter = False
         method = 'GET'
         if self._is_external_url(url):
             callback = self.check_existing
             method = 'HEAD'
+
+            if url.startswith(ZULIP_SERVER_GITHUB_FILE_URL_PREFIX):
+                file_path = url.replace(ZULIP_SERVER_GITHUB_FILE_URL_PREFIX, DEPLOY_ROOT)
+                hash_index = file_path.find("#")
+                if hash_index != -1:
+                    file_path = file_path[:hash_index]
+                if not os.path.isfile(file_path):
+                    self.logger.error("There is no local file associated with the GitHub URL: %s", url)
+                return
+            elif url.startswith(ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX):
+                dir_path = url.replace(ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX, DEPLOY_ROOT)
+                if not os.path.isdir(dir_path):
+                    self.logger.error("There is no local directory associated with the GitHub URL: %s", url)
+                return
         elif '#' in url:
             dont_filter = True
             callback = self.check_fragment
@@ -159,6 +194,6 @@ class BaseDocumentationSpider(scrapy.Spider):
             if response.status == 405 and response.request.method == 'HEAD':
                 # Method 'HEAD' not allowed, repeat request with 'GET'
                 return self.retry_request_with_get(response.request)
-            self.logger.error("Please check link: %s", response)
+            self.logger.error("Please check link: %s", response.request.url)
 
         return failure

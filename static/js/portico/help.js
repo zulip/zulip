@@ -37,8 +37,8 @@ function highlight_current_article() {
     let article = $('.help .sidebar a[href="' + path + hash + '"]');
     if (!article.length) {
         // If there isn't an entry in the left sidebar that matches
-        // the full url+hash pair, instead highlight an entry in the
-        // left sidebar that just matches the url part.
+        // the full URL+hash pair, instead highlight an entry in the
+        // left sidebar that just matches the URL part.
         article = $('.help .sidebar a[href="' + path + '"]');
     }
     // Highlight current article link and the heading of the same

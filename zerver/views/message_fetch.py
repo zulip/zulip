@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import orjson
 from django.conf import settings
@@ -11,9 +11,12 @@ from django.utils.html import escape as escape_html
 from django.utils.translation import ugettext as _
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.engine import Connection, RowProxy
 from sqlalchemy.sql import (
+    ClauseElement,
     ColumnElement,
-    Selectable,
+    FromClause,
+    Select,
     alias,
     and_,
     column,
@@ -26,6 +29,7 @@ from sqlalchemy.sql import (
     table,
     union_all,
 )
+from sqlalchemy.types import Boolean, Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import REQ, has_request_variables
@@ -84,11 +88,7 @@ class BadNarrowOperator(JsonableError):
     def msg_format() -> str:
         return _('Invalid narrow operator: {desc}')
 
-# TODO: Should be Select, but sqlalchemy stubs are busted
-Query = Any
-
-# TODO: should be Callable[[ColumnElement], ColumnElement], but sqlalchemy stubs are busted
-ConditionTransform = Any
+ConditionTransform = Callable[[ClauseElement], ClauseElement]
 
 OptionalNarrowListT = Optional[List[Dict[str, Any]]]
 
@@ -97,21 +97,24 @@ TS_START = "<ts-match>"
 TS_STOP = "</ts-match>"
 
 def ts_locs_array(
-    config: ColumnElement, text: ColumnElement, tsquery: ColumnElement,
-) -> ColumnElement:
+    config: "ColumnElement[str]", text: "ColumnElement[str]", tsquery: "ColumnElement[object]",
+) -> "ColumnElement[List[List[int]]]":
     options = f"HighlightAll = TRUE, StartSel = {TS_START}, StopSel = {TS_STOP}"
     delimited = func.ts_headline(config, text, tsquery, options)
     parts = func.unnest(func.string_to_array(delimited, TS_START)).alias()
-    part = column(parts.name)
+    part = column(parts.name, Text)
     part_len = func.length(part) - len(TS_STOP)
     match_pos = func.sum(part_len).over(rows=(None, -1)) + len(TS_STOP)
     match_len = func.strpos(part, TS_STOP) - 1
-    return func.array(
-        select([postgresql.array([match_pos, match_len])])
+    ret = func.array(
+        select([
+            postgresql.array([match_pos, match_len]),  # type: ignore[call-overload] # https://github.com/dropbox/sqlalchemy-stubs/issues/188
+        ])
         .select_from(parts)
         .offset(1)
         .as_scalar(),
     )
+    return ret
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder:
@@ -124,8 +127,8 @@ class NarrowBuilder:
     #   None of these methods ever *add* messages to a query's result.
     #
     # That is, the `add_term` method, and its helpers the `by_*` methods,
-    # are passed a Query object representing a query for messages; they may
-    # call some methods on it, and then they return a resulting Query
+    # are passed a Select object representing a query for messages; they may
+    # call some methods on it, and then they return a resulting Select
     # object.  Things these methods may do to the queries they handle
     # include
     #  * add conditions to filter out rows (i.e., messages), with `query.where`
@@ -136,14 +139,14 @@ class NarrowBuilder:
     #  * anything that would pull in additional rows, or information on
     #    other messages.
 
-    def __init__(self, user_profile: Optional[UserProfile], msg_id_column: str,
+    def __init__(self, user_profile: Optional[UserProfile], msg_id_column: "ColumnElement[int]",
                  realm: Realm, is_web_public_query: bool=False) -> None:
         self.user_profile = user_profile
         self.msg_id_column = msg_id_column
         self.realm = realm
         self.is_web_public_query = is_web_public_query
 
-    def add_term(self, query: Query, term: Dict[str, Any]) -> Query:
+    def add_term(self, query: Select, term: Dict[str, Any]) -> Select:
         """
         Extend the given query to one narrowed by the given term, and return the result.
 
@@ -176,14 +179,14 @@ class NarrowBuilder:
 
         return method(query, operand, maybe_negate)
 
-    def by_has(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_has(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if operand not in ['attachment', 'image', 'link']:
             raise BadNarrowOperator("unknown 'has' operand " + operand)
         col_name = 'has_' + operand
-        cond = column(col_name)
+        cond = column(col_name, Boolean)
         return query.where(maybe_negate(cond))
 
-    def by_in(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_in(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         # This operator does not support is_web_public_query.
         assert not self.is_web_public_query
         assert self.user_profile is not None
@@ -196,27 +199,27 @@ class NarrowBuilder:
 
         raise BadNarrowOperator("unknown 'in' operand " + operand)
 
-    def by_is(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_is(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         # This operator class does not support is_web_public_query.
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
         if operand == 'private':
-            cond = column("flags").op("&")(UserMessage.flags.is_private.mask) != 0
+            cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == 'starred':
-            cond = column("flags").op("&")(UserMessage.flags.starred.mask) != 0
+            cond = column("flags", Integer).op("&")(UserMessage.flags.starred.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == 'unread':
-            cond = column("flags").op("&")(UserMessage.flags.read.mask) == 0
+            cond = column("flags", Integer).op("&")(UserMessage.flags.read.mask) == 0
             return query.where(maybe_negate(cond))
         elif operand == 'mentioned':
-            cond1 = column("flags").op("&")(UserMessage.flags.mentioned.mask) != 0
-            cond2 = column("flags").op("&")(UserMessage.flags.wildcard_mentioned.mask) != 0
+            cond1 = column("flags", Integer).op("&")(UserMessage.flags.mentioned.mask) != 0
+            cond2 = column("flags", Integer).op("&")(UserMessage.flags.wildcard_mentioned.mask) != 0
             cond = or_(cond1, cond2)
             return query.where(maybe_negate(cond))
         elif operand == 'alerted':
-            cond = column("flags").op("&")(UserMessage.flags.has_alert_word.mask) != 0
+            cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0
             return query.where(maybe_negate(cond))
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
@@ -227,22 +230,22 @@ class NarrowBuilder:
         """
         Escape user input to place in a regex
 
-        Python's re.escape escapes unicode characters in a way which postgres
+        Python's re.escape escapes Unicode characters in a way which PostgreSQL
         fails on, '\u03bb' to '\\\u03bb'. This function will correctly escape
-        them for postgres, '\u03bb' to '\\u03bb'.
+        them for PostgreSQL, '\u03bb' to '\\u03bb'.
         """
         s = list(pattern)
         for i, c in enumerate(s):
             if c not in self._alphanum:
                 if ord(c) >= 128:
-                    # convert the character to hex postgres regex will take
+                    # convert the character to hex PostgreSQL regex will take
                     # \uXXXX
                     s[i] = f'\\u{ord(c):0>4x}'
                 else:
                     s[i] = '\\' + c
         return ''.join(s)
 
-    def by_stream(self, query: Query, operand: Union[str, int], maybe_negate: ConditionTransform) -> Query:
+    def by_stream(self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform) -> Select:
         try:
             # Because you can see your own message history for
             # private streams you are no longer subscribed to, we
@@ -274,14 +277,14 @@ class NarrowBuilder:
             matching_streams = get_active_streams(self.realm).filter(
                 name__iregex=fr'^(un)*{self._pg_re_escape(base_stream_name)}(\.d)*$')
             recipient_ids = [matching_stream.recipient_id for matching_stream in matching_streams]
-            cond = column("recipient_id").in_(recipient_ids)
+            cond = column("recipient_id", Integer).in_(recipient_ids)
             return query.where(maybe_negate(cond))
 
         recipient = stream.recipient
-        cond = column("recipient_id") == recipient.id
+        cond = column("recipient_id", Integer) == recipient.id
         return query.where(maybe_negate(cond))
 
-    def by_streams(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_streams(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if operand == 'public':
             # Get all both subscribed and non subscribed public streams
             # but exclude any private subscribed streams.
@@ -292,10 +295,10 @@ class NarrowBuilder:
             raise BadNarrowOperator('unknown streams operand ' + operand)
 
         recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by('id')
-        cond = column("recipient_id").in_(recipient_ids)
+        cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
-    def by_topic(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
@@ -307,7 +310,7 @@ class NarrowBuilder:
             # Additionally, MIT users expect the empty instance and
             # instance "personal" to be the same.
             if base_topic in ('', 'personal', '(instance "")'):
-                cond = or_(
+                cond: ClauseElement = or_(
                     topic_match_sa(""),
                     topic_match_sa(".d"),
                     topic_match_sa(".d.d"),
@@ -325,7 +328,7 @@ class NarrowBuilder:
                     topic_match_sa('(instance "").d.d.d.d'),
                 )
             else:
-                # We limit `.d` counts, since postgres has much better
+                # We limit `.d` counts, since PostgreSQL has much better
                 # query planning for this than they do for a regular
                 # expression (which would sometimes table scan).
                 cond = or_(
@@ -340,7 +343,7 @@ class NarrowBuilder:
         cond = topic_match_sa(operand)
         return query.where(maybe_negate(cond))
 
-    def by_sender(self, query: Query, operand: Union[str, int], maybe_negate: ConditionTransform) -> Query:
+    def by_sender(self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform) -> Select:
         try:
             if isinstance(operand, str):
                 sender = get_user_including_cross_realm(operand, self.realm)
@@ -349,20 +352,20 @@ class NarrowBuilder:
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator('unknown user ' + str(operand))
 
-        cond = column("sender_id") == literal(sender.id)
+        cond = column("sender_id", Integer) == literal(sender.id)
         return query.where(maybe_negate(cond))
 
-    def by_near(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_near(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         return query
 
-    def by_id(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_id(self, query: Select, operand: Union[int, str], maybe_negate: ConditionTransform) -> Select:
         if not str(operand).isdigit():
             raise BadNarrowOperator("Invalid message ID")
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
-    def by_pm_with(self, query: Query, operand: Union[str, Iterable[int]],
-                   maybe_negate: ConditionTransform) -> Query:
+    def by_pm_with(self, query: Select, operand: Union[str, Iterable[int]],
+                   maybe_negate: ConditionTransform) -> Select:
         # This operator does not support is_web_public_query.
         assert not self.is_web_public_query
         assert self.user_profile is not None
@@ -394,7 +397,7 @@ class NarrowBuilder:
 
         # Group DM
         if recipient.type == Recipient.HUDDLE:
-            cond = column("recipient_id") == recipient.id
+            cond = column("recipient_id", Integer) == recipient.id
             return query.where(maybe_negate(cond))
 
         # 1:1 PM
@@ -414,19 +417,19 @@ class NarrowBuilder:
             # complex query to get messages between these two users
             # with either of them as the sender.
             self_recipient_id = self.user_profile.recipient_id
-            cond = or_(and_(column("sender_id") == other_participant.id,
-                            column("recipient_id") == self_recipient_id),
-                       and_(column("sender_id") == self.user_profile.id,
-                            column("recipient_id") == recipient.id))
+            cond = or_(and_(column("sender_id", Integer) == other_participant.id,
+                            column("recipient_id", Integer) == self_recipient_id),
+                       and_(column("sender_id", Integer) == self.user_profile.id,
+                            column("recipient_id", Integer) == recipient.id))
             return query.where(maybe_negate(cond))
 
         # PM with self
-        cond = and_(column("sender_id") == self.user_profile.id,
-                    column("recipient_id") == recipient.id)
+        cond = and_(column("sender_id", Integer) == self.user_profile.id,
+                    column("recipient_id", Integer) == recipient.id)
         return query.where(maybe_negate(cond))
 
-    def by_group_pm_with(self, query: Query, operand: Union[str, int],
-                         maybe_negate: ConditionTransform) -> Query:
+    def by_group_pm_with(self, query: Select, operand: Union[str, int],
+                         maybe_negate: ConditionTransform) -> Select:
         # This operator does not support is_web_public_query.
         assert not self.is_web_public_query
         assert self.user_profile is not None
@@ -453,35 +456,35 @@ class NarrowBuilder:
             ).values("recipient_id")]
 
         recipient_ids = set(self_recipient_ids) & set(narrow_recipient_ids)
-        cond = column("recipient_id").in_(recipient_ids)
+        cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
-    def by_search(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+    def by_search(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if settings.USING_PGROONGA:
             return self._by_search_pgroonga(query, operand, maybe_negate)
         else:
             return self._by_search_tsearch(query, operand, maybe_negate)
 
-    def _by_search_pgroonga(self, query: Query, operand: str,
-                            maybe_negate: ConditionTransform) -> Query:
+    def _by_search_pgroonga(self, query: Select, operand: str,
+                            maybe_negate: ConditionTransform) -> Select:
         match_positions_character = func.pgroonga_match_positions_character
         query_extract_keywords = func.pgroonga_query_extract_keywords
         operand_escaped = func.escape_html(operand)
         keywords = query_extract_keywords(operand_escaped)
-        query = query.column(match_positions_character(column("rendered_content"),
+        query = query.column(match_positions_character(column("rendered_content", Text),
                                                        keywords).label("content_matches"))
         query = query.column(match_positions_character(func.escape_html(topic_column_sa()),
                                                        keywords).label("topic_matches"))
         condition = column("search_pgroonga").op("&@~")(operand_escaped)
         return query.where(maybe_negate(condition))
 
-    def _by_search_tsearch(self, query: Query, operand: str,
-                           maybe_negate: ConditionTransform) -> Query:
+    def _by_search_tsearch(self, query: Select, operand: str,
+                           maybe_negate: ConditionTransform) -> Select:
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
-                                           column("rendered_content"),
+                                           column("rendered_content", Text),
                                            tsquery).label("content_matches"))
-        # We HTML-escape the topic in Postgres to avoid doing a server round-trip
+        # We HTML-escape the topic in PostgreSQL to avoid doing a server round-trip
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
                                            func.escape_html(topic_column_sa()),
                                            tsquery).label("topic_matches"))
@@ -489,16 +492,16 @@ class NarrowBuilder:
         # Do quoted string matching.  We really want phrase
         # search here so we can ignore punctuation and do
         # stemming, but there isn't a standard phrase search
-        # mechanism in Postgres
+        # mechanism in PostgreSQL
         for term in re.findall(r'"[^"]+"|\S+', operand):
             if term[0] == '"' and term[-1] == '"':
                 term = term[1:-1]
                 term = '%' + connection.ops.prep_for_like_query(term) + '%'
-                cond = or_(column("content").ilike(term),
+                cond = or_(column("content", Text).ilike(term),
                            topic_column_sa().ilike(term))
                 query = query.where(maybe_negate(cond))
 
-        cond = column("search_tsvector").op("@@")(tsquery)
+        cond = column("search_tsvector", postgresql.TSVECTOR).op("@@")(tsquery)
         return query.where(maybe_negate(cond))
 
 def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
@@ -658,7 +661,7 @@ def get_stream_from_narrow_access_unchecked(narrow: OptionalNarrowListT, realm: 
     return None
 
 def exclude_muting_conditions(user_profile: UserProfile,
-                              narrow: OptionalNarrowListT) -> List[Selectable]:
+                              narrow: OptionalNarrowListT) -> List[ClauseElement]:
     conditions = []
     stream_id = None
     try:
@@ -681,7 +684,7 @@ def exclude_muting_conditions(user_profile: UserProfile,
         muted_recipient_ids = [row['recipient_id'] for row in rows]
         if len(muted_recipient_ids) > 0:
             # Only add the condition if we have muted streams to simplify/avoid warnings.
-            condition = not_(column("recipient_id").in_(muted_recipient_ids))
+            condition = not_(column("recipient_id", Integer).in_(muted_recipient_ids))
             conditions.append(condition)
 
     conditions = exclude_topic_mutes(conditions, user_profile, stream_id)
@@ -690,38 +693,39 @@ def exclude_muting_conditions(user_profile: UserProfile,
 
 def get_base_query_for_search(user_profile: Optional[UserProfile],
                               need_message: bool,
-                              need_user_message: bool) -> Tuple[Query, ColumnElement]:
+                              need_user_message: bool) -> Tuple[Select, "ColumnElement[int]"]:
     # Handle the simple case where user_message isn't involved first.
     if not need_user_message:
         assert(need_message)
-        query = select([column("id").label("message_id")],
+        query = select([column("id", Integer).label("message_id")],
                        None,
                        table("zerver_message"))
-        inner_msg_id_col = literal_column("zerver_message.id")
+        inner_msg_id_col: ColumnElement[int]
+        inner_msg_id_col = literal_column("zerver_message.id", Integer)  # type: ignore[assignment] # https://github.com/dropbox/sqlalchemy-stubs/pull/189
         return (query, inner_msg_id_col)
 
     assert user_profile is not None
     if need_message:
-        query = select([column("message_id"), column("flags")],
+        query = select([column("message_id"), column("flags", Integer)],
                        column("user_profile_id") == literal(user_profile.id),
                        join(table("zerver_usermessage"), table("zerver_message"),
-                            literal_column("zerver_usermessage.message_id") ==
-                            literal_column("zerver_message.id")))
-        inner_msg_id_col = column("message_id")
+                            literal_column("zerver_usermessage.message_id", Integer) ==
+                            literal_column("zerver_message.id", Integer)))
+        inner_msg_id_col = column("message_id", Integer)
         return (query, inner_msg_id_col)
 
-    query = select([column("message_id"), column("flags")],
+    query = select([column("message_id"), column("flags", Integer)],
                    column("user_profile_id") == literal(user_profile.id),
                    table("zerver_usermessage"))
-    inner_msg_id_col = column("message_id")
+    inner_msg_id_col = column("message_id", Integer)
     return (query, inner_msg_id_col)
 
 def add_narrow_conditions(user_profile: Optional[UserProfile],
-                          inner_msg_id_col: ColumnElement,
-                          query: Query,
+                          inner_msg_id_col: "ColumnElement[int]",
+                          query: Select,
                           narrow: OptionalNarrowListT,
                           is_web_public_query: bool,
-                          realm: Realm) -> Tuple[Query, bool]:
+                          realm: Realm) -> Tuple[Select, bool]:
     is_search = False  # for now
 
     if narrow is None:
@@ -742,7 +746,7 @@ def add_narrow_conditions(user_profile: Optional[UserProfile],
 
     if search_operands:
         is_search = True
-        query = query.column(topic_column_sa()).column(column("rendered_content"))
+        query = query.column(topic_column_sa()).column(column("rendered_content", Text))
         search_term = dict(
             operator='search',
             operand=' '.join(search_operands),
@@ -751,7 +755,7 @@ def add_narrow_conditions(user_profile: Optional[UserProfile],
 
     return (query, is_search)
 
-def find_first_unread_anchor(sa_conn: Any,
+def find_first_unread_anchor(sa_conn: Connection,
                              user_profile: Optional[UserProfile],
                              narrow: OptionalNarrowListT) -> int:
     # For anonymous web users, all messages are treated as read, and so
@@ -785,7 +789,7 @@ def find_first_unread_anchor(sa_conn: Any,
         realm=user_profile.realm,
     )
 
-    condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
+    condition = column("flags", Integer).op("&")(UserMessage.flags.read.mask) == 0
 
     # We exclude messages on muted topics when finding the first unread
     # message in this narrow
@@ -835,6 +839,8 @@ def parse_anchor_value(anchor_val: Optional[str],
         anchor = int(anchor_val)
         if anchor < 0:
             return 0
+        elif anchor > LARGER_THAN_MAX_MESSAGE_ID:
+            return LARGER_THAN_MAX_MESSAGE_ID
         return anchor
     except ValueError:
         raise JsonableError(_("Invalid anchor"))
@@ -913,6 +919,7 @@ def get_messages_backend(request: HttpRequest,
         need_message = True
         need_user_message = True
 
+    query: FromClause
     query, inner_msg_id_col = get_base_query_for_search(
         user_profile=user_profile,
         need_message=need_message,
@@ -970,7 +977,7 @@ def get_messages_backend(request: HttpRequest,
     )
 
     main_query = alias(query)
-    query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
+    query = select(main_query.c, None, main_query).order_by(column("message_id", Integer).asc())
     # This is a hack to tag the query we use for testing
     query = query.prefix_with("/* get_messages */")
     rows = list(sa_conn.execute(query).fetchall())
@@ -1059,14 +1066,14 @@ def get_messages_backend(request: HttpRequest,
     )
     return json_success(ret)
 
-def limit_query_to_range(query: Query,
+def limit_query_to_range(query: Select,
                          num_before: int,
                          num_after: int,
                          anchor: int,
                          anchored_to_left: bool,
                          anchored_to_right: bool,
-                         id_col: ColumnElement,
-                         first_visible_message_id: int) -> Query:
+                         id_col: "ColumnElement[int]",
+                         first_visible_message_id: int) -> FromClause:
     '''
     This code is actually generic enough that we could move it to a
     library, but our only caller for now is message search.
@@ -1121,11 +1128,11 @@ def limit_query_to_range(query: Query,
         after_query = after_query.limit(after_limit)
 
     if need_both_sides:
-        query = union_all(before_query.self_group(), after_query.self_group())
+        return union_all(before_query.self_group(), after_query.self_group())
     elif need_before_query:
-        query = before_query
+        return before_query
     elif need_after_query:
-        query = after_query
+        return after_query
     else:
         # If we don't have either a before_query or after_query, it's because
         # some combination of num_before/num_after/anchor are zero or
@@ -1135,11 +1142,9 @@ def limit_query_to_range(query: Query,
         # for something like `message_id = 42` is exactly what we want.  In other
         # cases, which could possibly be buggy API clients, at least we will
         # return at most one row here.
-        query = query.where(id_col == anchor)
+        return query.where(id_col == anchor)
 
-    return query
-
-def post_process_limited_query(rows: List[Any],
+def post_process_limited_query(rows: Sequence[Union[RowProxy, Sequence[Any]]],
                                num_before: int,
                                num_after: int,
                                anchor: int,
@@ -1155,7 +1160,9 @@ def post_process_limited_query(rows: List[Any],
     # that the clients will know that they got complete results.
 
     if first_visible_message_id > 0:
-        visible_rows = [r for r in rows if r[0] >= first_visible_message_id]
+        visible_rows: Sequence[Union[RowProxy, Sequence[Any]]] = [
+            r for r in rows if r[0] >= first_visible_message_id
+        ]
     else:
         visible_rows = rows
 
@@ -1164,8 +1171,8 @@ def post_process_limited_query(rows: List[Any],
     if anchored_to_right:
         num_after = 0
         before_rows = visible_rows[:]
-        anchor_rows: List[Any] = []
-        after_rows: List[Any] = []
+        anchor_rows = []
+        after_rows = []
     else:
         before_rows = [r for r in visible_rows if r[0] < anchor]
         anchor_rows = [r for r in visible_rows if r[0] == anchor]
@@ -1177,7 +1184,7 @@ def post_process_limited_query(rows: List[Any],
     if num_after:
         after_rows = after_rows[:num_after]
 
-    visible_rows = before_rows + anchor_rows + after_rows
+    visible_rows = [*before_rows, *anchor_rows, *after_rows]
 
     found_anchor = len(anchor_rows) == 1
     found_oldest = anchored_to_left or (len(before_rows) < num_before)
@@ -1213,14 +1220,14 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
-    query = select([column("message_id"), topic_column_sa(), column("rendered_content")],
-                   and_(column("user_profile_id") == literal(user_profile.id),
-                        column("message_id").in_(msg_ids)),
+    query = select([column("message_id", Integer), topic_column_sa(), column("rendered_content", Text)],
+                   and_(column("user_profile_id", Integer) == literal(user_profile.id),
+                        column("message_id", Integer).in_(msg_ids)),
                    join(table("zerver_usermessage"), table("zerver_message"),
-                        literal_column("zerver_usermessage.message_id") ==
-                        literal_column("zerver_message.id")))
+                        literal_column("zerver_usermessage.message_id", Integer) ==
+                        literal_column("zerver_message.id", Integer)))
 
-    builder = NarrowBuilder(user_profile, column("message_id"), user_profile.realm)
+    builder = NarrowBuilder(user_profile, column("message_id", Integer), user_profile.realm)
     if narrow is not None:
         for term in narrow:
             query = builder.add_term(query, term)

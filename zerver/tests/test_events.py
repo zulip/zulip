@@ -206,6 +206,7 @@ class BaseAction(ZulipTestCase):
                       client_gravatar: bool=True,
                       user_avatar_url_field_optional: bool=False,
                       slim_presence: bool=False,
+                      include_streams: bool=True,
                       num_events: int=1,
                       bulk_message_deletion: bool=True) -> List[Dict[str, Any]]:
         '''
@@ -241,6 +242,7 @@ class BaseAction(ZulipTestCase):
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            include_streams=include_streams,
             realm=self.user_profile.realm,
         )
         action()
@@ -253,7 +255,7 @@ class BaseAction(ZulipTestCase):
             'msg': '',
             'result': 'success'
         }
-        validate_against_openapi_schema(content, '/events', 'get', '200')
+        validate_against_openapi_schema(content, '/events', 'get', '200', display_brief_error=True)
         self.assertEqual(len(events), num_events)
         initial_state = copy.deepcopy(hybrid_state)
         post_process_state(self.user_profile, initial_state, notification_settings_null)
@@ -282,6 +284,7 @@ class BaseAction(ZulipTestCase):
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            include_streams=include_streams,
             realm=self.user_profile.realm,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
@@ -644,10 +647,10 @@ class NormalActionsTest(BaseAction):
                 prereg_user=prereg_user,
             ),
             state_change_expected=True,
-            num_events=5,
+            num_events=4,
         )
 
-        check_invites_changed('events[4]', events[4])
+        check_invites_changed('events[3]', events[3])
 
     def test_typing_events(self) -> None:
         events = self.verify_action(
@@ -951,12 +954,10 @@ class NormalActionsTest(BaseAction):
 
     def test_muted_topics_events(self) -> None:
         stream = get_stream('Denmark', self.user_profile.realm)
-        recipient = stream.recipient
         events = self.verify_action(
             lambda: do_mute_topic(
                 self.user_profile,
                 stream,
-                recipient,
                 "topic"))
         check_muted_topics('events[0]', events[0])
 
@@ -1438,49 +1439,61 @@ class NormalActionsTest(BaseAction):
         check_hotspots('events[0]', events[0])
 
     def test_rename_stream(self) -> None:
-        stream = self.make_stream('old_name')
-        new_name = 'stream with a brand new name'
-        self.subscribe(self.user_profile, stream.name)
-        notification = '<p><span class="user-mention silent" data-user-id="{user_id}">King Hamlet</span> renamed stream <strong>old_name</strong> to <strong>stream with a brand new name</strong>.</p>'
-        notification = notification.format(user_id=self.user_profile.id)
-        action = lambda: do_rename_stream(stream, new_name, self.user_profile)
-        events = self.verify_action(action, num_events=3)
+        for i, include_streams in enumerate([True, False]):
+            old_name = f'old name{i}'
+            new_name = f'new name{i}'
 
-        check_stream_update('events[0]', events[0])
-        self.assertEqual(events[0]['name'], 'old_name')
+            stream = self.make_stream(old_name)
+            self.subscribe(self.user_profile, stream.name)
+            action = lambda: do_rename_stream(stream, new_name, self.user_profile)
+            events = self.verify_action(action, num_events=3, include_streams=include_streams)
 
-        check_stream_update('events[1]', events[1])
-        self.assertEqual(events[1]['name'], 'old_name')
+            check_stream_update('events[0]', events[0])
+            self.assertEqual(events[0]['name'], old_name)
 
-        check_message('events[2]', events[2])
+            check_stream_update('events[1]', events[1])
+            self.assertEqual(events[1]['name'], old_name)
 
-        fields = dict(
-            sender_email='notification-bot@zulip.com',
-            display_recipient=new_name,
-            sender_full_name='Notification Bot',
-            is_me_message=False,
-            type='stream',
-            client='Internal',
-        )
+            check_message('events[2]', events[2])
 
-        fields[TOPIC_NAME] = 'stream events'
+            fields = dict(
+                sender_email='notification-bot@zulip.com',
+                display_recipient=new_name,
+                sender_full_name='Notification Bot',
+                is_me_message=False,
+                type='stream',
+                client='Internal',
+            )
 
-        msg = events[2]['message']
-        for k, v in fields.items():
-            self.assertEqual(msg[k], v)
+            fields[TOPIC_NAME] = 'stream events'
+
+            msg = events[2]['message']
+            for k, v in fields.items():
+                self.assertEqual(msg[k], v)
 
     def test_deactivate_stream_neversubscribed(self) -> None:
-        stream = self.make_stream('old_name')
-
-        action = lambda: do_deactivate_stream(stream)
-        events = self.verify_action(action)
-
-        check_stream_delete('events[0]', events[0])
+        for i, include_streams in enumerate([True, False]):
+            stream = self.make_stream(f"stream{i}")
+            action = lambda: do_deactivate_stream(stream)
+            events = self.verify_action(action, include_streams=include_streams)
+            check_stream_delete('events[0]', events[0])
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
-        action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
-        events = self.verify_action(action, num_events=2)
-        check_subscription_peer_add('events[1]', events[1])
+        for i, include_streams in enumerate([True, False]):
+            action = lambda: self.subscribe(self.example_user("othello"), f"test_stream{i}")
+            events = self.verify_action(action, num_events=2, include_streams=True)
+            check_subscription_peer_add('events[1]', events[1])
+
+    def test_remove_other_user_never_subscribed(self) -> None:
+        self.subscribe(self.example_user("othello"), "test_stream")
+        stream = get_stream("test_stream", self.user_profile.realm)
+
+        action = lambda: bulk_remove_subscriptions(
+            [self.example_user('othello')],
+            [stream],
+            get_client("website"))
+        events = self.verify_action(action)
+        check_subscription_peer_remove('events[0]', events[0])
 
     def test_do_delete_message_stream(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -1729,7 +1742,7 @@ class RealmPropertyActionTest(BaseAction):
             invite_to_stream_policy=[3, 2, 1],
             private_message_policy=[2, 1],
             user_group_edit_policy=[1, 2],
-            wildcard_mention_policy=[3, 2, 1],
+            wildcard_mention_policy=[6, 5, 4, 3, 2, 1],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
             video_chat_provider=[
@@ -1780,7 +1793,7 @@ class UserDisplayActionTest(BaseAction):
         test_changes: Dict[str, Any] = dict(
             emojiset = ['twitter'],
             default_language = ['es', 'de', 'en'],
-            timezone = ['US/Mountain', 'US/Samoa', 'Pacific/Galapogos', ''],
+            timezone = ['America/Denver', 'Pacific/Pago_Pago', 'Pacific/Galapagos', ''],
             demote_inactive_streams = [2, 3, 1],
             color_scheme = [2, 3, 1]
         )
@@ -1829,7 +1842,7 @@ class SubscribeActionTest(BaseAction):
         action: Callable[[], object] = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
         events = self.verify_action(
             action,
-            event_types=["subscription", "realm_user"],
+            event_types=["subscription"],
             include_subscribers=include_subscribers)
         check_subscription_add('events[0]', events[0], include_subscribers)
 
@@ -1843,7 +1856,8 @@ class SubscribeActionTest(BaseAction):
 
         stream = get_stream("test_stream", self.user_profile.realm)
 
-        # Now remove the first user, to test the normal unsubscribe flow
+        # Now remove the first user, to test the normal unsubscribe flow and
+        # 'peer_remove' event for subscribed streams.
         action = lambda: bulk_remove_subscriptions(
             [self.example_user('othello')],
             [stream],
@@ -1854,7 +1868,7 @@ class SubscribeActionTest(BaseAction):
             state_change_expected=include_subscribers)
         check_subscription_peer_remove('events[0]', events[0])
 
-        # Now remove the second user, to test the 'vacate' event flow
+        # Now remove the user himself, to test the 'remove' event flow
         action = lambda: bulk_remove_subscriptions(
             [self.example_user('hamlet')],
             [stream],
@@ -1862,7 +1876,8 @@ class SubscribeActionTest(BaseAction):
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,
-            num_events=3)
+            include_streams=False,
+            num_events=2)
         check_subscription_remove('events[0]', events[0])
         self.assertEqual(len(events[0]['subscriptions']), 1)
         self.assertEqual(
@@ -1870,13 +1885,34 @@ class SubscribeActionTest(BaseAction):
             'test_stream',
         )
 
+        # Subscribe other user to test 'peer_add' event flow for unsubscribed stream.
+        action = lambda: self.subscribe(self.example_user("iago"), "test_stream")
+        events = self.verify_action(
+            action,
+            event_types=["subscription"],
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers)
+        check_subscription_peer_add('events[0]', events[0])
+
+        # Remove the user to test 'peer_remove' event flow for unsubscribed stream.
+        action = lambda: bulk_remove_subscriptions(
+            [self.example_user('iago')],
+            [stream],
+            get_client("website"))
+        events = self.verify_action(
+            action,
+            include_subscribers=include_subscribers,
+            state_change_expected=include_subscribers)
+        check_subscription_peer_remove('events[0]', events[0])
+
         # Now resubscribe a user, to make sure that works on a vacated stream
         action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,
-            num_events=2)
-        check_subscription_add('events[1]', events[1], include_subscribers)
+            include_streams=False,
+            num_events=1)
+        check_subscription_add('events[0]', events[0], include_subscribers)
 
         action = lambda: do_change_stream_description(stream, 'new description')
         events = self.verify_action(
@@ -1910,7 +1946,7 @@ class SubscribeActionTest(BaseAction):
         stream.save()
 
         user_profile = self.example_user('hamlet')
-        action = lambda: bulk_add_subscriptions([stream], [user_profile])
+        action = lambda: bulk_add_subscriptions(user_profile.realm, [stream], [user_profile])
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,

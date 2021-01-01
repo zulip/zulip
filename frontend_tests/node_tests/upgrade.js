@@ -1,18 +1,18 @@
 "use strict";
 
-const noop = () => {};
+const {strict: assert} = require("assert");
 const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+const noop = () => {};
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
-let jquery_init;
-
-global.$ = (f) => {
-    jquery_init = f;
-};
 
 set_global("helpers", {
     set_tab: noop,
@@ -30,8 +30,7 @@ set_global("page_params", {
 });
 
 zrequire("helpers", "js/billing/helpers");
-zrequire("upgrade", "js/billing/upgrade");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("initialize", () => {
     let token_func;
@@ -58,7 +57,7 @@ run_test("initialize", () => {
             assert.equal(numeric_inputs, undefined);
             assert.equal(redirect_to, "/");
         } else {
-            throw Error("Unhandled case");
+            throw new Error("Unhandled case");
         }
     };
 
@@ -104,7 +103,7 @@ run_test("initialize", () => {
     $("#autopay-form").data = (key) =>
         document.querySelector("#autopay-form").getAttribute("data-" + key);
 
-    jquery_init();
+    zrequire("upgrade", "js/billing/upgrade");
 
     const e = {
         preventDefault: noop,

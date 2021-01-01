@@ -96,7 +96,7 @@ class MarkdownDirectoryView(ApiURLView):
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
             (sidebar_index, http_status_ignored) = self.get_path("sidebar_index")
-            title_base = "Zulip API Documentation"
+            title_base = "Zulip API documentation"
 
         # The following is a somewhat hacky approach to extract titles from articles.
         # Hack: `context["article"] has a leading `/`, so we use + to add directories.

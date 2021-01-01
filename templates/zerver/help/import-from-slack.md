@@ -43,7 +43,7 @@ email addresses.
 
 3. [Install the app](https://api.slack.com/authentication/basics#installing)
   to your workspace. You will get an API token that you can now use to fetch
-      data from your slack workspace.
+      data from your Slack workspace.
 
 {end_tabs}
 
@@ -118,7 +118,7 @@ root domain. Replace the last line above with the following, after replacing
 
 - Import of [user roles](/help/roles-and-permissions):
     - Slack's `Workspace Primary Owner` and `Workspace Owner` users
-    are mapped to Zulip `Organization Owner` users.
+    are mapped to Zulip `Organization owner` users.
     - Slack's `Workspace Admin` users are mapped to Zulip's `Organization
       administrator` users.
     - Slack's `Member` users is mapped to Zulip `Member` users.

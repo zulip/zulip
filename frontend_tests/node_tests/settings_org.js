@@ -1,8 +1,15 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const rewiremock = require("rewiremock/node");
 
-set_global("$", global.make_zjquery());
+const {stub_templates} = require("../zjsunit/handlebars");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+set_global("$", make_zjquery());
 
 const noop = () => {};
 
@@ -37,7 +44,7 @@ const _page_params = {
 const _realm_icon = {};
 const _channel = {};
 
-global.stub_templates((name, data) => {
+stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
         assert(data.realm_domain.domain);
         return "stub-domains-list";
@@ -198,7 +205,7 @@ function test_submit_settings_form(submit_form) {
         realm_create_stream_policy: settings_config.create_stream_policy_values.by_members.code,
     });
 
-    global.patch_builtin("setTimeout", (func) => func());
+    set_global("setTimeout", (func) => func());
     const ev = {
         preventDefault: noop,
         stopPropagation: noop,
@@ -646,9 +653,7 @@ function test_parse_time_limit() {
     const elem = $("#id_realm_message_content_edit_limit_minutes");
     const test_function = (value, expected_value = value) => {
         elem.val(value);
-        global.page_params.realm_message_content_edit_limit_seconds = settings_org.parse_time_limit(
-            elem,
-        );
+        page_params.realm_message_content_edit_limit_seconds = settings_org.parse_time_limit(elem);
         assert.equal(
             settings_org.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
@@ -929,7 +934,7 @@ run_test("misc", () => {
 
     const stub_notification_disable_parent = $.create("<stub notification_disable parent");
     stub_notification_disable_parent.set_find_results(
-        ".dropdown_list_reset_button:not([disabled])",
+        ".dropdown_list_reset_button:enabled",
         $.create("<disable link>"),
     );
 
@@ -1010,7 +1015,7 @@ run_test("misc", () => {
     ];
     const dropdown_list_parent = $.create("<list parent>");
     dropdown_list_parent.set_find_results(
-        ".dropdown_list_reset_button:not([disabled])",
+        ".dropdown_list_reset_button:enabled",
         $.create("<disable button>"),
     );
     widget_settings.forEach((name) => {

@@ -1,8 +1,14 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 const noop = () => {};
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 const input = $.create("input");
 set_global("document", {
     createElement: () => input,
@@ -116,8 +122,8 @@ run_test("adjust_mac_shortcuts", () => {
     });
 
     $(".markdown_content").each = (f) => {
-        for (let key_id = 0; key_id < keys_elem_list.length; key_id += 1) {
-            f.call(keys_elem_list[key_id]);
+        for (const key_elem of keys_elem_list) {
+            f.call(key_elem);
         }
     };
     common.adjust_mac_shortcuts(".markdown_content");

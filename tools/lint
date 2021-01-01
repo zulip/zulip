@@ -53,7 +53,7 @@ def run() -> None:
                                   description="Standard CSS style and formatting linter "
                                   "(config: stylelint.config.js)")
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
-                                             '--quiet', '--cache', '--ext', '.js,.ts'], ['js', 'ts'],
+                                             '--max-warnings=0', '--cache', '--ext', '.js,.ts'], ['js', 'ts'],
                                   fix_arg='--fix',
                                   description="Standard JavaScript style and formatting linter "
                                   "(config: .eslintrc).")
@@ -75,6 +75,9 @@ def run() -> None:
                                   "(zerver/openapi/zulip.yaml) ")
     linter_config.external_linter('shellcheck', ['shellcheck', '-x', '-P', 'SCRIPTDIR'], ['sh'],
                                   description="Standard shell script linter")
+    linter_config.external_linter('shfmt', ['shfmt'], ['sh'],
+                                  check_arg='-d', fix_arg='-w',
+                                  description="Formats shell scripts")
     command = ['tools/run-mypy', '--quiet']
     if args.force:
         command.append('--force')

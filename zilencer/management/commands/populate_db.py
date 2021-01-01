@@ -1,6 +1,7 @@
 import itertools
 import os
 import random
+from collections import defaultdict
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
@@ -25,7 +26,7 @@ from zerver.lib.actions import (
     try_add_realm_custom_profile_field,
     try_add_realm_default_custom_profile_field,
 )
-from zerver.lib.bulk_create import bulk_create_reactions, bulk_create_streams
+from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
@@ -44,6 +45,7 @@ from zerver.models import (
     DefaultStream,
     Huddle,
     Message,
+    Reaction,
     Realm,
     RealmAuditLog,
     RealmDomain,
@@ -71,6 +73,16 @@ default_cache = settings.CACHES['default']
 settings.CACHES['default'] = {
     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
 }
+
+DEFAULT_EMOJIS = [
+    ('+1', '1f44d'),
+    ('smiley', '1f603'),
+    ('eyes', '1f440'),
+    ('crying_cat_face', '1f63f'),
+    ('arrow_up', '2b06'),
+    ('confetti_ball', '1f38a'),
+    ('hundred_points', '1f4af'),
+]
 
 def clear_database() -> None:
     # Hacky function only for use inside populate_db.  Designed to
@@ -493,7 +505,7 @@ class Command(BaseCommand):
                 {"id": biography.id, "value": "Betrayer of Othello."},
                 {"id": favorite_food.id, "value": "Apples"},
                 {"id": favorite_editor.id, "value": "emacs"},
-                {"id": birthday.id, "value": "2000-1-1"},
+                {"id": birthday.id, "value": "2000-01-01"},
                 {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
                 {"id": mentor.id, "value": [hamlet.id]},
                 {"id": github_profile.id, "value": 'zulip'},
@@ -506,7 +518,7 @@ class Command(BaseCommand):
                 },
                 {"id": favorite_food.id, "value": "Dark chocolate"},
                 {"id": favorite_editor.id, "value": "vim"},
-                {"id": birthday.id, "value": "1900-1-1"},
+                {"id": birthday.id, "value": "1900-01-01"},
                 {"id": favorite_website.id, "value": "https://blog.zulig.org"},
                 {"id": mentor.id, "value": [iago.id]},
                 {"id": github_profile.id, "value": 'zulipbot'},
@@ -807,6 +819,55 @@ def send_messages(messages: List[Message]) -> None:
     bulk_create_reactions(messages)
     settings.USING_RABBITMQ = True
 
+def get_message_to_users(message_ids: List[int]) -> Dict[int, List[int]]:
+    rows = UserMessage.objects.filter(
+        message_id__in=message_ids,
+    ).values("message_id", "user_profile_id")
+
+    result: Dict[int, List[int]] = defaultdict(list)
+
+    for row in rows:
+        result[row["message_id"]].append(row["user_profile_id"])
+
+    return result
+
+def bulk_create_reactions(all_messages: List[Message]) -> None:
+    reactions: List[Reaction] = []
+
+    num_messages = int(0.2 * len(all_messages))
+    messages = random.sample(all_messages, num_messages)
+    message_ids = [message.id for message in messages]
+
+    message_to_users = get_message_to_users(message_ids)
+
+    for message_id in message_ids:
+        msg_user_ids = message_to_users[message_id]
+
+        if msg_user_ids:
+            # Now let between 1 and 7 users react.
+            #
+            # Ideally, we'd make exactly 1 reaction more common than
+            # this algorithm generates.
+            max_num_users = min(7, len(msg_user_ids))
+            num_users = random.randrange(1, max_num_users + 1)
+            user_ids = random.sample(msg_user_ids, num_users)
+
+            for user_id in user_ids:
+                # each user does between 1 and 3 emojis
+                num_emojis = random.choice([1, 2, 3])
+                emojis = random.sample(DEFAULT_EMOJIS, num_emojis)
+
+                for emoji_name, emoji_code in emojis:
+                    reaction = Reaction(
+                        user_profile_id=user_id,
+                        message_id=message_id,
+                        emoji_name=emoji_name,
+                        emoji_code=emoji_code,
+                        reaction_type=Reaction.UNICODE_EMOJI
+                    )
+                    reactions.append(reaction)
+
+    Reaction.objects.bulk_create(reactions)
 def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> datetime:
     # Spoofing time not supported with threading
     if threads != 1:

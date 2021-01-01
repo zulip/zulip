@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional
 
+import pytz
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.core.exceptions import ValidationError
@@ -8,6 +9,7 @@ from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy
 
 from confirmation.models import (
     Confirmation,
@@ -39,13 +41,12 @@ from zerver.lib.rate_limiter import RateLimited
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
-from zerver.lib.timezone import get_all_timezones
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_int, check_int_in, check_string, check_string_in
 from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
-AVATAR_CHANGES_DISABLED_ERROR = _("Avatar changes are disabled in this organization.")
+AVATAR_CHANGES_DISABLED_ERROR = ugettext_lazy("Avatar changes are disabled in this organization.")
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
@@ -97,7 +98,8 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
                                 realm=user_profile.realm, return_data=return_data):
                 return json_error(_("Wrong password!"))
         except RateLimited as e:
-            secs_to_freedom = int(float(str(e)))
+            assert e.secs_to_freedom is not None
+            secs_to_freedom = int(e.secs_to_freedom)
             return json_error(
                 _("You're making too many attempts! Try again in {} seconds.").format(secs_to_freedom),
             )
@@ -157,7 +159,6 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 
     return json_success(result)
 
-all_timezones = set(get_all_timezones())
 emojiset_choices = {emojiset['key'] for emojiset in UserProfile.emojiset_choices()}
 
 @human_users_only
@@ -178,7 +179,7 @@ def update_display_settings_backend(
             emojiset_choices), default=None),
         demote_inactive_streams: Optional[int]=REQ(validator=check_int_in(
             UserProfile.DEMOTE_STREAMS_CHOICES), default=None),
-        timezone: Optional[str]=REQ(validator=check_string_in(all_timezones),
+        timezone: Optional[str]=REQ(validator=check_string_in(pytz.all_timezones_set),
                                     default=None)) -> HttpResponse:
 
     # We can't use REQ for this widget because
@@ -242,7 +243,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
         return json_error(_("You must upload exactly one avatar."))
 
     if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
-        return json_error(AVATAR_CHANGES_DISABLED_ERROR)
+        return json_error(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     user_file = list(request.FILES.values())[0]
     if ((settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size):
@@ -260,7 +261,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
 
 def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
-        return json_error(AVATAR_CHANGES_DISABLED_ERROR)
+        return json_error(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile)
     gravatar_url = avatar_url(user_profile)

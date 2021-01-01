@@ -11,21 +11,9 @@ import urllib.parse
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from io import StringIO
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Dict, Generic, List, Optional, Set, Tuple, TypeVar, Union
 from typing.re import Match, Pattern
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -33,9 +21,15 @@ import ahocorasick
 import dateutil.parser
 import dateutil.tz
 import markdown
+import markdown.blockprocessors
+import markdown.inlinepatterns
+import markdown.postprocessors
+import markdown.treeprocessors
+import markdown.util
 import requests
 from django.conf import settings
 from django.db.models import Q
+from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
 from typing_extensions import TypedDict
@@ -162,7 +156,7 @@ def get_web_link_regex() -> str:
 
     # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
     #
-    # We detect a url either by the `https?://` or by building around the TLD.
+    # We detect a URL either by the `https?://` or by building around the TLD.
 
     # In lieu of having a recursive regex (which python doesn't support) to match
     # arbitrary numbers of nested matching parenthesis, we manually build a regexp that
@@ -388,8 +382,9 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
         # the startup performance of `manage.py` commands.
         import twitter
 
+        api = twitter.Api(tweet_mode='extended', **creds)
+
         try:
-            api = twitter.Api(tweet_mode='extended', **creds)
             # Sometimes Twitter hangs on responses.  Timing out here
             # will cause the Tweet to go through as-is with no inline
             # preview, rather than having the message be rejected
@@ -397,10 +392,6 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
             # formatting timeout.
             tweet = timeout(3, api.GetStatus, tweet_id)
             res = tweet.AsDict()
-        except AttributeError:
-            markdown_logger.error('Unable to load twitter api, you may have the wrong '
-                                  'library installed, see https://github.com/zulip/zulip/issues/86')
-            return None
         except TimeoutExpired:
             # We'd like to try again later and not cache the bad result,
             # so we need to re-raise the exception (just as though
@@ -449,7 +440,7 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
     # TODO: What if response content is huge? Should we get headers first?
     try:
         content = requests.get(url, timeout=1).text
-    except Exception:
+    except requests.RequestException:
         return None
     # Extract the head and meta tags
     # All meta tags are self closing, have no children or are closed
@@ -590,12 +581,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # We strip leading '/' from relative URLs here to ensure
             # consistency in what gets passed to /thumbnail
             url = url.lstrip('/')
-            img.set("src", "/thumbnail?url={}&size=thumbnail".format(
-                urllib.parse.quote(url, safe=''),
-            ))
-            img.set('data-src-fullsize', "/thumbnail?url={}&size=full".format(
-                urllib.parse.quote(url, safe=''),
-            ))
+            img.set("src", "/thumbnail?" + urlencode({"url": url, "size": "thumbnail"}))
+            img.set('data-src-fullsize', "/thumbnail?" + urlencode({"url": url, "size": "full"}))
         else:
             img.set("src", url)
 
@@ -671,7 +658,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             description_elm.text = description
 
     def get_actual_image_url(self, url: str) -> str:
-        # Add specific per-site cases to convert image-preview urls to image urls.
+        # Add specific per-site cases to convert image-preview URLs to image URLs.
         # See https://github.com/zulip/zulip/issues/4658 for more information
         parsed_url = urllib.parse.urlparse(url)
         if (parsed_url.netloc == 'github.com' or parsed_url.netloc.endswith('.github.com')):
@@ -688,7 +675,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not self.md.image_preview_enabled:
             return False
         parsed_url = urllib.parse.urlparse(url)
-        # remove html urls which end with img extensions that can not be shorted
+        # remove HTML URLs which end with image extensions that can not be shorted
         if parsed_url.netloc == 'pasteboard.co':
             return False
 
@@ -699,15 +686,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return False
 
     def corrected_image_source(self, url: str) -> Optional[str]:
-        # This function adjusts any urls from linx.li and
-        # wikipedia.org to point to the actual image url.  It's
+        # This function adjusts any URLs from linx.li and
+        # wikipedia.org to point to the actual image URL.  It's
         # structurally very similar to dropbox_image, and possibly
         # should be rewritten to use open graph, but has some value.
         parsed_url = urllib.parse.urlparse(url)
         if parsed_url.netloc.lower().endswith('.wikipedia.org'):
             # Redirecting from "/wiki/File:" to "/wiki/Special:FilePath/File:"
             # A possible alternative, that avoids the redirect after hitting "Special:"
-            # is using the first characters of md5($filename) to generate the url
+            # is using the first characters of md5($filename) to generate the URL
             domain = parsed_url.scheme + "://" + parsed_url.netloc
             correct_url = domain + parsed_url.path[:6] + 'Special:FilePath' + parsed_url.path[5:]
             return correct_url
@@ -763,7 +750,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def youtube_id(self, url: str) -> Optional[str]:
         if not self.md.image_preview_enabled:
             return None
-        # Youtube video id extraction regular expression from https://pastebin.com/KyKAFv1s
+        # YouTube video id extraction regular expression from https://pastebin.com/KyKAFv1s
         # Slightly modified to support URLs of the forms
         #   - youtu.be/<id>
         #   - youtube.com/playlist?v=<id>&list=<list-id>
@@ -820,11 +807,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                      user_mentions: List[Dict[str, Any]],
                      media: List[Dict[str, Any]]) -> Element:
         """
-        Use data from the twitter API to turn links, mentions and media into A
-        tags. Also convert unicode emojis to images.
+        Use data from the Twitter API to turn links, mentions and media into A
+        tags. Also convert Unicode emojis to images.
 
-        This works by using the urls, user_mentions and media data from
-        the twitter API and searching for unicode emojis in the text using
+        This works by using the URLs, user_mentions and media data from
+        the twitter API and searching for Unicode emojis in the text using
         `unicode_emoji_regex`.
 
         The first step is finding the locations of the URLs, mentions, media and
@@ -1170,7 +1157,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if not self.is_absolute_url(url):
                 if self.is_image(url):
                     self.handle_image_inlining(root, found_url)
-                # We don't have a strong use case for doing url preview for relative links.
+                # We don't have a strong use case for doing URL preview for relative links.
                 continue
 
             dropbox_image = self.dropbox_image(url)
@@ -1234,13 +1221,19 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if youtube is not None:
                     title = self.youtube_title(extracted_data)
                     if title is not None:
-                        found_url.family.child.text = title
+                        if url == text:
+                            found_url.family.child.text = title
+                        else:
+                            found_url.family.child.text = text
                     continue
                 self.add_embed(root, url, extracted_data)
                 if self.vimeo_id(url):
                     title = self.vimeo_title(extracted_data)
                     if title:
-                        found_url.family.child.text = title
+                        if url == text:
+                            found_url.family.child.text = title
+                        else:
+                            found_url.family.child.text = text
 
 class Timestamp(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
@@ -1273,7 +1266,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         time_element.text = markdown.util.AtomicString(time_input_string)
         return time_element
 
-# All of our emojis(non ZWJ sequences) belong to one of these unicode blocks:
+# All of our emojis(non ZWJ sequences) belong to one of these Unicode blocks:
 # \U0001f100-\U0001f1ff - Enclosed Alphanumeric Supplement
 # \U0001f200-\U0001f2ff - Enclosed Ideographic Supplement
 # \U0001f300-\U0001f5ff - Miscellaneous Symbols and Pictographs
@@ -1308,13 +1301,13 @@ unicode_emoji_regex = '(?P<syntax>['\
 # The equivalent JS regex is \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
 # \ud83e[\udd00-\uddff]|[\u2000-\u206f]|[\u2300-\u27bf]|[\u2b00-\u2bff]|[\u3000-\u303f]|
 # [\u3200-\u32ff]. See below comments for explanation. The JS regex is used by marked.js for
-# frontend unicode emoji processing.
+# frontend Unicode emoji processing.
 # The JS regex \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f] represents U0001f100-\U0001f64f
 # The JS regex \ud83d[\ude80-\udeff] represents \U0001f680-\U0001f6ff
 # The JS regex \ud83e[\udd00-\uddff] represents \U0001f900-\U0001f9ff
 # The JS regex [\u2000-\u206f] represents \u2000-\u206f
 # The JS regex [\u2300-\u27bf] represents \u2300-\u27bf
-# Similarly other JS regexes can be mapped to the respective unicode blocks.
+# Similarly other JS regexes can be mapped to the respective Unicode blocks.
 # For more information, please refer to the following article:
 # http://crocodillon.com/blog/parsing-emoji-unicode-in-javascript
 
@@ -1415,14 +1408,14 @@ class Tex(markdown.inlinepatterns.Pattern):
 
 def sanitize_url(url: str) -> Optional[str]:
     """
-    Sanitize a url against xss attacks.
+    Sanitize a URL against XSS attacks.
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
     """
     try:
         parts = urllib.parse.urlparse(url.replace(' ', '%20'))
         scheme, netloc, path, params, query, fragment = parts
     except ValueError:
-        # Bad url - so bad it couldn't be parsed.
+        # Bad URL - so bad it couldn't be parsed.
         return ''
 
     # If there is no scheme or netloc and there is a '@' in the path,
@@ -1464,7 +1457,7 @@ def sanitize_url(url: str) -> Optional[str]:
     # We already converted an empty scheme to http:// above, so we skip
     # the colon check, which would also forbid a lot of legitimate URLs.
 
-    # Url passes all tests. Return url as-is.
+    # URL passes all tests. Return URL as-is.
     return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
 
 def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> Union[Element, str]:
@@ -1527,7 +1520,7 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         parser.md.tab_length = 4
 
 class HashHeaderProcessor(markdown.blockprocessors.HashHeaderProcessor):
-    """ Process Hash Headers.
+    """ Process hash headers.
 
         Based on markdown.blockprocessors.HashHeaderProcessor, but requires space for heading.
     """
@@ -1537,7 +1530,7 @@ class HashHeaderProcessor(markdown.blockprocessors.HashHeaderProcessor):
     RE = re.compile(r'(?:^|\n)(?P<level>#{1,6})\s(?P<header>(?:\\.|[^\\])*?)#*(?:\n|$)')
 
 class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
-    """ Process BlockQuotes.
+    """ Process block quotes.
 
         Based on markdown.blockprocessors.BlockQuoteProcessor, but with 2-space indent
     """
@@ -1546,6 +1539,34 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     RE = re.compile(r'(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))'
                     r'[ ]{0,3}>[ ]?(.*)')
     mention_re = re.compile(mention.find_mentions)
+
+    # run() is very slightly forked from the base class; see notes below.
+    def run(self, parent: Element, blocks: List[Any]) -> None:
+        block = blocks.pop(0)
+        m = self.RE.search(block)
+        if m:
+            before = block[:m.start()]  # Lines before blockquote
+            # Pass lines before blockquote in recursively for parsing forst.
+            self.parser.parseBlocks(parent, [before])
+            # Remove ``> `` from beginning of each line.
+            block = '\n'.join(
+                [self.clean(line) for line in block[m.start():].split('\n')]
+            )
+
+        # Zulip modification: The next line is patched to match
+        # CommonMark rather than original Markdown.  In original
+        # Markdown, blockquotes with a blank line between them were
+        # merged, which makes it impossible to break a blockquote with
+        # a blank line intentionally.
+        #
+        # This is a new blockquote. Create a new parent element.
+        quote = etree.SubElement(parent, 'blockquote')
+
+        # Recursively parse block with blockquote as parent.
+        # change parser state so blockquotes embedded in lists use p tags
+        self.parser.state.set('blockquote')
+        self.parser.parseChunk(quote, block)
+        self.parser.state.reset()
 
     def clean(self, line: str) -> str:
         # Silence all the mentions inside blockquotes
@@ -1784,7 +1805,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
             return True
         return False
 
-    def run(self, lines: Iterable[str]) -> Iterable[str]:
+    def run(self, lines: List[str]) -> List[str]:
         db_data = self.md.zulip_db_data
         if self.md.zulip_message and db_data is not None:
             # We check for alert words here, the set of which are
@@ -1809,7 +1830,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         href = el.get('href')
         assert href is not None
 
-        # Sanitize url or don't parse link. See linkify_tests in markdown_test_cases for banned syntax.
+        # Sanitize URL or don't parse link. See linkify_tests in markdown_test_cases for banned syntax.
         href = sanitize_url(self.unescape(href.strip()))
         if href is None:
             return None  # no-op; the link is not processed.
@@ -1838,7 +1859,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return el, match_start, index
 
 def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
-    # Registry is a new class added by py-markdown to replace Ordered List.
+    # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
     # object instead of removing keys from the existing object.
     new_r = markdown.util.Registry()
@@ -1852,25 +1873,45 @@ DEFAULT_MARKDOWN_KEY = -1
 ZEPHYR_MIRROR_MARKDOWN_KEY = -2
 
 class Markdown(markdown.Markdown):
-    def __init__(self, *args: Any, **kwargs: Union[bool, int, List[Any]]) -> None:
+    zulip_message: Optional[Message]
+    zulip_realm: Optional[Realm]
+    zulip_db_data: Optional[DbData]
+    image_preview_enabled: bool
+    url_embed_preview_enabled: bool
+
+    def __init__(
+        self,
+        realm_filters: List[Tuple[str, str, int]],
+        realm_filters_key: int,
+        email_gateway: bool,
+    ) -> None:
         # define default configs
         self.config = {
-            "realm_filters": [kwargs['realm_filters'],
-                              "Realm-specific filters for realm_filters_key {}".format(kwargs['realm'])],
-            "realm": [kwargs['realm'], "Realm id"],
-            "code_block_processor_disabled": [kwargs['code_block_processor_disabled'],
+            "realm_filters": [realm_filters,
+                              f"Realm-specific filters for realm_filters_key {realm_filters_key}"],
+            "realm": [realm_filters_key, "Realm id"],
+            "code_block_processor_disabled": [email_gateway,
                                               "Disabled for email gateway"],
         }
 
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            extensions=[
+                nl2br.makeExtension(),
+                tables.makeExtension(),
+                codehilite.makeExtension(
+                    linenums=False,
+                    guess_lang=False,
+                ),
+            ],
+        )
         self.set_output_format('html')
 
     def build_parser(self) -> markdown.Markdown:
-        # Build the parser using selected default features from py-markdown.
+        # Build the parser using selected default features from Python-Markdown.
         # The complete list of all available processors can be found in the
         # super().build_parser() function.
         #
-        # Note: for any py-markdown updates, manually check if we want any
+        # Note: for any Python-Markdown updates, manually check if we want any
         # of the new features added upstream or not; they wouldn't get
         # included by default.
         self.preprocessors = self.build_preprocessors()
@@ -1893,7 +1934,7 @@ class Markdown(markdown.Markdown):
         preprocessors.register(AlertWordNotificationProcessor(self), 'custom_text_notifications', 20)
         return preprocessors
 
-    def build_block_parser(self) -> markdown.util.Registry:
+    def build_block_parser(self) -> BlockParser:
         # We disable the following blockparsers from upstream:
         #
         # indent - replaced by ours
@@ -1901,7 +1942,7 @@ class Markdown(markdown.Markdown):
         # olist - replaced by ours
         # ulist - replaced by ours
         # quote - replaced by ours
-        parser = markdown.blockprocessors.BlockParser(self)
+        parser = BlockParser(self)
         parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 95)
         parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 90)
         if not self.getConfig('code_block_processor_disabled'):
@@ -1945,7 +1986,7 @@ class Markdown(markdown.Markdown):
         ENTITY_RE = markdown.inlinepatterns.ENTITY_RE
         STRONG_EM_RE = r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*'
 
-        # Add Inline Patterns.  We use a custom numbering of the
+        # Add inline patterns.  We use a custom numbering of the
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
         reg = markdown.util.Registry()
@@ -1959,7 +2000,7 @@ class Markdown(markdown.Markdown):
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), 'link', 60)
         reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
-        # Reserve priority 45-54 for Realm Filters
+        # Reserve priority 45-54 for realm filters
         reg = self.register_realm_filters(reg)
         reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), 'entity', 40)
         reg.register(markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'), 'strong', 35)
@@ -2019,7 +2060,7 @@ class Markdown(markdown.Markdown):
             self.preprocessors = get_sub_registry(self.preprocessors, ['custom_text_notifications'])
             self.parser.blockprocessors = get_sub_registry(self.parser.blockprocessors, ['paragraph'])
 
-md_engines: Dict[Tuple[int, bool], markdown.Markdown] = {}
+md_engines: Dict[Tuple[int, bool], Markdown] = {}
 realm_filter_data: Dict[int, List[Tuple[str, str, int]]] = {}
 
 def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
@@ -2028,28 +2069,11 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
         del md_engines[md_engine_key]
 
     realm_filters = realm_filter_data[realm_filters_key]
-    md_engines[md_engine_key] = build_engine(
+    md_engines[md_engine_key] = Markdown(
         realm_filters=realm_filters,
         realm_filters_key=realm_filters_key,
         email_gateway=email_gateway,
     )
-
-def build_engine(realm_filters: List[Tuple[str, str, int]],
-                 realm_filters_key: int,
-                 email_gateway: bool) -> markdown.Markdown:
-    engine = Markdown(
-        realm_filters=realm_filters,
-        realm=realm_filters_key,
-        code_block_processor_disabled=email_gateway,
-        extensions = [
-            nl2br.makeExtension(),
-            tables.makeExtension(),
-            codehilite.makeExtension(
-                linenums=False,
-                guess_lang=False,
-            ),
-        ])
-    return engine
 
 # Split the topic name into multiple sections so that we can easily use
 # our common single link matching regex on it.
@@ -2069,7 +2093,7 @@ def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
         for m in re.finditer(pattern, topic_name):
             matches += [realm_filter[1] % m.groupdict()]
 
-    # Also make raw urls navigable.
+    # Also make raw URLs navigable.
     for sub_string in basic_link_splitter.split(topic_name):
         link_match = re.match(get_web_link_regex(), sub_string)
         if link_match:

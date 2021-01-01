@@ -10,10 +10,17 @@ args="$(getopt -o +n: --long help,name: -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
-        --help) usage;;
-        -n|--name) CONTAINER_NAME="$2"; shift; shift;;
-        --) shift; break;;
-        *) usage;;
+        --help) usage ;;
+        -n | --name)
+            CONTAINER_NAME="$2"
+            shift
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *) usage ;;
     esac
 done
 
@@ -31,7 +38,10 @@ poll_runlevel() {
     for _ in {1..60}; do
         echo "lxc-wait: $CONTAINER_NAME: polling for boot..." >&2
         runlevel="$(lxc-attach --clear-env -n "$CONTAINER_NAME" -- runlevel 2>/dev/null)" \
-            || { sleep 1; continue; }
+            || {
+                sleep 1
+                continue
+            }
         if [ "$runlevel" != "${0%[0-9]}" ]; then
             echo "lxc-wait: $CONTAINER_NAME: booted!" >&2
             poll_network
@@ -42,14 +52,16 @@ poll_runlevel() {
     exit 1
 }
 
-
 poll_network() {
     for _ in {1..60}; do
         echo "lxc-wait: $CONTAINER_NAME: polling for network..." >&2
         # New hosts don't have `host` or `nslookup`
         lxc-attach --clear-env -n "$CONTAINER_NAME" -- \
-                   ping -q -c 1 archive.ubuntu.com 2>/dev/null >/dev/null \
-            || { sleep 1; continue; }
+            ping -q -c 1 archive.ubuntu.com 2>/dev/null >/dev/null \
+            || {
+                sleep 1
+                continue
+            }
         echo "lxc-wait: $CONTAINER_NAME: network is up!" >&2
         exit 0
     done
@@ -57,6 +69,4 @@ poll_network() {
     exit 1
 }
 
-
 poll_runlevel
-

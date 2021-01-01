@@ -22,33 +22,13 @@ const hello_events = function () {
 };
 
 const apps_events = function () {
-    const ELECTRON_APP_VERSION = page_params.electron_app_version;
-    const ELECTRON_APP_URL_LINUX =
-        "https://github.com/zulip/zulip-desktop/releases/download/v" +
-        ELECTRON_APP_VERSION +
-        "/Zulip-" +
-        ELECTRON_APP_VERSION +
-        "-x86_64.AppImage";
-    const ELECTRON_APP_URL_MAC =
-        "https://github.com/zulip/zulip-desktop/releases/download/v" +
-        ELECTRON_APP_VERSION +
-        "/Zulip-" +
-        ELECTRON_APP_VERSION +
-        ".dmg";
-    const ELECTRON_APP_URL_WINDOWS =
-        "https://github.com/zulip/zulip-desktop/releases/download/v" +
-        ELECTRON_APP_VERSION +
-        "/Zulip-Web-Setup-" +
-        ELECTRON_APP_VERSION +
-        ".exe";
-
     const info = {
         windows: {
             image: "/static/images/landing-page/microsoft.png",
             alt: "Windows",
             description:
                 "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
-            link: ELECTRON_APP_URL_WINDOWS,
+            download_link: "/apps/download/windows",
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
             app_type: "desktop",
@@ -58,7 +38,7 @@ const apps_events = function () {
             alt: "macOS",
             description:
                 "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
-            link: ELECTRON_APP_URL_MAC,
+            download_link: "/apps/download/mac",
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
             app_type: "desktop",
@@ -68,7 +48,9 @@ const apps_events = function () {
             alt: "Android",
             description: "Zulip's native Android app makes it easy to keep up while on the go.",
             show_instructions: false,
-            link: "https://play.google.com/store/apps/details?id=com.zulipmobile",
+            play_store_link: "https://play.google.com/store/apps/details?id=com.zulipmobile",
+            download_link:
+                "https://github.com/zulip/zulip-mobile/releases/latest/download/app-release.apk",
             app_type: "mobile",
         },
         ios: {
@@ -76,7 +58,7 @@ const apps_events = function () {
             alt: "iOS",
             description: "Zulip's native iOS app makes it easy to keep up while on the go.",
             show_instructions: false,
-            link: "https://itunes.apple.com/us/app/zulip/id1203036395",
+            app_store_link: "https://itunes.apple.com/us/app/zulip/id1203036395",
             app_type: "mobile",
         },
         linux: {
@@ -84,7 +66,7 @@ const apps_events = function () {
             alt: "Linux",
             description:
                 "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
-            link: ELECTRON_APP_URL_LINUX,
+            download_link: "/apps/download/linux",
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
             app_type: "desktop",
@@ -127,9 +109,10 @@ const apps_events = function () {
 
         $(".info .platform").text(version_info.alt);
         $(".info .description").text(version_info.description);
-        $(".info .desktop-download-link").attr("href", version_info.link);
-        $(".download-from-google-play-store").attr("href", version_info.link);
-        $(".download-from-apple-app-store").attr("href", version_info.link);
+        $(".info .desktop-download-link").attr("href", version_info.download_link);
+        $(".download-from-google-play-store").attr("href", version_info.play_store_link);
+        $(".download-from-apple-app-store").attr("href", version_info.app_store_link);
+        $("#download-android-apk a").attr("href", version_info.download_link);
         $(".image img").attr("src", version_info.image);
         $download_instructions.find("a").attr("href", version_info.install_guide);
 

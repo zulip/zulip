@@ -22,7 +22,7 @@ The test files live in `frontend_tests/puppeteer_tests` and make use
 of various useful helper functions defined in
 `frontend_tests/puppeteer_lib/common.js`.
 
-## How puppeteer tests work
+## How Puppeteer tests work
 
 The Puppeteer tests use a real Chromium browser (powered by
 [puppeteer](https://github.com/puppeteer/puppeteer)), connected to a
@@ -93,7 +93,7 @@ These tools/features are often useful when debugging:
   debugging test failures.
 * TODO: Mention how to access Puppeteer screenshots in CI.
 * TODO: Add an option for using the `headless: false` debugging mode
-  of puppeteer so you can watch what's happening, and document how to
+  of Puppeteer so you can watch what's happening, and document how to
   make that work with Vagrant.
 * TODO: Document `--interactive`.
 * TODO: Document how to run 100x in CI to check for nondeterminstic
@@ -108,7 +108,7 @@ These tools/features are often useful when debugging:
   includes the console output for the server; any Python exceptions
   are likely actual bugs in the changes being tested.
 
-See also [puppeteer upstream's debugging
+See also [Puppeteer upstream's debugging
 tips](https://github.com/puppeteer/puppeteer#debugging-tips); some
 tips may require temporary patches to functions like `run_test` or
 `ensure_browser` in `frontend_tests/puppeteer_lib/common.js`.
@@ -153,4 +153,3 @@ notes above:
   `zilencer/management/commands/populate_db.py`.
 
 [learn-async-await]: https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await
-

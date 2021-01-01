@@ -25,8 +25,9 @@ def try_git_describe() -> Optional[str]:
             ['git', 'describe', '--tags', '--match=[0-9]*', '--always', '--dirty', '--long'],
             stderr=subprocess.PIPE,
             cwd=os.path.join(os.path.dirname(__file__), '..'),
-        ).strip().decode('utf-8')
-    except Exception:  # nocoverage
+            universal_newlines=True,
+        ).strip()
+    except (FileNotFoundError, subprocess.CalledProcessError):  # nocoverage
         return None
 
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
@@ -105,7 +106,7 @@ class AdminNotifyHandler(logging.Handler):
         # recursive exception loops are made).
         #
         # We initialize is_markdown_rendering_exception to `True` to
-        # prevent the infinite loop of zulip messages by ERROR_BOT if
+        # prevent the infinite loop of Zulip messages by ERROR_BOT if
         # the outer try block here throws an exception before we have
         # a chance to check the exception for whether it comes from
         # markdown.

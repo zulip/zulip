@@ -36,7 +36,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             unread_ops.process_read_messages_event(msg_ids);
             // This methods updates message_list too and since stream_topic_history relies on it
             // this method should be called first.
-            ui.remove_messages(msg_ids);
+            message_events.remove_messages(msg_ids);
 
             if (event.message_type === "stream") {
                 stream_topic_history.remove_messages({
@@ -143,6 +143,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose.update_video_chat_button_display,
                 waiting_period_threshold: noop,
+                wildcard_mention_policy: noop,
             };
             if (
                 event.op === "update" &&
@@ -343,7 +344,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     }
                 }
             } else if (event.op === "peer_add") {
-                function add_peer(stream_id, user_id) {
+                event.stream_ids.forEach((stream_id) => {
                     const sub = stream_data.get_sub_by_id(stream_id);
 
                     if (!sub) {
@@ -351,17 +352,18 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                         return;
                     }
 
-                    if (!stream_data.add_subscriber(stream_id, user_id)) {
-                        blueslip.warn("Cannot process peer_add event");
-                        return;
-                    }
+                    event.user_ids.forEach((user_id) => {
+                        if (!stream_data.add_subscriber(stream_id, user_id)) {
+                            blueslip.warn("Cannot process peer_add event");
+                            return;
+                        }
+                    });
 
                     subs.update_subscribers_ui(sub);
-                    compose_fade.update_faded_users();
-                }
-                add_peer(event.stream_id, event.user_id);
+                });
+                compose_fade.update_faded_users();
             } else if (event.op === "peer_remove") {
-                function remove_peer(stream_id, user_id) {
+                event.stream_ids.forEach((stream_id) => {
                     const sub = stream_data.get_sub_by_id(stream_id);
 
                     if (!sub) {
@@ -369,15 +371,16 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                         return;
                     }
 
-                    if (!stream_data.remove_subscriber(sub.stream_id, user_id)) {
-                        blueslip.warn("Cannot process peer_remove event.");
-                        return;
-                    }
+                    event.user_ids.forEach((user_id) => {
+                        if (!stream_data.remove_subscriber(sub.stream_id, user_id)) {
+                            blueslip.warn("Cannot process peer_remove event.");
+                            return;
+                        }
+                    });
 
                     subs.update_subscribers_ui(sub);
-                    compose_fade.update_faded_users();
-                }
-                remove_peer(event.stream_id, event.user_id);
+                });
+                compose_fade.update_faded_users();
             } else if (event.op === "remove") {
                 for (const rec of event.subscriptions) {
                     const sub = stream_data.get_sub_by_id(rec.stream_id);

@@ -7,7 +7,6 @@
 #
 # The decryption logic here isn't actually used by the flow; we just
 # have it here as part of testing the overall library.
-import binascii
 
 from zerver.models import UserProfile
 
@@ -21,11 +20,11 @@ def xor_hex_strings(bytes_a: str, bytes_b: str) -> str:
 
 def ascii_to_hex(input_string: str) -> str:
     """Given an ascii string, encode it as a hex string"""
-    return "".join(hex(ord(c))[2:].zfill(2) for c in input_string)
+    return input_string.encode().hex()
 
 def hex_to_ascii(input_string: str) -> str:
     """Given a hex array, decode it back to a string"""
-    return binascii.unhexlify(input_string).decode('utf8')
+    return bytes.fromhex(input_string).decode()
 
 def otp_encrypt_api_key(api_key: str, otp: str) -> str:
     assert len(otp) == UserProfile.API_KEY_LENGTH * 2

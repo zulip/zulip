@@ -10,14 +10,23 @@ args="$(getopt -o +r: --long help,release: -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
-        --help) usage;;
-        -r|--release) RELEASE="$2"; shift; shift;;
-        --) shift; break;;
-        *) usage;;
+        --help) usage ;;
+        -r | --release)
+            RELEASE="$2"
+            shift
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *) usage ;;
     esac
 done
-INSTALLER="$1"; shift || usage
-INSTALLER_ARGS=("$@"); set --
+INSTALLER="$1"
+shift || usage
+INSTALLER_ARGS=("$@")
+set --
 
 if [ -z "$RELEASE" ] || [ -z "$INSTALLER" ]; then
     usage
@@ -42,7 +51,8 @@ while [ -z "$CONTAINER_NAME" ] || lxc-info -n "$CONTAINER_NAME" >/dev/null 2>&1;
     CONTAINER_NAME=zulip-install-"$(basename "$shared_dir")"
 done
 
-message="$(cat <<EOF
+message="$(
+    cat <<EOF
 
 Container:
   sudo lxc-attach --clear-env -n $CONTAINER_NAME
@@ -68,7 +78,7 @@ mount -t overlay overlay \
     "$shared_dir"/mnt
 
 lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME" \
-         -m bind="$shared_dir"/mnt:/mnt/src/,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
+    -m bind="$shared_dir"/mnt:/mnt/src/,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
 
 "$THIS_DIR"/lxc-wait -n "$CONTAINER_NAME"
 

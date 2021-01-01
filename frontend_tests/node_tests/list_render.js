@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 zrequire("list_render");
 
 // We need these stubs to get by instanceof checks.
@@ -223,7 +228,7 @@ run_test("filtering", () => {
     const new_data = ["greta", "faye", "gary", "frank", "giraffe", "fox"];
 
     widget.replace_list_data(new_data);
-    expected_html = "<div>greta</div>" + "<div>gary</div>" + "<div>giraffe</div>";
+    expected_html = "<div>greta</div><div>gary</div><div>giraffe</div>";
     assert.deepEqual(container.appended_data.html(), expected_html);
 });
 
@@ -240,7 +245,7 @@ run_test("no filtering", () => {
     const widget = list_render.create(container, ["apple", "banana"], opts);
     widget.render();
 
-    const expected_html = "<div>apple</div>" + "<div>banana</div>";
+    const expected_html = "<div>apple</div><div>banana</div>";
     assert.deepEqual(container.appended_data.html(), expected_html);
 });
 
@@ -257,7 +262,7 @@ function sort_button(opts) {
             case "sort-prop":
                 return opts.prop_name;
             default:
-                throw Error("unknown selector: " + sel);
+                throw new Error("unknown selector: " + sel);
         }
     }
 
@@ -685,7 +690,7 @@ run_test("render item", () => {
         };
     };
 
-    const list = [...Array(100).keys()];
+    const list = [...new Array(100).keys()];
 
     let text = "initial";
     const get_item = (item) => ({text: `${text}: ${item}`, value: item});

@@ -12,7 +12,7 @@ system and possibly improve it.  This document assumes that the
 client is our web app, but any client can play along with this
 protocol.
 
-Right now typing indicators are only used in "Private Messages"
+Right now typing indicators are only used in "Private messages"
 views.
 
 There are two major roles for users in this system:

@@ -26,14 +26,6 @@ def installation_epoch() -> datetime.datetime:
     earliest_realm_creation = Realm.objects.aggregate(models.Min('date_created'))['date_created__min']
     return floor_to_day(earliest_realm_creation)
 
-def last_successful_fill(property: str) -> Optional[datetime.datetime]:
-    fillstate = FillState.objects.filter(property=property).first()
-    if fillstate is None:
-        return None
-    if fillstate.state == FillState.DONE:
-        return fillstate.end_time
-    return fillstate.end_time - datetime.timedelta(hours=1)
-
 class BaseCount(models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
     # the order of the columns in the migration to make sure they

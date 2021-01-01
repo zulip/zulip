@@ -9,7 +9,7 @@ exports.create_item_from_stream_name = function (stream_name, current_items) {
     if (!stream_name.startsWith("#")) {
         return undefined;
     }
-    stream_name = stream_name.substring(1);
+    stream_name = stream_name.slice(1);
 
     const sub = stream_data.get_sub(stream_name);
     if (!sub) {

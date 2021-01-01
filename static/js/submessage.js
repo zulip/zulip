@@ -13,7 +13,7 @@ exports.get_message_events = function (message) {
         return undefined;
     }
 
-    message.submessages.sort((m1, m2) => parseInt(m1.id, 10) - parseInt(m2.id, 10));
+    message.submessages.sort((m1, m2) => Number.parseInt(m1.id, 10) - Number.parseInt(m2.id, 10));
 
     const events = message.submessages.map((obj) => ({
         sender_id: obj.sender_id,
@@ -28,8 +28,8 @@ exports.process_submessages = function (in_opts) {
     // damage that may be triggered by one rogue message.
     try {
         return exports.do_process_submessages(in_opts);
-    } catch (err) {
-        blueslip.error("in process_submessages: " + err.message);
+    } catch (error) {
+        blueslip.error("in process_submessages: " + error.message);
         return undefined;
     }
 };
@@ -119,7 +119,7 @@ exports.handle_event = function (submsg) {
 
     try {
         data = JSON.parse(submsg.content);
-    } catch (err) {
+    } catch {
         blueslip.error("server sent us invalid json in handle_event: " + submsg.content);
         return;
     }

@@ -43,7 +43,7 @@ function is_valid_conversation() {
 }
 
 function get_current_time() {
-    return new Date().getTime();
+    return Date.now();
 }
 
 function notify_server_start(user_ids_array) {

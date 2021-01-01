@@ -62,7 +62,7 @@ exports.initialize = function (params) {
     for (const [str_user_id, dct] of Object.entries(params.user_status)) {
         // JSON does not allow integer keys, so we
         // convert them here.
-        const user_id = parseInt(str_user_id, 10);
+        const user_id = Number.parseInt(str_user_id, 10);
 
         if (dct.away) {
             away_user_ids.add(user_id);

@@ -58,6 +58,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   vm_memory = "2048"
 
   ubuntu_mirror = ""
+  vboxadd_version = nil
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/srv/zulip"
@@ -77,6 +78,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "GUEST_CPUS"; vm_num_cpus = value
       when "GUEST_MEMORY_MB"; vm_memory = value
       when "UBUNTU_MIRROR"; ubuntu_mirror = value
+      when "VBOXADD_VERSION"; vboxadd_version = value
       end
     end
   end
@@ -118,6 +120,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # It's possible we can get away with just 1.5GB; more testing needed
     vb.memory = vm_memory
     vb.cpus = vm_num_cpus
+
+    if !vboxadd_version.nil?
+      override.vbguest.installer = Class.new(VagrantVbguest::Installers::Ubuntu) do
+        define_method(:host_version) do |reload = false|
+          VagrantVbguest::Version(vboxadd_version)
+        end
+      end
+      override.vbguest.allow_downgrade = true
+      override.vbguest.iso_path = "https://download.virtualbox.org/virtualbox/#{vboxadd_version}/VBoxGuestAdditions_#{vboxadd_version}.iso"
+    end
   end
 
   config.vm.provider "parallels" do |prl, override|

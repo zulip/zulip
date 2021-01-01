@@ -430,31 +430,43 @@ li,
     line-height: 100%;
 }
 
-.copy_message,
-.copy_message:focus {
-    background-color: hsl(0, 0%, 100%);
-    height: 20px;
-    width: 15px;
-    padding: 5px 10px;
-    border: none;
-    position: relative;
-    top: 28px;
-    left: -5px;
-    margin-top: -24px;
+/* Classes which style copy buttons */
+.copy_button_base {
+    outline-color: hsl(0, 0%, 73%);
+    height: 18px;
+    width: 10px;
+    padding: 6px 6px;
     display: block;
+    /* The below two avoids the padded element from displaying
+    it's own border and background color */
+    border: none;
+    background-clip: content-box;
     /* The z-index here ensures that the copy-message
     icon is clickable and is needed because of reduced
     opacity of readonly textarea */
     z-index: 2;
+
+    &:hover svg path {
+        fill: hsl(200, 100%, 40%);
+    }
+}
+
+.copy_message {
+    position: relative;
+    top: 27px;
+    left: -10px;
+    margin-top: -24px;
+}
+
+#copy_generated_invite_link {
+    position: relative;
+    margin-right: -32px;
+    margin-top: -1px;
 }
 
 #clipboard_image {
     margin-top: -5px;
     margin-left: -8px;
-}
-
-.copy_message:hover svg path {
-    fill: hsl(0, 0%, 0%);
 }
 
 .btn-large {
@@ -1570,7 +1582,8 @@ div.focused_table {
         line-height: 16px;
         margin: 0 -4px 0 0;
         padding: 12px 6px;
-
+        overflow: hidden;
+        text-overflow: ellipsis;
         @media (max-width: 500px) {
             padding: 7px 3.5px; /* based on having ~41.66% decrease */
         }
@@ -1593,7 +1606,6 @@ div.focused_table {
 
     .stream {
         text-overflow: clip;
-        overflow: hidden;
         color: inherit;
         text-decoration: none;
         /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
@@ -1614,6 +1626,7 @@ div.focused_table {
         margin-left: 1px;
         padding-right: 10px;
         margin-right: 1px;
+        overflow: visible;
         .fa.fa-user-o {
             margin-left: 0;
         }
@@ -1653,7 +1666,6 @@ div.focused_table {
            is chosen such that the narrow description shrinks to close
            before the stream name must begin to shrink */
         flex-shrink: 100;
-        overflow: hidden;
         white-space: nowrap;
         margin: 0;
         padding: 12px 0;
@@ -1670,6 +1682,7 @@ div.focused_table {
     }
 
     .search_closed {
+        overflow: visible;
         flex: 0; /* makes sure search icon is always visible */
 
         cursor: pointer;
@@ -1679,15 +1692,6 @@ div.focused_table {
         @media (max-width: 500px) {
             padding: 5px 15px 0 0;
         }
-    }
-
-    > :not(.search_closed):not(.sub_count):not(.narrow_description) {
-        flex-shrink: 1;
-        overflow: hidden;
-    }
-
-    > :not(.stream) {
-        text-overflow: ellipsis;
     }
 
     /* The very last element in the navbar is the search icon, the second
@@ -1767,7 +1771,7 @@ div.focused_table {
     }
 
     .search_button,
-    .search_button[disabled]:hover {
+    .search_button:disabled:hover {
         position: absolute;
         right: 35px;
         top: 6px;
@@ -1788,7 +1792,7 @@ div.focused_table {
         color: hsl(0, 0%, 0%);
     }
 
-    .search_button[disabled] {
+    .search_button:disabled {
         visibility: hidden;
     }
 
@@ -2459,6 +2463,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
         width: 100%;
         min-width: 206px;
         box-sizing: border-box;
+        /* Setting resize as none hides the bottom right diagonal box
+           (which even has a background color of its own!). */
+        resize: none !important;
     }
 
     .control-group.no-margin {
@@ -2829,7 +2836,7 @@ select.inline_select_topic_edit {
         }
 
         .search_button,
-        .search_button[disabled]:hover {
+        .search_button:disabled:hover {
             top: 0;
         }
     }

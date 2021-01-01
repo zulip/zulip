@@ -49,12 +49,12 @@ exports.create = function (opts) {
     const funcs = {
         // return the value of the contenteditable input form.
         value(input_elem) {
-            return input_elem.innerText;
+            return input_elem.textContent;
         },
 
         // clear the value of the input form.
         clear(input_elem) {
-            input_elem.innerText = "";
+            input_elem.textContent = "";
         },
 
         clear_text() {
@@ -282,10 +282,8 @@ exports.create = function (opts) {
             // should switch to focus the last pill in the list.
             // the rest of the events then will be taken care of in the function
             // below that handles events on the ".pill" class.
-            if (char === KEY.LEFT_ARROW) {
-                if (window.getSelection().anchorOffset === 0) {
-                    store.$parent.find(".pill").last().trigger("focus");
-                }
+            if (char === KEY.LEFT_ARROW && window.getSelection().anchorOffset === 0) {
+                store.$parent.find(".pill").last().trigger("focus");
             }
 
             // Typing of the comma is prevented if the last field doesn't validate,

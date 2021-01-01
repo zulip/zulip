@@ -9,7 +9,6 @@ declare namespace BundleTracker {
     }
 }
 
-// eslint-disable-next-line no-redeclare
 declare class BundleTracker extends Plugin {
     constructor(options?: BundleTracker.Options);
 }

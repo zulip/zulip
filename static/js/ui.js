@@ -76,21 +76,6 @@ exports.show_error_for_unsupported_platform = function () {
     }
 };
 
-exports.find_message = function (message_id) {
-    // Try to find the message object. It might be in the narrow list
-    // (if it was loaded when narrowed), or only in the message_list.all
-    // (if received from the server while in a different narrow)
-    let message;
-
-    for (const msg_list of [message_list.all, home_msg_list, message_list.narrowed]) {
-        if (msg_list !== undefined && message === undefined) {
-            message = msg_list.get(message_id);
-        }
-    }
-
-    return message;
-};
-
 exports.update_starred_view = function (message_id, new_value) {
     const starred = new_value;
 
@@ -118,24 +103,6 @@ exports.show_message_failed = function (message_id, failed_msg) {
         failed_div.toggleClass("notvisible", false);
         failed_div.find(".failed_text").attr("title", failed_msg);
     });
-};
-
-exports.remove_messages = function (message_ids) {
-    const msg_ids_to_rerender = [];
-    for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
-        if (list === undefined) {
-            continue;
-        }
-        for (const message_id of message_ids) {
-            const row = list.get_row(message_id);
-            if (row !== undefined) {
-                msg_ids_to_rerender.push({id: message_id});
-            }
-        }
-        list.remove_and_rerender(msg_ids_to_rerender);
-    }
-    recent_senders.update_topics_of_deleted_message_ids(message_ids);
-    recent_topics.update_topics_of_deleted_message_ids(message_ids);
 };
 
 exports.show_failed_message_success = function (message_id) {

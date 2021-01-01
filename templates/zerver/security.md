@@ -83,9 +83,9 @@ priority.
   can also deactivate any [user](/help/deactivate-or-reactivate-a-user),
   [bot, or integration](/help/deactivate-or-reactivate-a-bot) except owners.
 - With Zulip on-premise,
-  [session length](https://github.com/zulip/zulip/blob/master/zproject/prod_settings_template.py#L206)
-  and idle timeouts can be configured to match your organization’s security
-  policies.
+  [session length](https://github.com/zulip/zulip/search?q=SESSION_COOKIE_AGE&type=code) and
+  [idle timeouts](https://github.com/zulip/zulip/search?q=SESSION_EXPIRE_AT_BROWSER_CLOSE&type=code)
+  can be configured to match your organization’s security policies.
 
 [apache-sso]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#apache-based-sso-with-remote-user
 

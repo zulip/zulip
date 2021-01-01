@@ -38,19 +38,19 @@ prefilled with that value.
 
 `AUTHENTICATION_BACKENDS`: Zulip supports a wide range of popular
 options for authenticating users to your server, including Google
-Auth, GitHub Auth, LDAP, SAML, REMOTE_USER, and more.
+auth, GitHub auth, LDAP, SAML, REMOTE_USER, and more.
 
 If you want an additional or different authentication backend, you
 will need to uncomment one or more and then do any additional
 configuration required for that backend as documented in the
 `settings.py` file. See the
-[section on Authentication](../production/authentication-methods.md) for more
+[section on authentication](../production/authentication-methods.md) for more
 detail on the available authentication backends and how to configure
 them.
 
 ### Mobile and desktop apps
 
-The Zulip apps expect to be talking to to servers with a properly
+The Zulip apps expect to be talking to servers with a properly
 signed SSL certificate, in most cases and will not accept a
 self-signed certificate.  You should get a proper SSL certificate
 before testing the apps.
@@ -65,10 +65,6 @@ have configured that server to be `push.zulipchat.com`, and offer a
 forwards push notifications through our servers to mobile devices.
 Read the linked documentation for instructions on how to register for
 and configure this service.
-
-By the end of summer 2017, all of the Zulip apps will have full
-support for multiple accounts, potentially on different Zulip servers,
-with a convenient UI for switching between them.
 
 ### Terms of Service and Privacy policy
 
@@ -100,7 +96,7 @@ Some popular settings in `/etc/zulip/settings.py` include:
   tweets.
 * The [email gateway](../production/email-gateway.md), which lets
   users send emails into Zulip.
-* The [Zoom video call integration](zoom-configuration.md).
+* The [Video call integrations](../production/video-calls.md).
 
 ## Zulip announcement list
 

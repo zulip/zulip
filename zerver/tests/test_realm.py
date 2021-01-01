@@ -8,6 +8,7 @@ from django.conf import settings
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
+    do_add_deactivated_redirect,
     do_change_plan_type,
     do_change_realm_subdomain,
     do_create_realm,
@@ -221,6 +222,21 @@ class RealmTest(ZulipTestCase):
 
         do_deactivate_realm(realm)
         self.assertTrue(realm.deactivated)
+
+    def test_do_set_deactivated_redirect_on_deactivated_realm(self) -> None:
+        """Ensure that the redirect url is working when deactivating realm"""
+        realm = get_realm('zulip')
+
+        redirect_url = 'new_server.zulip.com'
+        do_deactivate_realm(realm)
+        self.assertTrue(realm.deactivated)
+        do_add_deactivated_redirect(realm, redirect_url)
+        self.assertEqual(realm.deactivated_redirect, redirect_url)
+
+        new_redirect_url = 'test.zulip.com'
+        do_add_deactivated_redirect(realm, new_redirect_url)
+        self.assertEqual(realm.deactivated_redirect, new_redirect_url)
+        self.assertNotEqual(realm.deactivated_redirect, redirect_url)
 
     def test_realm_reactivation_link(self) -> None:
         realm = get_realm('zulip')
@@ -733,8 +749,11 @@ class RealmAPITest(ZulipTestCase):
                                      Realm.POLICY_MEMBERS_ONLY,
                                      Realm.POLICY_FULL_MEMBERS_ONLY],
             wildcard_mention_policy=[Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+                                     Realm.WILDCARD_MENTION_POLICY_MEMBERS,
                                      Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
-                                     Realm.WILDCARD_MENTION_POLICY_ADMINS],
+                                     Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS,
+                                     Realm.WILDCARD_MENTION_POLICY_ADMINS,
+                                     Realm.WILDCARD_MENTION_POLICY_NOBODY],
             bot_creation_policy=[1, 2],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                                       Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
@@ -850,7 +869,7 @@ class ScrubRealmTest(ZulipTestCase):
 
         self.assertNotEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
 
-        with mock.patch('logging.warning'):
+        with self.assertLogs(level="WARNING"):
             do_scrub_realm(zulip)
 
         self.assertEqual(Message.objects.filter(sender__in=[iago, othello]).count(), 0)

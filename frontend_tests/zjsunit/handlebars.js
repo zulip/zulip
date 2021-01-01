@@ -28,7 +28,7 @@ class ZJavaScriptCompiler extends hb.JavaScriptCompiler {
 ZJavaScriptCompiler.prototype.compiler = ZJavaScriptCompiler;
 hb.JavaScriptCompiler = ZJavaScriptCompiler;
 
-require.extensions[".hbs"] = (module, filename) => {
+function compile_hbs(module, filename) {
     const code = fs.readFileSync(filename, "utf-8");
     const name = path.relative(templates_path, filename).slice(0, -".hbs".length);
     const pc = hb.precompile(code, {preventIndent: true, srcName: filename});
@@ -54,4 +54,8 @@ require.extensions[".hbs"] = (module, filename) => {
             Buffer.from(out.map.toString()).toString("base64"),
         filename,
     );
+}
+
+exports.hook_require = () => {
+    require.extensions[".hbs"] = compile_hbs;
 };

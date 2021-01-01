@@ -46,31 +46,28 @@ export function wrap_code(code, lang) {
     // the `/shared` folder. To handle such a case we check if pygments data is empty and fallback to
     // using the default header if it is.
     if (lang !== undefined && lang !== "" && Object.keys(pygments_data).length > 0) {
-        const code_language = _.get(pygments_data, [lang, "pretty_name"], _.escape(lang));
-        header = `<div class="codehilite" data-code-language="${code_language}"><pre><span></span><code>`;
+        const code_language = _.get(pygments_data, [lang, "pretty_name"], lang);
+        header = `<div class="codehilite" data-code-language="${_.escape(
+            code_language,
+        )}"><pre><span></span><code>`;
     }
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
-    return header + _.escape(code.replace(/^\n+|\n+$/g, "")) + "\n</code></pre></div>\n";
+    return header + _.escape(code.replace(/^\n+|\n+$/g, "")) + "\n</code></pre></div>";
 }
 
 function wrap_quote(text) {
-    const paragraphs = text.split("\n\n");
+    const paragraphs = text.split("\n");
     const quoted_paragraphs = [];
 
     // Prefix each quoted paragraph with > at the
     // beginning of each line
     for (const paragraph of paragraphs) {
         const lines = paragraph.split("\n");
-        quoted_paragraphs.push(
-            lines
-                .filter((line) => line !== "")
-                .map((line) => "> " + line)
-                .join("\n"),
-        );
+        quoted_paragraphs.push(lines.map((line) => "> " + line).join("\n"));
     }
 
-    return quoted_paragraphs.join("\n\n");
+    return quoted_paragraphs.join("\n");
 }
 
 function wrap_tex(tex) {
@@ -78,7 +75,7 @@ function wrap_tex(tex) {
         return katex.renderToString(tex, {
             displayMode: true,
         });
-    } catch (ex) {
+    } catch {
         return '<span class="tex-error">' + _.escape(tex) + "</span>";
     }
 }
@@ -178,7 +175,7 @@ export function process_fenced_code(content) {
                     if (line === fence) {
                         this.done();
                     } else {
-                        lines.push(line.trimRight());
+                        lines.push(line.trimEnd());
                     }
                 },
 

@@ -69,5 +69,5 @@ us](/help/contact-support) and we'll see what we can do.
   built on top of this API, so it can do anything a human user can do. Most
   but not all of the endpoints are documented on this site; if you need
   something that isn't there check out Zulip's
-  [REST endpoints](https://github.com/zulip/zulip/tree/master/zproject/urls.py)
+  [REST endpoints](https://github.com/zulip/zulip/blob/master/zproject/urls.py)
   or [contact us](/help/contact-support) and we'll help you out.

@@ -1,7 +1,7 @@
 "use strict";
 
 const ClipboardJS = require("clipboard");
-const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
+const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
 const moment = require("moment");
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
@@ -32,7 +32,7 @@ let userlist_placement = "right";
 let list_of_popovers = [];
 
 function elem_to_user_id(elem) {
-    return parseInt(elem.attr("data-user-id"), 10);
+    return Number.parseInt(elem.attr("data-user-id"), 10);
 }
 
 // this utilizes the proxy pattern to intercept all calls to $.fn.popover
@@ -412,13 +412,12 @@ function fetch_group_members(member_ids) {
     return member_ids
         .map((m) => people.get_by_user_id(m))
         .filter((m) => m !== undefined)
-        .map((p) =>
-            Object.assign({}, p, {
-                user_circle_class: buddy_data.get_user_circle_class(p.user_id),
-                is_active: people.is_active_user_for_popover(p.user_id),
-                user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
-            }),
-        );
+        .map((p) => ({
+            ...p,
+            user_circle_class: buddy_data.get_user_circle_class(p.user_id),
+            is_active: people.is_active_user_for_popover(p.user_id),
+            user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
+        }));
 }
 
 function sort_group_members(members) {
@@ -587,7 +586,7 @@ exports.render_actions_remind_popover = function (element, id) {
             clickOpens: false,
             defaultDate: moment().format(),
             minDate: "today",
-            plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
+            plugins: [new ConfirmDatePlugin({})],
         });
         current_actions_popover_elem = elt;
     }
@@ -861,7 +860,7 @@ exports.register_click_handlers = function () {
         const message = current_msg_list.get(rows.id(row));
         let user;
         if (id_string) {
-            const user_id = parseInt(id_string, 10);
+            const user_id = Number.parseInt(id_string, 10);
             user = people.get_by_user_id(user_id);
         } else {
             user = people.get_by_email(email);
@@ -870,7 +869,7 @@ exports.register_click_handlers = function () {
     });
 
     $("#main_div").on("click", ".user-group-mention", function (e) {
-        const user_group_id = parseInt($(this).attr("data-user-group-id"), 10);
+        const user_group_id = Number.parseInt($(this).attr("data-user-group-id"), 10);
         const row = $(this).closest(".message_row");
         e.stopPropagation();
         const message = current_msg_list.get(rows.id(row));
@@ -983,7 +982,7 @@ exports.register_click_handlers = function () {
     });
 
     $("body").on("click", ".view_user_profile", (e) => {
-        const user_id = parseInt($(e.target).attr("data-user-id"), 10);
+        const user_id = Number.parseInt($(e.target).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
         exports.show_user_info_popover(e.target, user);
         e.stopPropagation();
@@ -1195,7 +1194,7 @@ exports.register_click_handlers = function () {
     });
 
     $("body").on("click", ".popover_mute_topic", (e) => {
-        const stream_id = parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         exports.hide_actions_popover();
@@ -1205,7 +1204,7 @@ exports.register_click_handlers = function () {
     });
 
     $("body").on("click", ".popover_unmute_topic", (e) => {
-        const stream_id = parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         exports.hide_actions_popover();
@@ -1261,7 +1260,7 @@ exports.register_click_handlers = function () {
                 return;
             }
 
-            const date = new Date().getTime();
+            const date = Date.now();
 
             // only run `popovers.hide_all()` if the last scroll was more
             // than 250ms ago.

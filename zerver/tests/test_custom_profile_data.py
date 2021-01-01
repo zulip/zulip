@@ -237,7 +237,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             'subtype': 'custom',
         }).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, 'Custom external account must define url pattern')
+        self.assert_json_error(result, 'Custom external account must define URL pattern')
 
         data["field_data"] = orjson.dumps({
             'subtype': 'custom',
@@ -504,6 +504,8 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         field_name = "Birthday"
         self.assert_error_update_invalid_value(field_name, "a-b-c",
                                                f"{field_name} is not a date")
+        self.assert_error_update_invalid_value(field_name, "1909-3-5",
+                                               f"{field_name} is not a date")
         self.assert_error_update_invalid_value(field_name, 123,
                                                f"{field_name} is not a string")
 
@@ -526,7 +528,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             ('Biography', '~~short~~ **long** text data'),
             ('Favorite food', 'long short text data'),
             ('Favorite editor', 'vim'),
-            ('Birthday', '1909-3-5'),
+            ('Birthday', '1909-03-05'),
             ('Favorite website', 'https://zulip.com'),
             ('Mentor', [self.example_user("cordelia").id]),
             ('GitHub', 'zulip-mobile'),
@@ -674,9 +676,8 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login_user(iago)
         assert(test_bot)
 
-        url = "/json/users?client_gravatar=false&include_custom_profile_fields=true"
         with queries_captured() as queries:
-            response = self.client_get(url)
+            response = self.client_get("/json/users", {"client_gravatar": "false", "include_custom_profile_fields": "true"})
 
         self.assertEqual(len(queries), 4)
 
@@ -712,8 +713,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(test_bot_raw_data["bot_type"], 1)
         self.assertEqual(test_bot_raw_data["bot_owner_id"], iago_raw_data["user_id"])
 
-        url = "/json/users?client_gravatar=false"
-        response = self.client_get(url)
+        response = self.client_get("/json/users", {"client_gravatar": "false"})
         self.assertEqual(response.status_code, 200)
         raw_users_data = response.json()["members"]
         for user_dict in raw_users_data:

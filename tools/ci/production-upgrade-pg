@@ -9,7 +9,7 @@ if [ "$CIRCLECI" = true ]; then
 fi
 
 supervisorctl stop all
-"$ZULIP_PATH"/scripts/setup/upgrade-postgres
+"$ZULIP_PATH"/scripts/setup/upgrade-postgresql
 supervisorctl start all
 
 echo "Upgrade of PostgreSQL complete!"

@@ -1,6 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 set_global("$", {});
 
@@ -247,7 +252,7 @@ run_test("retry", () => {
         },
 
         check_ajax_options(options) {
-            global.patch_builtin("setTimeout", (f, delay) => {
+            set_global("setTimeout", (f, delay) => {
                 assert.equal(delay, 0);
                 f();
             });

@@ -1,5 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 set_global("page_params", {
     search_pills_enabled: false,
 });
@@ -10,7 +16,7 @@ const noop = () => {};
 const return_true = () => true;
 const return_false = () => false;
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("narrow_state", {});
 set_global("search_suggestion", {});
 set_global("ui_util", {
@@ -19,7 +25,7 @@ set_global("ui_util", {
 set_global("narrow", {});
 set_global("Filter", {});
 
-global.patch_builtin("setTimeout", (func) => func());
+set_global("setTimeout", (func) => func());
 
 run_test("update_button_visibility", () => {
     const search_query = $("#search_query");

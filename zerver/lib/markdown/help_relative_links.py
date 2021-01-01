@@ -1,8 +1,9 @@
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 from typing.re import Match
 
-import markdown
+from markdown import Markdown
+from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
 # There is a lot of duplicated code between this file and
@@ -66,11 +67,11 @@ LINK_TYPE_HANDLERS = {
     'stream': stream_handle_match,
 }
 
-class RelativeLinksHelpExtension(markdown.Extension):
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
+class RelativeLinksHelpExtension(Extension):
+    def extendMarkdown(self, md: Markdown) -> None:
         """ Add RelativeLinksHelpExtension to the Markdown instance. """
         md.registerExtension(self)
-        md.preprocessors.add('help_relative_links', RelativeLinks(), '_begin')
+        md.preprocessors.register(RelativeLinks(), 'help_relative_links', 520)
 
 relative_help_links: Optional[bool] = None
 

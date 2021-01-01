@@ -208,12 +208,12 @@ Amount due: 0.00 INR
 
     def test_refund_event(self) -> None:
         expected_topic = "refunds"
-        expected_message = "A [refund](https://dashboard.stripe.com/refunds/re_1Gib6ZHLwdCOCoR7VrzCnXlj) for a [charge](https://dashboard.stripe.com/charges/ch_1Gib61HLwdCOCoR71rnkccye) of 30000000 INR was updated."
+        expected_message = "A [refund](https://dashboard.stripe.com/refunds/re_1Gib6ZHLwdCOCoR7VrzCnXlj) for a [charge](https://dashboard.stripe.com/charges/ch_1Gib61HLwdCOCoR71rnkccye) of 300000.00 INR was updated."
         self.check_webhook("refund_event", expected_topic, expected_message)
 
     def test_pseudo_refund_event(self) -> None:
         expected_topic = "refunds"
-        expected_message = "A [refund](https://dashboard.stripe.com/refunds/pyr_abcde12345ABCDF) for a [payment](https://dashboard.stripe.com/payments/py_abcde12345ABCDG) of 1234 EUR was updated."
+        expected_message = "A [refund](https://dashboard.stripe.com/refunds/pyr_abcde12345ABCDF) for a [payment](https://dashboard.stripe.com/payments/py_abcde12345ABCDG) of 12.34 EUR was updated."
         self.check_webhook("pseudo_refund_event", expected_topic, expected_message)
 
     @patch('zerver.webhooks.stripe.view.check_send_webhook_message')

@@ -100,7 +100,7 @@ def get_outoftime_event_body(payload: Dict[str, Any]) -> str:
         task_url=build_instance_url(payload['task_instance']),
     )
 
-@webhook_view("Google-Code-In")
+@webhook_view("GoogleCodeIn")
 @has_request_variables
 def api_gci_webhook(request: HttpRequest, user_profile: UserProfile,
                     payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:

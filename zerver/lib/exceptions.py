@@ -47,6 +47,7 @@ class ErrorCode(AbstractEnum):
     INVALID_ZOOM_TOKEN = ()
     UNAUTHENTICATED_USER = ()
     NONEXISTENT_SUBDOMAIN = ()
+    RATE_LIMIT_HIT = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.
@@ -110,6 +111,10 @@ class JsonableError(Exception):
         # the simplest form of use where we just get a plain message string
         # at construction time.
         return '{_msg}'
+
+    @property
+    def extra_headers(self) -> Dict[str, Any]:
+        return {}
 
     #
     # Infrastructure -- not intended to be overridden in subclasses.
@@ -179,9 +184,31 @@ class InvalidMarkdownIncludeStatement(JsonableError):
     def msg_format() -> str:
         return _("Invalid Markdown include statement: {include_statement}")
 
-class RateLimited(Exception):
-    def __init__(self, msg: str="") -> None:
-        super().__init__(msg)
+class RateLimited(JsonableError):
+    code = ErrorCode.RATE_LIMIT_HIT
+    http_status_code = 429
+
+    def __init__(self, secs_to_freedom: Optional[float]=None) -> None:
+        self.secs_to_freedom = secs_to_freedom
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("API usage exceeded rate limit")
+
+    @property
+    def extra_headers(self) -> Dict[str, Any]:
+        extra_headers_dict = super().extra_headers
+        if self.secs_to_freedom is not None:
+            extra_headers_dict["Retry-After"] = self.secs_to_freedom
+
+        return extra_headers_dict
+
+    @property
+    def data(self) -> Dict[str, Any]:
+        data_dict = super().data
+        data_dict['retry-after'] = self.secs_to_freedom
+
+        return data_dict
 
 class InvalidJSONError(JsonableError):
     code = ErrorCode.INVALID_JSON
@@ -193,50 +220,42 @@ class InvalidJSONError(JsonableError):
 class OrganizationMemberRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
-    MEMBER_REQUIRED_MESSAGE = _("Must be an organization member")
-
     def __init__(self) -> None:
-        super().__init__(self.MEMBER_REQUIRED_MESSAGE)
+        pass
 
     @staticmethod
     def msg_format() -> str:
-        return OrganizationMemberRequired.MEMBER_REQUIRED_MESSAGE
+        return _("Must be an organization member")
 
 class OrganizationAdministratorRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
-    ADMIN_REQUIRED_MESSAGE = _("Must be an organization administrator")
-
     def __init__(self) -> None:
-        super().__init__(self.ADMIN_REQUIRED_MESSAGE)
+        pass
 
     @staticmethod
     def msg_format() -> str:
-        return OrganizationAdministratorRequired.ADMIN_REQUIRED_MESSAGE
+        return _("Must be an organization administrator")
 
 class OrganizationOwnerRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
-    OWNER_REQUIRED_MESSAGE = _("Must be an organization owner")
-
     def __init__(self) -> None:
-        super().__init__(self.OWNER_REQUIRED_MESSAGE)
+        pass
 
     @staticmethod
     def msg_format() -> str:
-        return OrganizationOwnerRequired.OWNER_REQUIRED_MESSAGE
+        return _("Must be an organization owner")
 
 class StreamAdministratorRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
-    ADMIN_REQUIRED_MESSAGE = _("Must be an organization or stream administrator")
-
     def __init__(self) -> None:
-        super().__init__(self.ADMIN_REQUIRED_MESSAGE)
+        pass
 
     @staticmethod
     def msg_format() -> str:
-        return StreamAdministratorRequired.ADMIN_REQUIRED_MESSAGE
+        return _("Must be an organization or stream administrator")
 
 class MarkdownRenderingException(Exception):
     pass
@@ -289,3 +308,7 @@ class InvalidSubdomainError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Invalid subdomain")
+
+class ZephyrMessageAlreadySentException(Exception):
+    def __init__(self, message_id: int) -> None:
+        self.message_id = message_id

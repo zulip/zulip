@@ -36,7 +36,7 @@ and restart various services.
 
 ### Checking status with `supervisorctl status`
 
-You can check if the zulip application is running using:
+You can check if the Zulip application is running using:
 ```
 supervisorctl status
 ```
@@ -93,10 +93,10 @@ The Zulip application uses several major open source services to store
 and cache data, queue messages, and otherwise support the Zulip
 application:
 
-* postgresql
-* rabbitmq-server
-* nginx
-* redis
+* PostgreSQL
+* RabbitMQ
+* Nginx
+* Redis
 * memcached
 
 If one of these services is not installed or functioning correctly,
@@ -132,19 +132,21 @@ problems and how to resolve them:
   a virtual machine with broken DNS configuration; you can often
   correct this by configuring `/etc/hosts` properly.
 
-### Disabling unattended upgrades
+### Restrict unattended upgrades
 
 ```eval_rst
 .. important::
-    We recommend that you `disable Ubuntu's unattended-upgrades
-    <https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/>`_
-    and instead install apt upgrades manually.  With unattended upgrades
-    enabled, the moment a new Postgres release is published, your Zulip
-    server will have its postgres server upgraded (and thus restarted).
+    We recommend that you `disable or limit Ubuntu's unattended-upgrades
+    to skip some server packages
+    <https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/>`;
+    if you disable them, do not forget to regularly install apt upgrades
+    manually.  With unattended upgrades enabled but not limited, the
+    moment a new PostgreSQL release is published, your Zulip server will
+    have its PostgreSQL server upgraded (and thus restarted).
 ```
 
-Restarting one of the system services that Zulip uses (`postgres`,
-`memcached`, `redis`, or `rabbitmq`) will drop the connections that
+Restarting one of the system services that Zulip uses (PostgreSQL,
+memcached, Redis, or Rabbitmq) will drop the connections that
 Zulip processes have to the service, resulting in future operations on
 those connections throwing errors.
 
@@ -165,12 +167,25 @@ workers are commonly idle for periods of hours or days at a time.
 You can prevent this trickle when doing a planned upgrade by
 restarting the Zulip server with
 `/home/zulip/deployments/current/scripts/restart-server` after
-installing system package updates to `postgres`, `memcached`,
-`rabbitmq`, or `redis`.
+installing system package updates to PostgreSQL, memcached,
+RabbitMQ, or Redis.
 
-Few system administrators enjoy outages at random times (even if only
-brief) or the resulting distribution of error emails, which is why we
-recommend disabling `unattended-upgrades`.
+You can ensure that the `unattended-upgrades` package never upgrades
+PostgreSQL, memcached, Redis, or RabbitMQ, by configuring in
+`/etc/apt/apt.conf.d/50unattended-upgrades`:
+
+```
+// Python regular expressions, matching packages to exclude from upgrading
+Unattended-Upgrade::Package-Blacklist {
+    "libc\d+";
+    "memcached$";
+    "nginx-full$";
+    "postgresql-\d+$";
+    "rabbitmq-server$";
+    "redis-server$";
+    "supervisor$";
+};
+```
 
 ## Monitoring
 
@@ -189,8 +204,8 @@ standard stuff:
   especially for the database and where uploads are stored.
 * Service uptime and standard monitoring for the [services Zulip
   depends on](#troubleshooting-services).  Most monitoring software
-  has standard plugins for `nginx`, `postgres`, `redis`, `rabbitmq`,
-  and `memcached`, and those will work well with Zulip.
+  has standard plugins for Nginx, PostgreSQL, Redis, RabbitMQ,
+  and memcached, and those will work well with Zulip.
 * `supervisorctl status` showing all services `RUNNING`.
 * Checking for processes being OOM killed.
 
@@ -230,8 +245,8 @@ Database monitoring:
 * `check_fts_update_log`: Checks whether full-text search updates are
   being processed properly or getting backlogged.
 * `check_postgres`: General checks for database health.
-* `check_postgres_backup`: Checks status of postgres backups.
-* `check_postgres_replication_lag`: Checks whether postgres streaming
+* `check_postgresql_backup`: Checks status of PostgreSQL backups.
+* `check_postgresql_replication_lag`: Checks whether PostgreSQL streaming
   replication is up to date.
 
 Standard server monitoring:

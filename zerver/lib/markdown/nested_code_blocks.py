@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 from xml.etree.ElementTree import Element, SubElement
 
 import markdown
@@ -8,15 +8,15 @@ from zerver.lib.markdown import ResultWithFamily, walk_tree_with_family
 
 
 class NestedCodeBlocksRenderer(Extension):
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
-        md.treeprocessors.add(
-            'nested_code_blocks',
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
+        md.treeprocessors.register(
             NestedCodeBlocksRendererTreeProcessor(md, self.getConfigs()),
-            '_end',
+            'nested_code_blocks',
+            -500,
         )
 
 class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocessor):
-    def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
 
     def run(self, root: Element) -> None:

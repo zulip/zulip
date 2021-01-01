@@ -1,8 +1,14 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
 
-set_global("$", global.make_zjquery());
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+set_global("$", make_zjquery());
 set_global("document", "document-stub");
 
 zrequire("message_fetch");
@@ -88,15 +94,27 @@ function reset_lists() {
 function config_fake_channel(conf) {
     const self = {};
     let called;
+    let called_with_newest_flag = false;
 
     channel.get = function (opts) {
+        assert.equal(opts.url, "/json/messages");
+        // There's a separate call with anchor="newest" that happens
+        // unconditionally; do basic verfication of that call.
+        if (opts.data.anchor === "newest") {
+            if (!called_with_newest_flag) {
+                called_with_newest_flag = true;
+                assert.equal(opts.data.num_after, 0);
+                return;
+            }
+            throw new Error("Only one 'newest' call allowed");
+        }
+
         if (called && !conf.can_call_again) {
-            throw "only use this for one call";
+            throw new Error("only use this for one call");
         }
         if (!conf.can_call_again) {
             assert(self.success === undefined);
         }
-        assert.equal(opts.url, "/json/messages");
         assert.deepEqual(opts.data, conf.expected_opts_data);
         self.success = opts.success;
         called = true;
@@ -284,13 +302,11 @@ run_test("initialize", () => {
 function simulate_narrow() {
     const filter = {
         predicate: () => () => false,
+        public_operators: () => [{operator: "pm-with", operand: alice.email}],
     };
 
     narrow_state.active = function () {
         return true;
-    };
-    narrow_state.public_operators = function () {
-        return [{operator: "pm-with", operand: alice.email}];
     };
 
     const msg_list = new message_list.MessageList({

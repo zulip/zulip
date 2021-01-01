@@ -1,5 +1,4 @@
 class zulip::nginx {
-  include zulip::common
   $web_packages = [
     # Needed to run nginx with the modules we use
     $zulip::common::nginx,

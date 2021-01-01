@@ -19,7 +19,7 @@ def test_js_bindings(client: Client) -> None:
     os.environ['ZULIP_REALM'] = client.base_url[:-5]
 
     output = subprocess.check_output(
-        args=['node', 'zerver/openapi/javascript_examples.js'],
+        args=['node', '--unhandled-rejections=strict', 'zerver/openapi/javascript_examples.js'],
         universal_newlines=True,
     )
     endpoint_responses = json.loads(output)

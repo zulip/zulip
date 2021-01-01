@@ -21,7 +21,7 @@ from zerver.lib.email_mirror_helpers import (
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import RateLimited
-from zerver.lib.message import truncate_body, truncate_topic
+from zerver.lib.message import normalize_body, truncate_topic
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
@@ -161,8 +161,7 @@ def construct_zulip_body(message: EmailMessage, realm: Realm, show_sender: bool=
     if not body.endswith('\n'):
         body += '\n'
     body += extract_and_upload_attachments(message, realm)
-    body = body.strip()
-    if not body:
+    if not body.rstrip():
         body = '(No email body)'
 
     if show_sender:
@@ -182,7 +181,7 @@ def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) ->
         sender,
         stream,
         truncate_topic(topic),
-        truncate_body(content),
+        normalize_body(content),
         email_gateway=True)
 
 def get_message_part_by_type(message: EmailMessage, content_type: str) -> Optional[str]:

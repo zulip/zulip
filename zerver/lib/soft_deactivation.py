@@ -82,7 +82,7 @@ def filter_by_subscription_history(user_profile: UserProfile,
                     if stream_messages[-1]['id'] <= log_entry.event_last_message_id:
                         stream_messages = []
             else:
-                raise AssertionError(f'{log_entry.event_type} is not a Subscription Event.')
+                raise AssertionError(f'{log_entry.event_type} is not a subscription event.')
 
         if len(stream_messages) > 0:
             # We do this check for last event since if the last subscription
@@ -218,7 +218,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     user_profile.save(update_fields=[
         'long_term_idle',
         'last_active_message_id'])
-    logger.info('Soft Deactivated user %s', user_profile.id)
+    logger.info('Soft deactivated user %s', user_profile.id)
 
 def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
     BATCH_SIZE = 100

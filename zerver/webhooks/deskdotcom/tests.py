@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 # Tests for the Desk.com webhook integration.
 #
-# The stream name must be provided in the url-encoded test fixture data,
+# The stream name must be provided in the URL-encoded test fixture data,
 # and must match STREAM_NAME set here.
 #
 # Example:

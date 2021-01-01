@@ -1,7 +1,14 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {stub_templates} = require("../zjsunit/handlebars");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 set_global("document", "document-stub");
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 zrequire("unread_ui");
 zrequire("Filter", "js/filter");
@@ -50,7 +57,7 @@ run_test("create_sidebar_row", () => {
         subscribed: true,
         pin_to_top: true,
     };
-    global.stream_data.add_sub(devel);
+    stream_data.add_sub(devel);
 
     const social = {
         name: "social",
@@ -58,9 +65,9 @@ run_test("create_sidebar_row", () => {
         color: "green",
         subscribed: true,
     };
-    global.stream_data.add_sub(social);
+    stream_data.add_sub(social);
 
-    global.unread.num_unread_for_stream = function () {
+    unread.num_unread_for_stream = function () {
         return 42;
     };
 
@@ -74,7 +81,7 @@ run_test("create_sidebar_row", () => {
         devel_count.set_find_results(".value", devel_value);
         devel_count.set_parent(sidebar_row);
 
-        global.stub_templates((template_name, data) => {
+        stub_templates((template_name, data) => {
             assert.equal(template_name, "stream_sidebar_row");
             assert.equal(data.uri, "#narrow/stream/100-devel");
             return "<devel sidebar row>";
@@ -93,7 +100,7 @@ run_test("create_sidebar_row", () => {
         social_count.set_find_results(".value", social_value);
         social_count.set_parent(sidebar_row);
 
-        global.stub_templates((template_name, data) => {
+        stub_templates((template_name, data) => {
             assert.equal(template_name, "stream_sidebar_row");
             assert.equal(data.uri, "#narrow/stream/200-social");
             return "<social sidebar row>";
@@ -139,7 +146,7 @@ run_test("create_sidebar_row", () => {
 
     social.invite_only = true;
     social.color = "#222222";
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "stream_privacy");
         assert.equal(data.invite_only, true);
         assert.equal(data.dark_background, "dark_background");
@@ -183,7 +190,7 @@ run_test("pinned_streams_never_inactive", () => {
         subscribed: true,
         pin_to_top: true,
     };
-    global.stream_data.add_sub(devel);
+    stream_data.add_sub(devel);
 
     const social = {
         name: "social",
@@ -191,7 +198,7 @@ run_test("pinned_streams_never_inactive", () => {
         color: "green",
         subscribed: true,
     };
-    global.stream_data.add_sub(social);
+    stream_data.add_sub(social);
 
     // we use social and devel created in create_social_sidebar_row() and create_devel_sidebar_row()
 
@@ -225,10 +232,10 @@ run_test("pinned_streams_never_inactive", () => {
     assert(!devel_sidebar.hasClass("inactive_stream"));
 });
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 function add_row(sub) {
-    global.stream_data.add_sub(sub);
+    stream_data.add_sub(sub);
     const row = {
         update_whether_active() {},
         get_li() {
@@ -379,7 +386,7 @@ run_test("zoom_in_and_zoom_out", () => {
     assert($("#streams_list").hasClass("zoom-out"));
 });
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("narrowing", () => {
     initialize_stream_data();
@@ -461,7 +468,7 @@ run_test("sort_streams", () => {
 
     initialize_stream_data();
 
-    global.stream_data.is_active = function (sub) {
+    stream_data.is_active = function (sub) {
         return sub.name !== "cars";
     };
 
@@ -486,7 +493,7 @@ run_test("sort_streams", () => {
 
     assert.deepEqual(appended_elems, expected_elems);
 
-    const streams = global.stream_sort.get_streams();
+    const streams = stream_sort.get_streams();
 
     assert.deepEqual(streams, [
         // three groups: pinned, normal, dormant
@@ -543,7 +550,7 @@ run_test("separators_only_pinned_and_dormant", () => {
     };
     add_row(DenmarkSub);
 
-    global.stream_data.is_active = function (sub) {
+    stream_data.is_active = function (sub) {
         return sub.name !== "Denmark";
     };
 
@@ -668,7 +675,7 @@ run_test("rename_stream", () => {
     const li_stub = $.create("li stub");
     li_stub.length = 0;
 
-    global.stub_templates((name, payload) => {
+    stub_templates((name, payload) => {
         assert.equal(name, "stream_sidebar_row");
         assert.deepEqual(payload, {
             name: "Development",
@@ -694,7 +701,7 @@ run_test("rename_stream", () => {
     assert(count_updated);
 });
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("refresh_pin", () => {
     initialize_stream_data();
@@ -716,7 +723,7 @@ run_test("refresh_pin", () => {
     const li_stub = $.create("li stub");
     li_stub.length = 0;
 
-    global.stub_templates(() => ({to_$: () => li_stub}));
+    stub_templates(() => ({to_$: () => li_stub}));
 
     stream_list.update_count_in_dom = noop;
     $("#stream_filters").append = noop;
@@ -745,7 +752,7 @@ run_test("create_initial_sidebar_rows", () => {
 
     stream_list.update_count_in_dom = noop;
 
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "stream_sidebar_row");
         return "<div>stub-html-" + data.name;
     });

@@ -6,7 +6,7 @@ from .common.spiders import BaseDocumentationSpider
 
 
 def get_start_url() -> List[str]:
-    # Get index html file as start url and convert it to file uri
+    # Get index.html file as start URL and convert it to file URI
     dir_path = os.path.dirname(os.path.realpath(__file__))
     start_file = os.path.join(dir_path, os.path.join(*[os.pardir] * 4),
                               "docs/_build/html/index.html")

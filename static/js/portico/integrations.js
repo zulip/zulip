@@ -40,7 +40,7 @@ const INITIAL_STATE = {
     query: "",
 };
 
-let state = Object.assign({}, INITIAL_STATE);
+let state = {...INITIAL_STATE};
 
 function adjust_font_sizing() {
     $(".integration-lozenge")
@@ -224,7 +224,7 @@ function hide_integration_show_catalog() {
 }
 
 function get_state_from_path() {
-    const result = Object.assign({}, INITIAL_STATE);
+    const result = {...INITIAL_STATE};
     result.query = state.query;
 
     const parts = path_parts();
@@ -238,7 +238,7 @@ function get_state_from_path() {
 }
 
 function render(next_state) {
-    const previous_state = Object.assign({}, state);
+    const previous_state = {...state};
     state = next_state;
 
     if (previous_state.integration !== next_state.integration && next_state.integration !== null) {
@@ -264,48 +264,27 @@ function render(next_state) {
 function dispatch(action, payload) {
     switch (action) {
         case "CHANGE_CATEGORY":
-            render(
-                Object.assign({}, state, {
-                    category: payload.category,
-                }),
-            );
+            render({...state, category: payload.category});
             update_path();
             break;
 
         case "SHOW_INTEGRATION":
-            render(
-                Object.assign({}, state, {
-                    integration: payload.integration,
-                }),
-            );
+            render({...state, integration: payload.integration});
             update_path();
             break;
 
         case "HIDE_INTEGRATION":
-            render(
-                Object.assign({}, state, {
-                    integration: null,
-                }),
-            );
+            render({...state, integration: null});
             update_path();
             break;
 
         case "SHOW_CATEGORY":
-            render(
-                Object.assign({}, state, {
-                    integration: null,
-                    category: payload.category,
-                }),
-            );
+            render({...state, integration: null, category: payload.category});
             update_path();
             break;
 
         case "UPDATE_QUERY":
-            render(
-                Object.assign({}, state, {
-                    query: payload.query,
-                }),
-            );
+            render({...state, query: payload.query});
             break;
 
         case "LOAD_PATH":
@@ -328,8 +307,8 @@ function integration_events() {
     $('#integration-search input[type="text"]').on("keypress", (e) => {
         const integrations = $(".integration-lozenges").children().toArray();
         if (e.which === 13 && e.target.value !== "") {
-            for (let i = 0; i < integrations.length; i += 1) {
-                const integration = $(integrations[i]).find(".integration-lozenge");
+            for (const integration_element of integrations) {
+                const integration = $(integration_element).find(".integration-lozenge");
 
                 if ($(integration).css("display") !== "none") {
                     $(integration).closest("a")[0].click();

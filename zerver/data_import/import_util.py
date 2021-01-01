@@ -103,7 +103,7 @@ def build_user_profile(avatar_source: str,
 def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
                  timestamp: Any, avatar_list: List[ZerverFieldsT]) -> None:
     avatar = dict(
-        path=avatar_url,  # Save original avatar url here, which is downloaded later
+        path=avatar_url,  # Save original avatar URL here, which is downloaded later
         realm_id=realm_id,
         content_type=None,
         user_profile_id=zulip_user_id,
@@ -170,9 +170,9 @@ def build_public_stream_subscriptions(
         zerver_recipient: List[ZerverFieldsT],
         zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
     '''
-    This function is only used for Hipchat now, but it may apply to
-    future conversions.  We often don't get full subscriber data in
-    the Hipchat export, so this function just autosubscribes all
+    This function was only used for HipChat, but it may apply to
+    future conversions.  We often did't get full subscriber data in
+    the HipChat export, so this function just autosubscribes all
     users to every public stream.  This returns a list of Subscription
     dicts.
     '''
@@ -298,8 +298,8 @@ def build_recipients(zerver_userprofile: Iterable[ZerverFieldsT],
                      zerver_stream: Iterable[ZerverFieldsT],
                      zerver_huddle: Iterable[ZerverFieldsT] = []) -> List[ZerverFieldsT]:
     '''
-    As of this writing, we only use this in the HipChat
-    conversion.  The Slack and Gitter conversions do it more
+    This function was only used HipChat import, this function may be
+    required for future conversions. The Slack and Gitter conversions do it more
     tightly integrated with creating other objects.
     '''
 
@@ -550,7 +550,7 @@ def write_avatar_png(avatar_folder: str,
                      user_id: int,
                      bits: bytes) -> ZerverFieldsT:
     '''
-    Use this function for conversions like Hipchat where
+    Use this function for conversions like HipChat where
     the bits for the .png file come in something like
     a users.json file, and where we don't have to
     fetch avatar images externally.

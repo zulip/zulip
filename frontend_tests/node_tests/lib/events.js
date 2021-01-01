@@ -453,7 +453,7 @@ exports.fixtures = {
             is_bot: false,
             is_guest: false,
             profile_data: {},
-            timezone: "US/Eastern",
+            timezone: "America/New_York",
             date_joined: "2020-01-01",
         },
     },
@@ -537,15 +537,15 @@ exports.fixtures = {
     subscription__peer_add: {
         type: "subscription",
         op: "peer_add",
-        user_id: test_user.user_id,
-        stream_id: 42,
+        user_ids: [test_user.user_id],
+        stream_ids: [streams.devel.stream_id],
     },
 
     subscription__peer_remove: {
         type: "subscription",
         op: "peer_remove",
-        user_id: test_user.user_id,
-        stream_id: 42,
+        user_ids: [test_user.user_id],
+        stream_ids: [streams.devel.stream_id],
     },
 
     subscription__remove: {

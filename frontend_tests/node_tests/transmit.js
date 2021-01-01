@@ -1,8 +1,14 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 const noop = function () {};
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("page_params", {});
 set_global("channel", {});
 set_global("reload", {});
@@ -56,7 +62,7 @@ run_test("transmit_message_ajax", () => {
 
 run_test("transmit_message_ajax_reload_pending", () => {
     const success = function () {
-        throw "unexpected success";
+        throw new Error("unexpected success");
     };
 
     reload_state.is_pending = function () {

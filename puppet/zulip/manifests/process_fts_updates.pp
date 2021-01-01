@@ -1,4 +1,5 @@
 class zulip::process_fts_updates {
+  include zulip::supervisor
   case $::osfamily {
     'debian': {
       $fts_updates_packages = [

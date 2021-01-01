@@ -87,13 +87,16 @@ exports.get_organization_settings_options = () => {
     options.private_message_policy_values = exports.get_sorted_options_list(
         settings_config.private_message_policy_values,
     );
+    options.wildcard_mention_policy_values = exports.get_sorted_options_list(
+        settings_config.wildcard_mention_policy_values,
+    );
     return options;
 };
 
 exports.get_realm_time_limits_in_minutes = function (property) {
     let val = (page_params[property] / 60).toFixed(1);
-    if (parseFloat(val, 10) === parseInt(val, 10)) {
-        val = parseInt(val, 10);
+    if (Number.parseFloat(val, 10) === Number.parseInt(val, 10)) {
+        val = Number.parseInt(val, 10);
     }
     return val.toString();
 };
@@ -203,6 +206,7 @@ const simple_dropdown_properties = [
     "realm_private_message_policy",
     "realm_add_emoji_by_admins_only",
     "realm_user_invite_restriction",
+    "realm_wildcard_mention_policy",
 ];
 
 function set_property_dropdown_value(property_name) {
@@ -511,7 +515,7 @@ exports.get_input_element_value = function (input_elem, input_type) {
             return input_elem.val().trim();
         }
         if (input_type === "number") {
-            return parseInt(input_elem.val().trim(), 10);
+            return Number.parseInt(input_elem.val().trim(), 10);
         }
     }
     return undefined;
@@ -561,9 +565,9 @@ function check_property_changed(elem) {
         changed_val = get_auth_method_table_data();
         changed_val = JSON.stringify(changed_val);
     } else if (property_name === "realm_notifications_stream_id") {
-        changed_val = parseInt(exports.notifications_stream_widget.value(), 10);
+        changed_val = Number.parseInt(exports.notifications_stream_widget.value(), 10);
     } else if (property_name === "realm_signup_notifications_stream_id") {
-        changed_val = parseInt(exports.signup_notifications_stream_widget.value(), 10);
+        changed_val = Number.parseInt(exports.signup_notifications_stream_widget.value(), 10);
     } else if (property_name === "realm_default_code_block_language") {
         changed_val = exports.default_code_language_widget.value();
     } else if (current_val !== undefined) {
@@ -592,13 +596,10 @@ exports.signup_notifications_stream_widget = null;
 exports.init_dropdown_widgets = () => {
     const streams = stream_data.get_streams_for_settings_page();
     const notification_stream_options = {
-        data: streams.map((x) => {
-            const item = {
-                name: x.name,
-                value: x.stream_id.toString(),
-            };
-            return item;
-        }),
+        data: streams.map((x) => ({
+            name: x.name,
+            value: x.stream_id.toString(),
+        })),
         on_update: () => {
             exports.save_discard_widget_status_handler($("#org-notifications"));
         },
@@ -606,24 +607,16 @@ exports.init_dropdown_widgets = () => {
         render_text: (x) => `#${x}`,
         null_value: -1,
     };
-    exports.notifications_stream_widget = dropdown_list_widget(
-        Object.assign(
-            {
-                widget_name: "realm_notifications_stream_id",
-                value: page_params.realm_notifications_stream_id,
-            },
-            notification_stream_options,
-        ),
-    );
-    exports.signup_notifications_stream_widget = dropdown_list_widget(
-        Object.assign(
-            {
-                widget_name: "realm_signup_notifications_stream_id",
-                value: page_params.realm_signup_notifications_stream_id,
-            },
-            notification_stream_options,
-        ),
-    );
+    exports.notifications_stream_widget = dropdown_list_widget({
+        widget_name: "realm_notifications_stream_id",
+        value: page_params.realm_notifications_stream_id,
+        ...notification_stream_options,
+    });
+    exports.signup_notifications_stream_widget = dropdown_list_widget({
+        widget_name: "realm_signup_notifications_stream_id",
+        value: page_params.realm_signup_notifications_stream_id,
+        ...notification_stream_options,
+    });
     exports.default_code_language_widget = dropdown_list_widget({
         widget_name: "realm_default_code_block_language",
         data: Object.keys(pygments_data.langs).map((x) => ({
@@ -718,7 +711,7 @@ exports.build_page = function () {
     };
 
     exports.parse_time_limit = function parse_time_limit(elem) {
-        return Math.floor(parseFloat(elem.val(), 10).toFixed(1) * 60);
+        return Math.floor(Number.parseFloat(elem.val(), 10).toFixed(1) * 60);
     };
 
     function get_complete_data_for_subsection(subsection) {
@@ -733,7 +726,7 @@ exports.build_page = function () {
                     $("#id_realm_message_content_edit_limit_minutes"),
                 );
                 // Disable editing if the parsed time limit is 0 seconds
-                data.allow_message_editing = !!data.message_content_edit_limit_seconds;
+                data.allow_message_editing = Boolean(data.message_content_edit_limit_seconds);
             } else {
                 data.allow_message_editing = true;
                 data.message_content_edit_limit_seconds = settings_config.msg_edit_limit_dropdown_values.get(
@@ -748,7 +741,7 @@ exports.build_page = function () {
                     $("#id_realm_message_content_delete_limit_minutes"),
                 );
                 // Disable deleting if the parsed time limit is 0 seconds
-                data.allow_message_deleting = !!data.message_content_delete_limit_seconds;
+                data.allow_message_deleting = Boolean(data.message_content_delete_limit_seconds);
             } else {
                 data.allow_message_deleting = true;
                 data.message_content_delete_limit_seconds = settings_config.msg_delete_limit_dropdown_values.get(
@@ -757,10 +750,10 @@ exports.build_page = function () {
             }
         } else if (subsection === "notifications") {
             data.notifications_stream_id = JSON.stringify(
-                parseInt(exports.notifications_stream_widget.value(), 10),
+                Number.parseInt(exports.notifications_stream_widget.value(), 10),
             );
             data.signup_notifications_stream_id = JSON.stringify(
-                parseInt(exports.signup_notifications_stream_widget.value(), 10),
+                Number.parseInt(exports.signup_notifications_stream_widget.value(), 10),
             );
         } else if (subsection === "message_retention") {
             const message_retention_setting_value = $("#id_realm_message_retention_setting").val();

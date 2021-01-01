@@ -1,6 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const XDate = require("xdate");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 const people = zrequire("people");
 zrequire("presence");

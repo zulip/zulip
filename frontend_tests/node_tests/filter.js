@@ -1,10 +1,15 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 zrequire("unread");
 zrequire("stream_data");
 const people = zrequire("people");
-global.stub_out_jquery();
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 zrequire("message_util", "js/message_util");
 zrequire("Filter", "js/filter");
 
@@ -442,7 +447,7 @@ run_test("public_operators", () => {
     assert_same_operators(filter.public_operators(), operators);
     assert(filter.can_bucket_by("stream"));
 
-    global.page_params.narrow_stream = "default";
+    page_params.narrow_stream = "default";
     operators = [{operator: "stream", operand: "default"}];
     filter = new Filter(operators);
     assert_same_operators(filter.public_operators(), []);
@@ -528,7 +533,7 @@ function make_sub(name, stream_id) {
         name,
         stream_id,
     };
-    global.stream_data.add_sub(sub);
+    stream_data.add_sub(sub);
 }
 
 run_test("predicate_basics", () => {
@@ -598,7 +603,7 @@ run_test("predicate_basics", () => {
     predicate = get_predicate([["in", "home"]]);
     assert(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
     assert(predicate({type: "private"}));
-    global.page_params.narrow_stream = "kiosk";
+    page_params.narrow_stream = "kiosk";
     assert(predicate({stream: "kiosk"}));
 
     predicate = get_predicate([["near", 5]]);
@@ -776,7 +781,7 @@ run_test("negated_predicates", () => {
 });
 
 run_test("mit_exceptions", () => {
-    global.page_params.realm_is_zephyr_mirror_realm = true;
+    page_params.realm_is_zephyr_mirror_realm = true;
 
     let predicate = get_predicate([
         ["stream", "Foo"],
@@ -1288,7 +1293,7 @@ function make_private_sub(name, stream_id) {
         stream_id,
         invite_only: true,
     };
-    global.stream_data.add_sub(sub);
+    stream_data.add_sub(sub);
 }
 
 function make_web_public_sub(name, stream_id) {
@@ -1297,7 +1302,7 @@ function make_web_public_sub(name, stream_id) {
         stream_id,
         is_web_public: true,
     };
-    global.stream_data.add_sub(sub);
+    stream_data.add_sub(sub);
 }
 
 run_test("navbar_helpers", () => {

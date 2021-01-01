@@ -32,6 +32,7 @@ class SimpleQueueClient:
         self.channel: Optional[BlockingChannel] = None
         self.consumers: Dict[str, Set[Consumer]] = defaultdict(set)
         self.rabbitmq_heartbeat = rabbitmq_heartbeat
+        self.is_consuming = False
         self._connect()
 
     def _connect(self) -> None:
@@ -136,67 +137,53 @@ class SimpleQueueClient:
         self._reconnect()
         self.publish(queue_name, data)
 
-    def register_consumer(self, queue_name: str, consumer: Consumer) -> None:
-        def wrapped_consumer(ch: BlockingChannel,
-                             method: Basic.Deliver,
-                             properties: pika.BasicProperties,
-                             body: bytes) -> None:
-            try:
-                consumer(ch, method, properties, body)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
-            except Exception as e:
-                ch.basic_nack(delivery_tag=method.delivery_tag)
-                raise e
+    def start_json_consumer(self,
+                            queue_name: str,
+                            callback: Callable[[List[Dict[str, Any]]], None],
+                            batch_size: int=1,
+                            timeout: Optional[int]=None) -> None:
+        if batch_size == 1:
+            timeout = None
 
-        self.consumers[queue_name].add(wrapped_consumer)
-        self.ensure_queue(
-            queue_name,
-            lambda channel: channel.basic_consume(
-                queue_name,
-                wrapped_consumer,
-                consumer_tag=self._generate_ctag(queue_name),
-            ),
-        )
+        def do_consume(channel: BlockingChannel) -> None:
+            events: List[Dict[str, Any]] = []
+            last_process = time.time()
+            max_processed: Optional[int] = None
+            self.is_consuming = True
 
-    def register_json_consumer(self, queue_name: str,
-                               callback: Callable[[Dict[str, Any]], None]) -> None:
-        def wrapped_callback(ch: BlockingChannel,
-                             method: Basic.Deliver,
-                             properties: pika.BasicProperties,
-                             body: bytes) -> None:
-            callback(orjson.loads(body))
-        self.register_consumer(queue_name, wrapped_callback)
-
-    def drain_queue(self, queue_name: str) -> List[bytes]:
-        "Returns all messages in the desired queue"
-        messages = []
-
-        def opened(channel: BlockingChannel) -> None:
-            while True:
-                (meta, _, message) = channel.basic_get(queue_name)
-
-                if message is None:
+            # This iterator technique will iteratively collect up to
+            # batch_size events from the RabbitMQ queue (if present)
+            # before calling the callback with the batch.  If not
+            # enough events are present, it will sleep for at most
+            # timeout seconds before calling the callback with the
+            # batch of events it has.
+            for method, properties, body in channel.consume(queue_name, inactivity_timeout=timeout):
+                if body is not None:
+                    events.append(orjson.loads(body))
+                    max_processed = method.delivery_tag
+                now = time.time()
+                if len(events) >= batch_size or (timeout and now >= last_process + timeout):
+                    if events:
+                        try:
+                            callback(events)
+                            channel.basic_ack(max_processed, multiple=True)
+                        except BaseException:
+                            channel.basic_nack(max_processed, multiple=True)
+                            raise
+                        events = []
+                    last_process = now
+                if not self.is_consuming:
                     break
+        self.ensure_queue(queue_name, do_consume)
 
-                channel.basic_ack(meta.delivery_tag)
-                messages.append(message)
-
-        self.ensure_queue(queue_name, opened)
-        return messages
-
-    def json_drain_queue(self, queue_name: str) -> List[Dict[str, Any]]:
-        return list(map(orjson.loads, self.drain_queue(queue_name)))
-
-    def queue_size(self) -> int:
+    def local_queue_size(self) -> int:
         assert self.channel is not None
-        return len(self.channel._pending_events)
-
-    def start_consuming(self) -> None:
-        assert self.channel is not None
-        self.channel.start_consuming()
+        return self.channel.get_waiting_message_count() + len(self.channel._pending_events)
 
     def stop_consuming(self) -> None:
         assert self.channel is not None
+        assert self.is_consuming
+        self.is_consuming = False
         self.channel.stop_consuming()
 
 # Patch pika.adapters.tornado_connection.TornadoConnection so that a socket error doesn't
@@ -312,19 +299,25 @@ class TornadoQueueClient(SimpleQueueClient):
             assert self.channel is not None
             callback(self.channel)
 
-    def register_consumer(self, queue_name: str, consumer: Consumer) -> None:
+    def start_json_consumer(self,
+                            queue_name: str,
+                            callback: Callable[[List[Dict[str, Any]]], None],
+                            batch_size: int=1,
+                            timeout: Optional[int]=None) -> None:
         def wrapped_consumer(ch: BlockingChannel,
                              method: Basic.Deliver,
                              properties: pika.BasicProperties,
                              body: bytes) -> None:
-            consumer(ch, method, properties, body)
+            callback([orjson.loads(body)])
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
+        assert batch_size == 1
+        assert timeout is None
+        self.consumers[queue_name].add(wrapped_consumer)
+
         if not self.ready():
-            self.consumers[queue_name].add(wrapped_consumer)
             return
 
-        self.consumers[queue_name].add(wrapped_consumer)
         self.ensure_queue(
             queue_name,
             lambda channel: channel.basic_consume(
@@ -365,9 +358,9 @@ def queue_json_publish(
         elif processor:
             processor(event)
         else:
-            # Must be imported here: A top section import leads to obscure not-defined-ish errors.
+            # Must be imported here: A top section import leads to circular imports
             from zerver.worker.queue_processors import get_worker
-            get_worker(queue_name).consume_wrapper(event)
+            get_worker(queue_name).consume_single_event(event)
 
 def retry_event(queue_name: str,
                 event: Dict[str, Any],

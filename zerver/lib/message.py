@@ -1,12 +1,13 @@
 import copy
 import datetime
 import zlib
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import ahocorasick
 import orjson
 from django.db import connection
-from django.db.models import Sum
+from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from psycopg2.sql import SQL
@@ -28,7 +29,10 @@ from zerver.lib.display_recipient import (
 from zerver.lib.markdown import MentionData, markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.request import JsonableError
-from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
+from zerver.lib.stream_subscription import (
+    get_stream_subscriptions_for_user,
+    num_subscribers_for_stream_id,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
@@ -45,7 +49,6 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     get_display_recipient_by_id,
-    get_user_profile_by_id,
     get_usermessage_by_message_id,
     query_for_ids,
 )
@@ -76,6 +79,29 @@ class UnreadMessagesResult(TypedDict):
     mentions: List[int]
     count: int
 
+@dataclass
+class SendMessageRequest:
+    message: Message
+    stream: Optional[Stream]
+    local_id: Optional[int]
+    sender_queue_id: Optional[int]
+    realm: Realm
+    mention_data: MentionData
+    active_user_ids: Set[int]
+    push_notify_user_ids: Set[int]
+    stream_push_user_ids: Set[int]
+    stream_email_user_ids: Set[int]
+    um_eligible_user_ids: Set[int]
+    long_term_idle_user_ids: Set[int]
+    default_bot_user_ids: Set[int]
+    service_bot_tuples: List[Tuple[int, int]]
+    wildcard_mention_user_ids: Set[int]
+    links_for_embed: Set[str]
+    widget_content: Optional[Dict[str, Any]]
+    submessages: List[Dict[str, Any]] = field(default_factory=list)
+    deliver_at: Optional[datetime.datetime] = None
+    delivery_type: Optional[str] = None
+
 # We won't try to fetch more unread message IDs from the database than
 # this limit.  The limit is super high, in large part because it means
 # client-side code mostly doesn't need to think about the case that a
@@ -87,7 +113,12 @@ def truncate_content(content: str, max_length: int, truncation_message: str) -> 
         content = content[:max_length - len(truncation_message)] + truncation_message
     return content
 
-def truncate_body(body: str) -> str:
+def normalize_body(body: str) -> str:
+    body = body.rstrip()
+    if len(body) == 0:
+        raise JsonableError(_("Message must not be empty"))
+    if '\x00' in body:
+        raise JsonableError(_("Message must not contain null bytes"))
     return truncate_content(body, MAX_MESSAGE_LENGTH, "\n[message truncated]")
 
 def truncate_topic(topic: str) -> str:
@@ -682,7 +713,7 @@ def render_markdown(message: Message,
     if realm is None:
         realm = message.get_realm()
 
-    sender = get_user_profile_by_id(message.sender_id)
+    sender = message.sender
     sent_by_bot = sender.is_bot
     translate_emoticons = sender.translate_emoticons
 
@@ -885,7 +916,7 @@ def extract_unread_data_from_um_rows(
     )
 
     if user_profile is None:
-        return raw_unread_messages  # nocoverage
+        return raw_unread_messages
 
     muted_stream_ids = get_muted_stream_ids(user_profile)
     raw_unread_messages['muted_stream_ids'] = muted_stream_ids
@@ -1110,6 +1141,17 @@ def update_first_visible_message_id(realm: Realm) -> None:
         realm.first_visible_message_id = first_visible_message_id
     realm.save(update_fields=["first_visible_message_id"])
 
+def get_last_message_id() -> int:
+    # We generally use this function to populate RealmAuditLog, and
+    # the max id here is actually systemwide, not per-realm.  I
+    # assume there's some advantage in not filtering by realm.
+    last_id = Message.objects.aggregate(Max('id'))['id__max']
+    if last_id is None:
+        # During initial realm creation, there might be 0 messages in
+        # the database; in that case, the `aggregate` query returns
+        # None.  Since we want an int for "beginning of time", use -1.
+        last_id = -1
+    return last_id
 
 def get_recent_conversations_recipient_id(user_profile: UserProfile,
                                           recipient_id: int,
@@ -1223,3 +1265,34 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
         rec['user_ids'].sort()
 
     return recipient_map
+
+def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
+    realm = sender.realm
+
+    # If there are fewer than Realm.WILDCARD_MENTION_THRESHOLD, we
+    # allow sending.  In the future, we may want to make this behavior
+    # a default, and also just allow explicitly setting whether this
+    # applies to a stream as an override.
+    if num_subscribers_for_stream_id(stream.id) <= Realm.WILDCARD_MENTION_THRESHOLD:
+        return True
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_NOBODY:
+        return False
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_EVERYONE:
+        return True
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_ADMINS:
+        return sender.is_realm_admin
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS:
+        # TODO: Change this when we implement stream administrators
+        return sender.is_realm_admin
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS:
+        return sender.is_realm_admin or (not sender.is_new_member and not sender.is_guest)
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MEMBERS:
+        return not sender.is_guest
+
+    raise AssertionError("Invalid wildcard mention policy")

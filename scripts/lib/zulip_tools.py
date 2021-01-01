@@ -53,7 +53,7 @@ def overwrite_symlink(src: str, dst: str) -> None:
         break
     try:
         os.rename(tmp, dst)
-    except Exception:
+    except BaseException:
         os.remove(tmp)
         raise
 
@@ -105,9 +105,6 @@ def is_invalid_upgrade(current_version: str, new_version: str) -> bool:
     if new_version > '1.4.3' and current_version <= '1.3.10':
         return True
     return False
-
-def subprocess_text_output(args: Sequence[str]) -> str:
-    return subprocess.check_output(args, universal_newlines=True).strip()
 
 def get_zulip_pwent() -> pwd.struct_passwd:
     deploy_root_uid = os.stat(get_deploy_root()).st_uid

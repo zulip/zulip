@@ -131,7 +131,7 @@ function update_announce_stream_state() {
 function get_principals() {
     return Array.from($("#stream_creation_form input:checkbox[name=user]:checked"), (elem) => {
         const label = $(elem).closest(".add-user-label");
-        return parseInt(label.attr("data-user-id"), 10);
+        return Number.parseInt(label.attr("data-user-id"), 10);
     });
 }
 
@@ -171,7 +171,7 @@ function create_stream() {
     data.invite_only = JSON.stringify(invite_only);
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
-    const stream_post_policy = parseInt(
+    const stream_post_policy = Number.parseInt(
         $("#stream_creation_form input[name=stream-post-policy]:checked").val(),
         10,
     );
@@ -182,7 +182,7 @@ function create_stream() {
         "#stream_creation_form select[name=stream_message_retention_setting]",
     ).val();
     if (message_retention_selection === "retain_for_period") {
-        message_retention_selection = parseInt(
+        message_retention_selection = Number.parseInt(
             $("#stream_creation_form input[name=stream-message-retention-days]").val(),
             10,
         );
@@ -244,17 +244,7 @@ exports.new_stream_clicked = function (stream_name) {
         $("#create_stream_name").val(stream_name);
     }
     exports.show_new_stream_modal();
-
-    // at less than 700px we have a @media query that when you tap the
-    // .create_stream_button, the stream prompt slides in. However, when you
-    // focus  the button on that page, the entire app view jumps over to
-    // the other tab, and the animation breaks.
-    // it is unclear whether this is a browser bug or "feature", however what
-    // is clear is that this shouldn't be touched unless you're also changing
-    // the mobile @media query at 700px.
-    if (window.innerWidth > 700) {
-        $("#create_stream_name").trigger("focus");
-    }
+    $("#create_stream_name").trigger("focus");
 };
 
 function clear_error_display() {
@@ -297,13 +287,13 @@ exports.show_new_stream_modal = function () {
 
     $("#stream-checkboxes label.checkbox").on("change", function (e) {
         const elem = $(this);
-        const stream_id = parseInt(elem.attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
         const checked = elem.find("input").prop("checked");
         const subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
 
         $("#user-checkboxes label.checkbox").each(function () {
             const user_elem = $(this);
-            const user_id = parseInt(user_elem.attr("data-user-id"), 10);
+            const user_id = Number.parseInt(user_elem.attr("data-user-id"), 10);
 
             if (subscriber_ids.has(user_id)) {
                 user_elem.find("input").prop("checked", checked);
@@ -350,7 +340,7 @@ exports.create_handlers_for_users = function (container) {
         e.preventDefault();
     });
 
-    // Search People or Streams
+    // Search people or streams
     container.on("input", ".add-user-list-filter", (e) => {
         const user_list = $(".add-user-list-filter");
         if (user_list === 0) {
@@ -379,7 +369,7 @@ exports.create_handlers_for_users = function (container) {
             // implementation is merely sluggish.
             user_labels.each(function () {
                 const elem = $(this);
-                const user_id = parseInt(elem.attr("data-user-id"), 10);
+                const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
                 const user_checked = filtered_users.has(user_id);
                 const display = user_checked ? "block" : "none";
                 elem.css({display});

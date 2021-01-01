@@ -1,7 +1,7 @@
 "use strict";
 
 const autosize = require("autosize");
-const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
+const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
 const moment = require("moment");
 
 const pygments_data = require("../generated/pygments_data.json");
@@ -227,12 +227,13 @@ function handle_keydown(e) {
 function handle_keyup(e) {
     const code = e.keyCode || e.which;
 
-    if (code === 13 || (code === 9 && !e.shiftKey)) {
+    if (
         // Enter key or Tab key
-        if (nextFocus) {
-            nextFocus.trigger("focus");
-            nextFocus = false;
-        }
+        (code === 13 || (code === 9 && !e.shiftKey)) &&
+        nextFocus
+    ) {
+        nextFocus.trigger("focus");
+        nextFocus = false;
     }
 }
 
@@ -278,7 +279,7 @@ exports.tokenize_compose_str = function (s) {
             case "_":
                 if (i === 0) {
                     return s;
-                } else if (/[\s(){}[\]]/.test(s[i - 1])) {
+                } else if (/[\s()[\]{}]/.test(s[i - 1])) {
                     return s.slice(i);
                 }
                 break;
@@ -289,7 +290,10 @@ exports.tokenize_compose_str = function (s) {
                 // this will reposition the user from.  If | is the cursor, implements:
                 //
                 // `#**stream name** >|` => `#**stream name>|`.
-                if (s.substring(i - 2, i) === "**" || s.substring(i - 3, i) === "** ") {
+                if (
+                    s.slice(Math.max(0, i - 2), i) === "**" ||
+                    s.slice(Math.max(0, i - 3), i) === "** "
+                ) {
                     // return any string as long as its not ''.
                     return ">topic_jump";
                 }
@@ -316,7 +320,7 @@ exports.broadcast_mentions = function () {
 
         // Always sort above, under the assumption that names will
         // be longer and only contain "all" as a substring.
-        pm_recipient_count: Infinity,
+        pm_recipient_count: Number.POSITIVE_INFINITY,
 
         full_name: mention,
         is_broadcast: true,
@@ -328,9 +332,9 @@ exports.broadcast_mentions = function () {
 
 function filter_mention_name(current_token) {
     if (current_token.startsWith("**")) {
-        current_token = current_token.substring(2);
+        current_token = current_token.slice(2);
     } else if (current_token.startsWith("*")) {
-        current_token = current_token.substring(1);
+        current_token = current_token.slice(1);
     }
     if (current_token.length < 1 || current_token.lastIndexOf("*") !== -1) {
         return false;
@@ -580,7 +584,7 @@ exports.get_candidates = function (query) {
     }
 
     // Start syntax highlighting autocompleter if the first three characters are ```
-    const syntax_token = current_token.substring(0, 3);
+    const syntax_token = current_token.slice(0, 3);
     if (this.options.completions.syntax && (syntax_token === "```" || syntax_token === "~~~")) {
         // Only autocomplete if user starts typing a language after ```
         if (current_token.length === 3) {
@@ -588,14 +592,14 @@ exports.get_candidates = function (query) {
         }
 
         // If the only input is a space, don't autocomplete
-        current_token = current_token.substring(3);
+        current_token = current_token.slice(3);
         if (current_token === " ") {
             return false;
         }
 
         // Trim the first whitespace if it is there
         if (current_token[0] === " ") {
-            current_token = current_token.substring(1);
+            current_token = current_token.slice(1);
         }
         this.completing = "syntax";
         this.token = current_token;
@@ -609,7 +613,7 @@ exports.get_candidates = function (query) {
         // as :P or :-p
         // Also, if the user has only typed a colon and nothing after,
         // no need to match yet.
-        if (/^:-.?$/.test(current_token) || /^:[^a-z+]?$/.test(current_token)) {
+        if (/^:-.?$/.test(current_token) || /^:[^+a-z]?$/.test(current_token)) {
             return false;
         }
         // Don't autocomplete if there is a space following a ':'
@@ -617,19 +621,19 @@ exports.get_candidates = function (query) {
             return false;
         }
         this.completing = "emoji";
-        this.token = current_token.substring(1);
+        this.token = current_token.slice(1);
         return exports.emoji_collection;
     }
 
     if (this.options.completions.mention && current_token[0] === "@") {
-        current_token = current_token.substring(1);
+        current_token = current_token.slice(1);
         this.completing = "mention";
         // Silent mentions
         let is_silent = false;
         if (current_token.startsWith("_")) {
             this.completing = "silent_mention";
             is_silent = true;
-            current_token = current_token.substring(1);
+            current_token = current_token.slice(1);
         }
         current_token = filter_mention_name(current_token);
         if (!current_token) {
@@ -646,7 +650,7 @@ exports.get_candidates = function (query) {
     }
 
     if (this.options.completions.slash && current_token[0] === "/") {
-        current_token = current_token.substring(1);
+        current_token = current_token.slice(1);
 
         this.completing = "slash";
         this.token = current_token;
@@ -658,9 +662,9 @@ exports.get_candidates = function (query) {
             return false;
         }
 
-        current_token = current_token.substring(1);
+        current_token = current_token.slice(1);
         if (current_token.startsWith("**")) {
-            current_token = current_token.substring(2);
+            current_token = current_token.slice(2);
         }
 
         // Don't autocomplete if there is a space following a '#'
@@ -713,26 +717,30 @@ exports.get_candidates = function (query) {
 };
 
 exports.content_highlighter = function (item) {
-    if (this.completing === "emoji") {
-        return typeahead_helper.render_emoji(item);
-    } else if (this.completing === "mention" || this.completing === "silent_mention") {
-        return typeahead_helper.render_person_or_user_group(item);
-    } else if (this.completing === "slash") {
-        return typeahead_helper.render_typeahead_item({
-            primary: item.text,
-        });
-    } else if (this.completing === "stream") {
-        return typeahead_helper.render_stream(item);
-    } else if (this.completing === "syntax") {
-        return typeahead_helper.render_typeahead_item({primary: item});
-    } else if (this.completing === "topic_jump") {
-        return typeahead_helper.render_typeahead_item({primary: item});
-    } else if (this.completing === "topic_list") {
-        return typeahead_helper.render_typeahead_item({primary: item});
-    } else if (this.completing === "time_jump") {
-        return typeahead_helper.render_typeahead_item({primary: item});
+    switch (this.completing) {
+        case "emoji":
+            return typeahead_helper.render_emoji(item);
+        case "mention":
+            return typeahead_helper.render_person_or_user_group(item);
+        case "silent_mention":
+            return typeahead_helper.render_person_or_user_group(item);
+        case "slash":
+            return typeahead_helper.render_typeahead_item({
+                primary: item.text,
+            });
+        case "stream":
+            return typeahead_helper.render_stream(item);
+        case "syntax":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        case "topic_jump":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        case "topic_list":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        case "time_jump":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        default:
+            return undefined;
     }
-    return undefined;
 };
 
 const show_flatpickr = (element, callback, default_timestamp) => {
@@ -743,7 +751,7 @@ const show_flatpickr = (element, callback, default_timestamp) => {
         enableTime: true,
         clickOpens: false,
         defaultDate: default_timestamp,
-        plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
+        plugins: [new ConfirmDatePlugin({})],
         positionElement: element,
         dateFormat: "Z",
         formatDate: (date) => {
@@ -772,119 +780,129 @@ exports.content_typeahead_selected = function (item, event) {
     let rest = pieces[1];
     const textbox = this.$element;
 
-    if (this.completing === "emoji") {
-        // leading and trailing spaces are required for emoji,
-        // except if it begins a message or a new line.
-        if (
-            beginning.lastIndexOf(":") === 0 ||
-            beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
-            beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n"
-        ) {
-            beginning =
-                beginning.substring(0, beginning.length - this.token.length - 1) +
-                ":" +
-                item.emoji_name +
-                ": ";
-        } else {
-            beginning =
-                beginning.substring(0, beginning.length - this.token.length - 1) +
-                " :" +
-                item.emoji_name +
-                ": ";
-        }
-    } else if (this.completing === "mention" || this.completing === "silent_mention") {
-        const is_silent = this.completing === "silent_mention";
-        beginning = beginning.substring(0, beginning.length - this.token.length - 1);
-        if (beginning.endsWith("@_*")) {
-            beginning = beginning.substring(0, beginning.length - 3);
-        } else if (beginning.endsWith("@*") || beginning.endsWith("@_")) {
-            beginning = beginning.substring(0, beginning.length - 2);
-        } else if (beginning.endsWith("@")) {
-            beginning = beginning.substring(0, beginning.length - 1);
-        }
-        if (user_groups.is_user_group(item)) {
-            beginning += "@*" + item.name + "* ";
-            // We could theoretically warn folks if they are
-            // mentioning a user group that literally has zero
-            // members where we are posting to, but we don't have
-            // that functionality yet, and we haven't gotten much
-            // feedback on this being an actual pitfall.
-        } else {
-            const mention_text = people.get_mention_syntax(item.full_name, item.user_id, is_silent);
-            beginning += mention_text + " ";
-            if (!is_silent) {
-                compose.warn_if_mentioning_unsubscribed_user(item);
+    switch (this.completing) {
+        case "emoji":
+            // leading and trailing spaces are required for emoji,
+            // except if it begins a message or a new line.
+            if (
+                beginning.lastIndexOf(":") === 0 ||
+                beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
+                beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n"
+            ) {
+                beginning =
+                    beginning.slice(0, -this.token.length - 1) + ":" + item.emoji_name + ": ";
+            } else {
+                beginning =
+                    beginning.slice(0, -this.token.length - 1) + " :" + item.emoji_name + ": ";
             }
+            break;
+        case "silent_mention":
+        case "mention": {
+            const is_silent = this.completing === "silent_mention";
+            beginning = beginning.slice(0, -this.token.length - 1);
+            if (beginning.endsWith("@_*")) {
+                beginning = beginning.slice(0, -3);
+            } else if (beginning.endsWith("@*") || beginning.endsWith("@_")) {
+                beginning = beginning.slice(0, -2);
+            } else if (beginning.endsWith("@")) {
+                beginning = beginning.slice(0, -1);
+            }
+            if (user_groups.is_user_group(item)) {
+                beginning += "@*" + item.name + "* ";
+                // We could theoretically warn folks if they are
+                // mentioning a user group that literally has zero
+                // members where we are posting to, but we don't have
+                // that functionality yet, and we haven't gotten much
+                // feedback on this being an actual pitfall.
+            } else {
+                const mention_text = people.get_mention_syntax(
+                    item.full_name,
+                    item.user_id,
+                    is_silent,
+                );
+                beginning += mention_text + " ";
+                if (!is_silent) {
+                    compose.warn_if_mentioning_unsubscribed_user(item);
+                }
+            }
+            break;
         }
-    } else if (this.completing === "slash") {
-        beginning =
-            beginning.substring(0, beginning.length - this.token.length - 1) +
-            "/" +
-            item.name +
-            " ";
-    } else if (this.completing === "stream") {
-        beginning = beginning.substring(0, beginning.length - this.token.length - 1);
-        if (beginning.endsWith("#*")) {
-            beginning = beginning.substring(0, beginning.length - 2);
+        case "slash":
+            beginning = beginning.slice(0, -this.token.length - 1) + "/" + item.name + " ";
+            break;
+        case "stream":
+            beginning = beginning.slice(0, -this.token.length - 1);
+            if (beginning.endsWith("#*")) {
+                beginning = beginning.slice(0, -2);
+            }
+            beginning += "#**" + item.name;
+            if (event && event.key === ">") {
+                // Normally, one accepts typeahead with `Tab` or `Enter`, but when completing
+                // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
+                // as a completion that automatically sets up stream+topic typeahead for you.
+                beginning += ">";
+            } else {
+                beginning += "** ";
+            }
+            compose.warn_if_private_stream_is_linked(item);
+            break;
+        case "syntax": {
+            // Isolate the end index of the triple backticks/tildes, including
+            // possibly a space afterward
+            const backticks = beginning.length - this.token.length;
+            if (rest === "") {
+                // If cursor is at end of input ("rest" is empty), then
+                // complete the token before the cursor, and add a closing fence
+                // after the cursor
+                beginning = beginning.slice(0, backticks) + item + "\n";
+                rest = "\n" + beginning.slice(Math.max(0, backticks - 4), backticks).trim() + rest;
+            } else {
+                // If more text after the input, then complete the token, but don't touch
+                // "rest" (i.e. do not add a closing fence)
+                beginning = beginning.slice(0, backticks) + item;
+            }
+            break;
         }
-        beginning += "#**" + item.name;
-        if (event && event.key === ">") {
-            // Normally, one accepts typeahead with `Tab` or `Enter`, but when completing
-            // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
-            // as a completion that automatically sets up stream+topic typeahead for you.
-            beginning += ">";
-        } else {
-            beginning += "** ";
+        case "topic_jump": {
+            // Put the cursor at the end of immediately preceding stream mention syntax,
+            // just before where the `**` at the end of the syntax.  This will delete that
+            // final ** and set things up for the topic_list typeahead.
+            const index = beginning.lastIndexOf("**");
+            if (index !== -1) {
+                beginning = beginning.slice(0, index) + ">";
+            }
+            break;
         }
-        compose.warn_if_private_stream_is_linked(item);
-    } else if (this.completing === "syntax") {
-        // Isolate the end index of the triple backticks/tildes, including
-        // possibly a space afterward
-        const backticks = beginning.length - this.token.length;
-        if (rest === "") {
-            // If cursor is at end of input ("rest" is empty), then
-            // complete the token before the cursor, and add a closing fence
-            // after the cursor
-            beginning = beginning.substring(0, backticks) + item + "\n";
-            rest = "\n" + beginning.substring(backticks - 4, backticks).trim() + rest;
-        } else {
-            // If more text after the input, then complete the token, but don't touch
-            // "rest" (i.e. do not add a closing fence)
-            beginning = beginning.substring(0, backticks) + item;
+        case "topic_list": {
+            // Stream + topic mention typeahead; close the stream+topic mention syntax
+            // with the topic and the final **.  Note that this.token.length can be 0
+            // if we are completing from `**streamname>`.
+            const start = beginning.length - this.token.length;
+            beginning = beginning.slice(0, start) + item + "** ";
+            break;
         }
-    } else if (this.completing === "topic_jump") {
-        // Put the cursor at the end of immediately preceding stream mention syntax,
-        // just before where the `**` at the end of the syntax.  This will delete that
-        // final ** and set things up for the topic_list typeahead.
-        const index = beginning.lastIndexOf("**");
-        if (index !== -1) {
-            beginning = beginning.substring(0, index) + ">";
-        }
-    } else if (this.completing === "topic_list") {
-        // Stream + topic mention typeahead; close the stream+topic mention syntax
-        // with the topic and the final **.
-        const start = beginning.length - this.token.length;
-        beginning = beginning.substring(0, start) + item + "** ";
-    } else if (this.completing === "time_jump") {
-        let timestring = beginning.substring(beginning.lastIndexOf("<time:"));
-        if (timestring.startsWith("<time:") && timestring.endsWith(">")) {
-            timestring = timestring.substring(6, timestring.length - 1);
-        }
-        const timestamp = timerender.get_timestamp_for_flatpickr(timestring);
+        case "time_jump": {
+            let timestring = beginning.slice(Math.max(0, beginning.lastIndexOf("<time:")));
+            if (timestring.startsWith("<time:") && timestring.endsWith(">")) {
+                timestring = timestring.slice(6, -1);
+            }
+            const timestamp = timerender.get_timestamp_for_flatpickr(timestring);
 
-        const on_timestamp_selection = (val) => {
-            const datestr = val;
-            beginning =
-                beginning.substring(0, beginning.lastIndexOf("<time")) + `<time:${datestr}> `;
-            if (rest.startsWith(">")) {
-                rest = rest.slice(1);
-            }
-            textbox.val(beginning + rest);
-            textbox.caret(beginning.length, beginning.length);
-            compose_ui.autosize_textarea(textbox);
-        };
-        show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
-        return beginning + rest;
+            const on_timestamp_selection = (val) => {
+                const datestr = val;
+                beginning =
+                    beginning.slice(0, Math.max(0, beginning.lastIndexOf("<time"))) +
+                    `<time:${datestr}> `;
+                if (rest.startsWith(">")) {
+                    rest = rest.slice(1);
+                }
+                textbox.val(beginning + rest);
+                textbox.caret(beginning.length, beginning.length);
+                compose_ui.autosize_textarea(textbox);
+            };
+            show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
+            return beginning + rest;
+        }
     }
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to

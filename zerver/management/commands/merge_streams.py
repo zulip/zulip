@@ -72,4 +72,4 @@ class Command(ZulipBaseCommand):
         do_deactivate_stream(stream_to_destroy, acting_user=None)
         if len(users_to_activate) > 0:
             print(f"Adding {len(users_to_activate)} subscriptions")
-            bulk_add_subscriptions([stream_to_keep], users_to_activate)
+            bulk_add_subscriptions(realm, [stream_to_keep], users_to_activate)

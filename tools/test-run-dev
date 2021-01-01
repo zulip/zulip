@@ -16,11 +16,11 @@ def start_server(logfile_name: str) -> Tuple[bool, str]:
     failure = True
     key = "Quit the server with CTRL-C."
     datalog = []
-    with open(logfile_name, 'rb', buffering=0) as logfile:
+    with open(logfile_name, 'r', buffering=0) as logfile:
         for i in range(200):
             time.sleep(0.5)
             print(f"{i}. Polling run-dev...")
-            new_data = logfile.read().decode()
+            new_data = logfile.read()
             if new_data:
                 datalog.append(new_data)
 

@@ -22,6 +22,7 @@ from corporate.lib.stripe import (
     MAX_INVOICED_LICENSES,
     MIN_INVOICED_LICENSES,
     BillingError,
+    InvalidBillingSchedule,
     StripeCardError,
     add_months,
     attach_discount_to_realm,
@@ -29,6 +30,7 @@ from corporate.lib.stripe import (
     compute_plan_parameters,
     get_discount_for_realm,
     get_latest_seat_count,
+    get_price_per_license,
     invoice_plan,
     invoice_plans_as_needed,
     make_end_of_cycle_updates_if_needed,
@@ -224,7 +226,7 @@ def mock_stripe(tested_timestamp_fields: Sequence[str]=[],
                     decorated_function.__name__, mocked_function_name, mocked_function)  # nocoverage
             else:
                 side_effect = read_stripe_fixture(decorated_function.__name__, mocked_function_name)
-            decorated_function = patch(mocked_function_name, side_effect=side_effect)(decorated_function)
+            decorated_function = cast(CallableT, patch(mocked_function_name, side_effect=side_effect)(decorated_function))
 
         @wraps(decorated_function)
         def wrapped(*args: object, **kwargs: object) -> object:
@@ -654,7 +656,7 @@ class StripeTest(StripeTestCase):
             self.assert_not_in_success_response(["Go to your Zulip organization"], response)
 
             with patch('corporate.views.timezone_now', return_value=self.now):
-                response = self.client_get("/billing/?onboarding=true")
+                response = self.client_get("/billing/", {"onboarding": "true"})
                 self.assert_in_success_response(["Go to your Zulip organization"], response)
 
             with patch('corporate.lib.stripe.get_latest_seat_count', return_value=12):
@@ -1160,7 +1162,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, "/billing/")
 
-            response = self.client_get("/upgrade/?onboarding=true")
+            response = self.client_get("/upgrade/", {"onboarding": "true"})
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, "/billing/?onboarding=true")
 
@@ -1216,7 +1218,7 @@ class StripeTest(StripeTestCase):
     @mock_stripe()
     def test_payment_method_string(self, *mocks: Mock) -> None:
         pass
-        # If you signup with a card, we should show your card as the payment method
+        # If you sign up with a card, we should show your card as the payment method
         # Already tested in test_initial_upgrade
 
         # If you pay by invoice, your payment method should be
@@ -1228,7 +1230,7 @@ class StripeTest(StripeTestCase):
         # stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
         # self.assertEqual('Billed by invoice', payment_method_string(stripe_customer))
 
-        # If you signup with a card and then downgrade, we still have your
+        # If you sign up with a card and then downgrade, we still have your
         # card on file, and should show it
         # TODO
 
@@ -1242,10 +1244,10 @@ class StripeTest(StripeTestCase):
         self.assert_in_success_response(['85'], self.client_get("/upgrade/"))
         # Check that the customer was charged the discounted amount
         self.upgrade()
-        stripe_customer_id = Customer.objects.values_list('stripe_customer_id', flat=True).first()
-        [charge] = stripe.Charge.list(customer=stripe_customer_id)
+        customer = Customer.objects.first()
+        [charge] = stripe.Charge.list(customer=customer.stripe_customer_id)
         self.assertEqual(1200 * self.seat_count, charge.amount)
-        [invoice] = stripe.Invoice.list(customer=stripe_customer_id)
+        [invoice] = stripe.Invoice.list(customer=customer.stripe_customer_id)
         self.assertEqual([1200 * self.seat_count, -1200 * self.seat_count],
                          [item.amount for item in invoice.lines])
         # Check CustomerPlan reflects the discount
@@ -1255,13 +1257,25 @@ class StripeTest(StripeTestCase):
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=['status'])
         attach_discount_to_realm(user.realm, Decimal(25))
-        process_initial_upgrade(user, self.seat_count, True, CustomerPlan.ANNUAL, stripe_create_token().id)
-        [charge0, charge1] = stripe.Charge.list(customer=stripe_customer_id)
-        self.assertEqual(6000 * self.seat_count, charge0.amount)
-        [invoice0, invoice1] = stripe.Invoice.list(customer=stripe_customer_id)
+        with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
+            process_initial_upgrade(user, self.seat_count, True, CustomerPlan.ANNUAL, stripe_create_token().id)
+        [charge, _] = stripe.Charge.list(customer=customer.stripe_customer_id)
+        self.assertEqual(6000 * self.seat_count, charge.amount)
+        [invoice, _] = stripe.Invoice.list(customer=customer.stripe_customer_id)
         self.assertEqual([6000 * self.seat_count, -6000 * self.seat_count],
-                         [item.amount for item in invoice0.lines])
+                         [item.amount for item in invoice.lines])
         plan = CustomerPlan.objects.get(price_per_license=6000, discount=Decimal(25))
+
+        attach_discount_to_realm(user.realm, Decimal(50))
+        plan.refresh_from_db()
+        self.assertEqual(plan.price_per_license, 4000)
+        self.assertEqual(plan.discount, 50)
+        customer.refresh_from_db()
+        self.assertEqual(customer.default_discount, 50)
+        invoice_plans_as_needed(self.next_year + timedelta(days=10))
+        [invoice, _, _] = stripe.Invoice.list(customer=customer.stripe_customer_id)
+        self.assertEqual([4000 * self.seat_count],
+                         [item.amount for item in invoice.lines])
 
     def test_get_discount_for_realm(self) -> None:
         user = self.example_user('hamlet')
@@ -1985,6 +1999,24 @@ class BillingHelpersTest(ZulipTestCase):
                     None if free_trial is None else Decimal(free_trial),
                 )
                 self.assertEqual(output_, output)
+
+    def test_get_price_per_license(self) -> None:
+        self.assertEqual(
+            get_price_per_license(CustomerPlan.STANDARD, CustomerPlan.ANNUAL), 8000
+        )
+        self.assertEqual(
+            get_price_per_license(CustomerPlan.STANDARD, CustomerPlan.MONTHLY), 800
+        )
+        self.assertEqual(
+            get_price_per_license(CustomerPlan.STANDARD, CustomerPlan.MONTHLY, discount=Decimal(50)),
+            400
+        )
+
+        with self.assertRaises(AssertionError):
+            get_price_per_license(CustomerPlan.PLUS, CustomerPlan.MONTHLY)
+
+        with self.assertRaisesRegex(InvalidBillingSchedule, "Unknown billing_schedule: 1000"):
+            get_price_per_license(CustomerPlan.STANDARD, 1000)
 
     def test_update_or_create_stripe_customer_logic(self) -> None:
         user = self.example_user('hamlet')

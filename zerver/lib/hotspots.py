@@ -3,34 +3,43 @@
 from typing import Dict, List
 
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
+from django.utils.functional import Promise
+from django.utils.translation import ugettext_lazy
 
 from zerver.models import UserHotspot, UserProfile
 
-ALL_HOTSPOTS: Dict[str, Dict[str, str]] = {
+ALL_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
     'intro_reply': {
-        'title': _('Reply to a message'),
-        'description': _('Click anywhere on a message to reply.'),
+        'title': ugettext_lazy('Reply to a message'),
+        'description': ugettext_lazy('Click anywhere on a message to reply.'),
     },
     'intro_streams': {
-        'title': _('Catch up on a stream'),
-        'description': _('Messages sent to a stream are seen by everyone subscribed '
-                         'to that stream. Try clicking on one of the stream links below.'),
+        'title': ugettext_lazy('Catch up on a stream'),
+        'description': ugettext_lazy(
+            'Messages sent to a stream are seen by everyone subscribed '
+            'to that stream. Try clicking on one of the stream links below.'
+        ),
     },
     'intro_topics': {
-        'title': _('Topics'),
-        'description': _('Every message has a topic. Topics keep conversations '
-                         'easy to follow, and make it easy to reply to conversations that start '
-                         'while you are offline.'),
+        'title': ugettext_lazy('Topics'),
+        'description': ugettext_lazy(
+            'Every message has a topic. Topics keep conversations '
+            'easy to follow, and make it easy to reply to conversations that start '
+            'while you are offline.'
+        ),
     },
     'intro_gear': {
-        'title': _('Settings'),
-        'description': _('Go to Settings to configure your notifications and display settings.'),
+        'title': ugettext_lazy('Settings'),
+        'description': ugettext_lazy(
+            'Go to Settings to configure your notifications and display settings.'
+        ),
     },
     'intro_compose': {
-        'title': _('Compose'),
-        'description': _('Click here to start a new conversation. Pick a topic '
-                         '(2-3 words is best), and give it a go!'),
+        'title': ugettext_lazy('Compose'),
+        'description': ugettext_lazy(
+            'Click here to start a new conversation. Pick a topic '
+            '(2-3 words is best), and give it a go!'
+        ),
     },
 }
 

@@ -1,8 +1,13 @@
 "use strict";
 
-set_global("$", global.make_zjquery());
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
+set_global("$", make_zjquery());
 set_global("poll_widget", {});
-set_global("tictactoe_widget", {});
 set_global("todo_widget", {});
 set_global("zform", {});
 set_global("document", "document-stub");
@@ -135,6 +140,13 @@ run_test("activate", () => {
     assert(!is_widget_activated);
     assert(!is_event_handled);
     assert.equal(blueslip.get_test_logs("warn")[0].more_info, "invalid_widget");
+
+    opts.widget_type = "tictactoe";
+
+    widgetize.activate(opts);
+    assert(!is_widget_elem_inserted);
+    assert(!is_widget_activated);
+    assert(!is_event_handled);
 
     /* Testing widgetize.handle_events */
     const post_activate_event = {

@@ -1,5 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 zrequire("message_events");
 zrequire("message_store");
 zrequire("muting");
@@ -9,7 +15,7 @@ zrequire("stream_data");
 zrequire("stream_topic_history");
 zrequire("unread");
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 set_global("alert_words", {});
 set_global("condense", {});
 set_global("current_msg_list", {});

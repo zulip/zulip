@@ -1,11 +1,16 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 set_global("document", null);
 set_global("page_params", {
     realm_community_topic_editing_limit_seconds: 86400,
 });
 
-global.stub_out_jquery();
+stub_out_jquery();
 
 zrequire("message_edit");
 
@@ -49,22 +54,22 @@ run_test("get_editability", () => {
         sent_by_me: true,
     };
 
-    global.page_params = {
+    set_global("page_params", {
         realm_allow_message_editing: false,
-    };
+    });
     assert.equal(get_editability(message), editability_types.NO);
 
-    global.page_params = {
+    set_global("page_params", {
         realm_allow_message_editing: true,
         // Limit of 0 means no time limit on editing messages
         realm_message_content_edit_limit_seconds: 0,
-    };
+    });
     assert.equal(get_editability(message), editability_types.FULL);
 
-    global.page_params = {
+    set_global("page_params", {
         realm_allow_message_editing: true,
         realm_message_content_edit_limit_seconds: 10,
-    };
+    });
     const now = new Date();
     const current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 60;
@@ -83,13 +88,13 @@ run_test("get_editability", () => {
         sent_by_me: false,
         type: "stream",
     };
-    global.page_params = {
+    set_global("page_params", {
         realm_allow_community_topic_editing: true,
         realm_allow_message_editing: true,
         realm_message_content_edit_limit_seconds: 0,
         realm_community_topic_editing_limit_seconds: 86400,
         is_admin: false,
-    };
+    });
     message.timestamp = current_timestamp - 60;
     assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
 
@@ -97,28 +102,28 @@ run_test("get_editability", () => {
     assert.equal(message_edit.is_topic_editable(message), true);
 
     message.sent_by_me = true;
-    global.page_params.realm_allow_community_topic_editing = false;
+    page_params.realm_allow_community_topic_editing = false;
     assert.equal(message_edit.is_topic_editable(message), true);
 
     message.sent_by_me = false;
-    global.page_params.realm_allow_community_topic_editing = false;
+    page_params.realm_allow_community_topic_editing = false;
     assert.equal(message_edit.is_topic_editable(message), false);
 
     message.sent_by_me = false;
-    global.page_params.realm_allow_community_topic_editing = false;
-    global.page_params.is_admin = true;
+    page_params.realm_allow_community_topic_editing = false;
+    page_params.is_admin = true;
     assert.equal(message_edit.is_topic_editable(message), true);
 
-    global.page_params.realm_allow_message_editing = false;
+    page_params.realm_allow_message_editing = false;
     assert.equal(message_edit.is_topic_editable(message), false);
 });
 
 run_test("get_deletability", () => {
-    global.page_params = {
+    set_global("page_params", {
         is_admin: true,
         realm_allow_message_deleting: false,
         realm_message_content_delete_limit_seconds: 0,
-    };
+    });
     const message = {
         sent_by_me: false,
         locally_echoed: true,
@@ -128,7 +133,7 @@ run_test("get_deletability", () => {
     assert.equal(message_edit.get_deletability(message), true);
 
     // Non-admin can't delete message sent by others
-    global.page_params.is_admin = false;
+    page_params.is_admin = false;
     assert.equal(message_edit.get_deletability(message), false);
 
     // Locally echoed messages are not deletable
@@ -138,14 +143,14 @@ run_test("get_deletability", () => {
     message.locally_echoed = false;
     assert.equal(message_edit.get_deletability(message), false);
 
-    global.page_params.realm_allow_message_deleting = true;
+    page_params.realm_allow_message_deleting = true;
     assert.equal(message_edit.get_deletability(message), true);
 
     const now = new Date();
     const current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 5;
 
-    global.page_params.realm_message_content_delete_limit_seconds = 10;
+    page_params.realm_message_content_delete_limit_seconds = 10;
     assert.equal(message_edit.get_deletability(message), true);
 
     message.timestamp = current_timestamp - 60;

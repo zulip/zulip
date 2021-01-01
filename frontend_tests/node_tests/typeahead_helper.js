@@ -1,7 +1,12 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {stub_templates} = require("../zjsunit/handlebars");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 set_global("page_params", {realm_is_zephyr_mirror_realm: false});
-set_global("md5", (s) => "md5-" + s);
 
 const settings_config = zrequire("settings_config");
 const pm_conversations = zrequire("pm_conversations");
@@ -17,7 +22,7 @@ zrequire("hash_util");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
-const actual_pygments_data = Object.assign({}, pygments_data);
+const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
 const {LazySet} = zrequire("lazy_set");
@@ -50,7 +55,7 @@ run_test("sort_streams", () => {
     ];
     test_streams.forEach(stream_data.update_calculated_fields);
 
-    global.stream_data.is_active = function (sub) {
+    stream_data.is_active = function (sub) {
         return sub.name !== "dead";
     };
 
@@ -143,7 +148,7 @@ run_test("sort_languages", () => {
 
 const a_bot = {
     email: "a_bot@zulip.com",
-    full_name: "A zulip test bot",
+    full_name: "A Zulip test bot",
     is_admin: false,
     is_bot: true,
     user_id: 1,
@@ -151,7 +156,7 @@ const a_bot = {
 
 const a_user = {
     email: "a_user@zulip.org",
-    full_name: "A zulip user",
+    full_name: "A Zulip user",
     is_admin: false,
     is_bot: false,
     user_id: 2,
@@ -255,19 +260,19 @@ run_test("sort_recipients", () => {
     pm_conversations.set_partner(7);
 
     // For splitting based on recency
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 7,
         stream_id: 1,
         topic: "Dev Topic",
         id: (next_id += 1),
     });
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 5,
         stream_id: 1,
         topic: "Dev Topic",
         id: (next_id += 1),
     });
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 6,
         stream_id: 1,
         topic: "Dev Topic",
@@ -285,13 +290,13 @@ run_test("sort_recipients", () => {
         "a_bot@zulip.com",
     ]);
 
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 5,
         stream_id: 2,
         topic: "Linux Topic",
         id: (next_id += 1),
     });
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 7,
         stream_id: 2,
         topic: "Linux Topic",
@@ -458,7 +463,7 @@ run_test("render_person when emails hidden", () => {
     // Test render_person with regular person, under hidden email visibility case
     page_params.is_admin = false;
     let rendered = false;
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, b_user_1.full_name);
         assert.equal(args.secondary, undefined);
@@ -473,7 +478,7 @@ run_test("render_person", () => {
     page_params.is_admin = true;
     // Test render_person with regular person
     let rendered = false;
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, a_user.full_name);
         assert.equal(args.secondary, a_user.email);
@@ -493,7 +498,7 @@ run_test("render_person", () => {
         special_item_text: "special_text",
     };
     rendered = false;
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, special_person.special_item_text);
         rendered = true;
@@ -505,7 +510,7 @@ run_test("render_person", () => {
 
 run_test("clear_rendered_person", () => {
     let rendered = false;
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, b_bot.full_name);
         assert.equal(args.secondary, b_bot.email);
@@ -536,7 +541,7 @@ run_test("render_stream", () => {
         stream_id: 42,
         name: "Short Description",
     };
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
         assert.equal(args.secondary, stream.description);
@@ -553,10 +558,10 @@ run_test("render_stream", () => {
         stream_id: 43,
         name: "Long Description",
     };
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
-        const short_desc = stream.description.substring(0, 35);
+        const short_desc = stream.description.slice(0, 35);
         assert.equal(args.secondary, short_desc + "...");
         rendered = true;
         return "typeahead-item-stub";
@@ -572,7 +577,7 @@ run_test("clear_rendered_stream", () => {
         stream_id: 44,
         name: "Stream To Be Cleared",
     };
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
         assert.equal(args.secondary, stream.description);
@@ -605,7 +610,7 @@ run_test("render_emoji", () => {
         }),
     );
 
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.deepEqual(args, {
             primary: "thumbs up",
@@ -627,7 +632,7 @@ run_test("render_emoji", () => {
         emoji_url: "TBD",
     };
 
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.deepEqual(args, {
             primary: "realm emoji",

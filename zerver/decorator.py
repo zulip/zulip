@@ -12,6 +12,7 @@ from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as django_login
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, QueryDict
 from django.http.multipartparser import MultiPartParser
 from django.shortcuts import resolve_url
@@ -66,7 +67,7 @@ def cachify(method: FuncT) -> FuncT:
 
 def update_user_activity(request: HttpRequest, user_profile: UserProfile,
                          query: Optional[str]) -> None:
-    # update_active_status also pushes to rabbitmq, and it seems
+    # update_active_status also pushes to RabbitMQ, and it seems
     # redundant to log that here as well.
     if request.META["PATH_INFO"] == '/json/users/me/presence':
         return
@@ -313,24 +314,6 @@ def webhook_view(
         return _wrapped_func_arguments
     return _wrapped_view_func
 
-# From Django 1.8, modified to leave off ?next=/
-def redirect_to_login(next: str, login_url: Optional[str]=None,
-                      redirect_field_name: str=REDIRECT_FIELD_NAME) -> HttpResponseRedirect:
-    """
-    Redirects the user to the login page, passing the given 'next' page
-    """
-    resolved_url = resolve_url(login_url or settings.LOGIN_URL)
-
-    login_url_parts = list(urllib.parse.urlparse(resolved_url))
-    if redirect_field_name:
-        querystring = QueryDict(login_url_parts[4], mutable=True)
-        querystring[redirect_field_name] = next
-        # Don't add ?next=/, to keep our URLs clean
-        if next != '/':
-            login_url_parts[4] = querystring.urlencode(safe='/')
-
-    return HttpResponseRedirect(urllib.parse.urlunparse(login_url_parts))
-
 # From Django 2.2, modified to pass the request rather than just the
 # user into test_func; this is useful so that we can revalidate the
 # subdomain matches the user's realm.  It is likely that we could make
@@ -350,13 +333,19 @@ def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optio
                 return view_func(request, *args, **kwargs)
             path = request.build_absolute_uri()
             resolved_login_url = resolve_url(login_url or settings.LOGIN_URL)
-            # If the login url is the same scheme and net location then just
+            # If the login URL is the same scheme and net location then just
             # use the path as the "next" url.
             login_scheme, login_netloc = urllib.parse.urlparse(resolved_login_url)[:2]
             current_scheme, current_netloc = urllib.parse.urlparse(path)[:2]
             if ((not login_scheme or login_scheme == current_scheme) and
                     (not login_netloc or login_netloc == current_netloc)):
                 path = request.get_full_path()
+
+            # TODO: Restore testing for this case; it was removed when
+            # we enabled web-public stream testing on /.
+            if path == "/":  # nocoverage
+                # Don't add ?next=/, to keep our URLs clean
+                return HttpResponseRedirect(resolved_login_url)
             return redirect_to_login(
                 path, resolved_login_url, redirect_field_name)
         return cast(ViewFuncT, _wrapped_view)  # https://github.com/python/mypy/issues/1927
@@ -429,6 +418,28 @@ def zulip_login_required(
     if function:
         return actual_decorator(function)
     return actual_decorator  # nocoverage # We don't use this without a function
+
+def web_public_view(
+        view_func: ViewFuncT,
+        redirect_field_name: str=REDIRECT_FIELD_NAME,
+        login_url: str=settings.HOME_NOT_LOGGED_IN,
+) -> Union[Callable[[ViewFuncT], ViewFuncT], ViewFuncT]:
+    """
+    This wrapper adds client info for unauthenticated users but
+    forces authenticated users to go through 2fa.
+
+    NOTE: This function == zulip_login_required in a production environment as
+          web_public_view path has only been enabled for development purposes
+          currently.
+    """
+    if not settings.DEVELOPMENT:
+        # Coverage disabled because DEVELOPMENT is always true in development.
+        return zulip_login_required(view_func, redirect_field_name, login_url)  # nocoverage
+
+    actual_decorator = lambda view_func: zulip_otp_required(
+        redirect_field_name=redirect_field_name, login_url=login_url)(add_logging_data(view_func))
+
+    return actual_decorator(view_func)
 
 def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
     @zulip_login_required
@@ -504,7 +515,7 @@ def authenticated_uploads_api_view(
         return _wrapped_func_arguments
     return _wrapped_view_func
 
-# A more REST-y authentication decorator, using, in particular, HTTP Basic
+# A more REST-y authentication decorator, using, in particular, HTTP basic
 # authentication.
 #
 # If webhook_client_name is specific, the request is a webhook view
@@ -779,7 +790,7 @@ def zulip_otp_required(
         """
         :if_configured: If ``True``, an authenticated user with no confirmed
         OTP devices will be allowed. Also, non-authenticated users will be
-        allowed as web_public_guest users. Default is ``False``. If ``False``,
+        allowed as web_public_visitor users. Default is ``False``. If ``False``,
         2FA will not do any authentication.
         """
         if_configured = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
@@ -792,10 +803,12 @@ def zulip_otp_required(
 
         # This request is unauthenticated (logged-out) access; 2FA is
         # not required or possible.
+        #
+        # TODO: Add a test for 2FA-enabled with web-public views.
         if not user.is_authenticated:  # nocoverage
             return True
 
-        # If the user doesn't have 2FA setup, we can't enforce 2FA.
+        # If the user doesn't have 2FA set up, we can't enforce 2FA.
         if not user_has_device(user):
             return True
 

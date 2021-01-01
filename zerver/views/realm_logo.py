@@ -46,7 +46,7 @@ def get_logo_backend(request: HttpRequest, user_profile: UserProfile,
                      night: bool=REQ(validator=check_bool)) -> HttpResponse:
     url = get_realm_logo_url(user_profile.realm, night)
 
-    # We can rely on the url already having query parameters. Because
+    # We can rely on the URL already having query parameters. Because
     # our templates depend on being able to use the ampersand to
     # add query parameters to our url, get_logo_url does '?version=version_number'
     # hacks to prevent us from having to jump through decode/encode hoops.

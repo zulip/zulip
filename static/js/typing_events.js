@@ -36,7 +36,7 @@ function get_users_typing_for_narrow() {
         }
         const narrow_user_ids = narrow_user_ids_string
             .split(",")
-            .map((user_id_string) => parseInt(user_id_string, 10));
+            .map((user_id_string) => Number.parseInt(user_id_string, 10));
         const group = narrow_user_ids.concat([page_params.user_id]);
         return typing_data.get_group_typists(group);
     }

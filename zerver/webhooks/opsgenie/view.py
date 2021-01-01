@@ -73,7 +73,7 @@ def api_opsgenie_webhook(request: HttpRequest, user_profile: UserProfile,
         )
 
     body_template = """
-[OpsGenie Alert for {integration_name}](https://app.opsgenie.com/alert/V2#/show/{alert_id}):
+[OpsGenie alert for {integration_name}](https://app.opsgenie.com/alert/V2#/show/{alert_id}):
 * **Type**: {alert_type}
 {additional_info}
 """.strip()

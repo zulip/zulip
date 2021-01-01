@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, MutableMapping
+from typing import Dict, List
 
 from django.conf import settings
 from django.db.models import Count
@@ -12,6 +12,7 @@ from zerver.lib.actions import (
     internal_send_private_message,
 )
 from zerver.lib.emoji import emoji_name_to_emoji_code
+from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, Realm, UserProfile, get_system_bot
 
 
@@ -95,9 +96,9 @@ def send_initial_pms(user: UserProfile) -> None:
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
                                   user, content)
 
-def send_welcome_bot_response(message: MutableMapping[str, Any]) -> None:
+def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
-    human_recipient_id = message['message'].sender.recipient_id
+    human_recipient_id = send_request.message.sender.recipient_id
     if Message.objects.filter(sender=welcome_bot, recipient_id=human_recipient_id).count() < 2:
         content = (
             _("Congratulations on your first reply!") +
@@ -109,7 +110,7 @@ def send_welcome_bot_response(message: MutableMapping[str, Any]) -> None:
               "skills. Or, try clicking on some of the stream names to your left!")
         )
         internal_send_private_message(
-            message['realm'], welcome_bot, message['message'].sender, content)
+            send_request.realm, welcome_bot, send_request.message.sender, content)
 
 def send_initial_realm_messages(realm: Realm) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT)

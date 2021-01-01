@@ -35,8 +35,11 @@ can toggle whether you receive notifications for wildcard mentions:
 {end_tabs}
 
 Additionally, you can override this configuration for individual
-streams in your [Stream settings](/help/stream-notifications).
+streams in your [Stream settings](/help/stream-notifications), and
+administrators can [restrict use of wildcard
+mentions](/help/restrict-wildcard-mentions) in large streams.
 
 ## Related articles
 
 * [Add an alert word](/help/add-an-alert-word)
+* [Restrict wildcard mentions](/help/restrict-wildcard-mentions)

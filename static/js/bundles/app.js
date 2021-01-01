@@ -1,6 +1,6 @@
 import "./common";
 
-// Import Third party libraries
+// Import third party libraries
 import "../../third/bootstrap-notify/js/bootstrap-notify";
 import "../../third/bootstrap-typeahead/typeahead";
 import "../../third/bootstrap-tooltip/tooltip";
@@ -12,7 +12,7 @@ import "jquery-validation";
 import "flatpickr";
 import "flatpickr/dist/plugins/confirmDate/confirmDate";
 
-// Import App JS
+// Import app JS
 import "../i18n";
 import "../feature_flags";
 import "../loading";
@@ -59,7 +59,6 @@ import "../topic_zoom";
 import "../filter";
 import "../poll_widget";
 import "../todo_widget";
-import "../tictactoe_widget";
 import "../zform";
 import "../widgetize";
 import "../submessage";
@@ -194,8 +193,9 @@ import "../search_pill";
 import "../search_pill_widget";
 import "../stream_ui_updates";
 import "../spoilers";
+import "../desktop_integration";
 
-// Import Styles
+// Import styles
 
 import "../../third/bootstrap-notify/css/bootstrap-notify.css";
 import "spectrum-colorpicker/spectrum.css";
@@ -212,13 +212,13 @@ import "../../styles/image_upload_widget.css";
 import "../../styles/subscriptions.css";
 import "../../styles/drafts.css";
 import "../../styles/input_pill.css";
-import "../../styles/informational-overlays.css";
+import "../../styles/informational_overlays.css";
 import "../../styles/compose.css";
 import "../../styles/message_edit_history.css";
 import "../../styles/reactions.css";
 import "../../styles/user_circles.css";
-import "../../styles/left-sidebar.css";
-import "../../styles/right-sidebar.css";
+import "../../styles/left_sidebar.css";
+import "../../styles/right_sidebar.css";
 import "../../styles/lightbox.css";
 import "../../styles/popovers.css";
 import "../../styles/recent_topics.css";

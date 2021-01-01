@@ -21,6 +21,12 @@ you can scroll down to **Webhooks** on the same page and check the
 box that says **issues**. Make sure that you set up the permissions
 so that the integration will visible to the right people.
 
+    **NOTE:** Zulip also supports configuring this as a webhook in Sentry
+&mdash; which, while easier to configure (Navigate to **Settings > Integrations
+> WebHooks**) may not include the full breadth of event types. For instance,
+some events, like issue assignments or issues being resolved, will not trigger
+notifications with this configuration.
+
 4. Once you've saved the internal integration, go to you're project's
 settings (**settings** > **Projects** > Select the project). Once
 there go to **Alerts** and click on the **New Alert Rule** button to

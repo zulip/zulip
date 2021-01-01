@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 zrequire("unread");
 
 zrequire("Filter", "js/filter");
@@ -9,7 +14,7 @@ zrequire("MessageListData", "js/message_list_data");
 set_global("page_params", {});
 set_global("muting", {});
 
-global.patch_builtin("setTimeout", (f, delay) => {
+set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     return f();
 });
@@ -63,7 +68,7 @@ run_test("basics", () => {
     assert.equal(mld.selected_id(), 50);
     assert.equal(mld.selected_idx(), 8);
 
-    mld.remove([mld.get(50)]);
+    mld.remove([50]);
     assert_contents(mld, [10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
 
     mld.update_items_for_muting();
@@ -88,9 +93,7 @@ run_test("basics", () => {
     assert.equal(mld.selected_id(), 125.01);
 
     mld.get(125.01).id = 145;
-    mld.change_message_id(125.01, 145, {
-        rerender_view: () => {},
-    });
+    mld.change_message_id(125.01, 145);
     assert_contents(mld, [120, 130, 140, 145]);
 
     for (const msg of mld.all_messages()) {
@@ -116,7 +119,7 @@ run_test("muting enabled", () => {
     mld.update_items_for_muting();
     assert.deepEqual(mld._items, [mld.get(35)]);
 
-    mld.remove(make_msgs([35, 15]));
+    mld.remove([35, 15]);
     assert_contents(mld, []);
     assert.deepEqual(mld._all_items, make_msgs([25, 45]));
 

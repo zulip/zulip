@@ -1,5 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 zrequire("rows");
 zrequire("lightbox");
 
@@ -16,7 +22,7 @@ set_global("popovers", {
 
 rows.is_draft_row = () => false;
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 run_test("pan_and_zoom", () => {
     $.clear_all_elements();

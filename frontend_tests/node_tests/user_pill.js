@@ -1,7 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 const people = zrequire("people");
-set_global("md5", (s) => "md5-" + s);
 zrequire("user_pill");
 zrequire("pill_typeahead");
 

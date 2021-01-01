@@ -1,5 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const {make_zjquery} = require("../zjsunit/zjquery");
+
 const emoji = zrequire("emoji", "shared/js/emoji");
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
 zrequire("compose_state");
@@ -15,7 +21,6 @@ zrequire("composebox_typeahead");
 zrequire("recent_senders");
 zrequire("settings_org");
 const settings_config = zrequire("settings_config");
-set_global("md5", (s) => "md5-" + s);
 
 // To be eliminated in next commit:
 stream_data.update_calculated_fields = () => {};
@@ -167,7 +172,7 @@ stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(netherland_stream);
 
-set_global("$", global.make_zjquery());
+set_global("$", make_zjquery());
 
 set_global("page_params", {});
 set_global("channel", {});
@@ -279,9 +284,9 @@ const call_center = {
     members: [],
 };
 
-global.user_groups.add(hamletcharacters);
-global.user_groups.add(backend);
-global.user_groups.add(call_center);
+user_groups.add(hamletcharacters);
+user_groups.add(backend);
+user_groups.add(call_center);
 
 const make_emoji = function (emoji_dict) {
     return {emoji_name: emoji_dict.name, emoji_code: emoji_dict.emoji_code};
@@ -329,7 +334,7 @@ run_test("content_typeahead_selected", () => {
         },
     });
     let set_timeout_called = false;
-    global.patch_builtin("setTimeout", (f, time) => {
+    set_global("setTimeout", (f, time) => {
         f();
         assert.equal(time, 0);
         set_timeout_called = true;
@@ -405,7 +410,7 @@ run_test("content_typeahead_selected", () => {
     // silent mention
     fake_this.completing = "silent_mention";
     compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw Error("unexpected call for silent mentions");
+        throw new Error("unexpected call for silent mentions");
     };
 
     fake_this.query = "@_kin";
@@ -434,7 +439,7 @@ run_test("content_typeahead_selected", () => {
 
     // user group mention
     compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw Error("unexpected call for user groups");
+        throw new Error("unexpected call for user groups");
     };
 
     fake_this.query = "@back";
@@ -479,6 +484,21 @@ run_test("content_typeahead_selected", () => {
     fake_this.token = "swed";
     actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
     expected_value = "#**Sweden** ";
+    assert.equal(actual_value, expected_value);
+
+    // topic_list
+    fake_this.completing = "topic_list";
+
+    fake_this.query = "Hello #**Sweden>test";
+    fake_this.token = "test";
+    actual_value = ct.content_typeahead_selected.call(fake_this, "testing");
+    expected_value = "Hello #**Sweden>testing** ";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "Hello #**Sweden>";
+    fake_this.token = "";
+    actual_value = ct.content_typeahead_selected.call(fake_this, "testing");
+    expected_value = "Hello #**Sweden>testing** ";
     assert.equal(actual_value, expected_value);
 
     // syntax
@@ -1079,7 +1099,7 @@ run_test("initialize", () => {
     $("#compose-send-button").fadeOut = noop;
     $("#compose-send-button").fadeIn = noop;
     let channel_post_called = false;
-    global.channel.post = function (params) {
+    channel.post = function (params) {
         assert.equal(params.url, "/json/users/me/enter-sends");
         assert.equal(params.idempotent, true);
         assert.deepEqual(params.data, {enter_sends: page_params.enter_sends});

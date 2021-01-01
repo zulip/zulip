@@ -72,7 +72,7 @@ def get_or_create_key_prefix() -> str:
         # This sets the prefix for the benefit of the Puppeteer tests.
         #
         # Having a fixed key is OK since we don't support running
-        # multiple copies of the puppeteer tests at the same time anyway.
+        # multiple copies of the Puppeteer tests at the same time anyway.
         return 'puppeteer_tests:'
     elif settings.TEST_SUITE:
         # The Python tests overwrite KEY_PREFIX on each test, but use
@@ -85,13 +85,10 @@ def get_or_create_key_prefix() -> str:
 
     filename = os.path.join(settings.DEPLOY_ROOT, "var", "remote_cache_prefix")
     try:
-        fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o444)
-        prefix = secrets.token_hex(16) + ':'
-        # This does close the underlying file
-        with os.fdopen(fd, 'w') as f:
+        with open(filename, 'x') as f:
+            prefix = secrets.token_hex(16) + ':'
             f.write(prefix + "\n")
-    except OSError:
-        # The file already exists
+    except FileExistsError:
         tries = 1
         while tries < 10:
             with open(filename) as f:
@@ -576,13 +573,13 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
 # Called by models.py to flush various caches whenever we save
 # a Realm object.  The main tricky thing here is that Realm info is
 # generally cached indirectly through user_profile objects.
-def flush_realm(sender: Any, **kwargs: Any) -> None:
+def flush_realm(sender: Any, from_deletion: bool=False, **kwargs: Any) -> None:
     realm = kwargs['instance']
     users = realm.get_active_users()
     delete_user_profile_caches(users)
 
-    if realm.deactivated or (kwargs["update_fields"] is not None and
-                             "string_id" in kwargs['update_fields']):
+    if from_deletion or realm.deactivated or (kwargs["update_fields"] is not None and
+                                              "string_id" in kwargs['update_fields']):
         cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
@@ -591,8 +588,7 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
-
-    if changed(kwargs, ['description']):
+    elif changed(kwargs, ['description']):
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
 
@@ -635,7 +631,7 @@ def to_dict_cache_key_id(message_id: int) -> str:
 def to_dict_cache_key(message: 'Message', realm_id: Optional[int]=None) -> str:
     return to_dict_cache_key_id(message.id)
 
-def open_graph_description_cache_key(content: Any, request: HttpRequest) -> str:
+def open_graph_description_cache_key(content: bytes, request: HttpRequest) -> str:
     return 'open_graph_description_path:{}'.format(make_safe_digest(request.META['PATH_INFO']))
 
 def flush_message(sender: Any, **kwargs: Any) -> None:

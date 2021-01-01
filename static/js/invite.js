@@ -1,7 +1,9 @@
 "use strict";
 
 const autosize = require("autosize");
+const ClipboardJS = require("clipboard");
 
+const copy_invite_link = require("../templates/copy_invite_link.hbs");
 const render_invitation_failed_error = require("../templates/invitation_failed_error.hbs");
 const render_invite_subscription = require("../templates/invite_subscription.hbs");
 const render_settings_dev_env_email_access = require("../templates/settings/dev_env_email_access.hbs");
@@ -18,10 +20,10 @@ function reset_error_messages() {
 }
 
 function get_common_invitation_data() {
-    const invite_as = parseInt($("#invite_as").val(), 10);
+    const invite_as = Number.parseInt($("#invite_as").val(), 10);
     const stream_ids = [];
     $("#invite-stream-checkboxes input:checked").each(function () {
-        const stream_id = parseInt($(this).val(), 10);
+        const stream_id = Number.parseInt($(this).val(), 10);
         stream_ids.push(stream_id);
     });
     const data = {
@@ -114,12 +116,9 @@ function generate_multiuse_invite() {
         data,
         beforeSend,
         success(data) {
-            ui_report.success(
-                i18n.t('Invitation link: <a href="__link__">__link__</a>', {
-                    link: data.invite_link,
-                }),
-                invite_status,
-            );
+            const copy_link_html = copy_invite_link(data);
+            ui_report.success(copy_link_html, invite_status);
+            new ClipboardJS("#copy_generated_invite_link");
         },
         error(xhr) {
             ui_report.error("", xhr, invite_status);

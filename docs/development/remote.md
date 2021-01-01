@@ -254,7 +254,7 @@ Now your workspace should look similar this:
 Next, read the following to learn more about developing for Zulip:
 
 * [Git & GitHub Guide][rtd-git-guide]
-* [Using the Development Environment][rtd-using-dev-env]
+* [Using the development environment][rtd-using-dev-env]
 * [Testing][rtd-testing]
 
 [install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
