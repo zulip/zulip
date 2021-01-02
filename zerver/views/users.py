@@ -31,7 +31,7 @@ from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import CannotDeactivateLastUserError, OrganizationOwnerRequired
 from zerver.lib.integrations import EMBEDDED_BOTS
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.types import Validator
@@ -75,6 +75,7 @@ from zerver.models import (
     Service,
     Stream,
     UserProfile,
+    get_user,
     get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
@@ -637,3 +638,23 @@ def get_subscription_backend(
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 
     return json_success(subscription_status)
+
+
+@has_request_variables
+def get_user_by_email(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    email: str,
+    include_custom_profile_fields: bool = REQ(validator=check_bool, default=False),
+    client_gravatar: bool = REQ(validator=check_bool, default=False),
+) -> HttpResponse:
+    realm = user_profile.realm
+
+    target_user = None
+    if email is not None:
+        try:
+            target_user = get_user(email, realm)
+        except UserProfile.DoesNotExist:
+            raise JsonableError(_("No such user"))
+
+    return get_members_backend(request, user_profile, user_id=target_user.id)

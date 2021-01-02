@@ -4027,6 +4027,8 @@ paths:
         includes values of [custom profile field](/help/add-custom-profile-fields).
 
         `GET {{ api_url }}/v1/users`
+
+        You can also [fetch details on a single user](/api/get-user).
       parameters:
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
@@ -5450,6 +5452,94 @@ paths:
                         "result": "success",
                         "msg": "",
                       }
+  /users/{email}:
+    get:
+      operationId: get_user_by_email
+      tags: ["users"]
+      description: |
+        Fetch details for a single user in the organization given a Zulip display
+        email address.
+
+        `GET {{ api_url }}/v1/users/{email}`
+
+        Note that this endpoint uses Zulip display emails addresses
+        for organizations that have configured limited [email address
+        visibility](/help/restrict-visibility-of-email-addresses).
+
+        You can also fetch details on [all users in the organization](/api/get-users) or
+        [by user ID](/api/get-user).  Fetching by user ID is generally recommended
+        when possible, as users can
+        [change their email address](/help/change-your-email-address).
+
+        *This endpoint is new in Zulip Server 4.0 (feature level 39).*
+      parameters:
+        - name: email
+          in: path
+          description: |
+            The email address of the user whose details you want to fetch.
+          schema:
+            type: string
+          example: iago@zulip.com
+          required: true
+        - $ref: "#/components/parameters/ClientGravatar"
+        - $ref: "#/components/parameters/IncludeCustomProfileFields"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      user:
+                        $ref: "#/components/schemas/User"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "user":
+                          {
+                            "date_joined": "2019-10-20T07:50:53.729659+00:00",
+                            "full_name": "King Hamlet",
+                            "is_guest": false,
+                            "profile_data":
+                              {
+                                "4": {"value": "vim"},
+                                "2":
+                                  {
+                                    "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
+                                    "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
+                                  },
+                                "5": {"value": "1900-01-01"},
+                                "7": {"value": "[11]"},
+                                "6": {"value": "https://blog.zulig.org"},
+                                "1":
+                                  {
+                                    "value": "+0-11-23-456-7890",
+                                    "rendered_value": "<p>+0-11-23-456-7890</p>",
+                                  },
+                                "8": {"value": "zulipbot"},
+                                "3":
+                                  {
+                                    "rendered_value": "<p>Dark chocolate</p>",
+                                    "value": "Dark chocolate",
+                                  },
+                              },
+                            "user_id": 10,
+                            "is_bot": false,
+                            "bot_type": null,
+                            "timezone": "",
+                            "is_admin": false,
+                            "is_owner": false,
+                            "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                            "is_active": true,
+                            "email": "hamlet@zulip.com",
+                          },
+                      }
   /users/{user_id}:
     get:
       operationId: get_user
@@ -5459,7 +5549,8 @@ paths:
 
         `GET {{ api_url }}/v1/users/{user_id}`
 
-        You can also fetch details on [all users in the organization](/api/get-users).
+        You can also fetch details on [all users in the organization](/api/get-users)
+        or [by email](/api/get-user-by-email).
 
         *This endpoint is new in Zulip Server 3.0 (feature level 1).*
       parameters:

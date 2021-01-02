@@ -1815,6 +1815,35 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"]["email"], bot.email)
         self.assertTrue(result["user"]["is_bot"])
 
+    def test_get_user_by_email(self) -> None:
+        user = self.example_user("hamlet")
+        self.login("hamlet")
+        result = orjson.loads(self.client_get(f"/json/users/{user.email}").content)
+
+        self.assertEqual(result["user"]["email"], user.email)
+
+        self.assertEqual(result["user"]["full_name"], user.full_name)
+        self.assertIn("user_id", result["user"])
+        self.assertNotIn("profile_data", result["user"])
+        self.assertFalse(result["user"]["is_bot"])
+        self.assertFalse(result["user"]["is_admin"])
+        self.assertFalse(result["user"]["is_owner"])
+
+        result = orjson.loads(
+            self.client_get(
+                f"/json/users/{user.email}", {"include_custom_profile_fields": "true"}
+            ).content
+        )
+        self.assertIn("profile_data", result["user"])
+
+        result = self.client_get("/json/users/invalid")
+        self.assert_json_error(result, "No such user")
+
+        bot = self.example_user("default_bot")
+        result = orjson.loads(self.client_get(f"/json/users/{bot.email}").content)
+        self.assertEqual(result["user"]["email"], bot.email)
+        self.assertTrue(result["user"]["is_bot"])
+
     def test_get_all_profiles_avatar_urls(self) -> None:
         hamlet = self.example_user("hamlet")
         result = self.api_get(hamlet, "/api/v1/users")

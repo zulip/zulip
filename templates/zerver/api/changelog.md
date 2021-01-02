@@ -10,6 +10,10 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 39**
+
+* Added new [GET /users/{email}](/api/get-user-by-email) endpoint.
+
 **Feature level 38**
 
 * [`POST /register`](/api/register-queue): Increased

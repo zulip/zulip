@@ -222,6 +222,20 @@ def get_members(client: Client) -> None:
             assert member.get("profile_data", None) is not None
 
 
+@openapi_test_function("/users/{email}:get")
+def get_user_by_email(client: Client) -> None:
+
+    # {code_example|start}
+    # Fetch details on a user given a user ID
+    email = "iago@zulip.com"
+    result = client.call_endpoint(
+        url=f"/users/{email}",
+        method="GET",
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/{email}", "get", "200")
+
+
 @openapi_test_function("/users/{user_id}:get")
 def get_single_user(client: Client) -> None:
 
@@ -1287,6 +1301,7 @@ def test_users(client: Client) -> None:
     deactivate_user(client)
     reactivate_user(client)
     update_user(client)
+    get_user_by_email(client)
     get_subscription_status(client)
     get_profile(client)
     update_notification_settings(client)
