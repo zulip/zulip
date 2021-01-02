@@ -106,7 +106,6 @@
 ## Organization basics
 * [Review your organization's settings](/help/review-your-organization-settings)
 * [Create your organization profile](/help/create-your-organization-profile)
-* [Import from HipChat/Stride](/help/import-from-hipchat)
 * [Import from Mattermost](/help/import-from-mattermost)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)

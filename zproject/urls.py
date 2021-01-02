@@ -743,7 +743,6 @@ i18n_urls = [
     path('for/working-groups-and-communities/', landing_view,
          {'template_name': 'zerver/for-working-groups-and-communities.html'}),
     path('security/', landing_view, {'template_name': 'zerver/security.html'}),
-    path('atlassian/', landing_view, {'template_name': 'zerver/atlassian.html'}),
 
     # Terms of Service and privacy pages.
     path('terms/', terms_view),
