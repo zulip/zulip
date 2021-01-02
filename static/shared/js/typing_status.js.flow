@@ -4,15 +4,15 @@
 
 "use strict";
 
-type RecipientUserIds = number[];
+type RecipientUserIds<UserId: number> = $ReadOnlyArray<UserId>;
 
-type Worker = {|
+type Worker<UserId> = {|
   get_current_time: () => number, // as ms since epoch
-  notify_server_start: RecipientUserIds => void,
-  notify_server_stop: RecipientUserIds => void
+  notify_server_start: RecipientUserIds<UserId> => void,
+  notify_server_stop: RecipientUserIds<UserId> => void
 |};
 
-declare export function update(
-  worker: Worker,
-  new_recipient: RecipientUserIds | null
+declare export function update<UserId>(
+  worker: Worker<UserId>,
+  new_recipient: RecipientUserIds<UserId> | null
 ): void;
