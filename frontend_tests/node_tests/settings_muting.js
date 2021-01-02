@@ -23,7 +23,7 @@ run_test("settings", () => {
         assert.deepEqual(opts, [
             {
                 date_muted: 1577836800000,
-                date_muted_str: "Jan 01",
+                date_muted_str: "Jan\u00A001,\u00A02020",
                 stream: frontend.name,
                 stream_id: frontend.stream_id,
                 topic: "js",
