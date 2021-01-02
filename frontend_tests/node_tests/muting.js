@@ -67,14 +67,14 @@ run_test("get_and_set_muted_topics", () => {
     assert.deepEqual(muting.get_muted_topics().sort(), [
         {
             date_muted: 1577836800000,
-            date_muted_str: "Jan 01",
+            date_muted_str: "Jan\u00A001,\u00A02020",
             stream: devel.name,
             stream_id: devel.stream_id,
             topic: "java",
         },
         {
             date_muted: 1577836800000,
-            date_muted_str: "Jan 01",
+            date_muted_str: "Jan\u00A001,\u00A02020",
             stream: office.name,
             stream_id: office.stream_id,
             topic: "gossip",
@@ -93,14 +93,14 @@ run_test("get_and_set_muted_topics", () => {
     assert.deepEqual(muting.get_muted_topics().sort(), [
         {
             date_muted: 1577836800000,
-            date_muted_str: "Jan 01",
+            date_muted_str: "Jan\u00A001,\u00A02020",
             stream: social.name,
             stream_id: social.stream_id,
             topic: "breakfast",
         },
         {
             date_muted: 1577836800000,
-            date_muted_str: "Jan 01",
+            date_muted_str: "Jan\u00A001,\u00A02020",
             stream: design.name,
             stream_id: design.stream_id,
             topic: "typography",
