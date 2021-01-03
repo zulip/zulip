@@ -153,8 +153,8 @@ test_ui("validate_stream_message_address_info", () => {
         assert.equal(template_name, "compose_not_subscribed");
         return "compose_not_subscribed_stub";
     });
-    assert(!compose.validate_stream_message_address_info("social"));
-    assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
+    assert(compose.validate_stream_message_address_info("social"));
+    assert.equal($("#compose-error-msg").html(), "never-been-set");
 
     page_params.narrow_stream = false;
     channel.post = (payload) => {
@@ -172,8 +172,8 @@ test_ui("validate_stream_message_address_info", () => {
         payload.data.subscribed = false;
         payload.success(payload.data);
     };
-    assert(!compose.validate_stream_message_address_info("Frontend"));
-    assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
+    assert(compose.validate_stream_message_address_info("Frontend"));
+    assert.equal($("#compose-error-msg").html(), "never-been-set");
 
     channel.post = (payload) => {
         assert.equal(payload.data.stream, "Frontend");
