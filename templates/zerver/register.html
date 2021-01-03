@@ -102,7 +102,21 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     <input type='hidden' name='key' value='{{ key }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
-                    <div id="id_email">{{ email }}</div>
+
+                    <div class="input-box">
+                        <input id="id_email" type="text" value="{{ email }}" disabled />
+                        <div class="email-visibility-text">
+                            {% if EMAIL_ADDRESS_VISIBILITY == "1" %}
+                            Everyone including guests will be able to see this email address.
+                            {% elif EMAIL_ADDRESS_VISIBILITY == "2" %}
+                            Only organization members will be able to see this email address.
+                            {% elif EMAIL_ADDRESS_VISIBILITY == "3" %}
+                            Only admins will be able to see this email address.
+                            {% elif EMAIL_ADDRESS_VISIBILITY == "4" %}
+                            Nobody will be able to see this email address.
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
 
                 {% if accounts %}
