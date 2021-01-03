@@ -521,7 +521,7 @@ exports.register_topic_handlers = function () {
         }
 
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.mute(stream_id, topic);
+        muting_ui.mute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -534,7 +534,7 @@ exports.register_topic_handlers = function () {
         }
 
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.unmute(stream_id, topic);
+        muting_ui.unmute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });

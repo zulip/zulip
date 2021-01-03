@@ -356,7 +356,7 @@ run_test("basic_chars", () => {
     emoji_picker.reactions_popped = return_false;
 
     assert_mapping("G", "navigate.to_end");
-    assert_mapping("M", "muting_ui.toggle_mute");
+    assert_mapping("M", "muting_ui.toggle_topic_mute");
 
     // Test keys that work when a message is selected and
     // also when the message list is empty.

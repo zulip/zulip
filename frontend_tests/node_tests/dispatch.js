@@ -214,7 +214,7 @@ run_test("muted_topics", (override) => {
     const event = event_fixtures.muted_topics;
 
     with_stub((stub) => {
-        override("muting_ui.handle_updates", stub.f);
+        override("muting_ui.handle_topic_updates", stub.f);
         dispatch(event);
         const args = stub.get_args("muted_topics");
         assert_same(args.muted_topics, event.muted_topics);

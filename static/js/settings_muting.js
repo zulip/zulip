@@ -11,7 +11,7 @@ exports.set_up = function () {
 
         e.stopImmediatePropagation();
 
-        muting_ui.unmute(stream_id, topic);
+        muting_ui.unmute_topic(stream_id, topic);
         $row.remove();
     });
 

@@ -392,7 +392,7 @@ exports.initialize = function () {
         e.stopPropagation();
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.mute(stream_id, topic);
+        muting_ui.mute_topic(stream_id, topic);
     });
 
     $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
@@ -401,7 +401,7 @@ exports.initialize = function () {
         e.stopPropagation();
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.unmute(stream_id, topic);
+        muting_ui.unmute_topic(stream_id, topic);
     });
 
     $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);

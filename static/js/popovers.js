@@ -1202,7 +1202,7 @@ exports.register_click_handlers = function () {
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         exports.hide_actions_popover();
-        muting_ui.mute(stream_id, topic);
+        muting_ui.mute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1212,7 +1212,7 @@ exports.register_click_handlers = function () {
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         exports.hide_actions_popover();
-        muting_ui.unmute(stream_id, topic);
+        muting_ui.unmute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });

@@ -76,7 +76,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             break;
 
         case "muted_topics":
-            muting_ui.handle_updates(event.muted_topics);
+            muting_ui.handle_topic_updates(event.muted_topics);
             break;
 
         case "presence":
