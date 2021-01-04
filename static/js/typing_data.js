@@ -3,11 +3,13 @@ import * as util from "./util";
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
-const typist_dct = new Map();
+const pm_typists_dict = new Map();
+const stream_typists_dict = new Map();
 const inbound_timer_dict = new Map();
 
 export function clear_for_testing() {
-    typist_dct.clear();
+    pm_typists_dict.clear();
+    stream_typists_dict.clear();
     inbound_timer_dict.clear();
 }
 
@@ -20,17 +22,35 @@ export function get_pms_key(group) {
     return ids.join(",");
 }
 
-export function add_typist(key, typist) {
-    const current = typist_dct.get(key) || [];
+export function get_topic_key(stream_id, topic) {
+    topic = topic.toLowerCase(); // Topics are case-insensitive
+    return JSON.stringify({stream_id, topic});
+}
+
+export function get_typist_dict(message_type) {
+    if (message_type === "stream") {
+        return stream_typists_dict;
+    }
+
+    if (message_type === "private") {
+        return pm_typists_dict;
+    }
+    throw new Error(`Unknown message_type: ${message_type}`);
+}
+
+export function add_typist(key, typist, message_type) {
+    const typist_dict = get_typist_dict(message_type);
+    const current = typist_dict.get(key) || [];
     typist = to_int(typist);
     if (!current.includes(typist)) {
         current.push(typist);
     }
-    typist_dct.set(key, util.sorted_ids(current));
+    typist_dict.set(key, util.sorted_ids(current));
 }
 
-export function remove_typist(key, typist) {
-    let current = typist_dct.get(key) || [];
+export function remove_typist(key, typist, message_type) {
+    const typist_dict = get_typist_dict(message_type);
+    let current = typist_dict.get(key) || [];
 
     typist = to_int(typist);
     if (!current.includes(typist)) {
@@ -39,20 +59,24 @@ export function remove_typist(key, typist) {
 
     current = current.filter((user_id) => to_int(user_id) !== to_int(typist));
 
-    typist_dct.set(key, current);
+    typist_dict.set(key, current);
     return true;
 }
 
 export function get_group_typists(group) {
     const key = get_pms_key(group);
-    const user_ids = typist_dct.get(key) || [];
+    const user_ids = pm_typists_dict.get(key) || [];
     return muted_users.filter_muted_user_ids(user_ids);
 }
 
 export function get_all_pms_typists() {
-    let typists = Array.from(typist_dct.values()).flat();
+    let typists = Array.from(pm_typists_dict.values()).flat();
     typists = util.sorted_ids(typists);
     return muted_users.filter_muted_user_ids(typists);
+}
+
+export function get_stream_typists(stream_id, topic) {
+    return stream_typists_dict.get(get_topic_key(stream_id, topic)) || [];
 }
 
 // The next functions aren't pure data, but it is easy
