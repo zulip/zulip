@@ -572,6 +572,9 @@ exports.change_focused_element = function (e, input_key) {
                 // on rerender when user is typing.
                 current_focus_elem = $("#recent_topics_search");
                 return true;
+            case "escape":
+                set_table_focus(row_focus, col_focus);
+                return true;
         }
     } else if ($elem.hasClass("btn-recent-filters")) {
         switch (input_key) {

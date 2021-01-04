@@ -478,6 +478,7 @@ exports.process_hotkey = function (e, hotkey) {
         case "tab":
         case "shift_tab":
         case "open_recent_topics":
+        case "escape":
             if (
                 ["#recent_topics", "#", ""].includes(window.location.hash) &&
                 !popovers.any_active() &&
