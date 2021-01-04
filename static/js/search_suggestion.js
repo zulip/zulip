@@ -730,7 +730,7 @@ export function get_suggestions(base_query, query) {
 
 export function finalize_search_result(result) {
     for (const sug of result) {
-        const first = sug.description.charAt(0).toUpperCase();
+        const first = sug.description.charAt(0).toLocaleUpperCase();
         sug.description = first + sug.description.slice(1);
     }
 
