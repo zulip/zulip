@@ -819,6 +819,37 @@ run_test("typing", ({override}) => {
     page_params.user_id = typing_person1.user_id;
     event = event_fixtures.typing__start;
     dispatch(event);
+    page_params.user_id = undefined; // above change shouldn't effect stream_typing tests below
+});
+
+run_test("stream_typing", ({override}) => {
+    const stream_typing_in_id = events.stream_typing_in_id;
+    const topic_typing_in = events.topic_typing_in;
+    let event = event_fixtures.stream_typing__start;
+    {
+        const stub = make_stub();
+        override(typing_events, "display_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender.user_id, typing_person1.user_id);
+        assert_same(args.event.message_type, "stream");
+        assert_same(args.event.stream_id, stream_typing_in_id);
+        assert_same(args.event.topic, topic_typing_in);
+    }
+
+    event = event_fixtures.stream_typing__stop;
+    {
+        const stub = make_stub();
+        override(typing_events, "hide_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender.user_id, typing_person1.user_id);
+        assert_same(args.event.message_type, "stream");
+        assert_same(args.event.stream_id, stream_typing_in_id);
+        assert_same(args.event.topic, topic_typing_in);
+    }
 });
 
 run_test("user_settings", ({override}) => {
