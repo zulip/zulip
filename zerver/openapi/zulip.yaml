@@ -4260,7 +4260,7 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - example: {"msg": "", "result": "success"}
 
-  /users/{email}/presence:
+  /users/{user_id_or_email}/presence:
     get:
       operationId: get_user_presence
       tags: ["users"]
@@ -4273,16 +4273,19 @@ paths:
         presence endpoint, which returns data for all active users in the
         organization, instead.
 
-        `GET {{ api_url }}/v1/users/{email}/presence`
+        `GET {{ api_url }}/v1/users/{user_id_or_email}/presence`
 
         See
         [Zulip's developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/presence.html)
         for details on the data model for presence in Zulip.
       parameters:
-        - name: email
+        - name: user_id_or_email
           in: path
           description: |
-            The email address of the user whose presence you want to fetch.
+            The user_id or Zulip display email address of the user whose presence you want to fetch.
+
+            **Changes**: New in Zulip 4.0 (feature level 43). Previous versions only supported
+            identifying the user by Zulip display email.
           schema:
             type: string
           example: iago@zulip.com

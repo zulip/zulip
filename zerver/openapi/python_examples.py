@@ -140,7 +140,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400_1")
 
 
-@openapi_test_function("/users/{email}/presence:get")
+@openapi_test_function("/users/{user_id_or_email}/presence:get")
 def get_user_presence(client: Client) -> None:
 
     # {code_example|start}
@@ -148,7 +148,7 @@ def get_user_presence(client: Client) -> None:
     result = client.get_user_presence("iago@zulip.com")
     # {code_example|end}
 
-    validate_against_openapi_schema(result, "/users/{email}/presence", "get", "200")
+    validate_against_openapi_schema(result, "/users/{user_id_or_email}/presence", "get", "200")
 
 
 @openapi_test_function("/users/me/presence:post")

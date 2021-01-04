@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 43**
+
+* [`GET /users/{user_id_or_email}/presence`]: Added support for
+ passing the `user_id` to identify the target user.
+
 **Feature level 42**
 
 * `PATCH /settings/display`: Added a new `default_view` setting allowing
