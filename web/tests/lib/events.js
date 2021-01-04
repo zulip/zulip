@@ -32,6 +32,8 @@ const typing_person2 = {
 
 exports.typing_person1 = typing_person1;
 exports.typing_person2 = typing_person2;
+exports.stream_typing_in_id = 1;
+exports.topic_typing_in = "Typing topic";
 
 const fake_then = 1596710000;
 const fake_now = 1596713966;
@@ -687,6 +689,24 @@ exports.fixtures = {
         stream_id: 99,
         property: "color",
         value: "blue",
+    },
+
+    stream_typing__start: {
+        type: "typing",
+        op: "start",
+        message_type: "stream",
+        sender: typing_person1,
+        stream_id: this.stream_typing_in_id,
+        topic: this.topic_typing_in,
+    },
+
+    stream_typing__stop: {
+        type: "typing",
+        op: "stop",
+        message_type: "stream",
+        sender: typing_person1,
+        stream_id: this.stream_typing_in_id,
+        topic: this.topic_typing_in,
     },
 
     submessage: {

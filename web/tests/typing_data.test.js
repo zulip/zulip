@@ -20,8 +20,16 @@ test("basics", () => {
     // The typing_data needs to be robust with lists of
     // user ids being in arbitrary sorting order. So all
     // the apparent randomness in these tests has a purpose.
+
+    const stream_id = 1;
+    const topic = "typing notifications";
+    const topic_typing_key = typing_data.get_topic_key(stream_id, topic);
+
     typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 15);
     assert.deepEqual(typing_data.get_group_typists([15, 10, 5]), [15]);
+
+    typing_data.add_typist(topic_typing_key, 12);
+    assert.deepEqual(typing_data.get_topic_typists(stream_id, topic), [12]);
 
     // test that you can add twice
     typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 15);
@@ -29,6 +37,12 @@ test("basics", () => {
     // add another id to our first group
     typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 10);
     assert.deepEqual(typing_data.get_group_typists([10, 15, 5]), [10, 15]);
+
+    typing_data.add_typist(topic_typing_key, 12);
+
+    // add another typist to our stream/topic
+    typing_data.add_typist(topic_typing_key, 13);
+    assert.deepEqual(typing_data.get_topic_typists(stream_id, topic), [12, 13]);
 
     // start adding to a new group
     typing_data.add_typist(typing_data.get_direct_message_conversation_key([7, 15]), 7);
@@ -42,6 +56,8 @@ test("basics", () => {
         typing_data.remove_typist(typing_data.get_direct_message_conversation_key([15, 7]), 7),
     );
     assert.deepEqual(typing_data.get_group_typists([7, 15]), [15]);
+    assert.ok(typing_data.remove_typist(topic_typing_key, 12));
+    assert.deepEqual(typing_data.get_topic_typists(stream_id, topic), [13]);
 
     // test removing an id that is not there
     assert.ok(
@@ -89,6 +105,9 @@ test("timers", () => {
     const stub_group = [5, 10, 15];
     const stub_delay = 99;
     const stub_f = "function";
+    const stub_stream_id = 1;
+    const stub_topic = "typing notifications";
+    const topic_typing_key = typing_data.get_topic_key(stub_stream_id, stub_topic);
 
     function set_timeout(f, delay) {
         assert.equal(delay, stub_delay);
@@ -124,6 +143,16 @@ test("timers", () => {
         );
     }
 
+    function streams_kickstart() {
+        reset_events();
+        typing_data.kickstart_inbound_timer(topic_typing_key, stub_delay, stub_f);
+    }
+
+    function streams_clear() {
+        reset_events();
+        typing_data.clear_inbound_timer(topic_typing_key);
+    }
+
     set_global("setTimeout", set_timeout);
     set_global("clearTimeout", clear_timeout);
 
@@ -153,6 +182,38 @@ test("timers", () => {
 
     // second time clearing, we noop
     clear();
+    assert.deepEqual(events, {
+        f: undefined,
+        timer_cleared: false,
+        timer_set: false,
+    });
+
+    // first time, we set
+    streams_kickstart();
+    assert.deepEqual(events, {
+        f: stub_f,
+        timer_cleared: false,
+        timer_set: true,
+    });
+
+    // second time we clear and set
+    streams_kickstart();
+    assert.deepEqual(events, {
+        f: stub_f,
+        timer_cleared: true,
+        timer_set: true,
+    });
+
+    // first time clearing, we clear
+    streams_clear();
+    assert.deepEqual(events, {
+        f: undefined,
+        timer_cleared: true,
+        timer_set: false,
+    });
+
+    // second time clearing, we noop
+    streams_clear();
     assert.deepEqual(events, {
         f: undefined,
         timer_cleared: false,

@@ -13,7 +13,12 @@ export function clear_for_testing(): void {
 
 export function get_direct_message_conversation_key(group: number[]): string {
     const ids = util.sorted_ids(group);
-    return ids.join(",");
+    return "direct:" + ids.join(",");
+}
+
+export function get_topic_key(stream_id: number, topic: string): string {
+    topic = topic.toLowerCase(); // Topics are case-insensitive
+    return "topic:" + JSON.stringify({stream_id, topic});
 }
 
 export function add_typist(key: string, typist: number): void {
@@ -44,9 +49,18 @@ export function get_group_typists(group: number[]): number[] {
 }
 
 export function get_all_direct_message_typists(): number[] {
-    let typists = [...typists_dict.values()].flat();
+    let typists: number[] = [];
+    for (const [key, value] of typists_dict) {
+        if (key.startsWith("direct:")) {
+            typists.push(...value);
+        }
+    }
     typists = util.sorted_ids(typists);
     return muted_users.filter_muted_user_ids(typists);
+}
+
+export function get_topic_typists(stream_id: number, topic: string): number[] {
+    return typists_dict.get(get_topic_key(stream_id, topic)) ?? [];
 }
 
 // The next functions aren't pure data, but it is easy
