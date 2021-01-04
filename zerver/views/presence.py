@@ -13,25 +13,40 @@ from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool, check_capped_string
-from zerver.models import UserActivity, UserPresence, UserProfile, get_active_user
+from zerver.models import (
+    UserActivity,
+    UserPresence,
+    UserProfile,
+    get_active_user,
+    get_active_user_profile_by_id_in_realm,
+)
 
 
 def get_presence_backend(
-    request: HttpRequest, user_profile: UserProfile, email: str
+    request: HttpRequest, user_profile: UserProfile, user_id_or_email: str
 ) -> HttpResponse:
     # This isn't used by the webapp; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
+
     try:
-        target = get_active_user(email, user_profile.realm)
+        try:
+            user_id = int(user_id_or_email)
+            target = get_active_user_profile_by_id_in_realm(user_id, user_profile.realm)
+        except ValueError:
+            email = user_id_or_email
+            target = get_active_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_("No such user"))
+
     if target.is_bot:
         return json_error(_("Presence is not supported for bot users."))
 
     presence_dict = get_presence_for_user(target.id)
     if len(presence_dict) == 0:
-        return json_error(_("No presence data for {email}").format(email=email))
+        return json_error(
+            _("No presence data for {user_id_or_email}").format(user_id_or_email=user_id_or_email)
+        )
 
     # For initial version, we just include the status and timestamp keys
     result = dict(presence=presence_dict[target.email])

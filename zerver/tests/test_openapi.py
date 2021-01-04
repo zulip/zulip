@@ -1063,7 +1063,10 @@ class OpenAPIRegexTest(ZulipTestCase):
             find_openapi_endpoint("/users/23/subscriptions/21")
             == "/users/{user_id}/subscriptions/{stream_id}"
         )
-        assert find_openapi_endpoint("/users/iago@zulip.com/presence") == "/users/{email}/presence"
+        assert (
+            find_openapi_endpoint("/users/iago@zulip.com/presence")
+            == "/users/{user_id_or_email}/presence"
+        )
         assert find_openapi_endpoint("/users/iago@zulip.com") == "/users/{email}"
         assert find_openapi_endpoint("/messages/23") == "/messages/{message_id}"
         assert find_openapi_endpoint("/realm/emoji/realm_emoji_1") == "/realm/emoji/{emoji_name}"
