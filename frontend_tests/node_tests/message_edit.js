@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 
 set_global("document", null);
 set_global("page_params", {
-    realm_community_topic_editing_limit_seconds: 86400,
+    realm_community_topic_editing_limit_seconds: 259200,
 });
 
 stub_out_jquery();
@@ -92,7 +92,7 @@ run_test("get_editability", () => {
         realm_allow_community_topic_editing: true,
         realm_allow_message_editing: true,
         realm_message_content_edit_limit_seconds: 0,
-        realm_community_topic_editing_limit_seconds: 86400,
+        realm_community_topic_editing_limit_seconds: 259200,
         is_admin: false,
     });
     message.timestamp = current_timestamp - 60;

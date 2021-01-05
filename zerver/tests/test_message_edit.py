@@ -633,8 +633,8 @@ class EditMessageTest(ZulipTestCase):
         self.login('cordelia')
         do_edit_message_assert_error(id_, 'D', "Your organization has turned off message editing")
 
-        # non-admin users cannot edit topics sent > 24 hrs ago
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=90000)
+        # non-admin users cannot edit topics sent > 72 hrs ago
+        message.date_sent = message.date_sent - datetime.timedelta(seconds=290000)
         message.save()
         self.login('iago')
         set_message_editing_params(True, 0, True)
