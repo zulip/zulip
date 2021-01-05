@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 38**
+
+* [`POST /register`](/api/register-queue): Increased
+  `realm_community_topic_editing_limit_seconds` time limit value
+  to 259200s (3 days).
+
 **Feature level 37**
 
 * Consistently provide `subscribers` in stream data when
