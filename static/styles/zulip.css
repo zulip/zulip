@@ -278,6 +278,10 @@ p.n-margin {
             transform: translateY(-50%);
         }
 
+        .close:focus {
+            outline: none;
+        }
+
         .alert-link {
             color: hsl(169, 100%, 88%);
             font-weight: 600;
