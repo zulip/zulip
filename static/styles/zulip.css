@@ -2599,6 +2599,16 @@ select.inline_select_topic_edit {
     display: none;
 }
 
+#left-sidebar-resizer {
+    margin-left: -10px;
+    width: 10px;
+    height: 100%;
+    cursor: ew-resize;
+    float: left;
+    position: fixed;
+    z-index: 100;
+}
+
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (max-width: 1165px) {
     .app-main,
@@ -2708,7 +2718,7 @@ select.inline_select_topic_edit {
 
                 height: 100%;
                 padding-left: 10px;
-                width: 250px;
+                width: 250px !important;
             }
         }
     }
@@ -2722,7 +2732,7 @@ select.inline_select_topic_edit {
 
     .column-middle,
     .app-main .column-middle {
-        margin-left: 7px;
+        margin-left: 7px !important;
         margin-right: 7px;
     }
 
@@ -2775,6 +2785,14 @@ select.inline_select_topic_edit {
         #searchbox .navbar-search.expanded {
             width: calc(100% - 90px);
         }
+    }
+
+    #left-sidebar-resizer {
+        display: none;
+    }
+
+    .recipient-bar-main {
+        padding-left: 0 !important;
     }
 }
 
