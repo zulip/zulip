@@ -22,7 +22,7 @@ from zerver.openapi.curl_param_value_generators import (
 )
 
 
-def test_generated_curl_examples_for_success(client: Client) -> None:
+def test_generated_curl_examples_for_success(client: Client, owner_client: Client) -> None:
     authentication_line = f"{client.email}:{client.api_key}"
     # A limited Markdown engine that just processes the code example syntax.
     realm = get_realm("zulip")
@@ -49,10 +49,21 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
                 curl_command_html = md_engine.convert(line.strip())
                 unescaped_html = html.unescape(curl_command_html)
                 curl_command_text = unescaped_html[len("<p><code>curl\n") : -len("</code></p>")]
-
                 curl_command_text = curl_command_text.replace(
                     "BOT_EMAIL_ADDRESS:BOT_API_KEY", authentication_line
                 )
+
+                # TODO: This needs_reactivation block is a hack.
+                # However, it's awkward to test the "deactivate
+                # myself" endpoint with how this system tries to use
+                # the same account for all tests without some special
+                # logic for that endpoint; and the hack is better than
+                # just not documenting the endpoint.
+                needs_reactivation = False
+                user_id = 0
+                if file_name == "templates/zerver/api/deactivate-own-user.md":
+                    needs_reactivation = True
+                    user_id = client.get_profile()["user_id"]
 
                 print("Testing {} ...".format(curl_command_text.split("\n")[0]))
 
@@ -69,6 +80,8 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
                     )
                     response = json.loads(response_json)
                     assert response["result"] == "success"
+                    if needs_reactivation:
+                        owner_client.reactivate_user_by_id(user_id)
                 except (AssertionError, Exception):
                     error_template = """
 Error verifying the success of the API documentation curl example.

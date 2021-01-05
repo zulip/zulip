@@ -4552,10 +4552,15 @@ paths:
                           },
                       }
     delete:
-      operationId: deactivate_my_account
+      operationId: deactivate_own_user
       tags: ["users"]
       description: |
-        Delete the requesting user from the realm.
+        Deactivates the user's account.  See also the administrative endpoint for
+        [deactivating another user](/api/deactivate-user).
+
+        `DELETE {{ api_url }}/v1/users/me`
+
+        This endpoint is primarily useful to Zulip clients providing a user settings UI.
       responses:
         "200":
           description: Success.
