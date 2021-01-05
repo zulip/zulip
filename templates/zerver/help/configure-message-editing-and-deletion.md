@@ -19,7 +19,7 @@ is highly configurable. Two things are true under any configuration:
 | Edit others' message content       |          |         |
 | Edit your message topics           | [1]      | [1]     |
 | Add a topic to a topicless message | [1]      | [1]     |
-| Edit others' message topics        | [1]      | [1, 2]  |
+| Edit others' message topics        | [1]      | [2]     |
 | Delete your messages               | &#10004; | [3]     |
 | Delete others' messages            | &#10004; |         |
 
