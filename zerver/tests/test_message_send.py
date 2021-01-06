@@ -279,7 +279,8 @@ class MessagePOSTTest(ZulipTestCase):
             non_admin_owned_bot, stream_name, "New members cannot send to this stream."
         )
 
-        # Bots without owner (except cross realm bot) cannot send to announcement only stream
+        # Bots without owner (except cross realm bot) cannot send to STREAM_POST_POLICY_ADMINS_ONLY and
+        # STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams
         bot_without_owner = do_create_user(
             email="free-bot@zulip.testserver",
             password="",
