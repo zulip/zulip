@@ -567,6 +567,10 @@ def accounts_home(request: HttpRequest, multiuse_object_key: str="",
 
         email = request.POST['email']
         try:
+            validators.validate_email(email)
+        except ValidationError:
+            return render(request, "zerver/invalid_email.html", context={"invalid_email": True})
+        try:
             validate_email_not_already_in_realm(realm, email)
         except ValidationError:
             return redirect_to_email_login_url(email)
