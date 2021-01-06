@@ -555,6 +555,12 @@ def accounts_home(request: HttpRequest, multiuse_object_key: str="",
         form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
         if form.is_valid():
             email = form.cleaned_data['email']
+
+            try:
+                validate_email_not_already_in_realm(realm, email)
+            except ValidationError:
+                return redirect_to_email_login_url(email)
+
             activation_url = prepare_activation_url(email, request, streams=streams_to_subscribe,
                                                     invited_as=invited_as)
             try:
@@ -565,11 +571,6 @@ def accounts_home(request: HttpRequest, multiuse_object_key: str="",
 
             return HttpResponseRedirect(reverse('signup_send_confirm', kwargs={'email': email}))
 
-        email = request.POST['email']
-        try:
-            validate_email_not_already_in_realm(realm, email)
-        except ValidationError:
-            return redirect_to_email_login_url(email)
     else:
         form = HomepageForm(realm=realm)
     context = login_context(request)
