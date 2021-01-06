@@ -19,7 +19,7 @@ from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationT
 from two_factor.utils import totp_digits
 
 from zerver.lib.actions import do_change_password, email_not_system_bot
-from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
+from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
 from zerver.lib.rate_limiter import RateLimited, RateLimitedObject
 from zerver.lib.request import JsonableError
@@ -176,8 +176,6 @@ class HomepageForm(forms.Form):
             raise ValidationError(_("Please use your real email address."))
         except EmailContainsPlusError:
             raise ValidationError(_("Email addresses containing + are not allowed in this organization."))
-
-        validate_email_not_already_in_realm(realm, email)
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)

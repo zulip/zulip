@@ -710,6 +710,18 @@ class LoginTest(ZulipTestCase):
         with self.assertRaises(UserProfile.DoesNotExist):
             self.nonreg_user('test')
 
+    def test_register_with_invalid_email(self) -> None:
+        """
+        If you try to register with invalid email, you get an invalid email
+        page
+        """
+        invalid_email = "foo\x00bar"
+        result = self.client_post('/accounts/home/', {'email': invalid_email},
+                                  subdomain="zulip")
+
+        self.assertEqual(result.status_code, 200)
+        self.assertContains(result, "Enter a valid email address")
+
     def test_register_deactivated_partway_through(self) -> None:
         """
         If you try to register for a deactivated realm, you get a clear error
