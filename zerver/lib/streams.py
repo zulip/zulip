@@ -205,7 +205,7 @@ def access_stream_for_send_message(
     elif stream.stream_post_policy != Stream.STREAM_POST_POLICY_EVERYONE and sender.is_guest:
         raise JsonableError(_("Guests cannot send to this stream."))
     elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS:
-        if sender.is_bot and (sender.bot_owner is not None and sender.bot_owner.is_new_member):
+        if sender.is_bot and (sender.bot_owner is None or sender.bot_owner.is_new_member):
             raise JsonableError(_("New members cannot send to this stream."))
         elif sender.is_new_member:
             raise JsonableError(_("New members cannot send to this stream."))
