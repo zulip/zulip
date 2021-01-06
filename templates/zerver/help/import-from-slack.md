@@ -128,6 +128,9 @@ root domain. Replace the last line above with the following, after replacing
 
 - The "joined #channel_name" messages are not imported.
 
+- Messages in threads are still imported, but they are not explicitly marked as
+  to be in a thread.
+
 [upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-from-a-git-repository
 
 ## Related articles
