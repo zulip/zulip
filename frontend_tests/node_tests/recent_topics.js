@@ -168,6 +168,7 @@ set_global("stream_data", {
         // We only test via muted topics for now.
         // TODO: Make muted streams and test them.
         false,
+    id_is_subscribed: () => true,
 });
 
 let id = 0;

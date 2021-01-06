@@ -264,9 +264,10 @@ exports.update_topics_of_deleted_message_ids = function (message_ids) {
 
 exports.filters_should_hide_topic = function (topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
+    const sub = stream_data.get_sub_by_id(msg.stream_id);
 
-    if (stream_data.get_sub_by_id(msg.stream_id) === undefined) {
-        // Never try to process deactivated streams.
+    if (sub === undefined || !sub.subscribed) {
+        // Never try to process deactivated & unsubscribed stream msgs.
         return true;
     }
 
