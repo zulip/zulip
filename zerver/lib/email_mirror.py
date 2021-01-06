@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta
 
 from zerver.lib.actions import (
+    check_send_message,
     internal_send_huddle_message,
     internal_send_private_message,
     internal_send_stream_message,
@@ -20,7 +21,7 @@ from zerver.lib.email_mirror_helpers import (
     get_email_gateway_message_string_from_address,
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.message import normalize_body, truncate_topic
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
@@ -33,6 +34,7 @@ from zerver.models import (
     Recipient,
     Stream,
     UserProfile,
+    get_client,
     get_display_recipient,
     get_stream_by_id_in_realm,
     get_system_bot,
@@ -208,6 +210,27 @@ def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) ->
         normalize_body(content),
         email_gateway=True,
     )
+
+
+def send_mm_reply_to_stream(
+    user_profile: UserProfile, stream: Stream, topic: str, body: str
+) -> None:
+    try:
+        check_send_message(
+            sender=user_profile,
+            client=get_client("Internal"),
+            message_type_name="stream",
+            message_to=[stream.id],
+            topic_name=topic,
+            message_content=body,
+        )
+    except JsonableError as error:
+        error_message = "Error sending message to stream {stream} via missed messages email reply:\n{error}".format(
+            stream=stream.name, error=error.msg
+        )
+        internal_send_private_message(
+            get_system_bot(settings.NOTIFICATION_BOT), user_profile, error_message
+        )
 
 
 def get_message_part_by_type(message: EmailMessage, content_type: str) -> Optional[str]:
@@ -429,12 +452,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
 
     if recipient.type == Recipient.STREAM:
         stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
-        internal_send_stream_message(
-            user_profile,
-            stream,
-            topic,
-            body,
-        )
+        send_mm_reply_to_stream(user_profile, stream, topic, body)
         recipient_str = stream.name
     elif recipient.type == Recipient.PERSONAL:
         display_recipient = get_display_recipient(recipient)
