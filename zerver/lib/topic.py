@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+import orjson
 from django.db import connection
 from django.db.models.query import Q, QuerySet
 from sqlalchemy import Text
@@ -108,7 +110,10 @@ def update_messages_for_topic_edit(message: Message,
                                    propagate_mode: str,
                                    orig_topic_name: str,
                                    topic_name: Optional[str],
-                                   new_stream: Optional[Stream]) -> List[Message]:
+                                   new_stream: Optional[Stream],
+                                   edit_history_event: Dict[str, Any],
+                                   last_edit_time: datetime) -> List[Message]:
+
     propagate_query = Q(recipient = message.recipient, subject__iexact = orig_topic_name)
     if propagate_mode == 'change_all':
         propagate_query = propagate_query & ~Q(id = message.id)
@@ -117,7 +122,7 @@ def update_messages_for_topic_edit(message: Message,
 
     messages = Message.objects.filter(propagate_query).select_related()
 
-    update_fields: Dict[str, object] = {}
+    update_fields = ['edit_history', 'last_edit_time']
 
     # Evaluate the query before running the update
     messages_list = list(messages)
@@ -127,15 +132,24 @@ def update_messages_for_topic_edit(message: Message,
     # caller) requires the new value, so we manually update the
     # objects in addition to sending a bulk query to the database.
     if new_stream is not None:
-        update_fields["recipient"] = new_stream.recipient
+        update_fields.append("recipient")
         for m in messages_list:
             m.recipient = new_stream.recipient
     if topic_name is not None:
-        update_fields["subject"] = topic_name
+        update_fields.append("subject")
         for m in messages_list:
             m.set_topic_name(topic_name)
 
-    messages.update(**update_fields)
+    for message in messages_list:
+        message.last_edit_time = last_edit_time
+        if message.edit_history is not None:
+            edit_history = orjson.loads(message.edit_history)
+            edit_history.insert(0, edit_history_event)
+        else:
+            edit_history = [edit_history_event]
+        message.edit_history = orjson.dumps(edit_history).decode()
+
+    Message.objects.bulk_update(messages_list, update_fields)
 
     return messages_list
 
