@@ -1,5 +1,3 @@
-"use strict";
-
 const ClipboardJS = require("clipboard");
 
 const render_message_edit_form = require("../templates/message_edit_form.hbs");
@@ -806,6 +804,35 @@ exports.save_message_row_edit = function (row) {
     });
     // The message will automatically get replaced via message_list.update_message.
 };
+
+export function delete_message_row_edit(row) {
+    // This function is used to remove the content of the message by editing it.
+
+    const message_id = rows.id(row);
+    const message = current_msg_list.get(message_id);
+    const edit_locally_echoed = false;
+
+    row.find(".message_edit_content").val("");
+    const new_content = row.find(".message_edit_content").val();
+
+    const request = {message_id: message.id};
+
+    if (new_content !== message.raw_content) {
+        request.content = new_content;
+    }
+
+    channel.patch({
+        url: "/json/messages/" + message.id,
+        data: request,
+        success() {
+            if (edit_locally_echoed) {
+                delete message.local_edit_timestamp;
+                currently_echoing_messages.delete(message_id);
+            }
+            exports.hide_message_edit_spinner(row);
+        },
+    });
+}
 
 exports.maybe_show_edit = function (row, id) {
     if (currently_editing_messages.has(id)) {

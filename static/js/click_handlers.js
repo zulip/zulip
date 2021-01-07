@@ -317,6 +317,12 @@ exports.initialize = function () {
         e.stopPropagation();
         popovers.hide_all();
     });
+    $("body").on("click", ".message_edit_delete", function (e) {
+        const row = $(this).closest(".message_row");
+        message_edit.delete_message_row_edit(row);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
     $("body").on("click", ".message_edit_close", function (e) {
         const row = $(this).closest(".message_row");
         message_edit.end_message_row_edit(row);
