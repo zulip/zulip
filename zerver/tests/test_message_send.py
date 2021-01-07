@@ -279,6 +279,16 @@ class MessagePOSTTest(ZulipTestCase):
             non_admin_owned_bot, stream_name, "New members cannot send to this stream."
         )
 
+        non_admin_profile.date_joined = timezone_now() - datetime.timedelta(days=11)
+        non_admin_profile.save()
+        self.assertFalse(non_admin_profile.is_new_member)
+
+        self._send_and_verify_message(non_admin_profile, stream_name)
+        # We again set bot owner here, as date_joined of non_admin_profile is changed.
+        non_admin_owned_bot.bot_owner = non_admin_profile
+        non_admin_owned_bot.save()
+        self._send_and_verify_message(non_admin_owned_bot, stream_name)
+
         # Bots without owner (except cross realm bot) cannot send to STREAM_POST_POLICY_ADMINS_ONLY and
         # STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams
         bot_without_owner = do_create_user(
