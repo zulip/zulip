@@ -163,9 +163,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         try:
             validate_email_not_already_in_realm(realm, email)
         except ValidationError:
-            view_url = reverse('login')
-            redirect_url = add_query_to_redirect_url(view_url, urlencode({"email": email}))
-            return HttpResponseRedirect(redirect_url)
+            return redirect_to_email_login_url(email)
 
     name_validated = False
     full_name = None

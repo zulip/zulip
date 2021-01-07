@@ -1684,7 +1684,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         response = self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('login') + '?' +
-                         urlencode({"email": email}))
+                         urlencode({"email": email, "already_registered": 1}))
 
 class InvitationsTestCase(InviteUserBase):
     def test_do_get_user_invites(self) -> None:
