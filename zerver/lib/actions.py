@@ -4680,6 +4680,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         event["propagate_mode"] = propagate_mode
         event["stream_id"] = message.recipient.type_id
 
+    old_recipient_id = None
     if new_stream is not None:
         assert content is None
         assert message.is_stream_message()
@@ -4687,6 +4688,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
 
         edit_history_event['prev_stream'] = stream_being_edited.id
         event[ORIG_TOPIC] = orig_topic_name
+        old_recipient_id = message.recipient_id
         message.recipient_id = new_stream.recipient_id
 
         event["new_stream_id"] = new_stream.id
@@ -4751,6 +4753,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
             orig_topic_name=orig_topic_name,
             topic_name=topic_name,
             new_stream=new_stream,
+            old_recipient_id=old_recipient_id,
             edit_history_event=edit_history_event,
             last_edit_time=timestamp
         )
