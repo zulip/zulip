@@ -4411,11 +4411,11 @@ class MessageUpdateUserInfoResult(TypedDict):
     message_user_ids: Set[int]
     mention_user_ids: Set[int]
 
-def notify_topic_moved_streams(user_profile: UserProfile,
-                               old_stream: Stream, old_topic: str,
-                               new_stream: Stream, new_topic: Optional[str],
-                               send_notification_to_old_thread: bool,
-                               send_notification_to_new_thread: bool) -> None:
+def send_message_moved_breadcrumbs(user_profile: UserProfile,
+                                   old_stream: Stream, old_topic: str,
+                                   new_stream: Stream, new_topic: Optional[str],
+                                   send_notification_to_old_thread: bool,
+                                   send_notification_to_new_thread: bool) -> None:
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
     # happened.
@@ -4882,9 +4882,9 @@ def do_update_message(user_profile: UserProfile, message: Message,
     if (len(changed_messages) > 0 and new_stream is not None and
             stream_being_edited is not None):
         # Notify users that the topic was moved.
-        notify_topic_moved_streams(user_profile, stream_being_edited, orig_topic_name,
-                                   new_stream, topic_name, send_notification_to_old_thread,
-                                   send_notification_to_new_thread)
+        send_message_moved_breadcrumbs(user_profile, stream_being_edited, orig_topic_name,
+                                       new_stream, topic_name, send_notification_to_old_thread,
+                                       send_notification_to_new_thread)
 
     return len(changed_messages)
 
