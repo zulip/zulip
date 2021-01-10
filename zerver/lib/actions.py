@@ -5126,10 +5126,10 @@ def send_message_moved_breadcrumbs(
     user_profile: UserProfile,
     old_stream: Stream,
     old_topic: str,
+    old_thread_notification_string: Optional[str],
     new_stream: Stream,
     new_topic: Optional[str],
-    send_notification_to_old_thread: bool,
-    send_notification_to_new_thread: bool,
+    new_thread_notification_string: Optional[str],
 ) -> None:
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
@@ -5142,26 +5142,27 @@ def send_message_moved_breadcrumbs(
     user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
     old_topic_link = f"#**{old_stream.name}>{old_topic}**"
     new_topic_link = f"#**{new_stream.name}>{new_topic}**"
-    if send_notification_to_new_thread:
+
+    if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
             internal_send_stream_message(
                 sender,
                 new_stream,
                 new_topic,
-                _("This topic was moved here from {old_location} by {user}").format(
+                new_thread_notification_string.format(
                     old_location=old_topic_link,
                     user=user_mention,
                 ),
             )
 
-    if send_notification_to_old_thread:
+    if old_thread_notification_string is not None:
         with override_language(old_stream.realm.default_language):
             # Send a notification to the old stream that the topic was moved.
             internal_send_stream_message(
                 sender,
                 old_stream,
                 old_topic,
-                _("This topic was moved by {user} to {new_location}").format(
+                old_thread_notification_string.format(
                     user=user_mention,
                     new_location=new_topic_link,
                 ),
@@ -5621,14 +5622,24 @@ def do_update_message(
 
     if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
         # Notify users that the topic was moved.
+        old_thread_notification_string = None
+        if send_notification_to_old_thread:
+            old_thread_notification_string = _("This topic was moved by {user} to {new_location}")
+
+        new_thread_notification_string = None
+        if send_notification_to_new_thread:
+            new_thread_notification_string = _(
+                "This topic was moved here from {old_location} by {user}"
+            )
+
         send_message_moved_breadcrumbs(
             user_profile,
             stream_being_edited,
             orig_topic_name,
+            old_thread_notification_string,
             new_stream,
             topic_name,
-            send_notification_to_old_thread,
-            send_notification_to_new_thread,
+            new_thread_notification_string,
         )
 
     return len(changed_messages)
