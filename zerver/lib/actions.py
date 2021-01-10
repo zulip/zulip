@@ -5097,7 +5097,7 @@ class MessageUpdateUserInfoResult(TypedDict):
     mention_user_ids: Set[int]
 
 
-def notify_topic_moved_streams(
+def send_message_moved_breadcrumbs(
     user_profile: UserProfile,
     old_stream: Stream,
     old_topic: str,
@@ -5598,7 +5598,7 @@ def do_update_message(
 
     if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
         # Notify users that the topic was moved.
-        notify_topic_moved_streams(
+        send_message_moved_breadcrumbs(
             user_profile,
             stream_being_edited,
             orig_topic_name,
