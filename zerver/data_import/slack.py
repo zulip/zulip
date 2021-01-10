@@ -50,6 +50,28 @@ from zerver.models import (
     UserProfile,
 )
 
+
+class BotSuffix:
+    def __init__(self, all_emails: List[str]):
+        # This is a dictionary mapping each duplicate email to its suffix.
+        self.suffix_map: Dict[str, int] = {}
+        # This is a dictionary mapping each email to its count.
+        email_counts: Dict[str, int] = {}
+
+        for email in all_emails:
+            email_counts[email] = email_counts.get(email, 0) + 1
+        # This is a list used to store duplicates (the emails for which count is more than one).
+        self.dups = [email for email in email_counts if email_counts[email] > 1]
+
+    def get_suffix(self, email: str) -> str:
+        # If email is not duplicate no need of adding suffix.
+        if email not in self.dups:
+            return ""
+        # If email is duplicate return a suffix which gets incremented for each duplicate.
+        self.suffix_map[email] = self.suffix_map.get(email, 0) + 1
+        return "-" + str(self.suffix_map[email])
+
+
 SlackToZulipUserIDT = Dict[str, int]
 AddedChannelsT = Dict[str, Tuple[str, int]]
 AddedMPIMsT = Dict[str, Tuple[str, int]]
@@ -200,6 +222,7 @@ def users_to_zerver_userprofile(
     user_id_count = custom_profile_field_value_id_count = custom_profile_field_id_count = 0
     primary_owner_id = user_id_count
     user_id_count += 1
+    all_bot_emails = []
 
     for user in users:
         slack_user_id = user["id"]
@@ -210,6 +233,10 @@ def users_to_zerver_userprofile(
             user_id = user_id_count
 
         email = get_user_email(user, domain_name)
+
+        if "bot_id" in user["profile"]:
+            all_bot_emails.append(email)
+
         # ref: https://zulip.com/help/change-your-profile-picture
         avatar_url = build_avatar_url(
             slack_user_id, user["team_id"], user["profile"]["avatar_hash"]
@@ -268,6 +295,14 @@ def users_to_zerver_userprofile(
             user_id_count += 1
 
         logging.info("%s -> %s", user["name"], userprofile_dict["email"])
+
+    bot_suffix = BotSuffix(all_bot_emails)
+
+    for user in zerver_userprofile:
+        suffix = bot_suffix.get_suffix(user["email"])
+        email_prefix, email_suffix = user["email"].split("@")
+        email_prefix += suffix
+        user["email"] = "@".join([email_prefix, email_suffix])
 
     process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
     logging.info("######### IMPORTING USERS FINISHED #########\n")
