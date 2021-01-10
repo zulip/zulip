@@ -4412,9 +4412,13 @@ class MessageUpdateUserInfoResult(TypedDict):
     mention_user_ids: Set[int]
 
 def send_message_moved_breadcrumbs(user_profile: UserProfile,
-                                   old_stream: Stream, old_topic: str,
-                                   new_stream: Stream, new_topic: Optional[str],
+                                   old_stream: Stream,
+                                   old_topic: str,
+                                   old_thread_notification_string: str,
                                    send_notification_to_old_thread: bool,
+                                   new_stream: Stream,
+                                   new_topic: Optional[str],
+                                   new_thread_notification_string: str,
                                    send_notification_to_new_thread: bool) -> None:
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
@@ -4431,7 +4435,7 @@ def send_message_moved_breadcrumbs(user_profile: UserProfile,
         with override_language(new_stream.realm.default_language):
             internal_send_stream_message(
                 new_stream.realm, sender, new_stream, new_topic,
-                _("This topic was moved here from {old_location} by {user}").format(
+                new_thread_notification_string.format(
                     old_location=old_topic_link, user=user_mention,
                 ),
             )
@@ -4441,7 +4445,7 @@ def send_message_moved_breadcrumbs(user_profile: UserProfile,
             # Send a notification to the old stream that the topic was moved.
             internal_send_stream_message(
                 old_stream.realm, sender, old_stream, old_topic,
-                _("This topic was moved by {user} to {new_location}").format(
+                old_thread_notification_string.format(
                     user=user_mention, new_location=new_topic_link,
                 ),
             )
@@ -4882,8 +4886,16 @@ def do_update_message(user_profile: UserProfile, message: Message,
     if (len(changed_messages) > 0 and new_stream is not None and
             stream_being_edited is not None):
         # Notify users that the topic was moved.
-        send_message_moved_breadcrumbs(user_profile, stream_being_edited, orig_topic_name,
-                                       new_stream, topic_name, send_notification_to_old_thread,
+        old_thread_notification_string = _("This topic was moved by {user} to {new_location}")
+        new_thread_notification_string = _("This topic was moved here from {old_location} by {user}")
+        send_message_moved_breadcrumbs(user_profile,
+                                       stream_being_edited,
+                                       orig_topic_name,
+                                       old_thread_notification_string,
+                                       send_notification_to_old_thread,
+                                       new_stream,
+                                       topic_name,
+                                       new_thread_notification_string,
                                        send_notification_to_new_thread)
 
     return len(changed_messages)
