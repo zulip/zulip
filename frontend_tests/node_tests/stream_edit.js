@@ -36,6 +36,7 @@ set_global("ui", {
 set_global("$", make_zjquery());
 
 zrequire("input_pill");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 zrequire("pill_typeahead");
 zrequire("subs");
@@ -80,14 +81,14 @@ const denmark = {
     render_subscribers: true,
     should_display_subscription_button: true,
 };
-stream_data.set_subscribers(denmark, [me.user_id, mark.user_id]);
+peer_data.set_subscribers(denmark, [me.user_id, mark.user_id]);
 
 const sweden = {
     stream_id: 2,
     name: "Sweden",
     subscribed: false,
 };
-stream_data.set_subscribers(sweden, [mark.user_id, jill.user_id]);
+peer_data.set_subscribers(sweden, [mark.user_id, jill.user_id]);
 
 const subs = [denmark, sweden];
 for (const sub of subs) {
@@ -232,7 +233,7 @@ run_test("subscriber_pills", () => {
     // We cannot subscribe ourselves (`me`) as
     // we are already subscribed to denmark stream.
     const potential_denmark_stream_subscribers = Array.from(
-        stream_data.get_subscribers(denmark.stream_id),
+        peer_data.get_subscribers(denmark.stream_id),
     ).filter((id) => id !== me.user_id);
 
     // denmark.stream_id is stubbed. Thus request is
@@ -268,7 +269,7 @@ run_test("subscriber_pills", () => {
     // But only one request for mark is sent even though a mark user
     // pill is created and mark is also a subscriber of Denmark stream.
     user_pill.get_user_ids = () => [mark.user_id, fred.user_id];
-    stream_pill.get_user_ids = () => stream_data.get_subscribers(denmark.stream_id);
+    stream_pill.get_user_ids = () => peer_data.get_subscribers(denmark.stream_id);
     expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);
 });

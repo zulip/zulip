@@ -8,6 +8,7 @@ const emoji = require("../shared/js/emoji");
 const typeahead = require("../shared/js/typeahead");
 const render_typeahead_list_item = require("../templates/typeahead_list_item.hbs");
 
+const peer_data = require("./peer_data");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const settings_data = require("./settings_data");
@@ -390,8 +391,8 @@ exports.compare_by_activity = function (stream_a, stream_b) {
         return diff;
     }
     diff =
-        stream_data.get_subscriber_count(stream_b.stream_id) -
-        stream_data.get_subscriber_count(stream_a.stream_id);
+        peer_data.get_subscriber_count(stream_b.stream_id) -
+        peer_data.get_subscriber_count(stream_a.stream_id);
     if (diff !== 0) {
         return diff;
     }

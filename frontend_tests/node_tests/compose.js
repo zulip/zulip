@@ -73,6 +73,7 @@ document.location.host = "foo.com";
 
 zrequire("zcommand");
 zrequire("compose_ui");
+const peer_data = zrequire("peer_data");
 const util = zrequire("util");
 zrequire("rtl");
 zrequire("common");
@@ -389,7 +390,7 @@ run_test("validate_stream_message", () => {
     assert(!$("#compose-all-everyone").visible());
     assert(!$("#compose-send-status").visible());
 
-    stream_data.get_subscriber_count = function (stream_id) {
+    peer_data.get_subscriber_count = function (stream_id) {
         assert.equal(stream_id, 101);
         return 16;
     };
@@ -965,13 +966,13 @@ run_test("warn_if_private_stream_is_linked", () => {
     };
 
     stream_data.add_sub(test_sub);
-    stream_data.set_subscribers(test_sub, [1, 2]);
+    peer_data.set_subscribers(test_sub, [1, 2]);
 
     let denmark = {
         stream_id: 100,
         name: "Denmark",
     };
-    stream_data.set_subscribers(denmark, [1, 2, 3]);
+    peer_data.set_subscribers(denmark, [1, 2, 3]);
 
     function test_noop_case(invite_only) {
         compose_state.set_message_type("stream");
@@ -1211,7 +1212,7 @@ run_test("needs_subscribe_warning", () => {
     };
 
     stream_data.add_sub(sub);
-    stream_data.set_subscribers(sub, [bob.user_id, me.user_id]);
+    peer_data.set_subscribers(sub, [bob.user_id, me.user_id]);
 
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 999");
     // Test with an invalid user id.
@@ -1223,7 +1224,7 @@ run_test("needs_subscribe_warning", () => {
     // Test when user is subscribed to the stream.
     assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), false);
 
-    stream_data.remove_subscriber(sub.stream_id, bob.user_id);
+    peer_data.remove_subscriber(sub.stream_id, bob.user_id);
     // Test when the user is not subscribed.
     assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });

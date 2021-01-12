@@ -15,6 +15,7 @@ page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
 zrequire("recent_senders");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 zrequire("stream_data");
 zrequire("narrow");
@@ -55,7 +56,7 @@ run_test("sort_streams", () => {
 
     function process_test_streams() {
         for (const test_stream of test_streams) {
-            stream_data.set_subscribers(test_stream, test_stream.subscribers);
+            peer_data.set_subscribers(test_stream, test_stream.subscribers);
             delete test_stream.subscribers;
             stream_data.update_calculated_fields(test_stream);
         }
@@ -320,9 +321,9 @@ run_test("sort_recipients", () => {
     const subscriber_email_1 = "b_user_2@zulip.net";
     const subscriber_email_2 = "b_user_3@zulip.net";
     const subscriber_email_3 = "b_bot@example.com";
-    stream_data.add_subscriber(1, people.get_user_id(subscriber_email_1));
-    stream_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
-    stream_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
+    peer_data.add_subscriber(1, people.get_user_id(subscriber_email_1));
+    peer_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
+    peer_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
 
     const dev_sub = stream_data.get_sub("Dev");
     const linux_sub = stream_data.get_sub("Linux");

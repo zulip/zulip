@@ -6,6 +6,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 zrequire("stream_data");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 zrequire("compose_fade");
 
@@ -41,7 +42,7 @@ run_test("set_focused_recipient", () => {
         can_access_subscribers: true,
     };
     stream_data.add_sub(sub);
-    stream_data.set_subscribers(sub, [me.user_id, alice.user_id]);
+    peer_data.set_subscribers(sub, [me.user_id, alice.user_id]);
 
     set_global("$", (selector) => {
         switch (selector) {

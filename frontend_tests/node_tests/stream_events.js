@@ -25,6 +25,7 @@ set_global("stream_list", {});
 set_global("stream_muting", {});
 set_global("subs", {});
 
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 zrequire("stream_data");
 zrequire("stream_events");
@@ -303,10 +304,7 @@ run_test("marked_subscribed", (override) => {
 
         const user_ids = [15, 20, 25];
         stream_events.mark_subscribed(frontend, user_ids, "");
-        assert.deepEqual(
-            new Set(stream_data.get_subscribers(frontend.stream_id)),
-            new Set(user_ids),
-        );
+        assert.deepEqual(new Set(peer_data.get_subscribers(frontend.stream_id)), new Set(user_ids));
 
         // assign self as well
         with_stub((stub) => {
@@ -422,7 +420,7 @@ run_test("remove_deactivated_user_from_all_streams", () => {
     assert(!stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
 
     // verify that deactivating user should unsubscribe user from all streams
-    assert(stream_data.add_subscriber(dev_help.stream_id, george.user_id));
+    assert(peer_data.add_subscriber(dev_help.stream_id, george.user_id));
     assert(stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
 
     stream_events.remove_deactivated_user_from_all_streams(george.user_id);

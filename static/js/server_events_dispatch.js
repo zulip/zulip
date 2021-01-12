@@ -2,6 +2,7 @@
 
 const emoji = require("../shared/js/emoji");
 
+const peer_data = require("./peer_data");
 const people = require("./people");
 const settings_config = require("./settings_config");
 
@@ -353,7 +354,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     }
 
                     event.user_ids.forEach((user_id) => {
-                        if (!stream_data.add_subscriber(stream_id, user_id)) {
+                        if (!peer_data.add_subscriber(stream_id, user_id)) {
                             blueslip.warn("Cannot process peer_add event");
                             return;
                         }
@@ -372,7 +373,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     }
 
                     event.user_ids.forEach((user_id) => {
-                        if (!stream_data.remove_subscriber(sub.stream_id, user_id)) {
+                        if (!peer_data.remove_subscriber(sub.stream_id, user_id)) {
                             blueslip.warn("Cannot process peer_remove event.");
                             return;
                         }

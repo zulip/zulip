@@ -19,6 +19,7 @@ stub_out_jquery();
 zrequire("color_data");
 zrequire("hash_util");
 zrequire("stream_topic_history");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 zrequire("stream_color");
 zrequire("stream_data");
@@ -160,7 +161,7 @@ run_test("unsubscribe", () => {
     // set up our subscription
     stream_data.add_sub(sub);
     sub.subscribed = true;
-    stream_data.set_subscribers(sub, [me.user_id]);
+    peer_data.set_subscribers(sub, [me.user_id]);
 
     // ensure our setup is accurate
     assert(stream_data.is_subscribed("devel"));
@@ -203,7 +204,7 @@ run_test("subscribers", () => {
     people.add_active_user(george);
 
     function potential_subscriber_ids() {
-        const users = stream_data.potential_subscribers(sub.stream_id);
+        const users = peer_data.potential_subscribers(sub.stream_id);
         return users.map((u) => u.user_id).sort();
     }
 
@@ -214,7 +215,7 @@ run_test("subscribers", () => {
         george.user_id,
     ]);
 
-    stream_data.set_subscribers(sub, [me.user_id, fred.user_id, george.user_id]);
+    peer_data.set_subscribers(sub, [me.user_id, fred.user_id, george.user_id]);
     stream_data.update_calculated_fields(sub);
     assert(stream_data.is_user_subscribed(sub.stream_id, me.user_id));
     assert(stream_data.is_user_subscribed(sub.stream_id, fred.user_id));
@@ -223,7 +224,7 @@ run_test("subscribers", () => {
 
     assert.deepEqual(potential_subscriber_ids(), [not_fred.user_id]);
 
-    stream_data.set_subscribers(sub, []);
+    peer_data.set_subscribers(sub, []);
 
     const brutus = {
         email: "brutus@zulip.com",
@@ -234,7 +235,7 @@ run_test("subscribers", () => {
     assert(!stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
 
     // add
-    let ok = stream_data.add_subscriber(sub.stream_id, brutus.user_id);
+    let ok = peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     assert(ok);
     assert(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
@@ -245,14 +246,14 @@ run_test("subscribers", () => {
     assert.equal(sub.email_address, sub_email);
 
     // verify that adding an already-added subscriber is a noop
-    stream_data.add_subscriber(sub.stream_id, brutus.user_id);
+    peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     assert(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 1);
 
     // remove
-    ok = stream_data.remove_subscriber(sub.stream_id, brutus.user_id);
+    ok = peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
     assert(ok);
     assert(!stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
@@ -270,12 +271,12 @@ run_test("subscribers", () => {
         "warn",
         "We got a remove_subscriber call for an untracked stream " + bad_stream_id,
     );
-    ok = stream_data.remove_subscriber(bad_stream_id, brutus.user_id);
+    ok = peer_data.remove_subscriber(bad_stream_id, brutus.user_id);
     assert(!ok);
 
     // verify that removing an already-removed subscriber is a noop
     blueslip.expect("warn", "We tried to remove invalid subscriber: 104");
-    ok = stream_data.remove_subscriber(sub.stream_id, brutus.user_id);
+    ok = peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
     assert(!ok);
     assert(!stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
@@ -284,21 +285,21 @@ run_test("subscribers", () => {
 
     // Verify defensive code in set_subscribers, where the second parameter
     // can be undefined.
-    stream_data.set_subscribers(sub);
+    peer_data.set_subscribers(sub);
     stream_data.add_sub(sub);
-    stream_data.add_subscriber(sub.stream_id, brutus.user_id);
+    peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     sub.subscribed = true;
     assert(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
 
     // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
     stream_data.update_calculated_fields(sub);
-    ok = stream_data.add_subscriber(sub.stream_id, brutus.user_id);
+    ok = peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     assert(ok);
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), true);
-    stream_data.remove_subscriber(sub.stream_id, brutus.user_id);
+    peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), false);
-    stream_data.add_subscriber(sub.stream_id, brutus.user_id);
+    peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), true);
 
     blueslip.expect(
@@ -309,18 +310,18 @@ run_test("subscribers", () => {
     sub.invite_only = true;
     stream_data.update_calculated_fields(sub);
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), undefined);
-    stream_data.remove_subscriber(sub.stream_id, brutus.user_id);
+    peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), undefined);
 
     // Verify that we don't crash and return false for a bad stream.
     blueslip.expect("warn", "We got an add_subscriber call for an untracked stream: 9999999");
-    ok = stream_data.add_subscriber(9999999, brutus.user_id);
+    ok = peer_data.add_subscriber(9999999, brutus.user_id);
     assert(!ok);
 
     // Verify that we don't crash and return false for a bad user id.
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 9999999");
     blueslip.expect("error", "We tried to add invalid subscriber: 9999999");
-    ok = stream_data.add_subscriber(sub.stream_id, 9999999);
+    ok = peer_data.add_subscriber(sub.stream_id, 9999999);
     assert(!ok);
 });
 
@@ -608,10 +609,10 @@ run_test("get_subscriber_count", () => {
     stream_data.clear_subscriptions();
 
     blueslip.expect("warn", "We got a get_subscriber_count call for an untracked stream: 102");
-    assert.equal(stream_data.get_subscriber_count(india.stream_id), undefined);
+    assert.equal(peer_data.get_subscriber_count(india.stream_id), undefined);
 
     stream_data.add_sub(india);
-    assert.equal(stream_data.get_subscriber_count(india.stream_id), 0);
+    assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
 
     const fred = {
         email: "fred@zulip.com",
@@ -619,19 +620,19 @@ run_test("get_subscriber_count", () => {
         user_id: 101,
     };
     people.add_active_user(fred);
-    stream_data.add_subscriber(india.stream_id, 102);
-    assert.equal(stream_data.get_subscriber_count(india.stream_id), 1);
+    peer_data.add_subscriber(india.stream_id, 102);
+    assert.equal(peer_data.get_subscriber_count(india.stream_id), 1);
     const george = {
         email: "george@zulip.com",
         full_name: "George",
         user_id: 103,
     };
     people.add_active_user(george);
-    stream_data.add_subscriber(india.stream_id, 103);
-    assert.equal(stream_data.get_subscriber_count(india.stream_id), 2);
+    peer_data.add_subscriber(india.stream_id, 103);
+    assert.equal(peer_data.get_subscriber_count(india.stream_id), 2);
 
-    stream_data.remove_subscriber(india.stream_id, 103);
-    assert.deepStrictEqual(stream_data.get_subscriber_count(india.stream_id), 1);
+    peer_data.remove_subscriber(india.stream_id, 103);
+    assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 1);
 });
 
 run_test("notifications", () => {
@@ -977,7 +978,7 @@ run_test("filter inactives", () => {
 run_test("is_subscriber_subset", () => {
     function make_sub(stream_id, user_ids) {
         const sub = {stream_id};
-        stream_data.set_subscribers(sub, user_ids);
+        peer_data.set_subscribers(sub, user_ids);
         return sub;
     }
 
@@ -1006,7 +1007,7 @@ run_test("is_subscriber_subset", () => {
     ];
 
     for (const row of matrix) {
-        assert.equal(stream_data.is_subscriber_subset(row[0], row[1]), row[2]);
+        assert.equal(peer_data.is_subscriber_subset(row[0], row[1]), row[2]);
     }
 });
 
@@ -1106,7 +1107,7 @@ run_test("warn if subscribers are missing", () => {
             stream_data.is_user_subscribed(sub.stream_id, me.user_id);
 
             blueslip.expect("warn", "We called get_subscribers for an untracked stream: 3");
-            assert.deepEqual(stream_data.get_subscribers(sub.stream_id), []);
+            assert.deepEqual(peer_data.get_subscribers(sub.stream_id), []);
         },
     );
 });

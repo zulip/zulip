@@ -1,5 +1,7 @@
 "use strict";
 
+const peer_data = require("./peer_data");
+
 // In theory, this function should apply the account-level defaults,
 // however, they are only called after a manual override, so
 // doing so is unnecessary with the current code.  Ideally, we'd do a
@@ -97,7 +99,7 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     }
     stream_data.subscribe_myself(sub);
     if (subscribers) {
-        stream_data.set_subscribers(sub, subscribers);
+        peer_data.set_subscribers(sub, subscribers);
     }
     stream_data.update_calculated_fields(sub);
 
@@ -148,7 +150,7 @@ exports.remove_deactivated_user_from_all_streams = function (user_id) {
 
     for (const sub of all_subs) {
         if (stream_data.is_user_subscribed(sub.stream_id, user_id)) {
-            stream_data.remove_subscriber(sub.stream_id, user_id);
+            peer_data.remove_subscriber(sub.stream_id, user_id);
             subs.update_subscribers_ui(sub);
         }
     }

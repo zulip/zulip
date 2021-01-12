@@ -1,5 +1,7 @@
 "use strict";
 
+const peer_data = require("./peer_data");
+
 function display_pill(sub) {
     return "#" + sub.name + ": " + sub.subscriber_count + " users";
 }
@@ -39,7 +41,7 @@ function get_user_ids_from_subs(items) {
     for (const item of items) {
         // only some of our items have streams (for copy-from-stream)
         if (item.stream_id !== undefined) {
-            user_ids = user_ids.concat(stream_data.get_subscribers(item.stream_id));
+            user_ids = user_ids.concat(peer_data.get_subscribers(item.stream_id));
         }
     }
     return user_ids;

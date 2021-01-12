@@ -4,6 +4,8 @@ const render_subscription_count = require("../templates/subscription_count.hbs")
 const render_subscription_setting_icon = require("../templates/subscription_setting_icon.hbs");
 const render_subscription_type = require("../templates/subscription_type.hbs");
 
+const peer_data = require("./peer_data");
+
 exports.update_check_button_for_sub = function (sub) {
     const button = subs.check_button_for_sub(sub);
     if (sub.subscribed) {
@@ -194,7 +196,7 @@ exports.update_subscribers_list = function (sub) {
     if (!sub.can_access_subscribers) {
         $(".subscriber_list_settings_container").hide();
     } else {
-        const subscribers = stream_data.get_subscribers(sub.stream_id);
+        const subscribers = peer_data.get_subscribers(sub.stream_id);
         const users = stream_edit.get_users_from_subscribers(subscribers);
 
         /*
