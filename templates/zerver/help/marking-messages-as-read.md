@@ -1,7 +1,7 @@
 # Marking messages as read
 
 Zulip automatically keeps track of which messages you have and haven't
-read. Unread messages have a dark line along their left side, which fade as
+read. Unread messages have a [dark line along their left side](/help/screenshot-for-dark-lines), which fade as
 the message gets marked as read.
 
 There are two situations in which messages automatically get marked as read.
