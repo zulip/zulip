@@ -54,7 +54,7 @@ image files) as well as symlinks pointing to those emoji.
 We need to maintain those both for the names used in the iamcal emoji
 data set as well as our old emoji data set (`emoji_map.json`).  Zulip
 has a tool, `tools/setup/emoji/build_emoji`, that combines the
-`emoji.json` file from iamcal with the old `emoji-map.json` data set
+`emoji.json` file from iamcal with the old `emoji_map.json` data set
 to construct the various symlink farms and output files described
 below that support our emoji experience.
 
