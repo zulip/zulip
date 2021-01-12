@@ -289,7 +289,7 @@ exports.show_new_stream_modal = function () {
         const elem = $(this);
         const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
         const checked = elem.find("input").prop("checked");
-        const subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
+        const subscriber_ids = new Set(stream_data.get_subscribers(stream_id));
 
         $("#user-checkboxes label.checkbox").each(function () {
             const user_elem = $(this);

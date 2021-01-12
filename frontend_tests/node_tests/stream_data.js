@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {set_global, stub_out_jquery, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {
@@ -179,7 +179,7 @@ run_test("unsubscribe", () => {
 
 run_test("subscribers", () => {
     stream_data.clear_subscriptions();
-    let sub = {name: "Rome", subscribed: true, stream_id: 1};
+    let sub = {name: "Rome", subscribed: true, stream_id: 1001};
 
     stream_data.add_sub(sub);
 
@@ -203,7 +203,7 @@ run_test("subscribers", () => {
     people.add_active_user(george);
 
     function potential_subscriber_ids() {
-        const users = stream_data.potential_subscribers(sub);
+        const users = stream_data.potential_subscribers(sub.stream_id);
         return users.map((u) => u.user_id).sort();
     }
 
@@ -268,7 +268,7 @@ run_test("subscribers", () => {
     const bad_stream_id = 999999;
     blueslip.expect(
         "warn",
-        "We got a remove_subscriber call for a non-existent stream " + bad_stream_id,
+        "We got a remove_subscriber call for an untracked stream " + bad_stream_id,
     );
     ok = stream_data.remove_subscriber(bad_stream_id, brutus.user_id);
     assert(!ok);
@@ -313,7 +313,7 @@ run_test("subscribers", () => {
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), undefined);
 
     // Verify that we don't crash and return false for a bad stream.
-    blueslip.expect("warn", "We got an add_subscriber call for a non-existent stream.");
+    blueslip.expect("warn", "We got an add_subscriber call for an untracked stream: 9999999");
     ok = stream_data.add_subscriber(9999999, brutus.user_id);
     assert(!ok);
 
@@ -607,7 +607,7 @@ run_test("get_subscriber_count", () => {
     };
     stream_data.clear_subscriptions();
 
-    blueslip.expect("warn", "We got a get_subscriber_count count call for a non-existent stream.");
+    blueslip.expect("warn", "We got a get_subscriber_count call for an untracked stream: 102");
     assert.equal(stream_data.get_subscriber_count(india.stream_id), undefined);
 
     stream_data.add_sub(india);
@@ -630,9 +630,8 @@ run_test("get_subscriber_count", () => {
     stream_data.add_subscriber(india.stream_id, 103);
     assert.equal(stream_data.get_subscriber_count(india.stream_id), 2);
 
-    const sub = stream_data.get_sub_by_name("India");
-    delete sub.subscribers;
-    assert.deepStrictEqual(stream_data.get_subscriber_count(india.stream_id), 0);
+    stream_data.remove_subscriber(india.stream_id, 103);
+    assert.deepStrictEqual(stream_data.get_subscriber_count(india.stream_id), 1);
 });
 
 run_test("notifications", () => {
@@ -976,15 +975,15 @@ run_test("filter inactives", () => {
 });
 
 run_test("is_subscriber_subset", () => {
-    function make_sub(user_ids) {
-        const sub = {};
+    function make_sub(stream_id, user_ids) {
+        const sub = {stream_id};
         stream_data.set_subscribers(sub, user_ids);
         return sub;
     }
 
-    const sub_a = make_sub([1, 2]);
-    const sub_b = make_sub([2, 3]);
-    const sub_c = make_sub([1, 2, 3]);
+    const sub_a = make_sub(301, [1, 2]);
+    const sub_b = make_sub(302, [2, 3]);
+    const sub_c = make_sub(303, [1, 2, 3]);
 
     // The bogus case should not come up in normal
     // use.
@@ -1087,4 +1086,27 @@ run_test("all_topics_in_cache", () => {
 
     sub.first_message_id = 2;
     assert.equal(stream_data.all_topics_in_cache(sub), true);
+});
+
+run_test("warn if subscribers are missing", () => {
+    // This should only happen in this contrived test situation.
+    stream_data.clear_subscriptions();
+    const sub = {
+        name: "test",
+        stream_id: 3,
+        can_access_subscribers: true,
+    };
+
+    with_field(
+        stream_data,
+        "get_sub_by_id",
+        () => sub,
+        () => {
+            blueslip.expect("warn", "We called is_user_subscribed for an untracked stream: 3");
+            stream_data.is_user_subscribed(sub.stream_id, me.user_id);
+
+            blueslip.expect("warn", "We called get_subscribers for an untracked stream: 3");
+            assert.deepEqual(stream_data.get_subscribers(sub.stream_id), []);
+        },
+    );
 });

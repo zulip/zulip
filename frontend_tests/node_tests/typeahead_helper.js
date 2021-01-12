@@ -25,7 +25,6 @@ const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
-const {LazySet} = zrequire("lazy_set");
 
 let next_id = 0;
 
@@ -42,18 +41,27 @@ stream_data.create_streams([
 ]);
 
 run_test("sort_streams", () => {
-    const popular = new LazySet([1, 2, 3, 4, 5, 6]);
+    const popular = [1, 2, 3, 4, 5, 6];
 
-    const unpopular = new LazySet([1]);
+    const unpopular = [1];
 
     let test_streams = [
-        {name: "Dev", pin_to_top: false, subscribers: unpopular, subscribed: true},
-        {name: "Docs", pin_to_top: false, subscribers: popular, subscribed: true},
-        {name: "Derp", pin_to_top: false, subscribers: unpopular, subscribed: true},
-        {name: "Denmark", pin_to_top: true, subscribers: popular, subscribed: true},
-        {name: "dead", pin_to_top: false, subscribers: unpopular, subscribed: true},
+        {stream_id: 101, name: "Dev", pin_to_top: false, subscribers: unpopular, subscribed: true},
+        {stream_id: 102, name: "Docs", pin_to_top: false, subscribers: popular, subscribed: true},
+        {stream_id: 103, name: "Derp", pin_to_top: false, subscribers: unpopular, subscribed: true},
+        {stream_id: 104, name: "Denmark", pin_to_top: true, subscribers: popular, subscribed: true},
+        {stream_id: 105, name: "dead", pin_to_top: false, subscribers: unpopular, subscribed: true},
     ];
-    test_streams.forEach(stream_data.update_calculated_fields);
+
+    function process_test_streams() {
+        for (const test_stream of test_streams) {
+            stream_data.set_subscribers(test_stream, test_stream.subscribers);
+            delete test_stream.subscribers;
+            stream_data.update_calculated_fields(test_stream);
+        }
+    }
+
+    process_test_streams();
 
     stream_data.is_active = function (sub) {
         return sub.name !== "dead";
@@ -68,12 +76,44 @@ run_test("sort_streams", () => {
 
     // Test sort streams with description
     test_streams = [
-        {name: "Dev", description: "development help", subscribers: unpopular, subscribed: true},
-        {name: "Docs", description: "writing docs", subscribers: popular, subscribed: true},
-        {name: "Derp", description: "derping around", subscribers: unpopular, subscribed: true},
-        {name: "Denmark", description: "visiting Denmark", subscribers: popular, subscribed: true},
-        {name: "dead", description: "dead stream", subscribers: unpopular, subscribed: true},
+        {
+            stream_id: 201,
+            name: "Dev",
+            description: "development help",
+            subscribers: unpopular,
+            subscribed: true,
+        },
+        {
+            stream_id: 202,
+            name: "Docs",
+            description: "writing docs",
+            subscribers: popular,
+            subscribed: true,
+        },
+        {
+            stream_id: 203,
+            name: "Derp",
+            description: "derping around",
+            subscribers: unpopular,
+            subscribed: true,
+        },
+        {
+            stream_id: 204,
+            name: "Denmark",
+            description: "visiting Denmark",
+            subscribers: popular,
+            subscribed: true,
+        },
+        {
+            stream_id: 205,
+            name: "dead",
+            description: "dead stream",
+            subscribers: unpopular,
+            subscribed: true,
+        },
     ];
+    process_test_streams();
+
     test_streams.forEach(stream_data.update_calculated_fields);
     test_streams = th.sort_streams(test_streams, "wr");
     assert.deepEqual(test_streams[0].name, "Docs"); // Description match
@@ -84,14 +124,50 @@ run_test("sort_streams", () => {
 
     // Test sort both subscribed and unsubscribed streams.
     test_streams = [
-        {name: "Dev", description: "Some devs", subscribed: true, subscribers: popular},
-        {name: "East", description: "Developing east", subscribed: true, subscribers: popular},
-        {name: "New", description: "No match", subscribed: true, subscribers: popular},
-        {name: "Derp", description: "Always Derping", subscribed: false, subscribers: popular},
-        {name: "Ether", description: "Destroying ether", subscribed: false, subscribers: popular},
-        {name: "Mew", description: "Cat mews", subscribed: false, subscribers: popular},
+        {
+            stream_id: 301,
+            name: "Dev",
+            description: "Some devs",
+            subscribed: true,
+            subscribers: popular,
+        },
+        {
+            stream_id: 302,
+            name: "East",
+            description: "Developing east",
+            subscribed: true,
+            subscribers: popular,
+        },
+        {
+            stream_id: 303,
+            name: "New",
+            description: "No match",
+            subscribed: true,
+            subscribers: popular,
+        },
+        {
+            stream_id: 304,
+            name: "Derp",
+            description: "Always Derping",
+            subscribed: false,
+            subscribers: popular,
+        },
+        {
+            stream_id: 305,
+            name: "Ether",
+            description: "Destroying ether",
+            subscribed: false,
+            subscribers: popular,
+        },
+        {
+            stream_id: 306,
+            name: "Mew",
+            description: "Cat mews",
+            subscribed: false,
+            subscribers: popular,
+        },
     ];
-    test_streams.forEach(stream_data.update_calculated_fields);
+    process_test_streams();
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Dev"); // Subscribed and stream name starts with query

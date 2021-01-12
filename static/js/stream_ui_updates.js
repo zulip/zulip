@@ -194,7 +194,8 @@ exports.update_subscribers_list = function (sub) {
     if (!sub.can_access_subscribers) {
         $(".subscriber_list_settings_container").hide();
     } else {
-        const users = stream_edit.get_users_from_subscribers(sub.subscribers);
+        const subscribers = stream_data.get_subscribers(sub.stream_id);
+        const users = stream_edit.get_users_from_subscribers(subscribers);
 
         /*
             We try to find a subscribers list that is already in the

@@ -22,8 +22,6 @@ set_global("compose_actions", {
     update_placeholder_text: noop,
 });
 
-const {LazySet} = zrequire("lazy_set");
-
 const _navigator = {
     platform: "",
 };
@@ -961,16 +959,19 @@ run_test("finish", () => {
 });
 
 run_test("warn_if_private_stream_is_linked", () => {
-    stream_data.add_sub({
+    const test_sub = {
         name: compose_state.stream_name(),
-        subscribers: new LazySet([1, 2]),
         stream_id: 99,
-    });
+    };
+
+    stream_data.add_sub(test_sub);
+    stream_data.set_subscribers(test_sub, [1, 2]);
 
     let denmark = {
+        stream_id: 100,
         name: "Denmark",
-        subscribers: new LazySet([1, 2, 3]),
     };
+    stream_data.set_subscribers(denmark, [1, 2, 3]);
 
     function test_noop_case(invite_only) {
         compose_state.set_message_type("stream");
@@ -1016,7 +1017,6 @@ run_test("warn_if_private_stream_is_linked", () => {
     denmark = {
         invite_only: true,
         name: "Denmark",
-        subscribers: new LazySet([1]),
     };
 
     compose.warn_if_private_stream_is_linked(denmark);

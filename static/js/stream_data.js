@@ -93,6 +93,12 @@ let filter_out_inactives = false;
 const stream_ids_by_name = new FoldDict();
 const default_stream_ids = new Set();
 
+// This maps a stream_id to a LazySet of user_ids who are subscribed.
+// We maintain the invariant that this has keys for all all stream_ids
+// that we track in the other data structures.  We intialize it during
+// clear_subscriptions.
+let stream_subscribers;
+
 exports.stream_privacy_policy_values = {
     public: {
         code: "public",
@@ -133,8 +139,11 @@ exports.stream_post_policy_values = {
 };
 
 exports.clear_subscriptions = function () {
+    // This function is only used once at page load, and then
+    // it should only be used in tests.
     stream_info = new BinaryDict((sub) => sub.subscribed);
     subs_by_stream_id = new Map();
+    stream_subscribers = new Map();
 };
 
 exports.clear_subscriptions();
@@ -193,10 +202,14 @@ exports.subscribe_myself = function (sub) {
 };
 
 exports.is_subscriber_subset = function (sub1, sub2) {
-    if (sub1.subscribers && sub2.subscribers) {
-        const sub2_set = sub2.subscribers;
+    const stream_id1 = sub1.stream_id;
+    const stream_id2 = sub2.stream_id;
 
-        return Array.from(sub1.subscribers.keys()).every((key) => sub2_set.has(key));
+    const sub1_set = stream_subscribers.get(stream_id1);
+    const sub2_set = stream_subscribers.get(stream_id2);
+
+    if (sub1_set && sub2_set) {
+        return Array.from(sub1_set.keys()).every((key) => sub2_set.has(key));
     }
 
     return false;
@@ -216,8 +229,8 @@ exports.add_sub = function (sub) {
     // We use create_sub_from_server_data at page load.
     // We use create_streams for new streams in live-update events.
 
-    if (!Object.prototype.hasOwnProperty.call(sub, "subscribers")) {
-        sub.subscribers = new LazySet([]);
+    if (!stream_subscribers.has(sub.stream_id)) {
+        exports.set_subscribers(sub, []);
     }
 
     stream_info.set(sub.name, sub);
@@ -431,11 +444,13 @@ exports.get_colors = function () {
 };
 
 exports.update_subscribers_count = function (sub) {
-    const count = sub.subscribers.size;
-    sub.subscriber_count = count;
+    // This is part of an unfortunate legacy hack, where we
+    // put calculated fields onto the sub object instead of
+    // letting callers build their own objects.
+    sub.subscriber_count = exports.get_subscriber_count(sub.stream_id);
 };
 
-exports.potential_subscribers = function (sub) {
+exports.potential_subscribers = function (stream_id) {
     /*
         This is a list of unsubscribed users
         for the current stream, who the current
@@ -453,11 +468,13 @@ exports.potential_subscribers = function (sub) {
         may be moot now for other reasons.)
     */
 
+    const subscribers = stream_subscribers.get(stream_id);
+
     function is_potential_subscriber(person) {
         // Use verbose style to force better test
         // coverage, plus we may add more conditions over
         // time.
-        if (sub.subscribers.has(person.user_id)) {
+        if (subscribers.has(person.user_id)) {
             return false;
         }
 
@@ -472,15 +489,14 @@ exports.update_stream_email_address = function (sub, email) {
 };
 
 exports.get_subscriber_count = function (stream_id) {
-    const sub = exports.get_sub_by_id(stream_id);
-    if (sub === undefined) {
-        blueslip.warn("We got a get_subscriber_count count call for a non-existent stream.");
+    const subscribers = stream_subscribers.get(stream_id);
+
+    if (!subscribers) {
+        blueslip.warn("We got a get_subscriber_count call for an untracked stream: " + stream_id);
         return undefined;
     }
-    if (!sub.subscribers) {
-        return 0;
-    }
-    return sub.subscribers.size;
+
+    return subscribers.size;
 };
 
 exports.update_stream_post_policy = function (sub, stream_post_policy) {
@@ -693,14 +709,26 @@ exports.maybe_get_stream_name = function (stream_id) {
     return stream.name;
 };
 
+exports.get_subscribers = (stream_id) => {
+    const subscribers = stream_subscribers.get(stream_id);
+
+    if (typeof subscribers === "undefined") {
+        blueslip.warn("We called get_subscribers for an untracked stream: " + stream_id);
+        return [];
+    }
+
+    return Array.from(subscribers.keys());
+};
+
 exports.set_subscribers = function (sub, user_ids) {
-    sub.subscribers = new LazySet(user_ids || []);
+    const subscribers = new LazySet(user_ids || []);
+    stream_subscribers.set(sub.stream_id, subscribers);
 };
 
 exports.add_subscriber = function (stream_id, user_id) {
-    const sub = exports.get_sub_by_id(stream_id);
-    if (typeof sub === "undefined") {
-        blueslip.warn("We got an add_subscriber call for a non-existent stream.");
+    const subscribers = stream_subscribers.get(stream_id);
+    if (typeof subscribers === "undefined") {
+        blueslip.warn("We got an add_subscriber call for an untracked stream: " + stream_id);
         return false;
     }
     const person = people.get_by_user_id(user_id);
@@ -708,23 +736,23 @@ exports.add_subscriber = function (stream_id, user_id) {
         blueslip.error("We tried to add invalid subscriber: " + user_id);
         return false;
     }
-    sub.subscribers.add(user_id);
+    subscribers.add(user_id);
 
     return true;
 };
 
 exports.remove_subscriber = function (stream_id, user_id) {
-    const sub = exports.get_sub_by_id(stream_id);
-    if (typeof sub === "undefined") {
-        blueslip.warn("We got a remove_subscriber call for a non-existent stream " + stream_id);
+    const subscribers = stream_subscribers.get(stream_id);
+    if (typeof subscribers === "undefined") {
+        blueslip.warn("We got a remove_subscriber call for an untracked stream " + stream_id);
         return false;
     }
-    if (!sub.subscribers.has(user_id)) {
+    if (!subscribers.has(user_id)) {
         blueslip.warn("We tried to remove invalid subscriber: " + user_id);
         return false;
     }
 
-    sub.subscribers.delete(user_id);
+    subscribers.delete(user_id);
 
     return true;
 };
@@ -744,7 +772,13 @@ exports.is_user_subscribed = function (stream_id, user_id) {
         return undefined;
     }
 
-    return sub.subscribers.has(user_id);
+    const subscribers = stream_subscribers.get(stream_id);
+    if (typeof subscribers === "undefined") {
+        blueslip.warn("We called is_user_subscribed for an untracked stream: " + stream_id);
+        return false;
+    }
+
+    return subscribers.has(user_id);
 };
 
 exports.create_streams = function (streams) {
@@ -902,9 +936,7 @@ exports.sort_for_stream_settings = function (stream_ids, order) {
     }
 
     function by_subscriber_count(id_a, id_b) {
-        const out =
-            exports.get_sub_by_id(id_b).subscribers.size -
-            exports.get_sub_by_id(id_a).subscribers.size;
+        const out = exports.get_subscriber_count(id_b) - exports.get_subscriber_count(id_a);
         if (out === 0) {
             return by_stream_name(id_a, id_b);
         }

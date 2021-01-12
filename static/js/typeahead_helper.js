@@ -389,7 +389,9 @@ exports.compare_by_activity = function (stream_a, stream_b) {
     if (diff !== 0) {
         return diff;
     }
-    diff = stream_b.subscribers.size - stream_a.subscribers.size;
+    diff =
+        stream_data.get_subscriber_count(stream_b.stream_id) -
+        stream_data.get_subscriber_count(stream_a.stream_id);
     if (diff !== 0) {
         return diff;
     }

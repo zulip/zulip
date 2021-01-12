@@ -17,7 +17,9 @@ async function test_mention(page) {
     await common.ensure_enter_does_not_send(page);
 
     console.log("Checking for all everyone warning");
-    const stream_size = await page.evaluate(() => stream_data.get_sub("Verona").subscribers.size);
+    const stream_size = await page.evaluate(() =>
+        stream_data.get_subscriber_count(stream_data.get_sub("Verona").stream_id),
+    );
     const threshold = await page.evaluate(() => {
         compose.wildcard_mention_large_stream_threshold = 5;
         return compose.wildcard_mention_large_stream_threshold;

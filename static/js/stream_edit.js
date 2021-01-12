@@ -327,11 +327,12 @@ function show_subscription_settings(sub) {
     const list = get_subscriber_list(sub_settings);
     list.empty();
 
-    const users = exports.get_users_from_subscribers(sub.subscribers);
+    const user_ids = stream_data.get_subscribers(sub.stream_id);
+    const users = exports.get_users_from_subscribers(user_ids);
     exports.sort_but_pin_current_user_on_top(users);
 
     function get_users_for_subscriber_typeahead() {
-        const potential_subscribers = stream_data.potential_subscribers(sub);
+        const potential_subscribers = stream_data.potential_subscribers(stream_id);
         return user_pill.filter_taken_users(potential_subscribers, exports.pill_widget);
     }
 
