@@ -212,6 +212,10 @@ exports.unsubscribe_myself = function (sub) {
 };
 
 exports.add_sub = function (sub) {
+    // This function is currently used only by tests.
+    // We use create_sub_from_server_data at page load.
+    // We use create_streams for new streams in live-update events.
+
     if (!Object.prototype.hasOwnProperty.call(sub, "subscribers")) {
         sub.subscribers = new LazySet([]);
     }
@@ -805,7 +809,8 @@ exports.create_sub_from_server_data = function (attrs) {
 
     exports.update_calculated_fields(sub);
 
-    exports.add_sub(sub);
+    stream_info.set(sub.name, sub);
+    subs_by_stream_id.set(sub.stream_id, sub);
 
     return sub;
 };
