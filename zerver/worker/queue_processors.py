@@ -35,7 +35,6 @@ from typing import (
 )
 
 import orjson
-import requests
 import sentry_sdk
 from django.conf import settings
 from django.db import connection
@@ -369,32 +368,6 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
     def consume(self, event: Dict[str, Any]) -> None:
         """In LoopQueueProcessingWorker, consume is used just for automated tests"""
         self.consume_batch([event])
-
-@assign_queue('signups')
-class SignupWorker(QueueProcessingWorker):
-    def consume(self, data: Dict[str, Any]) -> None:
-        # TODO: This is the only implementation with Dict cf Mapping; should we simplify?
-        user_profile = get_user_profile_by_id(data['user_id'])
-        logging.info(
-            "Processing signup for user %s in realm %s",
-            user_profile.id, user_profile.realm.string_id,
-        )
-        if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
-            endpoint = "https://{}.api.mailchimp.com/3.0/lists/{}/members".format(
-                settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID,
-            )
-            params = dict(data)
-            del params['user_id']
-            params['list_id'] = settings.ZULIP_FRIENDS_LIST_ID
-            params['status'] = 'subscribed'
-            r = requests.post(endpoint, auth=('apikey', settings.MAILCHIMP_API_KEY), json=params, timeout=10)
-            if r.status_code == 400 and orjson.loads(r.content)['title'] == 'Member Exists':
-                logging.warning("Attempted to sign up already existing email to list: %s",
-                                data['email_address'])
-            elif r.status_code == 400:
-                retry_event(self.queue_name, data, lambda e: r.raise_for_status())
-            else:
-                r.raise_for_status()
 
 @assign_queue('invites')
 class ConfirmationEmailWorker(QueueProcessingWorker):
