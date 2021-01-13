@@ -39,10 +39,19 @@ EMAIL_HOST: Optional[str] = None
 
 # LDAP auth
 AUTH_LDAP_SERVER_URI = ""
+AUTH_LDAP_BIND_DN = ""
+AUTH_LDAP_USER_SEARCH: Optional["LDAPSearch"] = None
 LDAP_APPEND_DOMAIN: Optional[str] = None
 LDAP_EMAIL_ATTR: Optional[str] = None
-AUTH_LDAP_USERNAME_ATTR: Optional[str] = None
 AUTH_LDAP_REVERSE_EMAIL_SEARCH: Optional["LDAPSearch"] = None
+AUTH_LDAP_USERNAME_ATTR: Optional[str] = None
+# AUTH_LDAP_USER_ATTR_MAP is uncommented in prod_settings_template.py,
+# so the value here mainly serves to help document the default.
+AUTH_LDAP_USER_ATTR_MAP: Dict[str, str] = {
+    "full_name": "cn",
+}
+# Automatically deactivate users not found by the AUTH_LDAP_USER_SEARCH query.
+LDAP_DEACTIVATE_NON_MATCHING_USERS: Optional[bool] = None
 # AUTH_LDAP_CONNECTION_OPTIONS: we set ldap.OPT_REFERRALS in settings.py if unset.
 AUTH_LDAP_CONNECTION_OPTIONS: Dict[int, object] = {}
 # Disable django-auth-ldap caching, to prevent problems with OU changes.
@@ -423,9 +432,6 @@ IS_DEV_DROPLET = False
 
 # Used by puppet/zulip_ops/files/cron.d/check_send_receive_time.
 NAGIOS_BOT_HOST = EXTERNAL_HOST
-
-# Automatically deactivate users not found by the AUTH_LDAP_USER_SEARCH query.
-LDAP_DEACTIVATE_NON_MATCHING_USERS: Optional[bool] = None
 
 # Use half of the available CPUs for data import purposes.
 DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 1

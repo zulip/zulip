@@ -142,12 +142,11 @@ from django_auth_ldap.config import LDAPSearch
 
 # The LDAP server to connect to.  Setting this enables Zulip
 # automatically fetching each new user's name from LDAP.
-# Example: "ldaps://ldap.example.com"
-AUTH_LDAP_SERVER_URI = ""
+#AUTH_LDAP_SERVER_URI = "ldaps://ldap.example.com"
 
 # The DN of the user to bind as (i.e., authenticate as) in order to
 # query LDAP.  If unset, Zulip does an anonymous bind.
-AUTH_LDAP_BIND_DN = ""
+#AUTH_LDAP_BIND_DN = ""
 
 # Passwords and secrets are not stored in this file.  The password
 # corresponding to AUTH_LDAP_BIND_DN goes in `/etc/zulip/zulip-secrets.conf`.
