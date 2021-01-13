@@ -99,7 +99,7 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     }
     stream_data.subscribe_myself(sub);
     if (subscribers) {
-        peer_data.set_subscribers(sub, subscribers);
+        peer_data.set_subscribers(sub.stream_id, subscribers);
     }
     stream_data.update_calculated_fields(sub);
 

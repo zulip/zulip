@@ -56,7 +56,7 @@ run_test("sort_streams", () => {
 
     function process_test_streams() {
         for (const test_stream of test_streams) {
-            peer_data.set_subscribers(test_stream, test_stream.subscribers);
+            peer_data.set_subscribers(test_stream.stream_id, test_stream.subscribers);
             delete test_stream.subscribers;
             stream_data.update_calculated_fields(test_stream);
         }

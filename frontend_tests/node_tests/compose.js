@@ -966,13 +966,13 @@ run_test("warn_if_private_stream_is_linked", () => {
     };
 
     stream_data.add_sub(test_sub);
-    peer_data.set_subscribers(test_sub, [1, 2]);
+    peer_data.set_subscribers(test_sub.stream_id, [1, 2]);
 
     let denmark = {
         stream_id: 100,
         name: "Denmark",
     };
-    peer_data.set_subscribers(denmark, [1, 2, 3]);
+    peer_data.set_subscribers(denmark.stream_id, [1, 2, 3]);
 
     function test_noop_case(invite_only) {
         compose_state.set_message_type("stream");
@@ -1212,7 +1212,7 @@ run_test("needs_subscribe_warning", () => {
     };
 
     stream_data.add_sub(sub);
-    peer_data.set_subscribers(sub, [bob.user_id, me.user_id]);
+    peer_data.set_subscribers(sub.stream_id, [bob.user_id, me.user_id]);
 
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 999");
     // Test with an invalid user id.

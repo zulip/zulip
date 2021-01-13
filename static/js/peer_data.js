@@ -18,9 +18,9 @@ export function clear() {
     stream_subscribers = new Map();
 }
 
-export function maybe_clear_subscribers(sub) {
-    if (!stream_subscribers.has(sub.stream_id)) {
-        set_subscribers(sub, []);
+export function maybe_clear_subscribers(stream_id) {
+    if (!stream_subscribers.has(stream_id)) {
+        set_subscribers(stream_id, []);
     }
 }
 
@@ -94,9 +94,9 @@ export function get_subscribers(stream_id) {
     return Array.from(subscribers.keys());
 }
 
-export function set_subscribers(sub, user_ids) {
+export function set_subscribers(stream_id, user_ids) {
     const subscribers = new LazySet(user_ids || []);
-    stream_subscribers.set(sub.stream_id, subscribers);
+    stream_subscribers.set(stream_id, subscribers);
 }
 
 export function add_subscriber(stream_id, user_id) {

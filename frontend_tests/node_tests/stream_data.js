@@ -161,7 +161,7 @@ run_test("unsubscribe", () => {
     // set up our subscription
     stream_data.add_sub(sub);
     sub.subscribed = true;
-    peer_data.set_subscribers(sub, [me.user_id]);
+    peer_data.set_subscribers(sub.stream_id, [me.user_id]);
 
     // ensure our setup is accurate
     assert(stream_data.is_subscribed("devel"));
@@ -215,7 +215,7 @@ run_test("subscribers", () => {
         george.user_id,
     ]);
 
-    peer_data.set_subscribers(sub, [me.user_id, fred.user_id, george.user_id]);
+    peer_data.set_subscribers(sub.stream_id, [me.user_id, fred.user_id, george.user_id]);
     stream_data.update_calculated_fields(sub);
     assert(stream_data.is_user_subscribed(sub.stream_id, me.user_id));
     assert(stream_data.is_user_subscribed(sub.stream_id, fred.user_id));
@@ -224,7 +224,7 @@ run_test("subscribers", () => {
 
     assert.deepEqual(potential_subscriber_ids(), [not_fred.user_id]);
 
-    peer_data.set_subscribers(sub, []);
+    peer_data.set_subscribers(sub.stream_id, []);
 
     const brutus = {
         email: "brutus@zulip.com",
@@ -285,7 +285,6 @@ run_test("subscribers", () => {
 
     // Verify defensive code in set_subscribers, where the second parameter
     // can be undefined.
-    peer_data.set_subscribers(sub);
     stream_data.add_sub(sub);
     peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     sub.subscribed = true;
@@ -978,7 +977,7 @@ run_test("filter inactives", () => {
 run_test("is_subscriber_subset", () => {
     function make_sub(stream_id, user_ids) {
         const sub = {stream_id};
-        peer_data.set_subscribers(sub, user_ids);
+        peer_data.set_subscribers(sub.stream_id, user_ids);
         return sub;
     }
 

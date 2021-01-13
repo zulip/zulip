@@ -212,7 +212,7 @@ exports.add_sub = function (sub) {
     // We use create_sub_from_server_data at page load.
     // We use create_streams for new streams in live-update events.
 
-    peer_data.maybe_clear_subscribers(sub);
+    peer_data.maybe_clear_subscribers(sub.stream_id);
     stream_info.set(sub.name, sub);
     subs_by_stream_id.set(sub.stream_id, sub);
 };
@@ -716,7 +716,7 @@ exports.create_sub_from_server_data = function (attrs) {
         ...attrs,
     };
 
-    peer_data.set_subscribers(sub, subscriber_user_ids);
+    peer_data.set_subscribers(sub.stream_id, subscriber_user_ids);
 
     if (!sub.color) {
         sub.color = color_data.pick_color();

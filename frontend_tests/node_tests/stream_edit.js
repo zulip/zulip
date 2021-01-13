@@ -81,14 +81,14 @@ const denmark = {
     render_subscribers: true,
     should_display_subscription_button: true,
 };
-peer_data.set_subscribers(denmark, [me.user_id, mark.user_id]);
+peer_data.set_subscribers(denmark.stream_id, [me.user_id, mark.user_id]);
 
 const sweden = {
     stream_id: 2,
     name: "Sweden",
     subscribed: false,
 };
-peer_data.set_subscribers(sweden, [mark.user_id, jill.user_id]);
+peer_data.set_subscribers(sweden.stream_id, [mark.user_id, jill.user_id]);
 
 const subs = [denmark, sweden];
 for (const sub of subs) {

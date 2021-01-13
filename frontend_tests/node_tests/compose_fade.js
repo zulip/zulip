@@ -42,7 +42,7 @@ run_test("set_focused_recipient", () => {
         can_access_subscribers: true,
     };
     stream_data.add_sub(sub);
-    peer_data.set_subscribers(sub, [me.user_id, alice.user_id]);
+    peer_data.set_subscribers(sub.stream_id, [me.user_id, alice.user_id]);
 
     set_global("$", (selector) => {
         switch (selector) {
