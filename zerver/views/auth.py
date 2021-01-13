@@ -818,10 +818,9 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
     # this condition of Django so no need to check if LDAP backend is
     # enabled.
     validate_login_email(username)
-
-    subdomain = get_subdomain(request)
-    realm = get_realm(subdomain)
-
+    realm = get_realm_from_request(request)
+    if realm is None:
+        return json_error(_("Invalid subdomain"))
     return_data: Dict[str, bool] = {}
     user_profile = authenticate(dev_auth_username=username,
                                 realm=realm,
@@ -958,8 +957,9 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
 @has_request_variables
 def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
                        password: str=REQ(default='')) -> HttpResponse:
-    subdomain = get_subdomain(request)
-    realm = get_realm(subdomain)
+    realm = get_realm_from_request(request)
+    if realm is None:
+        return json_error(_("Invalid subdomain"))
     if password_auth_enabled(user_profile.realm):
         if not authenticate(request=request, username=user_profile.delivery_email, password=password,
                             realm=realm):

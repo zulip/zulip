@@ -856,8 +856,25 @@ def do_reactivate_realm(realm: Realm) -> None:
         }).decode())
 
 def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
+    old_subdomain = realm.subdomain
+    old_uri = realm.uri
     realm.string_id = new_subdomain
     realm.save(update_fields=["string_id"])
+
+    # If a realm if being renamed multiple times, we should find all the placeholder
+    # realms and reset their deactivated_redirect field to point to the new realm uri
+    placeholder_realms = Realm.objects.filter(deactivated_redirect=old_uri,
+                                              deactivated=True)
+    for placeholder_realm in placeholder_realms:
+        do_add_deactivated_redirect(placeholder_realm, realm.uri)
+
+    # When we change a realm's subdomain the realm with old subdomain is basically
+    # deactivated. We are creating a deactivated realm using old subdomain and setting
+    # it's deactivated redirect to new_subdomain so that we can tell the users that
+    # the realm has been moved to a new subdomain.
+    placeholder_realm = do_create_realm(old_subdomain, "placeholder-realm")
+    do_deactivate_realm(placeholder_realm)
+    do_add_deactivated_redirect(placeholder_realm, realm.uri)
 
 def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:
     realm.deactivated_redirect = redirect_url
@@ -4734,6 +4751,8 @@ def do_update_message(user_profile: UserProfile, message: Message,
             orig_topic_name=orig_topic_name,
             topic_name=topic_name,
             new_stream=new_stream,
+            edit_history_event=edit_history_event,
+            last_edit_time=timestamp
         )
         changed_messages += messages_list
 

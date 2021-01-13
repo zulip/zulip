@@ -65,7 +65,7 @@ def email_is_not_mit_mailing_list(email: str) -> None:
             else:
                 raise AssertionError("Unexpected DNS error")
 
-def check_subdomain_available(subdomain: str, from_management_command: bool=False) -> None:
+def check_subdomain_available(subdomain: str, allow_reserved_subdomain: bool=False) -> None:
     error_strings = {
         'too short': _("Subdomain needs to have length 3 or greater."),
         'extremal dash': _("Subdomain cannot start or end with a '-'."),
@@ -80,12 +80,11 @@ def check_subdomain_available(subdomain: str, from_management_command: bool=Fals
         raise ValidationError(error_strings['extremal dash'])
     if not re.match('^[a-z0-9-]*$', subdomain):
         raise ValidationError(error_strings['bad character'])
-    if from_management_command:
-        return
     if len(subdomain) < 3:
         raise ValidationError(error_strings['too short'])
-    if is_reserved_subdomain(subdomain) or \
-       Realm.objects.filter(string_id=subdomain).exists():
+    if Realm.objects.filter(string_id=subdomain).exists():
+        raise ValidationError(error_strings['unavailable'])
+    if is_reserved_subdomain(subdomain) and not allow_reserved_subdomain:
         raise ValidationError(error_strings['unavailable'])
 
 class RegistrationForm(forms.Form):
