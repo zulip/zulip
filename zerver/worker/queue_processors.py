@@ -632,7 +632,7 @@ class ErrorReporter(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         logging.info("Processing traceback with type %s for %s", event['type'], event.get('user_email'))
         if settings.ERROR_REPORTING:
-            do_report_error(event['report']['host'], event['type'], event['report'])
+            do_report_error(event['type'], event['report'])
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):  # nocoverage
