@@ -40,7 +40,7 @@
     "i18next": "^19.0.0",
     "jquery": "^3.4.1",
     "jquery-caret-plugin": "^1.5.2",
-    "jquery-validation": "^1.19.0",
+    "jquery-validation": "^1.19.3",
     "katex": "^0.12.0",
     "lodash": "^4.17.19",
     "mini-css-extract-plugin": "^1.2.0",
