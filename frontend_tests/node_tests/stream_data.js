@@ -1006,7 +1006,7 @@ run_test("is_subscriber_subset", () => {
     ];
 
     for (const row of matrix) {
-        assert.equal(peer_data.is_subscriber_subset(row[0], row[1]), row[2]);
+        assert.equal(peer_data.is_subscriber_subset(row[0].stream_id, row[1].stream_id), row[2]);
     }
 });
 

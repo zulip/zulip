@@ -981,7 +981,7 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
         return;
     }
 
-    if (peer_data.is_subscriber_subset(compose_stream, linked_stream)) {
+    if (peer_data.is_subscriber_subset(compose_stream.stream_id, linked_stream.stream_id)) {
         // Don't warn if subscribers list of current compose_stream is
         // a subset of linked_stream's subscribers list, because
         // everyone will be subscribed to the linked stream and so

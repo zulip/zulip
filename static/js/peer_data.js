@@ -24,10 +24,7 @@ export function maybe_clear_subscribers(stream_id) {
     }
 }
 
-export function is_subscriber_subset(sub1, sub2) {
-    const stream_id1 = sub1.stream_id;
-    const stream_id2 = sub2.stream_id;
-
+export function is_subscriber_subset(stream_id1, stream_id2) {
     const sub1_set = stream_subscribers.get(stream_id1);
     const sub2_set = stream_subscribers.get(stream_id2);
 
