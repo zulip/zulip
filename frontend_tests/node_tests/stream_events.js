@@ -202,7 +202,6 @@ run_test("update_property", (override) => {
 
 run_test("marked_subscribed", (override) => {
     override("stream_data.subscribe_myself", noop);
-    override("stream_data.set_subscribers", noop);
     override("stream_data.update_calculated_fields", noop);
 
     // Test undefined error
@@ -302,14 +301,12 @@ run_test("marked_subscribed", (override) => {
         override("message_util.do_unread_count_updates", noop);
         override("stream_list.add_sidebar_row", noop);
 
-        with_stub((stub) => {
-            override("stream_data.set_subscribers", stub.f);
-            const user_ids = [15, 20, 25];
-            stream_events.mark_subscribed(frontend, user_ids, "");
-            const args = stub.get_args("sub", "subscribers");
-            assert.deepEqual(frontend, args.sub);
-            assert.deepEqual(user_ids, args.subscribers);
-        });
+        const user_ids = [15, 20, 25];
+        stream_events.mark_subscribed(frontend, user_ids, "");
+        assert.deepEqual(
+            new Set(stream_data.get_subscribers(frontend.stream_id)),
+            new Set(user_ids),
+        );
 
         // assign self as well
         with_stub((stub) => {
