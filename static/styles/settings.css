@@ -1059,6 +1059,10 @@ input[type="checkbox"] {
         }
     }
 
+    .avoid-user-group-clicks {
+        pointer-events: none;
+    }
+
     .save-status {
         background-color: transparent;
         padding: 2px 5px;

@@ -110,6 +110,13 @@ exports.populate_user_groups = function () {
                 return false;
             }
 
+            // iterates through all user-groups and temporarily disables click-function on other user-groups
+            for (const element of user_groups_array) {
+                if (group_data.id !== element.id) {
+                    $("#" + element.id).addClass("avoid-user-group-clicks");
+                }
+            }
+
             if (
                 group_data.description === description &&
                 group_data.name === name &&
@@ -124,15 +131,21 @@ exports.populate_user_groups = function () {
             if (!exports.can_edit(data.id)) {
                 return;
             }
-            const cancel_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.btn-danger`);
-            const saved_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.sea-green`);
-            const save_instructions = $(`#user-groups #${CSS.escape(data.id)} .save-instructions`);
+            const cancel_button = $("#user-groups #" + data.id + " .save-status.btn-danger");
+            const saved_button = $("#user-groups #" + data.id + " .save-status.sea-green");
+            const save_instructions = $("#user-groups #" + data.id + " .save-instructions");
+            const save_user_group_btn = $(
+                "#user-groups #" + data.id + " .save-discard-widget-button",
+            );
 
             if (is_user_group_changed() && !cancel_button.is(":visible")) {
                 saved_button.fadeOut(0);
+                save_user_group_btn.css({display: "inline-block", opacity: "0"}).fadeTo(400, 1);
                 cancel_button.css({display: "inline-block", opacity: "0"}).fadeTo(400, 1);
                 save_instructions.css({display: "block", opacity: "0"}).fadeTo(400, 1);
             } else if (!is_user_group_changed() && cancel_button.is(":visible")) {
+                exports.reload();
+                save_user_group_btn.fadeOut();
                 cancel_button.fadeOut();
                 save_instructions.fadeOut();
             }
@@ -212,58 +225,24 @@ exports.populate_user_groups = function () {
             });
         }
 
-        function do_not_blur(except_class, event) {
-            // Event generated from or inside the typeahead.
-            if ($(event.relatedTarget).closest(".typeahead").length) {
-                return true;
-            }
-
-            const blur_exceptions = _.without(
-                [".pill-container", ".name", ".description", ".input", ".delete"],
-                except_class,
-            );
-            if ($(event.relatedTarget).closest(`#user-groups #${CSS.escape(data.id)}`).length) {
-                return blur_exceptions.some(
-                    (class_name) => $(event.relatedTarget).closest(class_name).length,
-                );
-            }
-            return false;
-        }
-
-        function auto_save(class_name, event) {
-            if (!exports.can_edit(data.id)) {
-                return;
-            }
-
-            if (do_not_blur(class_name, event)) {
-                return;
-            }
-            if (
-                $(event.relatedTarget).closest(`#user-groups #${CSS.escape(data.id)}`) &&
-                $(event.relatedTarget).closest(".save-status.btn-danger").length
-            ) {
-                exports.reload();
-                return;
-            }
+        function auto_save() {
             save_name_desc();
             save_members();
         }
 
-        $(`#user-groups #${CSS.escape(data.id)}`).on("blur", ".input", (event) => {
-            auto_save(".input", event);
+        $("#user-groups #" + data.id).on("click", "#save-user-group", () => {
+            auto_save();
         });
 
-        $(`#user-groups #${CSS.escape(data.id)}`).on("blur", ".name", (event) => {
-            auto_save(".name", event);
+        $("#user-groups #" + data.id).on("click", ".save-status.btn-danger", () => {
+            exports.reload();
         });
-        $(`#user-groups #${CSS.escape(data.id)}`).on("input", ".name", () => {
+
+        $("#user-groups #" + data.id).on("input", ".name", () => {
             update_cancel_button();
         });
 
-        $(`#user-groups #${CSS.escape(data.id)}`).on("blur", ".description", (event) => {
-            auto_save(".description", event);
-        });
-        $(`#user-groups #${CSS.escape(data.id)}`).on("input", ".description", () => {
+        $("#user-groups #" + data.id).on("input", ".description", () => {
             update_cancel_button();
         });
 

@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const _ = require("lodash");
-
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -92,12 +90,22 @@ test_ui("can_edit", () => {
     assert(settings_user_groups.can_edit(1));
 });
 
+<<<<<<< HEAD
 const user_group_selector = `#user-groups #${CSS.escape(1)}`;
 const cancel_selector = `#user-groups #${CSS.escape(1)} .save-status.btn-danger`;
 const saved_selector = `#user-groups #${CSS.escape(1)} .save-status.sea-green`;
 const name_selector = `#user-groups #${CSS.escape(1)} .name`;
 const description_selector = `#user-groups #${CSS.escape(1)} .description`;
 const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
+=======
+const user_group_selector = "#user-groups #1";
+const cancel_selector = "#user-groups #1 .save-status.btn-danger";
+const saved_selector = "#user-groups #1 .save-status.sea-green";
+const name_selector = "#user-groups #1 .name";
+const description_selector = "#user-groups #1 .description";
+const instructions_selector = "#user-groups #1 .save-instructions";
+const save_user_group_selector = "#user-groups #1 .save-discard-widget-button";
+>>>>>>> settings: Rework user_group save_discard widget
 
 test_ui("populate_user_groups", () => {
     const realm_user_group = {
@@ -453,12 +461,6 @@ test_ui("with_external_user", () => {
 
     const des_update_handler = $(user_group_selector).get_on_handler("input", ".description");
 
-    const member_change_handler = $(user_group_selector).get_on_handler("blur", ".input");
-
-    const name_change_handler = $(user_group_selector).get_on_handler("blur", ".name");
-
-    const des_change_handler = $(user_group_selector).get_on_handler("blur", ".description");
-
     const event = {
         stopPropagation: noop,
     };
@@ -469,12 +471,9 @@ test_ui("with_external_user", () => {
     assert.equal(delete_handler.call(fake_delete), undefined);
     assert.equal(name_update_handler(), undefined);
     assert.equal(des_update_handler(), undefined);
-    assert.equal(member_change_handler(), undefined);
-    assert.equal(name_change_handler(), undefined);
-    assert.equal(des_change_handler(), undefined);
     assert.equal(set_parents_result_called, 1);
     assert.equal(set_attributes_called, 1);
-    assert.equal(can_edit_called, 9);
+    assert.equal(can_edit_called, 6);
     assert(exit_button_called);
     assert.equal(user_group_find_called, 2);
     assert.equal(pill_container_find_called, 4);
@@ -610,6 +609,7 @@ test_ui("on_events", () => {
         assert(default_action_for_enter_stopped);
     })();
 
+<<<<<<< HEAD
     (function test_do_not_blur() {
         const blur_event_classes = [".name", ".description", ".input"];
         let api_endpoint_called = false;
@@ -673,6 +673,8 @@ test_ui("on_events", () => {
         }
     })();
 
+=======
+>>>>>>> settings: Rework user_group save_discard widget
     (function test_update_cancel_button() {
         const handler_name = $(user_group_selector).get_on_handler("input", ".name");
         const handler_desc = $(user_group_selector).get_on_handler("input", ".description");
@@ -690,6 +692,7 @@ test_ui("on_events", () => {
 
         let cancel_fade_out_called = false;
         let instructions_fade_out_called = false;
+        let save_fade_out_called = false;
         $(cancel_selector).show();
         $(cancel_selector).fadeOut = () => {
             cancel_fade_out_called = true;
@@ -697,12 +700,16 @@ test_ui("on_events", () => {
         $(instructions_selector).fadeOut = () => {
             instructions_fade_out_called = true;
         };
+        $(save_user_group_selector).fadeOut = function () {
+            save_fade_out_called = true;
+        };
 
         // Cancel button removed if user group if user group has no changes.
         const fake_this = $.create("fake-#update_cancel_button");
         handler_name.call(fake_this);
         assert(cancel_fade_out_called);
         assert(instructions_fade_out_called);
+        assert(save_fade_out_called);
 
         // Check if cancel button removed if user group error is showing.
         $(user_group_selector + " .user-group-status").show();
@@ -721,8 +728,11 @@ test_ui("on_events", () => {
     })();
 
     (function test_user_groups_save_group_changes_triggered() {
-        const handler_name = $(user_group_selector).get_on_handler("blur", ".name");
-        const handler_desc = $(user_group_selector).get_on_handler("blur", ".description");
+        const handler_name_btn = $(user_group_selector).get_on_handler("click", "#save-user-group");
+        const handler_cancel_btn = $(user_group_selector).get_on_handler(
+            "click",
+            ".save-status.btn-danger",
+        );
         const sib_des = $(description_selector);
         const sib_name = $(name_selector);
         sib_name.text(i18n.t("mobile"));
@@ -788,32 +798,39 @@ test_ui("on_events", () => {
             })();
         };
 
+<<<<<<< HEAD
         const fake_this = $.create("fake-#user-groups_blur_name");
         fake_this.closest = () => [];
+=======
+        const fake_this = $.create("fake-#user-groups_name");
+        fake_this.closest = function () {
+            return [];
+        };
+>>>>>>> settings: Rework user_group save_discard widget
         fake_this.set_parents_result(user_group_selector, $(user_group_selector));
         const event = {
             relatedTarget: fake_this,
         };
 
         api_endpoint_called = false;
-        handler_name.call(fake_this, event);
+        handler_name_btn.call(fake_this, event);
         assert(api_endpoint_called);
 
         // Check API endpoint isn't called if name and desc haven't changed.
         group_data.name = "translated: mobile";
         group_data.description = "translated: All mobile members";
         api_endpoint_called = false;
-        handler_name.call(fake_this, event);
+        handler_name_btn.call(fake_this, event);
         assert(!api_endpoint_called);
 
         // Check for handler_desc to achieve 100% coverage.
         api_endpoint_called = false;
-        handler_desc.call(fake_this, event);
+        handler_cancel_btn.call(fake_this, event);
         assert(!api_endpoint_called);
     })();
 
     (function test_user_groups_save_member_changes_triggered() {
-        const handler = $(user_group_selector).get_on_handler("blur", ".input");
+        const handler = $(user_group_selector).get_on_handler("click", "#save-user-group");
         const realm_user_group = {
             id: 1,
             name: "Mobile",
@@ -856,7 +873,7 @@ test_ui("on_events", () => {
             })();
         };
 
-        const fake_this = $.create("fake-#user-groups_blur_input");
+        const fake_this = $.create("fake-#user-groups_input");
         fake_this.set_parents_result(user_group_selector, $(user_group_selector));
         fake_this.closest = () => [];
         const event = {
