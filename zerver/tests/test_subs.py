@@ -4425,12 +4425,12 @@ class GetSubscribersTest(ZulipTestCase):
         sub_data = gather_subscriptions_helper(non_admin_user)
         unsubscribed_streams = sub_data[1]
         self.assertEqual(len(unsubscribed_streams), 1)
-        self.assertFalse('subscribers' in unsubscribed_streams[0])
+        self.assertEqual(unsubscribed_streams[0]['subscribers'], [])
 
         sub_data = gather_subscriptions_helper(guest_user)
         unsubscribed_streams = sub_data[1]
         self.assertEqual(len(unsubscribed_streams), 1)
-        self.assertFalse('subscribers' in unsubscribed_streams[0])
+        self.assertEqual(unsubscribed_streams[0]['subscribers'], [])
 
     def test_gather_subscriptions_mit(self) -> None:
         """
