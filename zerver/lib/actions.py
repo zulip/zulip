@@ -2666,7 +2666,9 @@ def validate_user_access_to_subscribers_helper(
     if stream_dict["is_web_public"]:
         return
 
-    # Guest users can access subscribed public stream's subscribers
+    # With the exception of web public streams, a guest must
+    # be subscribed to a stream (even a public one) in order
+    # to see subscribers.
     if user_profile.is_guest:
         if check_user_subscribed(user_profile):
             return
@@ -5056,15 +5058,6 @@ def build_stream_dict_for_sub(
     result["email_address"] = encode_email_address_helper(
         stream["name"], stream["email_token"], show_sender=True)
 
-    # Important: don't show the subscribers if the stream is invite only
-    # and this user isn't on it anymore (or a realm administrator).
-    if stream["invite_only"] and not (sub["active"] or user.is_realm_admin):
-        subscribers = None
-
-    # Guest users lose access to subscribers when they are unsubscribed if the stream
-    # is not web-public.
-    if not sub["active"] and user.is_guest and not stream["is_web_public"]:
-        subscribers = None
     if subscribers is not None:
         result["subscribers"] = subscribers
 
