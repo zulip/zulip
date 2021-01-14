@@ -156,6 +156,7 @@
                 "flatpickr": false,
                 "floating_recipient_bar": false,
                 "gear_menu": false,
+                "giphy": false,
                 "hash_util": false,
                 "hashchange": false,
                 "helpers": false,

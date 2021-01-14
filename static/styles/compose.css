@@ -415,6 +415,16 @@ a.message-control-button {
     }
 }
 
+#compose_box_giphy_grid {
+    outline: none;
+
+    img {
+        width: auto;
+        height: 14px;
+        vertical-align: top;
+    }
+}
+
 .drag {
     display: none;
     height: 18px;

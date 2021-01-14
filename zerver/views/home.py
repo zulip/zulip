@@ -230,6 +230,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'embedded': narrow_stream is not None,
                                'invite_as': PreregistrationUser.INVITE_AS,
                                'max_file_upload_size_mib': settings.MAX_FILE_UPLOAD_SIZE,
+                               'giphy_api_available': page_params['giphy_api_key'] != '',
                                })
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response

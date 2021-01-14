@@ -76,6 +76,7 @@ class HomeTest(ZulipTestCase):
         "fluid_layout_width",
         "full_name",
         "furthest_read_time",
+        "giphy_api_key",
         "has_mobile_devices",
         "has_zoom_token",
         "high_contrast_mode",

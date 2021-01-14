@@ -48,6 +48,7 @@ declare let feature_flags: any;
 declare let feedback_widget: any;
 declare let floating_recipient_bar: any;
 declare let gear_menu: any;
+declare let giphy: any;
 declare let hashchange: any;
 declare let hash_util: any;
 declare let helpers: any;

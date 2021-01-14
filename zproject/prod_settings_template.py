@@ -662,3 +662,6 @@ CAMO_URI = '/external_content/'
 # Controls the Big Blue Button video call integration.  You must also
 # set big_blue_button_secret in zulip-secrets.conf.
 # BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
+
+# File where your GIPHY API key is stored
+GIPHY_SECRETS_FILE = '/etc/zulip/giphy.key'

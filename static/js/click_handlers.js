@@ -635,6 +635,22 @@ exports.initialize = function () {
     });
 
     // COMPOSE
+    $("#compose_giphy_logo").on("click", () => {
+        $("#compose_box_giphy_grid").popover("toggle");
+        let gifs_grid = giphy.renderGrid($("#giphy_grid_in_popover .popover-content")[0]);
+        $("body").on(
+            "keyup",
+            "#giphy-search-query",
+            _.debounce(() => {
+                gifs_grid.remove();
+                gifs_grid = giphy.update_grid_with_search_term();
+            }, 400),
+        );
+        $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
+            gifs_grid.remove();
+            $("#compose_box_giphy_grid").popover("hide");
+        });
+    });
 
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.

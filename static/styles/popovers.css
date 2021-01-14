@@ -475,3 +475,46 @@ ul {
         margin-left: 5px !important;
     }
 }
+
+.popover.top .arrow::after {
+    left: -1px;
+}
+
+#giphy_grid_in_popover {
+    width: 300px;
+
+    .giphy-gif {
+        cursor: pointer;
+    }
+
+    .search-box {
+        display: flex;
+        position: sticky;
+
+        input {
+            flex-grow: 1;
+            margin: 5px;
+        }
+    }
+
+    .popover-content {
+        overflow: auto;
+        height: 200px;
+    }
+
+    .popover-footer {
+        text-align: center;
+
+        img {
+            width: 120px;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    #giphy_grid_in_popover {
+        position: static;
+        top: 0 !important;
+        left: 0 !important;
+    }
+}

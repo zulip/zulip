@@ -18,6 +18,7 @@ from zerver.lib.i18n import (
 )
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.views.message_flags import get_latest_update_message_flag_activity
+from zproject.config import get_from_file_if_exists
 
 
 @dataclass
@@ -100,6 +101,8 @@ def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermiss
             show_webathena=False,
         )
 
+def get_giphy_api_key() -> str:
+    return get_from_file_if_exists(settings.GIPHY_SECRETS_FILE).strip()
 
 def build_page_params_for_home_page_load(
     request: HttpRequest,
@@ -226,5 +229,6 @@ def build_page_params_for_home_page_load(
         page_params["enable_desktop_notifications"] = False
 
     page_params["translation_data"] = get_language_translation_data(request_language)
+    page_params["giphy_api_key"] = get_giphy_api_key()
 
     return register_ret["queue_id"], page_params
