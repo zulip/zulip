@@ -5022,7 +5022,6 @@ def build_stream_dict_for_sub(
     user: UserProfile,
     sub: Subscription,
     stream: Stream,
-    subscribers: Optional[List[int]],
     recent_traffic: Dict[int, int],
 ) -> Dict[str, object]:
     # We first construct a dictionary based on the standard Stream
@@ -5058,14 +5057,11 @@ def build_stream_dict_for_sub(
     result["email_address"] = encode_email_address_helper(
         stream["name"], stream["email_token"], show_sender=True)
 
-    if subscribers is not None:
-        result["subscribers"] = subscribers
-
+    # Our caller may add a subscribers field.
     return result
 
 def build_stream_dict_for_never_sub(
     stream: Stream,
-    subscribers: Optional[List[int]],
     recent_traffic: Dict[int, int],
 ) -> Dict[str, object]:
     result = {}
@@ -5084,9 +5080,7 @@ def build_stream_dict_for_never_sub(
     # Backwards-compatibility addition of removed field.
     result["is_announcement_only"] = stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
 
-    if subscribers is not None:
-        result["subscribers"] = subscribers
-
+    # Our caller may add a subscribers field.
     return result
 
 # In general, it's better to avoid using .values() because it makes
@@ -5137,10 +5131,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             user_profile,
             subscribed_stream_ids,
         )
-    else:
-        # If we're not including subscribers, always return None,
-        # which the below code needs to check for anyway.
-        subscriber_map = defaultdict(lambda: None)
 
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.
@@ -5158,9 +5148,11 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             user=user_profile,
             sub=sub,
             stream=stream,
-            subscribers=subscriber_map[stream_id],
             recent_traffic=recent_traffic,
         )
+
+        if include_subscribers:
+            stream_dict['subscribers'] = subscriber_map[stream_id]
 
         # is_active is represented in this structure by which list we include it in.
         is_active = sub["active"]
@@ -5185,9 +5177,11 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         if is_public or user_profile.is_realm_admin:
             stream_dict = build_stream_dict_for_never_sub(
                 stream=stream,
-                subscribers=subscriber_map[stream["id"]],
                 recent_traffic=recent_traffic
             )
+
+            if include_subscribers:
+                stream_dict['subscribers'] = subscriber_map[stream["id"]]
 
             never_subscribed.append(stream_dict)
 
