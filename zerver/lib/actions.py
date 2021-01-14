@@ -5118,18 +5118,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     traffic_stream_ids = {get_stream_id(sub) for sub in sub_dicts}
     recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids)
 
-    # The highly optimized bulk_get_subscriber_user_ids wants to know which
-    # streams we are subscribed to, for validation purposes, and it uses that
-    # info to know if it's allowed to find OTHER subscribers.
-    subscribed_stream_ids = {get_stream_id(sub) for sub in sub_dicts if sub["active"]}
-
-    if include_subscribers:
-        subscriber_map: Mapping[int, Optional[List[int]]] = bulk_get_subscriber_user_ids(
-            all_streams,
-            user_profile,
-            subscribed_stream_ids,
-        )
-
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.
     subscribed = []
@@ -5148,9 +5136,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             stream=stream,
             recent_traffic=recent_traffic,
         )
-
-        if include_subscribers:
-            stream_dict['subscribers'] = subscriber_map[stream_id]
 
         # is_active is represented in this structure by which list we include it in.
         is_active = sub["active"]
@@ -5178,10 +5163,23 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                 recent_traffic=recent_traffic
             )
 
-            if include_subscribers:
-                stream_dict['subscribers'] = subscriber_map[stream["id"]]
-
             never_subscribed.append(stream_dict)
+
+    if include_subscribers:
+        # The highly optimized bulk_get_subscriber_user_ids wants to know which
+        # streams we are subscribed to, for validation purposes, and it uses that
+        # info to know if it's allowed to find OTHER subscribers.
+        subscribed_stream_ids = {get_stream_id(sub) for sub in sub_dicts if sub["active"]}
+
+        subscriber_map = bulk_get_subscriber_user_ids(
+            all_streams,
+            user_profile,
+            subscribed_stream_ids,
+        )
+
+        for lst in [subscribed, unsubscribed, never_subscribed]:
+            for sub in lst:
+                sub["subscribers"] = subscriber_map[sub["stream_id"]]
 
     return (sorted(subscribed, key=lambda x: x['name']),
             sorted(unsubscribed, key=lambda x: x['name']),
