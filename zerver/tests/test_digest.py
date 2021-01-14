@@ -1,5 +1,6 @@
 import datetime
 import time
+from datetime import timedelta
 from typing import List
 from unittest import mock
 
@@ -7,10 +8,14 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import one_click_unsubscribe_link
+from zerver.forms import DigestParameterForm
 from zerver.lib.actions import do_create_user
 from zerver.lib.digest import (
+    DIGEST_CUTOFF,
     DigestTopic,
+    DigestWeights,
     _enqueue_emails_for_realm,
+    bulk_get_digest_context,
     bulk_handle_digest_email,
     bulk_write_realm_audit_logs,
     enqueue_emails,
@@ -464,6 +469,42 @@ class TestDigestContentInBrowser(ZulipTestCase):
         self.login("hamlet")
         result = self.client_get("/digest/")
         self.assert_in_success_response(["Click here to log in to Zulip and catch up."], result)
+
+    @mock.patch("zerver.lib.digest.bulk_get_digest_context")
+    def test_get_digest_context_called_with_weights(
+        self, mock_digest_context: mock.MagicMock
+    ) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        weights = dict(
+            message_weight=1,
+            sender_weight=1,
+        )
+        cutoff = time.mktime((timezone_now() - timedelta(days=DIGEST_CUTOFF)).timetuple())
+        digest_weights = DigestWeights(
+            message_weight=1,
+            sender_weight=1,
+        )
+        mock_digest_context.return_value = bulk_get_digest_context([user], cutoff, digest_weights)
+        self.client_post("/digest/", weights)
+        mock_digest_context.assert_called_once_with([user], cutoff, digest_weights)
+
+
+class TestDigestParameterFrom(ZulipTestCase):
+    def test_digest_parameter_form_validate(self) -> None:
+        invalid_params = dict(
+            message_weight="invalid",
+            sender_weight="invalid",
+        )
+        form = DigestParameterForm(invalid_params)
+        self.assertFalse(form.is_valid())
+        valid_params = dict(
+            message_weight=1,
+            sender_weight=1,
+        )
+        form = DigestParameterForm(valid_params)
+        self.assertTrue(form.is_valid())
 
 
 class TestDigestTopics(ZulipTestCase):

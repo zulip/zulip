@@ -2,7 +2,8 @@ import datetime
 import heapq
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
@@ -35,6 +36,12 @@ DIGEST_CUTOFF = 5
 MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST = 4
 
 TopicKey = Tuple[int, str]
+
+
+@dataclass
+class DigestWeights:
+    message_weight: int
+    sender_weight: int
 
 
 class DigestTopic:
@@ -74,6 +81,16 @@ class DigestTopic:
             "count": teaser_count,
             "first_few_messages": first_few_messages,
         }
+
+    def score(
+        self,
+        digest_weights: Optional[DigestWeights] = None,
+    ) -> int:
+        if digest_weights is not None:
+            score = digest_weights.message_weight * self.num_human_messages
+            score += digest_weights.sender_weight * len(self.human_senders)
+
+        return score
 
 
 # Digests accumulate 2 types of interesting traffic for a user:
@@ -160,10 +177,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
         )
 
 
-def get_recent_topics(
-    stream_ids: List[int],
-    cutoff_date: datetime.datetime,
-) -> List[DigestTopic]:
+def get_recent_topics(stream_ids: List[int], cutoff_date: datetime.datetime) -> List[DigestTopic]:
     # Gather information about topic conversations, then
     # classify by:
     #   * topic length
@@ -202,6 +216,7 @@ def get_recent_topics(
 def get_hot_topics(
     all_topics: List[DigestTopic],
     stream_ids: Set[int],
+    digest_weights: Optional[DigestWeights] = None,
 ) -> List[DigestTopic]:
     topics = [topic for topic in all_topics if topic.stream_id() in stream_ids]
 
@@ -214,6 +229,10 @@ def get_hot_topics(
             hot_topics.append(topic)
         if len(hot_topics) == MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST:
             break
+
+    if digest_weights is not None:
+        topics_by_score = heapq.nlargest(4, topics, key=lambda dt: dt.score(digest_weights))
+        return topics_by_score
 
     return hot_topics
 
@@ -276,7 +295,11 @@ def get_slim_stream_map(stream_ids: Set[int]) -> Dict[int, Stream]:
     return {stream.id: stream for stream in streams}
 
 
-def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int, Dict[str, Any]]:
+def bulk_get_digest_context(
+    users: List[UserProfile],
+    cutoff: float,
+    digest_weights: Optional[DigestWeights] = None,
+) -> Dict[int, Dict[str, Any]]:
     # We expect a non-empty list of users all from the same realm.
     assert users
     realm = users[0].realm
@@ -313,7 +336,7 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
     for user in users:
         stream_ids = user_stream_map[user.id]
 
-        hot_topics = get_hot_topics(recent_topics, stream_ids)
+        hot_topics = get_hot_topics(recent_topics, stream_ids, digest_weights)
 
         context = common_context(user)
 
@@ -340,8 +363,12 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
     return result
 
 
-def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
-    return bulk_get_digest_context([user], cutoff)[user.id]
+def get_digest_context(
+    user: UserProfile,
+    cutoff: float,
+    digest_weights: Optional[DigestWeights] = None,
+) -> Dict[str, Any]:
+    return bulk_get_digest_context([user], cutoff, digest_weights)[user.id]
 
 
 @transaction.atomic
