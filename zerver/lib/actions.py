@@ -4,6 +4,7 @@ import logging
 import os
 import time
 from collections import defaultdict
+from dataclasses import dataclass
 from operator import itemgetter
 from typing import (
     AbstractSet,
@@ -241,6 +242,12 @@ if settings.BILLING_ENABLED:
         downgrade_now_without_creating_additional_invoices,
         update_license_ledger_if_needed,
     )
+
+@dataclass
+class SubscriptionInfo:
+    subscriptions: List[Dict[str, Any]]
+    unsubscribed: List[Dict[str, Any]]
+    never_subscribed: List[Dict[str, Any]]
 
 # This will be used to type annotate parameters in a function if the function
 # works on both str and unicode in python 2 but in python 3 it only works on str.
@@ -4985,9 +4992,7 @@ def get_average_weekly_stream_traffic(stream_id: int, stream_date_created: datet
 
     return round_to_2_significant_digits(average_weekly_traffic)
 
-SubHelperT = Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
-
-def get_web_public_subs(realm: Realm) -> SubHelperT:
+def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
     color_idx = 0
 
     def get_next_color() -> str:
@@ -5016,7 +5021,11 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
         stream_dict['email_address'] = ''
         subscribed.append(stream_dict)
 
-    return (subscribed, [], [])
+    return SubscriptionInfo(
+        subscriptions=subscribed,
+        unsubscribed=[],
+        never_subscribed=[],
+    )
 
 def build_stream_dict_for_sub(
     user: UserProfile,
@@ -5087,8 +5096,10 @@ def build_stream_dict_for_never_sub(
 # the code pretty ugly, but in this case, it has significant
 # performance impact for loading / for users with large numbers of
 # subscriptions, so it's worth optimizing.
-def gather_subscriptions_helper(user_profile: UserProfile,
-                                include_subscribers: bool=True) -> SubHelperT:
+def gather_subscriptions_helper(
+    user_profile: UserProfile,
+    include_subscribers: bool=True,
+) -> SubscriptionInfo:
     realm = user_profile.realm
     all_streams = get_active_streams(realm).values(
         *Stream.API_FIELDS,
@@ -5183,16 +5194,23 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             for sub in lst:
                 sub["subscribers"] = subscriber_map[sub["stream_id"]]
 
-    return (sorted(subscribed, key=lambda x: x['name']),
-            sorted(unsubscribed, key=lambda x: x['name']),
-            sorted(never_subscribed, key=lambda x: x['name']))
+    return SubscriptionInfo(
+        subscriptions=sorted(subscribed, key=lambda x: x['name']),
+        unsubscribed=sorted(unsubscribed, key=lambda x: x['name']),
+        never_subscribed=sorted(never_subscribed, key=lambda x: x['name']),
+    )
 
 def gather_subscriptions(
     user_profile: UserProfile,
     include_subscribers: bool=False,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    subscribed, unsubscribed, _ = gather_subscriptions_helper(
-        user_profile, include_subscribers=include_subscribers)
+    helper_result = gather_subscriptions_helper(
+        user_profile,
+        include_subscribers=include_subscribers,
+    )
+
+    subscribed = helper_result.subscriptions
+    unsubscribed = helper_result.unsubscribed
 
     if include_subscribers:
         user_ids = set()

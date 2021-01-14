@@ -336,13 +336,16 @@ def fetch_initial_state_data(
 
     if want('subscription'):
         if user_profile is not None:
-            subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
-                user_profile, include_subscribers=include_subscribers)
+            sub_info = gather_subscriptions_helper(
+                user_profile,
+                include_subscribers=include_subscribers,
+            )
         else:
-            subscriptions, unsubscribed, never_subscribed = get_web_public_subs(realm)
-        state['subscriptions'] = subscriptions
-        state['unsubscribed'] = unsubscribed
-        state['never_subscribed'] = never_subscribed
+            sub_info = get_web_public_subs(realm)
+
+        state['subscriptions'] = sub_info.subscriptions
+        state['unsubscribed'] = sub_info.unsubscribed
+        state['never_subscribed'] = sub_info.never_subscribed
 
     if want('update_message_flags') and want('message'):
         # Keeping unread_msgs updated requires both message flag updates and
@@ -516,11 +519,14 @@ def apply_event(state: Dict[str, Any],
                     # current user changing roles, we should just do a
                     # full refetch.
                     if 'never_subscribed' in state:
-                        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
-                            user_profile, include_subscribers=include_subscribers)
-                        state['subscriptions'] = subscriptions
-                        state['unsubscribed'] = unsubscribed
-                        state['never_subscribed'] = never_subscribed
+                        sub_info = gather_subscriptions_helper(
+                            user_profile,
+                            include_subscribers=include_subscribers,
+                        )
+                        state['subscriptions'] = sub_info.subscriptions
+                        state['unsubscribed'] = sub_info.unsubscribed
+                        state['never_subscribed'] = sub_info.never_subscribed
+
                     if 'streams' in state:
                         state['streams'] = do_get_streams(user_profile)
 
