@@ -402,6 +402,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration('zabbix', ['monitoring'], display_name='Zabbix'),
     WebhookIntegration('gci', ['misc'], display_name='Google Code-in',
                        stream_name='gci'),
+    WebhookIntegration('tmate', ['customer-support']),
 ]
 
 INTEGRATIONS: Dict[str, Integration] = {

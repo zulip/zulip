@@ -1,0 +1,27 @@
+{
+  "entity_id": "a1de8ca8-567f-11eb-8275-0242ac150002",
+  "generation": 1,
+  "params": {
+    "client_version": "2.4.0",
+    "foreground": false,
+    "ip_address": "181.44.61.146",
+    "named": false,
+    "reconnected": false,
+    "ssh_cmd_fmt": "ssh -p2222 %s@remotesupport.librerouter.org",
+    "ssh_only": false,
+    "stoken": "kxEEYXAN8eQPpvWhnenxLXRmd",
+    "stoken_ro": "ro-XR8HTdrZ2qJcKbyDVrPdYb2nP",
+    "uname": {
+      "machine": "x86_64",
+      "nodename": "nico-ThinkPad-T470s-W10DG",
+      "release": "5.4.0-52-generic",
+      "sysname": "Linux",
+      "version": "#57-Ubuntu SMP Thu Oct 15 10:57:00 UTC 2020"
+    },
+    "web_url_fmt": "http://remotesupport.librerouter.org:4000/t/%s",
+    "ws_url_fmt": "ws://remotesupport.librerouter.org:4001/ws/session/%s"
+  },
+  "timestamp": "2021-01-14T15:46:14.148916Z",
+  "type": "session_register",
+  "userdata": "some private data"
+}

@@ -1,0 +1,14 @@
+{
+  "entity_id": "a1ba02fc-5684-11eb-9f1d-0242ac150002",
+  "generation": 1,
+  "params": {
+    "id": "ae4b50c0-5684-11eb-9762-0242ac150002",
+    "identity": "ae492746-5684-11eb-9ee6-0242ac150002",
+    "ip_address": "181.44.61.146",
+    "readonly": false,
+    "type": "web"
+  },
+  "timestamp": "2021-01-14T16:22:22.477892Z",
+  "type": "session_join",
+  "userdata": "some private data"
+}

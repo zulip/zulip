@@ -1,0 +1,8 @@
+{
+  "entity_id": "a1de8ca8-567f-11eb-8275-0242ac150002",
+  "generation": 1,
+  "params": {},
+  "timestamp": "2021-01-14T15:53:07.563450Z",
+  "type": "session_close",
+  "userdata": "some private data"
+}
