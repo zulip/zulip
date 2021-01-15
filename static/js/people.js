@@ -888,6 +888,7 @@ export function build_termlet_matcher(termlet) {
     const is_ascii = /^[a-z]+$/.test(termlet);
 
     return function (user) {
+        const email = user.delivery_email.toLowerCase();
         let full_name = user.full_name;
         if (is_ascii) {
             // Only ignore diacritics if the query is plain ascii
@@ -895,7 +896,7 @@ export function build_termlet_matcher(termlet) {
         }
         const names = full_name.toLowerCase().split(" ");
 
-        return names.some((name) => name.startsWith(termlet));
+        return names.some((name) => name.startsWith(termlet)) || email.startsWith(termlet);
     };
 }
 
@@ -1026,6 +1027,7 @@ export function get_people_for_stream_create() {
             people_minus_you.push({
                 email: person.email,
                 user_id: person.user_id,
+                delivery_email: person.delivery_email,
                 full_name: person.full_name,
             });
         }

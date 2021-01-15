@@ -323,6 +323,7 @@ def format_user_row(realm: Realm, acting_user: Optional[UserProfile], row: Dict[
     is_bot = row['is_bot']
     result = dict(
         email=row['email'],
+        delivery_email=row['delivery_email'],
         user_id=row['id'],
         avatar_version=row['avatar_version'],
         is_admin=is_admin,

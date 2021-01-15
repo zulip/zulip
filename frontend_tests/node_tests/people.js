@@ -38,6 +38,7 @@ const welcome_bot = {
 
 const me = {
     email: "me@example.com",
+    delivery_email: "me-delivery@example.com",
     user_id: 30,
     full_name: "Me Myself",
     timezone: "America/Los_Angeles",
@@ -123,24 +124,28 @@ const steven = {
 
 const alice1 = {
     email: "alice1@example.com",
+    delivery_email: "alice1-delivery@example.com",
     user_id: 202,
     full_name: "Alice",
 };
 
 const bob = {
     email: "bob@example.com",
+    delivery_email: "bob-delivery@example.com",
     user_id: 203,
     full_name: "Bob van Roberts",
 };
 
 const alice2 = {
     email: "alice2@example.com",
+    delivery_email: "alice2-delivery@example.com",
     user_id: 204,
     full_name: "Alice",
 };
 
 const charles = {
     email: "charles@example.com",
+    delivery_email: "charles-delivery@example.com",
     user_id: 301,
     full_name: "Charles Dickens",
     avatar_url: "charles.com/foo.png",
@@ -149,6 +154,7 @@ const charles = {
 
 const maria = {
     email: "Athens@example.com",
+    delivery_email: "Athens-delivery@example.com",
     user_id: 302,
     full_name: "Maria Athens",
     // With client_gravatar enabled, requests that client compute gravatar
@@ -157,12 +163,14 @@ const maria = {
 
 const ashton = {
     email: "ashton@example.com",
+    delivery_email: "ashton-delivery@example.com",
     user_id: 303,
     full_name: "Ashton Smith",
 };
 
 const linus = {
     email: "ltorvalds@example.com",
+    delivery_email: "ltorvalds-delivery@example.com",
     user_id: 304,
     full_name: "Linus Torvalds",
 };
@@ -199,12 +207,14 @@ const stephen2 = {
 
 const noah = {
     email: "emnoa@example.com",
+    delivery_email: "emnoa-delivery@example.com",
     user_id: 1200,
     full_name: "Nöôáàh Ëmerson",
 };
 
 const plain_noah = {
     email: "otheremnoa@example.com",
+    delivery_email: "otheremnoa-delivery@example.com",
     user_id: 1201,
     full_name: "Nooaah Emerson",
 };
@@ -485,9 +495,24 @@ run_test("get_people_for_stream_create", () => {
 
     const others = people.get_people_for_stream_create();
     const expected = [
-        {email: "alice1@example.com", user_id: alice1.user_id, full_name: "Alice"},
-        {email: "alice2@example.com", user_id: alice2.user_id, full_name: "Alice"},
-        {email: "bob@example.com", user_id: bob.user_id, full_name: "Bob van Roberts"},
+        {
+            email: "alice1@example.com",
+            delivery_email: "alice1-delivery@example.com",
+            user_id: alice1.user_id,
+            full_name: "Alice",
+        },
+        {
+            email: "alice2@example.com",
+            delivery_email: "alice2-delivery@example.com",
+            user_id: alice2.user_id,
+            full_name: "Alice",
+        },
+        {
+            email: "bob@example.com",
+            delivery_email: "bob-delivery@example.com",
+            user_id: bob.user_id,
+            full_name: "Bob van Roberts",
+        },
     ];
     assert.deepEqual(others, expected);
 });
@@ -524,6 +549,10 @@ run_test("filtered_users", () => {
     assert.equal(filtered_people.size, 0);
 
     filtered_people = people.filter_people_by_search_terms(users, ["ltorv"]);
+    assert.equal(filtered_people.size, 1);
+    assert(filtered_people.has(linus.user_id));
+
+    filtered_people = people.filter_people_by_search_terms(users, ["ltorvalds-del"]);
     assert.equal(filtered_people.size, 1);
     assert(filtered_people.has(linus.user_id));
 
@@ -625,6 +654,7 @@ run_test("message_methods", () => {
         {
             avatar_url_small: "/avatar/30&s=50",
             email: "me@example.com",
+            delivery_email: "me-delivery@example.com",
             full_name: "Me the Third",
             is_admin: false,
             is_bot: false,
@@ -833,6 +863,7 @@ run_test("get_people_for_search_bar", () => {
     for (const i of _.range(20)) {
         const person = {
             email: "whatever@email.com",
+            delivery_email: "person-delivery@email.com",
             full_name: "James Jones",
             user_id: 1000 + i,
         };
@@ -1094,7 +1125,7 @@ run_test("get_visible_email", () => {
     assert.equal(email, steven.delivery_email);
 
     email = people.get_visible_email(maria);
-    assert.equal(email, maria.email);
+    assert.equal(email, maria.delivery_email);
 });
 
 run_test("get_active_message_people", () => {

@@ -361,13 +361,13 @@ class FetchInitialStateDataTest(ZulipTestCase):
                               Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=user_profile.realm)
         for key, value in result['raw_users'].items():
-            self.assertNotIn('delivery_email', value)
+            self.assertIn('delivery_email', value)
 
         do_set_realm_property(user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=user_profile.realm)
         for key, value in result['raw_users'].items():
-            self.assertNotIn('delivery_email', value)
+            self.assertIn('delivery_email', value)
 
     def test_delivery_email_presence_for_admins(self) -> None:
         user_profile = self.example_user('iago')
@@ -377,7 +377,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
                               Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=user_profile.realm)
         for key, value in result['raw_users'].items():
-            self.assertNotIn('delivery_email', value)
+            self.assertIn('delivery_email', value)
 
         do_set_realm_property(user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)

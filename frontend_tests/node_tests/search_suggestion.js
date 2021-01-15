@@ -33,30 +33,35 @@ search.max_num_of_search_results = 15;
 
 const me = {
     email: "myself@zulip.com",
+    delivery_email: "myself-delivery@zulip.com",
     full_name: "Me Myself",
     user_id: 41,
 };
 
 const bob = {
     email: "bob@zulip.com",
+    delivery_email: "bob-delivery@zulip.com",
     full_name: "Bob Roberts",
     user_id: 42,
 };
 
 const ted = {
     email: "ted@zulip.com",
+    delivery_email: "ted-delivery@zulip.com",
     user_id: 101,
     full_name: "Ted Smith",
 };
 
 const alice = {
     email: "alice@zulip.com",
+    delivery_email: "alice-delivery@zulip.com",
     user_id: 102,
     full_name: "Alice Ignore",
 };
 
 const jeff = {
     email: "jeff@zulip.com",
+    delivery_email: "jeff-delivery@zulip.com",
     user_id: 103,
     full_name: "Jeff Zoolipson",
 };
@@ -824,6 +829,7 @@ function people_suggestion_setup() {
 
     const ted = {
         email: "ted@zulip.com",
+        delivery_email: "ted-delivery@zulip.com",
         user_id: 201,
         full_name: "Ted Smith",
     };
@@ -831,6 +837,7 @@ function people_suggestion_setup() {
 
     const bob = {
         email: "bob@zulip.com",
+        delivery_email: "bob-delivery@zulip.com",
         user_id: 202,
         full_name: "Bob Térry",
     };
@@ -838,6 +845,7 @@ function people_suggestion_setup() {
     people.add_active_user(bob);
     const alice = {
         email: "alice@zulip.com",
+        delivery_email: "alice-delivery@zulip.com",
         user_id: 203,
         full_name: "Alice Ignore",
     };
