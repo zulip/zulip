@@ -4,19 +4,23 @@ import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
 import render_new_stream_users from "../templates/new_stream_users.hbs";
 import render_subscription_invites_warning_modal from "../templates/subscription_invites_warning_modal.hbs";
 
-import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import {i18n} from "./i18n";
+import * as input_pill from "./input_pill";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as pill_typeahead from "./pill_typeahead";
 import * as stream_data from "./stream_data";
-import * as stream_settings_data from "./stream_settings_data";
+import * as stream_edit from "./stream_edit";
+import * as stream_pill from "./stream_pill";
 import * as subs from "./subs";
 import * as ui_report from "./ui_report";
+import * as user_pill from "./user_pill";
 
 let created_stream;
+let pill_widget;
 
 export function reset_created_stream() {
     created_stream = undefined;
@@ -139,10 +143,10 @@ function update_announce_stream_state() {
 }
 
 function get_principals() {
-    return Array.from($("#stream_creation_form input:checkbox[name=user]:checked"), (elem) => {
-        const label = $(elem).closest(".add-user-label");
-        return Number.parseInt(label.attr("data-user-id"), 10);
-    });
+    let user_ids = user_pill.get_user_ids(pill_widget);
+    user_ids = user_ids.concat(stream_pill.get_user_ids(pill_widget));
+    user_ids.push(page_params.user_id);
+    return user_ids;
 }
 
 function create_stream() {
@@ -262,24 +266,28 @@ function clear_error_display() {
     stream_subscription_error.clear_errors();
 }
 
+function setup_new_sub_pills() {
+    const pill_container = $("#stream-creation .add_subscribers_container .pill-container");
+
+    pill_widget = input_pill.create({
+        container: pill_container,
+        create_item_from_text: stream_edit.create_item_from_text,
+        get_text_from_item: stream_edit.get_text_from_item,
+    });
+
+    const opts = {stream: true};
+    pill_typeahead.set_up(pill_container.find(".input"), pill_widget, opts);
+}
+
 export function show_new_stream_modal() {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
 
-    const html = blueslip.measure_time("render new stream users", () => {
-        const all_users = people.get_people_for_stream_create();
-        // Add current user on top of list
-        all_users.unshift(people.get_by_user_id(page_params.user_id));
-        return render_new_stream_users({
-            users: all_users,
-            streams: stream_settings_data.get_streams_for_settings_page(),
-            is_admin: page_params.is_admin,
-        });
-    });
+    const html = render_new_stream_users();
 
     const container = $("#people_to_add");
     container.html(html);
-    create_handlers_for_users(container);
+    setup_new_sub_pills();
 
     // Make the options default to the same each time:
     // public, "announce stream" on.
@@ -310,82 +318,6 @@ export function show_new_stream_modal() {
                 user_elem.find("input").prop("checked", checked);
             }
         });
-
-        e.preventDefault();
-    });
-}
-
-export function create_handlers_for_users(container) {
-    // container should be $('#people_to_add')...see caller to verify
-    container.on("change", "#user-checkboxes input", update_announce_stream_state);
-
-    // 'Check all' and 'Uncheck all' visible users
-    container.on("click", ".subs_set_all_users", (e) => {
-        $("#user-checkboxes .checkbox").each((idx, li) => {
-            if (li.style.display !== "none") {
-                $(li.firstElementChild).prop("checked", true);
-            }
-        });
-        e.preventDefault();
-        update_announce_stream_state();
-    });
-
-    container.on("click", ".subs_unset_all_users", (e) => {
-        $("#user-checkboxes .checkbox").each((idx, li) => {
-            if (li.style.display !== "none") {
-                // The first checkbox is the one for ourself; this is the code path for:
-                // `stream_subscription_error.cant_create_stream_without_susbscribing`
-                if (idx === 0 && !page_params.is_admin) {
-                    return;
-                }
-                $(li.firstElementChild).prop("checked", false);
-            }
-        });
-        e.preventDefault();
-        update_announce_stream_state();
-    });
-
-    container.on("click", "#copy-from-stream-expand-collapse", (e) => {
-        $("#stream-checkboxes").toggle();
-        $("#copy-from-stream-expand-collapse .toggle").toggleClass("fa-caret-right fa-caret-down");
-        e.preventDefault();
-    });
-
-    // Search people or streams
-    container.on("input", ".add-user-list-filter", (e) => {
-        const user_list = $(".add-user-list-filter");
-        if (user_list === 0) {
-            return;
-        }
-        const search_term = user_list.expectOne().val().trim();
-        const search_terms = search_term.toLowerCase().split(",");
-
-        (function filter_user_checkboxes() {
-            const user_labels = $("#user-checkboxes label.add-user-label");
-
-            if (search_term === "") {
-                user_labels.css({display: "block"});
-                return;
-            }
-
-            const users = people.get_people_for_stream_create();
-            const filtered_users = people.filter_people_by_search_terms(users, search_terms);
-
-            // Be careful about modifying the follow code.  A naive implementation
-            // will work very poorly with a large user population (~1000 users).
-            //
-            // I tested using: `./manage.py populate_db --extra-users 3500`
-            //
-            // This would break the previous implementation, whereas the new
-            // implementation is merely sluggish.
-            user_labels.each(function () {
-                const elem = $(this);
-                const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
-                const user_checked = filtered_users.has(user_id);
-                const display = user_checked ? "block" : "none";
-                elem.css({display});
-            });
-        })();
 
         e.preventDefault();
     });

@@ -592,6 +592,12 @@ form#add_new_subscription {
     font-weight: 400;
 }
 
+.stream-sub-title {
+    display: block !important;
+    font-size: 1em;
+    font-weight: 300;
+}
+
 .stream-creation-info {
     font-style: italic;
     margin-bottom: 10px;
@@ -799,6 +805,7 @@ form#add_new_subscription {
         -webkit-overflow-scrolling: touch;
 
         .modal-footer {
+            padding-top: 8px;
             position: absolute;
             bottom: 0;
             width: calc(100% - 27px);
