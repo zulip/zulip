@@ -56,13 +56,13 @@ We recommend most Zulip servers use Certbot.  You'll want something
 else if:
 * you have an existing workflow for managing SSL certificates
   that you prefer;
-* you need wildcard certificates (support from Let's Encrypt planned
-  for [early 2018][letsencrypt-wildcard]); or
+* you need wildcard certificates (support from Let's Encrypt released
+  in [March 2018][letsencrypt-wildcard]); or
 * your Zulip server is not on the public Internet. (In this case you
   can [still use Certbot][certbot-manual-mode], but it's less
   convenient; and you'll want to ignore Zulip's automation.)
 
-[letsencrypt-wildcard]: https://letsencrypt.org/2017/07/06/wildcard-certificates-coming-jan-2018.html
+[letsencrypt-wildcard]: https://certbot.eff.org/faq#does-let-s-encrypt-issue-wildcard-certificates
 [certbot-manual-mode]: https://certbot.eff.org/docs/using.html#manual
 
 ### At initial Zulip install
