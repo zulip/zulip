@@ -199,6 +199,7 @@ class BaseAction(ZulipTestCase):
 
     def verify_action(self,
                       action: Callable[[], object],
+                      *,
                       event_types: Optional[List[str]]=None,
                       include_subscribers: bool=True,
                       state_change_expected: bool=True,
