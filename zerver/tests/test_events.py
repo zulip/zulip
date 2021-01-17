@@ -237,13 +237,13 @@ class BaseAction(ZulipTestCase):
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(
-            self.user_profile, event_types, "",
+            self.user_profile,
+            event_types=event_types,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,
-            realm=self.user_profile.realm,
         )
         action()
         events = client.event_queue.contents()
@@ -279,13 +279,13 @@ class BaseAction(ZulipTestCase):
                 raise AssertionError('Test is invalid--state actually does change here.')
 
         normal_state = fetch_initial_state_data(
-            self.user_profile, event_types, "",
+            self.user_profile,
+            event_types=event_types,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,
-            realm=self.user_profile.realm,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -1229,7 +1229,7 @@ class NormalActionsTest(BaseAction):
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
 
-        state_data = fetch_initial_state_data(self.user_profile, None, "", False, False, self.user_profile.realm)
+        state_data = fetch_initial_state_data(self.user_profile)
         self.assertEqual(state_data['realm_plan_type'], Realm.SELF_HOSTED)
         self.assertEqual(state_data['zulip_plan_is_not_limited'], True)
 
@@ -1237,7 +1237,7 @@ class NormalActionsTest(BaseAction):
             lambda: do_change_plan_type(realm, Realm.LIMITED))
         check_realm_update('events[0]', events[0], 'plan_type')
 
-        state_data = fetch_initial_state_data(self.user_profile, None, "", False, False, self.user_profile.realm)
+        state_data = fetch_initial_state_data(self.user_profile)
         self.assertEqual(state_data['realm_plan_type'], Realm.LIMITED)
         self.assertEqual(state_data['zulip_plan_is_not_limited'], False)
 
@@ -1589,7 +1589,7 @@ class NormalActionsTest(BaseAction):
             lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True,
         )
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=self.user_profile.realm)
+        result = fetch_initial_state_data(user_profile)
         self.assertEqual(result['max_message_id'], -1)
 
     def test_add_attachment(self) -> None:

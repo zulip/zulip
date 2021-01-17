@@ -331,7 +331,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     def test_realm_bots_non_admin(self) -> None:
         user_profile = self.example_user('cordelia')
         self.assertFalse(user_profile.is_realm_admin)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=user_profile.realm)
+        result = fetch_initial_state_data(user_profile)
         self.assert_length(result['realm_bots'], 0)
 
         # additionally the API key for a random bot is not present in the data
@@ -343,14 +343,14 @@ class FetchInitialStateDataTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(user_profile.is_realm_admin)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=user_profile.realm)
+        result = fetch_initial_state_data(user_profile)
         self.assertTrue(len(result['realm_bots']) > 2)
 
     def test_max_message_id_with_no_history(self) -> None:
         user_profile = self.example_user('aaron')
         # Delete all historical messages for this user
         UserMessage.objects.filter(user_profile=user_profile).delete()
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=user_profile.realm)
+        result = fetch_initial_state_data(user_profile)
         self.assertEqual(result['max_message_id'], -1)
 
     def test_delivery_email_presence_for_non_admins(self) -> None:
@@ -359,13 +359,15 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         do_set_realm_property(user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=user_profile.realm)
+        result = fetch_initial_state_data(user_profile)
+
         for key, value in result['raw_users'].items():
             self.assertNotIn('delivery_email', value)
 
         do_set_realm_property(user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=user_profile.realm)
+        result = fetch_initial_state_data(user_profile)
+
         for key, value in result['raw_users'].items():
             self.assertNotIn('delivery_email', value)
 
@@ -375,13 +377,13 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         do_set_realm_property(user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=user_profile.realm)
+        result = fetch_initial_state_data(user_profile)
         for key, value in result['raw_users'].items():
             self.assertNotIn('delivery_email', value)
 
         do_set_realm_property(user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=user_profile.realm)
+        result = fetch_initial_state_data(user_profile)
         for key, value in result['raw_users'].items():
             self.assertIn('delivery_email', value)
 
@@ -400,12 +402,10 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         long_term_idle_users_ids = [user.id for user in users]
 
-        result = fetch_initial_state_data(user_profile=hamlet,
-                                          event_types=None,
-                                          queue_id='',
-                                          client_gravatar=False,
-                                          user_avatar_url_field_optional=True,
-                                          realm=hamlet.realm)
+        result = fetch_initial_state_data(
+            user_profile=hamlet,
+            user_avatar_url_field_optional=True,
+        )
 
         raw_users = result['raw_users']
 
@@ -419,12 +419,11 @@ class FetchInitialStateDataTest(ZulipTestCase):
                              if 'avatar_url' in user_dict and 'gravatar.com' in user_dict['avatar_url']]
 
         # Test again with client_gravatar = True
-        result = fetch_initial_state_data(user_profile=hamlet,
-                                          event_types=None,
-                                          queue_id='',
-                                          client_gravatar=True,
-                                          user_avatar_url_field_optional=True,
-                                          realm=hamlet.realm)
+        result = fetch_initial_state_data(
+            user_profile=hamlet,
+            client_gravatar=True,
+            user_avatar_url_field_optional=True,
+        )
 
         raw_users = result['raw_users']
 
@@ -725,14 +724,7 @@ class FetchQueriesTest(ZulipTestCase):
         flush_per_request_caches()
         with queries_captured() as queries:
             with mock.patch('zerver.lib.events.always_want') as want_mock:
-                fetch_initial_state_data(
-                    user_profile=user,
-                    event_types=None,
-                    queue_id='x',
-                    client_gravatar=False,
-                    user_avatar_url_field_optional=False,
-                    realm=user.realm,
-                )
+                fetch_initial_state_data(user)
 
         self.assert_length(queries, 29)
 
@@ -782,14 +774,7 @@ class FetchQueriesTest(ZulipTestCase):
                 else:
                     event_types = [event_type]
 
-                fetch_initial_state_data(
-                    user_profile=user,
-                    event_types=event_types,
-                    queue_id='x',
-                    client_gravatar=False,
-                    user_avatar_url_field_optional=False,
-                    realm=user.realm,
-                )
+                fetch_initial_state_data(user, event_types=event_types)
             self.assert_length(queries, count)
 
 
