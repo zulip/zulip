@@ -182,6 +182,11 @@
         opacity: 0.5;
         margin-right: 5px;
     }
+
+    &:hover > #user_filter_icon {
+        opacity: 1;
+        cursor: pointer;
+    }
 }
 
 #keyboard-icon {
