@@ -187,6 +187,18 @@ exports.digress = function (command_data) {
     });
 };
 
+exports.giphy = function (command_data) {
+    exports.send({
+        command: "/giphy",
+        command_data,
+        on_success(data) {
+            if (data.msg) {
+                compose.compose_error(marked(data.msg));
+            }
+        },
+    });
+};
+
 exports.process = function (message_content) {
     const content = message_content.trim();
 
@@ -267,6 +279,22 @@ exports.process = function (message_content) {
             });
             return true;
         }
+    }
+
+    if (content.indexOf("/giphy") === 0) {
+        const text = content.slice(6).trim();
+        const message_type = compose_state.get_message_type();
+        const data = {
+            text,
+        };
+        if (message_type === "stream") {
+            data.stream = compose_state.stream_name();
+            data.topic = compose_state.topic();
+        } else {
+            data.recipient = compose_state.private_message_recipient();
+        }
+        exports.giphy(data);
+        return true;
     }
 
     // It is incredibly important here to return false

@@ -1,9 +1,17 @@
+from typing import Any
+from unittest import mock
+
 import orjson
 
 from zerver.lib.actions import get_topic_messages
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import UserProfile
+from zerver.models import UserProfile, get_huddle_recipient
 
+
+class MockResponse:
+    def __init__(self, text: str, status_code: int) -> None:
+        self.text = text
+        self.status_code = status_code
 
 class ZcommandTest(ZulipTestCase):
 
@@ -156,3 +164,90 @@ class ZcommandTest(ZulipTestCase):
         messages = get_topic_messages(hamlet, test, "new topic name")
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages[0].content, f"@_**King Hamlet|{hamlet.id}** digressed this from old topic: #**general>old topic name**")
+
+    @mock.patch('requests.get', return_value=MockResponse(orjson.dumps(dict(
+        data = {'images': {'downsized_large': {'url': 'https://www.example.com'}}}
+    )).decode(), 200))
+    @mock.patch('zerver.lib.zcommand.get_giphy_api_key', return_value='abcd')
+    def test_giphy_zcommand(self, mocked_request: Any, mocked_get_api_key: Any) -> None:
+        self.login('hamlet')
+        hamlet = self.example_user('hamlet')
+
+        # Test sending giphy zcommand in a stream
+        general = self.make_stream('general')
+        self.subscribe(hamlet, 'general')
+
+        payload = dict(
+            command="/giphy",
+            command_data=orjson.dumps(dict(
+                text='random',
+                stream='general',
+                topic='foo',
+            )).decode(),
+        )
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        messages = get_topic_messages(hamlet, general, "foo")
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].content, '[random](https://www.example.com)')
+
+        # Test sending giphy zcommand in a pm
+        aaron = self.example_user('aaron')
+        payload = dict(
+            command="/giphy",
+            command_data=orjson.dumps(dict(
+                text='random',
+                recipient=aaron.email,
+            )).decode(),
+        )
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient_id, aaron.id)
+        self.assertEqual(msg.content, '[random](https://www.example.com)')
+
+        # Test sending giphy zcommand in a huddle
+        iago = self.example_user('iago')
+        payload = dict(
+            command="/giphy",
+            command_data=orjson.dumps(dict(
+                text='random',
+                recipient=aaron.email + ',' + iago.email,
+            )).decode(),
+        )
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient_id, get_huddle_recipient({aaron.id, iago.id, hamlet.id}).id)
+        self.assertEqual(msg.content, '[random](https://www.example.com)')
+
+        # Test invalid data
+        payload = dict(
+            command="/giphy",
+        )
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_error(result, "Invalid data.")
+
+        # Test invalid API Key
+        with mock.patch('zerver.lib.zcommand.get_giphy_api_key', return_value=''):
+            payload = dict(
+                command="/giphy",
+                command_data=orjson.dumps(dict(
+                    text='random',
+                    stream='general',
+                    topic='foo',
+                )).decode(),
+            )
+            result = self.client_post("/json/zcommand", payload)
+            self.assert_json_error(result, "Please contact administrator to enable this feature.")
+
+        # Test incomplete data
+        payload = dict(
+            command="/giphy",
+            command_data=orjson.dumps(dict(
+                text='random',
+                topic='foo',
+            )).decode(),
+        )
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_error(result, "Invalid data.")

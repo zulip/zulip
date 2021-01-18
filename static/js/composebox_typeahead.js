@@ -371,6 +371,10 @@ exports.slash_commands = [
         name: "digress",
     },
     {
+        text: i18n.t("/giphy text"),
+        name: "giphy",
+    },
+    {
         text: i18n.t("/fixed-width (Toggle fixed width mode)"),
         name: "fixed-width",
     },

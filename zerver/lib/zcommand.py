@@ -1,9 +1,17 @@
+import json
 from typing import Any, Dict, Optional
 
+import requests
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import do_set_user_display_setting, send_message_moved_breadcrumbs
+from zerver.lib.actions import (
+    do_set_user_display_setting,
+    internal_send_huddle_message,
+    internal_send_stream_message,
+    send_message_moved_breadcrumbs,
+)
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.home import get_giphy_api_key
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.topic import user_message_exists_for_topic
 from zerver.models import UserProfile
@@ -99,5 +107,44 @@ def process_zcommands(content: str,
                                        data["new_topic"],
                                        new_thread_notification_string,
                                        True)
+        return {}
+    elif command == 'giphy':
+        if data is None:
+            raise JsonableError(_('Invalid data.'))
+        api_key = get_giphy_api_key()
+        text = data.get('text')
+        stream_name = data.get('stream')
+        topic = data.get('topic')
+        recipient = data.get('recipient')
+        if not api_key:
+            raise JsonableError(_('Please contact administrator to enable this feature.'))
+        payload = {
+            'api_key': api_key,
+            # Converted to str to fix mypy.
+            'tag': str(text),
+            'random_id': str(user_profile.id),
+        }
+        response = requests.get('http://api.giphy.com/v1/gifs/random', params=payload)
+        if response.status_code == 200:
+            giphy_url = json.loads(response.text)['data']['images']['downsized_large']['url']
+            content = f'[{text}]({giphy_url})'
+            if stream_name and topic:
+                (stream, ignored_old_stream_sub) = access_stream_by_name(user_profile, stream_name)
+                internal_send_stream_message(
+                    user_profile.realm,
+                    user_profile,
+                    stream,
+                    topic,
+                    content
+                )
+            elif recipient:
+                internal_send_huddle_message(
+                    user_profile.realm,
+                    user_profile,
+                    recipient.split(','),
+                    content
+                )
+            else:
+                raise JsonableError(_('Invalid data.'))
         return {}
     raise JsonableError(_('No such command: {}').format(command))
