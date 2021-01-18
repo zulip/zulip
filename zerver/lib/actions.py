@@ -2670,9 +2670,10 @@ def validate_user_access_to_subscribers_helper(
     if user_profile.is_guest:
         if check_user_subscribed(user_profile):
             return
-        # We could put an AssertionError here; in that we don't have
-        # any code paths that would allow a guest user to access other
-        # streams in the first place.
+        # We could explicitly handle the case where guests aren't
+        # subscribed here in an `else` statement or we can fall
+        # through to the subsequent logic.  Tim prefers the latter.
+        # Adding an `else` would ensure better code coverage.
 
     if not user_profile.can_access_public_streams() and not stream_dict["invite_only"]:
         raise JsonableError(_("Subscriber data is not available for this stream"))
