@@ -214,6 +214,16 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = 'hambot-bot@fakedomain.com'
         self.get_bot_user(email)
 
+    @override_settings(EXTERNAL_HOST="example.com")
+    def test_add_bot_verify_subdomain_in_email_address(self) -> None:
+        self.login('hamlet')
+        self.assert_num_bots_equal(0)
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        email = 'hambot-bot@zulip.example.com'
+        self.get_bot_user(email)
+
     @override_settings(FAKE_EMAIL_DOMAIN="fakedomain.com", REALM_HOSTS={"zulip": "zulip.example.com"})
     def test_add_bot_host_used_as_domain_if_valid(self) -> None:
         self.login('hamlet')
