@@ -618,6 +618,9 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
                 context["ldap_username"] = backend.django_to_ldap_username(user.delivery_email)
                 break
 
+    if other_account_count != 0:
+        context['other_account'] = True
+
     send_future_email(
         "zerver/emails/followup_day1", user.realm, to_user_ids=[user.id], from_name=from_name,
         from_address=from_address, context=context)
