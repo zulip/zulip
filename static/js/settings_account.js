@@ -2,6 +2,10 @@
 
 const _ = require("lodash");
 
+const meta = {
+    loaded: false,
+};
+
 const render_settings_api_key_modal = require("../templates/settings/api_key_modal.hbs");
 const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
 const render_settings_dev_env_email_access = require("../templates/settings/dev_env_email_access.hbs");
@@ -293,11 +297,36 @@ exports.add_custom_profile_fields_to_settings = function () {
     exports.initialize_custom_date_type_fields(element_id);
 };
 
+function change_time_setting(data, status_element, success_msg, sticky) {
+    const $status_el = $(status_element);
+    const status_is_sticky = $status_el.data("is_sticky");
+    const display_message = status_is_sticky ? $status_el.data("sticky_msg") : success_msg;
+    const opts = {
+        success_msg: display_message,
+        sticky: status_is_sticky || sticky,
+    };
+
+    if (sticky) {
+        $status_el.data("is_sticky", true);
+        $status_el.data("sticky_msg", success_msg);
+    }
+    settings_ui.do_settings_change(
+        channel.patch,
+        "/json/settings/display",
+        data,
+        status_element,
+        opts,
+    );
+}
+
 exports.set_up = function () {
+    meta.loaded = true;
+    $("#user_timezone").val(page_params.timezone);
+
+    $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
     // Add custom profile fields elements to user account settings.
     exports.add_custom_profile_fields_to_settings();
     $("#account-settings-status").hide();
-
     const setup_api_key_modal = _.once(() => {
         function request_api_key(data) {
             channel.post({
@@ -572,6 +601,16 @@ exports.set_up = function () {
             fields.push(field_id);
             update_user_custom_profile_fields(fields, channel.del);
         }
+    });
+
+    $("#twenty_four_hour_time").on("change", function () {
+        const data = {twenty_four_hour_time: this.value};
+        change_time_setting(data, "#time-settings-status");
+    });
+
+    $("#user_timezone").on("change", function () {
+        const data = {timezone: JSON.stringify(this.value)};
+        change_time_setting(data, "#time-settings-status");
     });
 
     $("#do_deactivate_self_button").on("click", () => {

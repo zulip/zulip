@@ -145,6 +145,37 @@
 
             <h3 class="inline-block" id="custom-field-header" {{#unless page_params.custom_profile_fields}}style="display: none"{{/unless}}>{{t "Profile" }}</h3>
             <form class="form-horizontal custom-profile-fields-form grid"></form>
+            <form class="time-settings">
+                <div id="user-time-settings">
+                    <h3 class="inline-block">{{t "Time settings" }}</h3>
+                    <div class="alert-notification" id="time-settings-status"></div>
+
+                    <div class="input-group">
+                        <label for="twenty_four_hour_time" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
+                        <select name="twenty_four_hour_time" id="twenty_four_hour_time">
+                            {{#each twenty_four_hour_time_values}}
+                            <option value='{{ this.value }}'>{{ this.description }}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="timezone" class="dropdown-title">{{t "Time zone" }}</label>
+                        <select name="timezone" id="user_timezone">
+                            {{#unless page_params.timezone}}
+                            <option></option>
+                            {{/unless}}
+
+                            {{#each timezones}}
+                            <option value="{{ this }}">{{ this }}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
+            </form>
+
+
+
             <button class="button rounded sea-green w-200 block" id="show_my_user_profile_modal">
                 {{t 'Preview profile' }}
                 <i class="fa fa-external-link" aria-hidden="true" title="{{t 'Preview profile' }}"></i>

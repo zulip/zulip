@@ -33,13 +33,9 @@ exports.set_up = function () {
     meta.loaded = true;
     $("#display-settings-status").hide();
 
-    $("#user_timezone").val(page_params.timezone);
-
     $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
 
     $("#color_scheme").val(page_params.color_scheme);
-
-    $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
@@ -110,15 +106,6 @@ exports.set_up = function () {
         window.location.reload();
     });
 
-    $("#twenty_four_hour_time").on("change", function () {
-        const data = {twenty_four_hour_time: this.value};
-        change_display_setting(data, "#time-settings-status");
-    });
-
-    $("#user_timezone").on("change", function () {
-        const data = {timezone: JSON.stringify(this.value)};
-        change_display_setting(data, "#time-settings-status");
-    });
     $(".emojiset_choice").on("click", function () {
         const data = {emojiset: JSON.stringify($(this).val())};
         const current_emojiset = JSON.stringify(page_params.emojiset);
