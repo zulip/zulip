@@ -45,6 +45,9 @@ mock_esm("../../static/js/message_lists", {
         can_mark_messages_read: () => true,
     },
 });
+mock_esm("../../static/js/resize", {
+    reset_compose_textarea_max_height: noop,
+});
 
 const people = zrequire("people");
 
