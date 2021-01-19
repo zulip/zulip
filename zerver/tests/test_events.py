@@ -261,10 +261,15 @@ class BaseAction(ZulipTestCase):
         initial_state = copy.deepcopy(hybrid_state)
         post_process_state(self.user_profile, initial_state, notification_settings_null)
         before = orjson.dumps(initial_state)
-        apply_events(hybrid_state, events, self.user_profile,
-                     client_gravatar=client_gravatar,
-                     slim_presence=slim_presence,
-                     include_subscribers=include_subscribers)
+        apply_events(
+            self.user_profile,
+            state=hybrid_state,
+            events=events,
+            fetch_event_types=None,
+            client_gravatar=client_gravatar,
+            slim_presence=slim_presence,
+            include_subscribers=include_subscribers,
+        )
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = orjson.dumps(hybrid_state)
 
