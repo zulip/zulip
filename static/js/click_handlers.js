@@ -965,7 +965,9 @@ export function initialize() {
 
         if (compose_state.composing()) {
             if ($(e.target).closest("a").length > 0) {
-                // Refocus compose message text box if link is clicked
+                // Refocus compose message text box if one clicks an external
+                // link/url to view something else while composing a message
+                // See issue #4331 for more details
                 $("#compose-textarea").trigger("focus");
                 return;
             } else if (

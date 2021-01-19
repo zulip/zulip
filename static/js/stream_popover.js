@@ -10,6 +10,7 @@ import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
+import * as compose_actions from "./compose_actions";
 import * as hash_util from "./hash_util";
 import * as message_edit from "./message_edit";
 import * as muting from "./muting";
@@ -468,6 +469,16 @@ export function register_stream_handlers() {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
         subs.set_muted(sub, !sub.is_muted);
+        e.stopPropagation();
+    });
+
+    // New topic in stream menu
+    $("body").on("click", ".popover_new_topic_button", (e) => {
+        const sub = stream_popover_sub(e);
+        hide_stream_popover();
+
+        compose_actions.start("stream", {trigger: "popover new topic button", stream: sub.name});
+        e.preventDefault();
         e.stopPropagation();
     });
 
