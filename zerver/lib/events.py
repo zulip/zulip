@@ -417,10 +417,16 @@ def fetch_initial_state_data(
 
     return state
 
-def apply_events(state: Dict[str, Any], events: Iterable[Dict[str, Any]],
-                 user_profile: UserProfile, client_gravatar: bool,
-                 slim_presence: bool, include_subscribers: bool = True,
-                 fetch_event_types: Optional[Iterable[str]] = None) -> None:
+def apply_events(
+    user_profile: UserProfile,
+    *,
+    state: Dict[str, Any],
+    events: Iterable[Dict[str, Any]],
+    fetch_event_types: Optional[Iterable[str]],
+    client_gravatar: bool,
+    slim_presence: bool,
+    include_subscribers: bool,
+) -> None:
     for event in events:
         if fetch_event_types is not None and event['type'] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
@@ -987,9 +993,15 @@ def do_events_register(
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
-    apply_events(ret, events, user_profile, include_subscribers=include_subscribers,
-                 client_gravatar=client_gravatar, slim_presence=slim_presence,
-                 fetch_event_types=fetch_event_types)
+    apply_events(
+        user_profile,
+        state=ret,
+        events=events,
+        fetch_event_types=fetch_event_types,
+        client_gravatar=client_gravatar,
+        slim_presence=slim_presence,
+        include_subscribers=include_subscribers,
+    )
 
     post_process_state(user_profile, ret, notification_settings_null)
 
