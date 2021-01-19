@@ -205,7 +205,6 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
-    UserStatus,
     active_non_guest_user_ids,
     active_user_ids,
     custom_profile_fields_for_realm,
@@ -4104,10 +4103,11 @@ def do_update_user_status(user_profile: UserProfile,
                           away: Optional[bool],
                           status_text: Optional[str],
                           client_id: int) -> None:
-    if away:
-        status = UserStatus.AWAY
+
+    if away is not None:
+        status = away
     else:
-        status = UserStatus.NORMAL
+        status = None
 
     realm = user_profile.realm
 
