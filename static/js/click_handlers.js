@@ -7,11 +7,14 @@ const WinChan = require("winchan");
 
 const render_buddy_list_tooltip = require("../templates/buddy_list_tooltip.hbs");
 const render_buddy_list_tooltip_content = require("../templates/buddy_list_tooltip_content.hbs");
+const render_edit_content_button = require("../templates/edit_content_button.hbs");
 
 const message_edit_history = require("./message_edit_history");
 const settings_panel_menu = require("./settings_panel_menu");
 const user_status_ui = require("./user_status_ui");
 const util = require("./util");
+
+let timeout;
 
 function convert_enter_to_click(e) {
     const key = e.which;
@@ -279,6 +282,34 @@ exports.initialize = function () {
     });
 
     // MESSAGE EDITING
+
+    $("#main_div").on("mouseenter", ".messagebox", function (e) {
+        e.stopPropagation();
+
+        const message_row = $(this).closest(".message_row");
+        const id = rows.id(message_row);
+        const message = current_msg_list.get(id);
+        const seconds_left =
+            page_params.realm_message_content_edit_limit_seconds +
+            (message.timestamp - Date.now() / 1000);
+        const is_message_editable =
+            message_edit.get_editability(message) === message_edit.editability_types.FULL;
+
+        if (is_message_editable) {
+            timeout = setTimeout(() => {
+                const args = {
+                    is_editable: false,
+                    msg_id: id,
+                };
+                message_row.find(".edit_content").html(render_edit_content_button(args));
+            }, seconds_left * 1000);
+        }
+    });
+
+    $("#main_div").on("mouseleave", ".messagebox", (e) => {
+        e.stopPropagation();
+        clearTimeout(timeout);
+    });
 
     $("body").on("click", ".edit_content_button", function (e) {
         const row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
