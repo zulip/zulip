@@ -438,15 +438,24 @@ def apply_events(
             # `apply_event`.  For now, be careful in your choice of
             # `fetch_event_types`.
             continue
-        apply_event(state, event, user_profile,
-                    client_gravatar, slim_presence, include_subscribers)
+        apply_event(
+            user_profile,
+            state=state,
+            event=event,
+            client_gravatar=client_gravatar,
+            slim_presence=slim_presence,
+            include_subscribers=include_subscribers,
+        )
 
-def apply_event(state: Dict[str, Any],
-                event: Dict[str, Any],
-                user_profile: UserProfile,
-                client_gravatar: bool,
-                slim_presence: bool,
-                include_subscribers: bool) -> None:
+def apply_event(
+    user_profile: UserProfile,
+    *,
+    state: Dict[str, Any],
+    event: Dict[str, Any],
+    client_gravatar: bool,
+    slim_presence: bool,
+    include_subscribers: bool,
+) -> None:
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
         if 'raw_unread_msgs' in state:
