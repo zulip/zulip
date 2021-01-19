@@ -431,7 +431,10 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
                  'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
                  'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
-                 'EMAIL_ADDRESS_VISIBILITY': "0" if realm is None else str(realm.email_address_visibility),
+                 'EMAIL_ADDRESS_VISIBILITY': str(realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE) if realm is None else str(realm.email_address_visibility),
+                 'EMAIL_ADDRESS_VISIBILITY_EVERYONE': str(realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE),
+                 'EMAIL_ADDRESS_VISIBILITY_ADMINS': str(realm.EMAIL_ADDRESS_VISIBILITY_ADMINS),
+                 'EMAIL_ADDRESS_VISIBILITY_NOBODY': str(realm.EMAIL_ADDRESS_VISIBILITY_NOBODY),
                  },
     )
 
