@@ -82,7 +82,7 @@ a.no-underline:hover {
         transition: width 0.2s ease 1s;
 
         &.simplebar-hover {
-            width: 15px;
+            width: 25px;
             transition: width 0.2s ease;
         }
     }
@@ -91,7 +91,7 @@ a.no-underline:hover {
         transition: height 0.2s ease 1s;
 
         &.simplebar-hover {
-            height: 15px;
+            height: 25px;
             transition: height 0.2s ease;
         }
 
