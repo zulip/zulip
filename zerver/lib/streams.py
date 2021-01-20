@@ -1,6 +1,7 @@
 from typing import Iterable, List, Optional, Tuple, Union
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
@@ -91,28 +92,35 @@ def create_stream_if_needed(realm: Realm,
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers)
 
-    (stream, created) = Stream.objects.get_or_create(
-        realm=realm,
-        name__iexact=stream_name,
-        defaults = dict(
-            name=stream_name,
-            description=stream_description,
-            invite_only=invite_only,
-            is_web_public=is_web_public,
-            stream_post_policy=stream_post_policy,
-            history_public_to_subscribers=history_public_to_subscribers,
-            is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
-            message_retention_days=message_retention_days,
-        ),
-    )
+    with transaction.atomic():
+        (stream, created) = Stream.objects.get_or_create(
+            realm=realm,
+            name__iexact=stream_name,
+            defaults = dict(
+                name=stream_name,
+                description=stream_description,
+                invite_only=invite_only,
+                is_web_public=is_web_public,
+                stream_post_policy=stream_post_policy,
+                history_public_to_subscribers=history_public_to_subscribers,
+                is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
+                message_retention_days=message_retention_days,
+            ),
+        )
 
+        if created:
+            recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+
+            stream.recipient = recipient
+            stream.rendered_description = render_stream_description(stream_description)
+            stream.save(update_fields=["recipient", "rendered_description"])
+
+            event_time = timezone_now()
+            RealmAuditLog.objects.create(realm=realm, acting_user=acting_user,
+                                         modified_stream=stream, event_type=RealmAuditLog.STREAM_CREATED,
+                                         event_time=event_time)
+    # Events should be sent after committing the transaction:
     if created:
-        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
-
-        stream.recipient = recipient
-        stream.rendered_description = render_stream_description(stream_description)
-        stream.save(update_fields=["recipient", "rendered_description"])
-
         if stream.is_public():
             send_stream_creation_event(stream, active_non_guest_user_ids(stream.realm_id))
         else:
@@ -120,10 +128,6 @@ def create_stream_if_needed(realm: Realm,
                                stream.realm.get_admin_users_and_bots()]
             send_stream_creation_event(stream, realm_admin_ids)
 
-        event_time = timezone_now()
-        RealmAuditLog.objects.create(realm=realm, acting_user=acting_user,
-                                     modified_stream=stream, event_type=RealmAuditLog.STREAM_CREATED,
-                                     event_time=event_time)
     return stream, created
 
 def create_streams_if_needed(

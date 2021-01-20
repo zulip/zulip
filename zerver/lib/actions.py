@@ -572,24 +572,26 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                    realm_creation: bool=False,
                    acting_user: Optional[UserProfile]=None) -> UserProfile:
 
-    user_profile = create_user(email=email, password=password, realm=realm,
-                               full_name=full_name,
-                               role=role, bot_type=bot_type, bot_owner=bot_owner,
-                               tos_version=tos_version, timezone=timezone, avatar_source=avatar_source,
-                               default_sending_stream=default_sending_stream,
-                               default_events_register_stream=default_events_register_stream,
-                               default_all_public_streams=default_all_public_streams,
-                               source_profile=source_profile)
+    with transaction.atomic():
+        user_profile = create_user(email=email, password=password, realm=realm,
+                                   full_name=full_name,
+                                   role=role, bot_type=bot_type, bot_owner=bot_owner,
+                                   tos_version=tos_version, timezone=timezone, avatar_source=avatar_source,
+                                   default_sending_stream=default_sending_stream,
+                                   default_events_register_stream=default_events_register_stream,
+                                   default_all_public_streams=default_all_public_streams,
+                                   source_profile=source_profile)
 
-    event_time = user_profile.date_joined
-    if not acting_user:
-        acting_user = user_profile
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm, acting_user=acting_user, modified_user=user_profile,
-        event_type=RealmAuditLog.USER_CREATED, event_time=event_time,
-        extra_data=orjson.dumps({
-            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-        }).decode())
+        event_time = user_profile.date_joined
+        if not acting_user:
+            acting_user = user_profile
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm, acting_user=acting_user, modified_user=user_profile,
+            event_type=RealmAuditLog.USER_CREATED, event_time=event_time,
+            extra_data=orjson.dumps({
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            }).decode())
+
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
     if settings.BILLING_ENABLED:
@@ -695,7 +697,7 @@ def do_set_realm_property(realm: Realm, name: str, value: Any,
 
         user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
         for user_profile in user_profiles:
-            user_profile.email = get_display_email_address(user_profile, realm)
+            user_profile.email = get_display_email_address(user_profile)
             # TODO: Design a bulk event for this or force-reload all clients
             send_user_email_update_event(user_profile)
         UserProfile.objects.bulk_update(user_profiles, ['email'])
