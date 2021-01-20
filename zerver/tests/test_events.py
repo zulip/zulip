@@ -1850,7 +1850,7 @@ class SubscribeActionTest(BaseAction):
             action,
             event_types=["subscription"],
             include_subscribers=include_subscribers)
-        check_subscription_add('events[0]', events[0], include_subscribers)
+        check_subscription_add('events[0]', events[0])
 
         # Add another user to that totally new stream
         action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
@@ -1918,7 +1918,7 @@ class SubscribeActionTest(BaseAction):
             include_subscribers=include_subscribers,
             include_streams=False,
             num_events=1)
-        check_subscription_add('events[0]', events[0], include_subscribers)
+        check_subscription_add('events[0]', events[0])
 
         action = lambda: do_change_stream_description(stream, 'new description')
         events = self.verify_action(
@@ -1958,7 +1958,7 @@ class SubscribeActionTest(BaseAction):
             include_subscribers=include_subscribers,
             num_events=2)
         check_stream_create('events[0]', events[0])
-        check_subscription_add('events[1]', events[1], include_subscribers)
+        check_subscription_add('events[1]', events[1])
 
         self.assertEqual(
             events[0]['streams'][0]['message_retention_days'],
