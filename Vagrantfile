@@ -132,6 +132,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
+  config.vm.provider "hyperv" do |h, override|
+    override.vm.box = "bento/ubuntu-18.04"
+    h.memory = vm_memory
+    h.maxmemory = vm_memory
+    h.cpus = vm_num_cpus
+  end
+
   config.vm.provider "parallels" do |prl, override|
     override.vm.box = "bento/ubuntu-18.04"
     override.vm.box_version = "202005.21.0"
