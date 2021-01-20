@@ -702,9 +702,6 @@ def apply_event(
                     state['realm_password_auth_enabled'] = (value['Email'] or value['LDAP'])
                     state['realm_email_auth_enabled'] = value['Email']
     elif event['type'] == "subscription":
-        if not include_subscribers and event['op'] in ['peer_add', 'peer_remove']:
-            return
-
         if event['op'] in ["add"]:
             if not include_subscribers:
                 # Avoid letting 'subscribers' entries end up in the list
@@ -752,21 +749,25 @@ def apply_event(
                 if sub['name'].lower() == event['name'].lower():
                     sub[event['property']] = event['value']
         elif event['op'] == 'peer_add':
-            stream_ids = set(event["stream_ids"])
-            user_ids = set(event["user_ids"])
-            for sub_dict in [state["subscriptions"], state['unsubscribed'], state["never_subscribed"]]:
-                for sub in sub_dict:
-                    if sub["stream_id"] in stream_ids:
-                        subscribers = set(sub["subscribers"]) | user_ids
-                        sub["subscribers"] = sorted(list(subscribers))
+            if include_subscribers:
+                stream_ids = set(event["stream_ids"])
+                user_ids = set(event["user_ids"])
+
+                for sub_dict in [state["subscriptions"], state["unsubscribed"], state["never_subscribed"]]:
+                    for sub in sub_dict:
+                        if sub["stream_id"] in stream_ids:
+                            subscribers = set(sub["subscribers"]) | user_ids
+                            sub["subscribers"] = sorted(list(subscribers))
         elif event['op'] == 'peer_remove':
-            stream_ids = set(event["stream_ids"])
-            user_ids = set(event["user_ids"])
-            for sub_dict in [state["subscriptions"], state['unsubscribed'], state['never_subscribed']]:
-                for sub in sub_dict:
-                    if sub["stream_id"] in stream_ids:
-                        subscribers = set(sub["subscribers"]) - user_ids
-                        sub["subscribers"] = sorted(list(subscribers))
+            if include_subscribers:
+                stream_ids = set(event["stream_ids"])
+                user_ids = set(event["user_ids"])
+
+                for sub_dict in [state["subscriptions"], state["unsubscribed"], state["never_subscribed"]]:
+                    for sub in sub_dict:
+                        if sub["stream_id"] in stream_ids:
+                            subscribers = set(sub["subscribers"]) - user_ids
+                            sub["subscribers"] = sorted(list(subscribers))
     elif event['type'] == "presence":
         if slim_presence:
             user_key = str(event['user_id'])
