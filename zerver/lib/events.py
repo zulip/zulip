@@ -702,19 +702,15 @@ def apply_event(
                     state['realm_password_auth_enabled'] = (value['Email'] or value['LDAP'])
                     state['realm_email_auth_enabled'] = value['Email']
     elif event['type'] == "subscription":
-        if event['op'] in ["add"]:
+        if event["op"] == "add":
             if not include_subscribers:
                 # Avoid letting 'subscribers' entries end up in the list
                 for i, sub in enumerate(event['subscriptions']):
                     event['subscriptions'][i] = copy.deepcopy(event['subscriptions'][i])
                     del event['subscriptions'][i]['subscribers']
 
-        def name(sub: Dict[str, Any]) -> str:
-            return sub['name'].lower()
-
-        if event['op'] == "add":
-            added_names = set(map(name, event["subscriptions"]))
-            was_added = lambda s: name(s) in added_names
+            added_stream_ids = {sub["stream_id"] for sub in event["subscriptions"]}
+            was_added = lambda s: s["stream_id"] in added_stream_ids
 
             # add the new subscriptions
             state['subscriptions'] += event['subscriptions']
@@ -725,9 +721,9 @@ def apply_event(
             # remove them from never_subscribed if they had been there
             state['never_subscribed'] = [s for s in state['never_subscribed'] if not was_added(s)]
 
-        elif event['op'] == "remove":
-            removed_names = set(map(name, event["subscriptions"]))
-            was_removed = lambda s: name(s) in removed_names
+        elif event["op"] == "remove":
+            removed_stream_ids = {sub["stream_id"] for sub in event["subscriptions"]}
+            was_removed = lambda s: s["stream_id"] in removed_stream_ids
 
             # Find the subs we are affecting.
             removed_subs = list(filter(was_removed, state['subscriptions']))
@@ -737,8 +733,6 @@ def apply_event(
                 for sub in removed_subs:
                     sub['subscribers'].remove(user_profile.id)
 
-            # We must effectively copy the removed subscriptions from subscriptions to
-            # unsubscribe, since we only have the name in our data structure.
             state['unsubscribed'] += removed_subs
 
             # Now filter out the removed subscriptions from subscriptions.
