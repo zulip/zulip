@@ -9,6 +9,7 @@ from analytics.models import StreamCount
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    check_message,
     do_activate_user,
     do_change_avatar_fields,
     do_change_bot_owner,
@@ -27,6 +28,7 @@ from zerver.lib.actions import (
     do_deactivate_stream,
     do_deactivate_user,
     do_reactivate_realm,
+    do_reactivate_stream,
     do_reactivate_user,
     do_regenerate_api_key,
     do_rename_stream,
@@ -36,13 +38,17 @@ from zerver.lib.actions import (
     do_set_realm_signup_notifications_stream,
     get_streams_traffic,
 )
+from zerver.lib.addressee import Addressee
 from zerver.lib.message import get_last_message_id
+from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import make_client
 from zerver.models import (
     Message,
     RealmAuditLog,
     Recipient,
+    Stream,
     Subscription,
     UserProfile,
     get_client,
@@ -356,6 +362,33 @@ class TestRealmAuditLog(ZulipTestCase):
             1,
         )
         self.assertEqual(stream.deactivated, True)
+
+    def test_reactivate_stream(self) -> None:
+        realm = get_realm("zulip")
+        deactivated_stream_name = "test"
+        stream = self.make_stream(deactivated_stream_name, realm, invite_only=True)
+        do_deactivate_stream(stream)
+        realm_audit_log = RealmAuditLog.objects.filter(realm=realm, modified_stream=stream).first()
+        self.assertEqual(realm_audit_log.invite_only, stream.invite_only)
+        self.assertEqual(stream.name, "!DEACTIVATED:test")
+        user = self.example_user("iago")
+        client = make_client(name="test suite")
+        stream_name = "announce"
+        self.make_stream(stream_name)
+        message_content = "Iago has reactivated the following stream: #test"
+        addressee = Addressee.for_stream_name(stream_name, message_content)
+        do_reactivate_stream(stream, user)
+        self.assertEqual(stream.invite_only, realm_audit_log.invite_only)
+        stream = Stream.objects.filter(realm=realm, name=deactivated_stream_name).first()
+        self.assertEqual(
+            get_active_subscriptions_for_stream_id(stream.id).first().user_profile, user
+        )
+        self.assertEqual(deactivated_stream_name, stream.name)
+        self.assertFalse(stream.deactivated)
+        subscribed_user = get_active_subscriptions_for_stream_id(stream.id).first().user_profile
+        self.assertEqual(subscribed_user, user)
+        ret = check_message(user, client, addressee, message_content)
+        self.assertEqual(ret.message.sender.id, user.id)
 
     def test_set_realm_authentication_methods(self) -> None:
         now = timezone_now()

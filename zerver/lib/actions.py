@@ -2,6 +2,7 @@ import datetime
 import itertools
 import logging
 import os
+import re
 import time
 from collections import defaultdict
 from dataclasses import dataclass
@@ -1229,7 +1230,53 @@ def do_deactivate_stream(
         modified_stream=stream,
         event_type=RealmAuditLog.STREAM_DEACTIVATED,
         event_time=event_time,
+        invite_only=was_invite_only,
     )
+
+
+def do_reactivate_stream(stream: Stream, user_profile: UserProfile) -> None:
+    realm_audit_log = RealmAuditLog.objects.filter(
+        realm=stream.realm, modified_stream=stream, event_type=RealmAuditLog.STREAM_DEACTIVATED
+    ).first()
+    was_invite_only = realm_audit_log.invite_only
+
+    stream.deactivated = False
+    stream.invite_only = was_invite_only
+    old_stream_name = stream.name
+    new_stream_name = re.sub("!+DEACTIVATED:", "", old_stream_name)
+    stream.name = new_stream_name
+    stream.save(update_fields=["name", "deactivated", "invite_only"])
+    stream = Stream.objects.filter(realm=stream.realm, name=new_stream_name)[0]
+
+    bulk_add_subscriptions(stream.realm, [stream], {user_profile}, color_map={})
+
+    notifications_stream = user_profile.realm.get_notifications_stream()
+    if notifications_stream is not None:
+        with override_language(notifications_stream.realm.default_language):
+            content = _("{user_name} has reactivated the following stream: {stream_str}.")
+            topic = _("reactivate streams")
+
+        content = content.format(
+            user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
+            stream_str="".join(f"#{stream.name}"),
+        )
+        sender = get_system_bot(settings.NOTIFICATION_BOT)
+
+        notifications = []
+        notifications.append(
+            internal_prep_stream_message(
+                realm=user_profile.realm,
+                sender=sender,
+                stream=notifications_stream,
+                topic=topic,
+                content=content,
+            ),
+        )
+
+        do_send_messages(notifications, mark_as_read=[user_profile.id])
+
+    stream_event = stream.to_dict()
+    stream_event.update(dict(name=new_stream_name, invite_only=was_invite_only))
 
 
 def send_user_email_update_event(user_profile: UserProfile) -> None:
