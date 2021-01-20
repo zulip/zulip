@@ -27,7 +27,7 @@
 # See check_delete_message and check_presence for examples of this
 # paradigm.
 
-from typing import Dict, List, Sequence, Tuple, Union
+from typing import Dict, List, Sequence, Set, Tuple, Union
 
 from zerver.lib.data_types import (
     DictType,
@@ -1527,10 +1527,21 @@ def check_user_group_update(
 
 user_status_event = event_dict_type(
     required_keys=[
+        # force vertical
         ("type", Equals("user_status")),
         ("user_id", int),
+    ],
+    optional_keys=[
+        # force vertical
         ("away", bool),
         ("status_text", str),
     ]
 )
-check_user_status = make_checker(user_status_event)
+_check_user_status = make_checker(user_status_event)
+
+def check_user_status(
+    var_name: str, event: Dict[str, object], fields: Set[str]
+) -> None:
+    _check_user_status(var_name, event)
+
+    assert set(event.keys()) == {"id", "type", "user_id"} | fields
