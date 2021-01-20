@@ -243,15 +243,10 @@ async function change_language(page, language_data_code) {
     await page.click(language_selector);
 }
 
-async function check_language_setting_status(page, current_lang_code) {
+async function check_language_setting_status(page) {
     const language_setting_status_selector = "#language-settings-status";
     await page.waitForSelector(language_setting_status_selector, {visible: true});
-    let status_text;
-    if (current_lang_code === "en") {
-        status_text = "Saved. Please reload for the change to take effect.";
-    } else if (current_lang_code === "de") {
-        status_text = "Gespeichert. Bitte lade die Seite neu um die Änderungen zu aktivieren.";
-    }
+    const status_text = "Saved. Please reload for the change to take effect.";
     await page.waitForFunction(
         (selector, status) => $(selector).text() === status,
         {},
@@ -284,7 +279,8 @@ async function test_default_language_setting(page) {
 
     const chinese_language_data_code = "zh-hans";
     await change_language(page, chinese_language_data_code);
-    await check_language_setting_status(page, "en");
+    // Check that the saved indicator appears
+    await check_language_setting_status(page);
     await page.click(".reload_link");
     await page.waitForSelector("#default_language", {visible: true});
     await assert_language_changed_to_chinese(page);
@@ -295,8 +291,8 @@ async function test_default_language_setting(page) {
     // Change the language back to English so that subsequent tests pass.
     await change_language(page, "en");
 
-    // As we've opened settings page in German the language status will be german.
-    await check_language_setting_status(page, "de");
+    // Check that the saved indicator appears
+    await check_language_setting_status(page);
     await page.goto("http://zulip.zulipdev.com:9981/#settings"); // get back to normal language.
     await page.waitForSelector(display_settings_section, {visible: true});
     await page.click(display_settings_section);
