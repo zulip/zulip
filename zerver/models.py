@@ -3182,6 +3182,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
     """
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    invite_only: Optional[bool] = models.BooleanField(null=True, default=False)
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     acting_user: Optional[UserProfile] = models.ForeignKey(
         UserProfile,
