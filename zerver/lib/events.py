@@ -703,17 +703,18 @@ def apply_event(
                     state['realm_email_auth_enabled'] = value['Email']
     elif event['type'] == "subscription":
         if event["op"] == "add":
-            if not include_subscribers:
-                # Avoid letting 'subscribers' entries end up in the list
-                for i, sub in enumerate(event['subscriptions']):
-                    event['subscriptions'][i] = copy.deepcopy(event['subscriptions'][i])
-                    del event['subscriptions'][i]['subscribers']
-
             added_stream_ids = {sub["stream_id"] for sub in event["subscriptions"]}
             was_added = lambda s: s["stream_id"] in added_stream_ids
 
+            existing_stream_ids = {sub["stream_id"] for sub in state["subscriptions"]}
+
             # add the new subscriptions
-            state['subscriptions'] += event['subscriptions']
+            for sub in event["subscriptions"]:
+                if sub["stream_id"] not in existing_stream_ids:
+                    if "subscribers" in sub and not include_subscribers:
+                        sub = copy.deepcopy(sub)
+                        del sub["subscribers"]
+                    state["subscriptions"].append(sub)
 
             # remove them from unsubscribed if they had been there
             state['unsubscribed'] = [s for s in state['unsubscribed'] if not was_added(s)]
