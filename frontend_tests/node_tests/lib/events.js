@@ -2,7 +2,7 @@
 
 //  These events are not guaranteed to be perfectly
 //  representative of what the server sends.  We
-//  have a tool called check-node-fixtures that tries
+//  have a tool called check-schemas that tries
 //  to validate this data against server side schemas,
 //  but there are certain edge cases that the tool now
 //  skips.  And even when the data matches the schema,

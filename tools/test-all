@@ -71,7 +71,7 @@ run ./tools/test-api
 # ci/frontend
 run ./tools/lint --groups=frontend $FORCEARG
 run ./tools/test-js-with-node
-run ./tools/check-node-fixtures
+run ./tools/check-schemas
 run ./manage.py makemessages --locale en
 run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
