@@ -816,7 +816,7 @@ class NormalActionsTest(BaseAction):
                 status_text='out to lunch',
                 client_id=client.id))
 
-        check_user_status('events[0]', events[0])
+        check_user_status("events[0]", events[0], {"away", "status_text"})
 
         events = self.verify_action(
             lambda: do_update_user_status(
@@ -825,7 +825,25 @@ class NormalActionsTest(BaseAction):
                 status_text='',
                 client_id=client.id))
 
-        check_user_status('events[0]', events[0])
+        check_user_status("events[0]", events[0], {"away", "status_text"})
+
+        events = self.verify_action(
+            lambda: do_update_user_status(
+                user_profile=self.user_profile,
+                away=True,
+                status_text=None,
+                client_id=client.id))
+
+        check_user_status("events[0]", events[0], {"away"})
+
+        events = self.verify_action(
+            lambda: do_update_user_status(
+                user_profile=self.user_profile,
+                away=None,
+                status_text="at the beach",
+                client_id=client.id))
+
+        check_user_status("events[0]", events[0], {"status_text"})
 
     def test_user_group_events(self) -> None:
         othello = self.example_user('othello')

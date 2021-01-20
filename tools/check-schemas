@@ -64,13 +64,6 @@ from zerver.lib.data_types import (
 )
 from zerver.openapi.openapi import openapi_spec
 
-SKIP_LIST = [
-    # The event_schema checker for user_status is overly strict.
-    "user_status__revoke_away",
-    "user_status__set_away",
-    "user_status__set_status_text",
-]
-
 # This list of exemptions represents details we should fix in Zulip's
 # API structure and/or validators.
 EXEMPT_OPENAPI_NAMES = [
@@ -232,9 +225,6 @@ def run() -> None:
     fixtures = read_fixtures()
     verify_fixtures_are_sorted(list(fixtures.keys()))
     for name, event in fixtures.items():
-        if name in SKIP_LIST:
-            print(f"skip {name}")
-            continue
         check_event(name, event)
     validate_openapi_against_event_schema()
 
