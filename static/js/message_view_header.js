@@ -2,15 +2,10 @@
 
 const render_message_view_header = require("../templates/message_view_header.hbs");
 
+const peer_data = require("./peer_data");
 const rendered_markdown = require("./rendered_markdown");
 
-function get_sub_count(current_stream) {
-    const sub_count = current_stream.subscriber_count;
-    return sub_count;
-}
-
-function get_formatted_sub_count(current_stream) {
-    let sub_count = get_sub_count(current_stream);
+function get_formatted_sub_count(sub_count) {
     if (sub_count >= 1000) {
         // parseInt() is used to floor the value of division to an integer
         sub_count = Number.parseInt(sub_count / 1000, 10) + "k";
@@ -42,8 +37,9 @@ function make_message_view_header(filter) {
         // the current user can access.
         const current_stream = filter._sub;
         message_view_header.rendered_narrow_description = current_stream.rendered_description;
-        message_view_header.sub_count = get_sub_count(current_stream);
-        message_view_header.formatted_sub_count = get_formatted_sub_count(current_stream);
+        const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
+        message_view_header.sub_count = sub_count;
+        message_view_header.formatted_sub_count = get_formatted_sub_count(sub_count);
         // the "title" is passed as a variable and doesn't get translated (nor should it)
         message_view_header.sub_count_tooltip_text = i18n.t(
             "__count__ users are subscribed to #__title__",

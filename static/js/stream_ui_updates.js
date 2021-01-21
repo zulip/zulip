@@ -174,16 +174,22 @@ exports.update_subscribers_count = function (sub, just_subscribed) {
         // If the streams overlay isn't open, we don't need to rerender anything.
         return;
     }
+
     const stream_row = subs.row_for_stream_id(sub.stream_id);
+    const sub_count = peer_data.get_subscriber_count(sub.stream_id);
+
     if (
         !sub.can_access_subscribers ||
         (just_subscribed && sub.invite_only) ||
         page_params.is_guest
     ) {
-        const rendered_sub_count = render_subscription_count(sub);
+        const rendered_sub_count = render_subscription_count({
+            can_access_subscribers: sub.can_access_subscribers,
+            subscriber_count: sub_count,
+        });
         stream_row.find(".subscriber-count").expectOne().html(rendered_sub_count);
     } else {
-        stream_row.find(".subscriber-count-text").expectOne().text(sub.subscriber_count);
+        stream_row.find(".subscriber-count-text").expectOne().text(sub_count);
     }
 };
 
