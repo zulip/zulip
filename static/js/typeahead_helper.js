@@ -8,7 +8,6 @@ const emoji = require("../shared/js/emoji");
 const typeahead = require("../shared/js/typeahead");
 const render_typeahead_list_item = require("../templates/typeahead_list_item.hbs");
 
-const peer_data = require("./peer_data");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const settings_data = require("./settings_data");
@@ -384,15 +383,14 @@ function activity_score(sub) {
 }
 
 // Sort streams by ranking them by activity. If activity is equal,
-// as defined bv activity_score, decide based on subscriber count.
+// as defined bv activity_score, decide based on our weekly traffic
+// stats.
 exports.compare_by_activity = function (stream_a, stream_b) {
     let diff = activity_score(stream_b) - activity_score(stream_a);
     if (diff !== 0) {
         return diff;
     }
-    diff =
-        peer_data.get_subscriber_count(stream_b.stream_id) -
-        peer_data.get_subscriber_count(stream_a.stream_id);
+    diff = (stream_b.stream_weekly_traffic || 0) - (stream_a.stream_weekly_traffic || 0);
     if (diff !== 0) {
         return diff;
     }
