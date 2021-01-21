@@ -400,13 +400,13 @@ function get_stream_id_buckets(stream_ids, query) {
 }
 
 exports.populate_stream_settings_left_panel = function () {
+    const finish = blueslip.start_timing("render left panel");
     const sub_rows = stream_data.get_updated_unsorted_subs();
 
     const template_data = {
         subscriptions: sub_rows,
     };
 
-    const finish = blueslip.start_timing("render_subscriptions");
     const html = render_subscriptions(template_data);
     finish();
 
