@@ -213,7 +213,6 @@ exports.rerender_subscriptions_settings = function (sub) {
         blueslip.error("Undefined sub passed to function rerender_subscriptions_settings");
         return;
     }
-    stream_data.update_subscribers_count(sub);
     stream_ui_updates.update_subscribers_count(sub);
     stream_ui_updates.update_subscribers_list(sub);
 };
@@ -237,8 +236,10 @@ exports.add_sub_to_table = function (sub) {
         return;
     }
 
-    const html = render_subscription(sub);
+    const setting_sub = stream_data.get_sub_for_settings(sub);
+    const html = render_subscription(setting_sub);
     const settings_html = render_subscription_settings(sub);
+
     if (stream_create.get_name() === sub.name) {
         ui.get_content_element($(".streams-list")).prepend(html);
         ui.reset_scrollbar($(".streams-list"));
@@ -287,7 +288,6 @@ exports.update_settings_for_subscribed = function (sub) {
     ).show();
 
     if (exports.is_sub_already_present(sub)) {
-        stream_data.update_subscribers_count(sub);
         stream_ui_updates.update_stream_row_in_settings_tab(sub);
         stream_ui_updates.update_subscribers_count(sub, true);
         stream_ui_updates.update_check_button_for_sub(sub);

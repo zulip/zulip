@@ -239,8 +239,7 @@ run_test("subscribers", () => {
     assert(ok);
     assert(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
-    stream_data.update_subscribers_count(sub);
-    assert.equal(sub.subscriber_count, 1);
+    assert.equal(peer_data.get_subscriber_count(sub.stream_id), 1);
     const sub_email = "Rome:214125235@zulipdev.com:9991";
     stream_data.update_stream_email_address(sub, sub_email);
     assert.equal(sub.email_address, sub_email);
@@ -249,16 +248,14 @@ run_test("subscribers", () => {
     peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     assert(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
-    stream_data.update_subscribers_count(sub);
-    assert.equal(sub.subscriber_count, 1);
+    assert.equal(peer_data.get_subscriber_count(sub.stream_id), 1);
 
     // remove
     ok = peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
     assert(ok);
     assert(!stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
-    stream_data.update_subscribers_count(sub);
-    assert.equal(sub.subscriber_count, 0);
+    assert.equal(peer_data.get_subscriber_count(sub.stream_id), 0);
 
     // verify that checking subscription with undefined user id
 
@@ -280,8 +277,7 @@ run_test("subscribers", () => {
     assert(!ok);
     assert(!stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
-    stream_data.update_subscribers_count(sub);
-    assert.equal(sub.subscriber_count, 0);
+    assert.equal(peer_data.get_subscriber_count(sub.stream_id), 0);
 
     // Verify defensive code in set_subscribers, where the second parameter
     // can be undefined.
