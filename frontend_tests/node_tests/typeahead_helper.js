@@ -42,27 +42,43 @@ stream_data.create_streams([
 ]);
 
 run_test("sort_streams", () => {
-    const popular = [1, 2, 3, 4, 5, 6];
-
-    const unpopular = [1];
-
     let test_streams = [
-        {stream_id: 101, name: "Dev", pin_to_top: false, subscribers: unpopular, subscribed: true},
-        {stream_id: 102, name: "Docs", pin_to_top: false, subscribers: popular, subscribed: true},
-        {stream_id: 103, name: "Derp", pin_to_top: false, subscribers: unpopular, subscribed: true},
-        {stream_id: 104, name: "Denmark", pin_to_top: true, subscribers: popular, subscribed: true},
-        {stream_id: 105, name: "dead", pin_to_top: false, subscribers: unpopular, subscribed: true},
+        {
+            stream_id: 101,
+            name: "Dev",
+            pin_to_top: false,
+            stream_weekly_traffic: 0,
+            subscribed: true,
+        },
+        {
+            stream_id: 102,
+            name: "Docs",
+            pin_to_top: false,
+            stream_weekly_traffic: 100,
+            subscribed: true,
+        },
+        {
+            stream_id: 103,
+            name: "Derp",
+            pin_to_top: false,
+            stream_weekly_traffic: 0,
+            subscribed: true,
+        },
+        {
+            stream_id: 104,
+            name: "Denmark",
+            pin_to_top: true,
+            stream_weekly_traffic: 100,
+            subscribed: true,
+        },
+        {
+            stream_id: 105,
+            name: "dead",
+            pin_to_top: false,
+            stream_weekly_traffic: 0,
+            subscribed: true,
+        },
     ];
-
-    function process_test_streams() {
-        for (const test_stream of test_streams) {
-            peer_data.set_subscribers(test_stream.stream_id, test_stream.subscribers);
-            delete test_stream.subscribers;
-            stream_data.update_calculated_fields(test_stream);
-        }
-    }
-
-    process_test_streams();
 
     stream_data.is_active = function (sub) {
         return sub.name !== "dead";
@@ -81,43 +97,34 @@ run_test("sort_streams", () => {
             stream_id: 201,
             name: "Dev",
             description: "development help",
-            subscribers: unpopular,
             subscribed: true,
         },
         {
             stream_id: 202,
             name: "Docs",
             description: "writing docs",
-            subscribers: popular,
             subscribed: true,
         },
         {
             stream_id: 203,
             name: "Derp",
             description: "derping around",
-            subscribers: unpopular,
             subscribed: true,
         },
         {
             stream_id: 204,
             name: "Denmark",
             description: "visiting Denmark",
-            subscribers: popular,
             subscribed: true,
         },
         {
             stream_id: 205,
             name: "dead",
             description: "dead stream",
-            subscribers: unpopular,
             subscribed: true,
         },
     ];
-    process_test_streams();
 
-    for (const sub of test_streams) {
-        stream_data.update_calculated_fields(sub);
-    }
     test_streams = th.sort_streams(test_streams, "wr");
     assert.deepEqual(test_streams[0].name, "Docs"); // Description match
     assert.deepEqual(test_streams[1].name, "Denmark"); // Popular stream
@@ -132,45 +139,38 @@ run_test("sort_streams", () => {
             name: "Dev",
             description: "Some devs",
             subscribed: true,
-            subscribers: popular,
         },
         {
             stream_id: 302,
             name: "East",
             description: "Developing east",
             subscribed: true,
-            subscribers: popular,
         },
         {
             stream_id: 303,
             name: "New",
             description: "No match",
             subscribed: true,
-            subscribers: popular,
         },
         {
             stream_id: 304,
             name: "Derp",
             description: "Always Derping",
             subscribed: false,
-            subscribers: popular,
         },
         {
             stream_id: 305,
             name: "Ether",
             description: "Destroying ether",
             subscribed: false,
-            subscribers: popular,
         },
         {
             stream_id: 306,
             name: "Mew",
             description: "Cat mews",
             subscribed: false,
-            subscribers: popular,
         },
     ];
-    process_test_streams();
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Dev"); // Subscribed and stream name starts with query
