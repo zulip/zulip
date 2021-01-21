@@ -363,21 +363,20 @@ run_test("bookend", (override) => {
     });
 });
 
-run_test("unmuted_messages", (override) => {
+run_test("filter_muted_topic_messages", () => {
     const list = new MessageList({});
-
-    const muted_stream_id = 999;
+    muting.add_muted_topic(1, "muted");
 
     const unmuted = [
         {
             id: 50,
-            stream_id: muted_stream_id,
+            stream_id: 1,
             mentioned: true, // overrides mute
-            topic: "whatever",
+            topic: "muted",
         },
         {
             id: 60,
-            stream_id: 42,
+            stream_id: 1,
             mentioned: false,
             topic: "whatever",
         },
@@ -385,13 +384,11 @@ run_test("unmuted_messages", (override) => {
     const muted = [
         {
             id: 70,
-            stream_id: muted_stream_id,
+            stream_id: 1,
             mentioned: false,
-            topic: "whatever",
+            topic: "muted",
         },
     ];
-
-    override("muting.is_topic_muted", (stream_id) => stream_id === muted_stream_id);
 
     // Make sure unmuted_message filters out the "muted" entry,
     // which we mark as having a muted topic, and not mentioned.
