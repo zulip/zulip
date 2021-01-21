@@ -1,9 +1,10 @@
-# Advanced setup (non-Vagrant)
+# Advanced setup
 
 Contents:
 
 * [Installing directly on Ubuntu, Debian, CentOS, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
 * [Installing directly on Windows 10](#installing-directly-on-windows-10-experimental)
+* [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
 * [Installing manually on other Linux/UNIX](#installing-manually-on-unix)
 * [Installing directly on cloud9](#installing-on-cloud9)
 
@@ -137,6 +138,133 @@ Store.
    Zulip development
    environment](../development/setup-vagrant.html#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
+
+## Using the Vagrant Hyper-V provider on Windows (beta)
+
+You should have [Vagrant](https://www.vagrantup.com/downloads) and
+[Hyper-V][hyper-v] installed on your system. Ensure they both work as
+expected.
+
+[hyper-v]: https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v
+
+**NOTE**: Hyper-V is available only on Windows Enterprise, Pro, or Education.
+
+1. Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+   and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
+
+   ```
+   git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
+   cd zulip
+   git remote add -f upstream https://github.com/zulip/zulip.git
+   ```
+
+1. You will have to open up powershell with administrator rights in
+   order to use Hyper-V. Then provision the development environment:
+
+   ```bash
+   vagrant up --provider=hyperv
+   ```
+
+   You should get output like this:
+
+   ```text
+   Bringing machine 'default' up with 'hyperv' provider...
+   ==> default: Verifying Hyper-V is enabled...
+   ==> default: Verifying Hyper-V is accessible...
+   <other stuff>...
+   ==> default: Waiting for the machine to report its IP address...
+       default: Timeout: 120 seconds
+       default: IP: 172.28.119.70
+   ==> default: Waiting for machine to boot. This may take a few minutes...
+       default: SSH address: 172.28.122.156
+   ==> default: Machine booted and ready!
+   ==> default: Preparing SMB shared folders...
+   Vagrant requires administrator access for pruning SMB shares and
+   may request access to complete removal of stale shares.
+   ==> default: Starting the machine...
+   <other stuff>...
+    default: Username (user[@domain]): <your-machine-username>
+    default: Password (will be hidden):
+   ```
+
+   At this point, you will be prompted for your Windows administrator
+   username and password (not your Microsoft account credentials).
+
+1. SSH into your newly created virtual machine
+
+   ```bash
+   vagrant ssh
+   ```
+
+   This will ssh you into the bash shell of the Zulip development environment
+   where you can execute bash commands.
+
+1. Set the `EXTERNAL_HOST` environment variable.
+
+   ```bash
+   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ export EXTERNAL_HOST="$(hostname -I | xargs):9991"
+   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ echo $EXTERNAL_HOST
+   ```
+
+   The output will be like:
+
+   ```text
+   172.28.122.156:9991
+   ```
+
+   Make sure you note down this down. This is where your zulip development web
+   server can be accessed.
+
+   ```eval_rst
+   .. important::
+      The output of the above command changes every time you restart the Vagrant
+      development machine. Thus, it will have to be run every time you bring one up.
+      This quirk is one reason this method is marked experimental.
+   ```
+
+1. You should now be able to start the Zulip development server.
+
+   ```bash
+   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ ./tools/run-dev.py
+   ```
+
+   The output will look like:
+
+   ```text
+   Starting Zulip on:
+
+        http://172.30.24.235:9991/
+
+   Internal ports:
+      9991: Development server proxy (connect here)
+      9992: Django
+      9993: Tornado
+      9994: webpack
+      9995: Thumbor
+   ```
+
+   Visit the indicated URL in your web browser.
+
+1. You can stop the development environment using `vagrant halt`, and restart it
+   using `vagrant up` and then going through steps **3** and **4** again.
+
+### Problems you may encounter
+
+1. If you get the error `Hyper-V could not initialize memory`, this is
+   likely because your system has insufficient free memory to start
+   the virtual machine.  You can generally work around this error by
+   closing all other running programs and running `vagrant up
+   --provider=hyperv` again. You can reopen the other programs after
+   the provisioning is completed. If it still isn't enough, try
+   restarting your system and running the command again.
+
+2. Be patient the first time you run `./tools/run-dev.py`.
+
+As with other installation methods, please visit [#provision
+help][provision-help] in the [Zulip development community
+server](../contributing/chat-zulip-org.md) if you need help.
+
+[provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
 
 ## Installing manually on Unix
 
