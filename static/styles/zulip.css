@@ -786,6 +786,11 @@ td.pointer {
         width: 16px;
         text-align: center;
 
+        @media (max-width: 500px) {
+            opacity: 1;
+            visibility: visible;
+        }
+
         > i {
             vertical-align: middle;
         }
@@ -2880,6 +2885,7 @@ select.inline_select_topic_edit {
 
     .message_content {
         padding-right: 50px;
+        margin-top: 20px;
     }
 }
 
