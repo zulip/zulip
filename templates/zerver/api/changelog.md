@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 37**
+
+* Consistently provide `subscribers` in stream data when
+  clients register for subscriptions with `include_subscribers`,
+  even if the user can't access subscribers.
+
 **Feature level 36**
 
 * [`POST /users`](/api/create-user): Restricted access to organization

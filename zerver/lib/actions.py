@@ -4,6 +4,7 @@ import logging
 import os
 import time
 from collections import defaultdict
+from dataclasses import dataclass
 from operator import itemgetter
 from typing import (
     AbstractSet,
@@ -241,6 +242,12 @@ if settings.BILLING_ENABLED:
         downgrade_now_without_creating_additional_invoices,
         update_license_ledger_if_needed,
     )
+
+@dataclass
+class SubscriptionInfo:
+    subscriptions: List[Dict[str, Any]]
+    unsubscribed: List[Dict[str, Any]]
+    never_subscribed: List[Dict[str, Any]]
 
 # This will be used to type annotate parameters in a function if the function
 # works on both str and unicode in python 2 but in python 3 it only works on str.
@@ -695,7 +702,7 @@ def do_set_realm_property(realm: Realm, name: str, value: Any,
 
         user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
         for user_profile in user_profiles:
-            user_profile.email = get_display_email_address(user_profile, realm)
+            user_profile.email = get_display_email_address(user_profile)
             # TODO: Design a bulk event for this or force-reload all clients
             send_user_email_update_event(user_profile)
         UserProfile.objects.bulk_update(user_profiles, ['email'])
@@ -2666,13 +2673,16 @@ def validate_user_access_to_subscribers_helper(
     if stream_dict["is_web_public"]:
         return
 
-    # Guest users can access subscribed public stream's subscribers
+    # With the exception of web public streams, a guest must
+    # be subscribed to a stream (even a public one) in order
+    # to see subscribers.
     if user_profile.is_guest:
         if check_user_subscribed(user_profile):
             return
-        # We could put an AssertionError here; in that we don't have
-        # any code paths that would allow a guest user to access other
-        # streams in the first place.
+        # We could explicitly handle the case where guests aren't
+        # subscribed here in an `else` statement or we can fall
+        # through to the subsequent logic.  Tim prefers the latter.
+        # Adding an `else` would ensure better code coverage.
 
     if not user_profile.can_access_public_streams() and not stream_dict["invite_only"]:
         raise JsonableError(_("Subscriber data is not available for this stream"))
@@ -4183,7 +4193,9 @@ def do_update_user_status(user_profile: UserProfile,
                           away: Optional[bool],
                           status_text: Optional[str],
                           client_id: int) -> None:
-    if away:
+    if away is None:
+        status = None
+    elif away:
         status = UserStatus.AWAY
     else:
         status = UserStatus.NORMAL
@@ -4680,6 +4692,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         event["propagate_mode"] = propagate_mode
         event["stream_id"] = message.recipient.type_id
 
+    old_recipient_id = None
     if new_stream is not None:
         assert content is None
         assert message.is_stream_message()
@@ -4687,6 +4700,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
 
         edit_history_event['prev_stream'] = stream_being_edited.id
         event[ORIG_TOPIC] = orig_topic_name
+        old_recipient_id = message.recipient_id
         message.recipient_id = new_stream.recipient_id
 
         event["new_stream_id"] = new_stream.id
@@ -4751,6 +4765,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
             orig_topic_name=orig_topic_name,
             topic_name=topic_name,
             new_stream=new_stream,
+            old_recipient_id=old_recipient_id,
             edit_history_event=edit_history_event,
             last_edit_time=timestamp
         )
@@ -4977,9 +4992,7 @@ def get_average_weekly_stream_traffic(stream_id: int, stream_date_created: datet
 
     return round_to_2_significant_digits(average_weekly_traffic)
 
-SubHelperT = Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
-
-def get_web_public_subs(realm: Realm) -> SubHelperT:
+def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
     color_idx = 0
 
     def get_next_color() -> str:
@@ -5008,13 +5021,16 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
         stream_dict['email_address'] = ''
         subscribed.append(stream_dict)
 
-    return (subscribed, [], [])
+    return SubscriptionInfo(
+        subscriptions=subscribed,
+        unsubscribed=[],
+        never_subscribed=[],
+    )
 
 def build_stream_dict_for_sub(
     user: UserProfile,
     sub: Subscription,
     stream: Stream,
-    subscribers: Optional[List[int]],
     recent_traffic: Dict[int, int],
 ) -> Dict[str, object]:
     # We first construct a dictionary based on the standard Stream
@@ -5050,23 +5066,11 @@ def build_stream_dict_for_sub(
     result["email_address"] = encode_email_address_helper(
         stream["name"], stream["email_token"], show_sender=True)
 
-    # Important: don't show the subscribers if the stream is invite only
-    # and this user isn't on it anymore (or a realm administrator).
-    if stream["invite_only"] and not (sub["active"] or user.is_realm_admin):
-        subscribers = None
-
-    # Guest users lose access to subscribers when they are unsubscribed if the stream
-    # is not web-public.
-    if not sub["active"] and user.is_guest and not stream["is_web_public"]:
-        subscribers = None
-    if subscribers is not None:
-        result["subscribers"] = subscribers
-
+    # Our caller may add a subscribers field.
     return result
 
 def build_stream_dict_for_never_sub(
     stream: Stream,
-    subscribers: Optional[List[int]],
     recent_traffic: Dict[int, int],
 ) -> Dict[str, object]:
     result = {}
@@ -5085,17 +5089,17 @@ def build_stream_dict_for_never_sub(
     # Backwards-compatibility addition of removed field.
     result["is_announcement_only"] = stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
 
-    if subscribers is not None:
-        result["subscribers"] = subscribers
-
+    # Our caller may add a subscribers field.
     return result
 
 # In general, it's better to avoid using .values() because it makes
 # the code pretty ugly, but in this case, it has significant
 # performance impact for loading / for users with large numbers of
 # subscriptions, so it's worth optimizing.
-def gather_subscriptions_helper(user_profile: UserProfile,
-                                include_subscribers: bool=True) -> SubHelperT:
+def gather_subscriptions_helper(
+    user_profile: UserProfile,
+    include_subscribers: bool=True,
+) -> SubscriptionInfo:
     realm = user_profile.realm
     all_streams = get_active_streams(realm).values(
         *Stream.API_FIELDS,
@@ -5127,22 +5131,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     traffic_stream_ids = {get_stream_id(sub) for sub in sub_dicts}
     recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids)
 
-    # The highly optimized bulk_get_subscriber_user_ids wants to know which
-    # streams we are subscribed to, for validation purposes, and it uses that
-    # info to know if it's allowed to find OTHER subscribers.
-    subscribed_stream_ids = {get_stream_id(sub) for sub in sub_dicts if sub["active"]}
-
-    if include_subscribers:
-        subscriber_map: Mapping[int, Optional[List[int]]] = bulk_get_subscriber_user_ids(
-            all_streams,
-            user_profile,
-            subscribed_stream_ids,
-        )
-    else:
-        # If we're not including subscribers, always return None,
-        # which the below code needs to check for anyway.
-        subscriber_map = defaultdict(lambda: None)
-
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.
     subscribed = []
@@ -5159,7 +5147,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             user=user_profile,
             sub=sub,
             stream=stream,
-            subscribers=subscriber_map[stream_id],
             recent_traffic=recent_traffic,
         )
 
@@ -5186,22 +5173,44 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         if is_public or user_profile.is_realm_admin:
             stream_dict = build_stream_dict_for_never_sub(
                 stream=stream,
-                subscribers=subscriber_map[stream["id"]],
                 recent_traffic=recent_traffic
             )
 
             never_subscribed.append(stream_dict)
 
-    return (sorted(subscribed, key=lambda x: x['name']),
-            sorted(unsubscribed, key=lambda x: x['name']),
-            sorted(never_subscribed, key=lambda x: x['name']))
+    if include_subscribers:
+        # The highly optimized bulk_get_subscriber_user_ids wants to know which
+        # streams we are subscribed to, for validation purposes, and it uses that
+        # info to know if it's allowed to find OTHER subscribers.
+        subscribed_stream_ids = {get_stream_id(sub) for sub in sub_dicts if sub["active"]}
+
+        subscriber_map = bulk_get_subscriber_user_ids(
+            all_streams,
+            user_profile,
+            subscribed_stream_ids,
+        )
+
+        for lst in [subscribed, unsubscribed, never_subscribed]:
+            for sub in lst:
+                sub["subscribers"] = subscriber_map[sub["stream_id"]]
+
+    return SubscriptionInfo(
+        subscriptions=sorted(subscribed, key=lambda x: x['name']),
+        unsubscribed=sorted(unsubscribed, key=lambda x: x['name']),
+        never_subscribed=sorted(never_subscribed, key=lambda x: x['name']),
+    )
 
 def gather_subscriptions(
     user_profile: UserProfile,
     include_subscribers: bool=False,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    subscribed, unsubscribed, _ = gather_subscriptions_helper(
-        user_profile, include_subscribers=include_subscribers)
+    helper_result = gather_subscriptions_helper(
+        user_profile,
+        include_subscribers=include_subscribers,
+    )
+
+    subscribed = helper_result.subscriptions
+    unsubscribed = helper_result.unsubscribed
 
     if include_subscribers:
         user_ids = set()

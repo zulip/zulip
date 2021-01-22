@@ -20,6 +20,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     Recipient,
+    Stream,
     Subscription,
     UserActivityInterval,
     UserProfile,
@@ -58,11 +59,12 @@ class DigestTopic:
     def diversity(self) -> int:
         return len(self.human_senders)
 
-    def teaser_data(self, user_profile: UserProfile) -> Dict[str, Any]:
+    def teaser_data(self, user: UserProfile, stream_map: Dict[int, Stream]) -> Dict[str, Any]:
         teaser_count = self.num_human_messages - len(self.sample_messages)
         first_few_messages = build_message_list(
-            user_profile,
-            self.sample_messages,
+            user=user,
+            messages=self.sample_messages,
+            stream_map=stream_map,
         )
         return {
             "participants": sorted(self.human_senders),
@@ -83,10 +85,10 @@ def should_process_digest(realm_str: str) -> bool:
 
 # Changes to this should also be reflected in
 # zerver/worker/queue_processors.py:DigestWorker.consume()
-def queue_digest_recipient(user_id: int, cutoff: datetime.datetime) -> None:
+def queue_digest_user_ids(user_ids: List[int], cutoff: datetime.datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {
-        "user_profile_id": user_id,
+        "user_profile_id": user_ids,
         "cutoff": cutoff.strftime('%s')
     }
     queue_json_publish("digest_emails", event)
@@ -125,13 +127,19 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
         end__gt=cutoff,
     ).values_list('user_profile_id', flat=True).distinct())
 
-    user_ids = realm_user_ids - active_user_ids
+    user_ids = list(realm_user_ids - active_user_ids)
+    user_ids.sort()
 
-    for user_id in user_ids:
-        queue_digest_recipient(user_id, cutoff)
+    # We process batches of 30.  We want a big enough batch
+    # to amorize work, but not so big that a single item
+    # from the queue takes too long to process.
+    chunk_size = 30
+    for i in range(0, len(user_ids), chunk_size):
+        chunk_user_ids = user_ids[i:i + chunk_size]
+        queue_digest_user_ids(chunk_user_ids, cutoff)
         logger.info(
-            "User %s is inactive, queuing for potential digest",
-            user_id,
+            "Queuing user_ids for potential digest: %s",
+            chunk_user_ids,
         )
 
 def get_recent_topics(
@@ -192,17 +200,21 @@ def get_hot_topics(
 
     return hot_topics
 
-def gather_new_streams(user_profile: UserProfile,
-                       threshold: datetime.datetime) -> Tuple[int, Dict[str, List[str]]]:
-    if user_profile.is_guest:
-        new_streams = list(get_active_streams(user_profile.realm).filter(
-            is_web_public=True, date_created__gt=threshold))
+def get_recent_streams(realm: Realm, threshold: datetime.datetime) -> List[Stream]:
+    fields = ["id", "name", "is_web_public", "invite_only"]
+    return list(get_active_streams(realm).filter(date_created__gt=threshold).only(*fields))
 
-    elif user_profile.can_access_public_streams():
-        new_streams = list(get_active_streams(user_profile.realm).filter(
-            invite_only=False, date_created__gt=threshold))
+def gather_new_streams(
+    realm: Realm,
+    recent_streams: List[Stream],  # streams only need id and name
+    can_access_public: bool,
+) -> Tuple[int, Dict[str, List[str]]]:
+    if can_access_public:
+        new_streams = [stream for stream in recent_streams if not stream.invite_only]
+    else:
+        new_streams = [stream for stream in recent_streams if stream.is_web_public]
 
-    base_url = f"{user_profile.realm.uri}/#narrow/stream/"
+    base_url = f"{realm.uri}/#narrow/stream/"
 
     streams_html = []
     streams_plain = []
@@ -218,7 +230,36 @@ def gather_new_streams(user_profile: UserProfile,
 def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
     return bool(hot_conversations or new_streams)
 
+def get_user_stream_map(user_ids: List[int]) -> Dict[int, Set[int]]:
+    rows = Subscription.objects.filter(
+        user_profile_id__in=user_ids,
+        recipient__type=Recipient.STREAM,
+        active=True,
+        is_muted=False,
+    ).values('user_profile_id', 'recipient__type_id')
+
+    # maps user_id -> {stream_id, stream_id, ...}
+    dct: Dict[int, Set[int]] = defaultdict(set)
+    for row in rows:
+        dct[row['user_profile_id']].add(row['recipient__type_id'])
+
+    return dct
+
+def get_slim_stream_map(stream_ids: Set[int]) -> Dict[int, Stream]:
+    # This can be passed to build_message_list.
+    streams = Stream.objects.filter(
+        id__in=stream_ids,
+    ).only('id', 'name')
+
+    return {stream.id: stream for stream in streams}
+
 def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int, Dict[str, Any]]:
+    # We expect a non-empty list of users all from the same realm.
+    assert(users)
+    realm = users[0].realm
+    for user in users:
+        assert user.realm_id == realm.id
+
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=datetime.timezone.utc)
 
@@ -226,31 +267,15 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
     user_ids = [user.id for user in users]
 
-    def get_stream_map(user_ids: List[int]) -> Dict[int, Set[int]]:
-        rows = Subscription.objects.filter(
-            user_profile_id__in=user_ids,
-            recipient__type=Recipient.STREAM,
-            active=True,
-            is_muted=False,
-        ).values('user_profile_id', 'recipient__type_id')
+    user_stream_map = get_user_stream_map(user_ids)
 
-        # maps user_id -> {stream_id, stream_id, ...}
-        dct: Dict[int, Set[int]] = defaultdict(set)
-        for row in rows:
-            dct[row['user_profile_id']].add(row['recipient__type_id'])
-
-        return dct
-
-    stream_map = get_stream_map(user_ids)
+    recently_modified_streams = get_modified_streams(user_ids, cutoff_date)
 
     all_stream_ids = set()
 
     for user in users:
-        stream_ids = stream_map[user.id]
-
-        if user.long_term_idle:
-            stream_ids -= streams_recently_modified_for_user(user, cutoff_date)
-
+        stream_ids = user_stream_map[user.id]
+        stream_ids -= recently_modified_streams.get(user.id, set())
         all_stream_ids |= stream_ids
 
     # Get all the recent topics for all the users.  This does the heavy
@@ -258,8 +283,12 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
     # for each user, we filter to just the streams they care about.
     recent_topics = get_recent_topics(sorted(list(all_stream_ids)), cutoff_date)
 
+    stream_map = get_slim_stream_map(all_stream_ids)
+
+    recent_streams = get_recent_streams(realm, cutoff_date)
+
     for user in users:
-        stream_ids = stream_map[user.id]
+        stream_ids = user_stream_map[user.id]
 
         hot_topics = get_hot_topics(recent_topics, stream_ids)
 
@@ -271,12 +300,16 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
 
         # Get context data for hot conversations.
         context["hot_conversations"] = [
-            hot_topic.teaser_data(user)
+            hot_topic.teaser_data(user, stream_map)
             for hot_topic in hot_topics
         ]
 
         # Gather new streams.
-        new_streams_count, new_streams = gather_new_streams(user, cutoff_date)
+        new_streams_count, new_streams = gather_new_streams(
+            realm=realm,
+            recent_streams=recent_streams,
+            can_access_public=user.can_access_public_streams()
+        )
         context["new_streams"] = new_streams
         context["new_streams_count"] = new_streams_count
 
@@ -291,7 +324,7 @@ def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
 def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
     # We go directly to the database to get user objects,
     # since inactive users are likely to not be in the cache.
-    users = UserProfile.objects.filter(id__in=user_ids).order_by('id')
+    users = UserProfile.objects.filter(id__in=user_ids).order_by("id").select_related("realm")
     context_map = bulk_get_digest_context(users, cutoff)
 
     digest_users = []
@@ -338,21 +371,37 @@ def bulk_write_realm_audit_logs(users: List[UserProfile]) -> None:
 
     RealmAuditLog.objects.bulk_create(log_rows)
 
-def handle_digest_email(user_id: int, cutoff: float) -> None:
-    bulk_handle_digest_email([user_id], cutoff)
+def get_modified_streams(user_ids: List[int], cutoff_date: datetime.datetime) -> Dict[int, Set[int]]:
+    """Skipping streams where the user's subscription status has changed
+    when constructing digests is critical to ensure correctness for
+    streams without shared history, guest users, and long-term idle
+    users, because it means that every user has the same view of the
+    history of a given stream whose message history is being included
+    (and thus we can share a lot of work).
 
-def streams_recently_modified_for_user(user: UserProfile, cutoff_date: datetime.datetime) -> Set[int]:
+    The downside is that newly created streams are never included in
+    the first digest email after their creation.  Should we wish to
+    change that, we will need to be very careful to avoid creating
+    bugs for any of those classes of users.
+    """
     events = [
         RealmAuditLog.SUBSCRIPTION_CREATED,
         RealmAuditLog.SUBSCRIPTION_ACTIVATED,
         RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
     ]
 
-    # Streams where the user's subscription was changed
-    modified_streams = RealmAuditLog.objects.filter(
-        realm=user.realm,
-        modified_user=user,
+    # Get rows where the users' subscriptions have changed.
+    rows = RealmAuditLog.objects.filter(
+        modified_user_id__in=user_ids,
         event_time__gt=cutoff_date,
-        event_type__in=events).values_list('modified_stream_id', flat=True)
+        event_type__in=events,
+    ).values("modified_user_id", "modified_stream_id").distinct()
 
-    return set(modified_streams)
+    result: Dict[int, Set[int]] = defaultdict(set)
+
+    for row in rows:
+        user_id = row["modified_user_id"]
+        stream_id = row["modified_stream_id"]
+        result[user_id].add(stream_id)
+
+    return result

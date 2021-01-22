@@ -10,8 +10,8 @@ set -x
 # Run the node tests first, since they're fast and deterministic
 ./tools/test-js-with-node --coverage
 
-# Check the node fixtures (also fast)
-./tools/check-node-fixtures
+# Check that various schemas are consistent. (is fast)
+./tools/check-schemas
 
 # Check capitalization of strings
 ./manage.py makemessages --locale en

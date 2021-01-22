@@ -90,12 +90,11 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
 
 def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     """ Handle either an exception type event or a message type event payload."""
-    subject = event["title"]
-
     # We shouldn't support the officially deprecated Raven series of SDKs.
     if int(event["version"]) < 7:
         raise UnsupportedWebhookEventType("Raven SDK")
 
+    subject = event["title"]
     platform_name = event["platform"]
     syntax_highlight_as = syntax_highlight_as_map.get(platform_name, "")
     if syntax_highlight_as == "":  # nocoverage

@@ -710,6 +710,18 @@ class LoginTest(ZulipTestCase):
         with self.assertRaises(UserProfile.DoesNotExist):
             self.nonreg_user('test')
 
+    def test_register_with_invalid_email(self) -> None:
+        """
+        If you try to register with invalid email, you get an invalid email
+        page
+        """
+        invalid_email = "foo\x00bar"
+        result = self.client_post('/accounts/home/', {'email': invalid_email},
+                                  subdomain="zulip")
+
+        self.assertEqual(result.status_code, 200)
+        self.assertContains(result, "Enter a valid email address")
+
     def test_register_deactivated_partway_through(self) -> None:
         """
         If you try to register for a deactivated realm, you get a clear error
@@ -1692,7 +1704,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         response = self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('login') + '?' +
-                         urlencode({"email": email}))
+                         urlencode({"email": email, "already_registered": 1}))
 
 class InvitationsTestCase(InviteUserBase):
     def test_do_get_user_invites(self) -> None:

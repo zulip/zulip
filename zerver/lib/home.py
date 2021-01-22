@@ -141,15 +141,17 @@ def build_page_params_for_home_page_load(
         # at the time of request and don't register for any events.
         # TODO: Implement events for web_public_visitor.
         from zerver.lib.events import fetch_initial_state_data, post_process_state
-        register_ret = fetch_initial_state_data(user_profile,
-                                                event_types=None,
-                                                queue_id=None,
-                                                client_gravatar=False,
-                                                user_avatar_url_field_optional=client_capabilities['user_avatar_url_field_optional'],
-                                                realm=realm,
-                                                slim_presence=False,
-                                                include_subscribers=False,
-                                                include_streams=False)
+        register_ret = fetch_initial_state_data(
+            user_profile,
+            realm=realm,
+            event_types=None,
+            queue_id=None,
+            client_gravatar=False,
+            user_avatar_url_field_optional=client_capabilities['user_avatar_url_field_optional'],
+            slim_presence=False,
+            include_subscribers=False,
+            include_streams=False
+        )
 
         post_process_state(user_profile, register_ret, False)
 

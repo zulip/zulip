@@ -199,6 +199,7 @@ class BaseAction(ZulipTestCase):
 
     def verify_action(self,
                       action: Callable[[], object],
+                      *,
                       event_types: Optional[List[str]]=None,
                       include_subscribers: bool=True,
                       state_change_expected: bool=True,
@@ -237,13 +238,13 @@ class BaseAction(ZulipTestCase):
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(
-            self.user_profile, event_types, "",
+            self.user_profile,
+            event_types=event_types,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,
-            realm=self.user_profile.realm,
         )
         action()
         events = client.event_queue.contents()
@@ -260,10 +261,15 @@ class BaseAction(ZulipTestCase):
         initial_state = copy.deepcopy(hybrid_state)
         post_process_state(self.user_profile, initial_state, notification_settings_null)
         before = orjson.dumps(initial_state)
-        apply_events(hybrid_state, events, self.user_profile,
-                     client_gravatar=client_gravatar,
-                     slim_presence=slim_presence,
-                     include_subscribers=include_subscribers)
+        apply_events(
+            self.user_profile,
+            state=hybrid_state,
+            events=events,
+            fetch_event_types=None,
+            client_gravatar=client_gravatar,
+            slim_presence=slim_presence,
+            include_subscribers=include_subscribers,
+        )
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = orjson.dumps(hybrid_state)
 
@@ -279,13 +285,13 @@ class BaseAction(ZulipTestCase):
                 raise AssertionError('Test is invalid--state actually does change here.')
 
         normal_state = fetch_initial_state_data(
-            self.user_profile, event_types, "",
+            self.user_profile,
+            event_types=event_types,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,
-            realm=self.user_profile.realm,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -815,7 +821,7 @@ class NormalActionsTest(BaseAction):
                 status_text='out to lunch',
                 client_id=client.id))
 
-        check_user_status('events[0]', events[0])
+        check_user_status("events[0]", events[0], {"away", "status_text"})
 
         events = self.verify_action(
             lambda: do_update_user_status(
@@ -824,7 +830,25 @@ class NormalActionsTest(BaseAction):
                 status_text='',
                 client_id=client.id))
 
-        check_user_status('events[0]', events[0])
+        check_user_status("events[0]", events[0], {"away", "status_text"})
+
+        events = self.verify_action(
+            lambda: do_update_user_status(
+                user_profile=self.user_profile,
+                away=True,
+                status_text=None,
+                client_id=client.id))
+
+        check_user_status("events[0]", events[0], {"away"})
+
+        events = self.verify_action(
+            lambda: do_update_user_status(
+                user_profile=self.user_profile,
+                away=None,
+                status_text="at the beach",
+                client_id=client.id))
+
+        check_user_status("events[0]", events[0], {"status_text"})
 
     def test_user_group_events(self) -> None:
         othello = self.example_user('othello')
@@ -1229,7 +1253,7 @@ class NormalActionsTest(BaseAction):
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
 
-        state_data = fetch_initial_state_data(self.user_profile, None, "", False, False, self.user_profile.realm)
+        state_data = fetch_initial_state_data(self.user_profile)
         self.assertEqual(state_data['realm_plan_type'], Realm.SELF_HOSTED)
         self.assertEqual(state_data['zulip_plan_is_not_limited'], True)
 
@@ -1237,7 +1261,7 @@ class NormalActionsTest(BaseAction):
             lambda: do_change_plan_type(realm, Realm.LIMITED))
         check_realm_update('events[0]', events[0], 'plan_type')
 
-        state_data = fetch_initial_state_data(self.user_profile, None, "", False, False, self.user_profile.realm)
+        state_data = fetch_initial_state_data(self.user_profile)
         self.assertEqual(state_data['realm_plan_type'], Realm.LIMITED)
         self.assertEqual(state_data['zulip_plan_is_not_limited'], False)
 
@@ -1589,7 +1613,7 @@ class NormalActionsTest(BaseAction):
             lambda: do_delete_messages(self.user_profile.realm, [message]),
             state_change_expected=True,
         )
-        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False, user_avatar_url_field_optional=False, realm=self.user_profile.realm)
+        result = fetch_initial_state_data(user_profile)
         self.assertEqual(result['max_message_id'], -1)
 
     def test_add_attachment(self) -> None:
@@ -1844,7 +1868,7 @@ class SubscribeActionTest(BaseAction):
             action,
             event_types=["subscription"],
             include_subscribers=include_subscribers)
-        check_subscription_add('events[0]', events[0], include_subscribers)
+        check_subscription_add('events[0]', events[0])
 
         # Add another user to that totally new stream
         action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
@@ -1912,7 +1936,7 @@ class SubscribeActionTest(BaseAction):
             include_subscribers=include_subscribers,
             include_streams=False,
             num_events=1)
-        check_subscription_add('events[0]', events[0], include_subscribers)
+        check_subscription_add('events[0]', events[0])
 
         action = lambda: do_change_stream_description(stream, 'new description')
         events = self.verify_action(
@@ -1952,7 +1976,7 @@ class SubscribeActionTest(BaseAction):
             include_subscribers=include_subscribers,
             num_events=2)
         check_stream_create('events[0]', events[0])
-        check_subscription_add('events[1]', events[1], include_subscribers)
+        check_subscription_add('events[1]', events[1])
 
         self.assertEqual(
             events[0]['streams'][0]['message_retention_days'],

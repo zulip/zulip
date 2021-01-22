@@ -27,7 +27,7 @@
 # See check_delete_message and check_presence for examples of this
 # paradigm.
 
-from typing import Dict, List, Sequence, Tuple, Union
+from typing import Dict, List, Sequence, Set, Tuple, Union
 
 from zerver.lib.data_types import (
     DictType,
@@ -77,6 +77,10 @@ subscription_fields: Sequence[Tuple[str, object]] = [
     ("push_notifications", OptionalType(bool)),
     ("role", EnumType(Subscription.ROLE_TYPES)),
     ("stream_weekly_traffic", OptionalType(int)),
+    # We may try to remove subscribers from some events in
+    # the future for clients that don't want subscriber
+    # info.
+    ("subscribers", ListType(int)),
     ("wildcard_mentions_notify", OptionalType(bool)),
 ]
 
@@ -1150,11 +1154,8 @@ submessage_event = event_dict_type(
 check_submessage = make_checker(submessage_event)
 
 single_subscription_type = DictType(
+    # force vertical
     required_keys=subscription_fields,
-    optional_keys=[
-        # force vertical
-        ("subscribers", ListType(int)),
-    ],
 )
 
 subscription_add_event = event_dict_type(
@@ -1164,21 +1165,7 @@ subscription_add_event = event_dict_type(
         ("subscriptions", ListType(single_subscription_type)),
     ],
 )
-_check_subscription_add = make_checker(subscription_add_event)
-
-
-def check_subscription_add(
-    var_name: str, event: Dict[str, object], include_subscribers: bool,
-) -> None:
-    _check_subscription_add(var_name, event)
-
-    assert isinstance(event["subscriptions"], list)
-    for sub in event["subscriptions"]:
-        if include_subscribers:
-            assert "subscribers" in sub.keys()
-        else:
-            assert "subscribers" not in sub.keys()
-
+check_subscription_add = make_checker(subscription_add_event)
 
 subscription_peer_add_event = event_dict_type(
     required_keys=[
@@ -1527,10 +1514,21 @@ def check_user_group_update(
 
 user_status_event = event_dict_type(
     required_keys=[
+        # force vertical
         ("type", Equals("user_status")),
         ("user_id", int),
+    ],
+    optional_keys=[
+        # force vertical
         ("away", bool),
         ("status_text", str),
     ]
 )
-check_user_status = make_checker(user_status_event)
+_check_user_status = make_checker(user_status_event)
+
+def check_user_status(
+    var_name: str, event: Dict[str, object], fields: Set[str]
+) -> None:
+    _check_user_status(var_name, event)
+
+    assert set(event.keys()) == {"id", "type", "user_id"} | fields

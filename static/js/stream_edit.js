@@ -6,6 +6,7 @@ const render_stream_subscription_info = require("../templates/stream_subscriptio
 const render_subscription_settings = require("../templates/subscription_settings.hbs");
 const render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
 
+const peer_data = require("./peer_data");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
@@ -327,11 +328,12 @@ function show_subscription_settings(sub) {
     const list = get_subscriber_list(sub_settings);
     list.empty();
 
-    const users = exports.get_users_from_subscribers(sub.subscribers);
+    const user_ids = peer_data.get_subscribers(sub.stream_id);
+    const users = exports.get_users_from_subscribers(user_ids);
     exports.sort_but_pin_current_user_on_top(users);
 
     function get_users_for_subscriber_typeahead() {
-        const potential_subscribers = stream_data.potential_subscribers(sub);
+        const potential_subscribers = peer_data.potential_subscribers(stream_id);
         return user_pill.filter_taken_users(potential_subscribers, exports.pill_widget);
     }
 

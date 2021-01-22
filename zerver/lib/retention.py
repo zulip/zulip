@@ -254,12 +254,9 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
         SELECT {src_fields}, {archive_transaction_id}
         FROM zerver_message
-        INNER JOIN zerver_recipient ON zerver_recipient.id = zerver_message.recipient_id
-        INNER JOIN zerver_userprofile recipient_profile ON recipient_profile.id = zerver_recipient.type_id
-        INNER JOIN zerver_userprofile sender_profile ON sender_profile.id = zerver_message.sender_id
-        WHERE sender_profile.id IN {cross_realm_bot_ids}
+        INNER JOIN zerver_userprofile recipient_profile ON recipient_profile.recipient_id = zerver_message.recipient_id
+        WHERE zerver_message.sender_id IN {cross_realm_bot_ids}
             AND recipient_profile.realm_id = {realm_id}
-            AND zerver_recipient.type = {recipient_personal}
             AND zerver_message.date_sent < {check_date}
         LIMIT {chunk_size}
     ON CONFLICT (id) DO UPDATE SET archive_transaction_id = {archive_transaction_id}
@@ -271,7 +268,6 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
         realm=realm,
         cross_realm_bot_ids=Literal(tuple(cross_realm_bot_ids)),
         realm_id=Literal(realm.id),
-        recipient_personal=Literal(Recipient.PERSONAL),
         check_date=Literal(check_date.isoformat()),
         chunk_size=chunk_size,
     )

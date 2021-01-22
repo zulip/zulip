@@ -546,7 +546,7 @@ class Realm(models.Model):
                                           is_active=True)
 
     def get_bot_domain(self) -> str:
-        return get_fake_email_domain()
+        return get_fake_email_domain(self)
 
     def get_notifications_stream(self) -> Optional['Stream']:
         if self.notifications_stream is not None and not self.notifications_stream.deactivated:
@@ -3111,7 +3111,14 @@ class BotConfigData(models.Model):
 class InvalidFakeEmailDomain(Exception):
     pass
 
-def get_fake_email_domain() -> str:
+def get_fake_email_domain(realm: Realm) -> str:
+    try:
+        # Check that realm.host can be used to form valid email addresses.
+        validate_email(f"bot@{realm.host}")
+        return realm.host
+    except ValidationError:
+        pass
+
     try:
         # Check that the fake email domain can be used to form valid email addresses.
         validate_email("bot@" + settings.FAKE_EMAIL_DOMAIN)

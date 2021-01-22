@@ -8,6 +8,7 @@ const render_compose_invite_users = require("../templates/compose_invite_users.h
 const render_compose_not_subscribed = require("../templates/compose_not_subscribed.hbs");
 const render_compose_private_stream_alert = require("../templates/compose_private_stream_alert.hbs");
 
+const peer_data = require("./peer_data");
 const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");
 const settings_config = require("./settings_config");
@@ -44,7 +45,7 @@ function make_uploads_relative(content) {
 }
 
 function show_all_everyone_warnings(stream_id) {
-    const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
+    const stream_count = peer_data.get_subscriber_count(stream_id) || 0;
 
     const all_everyone_template = render_compose_all_everyone({
         count: stream_count,
@@ -95,7 +96,7 @@ function show_sending_indicator(whats_happening) {
 }
 
 function show_announce_warnings(stream_id) {
-    const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
+    const stream_count = peer_data.get_subscriber_count(stream_id) || 0;
 
     const announce_template = render_compose_announce({count: stream_count});
     const error_area_announce = $("#compose-announce");
@@ -528,7 +529,7 @@ exports.wildcard_mention_allowed = function () {
 };
 
 function validate_stream_message_mentions(stream_id) {
-    const stream_count = stream_data.get_subscriber_count(stream_id) || 0;
+    const stream_count = peer_data.get_subscriber_count(stream_id) || 0;
 
     // If the user is attempting to do a wildcard mention in a large
     // stream, check if they permission to do so.
@@ -565,7 +566,7 @@ function validate_stream_message_mentions(stream_id) {
 }
 
 function validate_stream_message_announce(sub) {
-    const stream_count = stream_data.get_subscriber_count(sub.stream_id) || 0;
+    const stream_count = peer_data.get_subscriber_count(sub.stream_id) || 0;
 
     if (sub.name === "announce" && stream_count > exports.announce_warn_threshold) {
         if (user_acknowledged_announce === undefined || user_acknowledged_announce === false) {
@@ -980,7 +981,7 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
         return;
     }
 
-    if (stream_data.is_subscriber_subset(compose_stream, linked_stream)) {
+    if (peer_data.is_subscriber_subset(compose_stream.stream_id, linked_stream.stream_id)) {
         // Don't warn if subscribers list of current compose_stream is
         // a subset of linked_stream's subscribers list, because
         // everyone will be subscribed to the linked stream and so
