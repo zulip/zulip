@@ -71,10 +71,14 @@ test("peer add/remove", (override) => {
     assert.equal(compose_fade_stub.num_calls, 1);
     assert.equal(subs_stub.num_calls, 1);
 
+    assert(peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
+
     event = event_fixtures.subscription__peer_remove;
     dispatch(event);
     assert.equal(compose_fade_stub.num_calls, 2);
     assert.equal(subs_stub.num_calls, 2);
+
+    assert(!peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
 });
 
 test("remove", (override) => {
