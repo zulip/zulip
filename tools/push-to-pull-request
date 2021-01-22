@@ -2,8 +2,8 @@
 set -e
 
 usage() {
-    cat >&2 <<EOF
-usage: $0 PULL_REQUEST_ID [REMOTE]
+    cat <<EOF
+usage: $0 [--merge] PULL_REQUEST_ID [REMOTE]
 
 Force-push our HEAD to the given GitHub pull request branch.
 
@@ -22,8 +22,23 @@ branch is updated to reflect the pushed version.
 
 See also \`reset-to-pull-request\`.
 EOF
-    exit 1
 }
+
+args="$(getopt -o '' --long help -n "$0" -- "$@")"
+eval "set -- $args"
+
+while true; do
+    case "$1" in
+        --help)
+            usage
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
 
 remote_default="$(git config zulip.zulipRemote || echo upstream)"
 pseudo_remote="$(git config zulip.prPseudoRemote || echo)"
@@ -32,7 +47,8 @@ pr_id="$1"
 remote="${2:-"$remote_default"}"
 
 if [ -z "$pr_id" ]; then
-    usage
+    usage >&2
+    exit 1
 fi
 
 if ! jq --version >/dev/null 2>&1; then
