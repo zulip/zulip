@@ -12,9 +12,11 @@ exports.add_muted_topic = function (stream_id, topic, date_muted) {
         sub_dict = new FoldDict();
         muted_topics.set(stream_id, sub_dict);
     }
-    let time = date_muted * 1000;
-    if (!date_muted) {
+    let time;
+    if (date_muted === undefined) {
         time = Date.now();
+    } else {
+        time = date_muted * 1000;
     }
     sub_dict.set(topic, time);
 };
