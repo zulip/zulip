@@ -644,7 +644,9 @@ exports.build_page = function () {
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
 
-    simple_dropdown_properties.forEach(set_property_dropdown_value);
+    for (const property_name of simple_dropdown_properties) {
+        set_property_dropdown_value(property_name);
+    }
 
     set_realm_waiting_period_dropdown();
     set_video_chat_provider_dropdown();
@@ -684,7 +686,9 @@ exports.build_page = function () {
         (e) => {
             e.preventDefault();
             e.stopPropagation();
-            get_subsection_property_elements(e.target).forEach(discard_property_element_changes);
+            for (const elem of get_subsection_property_elements(e.target)) {
+                discard_property_element_changes(elem);
+            }
             const save_btn_controls = $(e.target).closest(".save-button-controls");
             exports.change_save_button_state(save_btn_controls, "discarded");
         },

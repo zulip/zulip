@@ -101,25 +101,25 @@ run_test("adjust_mac_shortcuts", () => {
         return false;
     };
     key_no = 1;
-    keys_to_test_non_mac.forEach((value, key) => {
+    for (const [key, value] of keys_to_test_non_mac) {
         keys_elem_list.push(get_key_stub_html(key, value, "hotkey_non_mac_" + key_no));
         key_no += 1;
-    });
+    }
 
     common.adjust_mac_shortcuts(".markdown_content");
-    keys_elem_list.forEach((key_elem) => {
+    for (const key_elem of keys_elem_list) {
         assert(key_elem.text(), key_elem.expected_key());
-    });
+    }
 
     keys_elem_list = [];
     key_no = 1;
     common.has_mac_keyboard = function () {
         return true;
     };
-    keys_to_test_mac.forEach((value, key) => {
+    for (const [key, value] of keys_to_test_mac) {
         keys_elem_list.push(get_key_stub_html(key, value, "hotkey_" + key_no));
         key_no += 1;
-    });
+    }
 
     $(".markdown_content").each = (f) => {
         for (const key_elem of keys_elem_list) {
@@ -127,9 +127,9 @@ run_test("adjust_mac_shortcuts", () => {
         }
     };
     common.adjust_mac_shortcuts(".markdown_content");
-    keys_elem_list.forEach((key_elem) => {
+    for (const key_elem of keys_elem_list) {
         assert.equal(key_elem.text(), key_elem.expected_key());
-    });
+    }
 
     const markdown_hotkey_1 = get_key_stub_html(
         "Ctrl + Backspace",

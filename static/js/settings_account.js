@@ -146,7 +146,7 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
         [all_field_types.URL.id, "url"],
     ]);
 
-    all_custom_fields.forEach((field) => {
+    for (const field of all_custom_fields) {
         let field_value = people.get_custom_profile_data(user_id, field.id);
         const is_choice_field = field.type === all_field_types.CHOICE.id;
         const field_choices = [];
@@ -178,7 +178,7 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
             field_choices,
         });
         $(element_id).append(html);
-    });
+    }
 };
 
 exports.initialize_custom_date_type_fields = function (element_id) {
@@ -219,7 +219,7 @@ exports.initialize_custom_user_type_fields = function (
         return user_pills;
     }
 
-    page_params.custom_profile_fields.forEach((field) => {
+    for (const field of page_params.custom_profile_fields) {
         let field_value_raw = people.get_custom_profile_data(user_id, field.id);
 
         if (field_value_raw) {
@@ -249,10 +249,10 @@ exports.initialize_custom_user_type_fields = function (
             if (field_value_raw) {
                 const field_value = JSON.parse(field_value_raw);
                 if (field_value) {
-                    field_value.forEach((pill_user_id) => {
+                    for (const pill_user_id of field_value) {
                         const user = people.get_by_user_id(pill_user_id);
                         user_pill.append_user(user, pills);
-                    });
+                    }
                 }
             }
 
@@ -270,7 +270,7 @@ exports.initialize_custom_user_type_fields = function (
             }
             user_pills.set(field.id, pills);
         }
-    });
+    }
 
     return user_pills;
 };

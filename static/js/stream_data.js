@@ -602,9 +602,9 @@ exports.all_topics_in_cache = function (sub) {
 exports.set_realm_default_streams = function (realm_default_streams) {
     default_stream_ids.clear();
 
-    realm_default_streams.forEach((stream) => {
+    for (const stream of realm_default_streams) {
         default_stream_ids.add(stream.stream_id);
-    });
+    }
 };
 
 exports.get_default_stream_ids = function () {
@@ -903,12 +903,12 @@ exports.initialize = function (params) {
     color_data.claim_colors(subscriptions);
 
     function populate_subscriptions(subs, subscribed, previously_subscribed) {
-        subs.forEach((sub) => {
+        for (const sub of subs) {
             sub.subscribed = subscribed;
             sub.previously_subscribed = previously_subscribed;
 
             exports.create_sub_from_server_data(sub);
-        });
+        }
     }
 
     exports.set_realm_default_streams(realm_default_streams);

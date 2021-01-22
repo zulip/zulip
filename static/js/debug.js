@@ -23,7 +23,7 @@ export function check_duplicate_ids() {
     const collisions = [];
     let total_collisions = 0;
 
-    Array.prototype.slice.call(document.querySelectorAll("*")).forEach((o) => {
+    for (const o of Array.prototype.slice.call(document.querySelectorAll("*"))) {
         if (o.id && ids.has(o.id)) {
             const el = collisions.find((c) => c.id === o.id);
 
@@ -53,7 +53,7 @@ export function check_duplicate_ids() {
         } else if (o.id) {
             ids.add(o.id);
         }
-    });
+    }
 
     return {
         collisions,

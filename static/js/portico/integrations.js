@@ -11,27 +11,23 @@ const INTEGRATIONS = new Map();
 const CATEGORIES = new Map();
 
 function load_data() {
-    $(".integration-lozenge")
-        .toArray()
-        .forEach((integration) => {
-            const name = $(integration).data("name");
-            const display_name = $(integration).find(".integration-name").text().trim();
+    for (const integration of $(".integration-lozenge")) {
+        const name = $(integration).data("name");
+        const display_name = $(integration).find(".integration-name").text().trim();
 
-            if (display_name && name) {
-                INTEGRATIONS.set(name, display_name);
-            }
-        });
+        if (display_name && name) {
+            INTEGRATIONS.set(name, display_name);
+        }
+    }
 
-    $(".integration-category")
-        .toArray()
-        .forEach((category) => {
-            const name = $(category).data("category");
-            const display_name = $(category).text().trim();
+    for (const category of $(".integration-category")) {
+        const name = $(category).data("category");
+        const display_name = $(category).text().trim();
 
-            if (display_name && name) {
-                CATEGORIES.set(name, display_name);
-            }
-        });
+        if (display_name && name) {
+            CATEGORIES.set(name, display_name);
+        }
+    }
 }
 
 const INITIAL_STATE = {
@@ -43,27 +39,25 @@ const INITIAL_STATE = {
 let state = {...INITIAL_STATE};
 
 function adjust_font_sizing() {
-    $(".integration-lozenge")
-        .toArray()
-        .forEach((integration) => {
-            const $integration_name = $(integration).find(".integration-name");
-            const $integration_category = $(integration).find(".integration-category");
+    for (const integration of $(".integration-lozenge")) {
+        const $integration_name = $(integration).find(".integration-name");
+        const $integration_category = $(integration).find(".integration-category");
 
-            // if the text has wrapped to two lines, decrease font-size
+        // if the text has wrapped to two lines, decrease font-size
+        if ($integration_name.height() > 30) {
+            $integration_name.css("font-size", "1em");
             if ($integration_name.height() > 30) {
-                $integration_name.css("font-size", "1em");
-                if ($integration_name.height() > 30) {
-                    $integration_name.css("font-size", ".95em");
-                }
+                $integration_name.css("font-size", ".95em");
             }
+        }
 
+        if ($integration_category.height() > 30) {
+            $integration_category.css("font-size", ".8em");
             if ($integration_category.height() > 30) {
-                $integration_category.css("font-size", ".8em");
-                if ($integration_category.height() > 30) {
-                    $integration_category.css("font-size", ".75em");
-                }
+                $integration_category.css("font-size", ".75em");
             }
-        });
+        }
+    }
 }
 
 function update_path() {
@@ -105,8 +99,7 @@ function update_categories() {
 const update_integrations = _.debounce(() => {
     const max_scrollY = window.scrollY;
 
-    const integrations = $(".integration-lozenges").children().toArray();
-    integrations.forEach((integration) => {
+    for (const integration of $(".integration-lozenges").children()) {
         const $integration = $(integration).find(".integration-lozenge");
         const $integration_category = $integration.find(".integration-category");
 
@@ -133,7 +126,7 @@ const update_integrations = _.debounce(() => {
         }
 
         document.body.scrollTop = Math.min(window.scrollY, max_scrollY);
-    });
+    }
 
     adjust_font_sizing();
 }, 50);
@@ -151,7 +144,7 @@ function hide_catalog_show_integration() {
     function show_integration(doc) {
         $("#integration-instructions-group .name").text(INTEGRATIONS.get(state.integration));
         $("#integration-instructions-group .categories .integration-category").remove();
-        categories.forEach((category) => {
+        for (const category of categories) {
             let link;
             for (const [name, display_name] of CATEGORIES) {
                 if (display_name === category) {
@@ -163,7 +156,7 @@ function hide_catalog_show_integration() {
                 .append('<h3 class="integration-category"></h3>');
             category_el.find(".integration-category").attr("data-category", link).text(category);
             $("#integration-instructions-group .categories").append(category_el);
-        });
+        }
         $("#integration-instructions-group").css({
             opacity: 0,
             display: "flex",
@@ -305,9 +298,8 @@ function toggle_categories_dropdown() {
 
 function integration_events() {
     $('#integration-search input[type="text"]').on("keypress", (e) => {
-        const integrations = $(".integration-lozenges").children().toArray();
         if (e.which === 13 && e.target.value !== "") {
-            for (const integration_element of integrations) {
+            for (const integration_element of $(".integration-lozenges").children()) {
                 const integration = $(integration_element).find(".integration-lozenge");
 
                 if ($(integration).css("display") !== "none") {

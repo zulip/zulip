@@ -1018,10 +1018,10 @@ run_test("misc", () => {
         ".dropdown_list_reset_button:enabled",
         $.create("<disable button>"),
     );
-    widget_settings.forEach((name) => {
+    for (const name of widget_settings) {
         const elem = $.create(`#${name}_widget #${name}_name`);
         elem.closest = () => dropdown_list_parent;
-    });
+    }
 
     // We do not define any settings we need in page_params yet, but we don't need to for this test.
     blueslip.expect(

@@ -68,9 +68,9 @@ const ls = {
         const key_regex = new RegExp(this.formGetter(version, regex));
         const keys = Object.keys(localStorage).filter((key) => key_regex.test(key));
 
-        keys.forEach((key) => {
+        for (const key of keys) {
             localStorage.removeItem(key);
-        });
+        }
     },
 
     // migrate from an older version of a data src to a newer one with a

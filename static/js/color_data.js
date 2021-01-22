@@ -55,7 +55,9 @@ exports.claim_color = function (color) {
 
 exports.claim_colors = function (subs) {
     const colors = new Set(subs.map((sub) => sub.color));
-    colors.forEach(exports.claim_color);
+    for (const color of colors) {
+        exports.claim_color(color);
+    }
 };
 
 exports.pick_color = function () {
