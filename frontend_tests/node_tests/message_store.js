@@ -170,14 +170,14 @@ run_test("message_booleans_parity", () => {
         const update_message = {topic: "update_booleans"};
         message_store.set_message_booleans(set_message);
         message_store.update_booleans(update_message, flags);
-        Object.keys(expected_message).forEach((key) => {
+        for (const key of Object.keys(expected_message)) {
             assert.equal(
                 set_message[key],
                 expected_message[key],
                 `'${key}' != ${expected_message[key]}`,
             );
             assert.equal(update_message[key], expected_message[key]);
-        });
+        }
         assert.equal(set_message.topic, "set_message_booleans");
         assert.equal(update_message.topic, "update_booleans");
     };

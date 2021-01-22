@@ -76,14 +76,14 @@ function submit_invitation_form() {
                 const invitee_emails_errored = [];
                 const error_list = [];
                 let is_invitee_deactivated = false;
-                arr.errors.forEach((value) => {
+                for (const value of arr.errors) {
                     const [email, error_message, deactivated] = value;
                     error_list.push(`${email}: ${error_message}`);
                     if (deactivated) {
                         is_invitee_deactivated = true;
                     }
                     invitee_emails_errored.push(email);
-                });
+                }
 
                 const error_response = render_invitation_failed_error({
                     error_message: arr.msg,

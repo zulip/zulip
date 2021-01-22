@@ -897,10 +897,10 @@ exports.register_click_handlers = function () {
             const url_prefix = playground_info[0].url_prefix;
             view_in_playground_button.attr("href", url_prefix + encodeURIComponent(extracted_code));
         } else {
-            playground_info.forEach(($playground) => {
+            for (const $playground of playground_info) {
                 $playground.playground_url =
                     $playground.url_prefix + encodeURIComponent(extracted_code);
-            });
+            }
             exports.toggle_playground_link_popover(this, playground_info);
         }
     });
@@ -1309,11 +1309,11 @@ exports.hide_all_except_sidebars = function () {
     exports.hide_playground_links_popover();
 
     // look through all the popovers that have been added and removed.
-    list_of_popovers.forEach(($o) => {
+    for (const $o of list_of_popovers) {
         if (!document.body.contains($o.$element[0]) && $o.$tip) {
             $o.$tip.remove();
         }
-    });
+    }
     list_of_popovers = [];
 };
 

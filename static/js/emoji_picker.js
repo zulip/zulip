@@ -546,11 +546,11 @@ exports.emoji_select_tab = function (elt) {
     const scrollheight = elt.prop("scrollHeight");
     const elt_height = elt.height();
     let currently_selected = "";
-    section_head_offsets.forEach((o) => {
+    for (const o of section_head_offsets) {
         if (scrolltop + elt_height / 2 >= o.position_y) {
             currently_selected = o.section;
         }
-    });
+    }
     // Handles the corner case of the last category being
     // smaller than half of the emoji picker height.
     if (elt_height + scrolltop === scrollheight) {

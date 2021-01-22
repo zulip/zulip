@@ -430,7 +430,7 @@ class MessageListData {
     }
 
     _add_to_hash(messages) {
-        messages.forEach((elem) => {
+        for (const elem of messages) {
             const id = Number.parseFloat(elem.id);
             if (Number.isNaN(id)) {
                 throw new TypeError("Bad message id");
@@ -440,10 +440,10 @@ class MessageListData {
             }
             if (this._hash.has(id)) {
                 blueslip.error("Duplicate message added to MessageListData");
-                return;
+                continue;
             }
             this._hash.set(id, elem);
-        });
+        }
     }
 
     _is_localonly_id(id) {

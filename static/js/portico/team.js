@@ -20,9 +20,9 @@ const loaded_repos = [];
 
 function calculate_total_commits(contributor) {
     let commits = 0;
-    Object.keys(repo_name_to_tab_name).forEach((repo_name) => {
+    for (const repo_name of Object.keys(repo_name_to_tab_name)) {
         commits += contributor[repo_name] || 0;
-    });
+    }
     return commits;
 }
 

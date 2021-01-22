@@ -235,7 +235,7 @@ function insert_hotspot_into_DOM(hotspot) {
         }
 
         // reposition on any event that might update the UI
-        ["resize", "scroll", "onkeydown", "click"].forEach((event_name) => {
+        for (const event_name of ["resize", "scroll", "onkeydown", "click"]) {
             window.addEventListener(
                 event_name,
                 _.debounce(() => {
@@ -245,7 +245,7 @@ function insert_hotspot_into_DOM(hotspot) {
                 }, 10),
                 true,
             );
-        });
+        }
     }, hotspot.delay * 1000);
 }
 
@@ -278,10 +278,10 @@ function close_read_hotspots(new_hotspots) {
 
 exports.load_new = function (new_hotspots) {
     close_read_hotspots(new_hotspots);
-    new_hotspots.forEach((hotspot) => {
+    for (const hotspot of new_hotspots) {
         hotspot.location = HOTSPOT_LOCATIONS.get(hotspot.name);
-    });
-    new_hotspots.forEach(insert_hotspot_into_DOM);
+        insert_hotspot_into_DOM(hotspot);
+    }
 };
 
 exports.initialize = function () {

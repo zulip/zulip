@@ -43,7 +43,9 @@ exports.get = function get(message_id) {
 };
 
 exports.each = function (f) {
-    stored_messages.forEach(f);
+    for (const [id, message] of stored_messages) {
+        f(message, id);
+    }
 };
 
 exports.get_pm_emails = function (message) {

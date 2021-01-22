@@ -136,13 +136,13 @@ exports.upload_files = function (uppy, config, files) {
         .show();
     exports.get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
     exports.get_item("send_status_close_button", config).one("click", () => {
-        uppy.getFiles().forEach((file) => {
+        for (const file of uppy.getFiles()) {
             compose_ui.replace_syntax(
                 exports.get_translated_status(file),
                 "",
                 exports.get_item("textarea", config),
             );
-        });
+        }
         compose_ui.autosize_textarea(exports.get_item("textarea", config));
         uppy.cancelAll();
         exports.get_item("textarea", config).trigger("focus");
@@ -261,7 +261,7 @@ exports.setup_upload = function (config) {
 
     uppy.on("complete", () => {
         let uploads_in_progress = false;
-        uppy.getFiles().forEach((file) => {
+        for (const file of uppy.getFiles()) {
             if (file.progress.uploadComplete) {
                 // The uploaded files should be removed since uppy don't allow files in the store
                 // to be re-uploaded again.
@@ -272,7 +272,7 @@ exports.setup_upload = function (config) {
                 // still be in progress.
                 uploads_in_progress = true;
             }
-        });
+        }
 
         const has_errors = exports.get_item("send_status", config).hasClass("alert-error");
         if (!uploads_in_progress && !has_errors) {
