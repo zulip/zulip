@@ -37,7 +37,7 @@ exports.highlight_with_escaping_and_regex = function (regex, item) {
     let result = "";
 
     for (const piece of pieces) {
-        if (piece.match(regex)) {
+        if (regex.test(piece)) {
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
         } else {
             result += Handlebars.Utils.escapeExpression(piece);
