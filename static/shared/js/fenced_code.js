@@ -81,16 +81,17 @@ function wrap_tex(tex) {
 }
 
 function wrap_spoiler(header, text, stash_func) {
-    const output = [];
     const header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">';
     const end_header_start_content_html = '</div><div class="spoiler-content" aria-hidden="true">';
     const footer_html = "</div></div>";
 
-    output.push(stash_func(header_div_open_html));
-    output.push(header);
-    output.push(stash_func(end_header_start_content_html));
-    output.push(text);
-    output.push(stash_func(footer_html));
+    const output = [
+        stash_func(header_div_open_html),
+        header,
+        stash_func(end_header_start_content_html),
+        text,
+        stash_func(footer_html),
+    ];
     return output.join("\n\n");
 }
 
@@ -121,9 +122,7 @@ export function process_fenced_code(content) {
 
                     done() {
                         const text = wrap_quote(lines.join("\n"));
-                        output_lines.push("");
-                        output_lines.push(text);
-                        output_lines.push("");
+                        output_lines.push("", text, "");
                         handler_stack.pop();
                     },
                 };
@@ -142,9 +141,7 @@ export function process_fenced_code(content) {
                     done() {
                         const text = wrap_tex(lines.join("\n"));
                         const placeholder = stash_func(text, true);
-                        output_lines.push("");
-                        output_lines.push(placeholder);
-                        output_lines.push("");
+                        output_lines.push("", placeholder, "");
                         handler_stack.pop();
                     },
                 };
@@ -162,9 +159,7 @@ export function process_fenced_code(content) {
 
                     done() {
                         const text = wrap_spoiler(header, lines.join("\n"), stash_func);
-                        output_lines.push("");
-                        output_lines.push(text);
-                        output_lines.push("");
+                        output_lines.push("", text, "");
                         handler_stack.pop();
                     },
                 };
@@ -183,9 +178,7 @@ export function process_fenced_code(content) {
                     const text = wrap_code(lines.join("\n"), lang);
                     // insert safe HTML that is passed through the parsing
                     const placeholder = stash_func(text, true);
-                    output_lines.push("");
-                    output_lines.push(placeholder);
-                    output_lines.push("");
+                    output_lines.push("", placeholder, "");
                     handler_stack.pop();
                 },
             };
