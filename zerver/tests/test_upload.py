@@ -1413,6 +1413,17 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         realm = get_realm("zulip")
         self.assertEqual(realm.icon_version, icon_version + 1)
 
+    def test_admin_bot_upload_and_delete_icon(self) -> None:
+        user_profile = self.example_user("iago")
+        bot = self.create_test_bot("adminbot", user_profile, bot_type=UserProfile.ADMINISTRATOR_BOT)
+        self.assertTrue(bot.is_bot)
+        self.assertTrue(bot.is_realm_admin)
+        self.logout()
+        result = self.api_post(bot, "/json/realm/icon")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+        result = self.api_delete(bot, "/json/realm/icon")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
     def test_realm_icon_upload_file_size_error(self) -> None:
         self.login("iago")
         with get_test_image_file(self.correct_files[0][0]) as fp:
@@ -1579,6 +1590,17 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(realm.night_logo_source, Realm.LOGO_DEFAULT)
         else:
             self.assertEqual(realm.logo_source, Realm.LOGO_DEFAULT)
+
+    def test_admin_bot_upload_and_delete_logo(self) -> None:
+        user_profile = self.example_user("iago")
+        bot = self.create_test_bot("adminbot", user_profile, bot_type=UserProfile.ADMINISTRATOR_BOT)
+        self.assertTrue(bot.is_bot)
+        self.assertTrue(bot.is_realm_admin)
+        self.logout()
+        result = self.api_post(bot, "/json/realm/logo")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+        result = self.api_delete(bot, "/json/realm/logo")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
     def test_logo_version(self) -> None:
         self.login("iago")

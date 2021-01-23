@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
-from zerver.decorator import require_realm_admin
+from zerver.decorator import human_users_only, require_realm_admin
 from zerver.lib.actions import do_change_logo_source
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.request import REQ, has_request_variables
@@ -14,6 +14,7 @@ from zerver.lib.validator import check_bool
 from zerver.models import UserProfile
 
 
+@human_users_only
 @require_realm_admin
 @has_request_variables
 def upload_logo(
@@ -37,6 +38,7 @@ def upload_logo(
     return json_success()
 
 
+@human_users_only
 @require_realm_admin
 @has_request_variables
 def delete_logo_backend(

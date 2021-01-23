@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
-from zerver.decorator import require_realm_admin
+from zerver.decorator import human_users_only, require_realm_admin
 from zerver.lib.actions import do_change_icon_source
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.response import json_error, json_success
@@ -12,6 +12,7 @@ from zerver.lib.url_encoding import add_query_arg_to_redirect_url
 from zerver.models import UserProfile
 
 
+@human_users_only
 @require_realm_admin
 def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
@@ -37,6 +38,7 @@ def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse
     return json_success(json_result)
 
 
+@human_users_only
 @require_realm_admin
 def delete_icon_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     # We don't actually delete the icon because it might still
