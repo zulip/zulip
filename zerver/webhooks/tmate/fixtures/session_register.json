@@ -1,5 +1,5 @@
 {
-  "entity_id": "a1de8ca8-567f-11eb-8275-0242ac150002",
+  "entity_id": "a1ba02fc-5684-11eb-9f1d-0242ac150002",
   "generation": 1,
   "params": {
     "client_version": "2.4.0",
@@ -13,7 +13,7 @@
     "stoken_ro": "ro-XR8HTdrZ2qJcKbyDVrPdYb2nP",
     "uname": {
       "machine": "x86_64",
-      "nodename": "nico-ThinkPad-T470s-W10DG",
+      "nodename": "nodename1",
       "release": "5.4.0-52-generic",
       "sysname": "Linux",
       "version": "#57-Ubuntu SMP Thu Oct 15 10:57:00 UTC 2020"
