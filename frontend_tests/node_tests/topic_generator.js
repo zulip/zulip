@@ -15,185 +15,6 @@ zrequire("stream_topic_history");
 zrequire("stream_sort");
 const tg = zrequire("topic_generator");
 
-function is_even(i) {
-    return i % 2 === 0;
-}
-function is_odd(i) {
-    return i % 2 === 1;
-}
-
-run_test("basics", () => {
-    let gen = tg.list_generator([10, 20, 30]);
-    assert.equal(gen.next(), 10);
-    assert.equal(gen.next(), 20);
-    assert.equal(gen.next(), 30);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    const gen1 = tg.list_generator([100, 200]);
-    const gen2 = tg.list_generator([300, 400]);
-    const outers = [gen1, gen2];
-    gen = tg.chain(outers);
-    assert.equal(gen.next(), 100);
-    assert.equal(gen.next(), 200);
-    assert.equal(gen.next(), 300);
-    assert.equal(gen.next(), 400);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    gen = tg.wrap([5, 15, 25, 35], 25);
-    assert.equal(gen.next(), 25);
-    assert.equal(gen.next(), 35);
-    assert.equal(gen.next(), 5);
-    assert.equal(gen.next(), 15);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    gen = tg.wrap_exclude([5, 15, 25, 35], 25);
-    assert.equal(gen.next(), 35);
-    assert.equal(gen.next(), 5);
-    assert.equal(gen.next(), 15);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    gen = tg.wrap([5, 15, 25, 35], undefined);
-    assert.equal(gen.next(), 5);
-
-    gen = tg.wrap_exclude([5, 15, 25, 35], undefined);
-    assert.equal(gen.next(), 5);
-
-    gen = tg.wrap([5, 15, 25, 35], 17);
-    assert.equal(gen.next(), 5);
-
-    gen = tg.wrap([], 42);
-    assert.equal(gen.next(), undefined);
-
-    let ints = tg.list_generator([1, 2, 3, 4, 5]);
-    gen = tg.filter(ints, is_even);
-    assert.equal(gen.next(), 2);
-    assert.equal(gen.next(), 4);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    ints = tg.list_generator([]);
-    gen = tg.filter(ints, is_even);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    ints = tg.list_generator([10, 20, 30]);
-
-    function mult10(x) {
-        return x * 10;
-    }
-
-    gen = tg.map(ints, mult10);
-    assert.equal(gen.next(), 100);
-    assert.equal(gen.next(), 200);
-});
-
-run_test("reverse", () => {
-    let gen = tg.reverse_list_generator([10, 20, 30]);
-    assert.equal(gen.next(), 30);
-    assert.equal(gen.next(), 20);
-    assert.equal(gen.next(), 10);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    // If second parameter is not in the list, we just traverse the list
-    // in reverse.
-    gen = tg.reverse_wrap_exclude([10, 20, 30]);
-    assert.equal(gen.next(), 30);
-    assert.equal(gen.next(), 20);
-    assert.equal(gen.next(), 10);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    gen = tg.reverse_wrap_exclude([10, 20, 30], "whatever");
-    assert.equal(gen.next(), 30);
-    assert.equal(gen.next(), 20);
-    assert.equal(gen.next(), 10);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    // Witness the mostly typical cycling behavior.
-    gen = tg.reverse_wrap_exclude([5, 10, 20, 30], 20);
-    assert.equal(gen.next(), 10);
-    assert.equal(gen.next(), 5);
-    assert.equal(gen.next(), 30);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    gen = tg.reverse_wrap_exclude([5, 10, 20, 30], 5);
-    assert.equal(gen.next(), 30);
-    assert.equal(gen.next(), 20);
-    assert.equal(gen.next(), 10);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    gen = tg.reverse_wrap_exclude([5, 10, 20, 30], 30);
-    assert.equal(gen.next(), 20);
-    assert.equal(gen.next(), 10);
-    assert.equal(gen.next(), 5);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    // Test small lists.
-    gen = tg.reverse_wrap_exclude([], 5);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    gen = tg.reverse_wrap_exclude([5], 5);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    gen = tg.reverse_wrap_exclude([5], 10);
-    assert.equal(gen.next(), 5);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-});
-
-run_test("fchain", () => {
-    const mults = function (n) {
-        let ret = 0;
-        return {
-            next() {
-                ret += n;
-                return ret <= 100 ? ret : undefined;
-            },
-        };
-    };
-
-    let ints = tg.list_generator([29, 43]);
-    let gen = tg.fchain(ints, mults);
-    assert.equal(gen.next(), 29);
-    assert.equal(gen.next(), 58);
-    assert.equal(gen.next(), 87);
-    assert.equal(gen.next(), 43);
-    assert.equal(gen.next(), 86);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    ints = tg.wrap([33, 34, 37], 37);
-    ints = tg.filter(ints, is_odd);
-    gen = tg.fchain(ints, mults);
-    assert.equal(gen.next(), 37);
-    assert.equal(gen.next(), 74);
-    assert.equal(gen.next(), 33);
-    assert.equal(gen.next(), 66);
-    assert.equal(gen.next(), 99);
-    assert.equal(gen.next(), undefined);
-    assert.equal(gen.next(), undefined);
-
-    const undef = function () {
-        return;
-    };
-
-    blueslip.expect("error", "Invalid generator returned.");
-    ints = tg.list_generator([29, 43]);
-    gen = tg.fchain(ints, undef);
-    gen.next();
-});
-
 run_test("streams", () => {
     function assert_next_stream(curr_stream, expected) {
         const actual = tg.get_next_stream(curr_stream);
@@ -247,6 +68,11 @@ run_test("topics", () => {
     assert.deepEqual(next_topic(3, "3b"), {stream: 3, topic: "3a"});
     assert.deepEqual(next_topic(4, "4a"), {stream: 1, topic: "1a"});
     assert.deepEqual(next_topic(undefined, undefined), {stream: 1, topic: "1a"});
+
+    assert.deepEqual(
+        tg.next_topic(streams, get_topics, () => false, 1, "1a"),
+        undefined,
+    );
 
     // Now test the deeper function that is wired up to
     // real functions stream_data/stream_sort/unread.
@@ -327,4 +153,8 @@ run_test("get_next_unread_pm_string", () => {
     assert.equal(tg.get_next_unread_pm_string("1"), "2,3");
     assert.equal(tg.get_next_unread_pm_string("read"), "2,3");
     assert.equal(tg.get_next_unread_pm_string("2,3"), "4");
+
+    unread.num_unread_for_person = () => 0;
+
+    assert.equal(tg.get_next_unread_pm_string("2,3"), undefined);
 });
