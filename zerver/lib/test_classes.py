@@ -8,8 +8,6 @@ import urllib
 from contextlib import contextmanager
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union
 from unittest import TestResult, mock
-import logging
-import collections
 
 import lxml.html
 import orjson
@@ -80,20 +78,56 @@ from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 if settings.ZILENCER_ENABLED:
     from zilencer.models import get_remote_server_by_uuid
 
-class _CapturingHandler(logging.Handler):
-    _LoggingWatcher = collections.namedtuple("_LoggingWatcher",["records", "output"])
-    def __init__(self):
-        logging.Handler.__init__(self)
-        self.watcher = _LoggingWatcher([], [])
-            
-    def flush(self):
-        pass
-        
-    def emit(self, record):
-        self.watcher.records.append(record)
-        msg = self.format(record)
-        self.watcher.output.append(msg)
 
+class LoggingTestCase(TestCase):
+    def __init__(self, methodName: Any='runTest', testlogger: Any=None, testlevel: Any=None) -> None:
+        super().__init__(methodName)
+        self.testlogger = testlogger
+        self.testlevel = testlevel
+        self.captured_logs.records = None
+
+    def run(self, result: Any=None) -> Any:
+        if result is None:
+            super(LoggingTestCase, self).run(result)
+        else:
+            try:
+                before_failures = len(result.failures)
+                before_errors = len(result.errors)
+            except AttributeError:
+                before_failures = 0
+                before_errors = 0
+            try:
+                with self.assertLogs(logger=self.testlogger,
+                                     level=self.testlevel) as self.captured_logs:
+                    super(LoggingTestCase, self).run(result)
+            except AssertionError as assertion_error:
+                if not self.captured_logs.records and "no logs of level" in str(assertion_error):
+                    pass
+                else:
+                    raise
+
+            add_logs = True
+
+            try:
+                after_failures = len(result.failures)
+                after_errors = len(result.errors)
+            except AttributeError:
+                if hasattr(result, '_excinfo'):
+                    add_logs = False
+                else:
+                    raise
+
+            # If the number of failures or errors increased, add the logs to the output
+            # for that test case.
+            if add_logs and self.captured_logs.records:
+
+                if after_failures > before_failures:
+                    result.failures[-1] = (result.failures[-1][0], result.failures[-1][1] + "\n"
+                                           + self._capture_logs_to_string(self.captured_logs))
+
+                elif after_errors > before_errors:
+                    result.errors[-1] = (result.errors[-1][0], result.errors[-1][1] + "\n"
+                                         + self._capture_logs_to_string(self.captured_logs))
 
 class UploadSerializeMixin(SerializeMixin):
     """
@@ -184,34 +218,21 @@ Output:
     DEFAULT_SUBDOMAIN = "zulip"
     TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
 
+    @staticmethod
+    def _capture_logs_to_string(capture_logs: Any) -> str:
+        return "\n".join(capture_logs.output)
+
     @contextmanager
-    def assertNoLogs(self, test_case,logger_name, level, no_logs, exc_type, exc_value,tb):
-        LOGGING_FORMAT = "%(levelname)s:%(name)s:%(message)s"
-        formatter = logging.Formatter(LOGGING_FORMAT)
-        handler = _CapturingHandler()
-        handler.setLevel(level)
-        handler.setFormatter(formatter)
-        self.watcher = handler.watcher
-        self.old_handlers = logger.handlers[:]
-        self.old_level = logger.level
-        self.old_propagate = logger.propagate
-        logger.handlers = [handler]
-        logger.setLevel(level)
-        logger.propagate = False
-        if self.no_logs:
+    def assertNoLogs(self) -> Any:
+        before_logs = self.captured_logs.output.copy()
+        try:
             yield
-        yield handler.watcher
-        self.logger.handlers = self.old_handlers
-        self.logger.propagate = self.old_propagate
-        self.logger.setLevel(self.old_level)
-        if exc_type is not None:
-            return False
-        if self.no_logs:
-            if len(self.watcher.records) > 0:
-                self._raiseFailure("Unexpected logs found: {!r}".format(self.watcher.output))
-        else:
-            if len(self.watcher.records) == 0:
-                self._raiseFailure("no logs of level {} or higher triggered on {}".format(logging.getLevelName(self.level), self.logger.name))
+        finally:
+            after_logs = self.captured_logs.output
+            if len(after_logs) > len(before_logs):
+                msg = 'The follow messages were unexpectedly logged:\n'
+                msg += '\n    '.join(after_logs[len(before_logs):])
+                raise self.failureException(msg)
 
     def set_http_headers(self, kwargs: Dict[str, Any]) -> None:
         if 'subdomain' in kwargs:
