@@ -31,9 +31,8 @@ const editability_types = {
 };
 exports.editability_types = editability_types;
 
-function is_topic_editable(message, edit_limit_seconds_buffer) {
+function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     const now = new XDate();
-    edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
 
     if (!page_params.realm_allow_message_editing) {
         // If message editing is disabled, so is topic editing.
@@ -61,8 +60,7 @@ function is_topic_editable(message, edit_limit_seconds_buffer) {
     );
 }
 
-function get_editability(message, edit_limit_seconds_buffer) {
-    edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
+function get_editability(message, edit_limit_seconds_buffer = 0) {
     if (!message) {
         return editability_types.NO;
     }

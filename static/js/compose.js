@@ -187,12 +187,11 @@ exports.abort_xhr = function () {
 exports.zoom_token_callbacks = new Map();
 exports.video_call_xhrs = new Map();
 
-exports.abort_video_callbacks = function (edit_message_id) {
-    const key = edit_message_id || "";
-    exports.zoom_token_callbacks.delete(key);
-    if (exports.video_call_xhrs.has(key)) {
-        exports.video_call_xhrs.get(key).abort();
-        exports.video_call_xhrs.delete(key);
+exports.abort_video_callbacks = function (edit_message_id = "") {
+    exports.zoom_token_callbacks.delete(edit_message_id);
+    if (exports.video_call_xhrs.has(edit_message_id)) {
+        exports.video_call_xhrs.get(edit_message_id).abort();
+        exports.video_call_xhrs.delete(edit_message_id);
     }
 };
 
