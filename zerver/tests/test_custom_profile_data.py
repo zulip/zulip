@@ -16,6 +16,7 @@ from zerver.lib.test_helpers import queries_captured
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
+    UserProfile,
     custom_profile_fields_for_realm,
     get_realm,
 )
@@ -336,6 +337,15 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_delete("/json/realm/profile_fields/1")
         self.assert_json_error(result, "Must be an organization administrator")
 
+    def test_not_human_admin_post(self) -> None:
+        user_profile = self.example_user("iago")
+        bot = self.create_test_bot("adminbot", user_profile, bot_type=UserProfile.ADMINISTRATOR_BOT)
+        self.assertTrue(bot.is_bot)
+        self.assertTrue(bot.is_realm_admin)
+        self.logout()
+        result = self.api_post(bot, "/json/realm/profile_fields")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
 
 class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_delete(self) -> None:
@@ -407,6 +417,15 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         self.assertFalse(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count - 1)
+
+    def test_not_human_admin_delete(self) -> None:
+        user_profile = self.example_user("iago")
+        bot = self.create_test_bot("adminbot", user_profile, bot_type=UserProfile.ADMINISTRATOR_BOT)
+        self.assertTrue(bot.is_bot)
+        self.assertTrue(bot.is_realm_admin)
+        self.logout()
+        result = self.api_delete(bot, "/json/realm/profile_fields/1")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
 
 class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
@@ -717,6 +736,15 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             do_update_user_custom_profile_data_if_changed(iago, data)
             mock_notify.assert_not_called()
 
+    def test_not_human_admin_update(self) -> None:
+        user_profile = self.example_user("iago")
+        bot = self.create_test_bot("adminbot", user_profile, bot_type=UserProfile.ADMINISTRATOR_BOT)
+        self.assertTrue(bot.is_bot)
+        self.assertTrue(bot.is_realm_admin)
+        self.logout()
+        result = self.api_patch(bot, "/json/realm/profile_fields/1")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
 
 class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_list(self) -> None:
@@ -910,3 +938,12 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
             "/json/realm/profile_fields", info={"order": orjson.dumps(order).decode()}
         )
         self.assert_json_error(result, "Invalid order mapping.")
+
+    def test_not_human_admin_reorder(self) -> None:
+        user_profile = self.example_user("iago")
+        bot = self.create_test_bot("adminbot", user_profile, bot_type=UserProfile.ADMINISTRATOR_BOT)
+        self.assertTrue(bot.is_bot)
+        self.assertTrue(bot.is_realm_admin)
+        self.logout()
+        result = self.api_post(bot, "/json/realm/profile_fields")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")

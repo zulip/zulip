@@ -94,6 +94,7 @@ def validate_custom_profile_field(
         raise JsonableError(_("Invalid field type."))
 
 
+@human_users_only
 @require_realm_admin
 @has_request_variables
 def create_realm_custom_profile_field(
@@ -127,6 +128,7 @@ def create_realm_custom_profile_field(
         return json_error(_("A field with that label already exists."))
 
 
+@human_users_only
 @require_realm_admin
 def delete_realm_custom_profile_field(
     request: HttpRequest, user_profile: UserProfile, field_id: int
@@ -140,6 +142,7 @@ def delete_realm_custom_profile_field(
     return json_success()
 
 
+@human_users_only
 @require_realm_admin
 @has_request_variables
 def update_realm_custom_profile_field(
@@ -168,6 +171,7 @@ def update_realm_custom_profile_field(
     return json_success()
 
 
+@human_users_only
 @require_realm_admin
 @has_request_variables
 def reorder_realm_custom_profile_fields(
