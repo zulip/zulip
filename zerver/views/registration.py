@@ -377,7 +377,6 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           role=role,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
-                                          newsletter_data={"IP": request.META['REMOTE_ADDR']},
                                           default_stream_groups=default_stream_groups,
                                           source_profile=source_profile,
                                           realm_creation=realm_creation,
