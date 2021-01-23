@@ -582,7 +582,9 @@ exports.save_discard_widget_status_handler = (subsection) => {
     subsection.find(".subsection-failed-status p").hide();
     subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements(subsection);
-    const show_change_process_button = properties_elements.some(check_property_changed);
+    const show_change_process_button = properties_elements.some((elem) =>
+        check_property_changed(elem),
+    );
 
     const save_btn_controls = subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";

@@ -128,7 +128,7 @@ class TopicListWidget {
 
         const attrs = [["class", "topic-list"]];
 
-        const nodes = list_info.items.map(exports.keyed_topic_li);
+        const nodes = list_info.items.map((convo) => exports.keyed_topic_li(convo));
 
         if (spinner) {
             nodes.push(exports.spinner_li());

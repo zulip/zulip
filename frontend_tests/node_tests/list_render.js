@@ -354,7 +354,7 @@ run_test("sorting", () => {
     };
 
     function html_for(people) {
-        return people.map(opts.modifier).join("");
+        return people.map((item) => opts.modifier(item)).join("");
     }
 
     list_render.create(container, list, opts);

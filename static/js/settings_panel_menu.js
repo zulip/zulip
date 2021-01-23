@@ -76,8 +76,7 @@ class SettingsPanelMenu {
 
     enter_panel() {
         const panel = this.get_panel();
-        const sel = "input:visible,button:visible,select:visible";
-        const panel_elem = panel.find(sel).first();
+        const panel_elem = panel.find("input:visible,button:visible,select:visible").first();
 
         panel_elem.trigger("focus");
         return true;
