@@ -528,8 +528,7 @@ exports.get_sorted_filtered_items = function (query) {
         several years ago.)
     */
 
-    const hacky_this = this;
-    const fetcher = exports.get_candidates.bind(hacky_this);
+    const fetcher = exports.get_candidates.bind(this);
     const big_results = fetcher(query);
 
     if (!big_results) {
@@ -538,10 +537,10 @@ exports.get_sorted_filtered_items = function (query) {
 
     // We are still hacking info onto the "this" from
     // bootstrap.  Yuck.
-    const completing = hacky_this.completing;
-    const token = hacky_this.token;
+    const completing = this.completing;
+    const token = this.token;
 
-    const opts = exports.get_stream_topic_data(hacky_this);
+    const opts = exports.get_stream_topic_data(this);
 
     if (completing === "mention" || completing === "silent_mention") {
         return exports.filter_and_sort_mentions(big_results.is_silent, token, opts);

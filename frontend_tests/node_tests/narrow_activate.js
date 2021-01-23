@@ -117,11 +117,10 @@ function test_helper() {
 
 function stub_message_list() {
     message_list.MessageList = function (opts) {
-        const list = this;
         this.data = opts.data;
         this.view = {
             set_message_offset(offset) {
-                list.view.offset = offset;
+                this.offset = offset;
             },
         };
 
