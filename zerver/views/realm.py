@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_safe
 
 from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
-from zerver.decorator import require_realm_admin, require_realm_owner
+from zerver.decorator import human_users_only, require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
 from zerver.lib.actions import (
     do_deactivate_realm,
@@ -36,6 +36,7 @@ from zerver.lib.validator import (
 from zerver.models import Realm, UserProfile
 
 
+@human_users_only
 @require_realm_admin
 @has_request_variables
 def update_realm(

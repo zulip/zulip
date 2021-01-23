@@ -825,6 +825,13 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
 
+    def test_admin_bot_realm_update(self) -> None:
+        user_profile = self.example_user("iago")
+        bot = self.create_test_bot("adminbot", user_profile, bot_type=UserProfile.ADMINISTRATOR_BOT)
+        self.logout()
+        result = self.api_patch(bot, "/json/realm")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
 
 class RealmAPITest(ZulipTestCase):
     def setUp(self) -> None:
