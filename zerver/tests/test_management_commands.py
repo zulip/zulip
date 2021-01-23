@@ -63,6 +63,15 @@ class TestZulipBaseCommand(ZulipTestCase):
         with self.assertRaisesRegex(CommandError, "There is no realm with id"):
             self.command.get_realm(dict(realm_id="mit"))
 
+    def test_get_stream(self) -> None:
+        realm = get_realm("zulip")
+        stream_name = "test"
+        stream = self.make_stream(stream_name, realm)
+        self.assertEqual(self.command.get_stream(stream_name, realm), stream)
+
+        with self.assertRaisesRegex(CommandError, "The stream with this name does not exist."):
+            self.command.get_stream("Invalid_stream", realm)
+
     def test_get_user(self) -> None:
         mit_realm = get_realm("zephyr")
         user_profile = self.example_user("hamlet")

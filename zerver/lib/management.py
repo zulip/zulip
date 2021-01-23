@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
 
-from zerver.models import Client, Realm, UserProfile, get_client
+from zerver.models import Client, Realm, Stream, UserProfile, get_client
 
 
 def is_integer_string(val: str) -> bool:
@@ -142,6 +142,12 @@ You can use the command list_realms to find ID of the realms in this server."""
             )
         except UserProfile.DoesNotExist:
             raise CommandError(f"This Zulip server does not contain a user with email '{email}'")
+
+    def get_stream(self, stream_name: str, realm: Realm) -> Stream:
+        try:
+            return Stream.objects.get(realm=realm, name=stream_name)
+        except Stream.DoesNotExist:
+            raise CommandError("The stream with this name does not exist.")
 
     def get_client(self) -> Client:
         """Returns a Zulip Client object to be used for things done in management commands"""
