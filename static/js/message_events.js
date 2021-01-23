@@ -147,7 +147,7 @@ exports.update_messages = function update_messages(events) {
 
         const new_topic = util.get_edit_event_topic(event);
 
-        const {new_stream_id} = event;
+        const new_stream_id = event.new_stream_id;
 
         // A topic edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message

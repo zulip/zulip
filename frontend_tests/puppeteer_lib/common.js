@@ -314,7 +314,7 @@ class CommonUtils {
     async send_message(page, type, params) {
         // If a message is outside the view, we do not need
         // to wait for it to be processed later.
-        const {outside_view} = params;
+        const outside_view = params.outside_view;
         delete params.outside_view;
 
         // Compose box content should be empty before sending the message.
