@@ -690,7 +690,7 @@ run_test("render item", () => {
         };
     };
 
-    const list = [...new Array(100).keys()];
+    const list = [...Array.from({length: 100}).keys()];
 
     let text = "initial";
     const get_item = (item) => ({text: `${text}: ${item}`, value: item});
