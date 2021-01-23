@@ -1000,12 +1000,10 @@ run_test("misc", () => {
     settings_account.update_email_change_display();
     assert(!$("#change_email .button").prop("disabled"));
 
-    stream_data.get_streams_for_settings_page = () => {
-        const arr = [];
-        arr.push({name: "some_stream", stream_id: 75});
-        arr.push({name: "some_stream", stream_id: 42});
-        return arr;
-    };
+    stream_data.get_streams_for_settings_page = () => [
+        {name: "some_stream", stream_id: 75},
+        {name: "some_stream", stream_id: 42},
+    ];
 
     // Set stubs for dropdown_list_widget:
     const widget_settings = [
