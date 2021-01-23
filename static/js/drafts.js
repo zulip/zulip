@@ -332,7 +332,9 @@ exports.launch = function () {
             (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt,
         );
 
-        const sorted_formatted_drafts = sorted_raw_drafts.map(exports.format_draft).filter(Boolean);
+        const sorted_formatted_drafts = sorted_raw_drafts
+            .map((draft_row) => exports.format_draft(draft_row))
+            .filter(Boolean);
 
         return sorted_formatted_drafts;
     }

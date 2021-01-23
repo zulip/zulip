@@ -197,8 +197,8 @@ run_test("merge_message_groups", () => {
     }
 
     function assert_message_groups_list_equal(list1, list2) {
-        const ids1 = list1.map(extract_group);
-        const ids2 = list2.map(extract_group);
+        const ids1 = list1.map((group) => extract_group(group));
+        const ids2 = list2.map((group) => extract_group(group));
         assert(ids1.length);
         assert.deepEqual(ids1, ids2);
     }

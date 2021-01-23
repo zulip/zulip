@@ -418,10 +418,6 @@ exports.get_pm_people = function (query) {
 exports.get_person_suggestions = function (query, opts) {
     query = typeahead.clean_query_lowercase(query);
 
-    const person_matcher = (item) => exports.query_matches_person(query, item);
-
-    const group_matcher = (item) => query_matches_name_description(query, item);
-
     function filter_persons(all_persons) {
         let persons;
 
@@ -434,7 +430,7 @@ exports.get_person_suggestions = function (query, opts) {
         if (opts.want_broadcast) {
             persons = persons.concat(exports.broadcast_mentions());
         }
-        return persons.filter(person_matcher);
+        return persons.filter((item) => exports.query_matches_person(query, item));
     }
 
     let groups;
@@ -445,7 +441,7 @@ exports.get_person_suggestions = function (query, opts) {
         groups = [];
     }
 
-    const filtered_groups = groups.filter(group_matcher);
+    const filtered_groups = groups.filter((item) => query_matches_name_description(query, item));
 
     /*
         Let's say you're on a big realm and type

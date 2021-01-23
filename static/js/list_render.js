@@ -35,14 +35,17 @@ exports.get_filtered_items = (value, list, opts) => {
 
     if (!opts.filter) {
         if (get_item) {
-            return list.map(get_item);
+            return list.map((key) => get_item(key));
         }
         return [...list];
     }
 
     if (opts.filter.filterer) {
         if (get_item) {
-            return opts.filter.filterer(list.map(get_item), value);
+            return opts.filter.filterer(
+                list.map((key) => get_item(key)),
+                value,
+            );
         }
         return opts.filter.filterer(list, value);
     }
@@ -62,7 +65,7 @@ exports.get_filtered_items = (value, list, opts) => {
         return result;
     }
 
-    return list.filter(predicate);
+    return list.filter((item) => predicate(item));
 };
 
 exports.alphabetic_sort = (prop) =>

@@ -160,7 +160,7 @@ export function sort_emojis(objs, query) {
         return popular_set.has(obj.emoji_code) && decent_match(obj.emoji_name);
     }
 
-    const popular_emoji_matches = objs.filter(is_popular);
+    const popular_emoji_matches = objs.filter((obj) => is_popular(obj));
     const others = objs.filter((obj) => !is_popular(obj));
 
     const triage_results = triage(query, others, (x) => x.emoji_name);

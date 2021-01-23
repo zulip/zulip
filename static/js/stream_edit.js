@@ -228,9 +228,11 @@ function submit_add_subscriber_form(e) {
 
     function invite_success(data) {
         exports.pill_widget.clear();
-        const subscribed_users = Object.keys(data.subscribed).map(people.get_by_email);
-        const already_subscribed_users = Object.keys(data.already_subscribed).map(
-            people.get_by_email,
+        const subscribed_users = Object.keys(data.subscribed).map((email) =>
+            people.get_by_email(email),
+        );
+        const already_subscribed_users = Object.keys(data.already_subscribed).map((email) =>
+            people.get_by_email(email),
         );
 
         const html = render_stream_subscription_info({subscribed_users, already_subscribed_users});

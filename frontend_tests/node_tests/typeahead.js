@@ -35,7 +35,10 @@ const emojis = [emoji_japanese_post_office, emoji_panda_face, emoji_smile, emoji
 run_test("get_emoji_matcher", () => {
     function assert_matches(query, expected) {
         const matcher = typeahead.get_emoji_matcher(query);
-        assert.deepEqual(emojis.filter(matcher), expected);
+        assert.deepEqual(
+            emojis.filter((emoji) => matcher(emoji)),
+            expected,
+        );
     }
 
     assert_matches("notaemoji", []);

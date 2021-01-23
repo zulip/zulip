@@ -118,9 +118,9 @@ function diff_strings(string_0, string_1) {
         }
     }
 
-    const emphasize_codes = (string) =>
-        "\u001B[34m" + string.slice(0, 1) + "\u001B[0m" + string.slice(1);
-    output_lines = output_lines.map(emphasize_codes);
+    output_lines = output_lines.map(
+        (string) => "\u001B[34m" + string.slice(0, 1) + "\u001B[0m" + string.slice(1),
+    );
 
     return output_lines.join("\n");
 }
