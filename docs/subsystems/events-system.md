@@ -369,7 +369,7 @@ in `frontend_tests/node_tests/lib/events.js`, a test of the
 `server_events_dispatch.js` code for that event in
 `frontend_tests/node_tests/dispatch.js`, and verify your example
 against the two versions of the schema that you declared above using
-`tools/check-node-fixtures`.
+`tools/check-schemas`.
 
 #### Code coverage
 

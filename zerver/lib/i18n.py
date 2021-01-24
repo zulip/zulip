@@ -95,8 +95,10 @@ def get_and_set_request_language(
         request_language = user_configured_language
     translation.activate(request_language)
 
-    # We also save the language to the user's session, so that
+    # We also want to save the language to the user's cookies, so that
     # something reasonable will happen in logged-in portico pages.
-    request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
+    # We accomplish that by setting a flag on the request which signals
+    # to LocaleMiddleware to set the cookie on the response.
+    request._set_language = translation.get_language()
 
     return request_language

@@ -163,9 +163,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         try:
             validate_email_not_already_in_realm(realm, email)
         except ValidationError:
-            view_url = reverse('login')
-            redirect_url = add_query_to_redirect_url(view_url, urlencode({"email": email}))
-            return HttpResponseRedirect(redirect_url)
+            return redirect_to_email_login_url(email)
 
     name_validated = False
     full_name = None
@@ -379,7 +377,6 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           role=role,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
-                                          newsletter_data={"IP": request.META['REMOTE_ADDR']},
                                           default_stream_groups=default_stream_groups,
                                           source_profile=source_profile,
                                           realm_creation=realm_creation,
@@ -486,7 +483,7 @@ def send_confirm_registration_email(email: str, activation_url: str, language: s
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     login_url = reverse('login')
-    redirect_url = add_query_to_redirect_url(login_url, urlencode({"already_registered": email}))
+    redirect_url = add_query_to_redirect_url(login_url, urlencode({"email": email, "already_registered": 1}))
     return HttpResponseRedirect(redirect_url)
 
 def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> HttpResponse:
@@ -555,6 +552,12 @@ def accounts_home(request: HttpRequest, multiuse_object_key: str="",
         form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
         if form.is_valid():
             email = form.cleaned_data['email']
+
+            try:
+                validate_email_not_already_in_realm(realm, email)
+            except ValidationError:
+                return redirect_to_email_login_url(email)
+
             activation_url = prepare_activation_url(email, request, streams=streams_to_subscribe,
                                                     invited_as=invited_as)
             try:
@@ -565,11 +568,6 @@ def accounts_home(request: HttpRequest, multiuse_object_key: str="",
 
             return HttpResponseRedirect(reverse('signup_send_confirm', kwargs={'email': email}))
 
-        email = request.POST['email']
-        try:
-            validate_email_not_already_in_realm(realm, email)
-        except ValidationError:
-            return redirect_to_email_login_url(email)
     else:
         form = HomepageForm(realm=realm)
     context = login_context(request)

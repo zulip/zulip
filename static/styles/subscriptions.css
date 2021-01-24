@@ -1180,6 +1180,14 @@ ul.grey-box {
     }
 }
 
+@media (max-width: 575px) {
+    #subscription_overlay .subscription_settings .button-group {
+        display: block;
+        float: unset;
+        margin-top: 10px;
+    }
+}
+
 #stream-creation #invites-warning-modal .modal-footer {
     position: static;
 }

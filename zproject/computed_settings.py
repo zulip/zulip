@@ -448,8 +448,6 @@ DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret('big_blue_button_secret')
 
-MAILCHIMP_API_KEY = get_secret("mailchimp_api_key")
-
 # Twitter API credentials
 # Secrecy not required because its only used for R/O requests.
 # Please don't make us go over our rate limit.

@@ -1800,7 +1800,12 @@ class DefaultStreamTest(ZulipTestCase):
         # Get all the streams that Polonius has access to (subscribed + web public streams)
         result = self.client_get("/json/streams", {"include_web_public": "true"})
         streams = result.json()['streams']
-        subscribed, unsubscribed, never_subscribed = gather_subscriptions_helper(user_profile)
+        sub_info = gather_subscriptions_helper(user_profile)
+
+        subscribed = sub_info.subscriptions
+        unsubscribed = sub_info.unsubscribed
+        never_subscribed = sub_info.never_subscribed
+
         self.assertEqual(len(streams),
                          len(subscribed) + len(unsubscribed) + len(never_subscribed))
         expected_streams = subscribed + unsubscribed + never_subscribed
@@ -2138,8 +2143,10 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         test_user = self.example_user("hamlet")
         self.login_user(test_user)
 
-        subscribed, unsubscribed, never_subscribed = gather_subscriptions_helper(test_user)
-        not_subbed = unsubscribed + never_subscribed
+        sub_info = gather_subscriptions_helper(test_user)
+
+        not_subbed = sub_info.never_subscribed
+
         result = self.api_post(test_user, "/api/v1/users/me/subscriptions/properties",
                                {"subscription_data": orjson.dumps([{"property": "color",
                                                                     "stream_id": not_subbed[0]["stream_id"],
@@ -3767,10 +3774,10 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Compare results - should be 1 stream less
         self.assertTrue(
-            len(admin_before_delete[0]) == len(admin_after_delete[0]) + 1,
+            len(admin_before_delete.subscriptions) == len(admin_after_delete.subscriptions) + 1,
             'Expected exactly 1 less stream from gather_subscriptions_helper')
         self.assertTrue(
-            len(non_admin_before_delete[0]) == len(non_admin_after_delete[0]) + 1,
+            len(non_admin_before_delete.subscriptions) == len(non_admin_after_delete.subscriptions) + 1,
             'Expected exactly 1 less stream from gather_subscriptions_helper')
 
     def test_validate_user_access_to_subscribers_helper(self) -> None:
@@ -4303,7 +4310,7 @@ class GetSubscribersTest(ZulipTestCase):
         def get_never_subscribed() -> List[Dict[str, Any]]:
             with queries_captured() as queries:
                 sub_data = gather_subscriptions_helper(self.user_profile)
-            never_subscribed = sub_data[2]
+            never_subscribed = sub_data.never_subscribed
             self.assert_length(queries, 4)
 
             # Ignore old streams.
@@ -4339,7 +4346,10 @@ class GetSubscribersTest(ZulipTestCase):
 
         def test_guest_user_case() -> None:
             self.user_profile.role = UserProfile.ROLE_GUEST
-            sub, unsub, never_sub = gather_subscriptions_helper(self.user_profile)
+            helper_result = gather_subscriptions_helper(self.user_profile)
+            sub = helper_result.subscriptions
+            unsub = helper_result.unsubscribed
+            never_sub = helper_result.never_subscribed
 
             # It's +1 because of the stream Rome.
             self.assertEqual(len(never_sub), len(web_public_streams) + 1)
@@ -4381,7 +4391,9 @@ class GetSubscribersTest(ZulipTestCase):
         self.subscribe(normal_user, stream_name_unsub)
         self.subscribe(normal_user, stream_name_unsub)
 
-        subs, unsubs, neversubs = gather_subscriptions_helper(guest_user)
+        helper_result = gather_subscriptions_helper(guest_user)
+        subs = helper_result.subscriptions
+        neversubs = helper_result.never_subscribed
 
         # Guest users get info about subscribed public stream's subscribers
         expected_stream_exists = False
@@ -4417,20 +4429,20 @@ class GetSubscribersTest(ZulipTestCase):
 
         # Test admin user gets previously subscribed private stream's subscribers.
         sub_data = gather_subscriptions_helper(admin_user)
-        unsubscribed_streams = sub_data[1]
+        unsubscribed_streams = sub_data.unsubscribed
         self.assertEqual(len(unsubscribed_streams), 1)
         self.assertEqual(len(unsubscribed_streams[0]["subscribers"]), 1)
 
         # Test non admin users cannot get previously subscribed private stream's subscribers.
         sub_data = gather_subscriptions_helper(non_admin_user)
-        unsubscribed_streams = sub_data[1]
+        unsubscribed_streams = sub_data.unsubscribed
         self.assertEqual(len(unsubscribed_streams), 1)
-        self.assertFalse('subscribers' in unsubscribed_streams[0])
+        self.assertEqual(unsubscribed_streams[0]['subscribers'], [])
 
         sub_data = gather_subscriptions_helper(guest_user)
-        unsubscribed_streams = sub_data[1]
+        unsubscribed_streams = sub_data.unsubscribed
         self.assertEqual(len(unsubscribed_streams), 1)
-        self.assertFalse('subscribers' in unsubscribed_streams[0])
+        self.assertEqual(unsubscribed_streams[0]['subscribers'], [])
 
     def test_gather_subscriptions_mit(self) -> None:
         """
@@ -4533,7 +4545,8 @@ class GetSubscribersTest(ZulipTestCase):
         if they aren't subscribed or have never subscribed to that stream.
         """
         guest_user = self.example_user("polonius")
-        _, _, never_subscribed = gather_subscriptions_helper(guest_user, True)
+        never_subscribed = gather_subscriptions_helper(guest_user, True).never_subscribed
+
         # A guest user can only see never subscribed streams that are web-public.
         # For Polonius, the only web public stream that he is not subscribed at
         # this point is Rome.
@@ -4708,10 +4721,10 @@ class NoRecipientIDsTest(ZulipTestCase):
         user_profile = self.example_user('cordelia')
 
         Subscription.objects.filter(user_profile=user_profile, recipient__type=Recipient.STREAM).delete()
-        subs = gather_subscriptions_helper(user_profile)
+        subs = gather_subscriptions_helper(user_profile).subscriptions
 
         # Checks that gather_subscriptions_helper will not return anything
         # since there will not be any recipients, without crashing.
         #
         # This covers a rare corner case.
-        self.assertEqual(len(subs[0]), 0)
+        self.assertEqual(len(subs), 0)

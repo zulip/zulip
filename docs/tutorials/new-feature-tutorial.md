@@ -359,7 +359,10 @@ race conditions.
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         # ...
 
-    def apply_event(state, events, user_profile, include_subscribers):
+    def apply_event
+        user_profile: UserProfile,
+        # ...
+    ) -> None:
       for event in events:
         # ...
         elif event['type'] == 'realm':

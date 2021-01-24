@@ -4,6 +4,7 @@ const render_announce_stream_docs = require("../templates/announce_stream_docs.h
 const render_new_stream_users = require("../templates/new_stream_users.hbs");
 const render_subscription_invites_warning_modal = require("../templates/subscription_invites_warning_modal.hbs");
 
+const peer_data = require("./peer_data");
 const people = require("./people");
 
 let created_stream;
@@ -289,7 +290,7 @@ exports.show_new_stream_modal = function () {
         const elem = $(this);
         const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
         const checked = elem.find("input").prop("checked");
-        const subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
+        const subscriber_ids = new Set(peer_data.get_subscribers(stream_id));
 
         $("#user-checkboxes label.checkbox").each(function () {
             const user_elem = $(this);

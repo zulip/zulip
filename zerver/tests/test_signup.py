@@ -35,6 +35,7 @@ from zerver.lib.actions import (
     add_new_user_history,
     do_add_default_stream,
     do_change_full_name,
+    do_change_realm_subdomain,
     do_change_user_role,
     do_create_default_stream_group,
     do_create_realm,
@@ -181,6 +182,25 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get('/accounts/deactivated/')
         self.assertIn('It has moved to <a href="http://example.zulipchat.com">http://example.zulipchat.com</a>.', result.content.decode())
+
+    def test_deactivation_notice_when_realm_subdomain_is_changed(self) -> None:
+        realm = get_realm("zulip")
+        do_change_realm_subdomain(realm, "new-subdomain-name")
+
+        result = self.client_get('/accounts/deactivated/')
+        self.assertIn('It has moved to <a href="http://new-subdomain-name.testserver">http://new-subdomain-name.testserver</a>.', result.content.decode())
+
+    def test_deactivated_redirect_field_of_placeholder_realms_are_modified_on_changing_subdomain_multiple_times(self) -> None:
+        realm = get_realm('zulip')
+        do_change_realm_subdomain(realm, 'new-name-1')
+
+        result = self.client_get('/accounts/deactivated/')
+        self.assertIn('It has moved to <a href="http://new-name-1.testserver">http://new-name-1.testserver</a>.', result.content.decode())
+
+        realm = get_realm('new-name-1')
+        do_change_realm_subdomain(realm, 'new-name-2')
+        result = self.client_get('/accounts/deactivated/')
+        self.assertIn('It has moved to <a href="http://new-name-2.testserver">http://new-name-2.testserver</a>.', result.content.decode())
 
 class AddNewUserHistoryTest(ZulipTestCase):
     def test_add_new_user_history_race(self) -> None:
@@ -689,6 +709,18 @@ class LoginTest(ZulipTestCase):
 
         with self.assertRaises(UserProfile.DoesNotExist):
             self.nonreg_user('test')
+
+    def test_register_with_invalid_email(self) -> None:
+        """
+        If you try to register with invalid email, you get an invalid email
+        page
+        """
+        invalid_email = "foo\x00bar"
+        result = self.client_post('/accounts/home/', {'email': invalid_email},
+                                  subdomain="zulip")
+
+        self.assertEqual(result.status_code, 200)
+        self.assertContains(result, "Enter a valid email address")
 
     def test_register_deactivated_partway_through(self) -> None:
         """
@@ -1672,7 +1704,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         response = self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('login') + '?' +
-                         urlencode({"email": email}))
+                         urlencode({"email": email, "already_registered": 1}))
 
 class InvitationsTestCase(InviteUserBase):
     def test_do_get_user_invites(self) -> None:
@@ -2524,6 +2556,24 @@ class RealmCreationTest(ZulipTestCase):
         self.assertTrue(result.url.startswith('http://a-0.testserver/accounts/login/subdomain/'))
 
     @override_settings(OPEN_REALM_CREATION=True)
+    def test_create_realm_using_old_subdomain_of_a_realm(self) -> None:
+        realm = get_realm("zulip")
+        do_change_realm_subdomain(realm, "new-name")
+
+        password = "test"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        result = self.client_post('/new/', {'email': email})
+        self.client_get(result["Location"])
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+        result = self.submit_reg_form_for_user(email, password,
+                                               realm_subdomain = "zulip",
+                                               realm_name = realm_name)
+        self.assert_in_response("Subdomain unavailable. Please choose a different one.", result)
+
+    @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions_root_domain(self) -> None:
         password = "test"
         email = "user1@test.com"
@@ -2596,13 +2646,29 @@ class RealmCreationTest(ZulipTestCase):
         self.assert_not_in_success_response(["unavailable"], result)
 
     def test_subdomain_check_management_command(self) -> None:
-        # Short names should work
-        check_subdomain_available('aa', from_management_command=True)
-        # So should reserved ones
-        check_subdomain_available('zulip', from_management_command=True)
-        # malformed names should still not
+        # Short names should not work, even with the flag
         with self.assertRaises(ValidationError):
-            check_subdomain_available('-ba_d-', from_management_command=True)
+            check_subdomain_available('aa')
+        with self.assertRaises(ValidationError):
+            check_subdomain_available('aa', allow_reserved_subdomain=True)
+
+        # Malformed names should never work
+        with self.assertRaises(ValidationError):
+            check_subdomain_available('-ba_d-')
+        with self.assertRaises(ValidationError):
+            check_subdomain_available('-ba_d-', allow_reserved_subdomain=True)
+
+        with patch('zerver.lib.name_restrictions.is_reserved_subdomain', return_value = False):
+            # Existing realms should never work even if they are not reserved keywords
+            with self.assertRaises(ValidationError):
+                check_subdomain_available('zulip')
+            with self.assertRaises(ValidationError):
+                check_subdomain_available('zulip', allow_reserved_subdomain=True)
+
+        # Reserved ones should only work with the flag
+        with self.assertRaises(ValidationError):
+            check_subdomain_available('stream')
+        check_subdomain_available('stream', allow_reserved_subdomain=True)
 
 class UserSignUpTest(InviteUserBase):
 

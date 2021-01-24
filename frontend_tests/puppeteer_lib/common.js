@@ -239,6 +239,21 @@ class CommonUtils {
         });
     }
 
+    async assert_compose_box_content(page, expected_value) {
+        await page.waitForSelector("#compose-textarea");
+
+        const compose_box_element = await page.$("#compose-textarea");
+        const compose_box_content = await page.evaluate(
+            (element) => element.value,
+            compose_box_element,
+        );
+        assert.equal(
+            compose_box_content,
+            expected_value,
+            `Compose box content did not match with the expected value '{${expected_value}}'`,
+        );
+    }
+
     async wait_for_fully_processed_message(page, content) {
         await page.waitForFunction(
             (content) => {
@@ -302,7 +317,8 @@ class CommonUtils {
         const {outside_view} = params;
         delete params.outside_view;
 
-        await page.waitForSelector("#compose-textarea");
+        // Compose box content should be empty before sending the message.
+        await this.assert_compose_box_content(page, "");
 
         if (type === "stream") {
             await page.keyboard.press("KeyC");
@@ -328,17 +344,13 @@ class CommonUtils {
         }
 
         await this.fill_form(page, 'form[action^="/json/messages"]', params);
+        await this.assert_compose_box_content(page, params.content);
         await this.ensure_enter_does_not_send(page);
         await page.waitForSelector("#compose-send-button", {visible: true});
         await page.click("#compose-send-button");
 
-        // confirm if compose box is empty.
-        const compose_box_element = await page.$("#compose-textarea");
-        const compose_box_content = await page.evaluate(
-            (element) => element.textContent,
-            compose_box_element,
-        );
-        assert.equal(compose_box_content, "", "Compose box not empty after message sent");
+        // Sending should clear compose box content.
+        this.assert_compose_box_content(page, "");
 
         if (!outside_view) {
             await this.wait_for_fully_processed_message(page, params.content);

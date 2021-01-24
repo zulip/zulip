@@ -47,8 +47,9 @@ run_test("filter_table", () => {
             name: "Denmark",
             stream_id: 1,
             description: "Copenhagen",
-            subscribers: {size: 1},
+            subscribers: [1],
             stream_weekly_traffic: null,
+            color: "red",
         },
         {
             elem: "poland",
@@ -56,8 +57,9 @@ run_test("filter_table", () => {
             name: "Poland",
             stream_id: 2,
             description: "monday",
-            subscribers: {size: 3},
+            subscribers: [1, 2, 3],
             stream_weekly_traffic: 13,
+            color: "red",
         },
         {
             elem: "pomona",
@@ -65,8 +67,9 @@ run_test("filter_table", () => {
             name: "Pomona",
             stream_id: 3,
             description: "college",
-            subscribers: {size: 0},
+            subscribers: [],
             stream_weekly_traffic: 0,
+            color: "red",
         },
         {
             elem: "cpp",
@@ -74,8 +77,9 @@ run_test("filter_table", () => {
             name: "C++",
             stream_id: 4,
             description: "programming lang",
-            subscribers: {size: 2},
+            subscribers: [1, 2],
             stream_weekly_traffic: 6,
+            color: "red",
         },
         {
             elem: "zzyzx",
@@ -83,13 +87,14 @@ run_test("filter_table", () => {
             name: "Zzyzx",
             stream_id: 5,
             description: "california town",
-            subscribers: {size: 2},
+            subscribers: [1, 2],
             stream_weekly_traffic: 6,
+            color: "red",
         },
     ];
 
     for (const sub of sub_row_data) {
-        stream_data.add_sub(sub);
+        stream_data.create_sub_from_server_data(sub);
     }
 
     let populated_subs;
