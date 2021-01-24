@@ -36,6 +36,7 @@ ONLY perform this on customer request from an authorized person.
                          'admin': UserProfile.ROLE_REALM_ADMINISTRATOR,
                          'member': UserProfile.ROLE_MEMBER,
                          'guest': UserProfile.ROLE_GUEST}
+        inverse_user_role_map = {value: name for name, value in user_role_map.items()}
 
         if options['new_role'] != 'api_super_user':
             new_role = user_role_map[options['new_role']]
@@ -43,9 +44,9 @@ ONLY perform this on customer request from an authorized person.
                 raise CommandError("Revoke not supported with this permission; please specify new role.")
             if new_role == user.role:
                 raise CommandError("User already has this role.")
-            old_role_name = UserProfile.ROLE_ID_TO_NAME_MAP[user.role]
+            old_role_name = inverse_user_role_map[user.role]
             do_change_user_role(user, new_role, acting_user=None)
-            new_role_name = UserProfile.ROLE_ID_TO_NAME_MAP[user.role]
+            new_role_name = inverse_user_role_map[user.role]
             print(f"Role for {user.delivery_email} changed from {old_role_name} to {new_role_name}.")
         else:
             if user.is_api_super_user and options['grant']:
