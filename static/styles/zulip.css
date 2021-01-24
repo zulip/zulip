@@ -276,6 +276,10 @@ p.n-margin {
             right: 18px;
             top: 50%;
             transform: translateY(-50%);
+
+            &:focus {
+                outline: hsl(200, 100%, 25%) solid 5px;
+            }
         }
 
         .alert-link {
