@@ -2883,7 +2883,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: 350px) {
+@media (max-width: $mm_max) {
     html {
         overflow-x: hidden;
     }
