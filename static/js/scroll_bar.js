@@ -1,5 +1,6 @@
 "use strict";
 
+const {media_breakpoints} = require("./css_variables");
 // A few of our width properties in Zulip depend on the width of the
 // browser scrollbar that is generated at the far right side of the
 // page, which unfortunately varies depending on the browser and
@@ -57,7 +58,9 @@ exports.initialize = function () {
         $("#keyboard-icon").css({right: sbWidth + 35 + "px"});
 
         $("head").append(
-            "<style> @media (max-width: 1165px) { .compose-content, .header-main .column-middle { margin-right: " +
+            "<style> @media (max-width: " +
+                media_breakpoints["xl-max"] +
+                ") { .compose-content, .header-main .column-middle { margin-right: " +
                 (7 + sbWidth) +
                 "px !important; } } " +
                 "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " +

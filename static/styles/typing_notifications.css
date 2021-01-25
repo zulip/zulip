@@ -11,7 +11,7 @@
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */
-@media (max-width: 1165px) {
+@media (max-width: $xl-max) {
     #typing_notifications {
         margin-right: 7px;
     }

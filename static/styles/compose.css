@@ -497,7 +497,7 @@ a#undo_markdown_preview {
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */
-@media (max-width: 1165px) {
+@media (max-width: $xl-max) {
     .compose-content {
         margin-right: 7px;
     }
