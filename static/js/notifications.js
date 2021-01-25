@@ -1,5 +1,4 @@
 import $ from "jquery";
-import _ from "lodash";
 
 import render_compose_notification from "../templates/compose_notification.hbs";
 
@@ -324,7 +323,7 @@ export function process_notification(notification) {
             message_id: message.id,
         });
 
-        if (_.isFunction(notification_object.addEventListener)) {
+        if (typeof notification_object.addEventListener === "function") {
             // Sadly, some third-party Electron apps like Franz/Ferdi
             // misimplement the Notification API not inheriting from
             // EventTarget.  This results in addEventListener being
