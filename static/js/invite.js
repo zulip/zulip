@@ -8,6 +8,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 
 import * as channel from "./channel";
 import * as common from "./common";
+import * as feedback_widget from "./feedback_widget";
 import * as hashchange from "./hashchange";
 import * as overlays from "./overlays";
 import * as stream_data from "./stream_data";
@@ -123,7 +124,15 @@ function generate_multiuse_invite() {
         success(data) {
             const copy_link_html = copy_invite_link(data);
             ui_report.success(copy_link_html, invite_status);
-            new ClipboardJS("#copy_generated_invite_link");
+            const clipboard = new ClipboardJS("#copy_generated_invite_link");
+            clipboard.on("success", () => {
+                feedback_widget.show({
+                    populate(container) {
+                        container.html(i18n.t("Invite-link copied to clipboard."));
+                    },
+                    title_text: i18n.t("Invite-link"),
+                });
+            });
         },
         error(xhr) {
             ui_report.error("", xhr, invite_status);
