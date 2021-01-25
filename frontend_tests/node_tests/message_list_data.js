@@ -38,7 +38,7 @@ function assert_contents(mld, msg_ids) {
 
 run_test("basics", () => {
     const mld = new MessageListData({
-        muting_enabled: false,
+        consider_topic_mutes: false,
         filter: undefined,
     });
 
@@ -105,7 +105,7 @@ run_test("basics", () => {
 
 run_test("muting enabled", () => {
     const mld = new MessageListData({
-        muting_enabled: true,
+        consider_topic_mutes: true,
         filter: undefined,
     });
 
@@ -139,7 +139,7 @@ run_test("more muting", () => {
     };
 
     const mld = new MessageListData({
-        muting_enabled: true,
+        consider_topic_mutes: true,
         filter: undefined,
     });
 
@@ -202,7 +202,7 @@ run_test("more muting", () => {
 
 run_test("errors", () => {
     const mld = new MessageListData({
-        muting_enabled: false,
+        consider_topic_mutes: false,
         filter: undefined,
     });
     assert.equal(mld.get("bogus-id"), undefined);

@@ -140,27 +140,27 @@ run_test("operators", () => {
     assert.equal(result.length, 0);
 });
 
-run_test("muting_enabled", () => {
+run_test("consider_topic_mutes", () => {
     set_filter([["stream", "devel"]]);
-    assert(narrow_state.muting_enabled());
+    assert(narrow_state.consider_topic_mutes());
 
     narrow_state.reset_current_filter(); // not narrowed, basically
-    assert(narrow_state.muting_enabled());
+    assert(narrow_state.consider_topic_mutes());
 
     set_filter([
         ["stream", "devel"],
         ["topic", "mac"],
     ]);
-    assert(!narrow_state.muting_enabled());
+    assert(!narrow_state.consider_topic_mutes());
 
     set_filter([["search", "whatever"]]);
-    assert(!narrow_state.muting_enabled());
+    assert(!narrow_state.consider_topic_mutes());
 
     set_filter([["is", "private"]]);
-    assert(!narrow_state.muting_enabled());
+    assert(!narrow_state.consider_topic_mutes());
 
     set_filter([["is", "starred"]]);
-    assert(!narrow_state.muting_enabled());
+    assert(!narrow_state.consider_topic_mutes());
 });
 
 run_test("set_compose_defaults", () => {

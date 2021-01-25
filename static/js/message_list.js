@@ -10,14 +10,14 @@ exports.set_narrowed = function (value) {
 class MessageList {
     constructor(opts) {
         if (opts.data) {
-            this.muting_enabled = opts.data.muting_enabled;
+            this.consider_topic_mutes = opts.data.consider_topic_mutes;
             this.data = opts.data;
         } else {
             const filter = opts.filter;
 
-            this.muting_enabled = opts.muting_enabled;
+            this.consider_topic_mutes = opts.consider_topic_mutes;
             this.data = new MessageListData({
-                muting_enabled: this.muting_enabled,
+                consider_topic_mutes: this.consider_topic_mutes,
                 filter,
             });
         }
@@ -375,7 +375,7 @@ class MessageList {
     }
 
     update_muting_and_rerender() {
-        if (!this.muting_enabled) {
+        if (!this.consider_topic_mutes) {
             return;
         }
         this.data.update_items_for_muting();
@@ -412,7 +412,7 @@ class MessageList {
 exports.MessageList = MessageList;
 
 exports.all = new MessageList({
-    muting_enabled: false,
+    consider_topic_mutes: false,
 });
 
 window.message_list = exports;

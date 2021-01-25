@@ -32,10 +32,10 @@ function test_with(fixture) {
         }
     }
 
-    const muting_enabled = narrow_state.muting_enabled();
+    const consider_topic_mutes = narrow_state.consider_topic_mutes();
     const msg_data = new MessageListData({
         filter: narrow_state.filter(),
-        muting_enabled,
+        consider_topic_mutes,
     });
     const id_info = {
         target_id: fixture.target_id,
