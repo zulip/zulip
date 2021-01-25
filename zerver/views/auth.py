@@ -60,6 +60,7 @@ from zerver.models import (
 from zerver.signals import email_on_new_login
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
+    AmazonCognitoAuthBackend,
     AppleAuthBackend,
     ExternalAuthDataDict,
     ExternalAuthResult,
@@ -523,6 +524,9 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
         secret_setting = "SOCIAL_AUTH_" + backend.upper() + "_SECRET"
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):
             return config_error(request, backend)
+
+    if backend == "cognito" and not AmazonCognitoAuthBackend.check_config():
+        return config_error(request, 'amazoncognito')
 
     return oauth_redirect_to_root(request, backend_url, 'social', extra_url_params=extra_url_params)
 
@@ -1012,6 +1016,7 @@ def config_error(request: HttpRequest, error_category_name: str) -> HttpResponse
         'google': {'social_backend_name': 'google', 'has_markdown_file': True},
         'github': {'social_backend_name': 'github', 'has_markdown_file': True},
         'gitlab': {'social_backend_name': 'gitlab', 'has_markdown_file': True},
+        'amazoncognito': {'social_backend_name': 'cognito', 'has_markdown_file': True},
         'ldap': {'error_name': 'ldap_error_realm_is_none'},
         'dev': {'error_name': 'dev_not_supported_error'},
         'saml': {'social_backend_name': 'saml'},
