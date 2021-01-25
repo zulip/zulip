@@ -1829,7 +1829,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: $sm_max) {
     #pw_strength {
         margin: auto;
     }
