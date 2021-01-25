@@ -364,18 +364,22 @@ run_test("bookend", (override) => {
 });
 
 run_test("filter_muted_topic_messages", () => {
-    const list = new MessageList({});
+    const list = new MessageList({
+        consider_topic_mutes: true,
+    });
     muting.add_muted_topic(1, "muted");
 
     const unmuted = [
         {
             id: 50,
+            type: "stream",
             stream_id: 1,
             mentioned: true, // overrides mute
             topic: "muted",
         },
         {
             id: 60,
+            type: "stream",
             stream_id: 1,
             mentioned: false,
             topic: "whatever",
@@ -384,6 +388,7 @@ run_test("filter_muted_topic_messages", () => {
     const muted = [
         {
             id: 70,
+            type: "stream",
             stream_id: 1,
             mentioned: false,
             topic: "muted",
@@ -403,9 +408,6 @@ run_test("add_remove_rerender", () => {
 
     const messages = [{id: 1}, {id: 2}, {id: 3}];
 
-    list.data.unmuted_messages = function (msgs) {
-        return msgs;
-    };
     list.add_messages(messages);
     assert.equal(list.num_items(), 3);
 

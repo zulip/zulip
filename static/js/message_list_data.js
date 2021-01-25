@@ -170,11 +170,21 @@ class MessageListData {
         return messages.filter((message) => predicate(message));
     }
 
+    exclude_topic_muted_messages(messages) {
+        if (!this.consider_topic_mutes) {
+            return messages;
+        }
+
+        return messages.filter((message) => {
+            if (message.type !== "stream") {
+                return true;
+            }
+            return !muting.is_topic_muted(message.stream_id, message.topic) || message.mentioned;
+        });
+    }
+
     unmuted_messages(messages) {
-        return messages.filter(
-            (message) =>
-                !muting.is_topic_muted(message.stream_id, message.topic) || message.mentioned,
-        );
+        return this.exclude_topic_muted_messages(messages);
     }
 
     update_items_for_muting() {
@@ -252,47 +262,43 @@ class MessageListData {
         // This should be used internally when we have
         // "interior" messages to add and can't optimize
         // things by only doing prepend or only doing append.
-        let viewable_messages;
+
+        const viewable_messages = this.unmuted_messages(messages);
+
         if (this.consider_topic_mutes) {
             this._all_items = messages.concat(this._all_items);
             this._all_items.sort((a, b) => a.id - b.id);
-
-            viewable_messages = this.unmuted_messages(messages);
-            this._items = viewable_messages.concat(this._items);
-        } else {
-            viewable_messages = messages;
-            this._items = messages.concat(this._items);
         }
 
+        this._items = viewable_messages.concat(this._items);
         this._items.sort((a, b) => a.id - b.id);
+
         this._add_to_hash(messages);
         return viewable_messages;
     }
 
     append(messages) {
         // Caller should have already filtered
-        let viewable_messages;
+        const viewable_messages = this.unmuted_messages(messages);
+
         if (this.consider_topic_mutes) {
             this._all_items = this._all_items.concat(messages);
-            viewable_messages = this.unmuted_messages(messages);
-        } else {
-            viewable_messages = messages;
         }
         this._items = this._items.concat(viewable_messages);
+
         this._add_to_hash(messages);
         return viewable_messages;
     }
 
     prepend(messages) {
         // Caller should have already filtered
-        let viewable_messages;
+        const viewable_messages = this.unmuted_messages(messages);
+
         if (this.consider_topic_mutes) {
             this._all_items = messages.concat(this._all_items);
-            viewable_messages = this.unmuted_messages(messages);
-        } else {
-            viewable_messages = messages;
         }
         this._items = viewable_messages.concat(this._items);
+
         this._add_to_hash(messages);
         return viewable_messages;
     }
