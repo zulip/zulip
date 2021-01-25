@@ -344,20 +344,27 @@ def get_signups_stream(realm: Realm) -> Stream:
     return get_stream("signups", realm)
 
 
-def notify_new_user(user_profile: UserProfile) -> None:
-    sender_email = settings.NOTIFICATION_BOT
-    sender = get_system_bot(sender_email)
+def send_message_to_signup_notification_stream(
+    sender: UserProfile, realm: Realm, message: str, topic_name: str = _("signups")
+) -> None:
+    signup_notifications_stream = realm.get_signup_notifications_stream()
+    if signup_notifications_stream is None:
+        return
 
+    with override_language(realm.default_language):
+        internal_send_stream_message(sender, signup_notifications_stream, topic_name, message)
+
+
+def notify_new_user(user_profile: UserProfile) -> None:
     user_count = realm_user_count(user_profile.realm)
-    signup_notifications_stream = user_profile.realm.get_signup_notifications_stream()
-    # Send notification to realm signup notifications stream if it exists
-    # Don't send notification for the first user in a realm
-    if signup_notifications_stream is not None and user_count > 1:
-        with override_language(user_profile.realm.default_language):
-            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
-                user=f"@_**{user_profile.full_name}|{user_profile.id}**", user_count=user_count
-            )
-            internal_send_stream_message(sender, signup_notifications_stream, _("signups"), message)
+    sender = get_system_bot(settings.NOTIFICATION_BOT)
+
+    is_first_user = user_count == 1
+    if not is_first_user:
+        message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+            user=f"@_**{user_profile.full_name}|{user_profile.id}**", user_count=user_count
+        )
+        send_message_to_signup_notification_stream(sender, user_profile.realm, message)
 
     # We also send a notification to the Zulip administrative realm
     admin_realm = sender.realm

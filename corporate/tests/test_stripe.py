@@ -1815,12 +1815,15 @@ class StripeTest(StripeTestCase):
             mock_customer = Mock(email=user.delivery_email, default_source=None)
             with patch("corporate.views.stripe_get_customer", return_value=mock_customer):
                 response = self.client_get("/billing/")
-                self.assert_in_success_response([
-                    "Your plan will be downgraded to <strong>Zulip Limited</strong> on "
-                    "<strong>January 2, 2013</strong>",
-                    "You plan is scheduled for downgrade on <strong>January 2, 2013</strong>",
-                    "Cancel downgrade",
-                ], response)
+                self.assert_in_success_response(
+                    [
+                        "Your plan will be downgraded to <strong>Zulip Limited</strong> on "
+                        "<strong>January 2, 2013</strong>",
+                        "You plan is scheduled for downgrade on <strong>January 2, 2013</strong>",
+                        "Cancel downgrade",
+                    ],
+                    response,
+                )
 
         # Verify that we still write LicenseLedger rows during the remaining
         # part of the cycle
