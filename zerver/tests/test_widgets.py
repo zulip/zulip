@@ -62,6 +62,28 @@ class WidgetContentTestCase(ZulipTestCase):
 
         check_widget_content(obj)
 
+        extra_data['type'] = 'button_row'
+        extra_data.pop('heading')
+        extra_data.pop('choices')
+
+        assert_error(obj, 'buttons key is missing from extra_data')
+
+        extra_data['buttons'] = [
+            dict(label='foo')
+        ]
+
+        assert_error(obj, 'reply key is missing from extra_data["buttons"][0]')
+
+        extra_data['buttons'] = [
+            dict(label='foo', reply='bar')
+        ]
+        check_widget_content(obj)
+
+        extra_data['buttons'] = [
+            dict(label='foo', reply='bar', title='baz')
+        ]
+        check_widget_content(obj)
+
     def test_message_error_handling(self) -> None:
         sender = self.example_user('cordelia')
         stream_name = 'Verona'

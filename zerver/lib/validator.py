@@ -364,6 +364,25 @@ def check_widget_content(widget_content: object) -> Dict[str, Any]:
 
             return widget_content
 
+        if extra_data['type'] == 'button_row':
+            check_buttons = check_list(
+                check_dict([
+                    ('label', check_string),
+                    ('reply', check_string),
+                ],
+                    [
+                    ('title', check_string)
+                ]),
+            )
+
+            checker = check_dict([
+                ('buttons', check_buttons),
+            ])
+
+            checker('extra_data', extra_data)
+
+            return widget_content
+
         raise ValidationError('unknown zform type: ' + extra_data['type'])
 
     raise ValidationError('unknown widget type: ' + widget_type)

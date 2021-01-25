@@ -1,5 +1,6 @@
 "use strict";
 
+const render_widgets_zform_button_row = require("../templates/widgets/zform_button_row.hbs");
 const render_widgets_zform_choices = require("../templates/widgets/zform_choices.hbs");
 
 exports.validate_extra_data = function (data) {
@@ -23,8 +24,29 @@ exports.validate_extra_data = function (data) {
             });
         }
 
+        function check_button_row_data(data) {
+            function check_button(field_name, val) {
+                return schema.check_record(field_name, val, {
+                    label: schema.check_string,
+                    reply: schema.check_string,
+                });
+            }
+
+            function check_buttons(field_name, val) {
+                return schema.check_array(field_name, val, check_button);
+            }
+
+            return schema.check_record("zform data", data, {
+                buttons: check_buttons,
+            });
+        }
+
         if (data.type === "choices") {
             return check_choice_data(data);
+        }
+
+        if (data.type === "button_row") {
+            return check_button_row_data(data);
         }
 
         return "unknown zform type: " + data.type;
@@ -81,11 +103,40 @@ exports.activate = function (opts) {
         return elem;
     }
 
+    function make_buttons(data) {
+        for (const [idx, button] of data.buttons.entries()) {
+            button.idx = idx;
+        }
+
+        const html = render_widgets_zform_button_row(data);
+        const elem = $(html);
+
+        elem.find("button").on("click", (e) => {
+            e.stopPropagation();
+
+            const idx = $(e.target).attr("data-idx");
+
+            const reply_content = data.buttons[idx].reply;
+
+            transmit.reply_message({
+                message: opts.message,
+                content: reply_content,
+            });
+        });
+
+        return elem;
+    }
+
     function render() {
         let rendered_widget;
 
         if (data.type === "choices") {
             rendered_widget = make_choices(data);
+            outer_elem.html(rendered_widget);
+        }
+
+        if (data.type === "button_row") {
+            rendered_widget = make_buttons(data);
             outer_elem.html(rendered_widget);
         }
     }
