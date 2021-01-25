@@ -240,7 +240,7 @@ $alert-error-red: hsl(0, 80%, 40%);
 }
 
 /* @media queries */
-@media (max-width: $lg-max) {
+@media (max-width: $lg_max) {
     .alert-box {
         width: 80%;
         left: 10%;

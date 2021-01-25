@@ -59,12 +59,12 @@ exports.initialize = function () {
 
         $("head").append(
             "<style> @media (max-width: " +
-                media_breakpoints["xl-max"] +
+                media_breakpoints.xl_max +
                 ") { .compose-content, .header-main .column-middle { margin-right: " +
                 (7 + sbWidth) +
                 "px !important; } } " +
                 "@media (max-width: " +
-                media_breakpoints["xl-max"] +
+                media_breakpoints.xl_max +
                 ") { .fixed-app .column-middle { margin-left: " +
                 (7 + sbWidth) +
                 "px !important; } } " +
