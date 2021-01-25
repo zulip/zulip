@@ -37,6 +37,7 @@ from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy
+from django_otp import user_has_device
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -1339,6 +1340,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             raise PasswordTooWeakError
 
         super().set_password(password)
+
+    @property
+    def is_authenticated(self) -> bool:
+        if_configured = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
+        if not if_configured:
+            return super().is_authenticated
+
+        if not getattr(self, '_otp_middleware_verify_user_applied', False):
+            return super().is_authenticated
+
+        if not user_has_device(self):
+            return super().is_authenticated
+
+        return super().is_authenticated and self.is_verified()
 
 class PasswordTooWeakError(Exception):
     pass

@@ -32,6 +32,7 @@ from onelogin.saml2.response import OneLogin_Saml2_Response
 from social_core.exceptions import AuthFailed, AuthStateForbidden
 from social_django.storage import BaseDjangoStorage
 from social_django.strategy import DjangoStrategy
+from two_factor.models import PhoneDevice
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
@@ -47,6 +48,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.cache import cache_get
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
 from zerver.lib.email_validation import (
     get_existing_user_errors,
@@ -64,6 +66,7 @@ from zerver.lib.test_helpers import (
     create_s3_buckets,
     get_test_image_file,
     load_subdomain_token,
+    queries_captured,
     use_s3_backend,
 )
 from zerver.lib.upload import MEDIUM_AVATAR_SIZE, resize_avatar
@@ -78,6 +81,7 @@ from zerver.lib.validator import (
     check_string,
     validate_login_email,
 )
+from zerver.middleware import otp_middleware_device_from_persistent_id_cache_key
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -3197,6 +3201,14 @@ class FetchAPIKeyTest(ZulipTestCase):
                                        password=initial_password(self.email)))
         self.assert_json_success(result)
 
+    def test_disallowed_if_2fa_enabled(self) -> None:
+        with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
+            self.create_default_device(self.user_profile)
+            result = self.client_post("/api/v1/fetch_api_key",
+                                      dict(username=self.email,
+                                           password=initial_password(self.email)))
+            self.assert_json_error(result, "This endpoint is forbidden for users with 2FA enabled.", 403)
+
     def test_invalid_email(self) -> None:
         result = self.client_post("/api/v1/fetch_api_key",
                                   dict(username='hamlet',
@@ -3482,32 +3494,17 @@ class TestTwoFactor(ZulipTestCase):
             self.assertIn('otp_device_id', self.client.session.keys())
 
     @mock.patch('two_factor.models.totp')
-    def test_two_factor_login_with_ldap(self, mock_totp: mock.MagicMock) -> None:
+    def login_with_2fa(self, email: str, password: str, mock_totp: mock.MagicMock, *,
+                       submit_invalid_token_num: Optional[int]=None) -> HttpResponse:
         token = 123456
-        email = self.example_email('hamlet')
-        password = self.ldap_password('hamlet')
-
-        user_profile = self.example_user('hamlet')
-        user_profile.set_password(password)
-        user_profile.save()
-        self.create_default_device(user_profile)
 
         def totp(*args: Any, **kwargs: Any) -> int:
             return token
 
         mock_totp.side_effect = totp
-
-        # Setup LDAP
-        self.init_default_ldap_database()
-        ldap_user_attr_map = {'full_name': 'cn'}
         with self.settings(
-                AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
-                TWO_FACTOR_CALL_GATEWAY='two_factor.gateways.fake.Fake',
-                TWO_FACTOR_SMS_GATEWAY='two_factor.gateways.fake.Fake',
-                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
-                POPULATE_PROFILE_VIA_LDAP=True,
-                LDAP_APPEND_DOMAIN='zulip.com',
-                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            TWO_FACTOR_CALL_GATEWAY='two_factor.gateways.fake.Fake',
+            TWO_FACTOR_SMS_GATEWAY='two_factor.gateways.fake.Fake',
         ):
             first_step_data = {"username": email,
                                "password": password,
@@ -3519,12 +3516,132 @@ class TestTwoFactor(ZulipTestCase):
                 'INFO:two_factor.gateways.fake:Fake SMS to +12125550100: "Your token is: 123456"'
             ])
 
-            second_step_data = {"token-otp_token": str(token),
+            if submit_invalid_token_num is None:
+                token_to_submit = token
+            else:
+                token_to_submit = token - 1  # Use an incorrect token
+
+            second_step_data = {"token-otp_token": str(token_to_submit),
                                 "two_factor_login_view-current_step": "token"}
-            result = self.client_post("/accounts/login/", second_step_data)
+
+            if submit_invalid_token_num is None:
+                result = self.client_post("/accounts/login/", second_step_data)
+                self.assertEqual(result.status_code, 302)
+                self.assertEqual(result['Location'], 'http://zulip.testserver')
+                return result
+
+        for i in range(0, submit_invalid_token_num):
+            # We don't care about the log output here so we just use assertLogs to suppress it.
+            with self.assertLogs('two_factor.gateways.fake', 'INFO'):
+                result = self.client_post("/accounts/login/", second_step_data)
+            self.assertEqual(result.status_code, 200)
+        return result
+
+    def test_two_factor_login(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        password = initial_password(email)
+        self.create_default_device(user_profile)
+
+        with self.settings(
+                AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
+        ):
+            self.login_with_2fa(email, password)
+            self.assert_logged_in_user_id(user_profile.id)
+            # Going to login page should redirect to `realm.uri` if user is
+            # already logged in.
+            with queries_captured(keep_cache_warm=True) as queries:
+                result = self.client_get('/accounts/login/')
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result['Location'], 'http://zulip.testserver')
 
+            self.assert_length(queries, 3)
+
+    def test_two_factor_token_submissions_are_rate_limited(self) -> None:
+        """
+        Short tokens can be prone to brute-forcing and thus attempts
+        need to be rate limited.
+        """
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        password = initial_password(email)
+        self.create_default_device(user_profile)
+
+        add_ratelimit_rule(10, 2, domain='2fa_attempts_by_user')
+        with self.settings(
+                AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
+        ):
+            result = self.login_with_2fa(email, password, submit_invalid_token_num=3)
+            self.assert_in_response("Too many attempts. Try again in", result)
+
+        remove_ratelimit_rule(10, 2, domain='2fa_attempts_by_user')
+
+    def test_deleting_device_clears_otp_middleware_cache(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        password = initial_password(email)
+        self.create_default_device(user_profile)
+
+        with self.settings(
+                AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
+        ):
+            self.login_with_2fa(email, password)
+            self.assert_logged_in_user_id(user_profile.id)
+
+            device = PhoneDevice.objects.get(user=user_profile)
+            cached_device = cache_get(otp_middleware_device_from_persistent_id_cache_key(device.persistent_id))[0]
+            self.assertEqual(device.persistent_id, cached_device.persistent_id)
+
+            PhoneDevice.objects.filter(user=user_profile).delete()
+            cached_device = cache_get(otp_middleware_device_from_persistent_id_cache_key(device.persistent_id))[0]
+            self.assertEqual(cached_device, None)
+
+    def test_editing_device_updates_otp_middleware_cache(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.delivery_email
+        password = initial_password(email)
+        self.create_default_device(user_profile)
+
+        with self.settings(
+                AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
+        ):
+            self.login_with_2fa(email, password)
+            self.assert_logged_in_user_id(user_profile.id)
+
+            device = PhoneDevice.objects.get(user=user_profile)
+            cached_device = cache_get(otp_middleware_device_from_persistent_id_cache_key(device.persistent_id))[0]
+            self.assertEqual(device.persistent_id, cached_device.persistent_id)
+
+            self.assertEqual(device.confirmed, True)
+            device.confirmed = False
+            device.save()
+            cached_device = cache_get(otp_middleware_device_from_persistent_id_cache_key(device.persistent_id))[0]
+            self.assertEqual(device.persistent_id, cached_device.persistent_id)
+            self.assertEqual(cached_device.confirmed, False)
+
+    def test_two_factor_login_with_ldap(self) -> None:
+        email = self.example_email('hamlet')
+        password = self.ldap_password('hamlet')
+
+        user_profile = self.example_user('hamlet')
+        self.create_default_device(user_profile)
+
+        # Setup LDAP
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {'full_name': 'cn'}
+        with self.settings(
+                AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
+                TWO_FACTOR_AUTHENTICATION_ENABLED=True,
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+        ):
+            self.login_with_2fa(email, password)
+            self.assert_logged_in_user_id(user_profile.id)
             # Going to login page should redirect to `realm.uri` if user is
             # already logged in.
             result = self.client_get('/accounts/login/')

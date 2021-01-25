@@ -253,6 +253,7 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
     'api_by_user': [],
     'authenticate_by_username': [],
     'password_reset_form_by_email': [],
+    '2fa_attempts_by_user': [],
 }
 
 FREE_TRIAL_DAYS = None

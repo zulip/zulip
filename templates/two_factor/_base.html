@@ -1,0 +1,21 @@
+<!-- Copied from the upstream two_factor/_base.html template with an alert div removed, to provide
+a very basic, but usable page until a proper way to deal with the templates is figured out. -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %}{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    </head>
+    <body>
+
+        {% block content_wrapper %}
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+        {% endblock %}
+
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.2/js/bootstrap.min.js"></script>
+    </body>
+</html>

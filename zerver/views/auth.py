@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView
 from django.contrib.auth.views import logout_then_login as django_logout_then_login
-from django.forms import Form
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import redirect, render
 from django.template.response import SimpleTemplateResponse
@@ -20,9 +20,11 @@ from django.utils.http import is_safe_url
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
+from django_otp import user_has_device
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
+from typing_extensions import Protocol
 
 from confirmation.models import Confirmation, create_confirmation_link
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
@@ -38,6 +40,7 @@ from zerver.forms import (
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_error, json_success
@@ -634,12 +637,50 @@ def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> 
 
     context['deactivated_account_error'] = DEACTIVATED_ACCOUNT_ERROR
 
+def rate_limit_2fa_attempt_for_user(user_profile: UserProfile) -> None:
+    ratelimited, secs_to_freedom = RateLimitedUser(user_profile, domain="2fa_attempts_by_user").rate_limit()
+    if ratelimited:
+        raise ValidationError(_("Too many attempts. Try again in {} seconds.").format(int(secs_to_freedom)))
+
+class TwoFactorAuthenticationTokenFormProtocol(Protocol):
+    def clean(self) -> Dict[str, Any]:
+        ...
+
+    @property
+    def user(self) -> UserProfile:
+        ...
+
+class RateLimitedTwoFactorTokenFormMixin:
+    """
+    2fa tokens can be prone to brute-forcing and thus limitations need to be enforced
+    on how many times attempts can be made. django-two-factor-auth doesn't properly
+    ensure all device types are protected in this way, so it falls on us to ensure
+    not to leave any openings. The most straight-forward and reliable way is to
+    customize the forms that are used for processing submitted tokens and apply
+    rate limiting in the clean() method, which has to be called on every token submission
+    as it does the validation.
+    It might be possible to delete this once https://github.com/Bouke/django-two-factor-auth/issues/299
+    is resolved.
+    """
+    def clean(self: TwoFactorAuthenticationTokenFormProtocol) -> Dict[str, Any]:
+        user_profile = self.user
+        assert isinstance(user_profile, UserProfile)
+
+        rate_limit_2fa_attempt_for_user(user_profile)
+        return super().clean()  # type: ignore[misc] # mypy complains about super argument types otherwise
+
+class TwoFactorAuthenticationTokenForm(RateLimitedTwoFactorTokenFormMixin, AuthenticationTokenForm):
+    pass
+
+class TwoFactorBackupTokenForm(RateLimitedTwoFactorTokenFormMixin, BackupTokenForm):
+    pass
+
 class TwoFactorLoginView(BaseTwoFactorLoginView):
     extra_context: ExtraContext = None
     form_list = (
         ('auth', OurAuthenticationForm),
-        ('token', AuthenticationTokenForm),
-        ('backup', BackupTokenForm),
+        ('token', TwoFactorAuthenticationTokenForm),
+        ('backup', TwoFactorBackupTokenForm),
     )
 
     def __init__(self, extra_context: ExtraContext=None,
@@ -660,23 +701,12 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         )
         return context
 
-    def done(self, form_list: List[Form], **kwargs: Any) -> HttpResponse:
+    def get_success_url(self) -> str:
         """
-        Login the user and redirect to the desired page.
-
         We need to override this function so that we can redirect to
-        realm.uri instead of '/'.
+        realm.uri instead of '/' upon successful authentication attempt.
         """
-        realm_uri = self.get_user().realm.uri
-        # This mock.patch business is an unpleasant hack that we'd
-        # ideally like to remove by instead patching the upstream
-        # module to support better configurability of the
-        # LOGIN_REDIRECT_URL setting.  But until then, it works.  We
-        # import mock.patch here because mock has an expensive import
-        # process involving pbr -> pkgresources (which is really slow).
-        from unittest.mock import patch
-        with patch.object(settings, 'LOGIN_REDIRECT_URL', realm_uri):
-            return super().done(form_list, **kwargs)
+        return self.get_user().realm.uri
 
 @has_request_variables
 def login_page(
@@ -745,30 +775,6 @@ def login_page(
 def start_two_factor_auth(request: HttpRequest,
                           extra_context: ExtraContext=None,
                           **kwargs: Any) -> HttpResponse:
-    two_fa_form_field = 'two_factor_login_view-current_step'
-    if two_fa_form_field not in request.POST:
-        # Here we inject the 2FA step in the request context if it's missing to
-        # force the user to go to the first step of 2FA authentication process.
-        # This seems a bit hackish but simplifies things from testing point of
-        # view. I don't think this can result in anything bad because all the
-        # authentication logic runs after the auth step.
-        #
-        # If we don't do this, we will have to modify a lot of auth tests to
-        # insert this variable in the request.
-        request.POST = request.POST.copy()
-        request.POST.update({two_fa_form_field: 'auth'})
-
-    """
-    This is how Django implements as_view(), so extra_context will be passed
-    to the __init__ method of TwoFactorLoginView.
-
-    def as_view(cls, **initkwargs):
-        def view(request, *args, **kwargs):
-            self = cls(**initkwargs)
-            ...
-
-        return view
-    """
     two_fa_view = TwoFactorLoginView.as_view(extra_context=extra_context,
                                              **kwargs)
     return two_fa_view(request, **kwargs)
@@ -867,6 +873,11 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
                                 password=password,
                                 realm=realm,
                                 return_data=return_data)
+    if settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_has_device(user_profile):
+        # Allowing the use of just username+password to fetch the API key would completely
+        # undermine the point of having 2FA.
+        return json_error(_("This endpoint is forbidden for users with 2FA enabled."),
+                          data={"reason": "forbidden with 2fa"}, status=403)
     if return_data.get("inactive_user"):
         return json_error(_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)

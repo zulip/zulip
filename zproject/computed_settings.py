@@ -165,7 +165,7 @@ ALLOWED_HOSTS += REALM_HOSTS.values()
 class TwoFactorLoader(app_directories.Loader):
     def get_dirs(self) -> List[str]:
         dirs = super().get_dirs()
-        return [d for d in dirs if 'two_factor' in d]
+        return [os.path.join(DEPLOY_ROOT, 'templates')] + [d for d in dirs if 'two_factor' in d]
 
 MIDDLEWARE = (
     # With the exception of it's dependencies,
@@ -184,7 +184,7 @@ MIDDLEWARE = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     # Make sure 2FA middlewares come after authentication middleware.
-    'django_otp.middleware.OTPMiddleware',  # Required by two factor auth.
+    'zerver.middleware.OTPMiddleware',  # Required by two factor auth.
     'two_factor.middleware.threadlocals.ThreadLocals',  # Required by Twilio
     # Needs to be after CommonMiddleware, which sets Content-Length
     'zerver.middleware.FinalizeOpenGraphDescription',
@@ -367,6 +367,10 @@ RATE_LIMITING_RULES = {
     'password_reset_form_by_email': [
         (3600, 2),  # 2 reset emails per hour
         (86400, 5),  # 5 per day
+    ],
+    '2fa_attempts_by_user': [
+        (180, 5),
+        (3600, 40),
     ],
 }
 
