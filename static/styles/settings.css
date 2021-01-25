@@ -1870,14 +1870,6 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 }
 
-@media (max-width: 430px) {
-    /* selects the label (inline-block)
-       immediately following the checkbox */
-    .settings-box .checkbox + .inline-block {
-        width: calc(100% - 25px);
-    }
-}
-
 @media only screen and (max-width: $lg_max) {
     /* Show bot-information-box at full width on small
        screen sizes. Not having this media query breaks the
