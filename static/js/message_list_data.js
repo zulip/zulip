@@ -6,8 +6,8 @@ const util = require("./util");
 
 class MessageListData {
     constructor(opts) {
-        this.muting_enabled = opts.muting_enabled;
-        if (this.muting_enabled) {
+        this.excludes_muted_topics = opts.excludes_muted_topics;
+        if (this.excludes_muted_topics) {
             this._all_items = [];
         }
         this._items = [];
@@ -110,7 +110,7 @@ class MessageListData {
     }
 
     clear() {
-        if (this.muting_enabled) {
+        if (this.excludes_muted_topics) {
             this._all_items = [];
         }
 
@@ -178,7 +178,7 @@ class MessageListData {
     }
 
     update_items_for_muting() {
-        if (!this.muting_enabled) {
+        if (!this.excludes_muted_topics) {
             return;
         }
         this._items = this.unmuted_messages(this._all_items);
@@ -253,7 +253,7 @@ class MessageListData {
         // "interior" messages to add and can't optimize
         // things by only doing prepend or only doing append.
         let viewable_messages;
-        if (this.muting_enabled) {
+        if (this.excludes_muted_topics) {
             this._all_items = messages.concat(this._all_items);
             this._all_items.sort((a, b) => a.id - b.id);
 
@@ -272,7 +272,7 @@ class MessageListData {
     append(messages) {
         // Caller should have already filtered
         let viewable_messages;
-        if (this.muting_enabled) {
+        if (this.excludes_muted_topics) {
             this._all_items = this._all_items.concat(messages);
             viewable_messages = this.unmuted_messages(messages);
         } else {
@@ -286,7 +286,7 @@ class MessageListData {
     prepend(messages) {
         // Caller should have already filtered
         let viewable_messages;
-        if (this.muting_enabled) {
+        if (this.excludes_muted_topics) {
             this._all_items = messages.concat(this._all_items);
             viewable_messages = this.unmuted_messages(messages);
         } else {
@@ -305,7 +305,7 @@ class MessageListData {
         }
 
         this._items = this._items.filter((msg) => !msg_ids_to_remove.has(msg.id));
-        if (this.muting_enabled) {
+        if (this.excludes_muted_topics) {
             this._all_items = this._all_items.filter((msg) => !msg_ids_to_remove.has(msg.id));
         }
     }
@@ -496,7 +496,7 @@ class MessageListData {
         ) {
             blueslip.debug("Changed message ID from server caused out-of-order list, reordering");
             this._items.sort(message_sort_func);
-            if (this.muting_enabled) {
+            if (this.excludes_muted_topics) {
                 this._all_items.sort(message_sort_func);
             }
             return true;

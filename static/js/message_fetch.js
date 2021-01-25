@@ -466,7 +466,7 @@ exports.initialize = function () {
     // without a `table_name` attached.
     const recent_topics_message_list = new message_list.MessageList({
         filter: new Filter([{operator: "in", operand: "home"}]),
-        muting_enabled: true,
+        excludes_muted_topics: true,
     });
     exports.load_messages({
         anchor: "newest",
