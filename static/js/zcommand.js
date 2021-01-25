@@ -142,12 +142,20 @@ exports.enter_fixed_mode = function () {
 
 exports.process = function (message_content) {
     const content = message_content.trim();
+    const [command, ...raw_args] = content.split(" ");
+    const args = raw_args.filter((x) => x !== "");
 
-    if (content === "/ping") {
+    // This is handled in rendering logic, but can be validated here
+    if (command === "/me") {
+        // Avoid sending '/me' as content (TODO: inform user why nothing happened)
+        return args.length === 0;
+    }
+
+    if (command === "/ping") {
         const start_time = new Date();
 
         exports.send({
-            command: content,
+            command: command,
             on_success() {
                 const end_time = new Date();
                 let diff = end_time - start_time;
@@ -160,28 +168,58 @@ exports.process = function (message_content) {
     }
 
     const day_commands = ["/day", "/light"];
-    if (day_commands.includes(content)) {
+    if (day_commands.includes(command)) {
         exports.enter_day_mode();
         return true;
     }
 
     const night_commands = ["/night", "/dark"];
-    if (night_commands.includes(content)) {
+    if (night_commands.includes(command)) {
         exports.enter_night_mode();
         return true;
     }
 
-    if (content === "/fluid-width") {
+    const theme_command = "/theme";
+    if (command === theme_command) {
+        const direct_theme_command = "/" + args[0];
+        if (night_commands.includes(direct_theme_command)) {
+            exports.enter_night_mode();
+            return true;
+        }
+        if (day_commands.includes(direct_theme_command)) {
+            exports.enter_day_mode();
+            return true;
+        }
+        // Not a valid use of command, so inform user why
+        const issue = (() => {
+            if (args.length === 0) {
+                return "No theme specified";
+            }
+            return "Theme '" + direct_theme_command.slice(1) + "' does not exist";
+        })();
+        const valid_theme_slash_commands = day_commands.concat(night_commands);
+        const valid_themes = valid_theme_slash_commands.map((theme) => theme.slice(1));
+        const msg = issue + " (valid themes: " + valid_themes.join(", ") + ")";
+        exports.send({
+            command: "/ping", // FIXME: Fake ping to use tell_user
+            on_success() {
+                exports.tell_user(msg);
+            },
+        });
+        return true;
+    }
+
+    if (command === "/fluid-width") {
         exports.enter_fluid_mode();
         return true;
     }
 
-    if (content === "/fixed-width") {
+    if (command === "/fixed-width") {
         exports.enter_fixed_mode();
         return true;
     }
 
-    if (content === "/settings") {
+    if (command === "/settings") {
         hashchange.go_to_location("settings/your-account");
         return true;
     }

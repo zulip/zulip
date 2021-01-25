@@ -357,34 +357,11 @@ function should_show_custom_query(query, items) {
     return !matched;
 }
 
+// Prioritize top 5 shown in typeahead, keeping each group sorted manually.
 exports.slash_commands = [
-    {
-        text: i18n.t("/dark (Toggle night mode)"),
-        name: "dark",
-    },
-    {
-        text: i18n.t("/day (Toggle day mode)"),
-        name: "day",
-    },
-    {
-        text: i18n.t("/fixed-width (Toggle fixed width mode)"),
-        name: "fixed-width",
-    },
-    {
-        text: i18n.t("/fluid-width (Toggle fluid width mode)"),
-        name: "fluid-width",
-    },
-    {
-        text: i18n.t("/light (Toggle day mode)"),
-        name: "light",
-    },
     {
         text: i18n.t("/me is excited (Display action text)"),
         name: "me",
-    },
-    {
-        text: i18n.t("/night (Toggle night mode)"),
-        name: "night",
     },
     {
         text: i18n.t("/poll Where should we go to lunch today? (Create a poll)"),
@@ -393,6 +370,42 @@ exports.slash_commands = [
     {
         text: i18n.t("/settings (Load settings menu)"),
         name: "settings",
+    },
+    {
+        text: i18n.t("/theme color_mode (Switch to new color mode: dark, night, light, day)"),
+        name: "theme",
+    },
+    {
+        text: i18n.t("/todo (Create a todo list)"),
+        name: "todo",
+    },
+    {
+        text: i18n.t("/dark (Switch to night mode)"),
+        name: "dark",
+    },
+    {
+        text: i18n.t("/day (Switch to day mode)"),
+        name: "day",
+    },
+    {
+        text: i18n.t("/fixed-width (Switch to fixed width mode)"),
+        name: "fixed-width",
+    },
+    {
+        text: i18n.t("/fluid-width (Switch to fluid width mode)"),
+        name: "fluid-width",
+    },
+    {
+        text: i18n.t("/light (Switch to day mode)"),
+        name: "light",
+    },
+    {
+        text: i18n.t("/night (Switch to night mode)"),
+        name: "night",
+    },
+    {
+        text: i18n.t("/ping (Test server round-trip time)"),
+        name: "ping",
     },
 ];
 
@@ -982,6 +995,9 @@ function get_header_text() {
             break;
         case "silent_mention":
             tip_text = i18n.t("User will not be notified");
+            break;
+        case "slash":
+            tip_text = i18n.t("Try /commands to receive full command list from notification bot");
             break;
         case "syntax":
             if (page_params.realm_default_code_block_language !== null) {

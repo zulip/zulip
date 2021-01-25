@@ -357,11 +357,9 @@ function slash_command_comparator(slash_command_a, slash_command_b) {
     return 0;
 }
 exports.sort_slash_commands = function (matches, query) {
-    // We will likely want to in the future make this sort the
-    // just-`/` commands by something approximating usefulness.
     const results = typeahead.triage(query, matches, (x) => x.name);
 
-    results.matches = results.matches.sort(slash_command_comparator);
+    // Don't sort the matches here too, as these are prioritized manually
     results.rest = results.rest.sort(slash_command_comparator);
     return results.matches.concat(results.rest);
 };
