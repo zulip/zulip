@@ -461,6 +461,11 @@ li,
     margin-right: -32px;
     margin-top: -1px;
     padding: 8px 3px 0 13px;
+
+    /* This property nullifies the box-shadow rendered by .btn class */
+    &:active {
+        box-shadow: none;
+    }
 }
 
 #clipboard_image {
