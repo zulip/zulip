@@ -1087,7 +1087,7 @@ ul.grey-box {
     }
 }
 
-@media (max-width: $lg-max) {
+@media (max-width: $lg_max) {
     .subscriptions-container {
         max-width: 95%;
     }
@@ -1103,7 +1103,7 @@ ul.grey-box {
     }
 }
 
-@media (max-width: $lg-max) {
+@media (max-width: $lg_max) {
     .subscriptions-container .left .search-container {
         flex-wrap: wrap;
         justify-content: space-evenly;
@@ -1119,7 +1119,7 @@ ul.grey-box {
 
    Longer-term we should extract this logic two-column-overlay class
    to read more naturally. */
-@media (max-width: $md-max) {
+@media (max-width: $md_max) {
     .subscriptions-container {
         position: relative;
         overflow: hidden;
@@ -1180,7 +1180,7 @@ ul.grey-box {
     }
 }
 
-@media (max-width: $sm-max) {
+@media (max-width: $sm_max) {
     #subscription_overlay .subscription_settings .button-group {
         display: block;
         float: unset;

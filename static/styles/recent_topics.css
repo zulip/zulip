@@ -11,7 +11,7 @@
     display: flex;
     flex-direction: column;
 
-    @media (max-width: $md-max) {
+    @media (max-width: $md_max) {
         height: 95%;
         max-width: none;
         width: 90%;
@@ -279,7 +279,7 @@
             white-space: nowrap;
         }
 
-        @media (max-width: $md-max) {
+        @media (max-width: $md_max) {
             /* Hide participants and last message time
                on smaller screens. This ensures user always
                has a nice UI experience. */
