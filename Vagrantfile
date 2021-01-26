@@ -158,12 +158,6 @@ sudo dpkg --purge landscape-client landscape-common ubuntu-release-upgrader-core
 sudo dpkg-divert --add --rename /etc/default/motd-news
 sudo sh -c 'echo ENABLED=0 > /etc/default/motd-news'
 
-# If the host is running SELinux remount the /sys/fs/selinux directory as read only,
-# needed for apt-get to work.
-if [ -d "/sys/fs/selinux" ]; then
-    sudo mount -o remount,ro /sys/fs/selinux
-fi
-
 # Set default locale, this prevents errors if the user has another locale set.
 if ! grep -q 'LC_ALL=en_US.UTF-8' /etc/default/locale; then
     echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/default/locale
