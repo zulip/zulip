@@ -282,8 +282,9 @@ class RealmTest(ZulipTestCase):
         from django.core.mail import outbox
 
         self.assertEqual(len(outbox), 1)
+        self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
-            outbox[0].from_email,
+            self.email_display_from(outbox[0]),
             fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn("Reactivate your Zulip organization", outbox[0].subject)

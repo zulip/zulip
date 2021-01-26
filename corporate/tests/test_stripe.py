@@ -1422,7 +1422,8 @@ class StripeTest(StripeTestCase):
             self.assertEqual(message.to[0], "desdemona+admin@zulip.com")
             self.assertEqual(message.subject, "Sponsorship request (Open-source) for zulip")
             self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
-            self.assertIn("Zulip sponsorship <noreply-", message.from_email)
+            self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+            self.assertIn("Zulip sponsorship <noreply-", self.email_display_from(message))
             self.assertIn("Requested by: King Hamlet (Member)", message.body)
             self.assertIn(
                 "Support URL: http://zulip.testserver/activity/support?q=zulip", message.body

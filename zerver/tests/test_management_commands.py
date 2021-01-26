@@ -377,8 +377,9 @@ class TestPasswordRestEmail(ZulipTestCase):
         call_command(self.COMMAND_NAME, users=self.example_email("iago"))
         from django.core.mail import outbox
 
+        self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
-            outbox[0].from_email,
+            self.email_display_from(outbox[0]),
             fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn("reset your password", outbox[0].body)

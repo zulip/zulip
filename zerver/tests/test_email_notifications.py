@@ -311,7 +311,8 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
             from_email = f'"{othello.full_name}" <{othello.email}>'
-        self.assertEqual(msg.from_email, from_email)
+        self.assertEqual(self.email_envelope_from(msg), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assertEqual(self.email_display_from(msg), from_email)
         self.assertEqual(msg.subject, email_subject)
         self.assertEqual(len(msg.reply_to), 1)
         self.assertIn(msg.reply_to[0], reply_to_emails)

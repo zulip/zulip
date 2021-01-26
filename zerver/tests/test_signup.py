@@ -349,8 +349,9 @@ class PasswordResetTest(ZulipTestCase):
         from django.core.mail import outbox
 
         [message] = outbox
+        self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
-            message.from_email,
+            self.email_display_from(message),
             fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
@@ -911,9 +912,12 @@ class InviteUserBase(ZulipTestCase):
             return
 
         if custom_from_name is not None:
-            self.assertIn(custom_from_name, outbox[0].from_email)
+            self.assertIn(custom_from_name, self.email_display_from(outbox[0]))
 
-        self.assertRegex(outbox[0].from_email, fr" <{self.TOKENIZED_NOREPLY_REGEX}>\Z")
+        self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assertRegex(
+            self.email_display_from(outbox[0]), fr" <{self.TOKENIZED_NOREPLY_REGEX}>\Z"
+        )
 
         self.assertEqual(outbox[0].extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
 
@@ -1676,7 +1680,8 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         for job in email_jobs_to_deliver:
             deliver_email(job)
         self.assertEqual(len(outbox), email_count + 1)
-        self.assertIn(FromAddress.NOREPLY, outbox[-1].from_email)
+        self.assertEqual(self.email_envelope_from(outbox[-1]), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assertIn(FromAddress.NOREPLY, self.email_display_from(outbox[-1]))
 
         # Now verify that signing up clears invite_reminder emails
         with self.settings(EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"):

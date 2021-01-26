@@ -39,7 +39,8 @@ class EmailLogBackEnd(EmailBackend):
 
         context = {
             "subject": email.subject,
-            "from_email": email.from_email,
+            "envelope_from": email.from_email,
+            "from_email": email.extra_headers.get("From", email.from_email),
             "reply_to": email.reply_to,
             "recipients": email.to,
             "body": email.body,
