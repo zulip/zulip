@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 46**
+
+* [`GET /messages`](/api/get-messages) and [`GET
+  /events`](/api/get-events): The `topic_links` field now contains a
+  list of dictionaries, rather than a list of strings.
+
 **Feature level 45**
 
 * [`GET /events`](/api/get-events): Removed useless `op` field from

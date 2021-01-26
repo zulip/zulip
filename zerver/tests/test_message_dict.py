@@ -246,7 +246,7 @@ class MessageDictTest(ZulipTestCase):
         # the notification bot.
         zulip_realm = get_realm("zulip")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        url = "https://trac.example.com/ticket/123"
+        links = {"url": "https://trac.example.com/ticket/123", "text": "#123"}
         topic_name = "test #123"
 
         realm_filter = RealmFilter(
@@ -263,7 +263,7 @@ class MessageDictTest(ZulipTestCase):
             )
             return Message.objects.get(id=msg_id)
 
-        def assert_topic_links(links: List[str], msg: Message) -> None:
+        def assert_topic_links(links: List[Dict[str, str]], msg: Message) -> None:
             dct = MessageDict.to_dict_uncached_helper([msg])[0]
             self.assertEqual(dct[TOPIC_LINKS], links)
 
@@ -272,9 +272,9 @@ class MessageDictTest(ZulipTestCase):
         assert_topic_links([], get_message(self.lear_user("cordelia")))
         assert_topic_links([], get_message(self.notification_bot()))
         realm_filter.save()
-        assert_topic_links([url], get_message(self.example_user("othello")))
-        assert_topic_links([url], get_message(self.lear_user("cordelia")))
-        assert_topic_links([url], get_message(self.notification_bot()))
+        assert_topic_links([links], get_message(self.example_user("othello")))
+        assert_topic_links([links], get_message(self.lear_user("cordelia")))
+        assert_topic_links([links], get_message(self.notification_bot()))
 
     def test_reaction(self) -> None:
         sender = self.example_user("othello")

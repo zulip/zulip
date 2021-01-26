@@ -2382,30 +2382,49 @@ basic_link_splitter = re.compile(r"[ !;\?\),\'\"]")
 # function on the URLs; they are expected to be HTML-escaped when
 # rendered by clients (just as links rendered into message bodies
 # are validated and escaped inside `url_to_a`).
-def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
-    matches: List[str] = []
-
+def topic_links(realm_filters_key: int, topic_name: str) -> List[Dict[str, str]]:
+    matches: List[Dict[str, Union[str, int]]] = []
     realm_filters = realm_filters_for_realm(realm_filters_key)
 
     for realm_filter in realm_filters:
-        pattern = prepare_realm_pattern(realm_filter[0])
+        raw_pattern = realm_filter[0]
+        url_format_string = realm_filter[1]
+        pattern = prepare_realm_pattern(raw_pattern)
         for m in re.finditer(pattern, topic_name):
-            matches += [realm_filter[1] % m.groupdict()]
+            match_details = m.groupdict()
+            match_text = match_details["linkifier_actual_match"]
+            # We format the realm_filter's url string using the matched text.
+            # Also, we include the matched text in the response, so that our clients
+            # don't have to implement any logic of their own to get back the text.
+            matches += [
+                dict(
+                    url=url_format_string % match_details,
+                    text=match_text,
+                    index=topic_name.find(match_text),
+                )
+            ]
 
     # Also make raw URLs navigable.
     for sub_string in basic_link_splitter.split(topic_name):
         link_match = re.match(get_web_link_regex(), sub_string)
         if link_match:
-            url = link_match.group("url")
-            result = urlsplit(url)
+            actual_match_url = link_match.group("url")
+            result = urlsplit(actual_match_url)
             if not result.scheme:
                 if not result.netloc:
                     i = (result.path + "/").index("/")
                     result = result._replace(netloc=result.path[:i], path=result.path[i:])
                 url = result._replace(scheme="https").geturl()
-            matches.append(url)
+            else:
+                url = actual_match_url
+            matches.append(
+                dict(url=url, text=actual_match_url, index=topic_name.find(actual_match_url))
+            )
 
-    return matches
+    # In order to preserve the order in which the links occur, we sort the matched text
+    # based on its starting index in the topic. We pop the index field before returning.
+    matches = sorted(matches, key=lambda k: k["index"])
+    return [{k: str(v) for k, v in match.items() if k != "index"} for match in matches]
 
 
 def maybe_update_markdown_engines(realm_filters_key: Optional[int], email_gateway: bool) -> None:

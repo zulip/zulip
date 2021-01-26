@@ -337,6 +337,13 @@ muted_topics_event = event_dict_type(
 )
 check_muted_topics = make_checker(muted_topics_event)
 
+_check_topic_links = DictType(
+    required_keys=[
+        ("text", str),
+        ("url", str),
+    ]
+)
+
 message_fields = [
     ("avatar_url", OptionalType(str)),
     ("client", str),
@@ -353,7 +360,7 @@ message_fields = [
     ("sender_id", int),
     ("stream_id", int),
     (TOPIC_NAME, str),
-    (TOPIC_LINKS, ListType(str)),
+    (TOPIC_LINKS, ListType(_check_topic_links)),
     ("submessages", ListType(dict)),
     ("timestamp", int),
     ("type", str),
@@ -1380,7 +1387,7 @@ update_message_topic_fields = [
     ),
     ("stream_id", int),
     ("stream_name", str),
-    (TOPIC_LINKS, ListType(str)),
+    (TOPIC_LINKS, ListType(_check_topic_links)),
     (TOPIC_NAME, str),
 ]
 
