@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.core import mail
 from django.utils.timezone import now
 
@@ -116,8 +117,9 @@ class EmailChangeTestCase(ZulipTestCase):
         )
         body = email_message.body
         self.assertIn("We received a request to change the email", body)
+        self.assertEqual(self.email_envelope_from(email_message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
-            email_message.from_email,
+            self.email_display_from(email_message),
             fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
 

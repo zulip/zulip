@@ -148,7 +148,9 @@ def build_email(
     if from_address == FromAddress.support_placeholder:
         from_address = FromAddress.SUPPORT
 
-    from_email = str(Address(display_name=from_name, addr_spec=from_address))
+    # Set the "From" that is displayed separately from the envelope-from
+    extra_headers["From"] = str(Address(display_name=from_name, addr_spec=from_address))
+
     reply_to = None
     if reply_to_email is not None:
         reply_to = [reply_to_email]
@@ -158,8 +160,9 @@ def build_email(
     elif from_address == FromAddress.NOREPLY:
         reply_to = [FromAddress.NOREPLY]
 
+    envelope_from = FromAddress.NOREPLY
     mail = EmailMultiAlternatives(
-        email_subject, message, from_email, to_emails, reply_to=reply_to, headers=extra_headers
+        email_subject, message, envelope_from, to_emails, reply_to=reply_to, headers=extra_headers
     )
     if html_message is not None:
         mail.attach_alternative(html_message, "text/html")

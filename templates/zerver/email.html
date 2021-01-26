@@ -1,3 +1,6 @@
+{% if from_email != envelope_from %}
+<h4>Envelope-From: {{ envelope_from }}</h4>
+{% endif %}
 <h4>From: {{ from_email }}</h4>
 {% if reply_to %}
 <h4>Reply To:

@@ -13,6 +13,7 @@ import lxml.html
 import orjson
 from django.apps import apps
 from django.conf import settings
+from django.core.mail import EmailMessage
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
@@ -1159,6 +1160,25 @@ Output:
 
     def ldap_password(self, uid: str) -> str:
         return f"{uid}_ldap_password"
+
+    def email_display_from(self, email_message: EmailMessage) -> str:
+        """
+        Returns the email address that will show in email clients as the
+        "From" field.
+        """
+        # The extra_headers field may contain a "From" which is used
+        # for display in email clients, and appears in the RFC822
+        # header as `From`.  The `.from_email` accessor is the
+        # "envelope from" address, used by mail transfer agents if
+        # the email bounces.
+        return email_message.extra_headers.get("From", email_message.from_email)
+
+    def email_envelope_from(self, email_message: EmailMessage) -> str:
+        """
+        Returns the email address that will be used if the email bounces.
+        """
+        # See email_display_from, above.
+        return email_message.from_email
 
 
 class WebhookTestCase(ZulipTestCase):
