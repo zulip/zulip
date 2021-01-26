@@ -139,7 +139,7 @@ js_rules = RuleList(
         {'pattern': r'ui.report_success\(',
          'description': 'Deprecated function, use ui_report.success.'},
         {'pattern': r'''report.success\(["']''',
-         'description': 'Argument to report_success should be a literal string enclosed '
+         'description': 'Argument to ui_report.success should be a literal string enclosed '
                         'by i18n.t()'},
         {'pattern': r'ui.report_error\(',
          'description': 'Deprecated function, use ui_report.error.'},
@@ -148,6 +148,11 @@ js_rules = RuleList(
                         'by i18n.t()',
          'good_lines': ['ui_report.error("")', 'ui_report.error(_("text"))'],
          'bad_lines': ['ui_report.error("test")']},
+        {'pattern': r'''report.client_error\(["'][^'"]''',
+         'description': 'Argument to ui_report.client_error should be a literal string enclosed '
+                        'by i18n.t()',
+         'good_lines': ['ui_report.client_error("")', 'ui_report.client_error(_("text"))'],
+         'bad_lines': ['ui_report.client_error("test")']},
         {'pattern': r'\$\(document\)\.ready\(',
          'description': "`Use $(f) rather than `$(document).ready(f)`",
          'good_lines': ['$(function () {foo();}'],
