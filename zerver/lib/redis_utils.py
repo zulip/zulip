@@ -30,8 +30,9 @@ def put_dict_in_redis(redis_client: redis.StrictRedis, key_format: str,
                       token: Optional[str]=None) -> str:
     key_length = len(key_format) - len('{token}') + token_length
     if key_length > MAX_KEY_LENGTH:
-        error_msg = "Requested key too long in put_dict_in_redis. Key format: %s, token length: %s"
-        raise ZulipRedisKeyTooLongError(error_msg % (key_format, token_length))
+        raise ZulipRedisKeyTooLongError(
+            f"Requested key too long in put_dict_in_redis. Key format: {key_format}, token length: {token_length}",
+        )
     if token is None:
         token = secrets.token_hex(token_length // 2)
     key = key_format.format(token=token)
@@ -49,8 +50,9 @@ def get_dict_from_redis(redis_client: redis.StrictRedis, key_format: str, key: s
     # against bugs where a caller requests a key based on user input and doesn't
     # validate it - which could potentially allow users to poke around arbitrary Redis keys.
     if len(key) > MAX_KEY_LENGTH:
-        error_msg = "Requested key too long in get_dict_from_redis: %s"
-        raise ZulipRedisKeyTooLongError(error_msg % (key,))
+        raise ZulipRedisKeyTooLongError(
+            f"Requested key too long in get_dict_from_redis: {key}",
+        )
     validate_key_fits_format(key, key_format)
 
     data = redis_client.get(key)
