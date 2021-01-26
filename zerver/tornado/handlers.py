@@ -19,9 +19,6 @@ from zerver.tornado.descriptors import get_descriptor_by_handler_id
 current_handler_id = 0
 handlers: Dict[int, "AsyncDjangoHandler"] = {}
 
-# Copied from django.core.handlers.base
-logger = logging.getLogger("django.request")
-
 
 def get_handler_by_id(handler_id: int) -> "AsyncDjangoHandler":
     return handlers[handler_id]
