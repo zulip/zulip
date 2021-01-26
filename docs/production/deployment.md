@@ -490,6 +490,11 @@ If you are using a [Apache as a single-sign-on
 authenticator](../production/authentication-methods.html#apache-based-sso-with-remote-user),
 you will need to add **`zulip::apache_sso`** to the list.
 
+In order to enable the SAML configuration cron job, which currently keeps the
+SAML certificates up-to-date, you need to complete the configuration of the
+`metadata_url` field as described [here](../production/authentication-methods.html#saml)
+and add **`zulip::auto_saml_configuration`** to the list of `puppet_classes`.
+
 #### `pgroonga`
 
 Set to the string `enabled` if enabling the [multi-language PGroonga
