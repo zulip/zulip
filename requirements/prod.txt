@@ -280,10 +280,6 @@ html2text==2020.1.16 \
     # via
     #   -r requirements/common.in
     #   zulip-bots
-httplib2==0.18.1 \
-    --hash=sha256:8af66c1c52c7ffe1aa5dc4bcd7c769885254b0756e6e69f953c7f0ab49a70ba3 \
-    --hash=sha256:ca2914b015b6247791c4866782fa6042f495b94401a0f0bd3e1d6e0ba2236782
-    # via -r requirements/common.in
 hyper==0.7.0 \
     --hash=sha256:069514f54231fb7b5df2fb910a114663a83306d5296f588fffcb0a9be19407fc \
     --hash=sha256:12c82eacd122a659673484c1ea0d34576430afbe5aa6b8f63fe37fcb06a2458c
