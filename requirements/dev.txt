@@ -40,7 +40,7 @@ argon2-cffi==20.1.0 \
     --hash=sha256:d8029b2d3e4b4cea770e9e5a0104dd8fa185c1724a0f01528ae4826a6d25f97d \
     --hash=sha256:da7f0445b71db6d3a72462e04f36544b0de871289b0bc8a7cc87c0f5ec7079fa \
     --hash=sha256:e2db6e85c057c16d0bd3b4d2b04f270a7467c147381e8fd73cbbe5bc719832be
-    # via -r requirements/common.in
+    # via django
 arrow==0.17.0 \
     --hash=sha256:e098abbd9af3665aea81bdd6c869e93af4feb078e98468dd351c383af187aac5 \
     --hash=sha256:ff08d10cda1d36c68657d6ad20d74fbea493d980f8b2d45344e00d6ed2bf6ed4
@@ -402,7 +402,7 @@ django-webpack4-loader==0.0.5 \
     --hash=sha256:baa043c4601ed763d161490e2888cf6aa93a2fd9b60681e6b19e35dc7fcb155d \
     --hash=sha256:be90257041170f39c025ff674c9064569c9303b464536488b6a6cedd8e3d28be
     # via -r requirements/common.in
-django==3.1.5 \
+django[argon2]==3.1.5 \
     --hash=sha256:2d78425ba74c7a1a74b196058b261b9733a8570782f4e2828974777ccca7edf7 \
     --hash=sha256:efa2ab96b33b20c2182db93147a0c3cd7769d418926f9e9f140a60dca7c64ca9
     # via
