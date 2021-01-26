@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django==3.1.*
+Django[argon2]==3.1.*
 
 # needed for Literal, TypedDict
 typing-extensions
@@ -28,9 +28,6 @@ Pillow
 
 # Needed for building complex DB queries
 SQLAlchemy
-
-# Needed for password hashing
-argon2-cffi
 
 # Needed for S3 file uploads
 boto3
