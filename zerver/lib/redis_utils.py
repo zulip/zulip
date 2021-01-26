@@ -19,11 +19,12 @@ class ZulipRedisKeyTooLongError(ZulipRedisError):
 class ZulipRedisKeyOfWrongFormatError(ZulipRedisError):
     pass
 
-def get_redis_client() -> redis.StrictRedis:
+def get_redis_client() -> "redis.StrictRedis[bytes]":
     return redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT,
-                             password=settings.REDIS_PASSWORD, db=0)
+                             password=settings.REDIS_PASSWORD, db=0,
+                             decode_responses=False)
 
-def put_dict_in_redis(redis_client: redis.StrictRedis, key_format: str,
+def put_dict_in_redis(redis_client: "redis.StrictRedis[bytes]", key_format: str,
                       data_to_store: Mapping[str, Any],
                       expiration_seconds: int,
                       token_length: int=64,
@@ -43,7 +44,7 @@ def put_dict_in_redis(redis_client: redis.StrictRedis, key_format: str,
 
     return key
 
-def get_dict_from_redis(redis_client: redis.StrictRedis, key_format: str, key: str,
+def get_dict_from_redis(redis_client: "redis.StrictRedis[bytes]", key_format: str, key: str,
                         ) -> Optional[Dict[str, Any]]:
     # This function requires inputting the intended key_format to validate
     # that the key fits it, as an additionally security measure. This protects
