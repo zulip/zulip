@@ -64,7 +64,7 @@ exports.initialize = function () {
                 (7 + sbWidth) +
                 "px !important; } } " +
                 "@media (max-width: " +
-                media_breakpoints.xl_max +
+                media_breakpoints.md_max +
                 ") { .fixed-app .column-middle { margin-left: " +
                 (7 + sbWidth) +
                 "px !important; } } " +
