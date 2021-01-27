@@ -225,6 +225,25 @@ exports.get_sub_by_id = function (stream_id) {
     return subs_by_stream_id.get(stream_id);
 };
 
+exports.validate_stream_ids = function (stream_ids) {
+    const good_ids = [];
+    const bad_ids = [];
+
+    for (const stream_id of stream_ids) {
+        if (subs_by_stream_id.has(stream_id)) {
+            good_ids.push(stream_id);
+        } else {
+            bad_ids.push(stream_id);
+        }
+    }
+
+    if (bad_ids.length > 0) {
+        blueslip.warn(`We have untracked stream_ids: ${bad_ids}`);
+    }
+
+    return good_ids;
+};
+
 exports.get_stream_id = function (name) {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an

@@ -345,42 +345,28 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     }
                 }
             } else if (event.op === "peer_add") {
-                for (const stream_id of event.stream_ids) {
+                const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                const user_ids = people.validate_user_ids(event.user_ids);
+
+                peer_data.bulk_add_subscribers({stream_ids, user_ids});
+
+                for (const stream_id of stream_ids) {
                     const sub = stream_data.get_sub_by_id(stream_id);
-
-                    if (!sub) {
-                        blueslip.warn("Cannot find stream for peer_add: " + stream_id);
-                        continue;
-                    }
-
-                    for (const user_id of event.user_ids) {
-                        if (!peer_data.add_subscriber(stream_id, user_id)) {
-                            blueslip.warn("Cannot process peer_add event");
-                            continue;
-                        }
-                    }
-
                     subs.update_subscribers_ui(sub);
                 }
+
                 compose_fade.update_faded_users();
             } else if (event.op === "peer_remove") {
-                for (const stream_id of event.stream_ids) {
+                const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                const user_ids = people.validate_user_ids(event.user_ids);
+
+                peer_data.bulk_remove_subscribers({stream_ids, user_ids});
+
+                for (const stream_id of stream_ids) {
                     const sub = stream_data.get_sub_by_id(stream_id);
-
-                    if (!sub) {
-                        blueslip.warn("Cannot find stream for peer_remove: " + stream_id);
-                        continue;
-                    }
-
-                    for (const user_id of event.user_ids) {
-                        if (!peer_data.remove_subscriber(sub.stream_id, user_id)) {
-                            blueslip.warn("Cannot process peer_remove event.");
-                            continue;
-                        }
-                    }
-
                     subs.update_subscribers_ui(sub);
                 }
+
                 compose_fade.update_faded_users();
             } else if (event.op === "remove") {
                 for (const rec of event.subscriptions) {

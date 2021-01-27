@@ -94,6 +94,7 @@ export function get_subscribers(stream_id) {
 export function set_subscribers(stream_id, user_ids) {
     const subscribers = new LazySet(user_ids || []);
     stream_subscribers.set(stream_id, subscribers);
+    return subscribers;
 }
 
 export function add_subscriber(stream_id, user_id) {
@@ -126,6 +127,26 @@ export function remove_subscriber(stream_id, user_id) {
     subscribers.delete(user_id);
 
     return true;
+}
+
+export function bulk_add_subscribers({stream_ids, user_ids}) {
+    // We rely on our callers to validate stream_ids and user_ids.
+    for (const stream_id of stream_ids) {
+        const subscribers = stream_subscribers.get(stream_id) || set_subscribers(stream_id);
+        for (const user_id of user_ids) {
+            subscribers.add(user_id);
+        }
+    }
+}
+
+export function bulk_remove_subscribers({stream_ids, user_ids}) {
+    // We rely on our callers to validate stream_ids and user_ids.
+    for (const stream_id of stream_ids) {
+        const subscribers = stream_subscribers.get(stream_id) || set_subscribers(stream_id);
+        for (const user_id of user_ids) {
+            subscribers.delete(user_id);
+        }
+    }
 }
 
 export function is_user_subscribed(stream_id, user_id) {

@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub, with_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -123,70 +123,29 @@ test("add error handling", (override) => {
     });
 });
 
-test("peer event error handling (bad stream_ids)", (override) => {
+test("peer event error handling (bad stream_ids/user_ids)", (override) => {
     override("compose_fade.update_faded_users", () => {});
 
     const add_event = {
         type: "subscription",
         op: "peer_add",
-        stream_ids: [99999],
+        stream_ids: [8888, 9999],
+        user_ids: [3333, 4444],
     };
 
-    blueslip.expect("warn", "Cannot find stream for peer_add: 99999");
+    blueslip.expect("warn", "We have untracked stream_ids: 8888,9999");
+    blueslip.expect("warn", "We have untracked user_ids: 3333,4444");
     dispatch(add_event);
     blueslip.reset();
 
     const remove_event = {
         type: "subscription",
         op: "peer_remove",
-        stream_ids: [99999],
+        stream_ids: [8888, 9999],
+        user_ids: [3333, 4444],
     };
 
-    blueslip.expect("warn", "Cannot find stream for peer_remove: 99999");
+    blueslip.expect("warn", "We have untracked stream_ids: 8888,9999");
+    blueslip.expect("warn", "We have untracked user_ids: 3333,4444");
     dispatch(remove_event);
-});
-
-test("peer event error handling (add/remove subscriber)", (override) => {
-    override("compose_fade.update_faded_users", () => {});
-    override("subs.update_subscribers_ui", () => {});
-
-    stream_data.add_sub({
-        name: "devel",
-        stream_id: 1,
-    });
-
-    with_field(
-        peer_data,
-        "add_subscriber",
-        () => false,
-        () => {
-            const add_event = {
-                type: "subscription",
-                op: "peer_add",
-                stream_ids: [1],
-                user_ids: [99999], // id is irrelevant
-            };
-
-            blueslip.expect("warn", "Cannot process peer_add event");
-            dispatch(add_event);
-            blueslip.reset();
-        },
-    );
-
-    with_field(
-        peer_data,
-        "remove_subscriber",
-        () => false,
-        () => {
-            const remove_event = {
-                type: "subscription",
-                op: "peer_remove",
-                stream_ids: [1],
-                user_ids: [99999], // id is irrelevant
-            };
-
-            blueslip.expect("warn", "Cannot process peer_remove event.");
-            dispatch(remove_event);
-        },
-    );
 });
