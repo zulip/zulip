@@ -56,6 +56,25 @@ export function get_by_user_id(user_id, ignore_missing) {
     return people_by_user_id_dict.get(user_id);
 }
 
+export function validate_user_ids(user_ids) {
+    const good_ids = [];
+    const bad_ids = [];
+
+    for (const user_id of user_ids) {
+        if (people_by_user_id_dict.has(user_id)) {
+            good_ids.push(user_id);
+        } else {
+            bad_ids.push(user_id);
+        }
+    }
+
+    if (bad_ids.length > 0) {
+        blueslip.warn(`We have untracked user_ids: ${bad_ids}`);
+    }
+
+    return good_ids;
+}
+
 export function get_by_email(email) {
     const person = people_dict.get(email);
 
