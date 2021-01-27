@@ -50,7 +50,7 @@ from zerver.lib.mention import extract_user_group, possible_mentions, possible_u
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
 from zerver.lib.timeout import TimeoutExpired, timeout
-from zerver.lib.timezone import get_common_timezones
+from zerver.lib.timezone import common_timezones
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
@@ -1240,7 +1240,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         time_input_string = match.group('time')
         timestamp = None
         try:
-            timestamp = dateutil.parser.parse(time_input_string, tzinfos=get_common_timezones())
+            timestamp = dateutil.parser.parse(time_input_string, tzinfos=common_timezones)
         except ValueError:
             try:
                 timestamp = datetime.datetime.fromtimestamp(float(time_input_string))
