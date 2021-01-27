@@ -1726,6 +1726,10 @@ label.label-title {
     }
 }
 
+.api-response-datatype {
+    color: hsl(176, 46.4%, 41%);
+}
+
 .desktop-redirect-box {
     text-align: center;
 
