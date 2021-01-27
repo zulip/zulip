@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {
@@ -12,9 +12,6 @@ set_global("page_params", {
     realm_users: [],
     is_guest: false,
 });
-
-set_global("document", null);
-stub_out_jquery();
 
 zrequire("color_data");
 zrequire("hash_util");
