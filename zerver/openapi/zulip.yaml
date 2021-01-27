@@ -4694,6 +4694,24 @@ paths:
             exist a new stream is created. The description of the stream created can
             be specified by setting the dictionary key `description` with an
             appropriate value.
+            The possible values for each `property` and `value` pairs are:
+
+            * `color` (string): the hex value of the user's display color for the stream.
+            * `is_muted` (boolean): whether the stream is
+              [muted](/help/mute-a-stream).  Prior to Zulip 2.1, this feature was
+              represented by the more confusingly named `in_home_view` (with the
+              opposite value, `in_home_view=!is_muted`); for
+              backwards-compatibility, modern Zulip still accepts that value.
+            * `pin_to_top` (boolean): whether to pin the stream at the top of the stream list.
+            * `desktop_notifications` (boolean): whether to show desktop notifications
+                for all messages sent to the stream.
+            * `audible_notifications` (boolean): whether to play a sound
+              notification for all messages sent to the stream.
+            * `push_notifications` (boolean): whether to trigger a mobile push
+                notification for all messages sent to the stream.
+            * `email_notifications` (boolean): whether to trigger an email
+                notification for all messages sent to the stream.
+
           content:
             application/json:
               schema:
@@ -5418,38 +5436,30 @@ paths:
                               type: string
                               description: |
                                 The property to be changed. It is one of:
-                                    *`color`: The hex value of the user's personal display color for the stream.
 
-                                    *`is_muted`: Whether the stream is [muted](/help/mute-a-stream).
+                                * `color`: The hex value of the user's personal display color for the stream.<br>
+                                * `is_muted`: Whether the stream is [muted](/help/mute-a-stream).<br>
+                                **Changes**: Prior to Zulip 2.1, this feature was
+                                represented by the more confusingly named `in_home_view` (with the
+                                opposite value, `in_home_view=!is_muted`); for
+                                backwards-compatibility, modern Zulip still accepts that value.<br>
+                                * `pin_to_top`: Whether to pin the stream at the top of the stream list.
+                                * `desktop_notifications`: Whether to show desktop notifications for all
+                                messages sent to the stream.<br>
+                                * `audible_notifications`: Whether to play a sound notification for all
+                                messages sent to the stream.<br>
+                                * `push_notifications`: Whether to trigger a mobile push notification for
+                                all messages sent to the stream.<br>
+                                * `email_notifications`: Whether to trigger an email notification for all
+                                messages sent to the stream.<br>
+                                * `in_home_view`: Whether to mute the stream (legacy property)<br>
+                                * `wildcard_mentions_notify`: whether wildcard mentions trigger notifications
+                                as though they were personal mentions in this stream.<br>
+                                A null value means the value of this setting
+                                should be inherited from the user-level default
+                                setting, wildcard_mentions_notify, for
+                                this stream.
 
-                                    **Changes**: Prior to Zulip 2.1, this feature was
-                                    represented by the more confusingly named `in_home_view` (with the
-                                    opposite value, `in_home_view=!is_muted`); for
-                                    backwards-compatibility, modern Zulip still accepts that value.
-
-                                    *`pin_to_top`: Whether to pin the stream at the top of the stream list.
-
-                                    *`desktop_notifications`: Whether to show desktop notifications for all
-                                    messages sent to the stream.
-
-                                    *`audible_notifications`: Whether to play a sound notification for all
-                                    messages sent to the stream.
-
-                                    *`push_notifications`: Whether to trigger a mobile push notification for
-                                    all messages sent to the stream.
-
-                                    *`email_notifications`: Whether to trigger an email notification for all
-                                    messages sent to the stream.
-
-                                    *`in_home_view`: Whether to mute the stream (legacy property)
-
-                                    *`wildcard_mentions_notify`: whether wildcard mentions trigger notifications
-                                    as though they were personal mentions in this stream.
-
-                                    A null value means the value of this setting
-                                    should be inherited from the user-level default
-                                    setting, wildcard_mentions_notify, for
-                                    this stream.
                               enum:
                                 - color
                                 - push_notifications

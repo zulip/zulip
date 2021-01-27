@@ -41,8 +41,7 @@ The possible values for each `property` and `value` pairs are:
 
 #### Return values
 
-* `subscription_data`: The same `subscription_data` object sent by the client
-    for the request, confirming the changes made.
+{generate_return_values_table|zulip.yaml|/users/me/subscriptions/properties:post}
 
 #### Example response
 
