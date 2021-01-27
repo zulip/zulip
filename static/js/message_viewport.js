@@ -457,6 +457,14 @@ exports.initialize = function () {
     $(document).on("compose_started compose_canceled compose_finished", () => {
         bottom_of_feed.reset();
     });
+
+    // We stop autoscrolling when the user is clearly in the middle of
+    // doing something.  Be careful, though, if you try to capture
+    // mousemove, then you will have to contend with the autoscroll
+    // itself generating mousemove events.
+    $(document).on("message_selected.zulip wheel", () => {
+        exports.stop_auto_scrolling();
+    });
 };
 
 window.message_viewport = exports;

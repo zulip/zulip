@@ -415,12 +415,4 @@ exports.all = new MessageList({
     muting_enabled: false,
 });
 
-// We stop autoscrolling when the user is clearly in the middle of
-// doing something.  Be careful, though, if you try to capture
-// mousemove, then you will have to contend with the autoscroll
-// itself generating mousemove events.
-$(document).on("message_selected.zulip wheel", () => {
-    message_viewport.stop_auto_scrolling();
-});
-
 window.message_list = exports;
