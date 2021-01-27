@@ -168,6 +168,11 @@ class TwoFactorLoader(app_directories.Loader):
         dirs = super().get_dirs()
         return [d for d in dirs if d.match("two_factor/*")]
 
+class OauthLoader(app_directories.Loader):
+    def get_dirs(self) -> List[str]:
+        dirs = super().get_dirs()
+        return [d for d in dirs if 'oauth2_provider' in d]
+
 MIDDLEWARE = (
     # With the exception of it's dependencies,
     # our logging middleware should be the top middleware item.
@@ -210,6 +215,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'confirmation',
+    'oauth2_provider',
     'webpack_loader',
     'zerver',
     'social_django',
@@ -638,12 +644,25 @@ two_factor_template_engine_settings = {
     'OPTIONS': two_factor_template_options,
 }
 
+oauth_template_options = deepcopy(default_template_engine_settings['OPTIONS'])
+del oauth_template_options['environment']
+del oauth_template_options['extensions']
+oauth_template_options['loaders'] = ['zproject.settings.OauthLoader']
+oauth_engine_settings = {
+    'NAME': 'Oauth_Server',
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [],
+    'APP_DIRS': False,
+    'OPTIONS': oauth_template_options,
+}
+
 # The order here is important; get_template and related/parent functions try
 # the template engines in order until one succeeds.
 TEMPLATES = [
     default_template_engine_settings,
     non_html_template_engine_settings,
     two_factor_template_engine_settings,
+    oauth_engine_settings,
 ]
 ########################################################################
 # LOGGING SETTINGS

@@ -15,6 +15,7 @@ from django.views.generic import RedirectView, TemplateView
 
 from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.oauth2 import oauth2_endpoint_views  # type: ignore[attr-defined] # fix this later
 from zerver.lib.rest import rest_path
 from zerver.tornado.views import cleanup_event_queue, get_events, get_events_internal, notify
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
@@ -891,7 +892,11 @@ urls += [
     path('api/<slug:article>', api_documentation_view),
 ]
 
-# Two-factor URLs
+# Experimental oauth provider support.
+urls += [
+    path('o/', include((oauth2_endpoint_views, 'oauth2_provider'),)),
+]
+
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
     urls += [path('', include(tf_urls)),
              path('', include(tf_twilio_urls))]
