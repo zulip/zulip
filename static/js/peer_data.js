@@ -1,13 +1,6 @@
 const {LazySet} = require("./lazy_set");
 const people = require("./people");
 
-/*
-
-For legacy reasons this module is mostly tested
-by frontend_tests/node_tests/stream_data.js.
-
-*/
-
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 // We maintain the invariant that this has keys for all all stream_ids
 // that we track in the other data structures.  We intialize it during
