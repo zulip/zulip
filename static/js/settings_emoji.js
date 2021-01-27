@@ -183,11 +183,7 @@ exports.set_up = function () {
             }
 
             if (emoji.name.trim() === "") {
-                ui_report.message(
-                    i18n.t("Failed: Emoji name is required."),
-                    emoji_status,
-                    "alert-error",
-                );
+                ui_report.client_error(i18n.t("Failed: Emoji name is required."), emoji_status);
                 return;
             }
             $("#admin_emoji_submit").prop("disabled", true);

@@ -815,11 +815,7 @@ exports.initialize = function () {
 
         const stream_id = get_stream_id(e.target);
         if (!stream_id) {
-            ui_report.message(
-                i18n.t("Invalid stream id"),
-                $(".stream_change_property_info"),
-                "alert-error",
-            );
+            ui_report.client_error(i18n.t("Invalid stream id"), $(".stream_change_property_info"));
             return;
         }
         const stream_name = stream_data.maybe_get_stream_name(stream_id);
@@ -837,11 +833,7 @@ exports.initialize = function () {
         overlays.close_modal("#deactivation_stream_modal");
         $("#deactivation_stream_modal").remove();
         if (!stream_id) {
-            ui_report.message(
-                i18n.t("Invalid stream id"),
-                $(".stream_change_property_info"),
-                "alert-error",
-            );
+            ui_report.client_error(i18n.t("Invalid stream id"), $(".stream_change_property_info"));
             return;
         }
         const row = $(".stream-row.active");
