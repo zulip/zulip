@@ -3795,7 +3795,7 @@ paths:
                                 narrow is a search narrow, `<span class="highlight">` elements
                                 will be included wrapping the matches for the search keywords.
                           description: |
-                            The ID of the message that matches the narrow.  No record will be returned
+                            `message_id`: The ID of the message that matches the narrow.  No record will be returned
                             for queried messages that do not match the narrow.
                     example:
                       {
@@ -6430,6 +6430,7 @@ paths:
                           description: |
                             `{user_id}`: Object containing the status details of a user
                             with the key of the object being the id of the user.
+                          type: object
                           properties:
                             away:
                               type: boolean
@@ -7105,6 +7106,7 @@ paths:
                             `{provider_name}`: Dictionary containing the details of the
                             video chat provider with the name of the chat provider as
                             the key.
+                          type: object
                           properties:
                             name:
                               type: string
@@ -7217,6 +7219,7 @@ paths:
                             `{site_name}`: Dictionary containing the details of the
                             default external account provider with the name of the
                             website as the key.
+                          type: object
                           properties:
                             name:
                               type: string
@@ -9915,7 +9918,7 @@ components:
         type: object
         additionalProperties: false
         description: |
-          '{id}': Object with data about what value user filled in the custom
+          `{id}`: Object with data about what value user filled in the custom
                       profile field with id `id`.
         properties:
           value:
@@ -10101,7 +10104,7 @@ components:
                 subscribed to.
               additionalProperties:
                 description: |
-                  {email_address}`: List of the names of the streams that the user is
+                  `{email_address}`: List of the names of the streams that the user is
                   already subscribed to.
                 type: array
                 items:
