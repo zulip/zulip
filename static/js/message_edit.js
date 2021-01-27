@@ -175,6 +175,7 @@ exports.show_topic_edit_spinner = function (row) {
     spinner.css({height: ""});
     $(".topic_edit_save").hide();
     $(".topic_edit_cancel").hide();
+    $(".topic_edit_spinner").show();
 };
 
 exports.hide_topic_move_spinner = function () {
@@ -549,6 +550,7 @@ exports.start_topic_edit = function (recipient_row) {
     const form = $(render_topic_edit_form());
     current_msg_list.show_edit_topic_on_recipient_row(recipient_row, form);
     form.on("keydown", handle_inline_topic_edit_keydown);
+    $(".topic_edit_spinner").hide();
     const msg_id = rows.id_for_recipient_row(recipient_row);
     const message = current_msg_list.get(msg_id);
     let topic = message.topic;
