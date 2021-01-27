@@ -146,10 +146,9 @@ function create_stream() {
     // newline characters (by pressing the Enter key) it would still be possible to copy
     // and paste over a description with newline characters in it. Prevent that.
     if (description.includes("\n")) {
-        ui_report.message(
+        ui_report.client_error(
             i18n.t("The stream description cannot contain newline characters."),
             $(".stream_create_info"),
-            "alert-error",
         );
         return undefined;
     }
