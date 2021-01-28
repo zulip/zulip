@@ -24,7 +24,11 @@ function convert_enter_to_click(e) {
 exports.initialize = function () {
     // Login button
     $("body").on("click", ".login_button", () => {
-        window.location.href = "/login/";
+        if (page_params.development_environment) {
+            window.location.href = "/devlogin/";
+        } else {
+            window.location.href = "/login/";
+        }
     });
 
     $("body").on("click", ".go_back_button", () => {
