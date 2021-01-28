@@ -89,7 +89,7 @@ def check_last_owner(user_profile: UserProfile) -> bool:
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
-    target = access_user_by_id(user_profile, user_id)
+    target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
     if check_last_owner(target):
@@ -117,7 +117,8 @@ def _deactivate_user_profile_backend(request: HttpRequest, user_profile: UserPro
 
 def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
-    target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
+    target = access_user_by_id(user_profile, user_id,
+                               allow_deactivated=True, allow_bots=True, for_admin=True)
     if target.is_bot:
         assert target.bot_type is not None
         check_bot_creation_policy(user_profile, target.bot_type)
@@ -144,13 +145,19 @@ def update_user_backend(
         default=None, validator=check_profile_data,
     ),
 ) -> HttpResponse:
-    target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
+    target = access_user_by_id(user_profile, user_id,
+                               allow_deactivated=True, allow_bots=True, for_admin=True)
 
     if role is not None and target.role != role:
-        if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(user_profile):
-            return json_error(_('The owner permission cannot be removed from the only organization owner.'))
+        # Require that the current user has permissions to
+        # grant/remove the role in question.  access_user_by_id has
+        # already verified we're an administrator; here we enforce
+        # that only owners can toggle the is_realm_owner flag.
         if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
+
+        if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(user_profile):
+            return json_error(_('The owner permission cannot be removed from the only organization owner.'))
         do_change_user_role(target, role, acting_user=user_profile)
 
     if (full_name is not None and target.full_name != full_name and
@@ -470,7 +477,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id
     target_user = None
     if user_id is not None:
         target_user = access_user_by_id(user_profile, user_id, allow_deactivated=True,
-                                        allow_bots=True, read_only=True)
+                                        allow_bots=True, for_admin=False)
 
     members = get_raw_user_data(realm, user_profile, target_user=target_user,
                                 client_gravatar=client_gravatar,
@@ -548,7 +555,7 @@ def get_subscription_backend(request: HttpRequest, user_profile: UserProfile,
                              user_id: int=REQ(validator=check_int, path_only=True),
                              stream_id: int=REQ(validator=check_int, path_only=True),
                              ) -> HttpResponse:
-    target_user = access_user_by_id(user_profile, user_id, read_only=True)
+    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
     subscription_status = {'is_subscribed': subscribed_to_stream(target_user, stream_id)}

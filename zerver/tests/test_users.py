@@ -382,29 +382,30 @@ class PermissionTest(ZulipTestCase):
 
         # Must be a valid user ID in the realm
         with self.assertRaises(JsonableError):
-            access_user_by_id(iago, 1234)
+            access_user_by_id(iago, 1234, for_admin=False)
         with self.assertRaises(JsonableError):
-            access_user_by_id(iago, self.mit_user("sipbtest").id)
+            access_user_by_id(iago, self.mit_user("sipbtest").id, for_admin=False)
 
-        # Can only access bot users if allow_deactivated is passed
+        # Can only access bot users if allow_bots is passed
         bot = self.example_user("default_bot")
-        access_user_by_id(iago, bot.id, allow_bots=True)
+        access_user_by_id(iago, bot.id, allow_bots=True, for_admin=True)
         with self.assertRaises(JsonableError):
-            access_user_by_id(iago, bot.id)
+            access_user_by_id(iago, bot.id, for_admin=True)
 
         # Can only access deactivated users if allow_deactivated is passed
         hamlet = self.example_user("hamlet")
         do_deactivate_user(hamlet)
         with self.assertRaises(JsonableError):
-            access_user_by_id(iago, hamlet.id)
-        access_user_by_id(iago, hamlet.id, allow_deactivated=True)
+            access_user_by_id(iago, hamlet.id, for_admin=False)
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, hamlet.id, for_admin=True)
+        access_user_by_id(iago, hamlet.id, allow_deactivated=True, for_admin=True)
 
         # Non-admin user can't admin another user
         with self.assertRaises(JsonableError):
-            access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id)
+            access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True)
         # But does have read-only access to it.
-        access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id,
-                          read_only=True)
+        access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False)
 
     def test_change_regular_member_to_guest(self) -> None:
         iago = self.example_user("iago")
