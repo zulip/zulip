@@ -28,7 +28,8 @@ def set_forward_address(forward_address: str) -> None:
         config.write(cfgfile)
 
 class EmailLogBackEnd(EmailBackend):
-    def log_email(self, email: EmailMultiAlternatives) -> None:
+    @staticmethod
+    def log_email(email: EmailMultiAlternatives) -> None:
         """Used in development to record sent emails in a nice HTML log"""
         html_message = 'Missing HTML message'
         if len(email.alternatives) > 0:
