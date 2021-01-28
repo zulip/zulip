@@ -85,6 +85,7 @@ following keys in `zproject/dev-secrets.conf`
 * `email_port` - SMTP port.
 * `email_host_user` - Username of the SMTP user
 * `email_password` - Password of the SMTP user.
+* `email_use_tls` - Set to `true` for most providers. Else, don't set any value.
 
 Here is an example of how `zproject/dev-secrets.conf` might look if
 you are using Gmail.
@@ -93,6 +94,7 @@ you are using Gmail.
 email_host = smtp.gmail.com
 email_port = 587
 email_host_user = username@gmail.com
+email_use_tls = true
 
 # This is different from your Gmail password if you have 2FA enabled for your Google account.
 # See the configuring Gmail to send email section above for more details
