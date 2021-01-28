@@ -117,6 +117,10 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
 };
 
 exports.process_reaction_click = function (message_id, local_id) {
+    if (page_params.is_web_public_visitor) {
+        login_to_access.show();
+        return;
+    }
     const message = get_message(message_id);
 
     if (!message) {

@@ -51,6 +51,7 @@ const channel = set_global("channel", {});
 const emoji_picker = set_global("emoji_picker", {
     hide_emoji_popover() {},
 });
+const login_to_access = set_global("login_to_access", {});
 
 const alice = {
     email: "alice@example.com",
@@ -779,15 +780,23 @@ run_test("process_reaction_click", () => {
         emoji_name: "smile",
         emoji_code: "1f642",
     };
-    {
-        const stub = make_stub();
-        channel.del = stub.f;
-        reactions.process_reaction_click(message_id, "unicode_emoji,1f642");
-        assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("args").args;
-        assert.equal(args.url, "/json/messages/1001/reactions");
-        assert.deepEqual(args.data, expected_reaction_info);
-    }
+
+    // Test web_public_visitor cannot react.
+    page_params.is_web_public_visitor = true;
+    let stub = make_stub();
+    login_to_access.show = stub.f;
+    reactions.process_reaction_click(message_id, "unicode_emoji,1f642");
+    let args = stub.get_args("args").args;
+    assert.equal(args, undefined);
+
+    page_params.is_web_public_visitor = false;
+    stub = make_stub();
+    channel.del = stub.f;
+    reactions.process_reaction_click(message_id, "unicode_emoji,1f642");
+    assert.equal(stub.num_calls, 1);
+    args = stub.get_args("args").args;
+    assert.equal(args.url, "/json/messages/1001/reactions");
+    assert.deepEqual(args.data, expected_reaction_info);
 });
 
 run_test("warnings", () => {
