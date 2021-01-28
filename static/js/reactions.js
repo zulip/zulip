@@ -8,6 +8,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as emoji_picker from "./emoji_picker";
 import {$t} from "./i18n";
+import * as login_to_access from "./login_to_access";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
@@ -110,6 +111,13 @@ export function toggle_emoji_reaction(message_id, emoji_name) {
 }
 
 export function process_reaction_click(message_id, local_id) {
+    if (page_params.is_spectator) {
+        // Spectators can't react, since they don't have accounts.  We
+        // stop here to avoid a confusing reaction local echo.
+        login_to_access.show();
+        return;
+    }
+
     const message = get_message(message_id);
 
     if (!message) {
