@@ -8468,6 +8468,108 @@ paths:
                         "result": "error",
                       }
 
+  /bot_storage:
+    get:
+      operationId: get_storage
+      tags: ["users"]
+      description: |
+        Returns a Dictionary-type storage associated with Bot.
+
+        `GET {{ api_url }}/v1/bot_storage`
+      parameters:
+        - name: keys
+          in: query
+          description: |
+            Specify the keys associated with the desired items.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      storage:
+                        type: object
+                        additionalProperties:
+                          type: string
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "storage":
+                          {
+                            "entry 1": "value 1",
+                            "entry 2": "value 2",
+                            "entry 3": "value 3",
+                          },
+                      }
+    put:
+      operationId: update_storage
+      tags: ["users"]
+      description: |
+        Put a Dictionary-type storage into Bot.
+
+        `PUT {{ api_url }}/v1/bot_storage`
+      parameters:
+        - name: storage
+          in: query
+          description: |
+            Dictionary-type object to insert into bot.
+          required: true
+          schema:
+            type: object
+            items:
+              type: string
+              additionalProperties: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    example: {"msg": "", "result": "success"}
+
+    delete:
+      operationId: remove_storage
+      tags: ["users"]
+      description: |
+        Delete bot Storage.
+
+        `DELETE {{ api_url }}/v1/bot_storage`
+      parameters:
+        - name: keys
+          in: query
+          description: |
+            Specify the keys associated with the desired items.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    example: {"msg": "", "result": "success"}
+
   /user_groups:
     get:
       operationId: get_user_groups
