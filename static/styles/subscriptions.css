@@ -124,6 +124,7 @@
     margin-right: 12px;
     border: none;
     box-shadow: 0 0 2px hsla(0, 0%, 0%, 0.8);
+    border-radius: 3px;
 }
 
 .stream-email .email-address {
