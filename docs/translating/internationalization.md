@@ -2,7 +2,7 @@
 
 Zulip, like many popular applications, is designed with
 internationalization (i18n) in mind, which means users can fully use
-the the Zulip UI in their preferred language.
+the Zulip UI in their preferred language.
 
 This article aims to teach Zulip contributors enough about
 internationalization and Zulip's tools for it so that they can make
@@ -38,7 +38,7 @@ their style guidelines.
 
 ## Key details about human language
 
-There's a few critical details about human language that are important
+There are a few critical details about human language that are important
 to understand when implementing an internationalized application:
 
 * **Punctuation** varies between languages (e.g. Japanese doesn't use
@@ -113,7 +113,7 @@ sense of how everything fits together.
 
 ## Translation resource files
 
-All the translation magic happens through resource files which hold
+All the translation magic happens through resource files, which hold
 the translated text. Backend resource files are located at
 `locale/<lang_code>/LC_MESSAGES/django.po`, while frontend
 resource files are located at
