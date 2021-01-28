@@ -88,12 +88,6 @@ POST_MIGRATION_CACHE_FLUSHING = True
 PASSWORD_MIN_LENGTH = 0
 PASSWORD_MIN_GUESSES = 0
 
-# SMTP settings for forwarding emails sent in development
-# environment to an email account.
-EMAIL_HOST = ""
-EMAIL_PORT = 25
-EMAIL_HOST_USER = ""
-
 # Two factor authentication: Use the fake backend for development.
 TWO_FACTOR_CALL_GATEWAY = 'two_factor.gateways.fake.Fake'
 TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
