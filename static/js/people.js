@@ -153,11 +153,9 @@ export function huddle_string(message) {
 
     let user_ids = message.display_recipient.map((recip) => recip.id);
 
-    function is_huddle_recip(user_id) {
-        return user_id && people_by_user_id_dict.has(user_id) && !is_my_user_id(user_id);
-    }
-
-    user_ids = user_ids.filter(is_huddle_recip);
+    user_ids = user_ids.filter(
+        (user_id) => user_id && people_by_user_id_dict.has(user_id) && !is_my_user_id(user_id),
+    );
 
     if (user_ids.length <= 1) {
         return undefined;
@@ -302,7 +300,7 @@ export function get_recipients(user_ids_string) {
         return my_full_name();
     }
 
-    const names = other_ids.map(get_full_name).sort();
+    const names = other_ids.map((user_id) => get_full_name(user_id)).sort();
     return names.join(", ");
 }
 
@@ -873,7 +871,7 @@ export function get_people_for_search_bar(query) {
 
     const message_people = get_message_people();
 
-    const small_results = message_people.filter(pred);
+    const small_results = message_people.filter((item) => pred(item));
 
     if (small_results.length >= 5) {
         return small_results;
@@ -903,7 +901,7 @@ export function build_person_matcher(query) {
     query = query.trim();
 
     const termlets = query.toLowerCase().split(/\s+/);
-    const termlet_matchers = termlets.map(build_termlet_matcher);
+    const termlet_matchers = termlets.map((termlet) => build_termlet_matcher(termlet));
 
     return function (user) {
         const email = user.email.toLowerCase();

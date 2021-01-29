@@ -21,7 +21,7 @@ coverage
 fakeldap
 
 # For testing mock http requests
-responses
+responses==0.12.0  # https://github.com/spulec/moto/issues/3460
 
 # For sorting imports
 isort

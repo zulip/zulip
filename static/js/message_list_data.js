@@ -167,7 +167,7 @@ class MessageListData {
 
     filter_incoming(messages) {
         const predicate = this._get_predicate();
-        return messages.filter(predicate);
+        return messages.filter((message) => predicate(message));
     }
 
     unmuted_messages(messages) {
@@ -304,10 +304,9 @@ class MessageListData {
             this._local_only.delete(id);
         }
 
-        const remove_messages = (msg) => !msg_ids_to_remove.has(msg.id);
-        this._items = this._items.filter(remove_messages);
+        this._items = this._items.filter((msg) => !msg_ids_to_remove.has(msg.id));
         if (this.muting_enabled) {
-            this._all_items = this._all_items.filter(remove_messages);
+            this._all_items = this._all_items.filter((msg) => !msg_ids_to_remove.has(msg.id));
         }
     }
 
@@ -430,7 +429,7 @@ class MessageListData {
     }
 
     _add_to_hash(messages) {
-        messages.forEach((elem) => {
+        for (const elem of messages) {
             const id = Number.parseFloat(elem.id);
             if (Number.isNaN(id)) {
                 throw new TypeError("Bad message id");
@@ -440,10 +439,10 @@ class MessageListData {
             }
             if (this._hash.has(id)) {
                 blueslip.error("Duplicate message added to MessageListData");
-                return;
+                continue;
             }
             this._hash.set(id, elem);
-        });
+        }
     }
 
     _is_localonly_id(id) {

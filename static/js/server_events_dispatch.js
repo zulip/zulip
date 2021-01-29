@@ -345,42 +345,42 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     }
                 }
             } else if (event.op === "peer_add") {
-                event.stream_ids.forEach((stream_id) => {
+                for (const stream_id of event.stream_ids) {
                     const sub = stream_data.get_sub_by_id(stream_id);
 
                     if (!sub) {
                         blueslip.warn("Cannot find stream for peer_add: " + stream_id);
-                        return;
+                        continue;
                     }
 
-                    event.user_ids.forEach((user_id) => {
+                    for (const user_id of event.user_ids) {
                         if (!peer_data.add_subscriber(stream_id, user_id)) {
                             blueslip.warn("Cannot process peer_add event");
-                            return;
+                            continue;
                         }
-                    });
+                    }
 
                     subs.update_subscribers_ui(sub);
-                });
+                }
                 compose_fade.update_faded_users();
             } else if (event.op === "peer_remove") {
-                event.stream_ids.forEach((stream_id) => {
+                for (const stream_id of event.stream_ids) {
                     const sub = stream_data.get_sub_by_id(stream_id);
 
                     if (!sub) {
                         blueslip.warn("Cannot find stream for peer_remove: " + stream_id);
-                        return;
+                        continue;
                     }
 
-                    event.user_ids.forEach((user_id) => {
+                    for (const user_id of event.user_ids) {
                         if (!peer_data.remove_subscriber(sub.stream_id, user_id)) {
                             blueslip.warn("Cannot process peer_remove event.");
-                            return;
+                            continue;
                         }
-                    });
+                    }
 
                     subs.update_subscribers_ui(sub);
-                });
+                }
                 compose_fade.update_faded_users();
             } else if (event.op === "remove") {
                 for (const rec of event.subscriptions) {

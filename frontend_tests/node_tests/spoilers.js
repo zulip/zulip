@@ -12,9 +12,9 @@ zrequire("spoilers");
 // This function is taken from rendered_markdown.js and slightly modified.
 const $array = (array) => {
     const each = (func) => {
-        array.forEach((elem, index) => {
+        for (const [index, elem] of array.entries()) {
             func.call(this, index, elem);
-        });
+        }
     };
     return {each};
 };

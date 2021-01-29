@@ -83,7 +83,7 @@ exports.populate_emoji = function () {
     }
 
     const emoji_table = $("#admin_emoji_table").expectOne();
-    list_render.create(emoji_table, Object.values(emoji_data), {
+    ListWidget.create(emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
         modifier(item) {
             if (item.deactivated !== true) {

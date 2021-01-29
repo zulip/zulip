@@ -1338,13 +1338,13 @@ run_test("begins_typeahead", () => {
     assert_typeahead_equals("```test", "ing", false);
     assert_typeahead_equals("~~~test", "ing", false);
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
-    terminal_symbols.split().forEach((symbol) => {
+    for (const symbol of terminal_symbols.split()) {
         assert_stream_list("#test", symbol);
         assert_typeahead_equals("@test", symbol, all_mentions);
         assert_typeahead_equals(":test", symbol, emoji_list);
         assert_typeahead_equals("```test", symbol, lang_list);
         assert_typeahead_equals("~~~test", symbol, lang_list);
-    });
+    }
 });
 
 run_test("tokenizing", () => {

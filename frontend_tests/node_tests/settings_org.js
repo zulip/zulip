@@ -68,7 +68,7 @@ const _realm_logo = {
     build_realm_logo_widget: noop,
 };
 
-const _list_render = {
+const _ListWidget = {
     create: () => ({init: noop}),
 };
 
@@ -82,7 +82,7 @@ set_global("page_params", _page_params);
 set_global("realm_icon", _realm_icon);
 set_global("realm_logo", _realm_logo);
 set_global("ui_report", _ui_report);
-set_global("list_render", _list_render);
+set_global("ListWidget", _ListWidget);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
@@ -1000,12 +1000,10 @@ run_test("misc", () => {
     settings_account.update_email_change_display();
     assert(!$("#change_email .button").prop("disabled"));
 
-    stream_data.get_streams_for_settings_page = () => {
-        const arr = [];
-        arr.push({name: "some_stream", stream_id: 75});
-        arr.push({name: "some_stream", stream_id: 42});
-        return arr;
-    };
+    stream_data.get_streams_for_settings_page = () => [
+        {name: "some_stream", stream_id: 75},
+        {name: "some_stream", stream_id: 42},
+    ];
 
     // Set stubs for dropdown_list_widget:
     const widget_settings = [
@@ -1018,10 +1016,10 @@ run_test("misc", () => {
         ".dropdown_list_reset_button:enabled",
         $.create("<disable button>"),
     );
-    widget_settings.forEach((name) => {
+    for (const name of widget_settings) {
         const elem = $.create(`#${name}_widget #${name}_name`);
         elem.closest = () => dropdown_list_parent;
-    });
+    }
 
     // We do not define any settings we need in page_params yet, but we don't need to for this test.
     blueslip.expect(

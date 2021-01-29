@@ -74,7 +74,7 @@ const DropdownListWidget = function (opts) {
         const search_input = $(`#${opts.container_id} .dropdown-search > input[type=text]`);
         const dropdown_toggle = $(`#${opts.container_id} .dropdown-toggle`);
 
-        list_render.create(dropdown_list_body, opts.data, {
+        ListWidget.create(dropdown_list_body, opts.data, {
             name: `${opts.widget_name}_list`,
             modifier(item) {
                 return render_dropdown_list({item});

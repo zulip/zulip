@@ -152,7 +152,7 @@ def check_and_send_restart_signal() -> None:
 
 def retry_send_email_failures(
         func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None],
-) -> Callable[['QueueProcessingWorker', Dict[str, Any]], None]:
+) -> Callable[[ConcreteQueueWorker, Dict[str, Any]], None]:
 
     @wraps(func)
     def wrapper(worker: ConcreteQueueWorker, data: Dict[str, Any]) -> None:

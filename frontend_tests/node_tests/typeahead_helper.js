@@ -115,7 +115,9 @@ run_test("sort_streams", () => {
     ];
     process_test_streams();
 
-    test_streams.forEach(stream_data.update_calculated_fields);
+    for (const sub of test_streams) {
+        stream_data.update_calculated_fields(sub);
+    }
     test_streams = th.sort_streams(test_streams, "wr");
     assert.deepEqual(test_streams[0].name, "Docs"); // Description match
     assert.deepEqual(test_streams[1].name, "Denmark"); // Popular stream

@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from copy import deepcopy
+from pathlib import PosixPath
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
 
@@ -163,9 +164,9 @@ ALLOWED_HOSTS += REALM_HOSTS.values()
 
 
 class TwoFactorLoader(app_directories.Loader):
-    def get_dirs(self) -> List[str]:
+    def get_dirs(self) -> List[PosixPath]:
         dirs = super().get_dirs()
-        return [d for d in dirs if 'two_factor' in d]
+        return [d for d in dirs if d.match("two_factor/*")]
 
 MIDDLEWARE = (
     # With the exception of it's dependencies,

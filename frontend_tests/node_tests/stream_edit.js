@@ -16,7 +16,7 @@ set_global("hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });
-set_global("list_render", {
+set_global("ListWidget", {
     create: () => ({init: noop}),
 });
 set_global("page_params", {});

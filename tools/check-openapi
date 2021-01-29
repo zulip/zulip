@@ -44,7 +44,7 @@ function checkRefSiblings(file, path, data) {
     // script, hence the starting point at 2.
     for (const file of process.argv.slice(2)) {
         try {
-            const data = jsyaml.safeLoad(await fs.promises.readFile(file, "utf8"), {
+            const data = jsyaml.load(await fs.promises.readFile(file, "utf8"), {
                 filename: file,
             });
             if (data.openapi !== undefined) {

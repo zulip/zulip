@@ -26,7 +26,6 @@ from bitfield import BitField
 from bitfield.types import BitHandler
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
@@ -321,7 +320,7 @@ class Realm(models.Model):
     # Whether users have access to message edit history
     allow_edit_history: bool = models.BooleanField(default=True)
 
-    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 86400
+    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
     allow_community_topic_editing: bool = models.BooleanField(default=True)
 
     # Defaults for new users
@@ -1121,7 +1120,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # completed.
     onboarding_steps: str = models.TextField(default='[]')
 
-    zoom_token: Optional[object] = JSONField(default=None, null=True)
+    zoom_token: Optional[object] = models.JSONField(default=None, null=True)
 
     objects: UserManager = UserManager()
 

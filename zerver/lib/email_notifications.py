@@ -75,11 +75,15 @@ def relative_to_full_url(base_url: str, content: str) -> str:
     # entire message body will be that image element; here, we need a
     # more drastic edit to the content.
     if fragment.get('class') == 'message_inline_image':
-        content_template = '<p><a href="%s" target="_blank" title="%s">%s</a></p>'
         image_link = fragment.find('a').get('href')
         image_title = fragment.find('a').get('title')
-        new_content = (content_template % (image_link, image_title, image_link))
-        fragment = lxml.html.fromstring(new_content)
+        fragment = lxml.html.Element('p')
+        a = lxml.html.Element('a')
+        a.set('href', image_link)
+        a.set('target', '_blank')
+        a.set('title', image_title)
+        a.text = image_link
+        fragment.append(a)
 
     fragment.make_links_absolute(base_url)
     content = lxml.html.tostring(fragment, encoding="unicode")

@@ -24,7 +24,7 @@ function add_messages(messages, msg_list, opts) {
 // one needs an outer element wrapping an object to use this
 // construction.
 function is_element_in_message_content(message, element_selector) {
-    return $(`<div>${message.content}</div>`).find(element_selector).length > 0;
+    return $(`<div>${message.content}</div>`).find(`${element_selector}`).length > 0;
 }
 
 exports.message_has_link = function (message) {

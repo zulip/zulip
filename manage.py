@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     from scripts.lib.zulip_tools import log_management_command
 
-    log_management_command(" ".join(sys.argv), settings.MANAGEMENT_LOG_PATH)
+    log_management_command(sys.argv, settings.MANAGEMENT_LOG_PATH)
 
     os.environ.setdefault("PYTHONSTARTUP", os.path.join(BASE_DIR, "scripts/lib/pythonrc.py"))
     if "--no-traceback" not in sys.argv and len(sys.argv) > 1:

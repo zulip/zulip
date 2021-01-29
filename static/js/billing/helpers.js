@@ -32,13 +32,13 @@ exports.create_ajax_request = function (
         data.stripe_token = JSON.stringify(stripe_token.id);
     }
 
-    form.serializeArray().forEach((item) => {
+    for (const item of form.serializeArray()) {
         if (numeric_inputs.includes(item.name)) {
             data[item.name] = item.value;
         } else {
             data[item.name] = JSON.stringify(item.value);
         }
-    });
+    }
 
     $.post({
         url,
