@@ -987,6 +987,27 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    .update_status_text .small_square_button {
+        &.small_square_check {
+            background-color: hsl(213, 24%, 15%);
+            color: hsl(0, 0%, 90%);
+
+            &:hover {
+                background-color: hsl(213, 24%, 15%);
+                color: hsl(120, 88%, 47%);
+            }
+        }
+
+        &.small_square_x {
+            background-color: hsl(213, 24%, 15%);
+            color: hsl(0, 0%, 47%);
+
+            &:hover {
+                color: hsl(0, 0%, 100%);
+            }
+        }
+    }
+
     a:not(:active):focus {
         outline-color: hsl(0, 0%, 100%);
     }

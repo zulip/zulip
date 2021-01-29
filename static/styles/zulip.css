@@ -2190,6 +2190,24 @@ div.floating_recipient {
             color: hsl(0, 0%, 18%);
         }
     }
+
+    .update_status_text &.small_square_check {
+        background-color: hsl(0, 0%, 100%);
+        color: hsl(0, 0%, 47%);
+
+        &:hover {
+            color: hsl(120, 88%, 47%);
+        }
+    }
+
+    .update_status_text &.small_square_x {
+        background-color: hsl(0, 0%, 100%);
+        color: hsl(0, 0%, 47%);
+
+        &:hover {
+            color: hsl(0, 3%, 7%);
+        }
+    }
 }
 
 div.topic_edit_spinner {

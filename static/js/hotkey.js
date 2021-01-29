@@ -282,6 +282,12 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
+    if ($(".popover-inner .update_status_text").length && $(e.target)) {
+        e.target.click();
+        user_status_ui.submit_new_status();
+        return true;
+    }
+
     if (hotspots.is_open()) {
         $(e.target).find(".hotspot.overlay.show .hotspot-confirm").trigger("click");
         return false;

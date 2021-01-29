@@ -137,36 +137,6 @@
             </div>
         </div>
     </div>
-    <div class="user_status_overlay overlay new-style" data-overlay="user_status_overlay" aria-hidden="true">
-        <div class="overlay-content modal-bg">
-            <div class="user-status-header">
-                <h1>Set a status</h1>
-                <div class="exit">
-                    <span class="exit-sign">&times;</span>
-                </div>
-            </div>
-            <div class="modal-body">
-                <label for="user_status">Status message</label>
-                <input type="text" class="user_status" maxlength="60" />
-                <button type="button" class="btn clear_search_button" id="clear_status_message_button" disabled="disabled">
-                    <i class="fa fa-remove" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div class="user-status-options">
-                <button type="button" class="button no-style user-status-value" data-user-status-value="In a meeting">In a meeting</button>
-                <button type="button" class="button no-style user-status-value" data-user-status-value="Commuting">Commuting</button>
-                <button type="button" class="button no-style user-status-value" data-user-status-value="Out sick">Out sick</button>
-                <button type="button" class="button no-style user-status-value" data-user-status-value="Vacationing">Vacationing</button>
-                <button type="button" class="button no-style user-status-value" data-user-status-value="Working remotely">Working remotely</button>
-            </div>
-            <div class="modal-footer">
-                <button class="button exit small rounded">Cancel</button>
-                <button class="sea-green small rounded button set_user_status">
-                    Save
-                </button>
-            </div>
-        </div>
-    </div>
     {% include "zerver/app/invite_user.html" %}
     {% include "zerver/app/logout.html" %}
     {% include "zerver/app/deprecation_notice.html" %}

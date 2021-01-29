@@ -3,21 +3,14 @@
 const people = require("./people");
 
 exports.input_field = function () {
-    return $(".user_status_overlay input.user_status");
+    return $(".update_status_text input.user_status");
 };
 
 exports.submit_button = function () {
-    return $(".user_status_overlay .set_user_status");
+    return $(".update_status_text .set_user_status");
 };
 
-exports.open_overlay = function () {
-    const overlay = $(".user_status_overlay");
-    overlays.open_overlay({
-        name: "user_status_overlay",
-        overlay,
-        on_close() {},
-    });
-
+exports.status = function () {
     const user_id = people.my_current_user_id();
     const old_status_text = user_status.get_status_text(user_id);
     const field = exports.input_field();
@@ -30,10 +23,6 @@ exports.open_overlay = function () {
     button.prop("disabled", true);
 };
 
-exports.close_overlay = function () {
-    overlays.close_overlay("user_status_overlay");
-};
-
 exports.submit_new_status = function () {
     const user_id = people.my_current_user_id();
     let old_status_text = user_status.get_status_text(user_id) || "";
@@ -41,15 +30,12 @@ exports.submit_new_status = function () {
     const new_status_text = exports.input_field().val().trim();
 
     if (old_status_text === new_status_text) {
-        exports.close_overlay();
         return;
     }
 
     user_status.server_update({
         status_text: new_status_text,
-        success() {
-            exports.close_overlay();
-        },
+        success() {},
     });
 };
 
@@ -82,24 +68,16 @@ exports.clear_message = function () {
 };
 
 exports.initialize = function () {
-    $("body").on("click", ".user_status_overlay .set_user_status", () => {
+    $("body").on("click", ".update_status_text .set_user_status", () => {
         exports.submit_new_status();
     });
 
-    $("body").on("keypress", ".user_status_overlay .user_status", (event) => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-
-            exports.submit_new_status();
-        }
-    });
-
-    $("body").on("keyup", ".user_status_overlay input.user_status", () => {
+    $("body").on("keyup", ".update_status_text input.user_status", () => {
         exports.update_button();
         exports.toggle_clear_message_button();
     });
 
-    $("#clear_status_message_button").on("click", () => {
+    $("body").on("click", "#clear_status_message_button", () => {
         exports.clear_message();
         exports.update_button();
     });

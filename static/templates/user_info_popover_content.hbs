@@ -67,15 +67,26 @@
             </a>
         </li>
         {{/if}}
-        <li>
-            <a tabindex="0" class="update_status_text">
-                <i class="fa fa-comments" aria-hidden="true"></i>
-                {{#if status_text}}
-                    {{#tr this}}Edit status message{{/tr}}
-                {{else}}
-                    {{#tr this}}Set a status message{{/tr}}
-                {{/if}}
-            </a>
+        <li class="update_status_text" id="status_messages">
+            {{#if status_text}}
+            <label for="user_status"><i class="fa fa-comments" aria-hidden="true"></i>Edit status message</label>
+            <input type="text" class="user_status" maxlength="22" />
+            <button type="button" class="set_user_status small_square_button small_square_check" >
+                <i class="fa fa-check" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="small_square_button small_square_x" id="clear_status_message_button" >
+                <i class ="fa fa-remove" aria-hidden="true" ></i>
+            </button>
+            {{else}}
+            <label for="user_status"><i class="fa fa-comments" aria-hidden="true"></i>Set status message</label>
+            <input type="text" class="user_status" maxlength="22" />
+            <button type="button" class="set_user_status small_square_button small_square_check" >
+                <i class="fa fa-check" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="small_square_button small_square_x" id="clear_status_message_button" >
+                <i class ="fa fa-remove" aria-hidden="true" ></i>
+            </button>
+            {{/if}}
         </li>
     {{/if}}
 

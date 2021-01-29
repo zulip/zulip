@@ -475,3 +475,7 @@ ul {
         margin-left: 5px !important;
     }
 }
+
+.user_status {
+    width: 154px;
+}

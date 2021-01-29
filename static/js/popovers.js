@@ -1013,15 +1013,6 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $("body").on("click", ".update_status_text", (e) => {
-        exports.hide_all();
-
-        user_status_ui.open_overlay();
-
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     $("#user_presences").on("click", ".user-list-sidebar-menu-icon", function (e) {
         e.stopPropagation();
 
