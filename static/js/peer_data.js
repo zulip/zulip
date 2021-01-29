@@ -7,6 +7,28 @@ const people = require("./people");
 // clear_subscriptions.
 let stream_subscribers;
 
+function assert_number(id) {
+    if (typeof id !== "number") {
+        blueslip.error(`You must pass ids as numbers to peer_data. id = ${id}`);
+    }
+}
+
+function get_user_set(stream_id) {
+    assert_number(stream_id);
+
+    // This is an internal function to get the LazySet of users.
+    // We create one on the fly as necessary, but we warn in that case.
+    let subscribers = stream_subscribers.get(stream_id);
+
+    if (subscribers === undefined) {
+        blueslip.warn("We called get_user_set for an untracked stream: " + stream_id);
+        subscribers = new LazySet([]);
+        stream_subscribers.set(stream_id, subscribers);
+    }
+
+    return subscribers;
+}
+
 export function clear() {
     stream_subscribers = new Map();
 }
@@ -18,14 +40,10 @@ export function maybe_clear_subscribers(stream_id) {
 }
 
 export function is_subscriber_subset(stream_id1, stream_id2) {
-    const sub1_set = stream_subscribers.get(stream_id1);
-    const sub2_set = stream_subscribers.get(stream_id2);
+    const sub1_set = get_user_set(stream_id1);
+    const sub2_set = get_user_set(stream_id2);
 
-    if (sub1_set && sub2_set) {
-        return Array.from(sub1_set.keys()).every((key) => sub2_set.has(key));
-    }
-
-    return false;
+    return Array.from(sub1_set.keys()).every((key) => sub2_set.has(key));
 }
 
 export function potential_subscribers(stream_id) {
@@ -63,23 +81,14 @@ export function potential_subscribers(stream_id) {
 }
 
 export function get_subscriber_count(stream_id) {
-    const subscribers = stream_subscribers.get(stream_id);
-
-    if (!subscribers) {
-        blueslip.warn("We got a get_subscriber_count call for an untracked stream: " + stream_id);
-        return undefined;
-    }
-
+    const subscribers = get_user_set(stream_id);
     return subscribers.size;
 }
 
 export function get_subscribers(stream_id) {
-    const subscribers = stream_subscribers.get(stream_id);
-
-    if (typeof subscribers === "undefined") {
-        blueslip.warn("We called get_subscribers for an untracked stream: " + stream_id);
-        return [];
-    }
+    // This is our external interface for callers who just
+    // want an array of user_ids who are subscribed to a stream.
+    const subscribers = get_user_set(stream_id);
 
     return Array.from(subscribers.keys());
 }
@@ -91,27 +100,18 @@ export function set_subscribers(stream_id, user_ids) {
 }
 
 export function add_subscriber(stream_id, user_id) {
-    const subscribers = stream_subscribers.get(stream_id);
-    if (typeof subscribers === "undefined") {
-        blueslip.warn("We got an add_subscriber call for an untracked stream: " + stream_id);
-        return false;
-    }
+    // If stream_id/user_id are unknown to us, we will
+    // still track it, but we will warn.
+    const subscribers = get_user_set(stream_id);
     const person = people.get_by_user_id(user_id);
     if (person === undefined) {
-        blueslip.error("We tried to add invalid subscriber: " + user_id);
-        return false;
+        blueslip.warn("We tried to add invalid subscriber: " + user_id);
     }
     subscribers.add(user_id);
-
-    return true;
 }
 
 export function remove_subscriber(stream_id, user_id) {
-    const subscribers = stream_subscribers.get(stream_id);
-    if (typeof subscribers === "undefined") {
-        blueslip.warn("We got a remove_subscriber call for an untracked stream " + stream_id);
-        return false;
-    }
+    const subscribers = get_user_set(stream_id);
     if (!subscribers.has(user_id)) {
         blueslip.warn("We tried to remove invalid subscriber: " + user_id);
         return false;
@@ -125,7 +125,7 @@ export function remove_subscriber(stream_id, user_id) {
 export function bulk_add_subscribers({stream_ids, user_ids}) {
     // We rely on our callers to validate stream_ids and user_ids.
     for (const stream_id of stream_ids) {
-        const subscribers = stream_subscribers.get(stream_id) || set_subscribers(stream_id);
+        const subscribers = get_user_set(stream_id);
         for (const user_id of user_ids) {
             subscribers.add(user_id);
         }
@@ -135,7 +135,7 @@ export function bulk_add_subscribers({stream_ids, user_ids}) {
 export function bulk_remove_subscribers({stream_ids, user_ids}) {
     // We rely on our callers to validate stream_ids and user_ids.
     for (const stream_id of stream_ids) {
-        const subscribers = stream_subscribers.get(stream_id) || set_subscribers(stream_id);
+        const subscribers = get_user_set(stream_id);
         for (const user_id of user_ids) {
             subscribers.delete(user_id);
         }
@@ -146,11 +146,6 @@ export function is_user_subscribed(stream_id, user_id) {
     // Most callers should call stream_data.is_user_subscribed,
     // which does additional checks.
 
-    const subscribers = stream_subscribers.get(stream_id);
-    if (typeof subscribers === "undefined") {
-        blueslip.warn("We called is_user_subscribed for an untracked stream: " + stream_id);
-        return false;
-    }
-
+    const subscribers = get_user_set(stream_id);
     return subscribers.has(user_id);
 }
