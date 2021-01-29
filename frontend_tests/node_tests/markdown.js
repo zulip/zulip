@@ -235,22 +235,22 @@ run_test("markdown_detection", () => {
         "YouTube URL https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
     ];
 
-    no_markup.forEach((content) => {
+    for (const content of no_markup) {
         assert.equal(markdown.contains_backend_only_syntax(content), false);
-    });
+    }
 
-    markup.forEach((content) => {
+    for (const content of markup) {
         assert.equal(markdown.contains_backend_only_syntax(content), true);
-    });
+    }
 });
 
 run_test("marked_shared", () => {
     const tests = markdown_test_cases.regular_tests;
 
-    tests.forEach((test) => {
+    for (const test of tests) {
         // Ignore tests if specified
         if (test.ignore === true) {
-            return;
+            continue;
         }
 
         const message = {raw_content: test.input};
@@ -266,7 +266,7 @@ run_test("marked_shared", () => {
         } else {
             markdown_assert.equal(test.expected_output, output, error_message);
         }
-    });
+    }
 });
 
 run_test("message_flags", () => {
@@ -531,7 +531,7 @@ run_test("marked", () => {
         },
     ];
 
-    test_cases.forEach((test_case) => {
+    for (const test_case of test_cases) {
         // Disable emoji conversion by default.
         page_params.translate_emoticons = test_case.translate_emoticons || false;
 
@@ -542,7 +542,7 @@ run_test("marked", () => {
         markdown.apply_markdown(message);
         const output = message.content;
         assert.equal(output, expected);
-    });
+    }
 });
 
 run_test("topic_links", () => {
@@ -671,9 +671,9 @@ run_test("backend_only_realm_filters", () => {
         "Here is the PR-#123.",
         "Function abc() was introduced in (PR)#123.",
     ];
-    backend_only_realm_filters.forEach((content) => {
+    for (const content of backend_only_realm_filters) {
         assert.equal(markdown.contains_backend_only_syntax(content), true);
-    });
+    }
 });
 
 run_test("python_to_js_filter", () => {

@@ -105,7 +105,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(result, 'Bad name or username')
         self.assert_num_bots_equal(0)
 
-    @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain")
+    @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_add_bot_with_invalid_fake_email_domain(self) -> None:
         self.login('hamlet')
         self.assert_num_bots_equal(0)
@@ -203,6 +203,36 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         [bot] = [m for m in members if m['email'] == 'hambot-bot@zulip.testserver']
         self.assertEqual(bot['bot_owner_id'], self.example_user('hamlet').id)
         self.assertEqual(bot['user_id'], self.get_bot_user(email).id)
+
+    @override_settings(FAKE_EMAIL_DOMAIN="fakedomain.com", REALM_HOSTS={"zulip": "127.0.0.1"})
+    def test_add_bot_with_fake_email_domain(self) -> None:
+        self.login('hamlet')
+        self.assert_num_bots_equal(0)
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        email = 'hambot-bot@fakedomain.com'
+        self.get_bot_user(email)
+
+    @override_settings(EXTERNAL_HOST="example.com")
+    def test_add_bot_verify_subdomain_in_email_address(self) -> None:
+        self.login('hamlet')
+        self.assert_num_bots_equal(0)
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        email = 'hambot-bot@zulip.example.com'
+        self.get_bot_user(email)
+
+    @override_settings(FAKE_EMAIL_DOMAIN="fakedomain.com", REALM_HOSTS={"zulip": "zulip.example.com"})
+    def test_add_bot_host_used_as_domain_if_valid(self) -> None:
+        self.login('hamlet')
+        self.assert_num_bots_equal(0)
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        email = 'hambot-bot@zulip.example.com'
+        self.get_bot_user(email)
 
     def test_add_bot_with_username_in_use(self) -> None:
         self.login('hamlet')

@@ -39,7 +39,7 @@ exports.populate_filters = function (filters_data) {
     }
 
     const filters_table = $("#admin_filters_table").expectOne();
-    list_render.create(filters_table, filters_data, {
+    ListWidget.create(filters_table, filters_data, {
         name: "linkifiers_list",
         modifier(filter) {
             return render_admin_filter_list({

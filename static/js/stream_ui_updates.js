@@ -4,6 +4,8 @@ const render_subscription_count = require("../templates/subscription_count.hbs")
 const render_subscription_setting_icon = require("../templates/subscription_setting_icon.hbs");
 const render_subscription_type = require("../templates/subscription_type.hbs");
 
+const peer_data = require("./peer_data");
+
 exports.update_check_button_for_sub = function (sub) {
     const button = subs.check_button_for_sub(sub);
     if (sub.subscribed) {
@@ -194,16 +196,17 @@ exports.update_subscribers_list = function (sub) {
     if (!sub.can_access_subscribers) {
         $(".subscriber_list_settings_container").hide();
     } else {
-        const users = stream_edit.get_users_from_subscribers(sub.subscribers);
+        const subscribers = peer_data.get_subscribers(sub.stream_id);
+        const users = stream_edit.get_users_from_subscribers(subscribers);
 
         /*
             We try to find a subscribers list that is already in the
-            cache that list_render.js maintains.  The list we are
+            cache that list_widget.js maintains.  The list we are
             looking for would have been created in the function
             stream_edit.show_subscription_settings, using the same
             naming scheme as below for the `name` parameter.
         */
-        const subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
+        const subscribers_list = ListWidget.get("stream_subscribers/" + sub.stream_id);
 
         // Changing the data clears the rendered list and the list needs to be re-rendered.
         // Perform re-rendering only when the stream settings form of the corresponding

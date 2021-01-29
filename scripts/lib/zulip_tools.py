@@ -203,7 +203,7 @@ def run(args: Sequence[str], **kwargs: Any) -> None:
         print()
         raise
 
-def log_management_command(cmd: str, log_path: str) -> None:
+def log_management_command(cmd: Sequence[str], log_path: str) -> None:
     log_dir = os.path.dirname(log_path)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -215,7 +215,7 @@ def log_management_command(cmd: str, log_path: str) -> None:
     logger.addHandler(file_handler)
     logger.setLevel(logging.INFO)
 
-    logger.info("Ran '%s'", cmd)
+    logger.info("Ran %s", " ".join(map(shlex.quote, cmd)))
 
 def get_environment() -> str:
     if os.path.exists(DEPLOYMENTS_DIR):

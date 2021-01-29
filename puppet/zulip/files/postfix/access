@@ -4,6 +4,6 @@
 
 /\+.*@/         OK
 /\..*@/         OK
-/^mm/           OK
+/^mm.{32}@/     OK
 
 /^postmaster@/  OK

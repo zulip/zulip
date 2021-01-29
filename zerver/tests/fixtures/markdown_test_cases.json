@@ -501,7 +501,7 @@
       "name": "multiline_strong",
       "input": "You can check out **any time you'd like\nBut you can never leave**",
       "expected_output": "<p>You can check out **any time you'd like<br>\nBut you can never leave**</p>",
-      "marked_expected_output": "<p>You can check out <strong>any time you&#39;d like<br>\nBut you can never leave</strong></p>",
+      "marked_expected_output": "<p>You can check out <strong>any time you&#x27;d like<br>\nBut you can never leave</strong></p>",
       "text_content": "You can check out **any time you'd like\nBut you can never leave**"
     },
     {
@@ -863,8 +863,8 @@
     {
       "name": "tex_error_safe_script_tag",
       "input": "$$\\<script type='text/javascript'>alert('xss');</script>$$\n\n~~~math\n\\<script type='text/javascript'>alert('xss');</script>\n~~~",
-      "expected_output": "<p><span class=\"tex-error\">$$\\&lt;script type='text/javascript'&gt;alert('xss');&lt;/script&gt;$$</span></p>\n<p><span class=\"tex-error\">\\&lt;script type=&#39;text/javascript&#39;&gt;alert(&#39;xss&#39;);&lt;/script&gt;</span></p>",
-      "marked_expected_output": "<p><span class=\"tex-error\">$$\\&lt;script type=&#39;text/javascript&#39;&gt;alert(&#39;xss&#39;);&lt;/script&gt;$$</span></p>\n<span class=\"tex-error\">\\&lt;script type=&#39;text/javascript&#39;&gt;alert(&#39;xss&#39;);&lt;/script&gt;</span>"
+      "expected_output": "<p><span class=\"tex-error\">$$\\&lt;script type='text/javascript'&gt;alert('xss');&lt;/script&gt;$$</span></p>\n<p><span class=\"tex-error\">\\&lt;script type=&#x27;text/javascript&#x27;&gt;alert(&#x27;xss&#x27;);&lt;/script&gt;</span></p>",
+      "marked_expected_output": "<p><span class=\"tex-error\">$$\\&lt;script type=&#x27;text/javascript&#x27;&gt;alert(&#x27;xss&#x27;);&lt;/script&gt;$$</span></p>\n<span class=\"tex-error\">\\&lt;script type=&#x27;text/javascript&#x27;&gt;alert(&#x27;xss&#x27;);&lt;/script&gt;</span>"
     },
     {
       "name": "auto_renumbered_list_blankline",

@@ -31,7 +31,7 @@ exports.populate_exports_table = function (exports) {
     }
 
     const exports_table = $("#admin_exports_table").expectOne();
-    list_render.create(exports_table, Object.values(exports), {
+    ListWidget.create(exports_table, Object.values(exports), {
         name: "admin_exports_list",
         modifier(data) {
             let failed_timestamp = data.failed_timestamp;

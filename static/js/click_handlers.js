@@ -826,7 +826,7 @@ exports.initialize = function () {
 
         $("body").on("click", "[data-make-editable]", function () {
             const selector = $(this).attr("data-make-editable");
-            const edit_area = $(this).parent().find(selector);
+            const edit_area = $(this).parent().find(`${selector}`);
             $(selector).removeClass("stream-name-edit-box");
             if (edit_area.attr("contenteditable") === "true") {
                 $("[data-finish-editing='" + selector + "']").hide();
@@ -857,7 +857,7 @@ exports.initialize = function () {
             if (map[selector].on_save) {
                 map[selector].on_save(e);
                 $(this).hide();
-                $(this).parent().find(selector).attr("contenteditable", false);
+                $(this).parent().find(`${selector}`).attr("contenteditable", false);
                 $("[data-make-editable='" + selector + "']").html("");
             }
         });

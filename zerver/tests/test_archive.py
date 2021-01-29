@@ -59,31 +59,30 @@ class GlobalPublicStreamTest(ZulipTestCase):
         public_stream = public_streams[0]
         self.assertEqual(public_stream['name'], "Rome")
 
-        public_subs, public_unsubs, public_neversubs = get_web_public_subs(realm)
-        self.assert_length(public_subs, 1)
-        public_sub = public_subs[0]
-        self.assertEqual(public_sub['name'], "Rome")
-        self.assert_length(public_unsubs, 0)
-        self.assert_length(public_neversubs, 0)
+        info = get_web_public_subs(realm)
+        self.assert_length(info.subscriptions, 1)
+        self.assertEqual(info.subscriptions[0]['name'], "Rome")
+        self.assert_length(info.unsubscribed, 0)
+        self.assert_length(info.never_subscribed, 0)
 
         # Now add a second public stream
         test_stream = self.make_stream('Test Public Archives')
         do_change_stream_web_public(test_stream, True)
         public_streams = get_web_public_streams(realm)
         self.assert_length(public_streams, 2)
-        public_subs, public_unsubs, public_neversubs = get_web_public_subs(realm)
-        self.assert_length(public_subs, 2)
-        self.assert_length(public_unsubs, 0)
-        self.assert_length(public_neversubs, 0)
-        self.assertNotEqual(public_subs[0]['color'], public_subs[1]['color'])
+        info = get_web_public_subs(realm)
+        self.assert_length(info.subscriptions, 2)
+        self.assert_length(info.unsubscribed, 0)
+        self.assert_length(info.never_subscribed, 0)
+        self.assertNotEqual(info.subscriptions[0]['color'], info.subscriptions[1]['color'])
 
         do_deactivate_stream(test_stream)
         public_streams = get_web_public_streams(realm)
         self.assert_length(public_streams, 1)
-        public_subs, public_unsubs, public_neversubs = get_web_public_subs(realm)
-        self.assert_length(public_subs, 1)
-        self.assert_length(public_unsubs, 0)
-        self.assert_length(public_neversubs, 0)
+        info = get_web_public_subs(realm)
+        self.assert_length(info.subscriptions, 1)
+        self.assert_length(info.unsubscribed, 0)
+        self.assert_length(info.never_subscribed, 0)
 
 class WebPublicTopicHistoryTest(ZulipTestCase):
     def test_non_existant_stream_id(self) -> None:

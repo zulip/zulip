@@ -83,11 +83,12 @@ def always_want(msg_type: str) -> bool:
 
 def fetch_initial_state_data(
     user_profile: Optional[UserProfile],
-    event_types: Optional[Iterable[str]],
-    queue_id: Optional[str],
-    client_gravatar: bool,
-    user_avatar_url_field_optional: bool,
-    realm: Realm,
+    *,
+    realm: Optional[Realm] = None,
+    event_types: Optional[Iterable[str]] = None,
+    queue_id: Optional[str] = "",
+    client_gravatar: bool = False,
+    user_avatar_url_field_optional: bool = False,
     slim_presence: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
@@ -103,6 +104,10 @@ def fetch_initial_state_data(
     corresponding events for changes in the data structures and new
     code to apply_events (and add a test in test_events.py).
     """
+    if realm is None:
+        assert user_profile is not None
+        realm = user_profile.realm
+
     state: Dict[str, Any] = {'queue_id': queue_id}
 
     if event_types is None:
@@ -331,13 +336,16 @@ def fetch_initial_state_data(
 
     if want('subscription'):
         if user_profile is not None:
-            subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
-                user_profile, include_subscribers=include_subscribers)
+            sub_info = gather_subscriptions_helper(
+                user_profile,
+                include_subscribers=include_subscribers,
+            )
         else:
-            subscriptions, unsubscribed, never_subscribed = get_web_public_subs(realm)
-        state['subscriptions'] = subscriptions
-        state['unsubscribed'] = unsubscribed
-        state['never_subscribed'] = never_subscribed
+            sub_info = get_web_public_subs(realm)
+
+        state['subscriptions'] = sub_info.subscriptions
+        state['unsubscribed'] = sub_info.unsubscribed
+        state['never_subscribed'] = sub_info.never_subscribed
 
     if want('update_message_flags') and want('message'):
         # Keeping unread_msgs updated requires both message flag updates and
@@ -409,10 +417,16 @@ def fetch_initial_state_data(
 
     return state
 
-def apply_events(state: Dict[str, Any], events: Iterable[Dict[str, Any]],
-                 user_profile: UserProfile, client_gravatar: bool,
-                 slim_presence: bool, include_subscribers: bool = True,
-                 fetch_event_types: Optional[Iterable[str]] = None) -> None:
+def apply_events(
+    user_profile: UserProfile,
+    *,
+    state: Dict[str, Any],
+    events: Iterable[Dict[str, Any]],
+    fetch_event_types: Optional[Iterable[str]],
+    client_gravatar: bool,
+    slim_presence: bool,
+    include_subscribers: bool,
+) -> None:
     for event in events:
         if fetch_event_types is not None and event['type'] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
@@ -424,15 +438,24 @@ def apply_events(state: Dict[str, Any], events: Iterable[Dict[str, Any]],
             # `apply_event`.  For now, be careful in your choice of
             # `fetch_event_types`.
             continue
-        apply_event(state, event, user_profile,
-                    client_gravatar, slim_presence, include_subscribers)
+        apply_event(
+            user_profile,
+            state=state,
+            event=event,
+            client_gravatar=client_gravatar,
+            slim_presence=slim_presence,
+            include_subscribers=include_subscribers,
+        )
 
-def apply_event(state: Dict[str, Any],
-                event: Dict[str, Any],
-                user_profile: UserProfile,
-                client_gravatar: bool,
-                slim_presence: bool,
-                include_subscribers: bool) -> None:
+def apply_event(
+    user_profile: UserProfile,
+    *,
+    state: Dict[str, Any],
+    event: Dict[str, Any],
+    client_gravatar: bool,
+    slim_presence: bool,
+    include_subscribers: bool,
+) -> None:
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
         if 'raw_unread_msgs' in state:
@@ -511,11 +534,14 @@ def apply_event(state: Dict[str, Any],
                     # current user changing roles, we should just do a
                     # full refetch.
                     if 'never_subscribed' in state:
-                        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
-                            user_profile, include_subscribers=include_subscribers)
-                        state['subscriptions'] = subscriptions
-                        state['unsubscribed'] = unsubscribed
-                        state['never_subscribed'] = never_subscribed
+                        sub_info = gather_subscriptions_helper(
+                            user_profile,
+                            include_subscribers=include_subscribers,
+                        )
+                        state['subscriptions'] = sub_info.subscriptions
+                        state['unsubscribed'] = sub_info.unsubscribed
+                        state['never_subscribed'] = sub_info.never_subscribed
+
                     if 'streams' in state:
                         state['streams'] = do_get_streams(user_profile)
 
@@ -676,25 +702,19 @@ def apply_event(state: Dict[str, Any],
                     state['realm_password_auth_enabled'] = (value['Email'] or value['LDAP'])
                     state['realm_email_auth_enabled'] = value['Email']
     elif event['type'] == "subscription":
-        if not include_subscribers and event['op'] in ['peer_add', 'peer_remove']:
-            return
+        if event["op"] == "add":
+            added_stream_ids = {sub["stream_id"] for sub in event["subscriptions"]}
+            was_added = lambda s: s["stream_id"] in added_stream_ids
 
-        if event['op'] in ["add"]:
-            if not include_subscribers:
-                # Avoid letting 'subscribers' entries end up in the list
-                for i, sub in enumerate(event['subscriptions']):
-                    event['subscriptions'][i] = copy.deepcopy(event['subscriptions'][i])
-                    del event['subscriptions'][i]['subscribers']
-
-        def name(sub: Dict[str, Any]) -> str:
-            return sub['name'].lower()
-
-        if event['op'] == "add":
-            added_names = set(map(name, event["subscriptions"]))
-            was_added = lambda s: name(s) in added_names
+            existing_stream_ids = {sub["stream_id"] for sub in state["subscriptions"]}
 
             # add the new subscriptions
-            state['subscriptions'] += event['subscriptions']
+            for sub in event["subscriptions"]:
+                if sub["stream_id"] not in existing_stream_ids:
+                    if "subscribers" in sub and not include_subscribers:
+                        sub = copy.deepcopy(sub)
+                        del sub["subscribers"]
+                    state["subscriptions"].append(sub)
 
             # remove them from unsubscribed if they had been there
             state['unsubscribed'] = [s for s in state['unsubscribed'] if not was_added(s)]
@@ -702,9 +722,9 @@ def apply_event(state: Dict[str, Any],
             # remove them from never_subscribed if they had been there
             state['never_subscribed'] = [s for s in state['never_subscribed'] if not was_added(s)]
 
-        elif event['op'] == "remove":
-            removed_names = set(map(name, event["subscriptions"]))
-            was_removed = lambda s: name(s) in removed_names
+        elif event["op"] == "remove":
+            removed_stream_ids = {sub["stream_id"] for sub in event["subscriptions"]}
+            was_removed = lambda s: s["stream_id"] in removed_stream_ids
 
             # Find the subs we are affecting.
             removed_subs = list(filter(was_removed, state['subscriptions']))
@@ -714,8 +734,6 @@ def apply_event(state: Dict[str, Any],
                 for sub in removed_subs:
                     sub['subscribers'].remove(user_profile.id)
 
-            # We must effectively copy the removed subscriptions from subscriptions to
-            # unsubscribe, since we only have the name in our data structure.
             state['unsubscribed'] += removed_subs
 
             # Now filter out the removed subscriptions from subscriptions.
@@ -726,21 +744,25 @@ def apply_event(state: Dict[str, Any],
                 if sub['name'].lower() == event['name'].lower():
                     sub[event['property']] = event['value']
         elif event['op'] == 'peer_add':
-            stream_ids = set(event["stream_ids"])
-            user_ids = set(event["user_ids"])
-            for sub_dict in [state["subscriptions"], state['unsubscribed'], state["never_subscribed"]]:
-                for sub in sub_dict:
-                    if sub["stream_id"] in stream_ids:
-                        subscribers = set(sub["subscribers"]) | user_ids
-                        sub["subscribers"] = sorted(list(subscribers))
+            if include_subscribers:
+                stream_ids = set(event["stream_ids"])
+                user_ids = set(event["user_ids"])
+
+                for sub_dict in [state["subscriptions"], state["unsubscribed"], state["never_subscribed"]]:
+                    for sub in sub_dict:
+                        if sub["stream_id"] in stream_ids:
+                            subscribers = set(sub["subscribers"]) | user_ids
+                            sub["subscribers"] = sorted(list(subscribers))
         elif event['op'] == 'peer_remove':
-            stream_ids = set(event["stream_ids"])
-            user_ids = set(event["user_ids"])
-            for sub_dict in [state["subscriptions"], state['unsubscribed'], state['never_subscribed']]:
-                for sub in sub_dict:
-                    if sub["stream_id"] in stream_ids:
-                        subscribers = set(sub["subscribers"]) - user_ids
-                        sub["subscribers"] = sorted(list(subscribers))
+            if include_subscribers:
+                stream_ids = set(event["stream_ids"])
+                user_ids = set(event["user_ids"])
+
+                for sub_dict in [state["subscriptions"], state["unsubscribed"], state["never_subscribed"]]:
+                    for sub in sub_dict:
+                        if sub["stream_id"] in stream_ids:
+                            subscribers = set(sub["subscribers"]) - user_ids
+                            sub["subscribers"] = sorted(list(subscribers))
     elif event['type'] == "presence":
         if slim_presence:
             user_key = str(event['user_id'])
@@ -965,11 +987,10 @@ def do_events_register(
 
     ret = fetch_initial_state_data(
         user_profile,
-        event_types_set,
-        queue_id,
+        event_types=event_types_set,
+        queue_id=queue_id,
         client_gravatar=client_gravatar,
         user_avatar_url_field_optional=user_avatar_url_field_optional,
-        realm=user_profile.realm,
         slim_presence=slim_presence,
         include_subscribers=include_subscribers,
         include_streams=include_streams,
@@ -977,9 +998,15 @@ def do_events_register(
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
-    apply_events(ret, events, user_profile, include_subscribers=include_subscribers,
-                 client_gravatar=client_gravatar, slim_presence=slim_presence,
-                 fetch_event_types=fetch_event_types)
+    apply_events(
+        user_profile,
+        state=ret,
+        events=events,
+        fetch_event_types=fetch_event_types,
+        client_gravatar=client_gravatar,
+        slim_presence=slim_presence,
+        include_subscribers=include_subscribers,
+    )
 
     post_process_state(user_profile, ret, notification_settings_null)
 

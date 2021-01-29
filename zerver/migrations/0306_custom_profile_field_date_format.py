@@ -20,7 +20,10 @@ class Migration(migrations.Migration):
                 FROM zerver_customprofilefield AS f
                 WHERE f.id = field_id
                 AND f.field_type = 4
-                AND value <> to_char(to_date(value, 'YYYY-MM-DD'), 'YYYY-MM-DD');
+                AND CASE
+                        WHEN f.field_type = 4
+                        THEN value <> to_char(to_date(value, 'YYYY-MM-DD'), 'YYYY-MM-DD')
+                    END;
             """,
             reverse_sql="",
         ),

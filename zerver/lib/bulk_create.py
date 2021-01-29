@@ -41,7 +41,7 @@ def bulk_create_users(realm: Realm,
         UserProfile.objects.bulk_create(profiles_to_create)
 
         for user_profile in profiles_to_create:
-            user_profile.email = get_display_email_address(user_profile, realm)
+            user_profile.email = get_display_email_address(user_profile)
         UserProfile.objects.bulk_update(profiles_to_create, ['email'])
 
     user_ids = {user.id for user in profiles_to_create}

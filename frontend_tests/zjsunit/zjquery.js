@@ -300,9 +300,9 @@ exports.make_new_elem = function (selector, opts) {
         },
         removeClass(class_names) {
             class_names = class_names.split(" ");
-            class_names.forEach((class_name) => {
+            for (const class_name of class_names) {
                 classes.delete(class_name);
-            });
+            }
             return self;
         },
         remove() {

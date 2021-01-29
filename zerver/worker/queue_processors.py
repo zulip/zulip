@@ -35,7 +35,6 @@ from typing import (
 )
 
 import orjson
-import requests
 import sentry_sdk
 from django.conf import settings
 from django.db import connection
@@ -61,7 +60,7 @@ from zerver.lib.actions import (
 from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, get_bot_handler
 from zerver.lib.context_managers import lockfile
 from zerver.lib.db import reset_queries
-from zerver.lib.digest import handle_digest_email
+from zerver.lib.digest import bulk_handle_digest_email
 from zerver.lib.email_mirror import decode_stream_email_address, is_missed_message_address
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.lib.email_mirror import rate_limit_mirror_by_realm
@@ -153,7 +152,7 @@ def check_and_send_restart_signal() -> None:
 
 def retry_send_email_failures(
         func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None],
-) -> Callable[['QueueProcessingWorker', Dict[str, Any]], None]:
+) -> Callable[[ConcreteQueueWorker, Dict[str, Any]], None]:
 
     @wraps(func)
     def wrapper(worker: ConcreteQueueWorker, data: Dict[str, Any]) -> None:
@@ -369,32 +368,6 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
     def consume(self, event: Dict[str, Any]) -> None:
         """In LoopQueueProcessingWorker, consume is used just for automated tests"""
         self.consume_batch([event])
-
-@assign_queue('signups')
-class SignupWorker(QueueProcessingWorker):
-    def consume(self, data: Dict[str, Any]) -> None:
-        # TODO: This is the only implementation with Dict cf Mapping; should we simplify?
-        user_profile = get_user_profile_by_id(data['user_id'])
-        logging.info(
-            "Processing signup for user %s in realm %s",
-            user_profile.id, user_profile.realm.string_id,
-        )
-        if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
-            endpoint = "https://{}.api.mailchimp.com/3.0/lists/{}/members".format(
-                settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID,
-            )
-            params = dict(data)
-            del params['user_id']
-            params['list_id'] = settings.ZULIP_FRIENDS_LIST_ID
-            params['status'] = 'subscribed'
-            r = requests.post(endpoint, auth=('apikey', settings.MAILCHIMP_API_KEY), json=params, timeout=10)
-            if r.status_code == 400 and orjson.loads(r.content)['title'] == 'Member Exists':
-                logging.warning("Attempted to sign up already existing email to list: %s",
-                                data['email_address'])
-            elif r.status_code == 400:
-                retry_event(self.queue_name, data, lambda e: r.raise_for_status())
-            else:
-                r.raise_for_status()
 
 @assign_queue('invites')
 class ConfirmationEmailWorker(QueueProcessingWorker):
@@ -632,7 +605,7 @@ class ErrorReporter(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         logging.info("Processing traceback with type %s for %s", event['type'], event.get('user_email'))
         if settings.ERROR_REPORTING:
-            do_report_error(event['report']['host'], event['type'], event['report'])
+            do_report_error(event['type'], event['report'])
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):  # nocoverage
@@ -640,7 +613,12 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
     # management command, not here.
     def consume(self, event: Mapping[str, Any]) -> None:
         logging.info("Received digest event: %s", event)
-        handle_digest_email(event["user_profile_id"], event["cutoff"])
+        if "user_ids" in event:
+            user_ids = event["user_ids"]
+        else:
+            # legacy code may have enqueued a single id
+            user_ids = [event["user_profile_id"]]
+        bulk_handle_digest_email(user_ids, event["cutoff"])
 
 @assign_queue('email_mirror')
 class MirrorWorker(QueueProcessingWorker):

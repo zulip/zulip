@@ -1717,6 +1717,13 @@ label.label-title {
         font-size: 12px;
         color: hsl(0, 50%, 60%);
     }
+
+    .api-argument-datatype {
+        text-transform: lowercase;
+        font-weight: 600;
+        font-size: 14px;
+        color: hsl(176, 46.4%, 41%);
+    }
 }
 
 .desktop-redirect-box {

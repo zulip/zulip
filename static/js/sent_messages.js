@@ -110,7 +110,7 @@ class MessageState {
         // wrong with our event loop.
 
         if (!this.received) {
-            setTimeout(this.maybe_restart_event_loop, 5000);
+            setTimeout(this.maybe_restart_event_loop.bind(this), 5000);
         }
     }
 

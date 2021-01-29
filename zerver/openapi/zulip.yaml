@@ -6226,6 +6226,12 @@ paths:
                                   description: |
                                     A list of user IDs of users who are subscribed
                                     to the stream. Included only if `include_subscribers` is `true`.
+
+                                    If a user is not allowed to know the subscribers for
+                                    a stream, we will send an empty array.  API authors
+                                    should use other data to determine whether users like
+                                    guest users are forbidden to know the subscribers.
+
                         description: |
                           Present if `subscription` is present in `fetch_event_types`.
 

@@ -340,8 +340,8 @@ def shutdown_handler(*args: Any, **kwargs: Any) -> None:
         io_loop.stop()
 
 def print_listeners() -> None:
-    external_host = os.getenv('EXTERNAL_HOST', 'localhost')
-    print(f"\nStarting Zulip on {CYAN}http://{external_host}:{proxy_port}/{ENDC}.  Internal ports:")
+    external_host = os.getenv('EXTERNAL_HOST', f'localhost:{proxy_port}')
+    print(f"\nStarting Zulip on:\n\n\t{CYAN}http://{external_host}/{ENDC}\n\nInternal ports:")
     ports = [
         (proxy_port, 'Development server proxy (connect here)'),
         (django_port, 'Django'),

@@ -7,7 +7,7 @@ the article below describes each in more detail.
 
 * Allow people to join based on the **domain** of their email address.
 
-* Send **email invitations** to up to 100 addresses at a time.
+* Send **email invitations** to up to 100 addresses in a day.
 
 * Share a **reusable invitation link**.
 

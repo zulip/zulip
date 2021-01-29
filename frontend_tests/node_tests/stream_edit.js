@@ -7,8 +7,6 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-const {LazySet} = zrequire("lazy_set");
-
 const noop = () => {};
 stub_templates(() => noop);
 
@@ -18,7 +16,7 @@ set_global("hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });
-set_global("list_render", {
+set_global("ListWidget", {
     create: () => ({init: noop}),
 });
 set_global("page_params", {});
@@ -38,6 +36,7 @@ set_global("ui", {
 set_global("$", make_zjquery());
 
 zrequire("input_pill");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 zrequire("pill_typeahead");
 zrequire("subs");
@@ -79,16 +78,17 @@ const denmark = {
     stream_id: 1,
     name: "Denmark",
     subscribed: true,
-    subscribers: new LazySet([me.user_id, mark.user_id]),
     render_subscribers: true,
     should_display_subscription_button: true,
 };
+peer_data.set_subscribers(denmark.stream_id, [me.user_id, mark.user_id]);
+
 const sweden = {
     stream_id: 2,
     name: "Sweden",
     subscribed: false,
-    subscribers: new LazySet([mark.user_id, jill.user_id]),
 };
+peer_data.set_subscribers(sweden.stream_id, [mark.user_id, jill.user_id]);
 
 const subs = [denmark, sweden];
 for (const sub of subs) {
@@ -134,7 +134,7 @@ run_test("subscriber_pills", () => {
     let add_subscribers_request = false;
     stream_edit.invite_user_to_stream = (user_ids, sub) => {
         assert.equal(sub.stream_id, denmark.stream_id);
-        assert.deepEqual(user_ids.sort(), expected_user_ids);
+        assert.deepEqual(user_ids.sort(), expected_user_ids.sort());
         add_subscribers_request = true;
     };
 
@@ -197,8 +197,8 @@ run_test("subscriber_pills", () => {
         (function test_source() {
             const result = config.source.call(fake_this);
             const taken_ids = stream_pill.get_stream_ids(stream_edit.pill_widget);
-            const stream_ids = result.map((stream) => stream.stream_id).sort();
-            let expected_ids = subs.map((stream) => stream.stream_id).sort();
+            const stream_ids = Array.from(result, (stream) => stream.stream_id).sort();
+            let expected_ids = Array.from(subs, (stream) => stream.stream_id).sort();
             expected_ids = expected_ids.filter((id) => !taken_ids.includes(id));
             assert.deepEqual(stream_ids, expected_ids);
         })();
@@ -232,9 +232,9 @@ run_test("subscriber_pills", () => {
 
     // We cannot subscribe ourselves (`me`) as
     // we are already subscribed to denmark stream.
-    const potential_denmark_stream_subscribers = denmark.subscribers
-        .map()
-        .filter((id) => id !== me.user_id);
+    const potential_denmark_stream_subscribers = Array.from(
+        peer_data.get_subscribers(denmark.stream_id),
+    ).filter((id) => id !== me.user_id);
 
     // denmark.stream_id is stubbed. Thus request is
     // sent to add all subscribers of stream Denmark.
@@ -269,7 +269,7 @@ run_test("subscriber_pills", () => {
     // But only one request for mark is sent even though a mark user
     // pill is created and mark is also a subscriber of Denmark stream.
     user_pill.get_user_ids = () => [mark.user_id, fred.user_id];
-    stream_pill.get_user_ids = () => denmark.subscribers.map();
+    stream_pill.get_user_ids = () => peer_data.get_subscribers(denmark.stream_id);
     expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);
 });

@@ -28,7 +28,7 @@ function make_msg(msg_id) {
 }
 
 function make_msgs(msg_ids) {
-    return msg_ids.map(make_msg);
+    return msg_ids.map((msg_id) => make_msg(msg_id));
 }
 
 function assert_contents(mld, msg_ids) {

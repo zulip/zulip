@@ -77,7 +77,7 @@ exports.set_up_muted_topics_ui = function () {
     const muted_topics_table = $("#muted_topics_table");
     const $search_input = $("#muted_topics_search");
 
-    list_render.create(muted_topics_table, muted_topics, {
+    ListWidget.create(muted_topics_table, muted_topics, {
         name: "muted-topics-list",
         modifier(muted_topics) {
             return render_muted_topic_ui_row({muted_topics});

@@ -65,10 +65,10 @@ exports.populate_user_groups = function () {
         }
 
         const userg = $('div.user-group[id="' + data.id + '"]');
-        data.members.forEach((user_id) => {
+        for (const user_id of data.members) {
             const user = people.get_by_user_id(user_id);
             user_pill.append_user(user, pills);
-        });
+        }
 
         function update_membership(group_id) {
             if (exports.can_edit(group_id)) {

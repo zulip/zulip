@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from copy import deepcopy
+from pathlib import PosixPath
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
 
@@ -163,9 +164,9 @@ ALLOWED_HOSTS += REALM_HOSTS.values()
 
 
 class TwoFactorLoader(app_directories.Loader):
-    def get_dirs(self) -> List[str]:
+    def get_dirs(self) -> List[PosixPath]:
         dirs = super().get_dirs()
-        return [d for d in dirs if 'two_factor' in d]
+        return [d for d in dirs if d.match("two_factor/*")]
 
 MIDDLEWARE = (
     # With the exception of it's dependencies,
@@ -447,8 +448,6 @@ ANDROID_GCM_API_KEY = get_secret("android_gcm_api_key")
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret('big_blue_button_secret')
-
-MAILCHIMP_API_KEY = get_secret("mailchimp_api_key")
 
 # Twitter API credentials
 # Secrecy not required because its only used for R/O requests.

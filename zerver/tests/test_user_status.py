@@ -230,3 +230,40 @@ class UserStatusTest(ZulipTestCase):
             get_user_info_dict(realm_id=realm_id),
             {},
         )
+
+        # Turn on "away" status again.
+        payload = dict(away=orjson.dumps(True).decode())
+
+        event_info = EventInfo()
+        with capture_event(event_info):
+            result = self.client_post('/json/users/me/status', payload)
+        self.assert_json_success(result)
+
+        self.assertEqual(
+            event_info.payload,
+            dict(type='user_status', user_id=hamlet.id, away=True),
+        )
+
+        away_user_ids = get_away_user_ids(realm_id=realm_id)
+        self.assertEqual(away_user_ids, {hamlet.id})
+
+        # And set status text while away.
+        payload = dict(status_text='   at the beach  ')
+
+        event_info = EventInfo()
+        with capture_event(event_info):
+            result = self.client_post('/json/users/me/status', payload)
+        self.assert_json_success(result)
+
+        self.assertEqual(
+            event_info.payload,
+            dict(type='user_status', user_id=hamlet.id, status_text='at the beach'),
+        )
+
+        self.assertEqual(
+            user_info(hamlet),
+            dict(status_text='at the beach', away=True),
+        )
+
+        away_user_ids = get_away_user_ids(realm_id=realm_id)
+        self.assertEqual(away_user_ids, {hamlet.id})

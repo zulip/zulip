@@ -1,7 +1,2 @@
 #!/bin/sh
-if [ "$(hostname)" = "staging.zulip.net" ]; then
-    site="https://staging.zulip.com"
-else
-    site="https://api.zulip.com"
-fi
-/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --munin "$1" --site="$site"
+/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --munin "$1" --site="https://$(/home/zulip/deployments/current/scripts/get-django-setting NAGIOS_BOT_HOST)"

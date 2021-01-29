@@ -239,6 +239,21 @@ class CommonUtils {
         });
     }
 
+    async assert_compose_box_content(page, expected_value) {
+        await page.waitForSelector("#compose-textarea");
+
+        const compose_box_element = await page.$("#compose-textarea");
+        const compose_box_content = await page.evaluate(
+            (element) => element.value,
+            compose_box_element,
+        );
+        assert.equal(
+            compose_box_content,
+            expected_value,
+            `Compose box content did not match with the expected value '{${expected_value}}'`,
+        );
+    }
+
     async wait_for_fully_processed_message(page, content) {
         await page.waitForFunction(
             (content) => {
@@ -299,10 +314,11 @@ class CommonUtils {
     async send_message(page, type, params) {
         // If a message is outside the view, we do not need
         // to wait for it to be processed later.
-        const {outside_view} = params;
+        const outside_view = params.outside_view;
         delete params.outside_view;
 
-        await page.waitForSelector("#compose-textarea");
+        // Compose box content should be empty before sending the message.
+        await this.assert_compose_box_content(page, "");
 
         if (type === "stream") {
             await page.keyboard.press("KeyC");
@@ -328,17 +344,13 @@ class CommonUtils {
         }
 
         await this.fill_form(page, 'form[action^="/json/messages"]', params);
+        await this.assert_compose_box_content(page, params.content);
         await this.ensure_enter_does_not_send(page);
         await page.waitForSelector("#compose-send-button", {visible: true});
         await page.click("#compose-send-button");
 
-        // confirm if compose box is empty.
-        const compose_box_element = await page.$("#compose-textarea");
-        const compose_box_content = await page.evaluate(
-            (element) => element.textContent,
-            compose_box_element,
-        );
-        assert.equal(compose_box_content, "", "Compose box not empty after message sent");
+        // Sending should clear compose box content.
+        this.assert_compose_box_content(page, "");
 
         if (!outside_view) {
             await this.wait_for_fully_processed_message(page, params.content);
@@ -369,9 +381,8 @@ class CommonUtils {
      */
     async get_rendered_messages(page, table = "zhome") {
         return await page.evaluate((table) => {
-            const data = [];
             const $recipient_rows = $(`#${table}`).find(".recipient_row");
-            $.map($recipient_rows, (element) => {
+            return $recipient_rows.toArray().map((element) => {
                 const $el = $(element);
                 const stream_name = $el.find(".stream_label").text().trim();
                 const topic_name = $el.find(".stream_topic a").text().trim();
@@ -383,15 +394,13 @@ class CommonUtils {
                     key = `${stream_name} > ${topic_name}`;
                 }
 
-                const messages = [];
-                $.map($el.find(".message_row .message_content"), (message_row) => {
-                    messages.push(message_row.textContent.trim());
-                });
+                const messages = $el
+                    .find(".message_row .message_content")
+                    .toArray()
+                    .map((message_row) => message_row.textContent.trim());
 
-                data.push([key, messages]);
+                return [key, messages];
             });
-
-            return data;
         }, table);
     }
 

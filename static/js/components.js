@@ -20,7 +20,7 @@ exports.toggle = function (opts) {
             // classes need to be added for correct alignment or other purposes
             _component.addClass(opts.html_class);
         }
-        opts.values.forEach((value, i) => {
+        for (const [i, value] of opts.values.entries()) {
             // create a tab with a tab-id so they don't have to be referenced
             // by text value which can be inconsistent.
             const tab = $(
@@ -43,7 +43,7 @@ exports.toggle = function (opts) {
                 tab.addClass("middle");
             }
             _component.append(tab);
-        });
+        }
         return _component;
     })(opts);
 
