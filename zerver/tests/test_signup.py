@@ -1250,7 +1250,7 @@ earl-test@zulip.com""", ["Denmark"]))
         self.invite(invitee_emails, ["Denmark"])
         invitee_emails = ", ".join(str(i) for i in range(get_realm("zulip").max_invites - 1))
         self.assert_json_error(self.invite(invitee_emails, ["Denmark"]),
-                               "You do not have enough remaining invites. "
+                               "You do not have enough remaining invites for today. "
                                "Please contact desdemona+admin@zulip.com to have your limit raised. "
                                "No invitations were sent.")
 

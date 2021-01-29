@@ -5317,7 +5317,7 @@ def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
 
 def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     '''Discourage using invitation emails as a vector for carrying spam.'''
-    msg = _("You do not have enough remaining invites. "
+    msg = _("You do not have enough remaining invites for today. "
             "Please contact {email} to have your limit raised. "
             "No invitations were sent.").format(email=settings.ZULIP_ADMINISTRATOR)
     if not settings.OPEN_REALM_CREATION:
