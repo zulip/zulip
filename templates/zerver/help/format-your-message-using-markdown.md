@@ -24,8 +24,8 @@ to allow you to easily format your messages.
 ## Emphasis
 
 ```
-**bold**, *italic*, and ~~strikethrough~~ text
-***~~All three at once~~***
+**bold** or __bold__, *italic* or _italic_, and ~~strikethrough~~ text
+***~~All three at once~~*** or ___~~All three at once~~___
 ```
 
 ![Markdown emphasis](/static/images/help/markdown-emphasis.png)

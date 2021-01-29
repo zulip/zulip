@@ -295,7 +295,9 @@ run_test("marked", () => {
             input: "hello ***foo*** for you",
             expected: "<p>hello <strong><em>foo</em></strong> for you</p>",
         },
-        {input: "__hello__", expected: "<p>__hello__</p>"},
+        {input: "_hello_", expected: "<p><em>hello</em></p>"},
+        {input: "__hello__", expected: "<p><strong>hello</strong></p>"},
+        {input: "___hello___", expected: "<p><strong><em>hello</em></strong></p>"},
         {
             input: "\n```\nfenced code\n```\n\nand then after\n",
             expected:
@@ -341,11 +343,11 @@ run_test("marked", () => {
         },
         {
             input: "These @ @**** are not mentions",
-            expected: "<p>These @ @<em>**</em> are not mentions</p>",
+            expected: "<p>These @ @**** are not mentions</p>",
         },
         {
             input: "These # #**** are not mentions",
-            expected: "<p>These # #<em>**</em> are not mentions</p>",
+            expected: "<p>These # #**** are not mentions</p>",
         },
         {input: "These @* are not mentions", expected: "<p>These @* are not mentions</p>"},
         {

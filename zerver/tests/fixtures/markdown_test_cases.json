@@ -316,9 +316,9 @@
       "text_content": "test http://xx.xx link"
     },
     {
-      "name": "underscore_disabled",
+      "name": "underscore_enabled",
       "input": "_foo_",
-      "expected_output": "<p>_foo_</p>"
+      "expected_output": "<p><em>foo</em></p>"
     },
     {
       "name": "emphasis_text",
@@ -332,6 +332,11 @@
       "expected_output": "<p>const char *x = (char *)y</p>"
     },
     {
+      "name": "strong_code",
+      "input": "const char **x = (char **)y",
+      "expected_output": "<p>const char **x = (char **)y</p>"
+    },
+    {
       "name": "emphasis_with_space",
       "input": "A *foo bar* is a *baz quux*",
       "expected_output": "<p>A <em>foo bar</em> is a <em>baz quux</em></p>",
@@ -343,9 +348,9 @@
       "expected_output": "<p><em>&lt;h1&gt;Hello World&lt;/h1&gt;</em></p>"
     },
     {
-      "name": "underscore_strong_disabled",
+      "name": "underscore_strong_enabled",
       "input": "__foo__",
-      "expected_output": "<p>__foo__</p>"
+      "expected_output": "<p><strong>foo</strong></p>"
     },
     {
       "name": "star_strong",
@@ -369,6 +374,58 @@
       "name": "strong_with_html",
       "input": "**<h1>Hello World</h1>**",
       "expected_output": "<p><strong>&lt;h1&gt;Hello World&lt;/h1&gt;</strong></p>"
+    },
+    {
+      "name": "underscore_strong_em",
+      "input": "___foo___",
+      "expected_output": "<p><strong><em>foo</em></strong></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "em_strong",
+      "input": "***strongem*** or ***em*strong**",
+      "expected_output": "<p><strong><em>strongem</em></strong> or <strong><em>em</em>strong</strong></p>",
+      "text_content": "strongem or emstrong"
+    },
+    {
+      "name": "em_strong and strong_em",
+      "input": "***strong**em* and **strong*em***",
+      "expected_output": "<p><em><strong>strong</strong>em</em> and <strong>strong<em>em</em></strong></p>",
+      "text_content": "strongem and strongem"
+    },
+    {
+      "name": "em_strong",
+      "input": "___em_strong__",
+      "expected_output": "<p><strong><em>em</em>strong</strong></p>",
+      "text_content": "emstrong"
+    },
+    {
+      "name": "strong_em2",
+      "input": "___strong__em_",
+      "expected_output": "<p><em><strong>strong</strong>em</em></p>",
+      "text_content": "strongem"
+    },
+    {
+      "name": "underline_strong",
+      "input": "__strong__",
+      "expected_output": "<p><strong>strong</strong></p>",
+      "text_content": "strong"
+    },
+    {
+      "name": "underline_emphasis",
+      "input": "_emphasis_",
+      "expected_output": "<p><em>emphasis</em></p>",
+      "text_content": "emphasis"
+    },
+    {
+      "name": "strong_and_emphasis_url",
+      "input": "__[text1](https://trac.example.com/epic)__ and _[text2](https://trac.example.com/epic)_ and _[text3](https://trac.example.com/epic)_ and __[text4](https://trac.example.com/epic)__ and ___[text5](https://trac.example.com/epic)___",
+      "expected_output": "<p><strong><a href=\"https://trac.example.com/epic\">text1</a></strong> and <em><a href=\"https://trac.example.com/epic\">text2</a></em> and <em><a href=\"https://trac.example.com/epic\">text3</a></em> and <strong><a href=\"https://trac.example.com/epic\">text4</a></strong> and <strong><em><a href=\"https://trac.example.com/epic\">text5</a></em></strong></p>"
+    },
+    {
+      "name": "escape_inside_strong_and_em",
+      "input": "__<h1>text1</h1>__ _<h2>text2</h2>_ **<h1>text3</h1>** *<h2>text4</h2>*",
+      "expected_output": "<p><strong>&lt;h1&gt;text1&lt;/h1&gt;</strong> <em>&lt;h2&gt;text2&lt;/h2&gt;</em> <strong>&lt;h1&gt;text3&lt;/h1&gt;</strong> <em>&lt;h2&gt;text4&lt;/h2&gt;</em></p>"
     },
     {
       "name": "numbered_list",
