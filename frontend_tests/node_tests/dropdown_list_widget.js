@@ -11,10 +11,10 @@ zrequire("scroll_util");
 set_global("$", make_zjquery());
 
 const noop = () => {};
-const _list_render = {
+const _ListWidget = {
     create: () => ({init: noop}),
 };
-set_global("list_render", _list_render);
+set_global("ListWidget", _ListWidget);
 
 const setup_zjquery_data = (name) => {
     $.clear_all_elements();

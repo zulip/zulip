@@ -7,8 +7,7 @@ const DEFAULTS = {
 };
 
 // ----------------------------------------------------
-// This function describes (programmatically) how to use
-// the list_render widget.
+// This function describes (programmatically) how to use the ListWidget.
 // ----------------------------------------------------
 
 exports.validate_opts = (opts) => {
@@ -187,7 +186,7 @@ exports.create = function ($container, list, opts) {
 
         const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
-        const finish = blueslip.start_timing("list_render " + opts.name);
+        const finish = blueslip.start_timing("ListWidget " + opts.name);
         let html = "";
         for (const item of slice) {
             const s = opts.modifier(item);
@@ -390,4 +389,4 @@ exports.handle_sort = function (th, list) {
     list.sort(sort_type, prop_name);
 };
 
-window.list_render = exports;
+window.ListWidget = exports;

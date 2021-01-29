@@ -55,17 +55,17 @@ set_global("hash_util", {
 set_global("recent_senders", {
     get_topic_recent_senders: () => [1, 2],
 });
-set_global("list_render", {
+set_global("ListWidget", {
     modifier: noop,
     create: (container, mapped_topic_values, opts) => {
         const formatted_topics = [];
-        list_render.modifier = opts.modifier;
+        ListWidget.modifier = opts.modifier;
         for (const item of mapped_topic_values) {
             formatted_topics.push(opts.modifier(item));
             opts.filter.predicate(item);
         }
         // Just for coverage, the mechanisms
-        // are tested in list_render
+        // are tested in list_widget.js
         if (mapped_topic_values.length >= 2) {
             opts.sort_fields.stream_sort(mapped_topic_values[0], mapped_topic_values[1]);
             opts.sort_fields.stream_sort(mapped_topic_values[1], mapped_topic_values[0]);
@@ -74,10 +74,10 @@ set_global("list_render", {
             opts.sort_fields.topic_sort(mapped_topic_values[1], mapped_topic_values[0]);
             opts.sort_fields.topic_sort(mapped_topic_values[0], mapped_topic_values[0]);
         }
-        return list_render;
+        return ListWidget;
     },
     hard_redraw: noop,
-    render_item: (item) => list_render.modifier(item),
+    render_item: (item) => ListWidget.modifier(item),
 });
 
 // Custom Data

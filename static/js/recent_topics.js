@@ -410,7 +410,7 @@ exports.complete_rerender = function () {
     container.empty();
     const mapped_topic_values = Array.from(exports.get().values()).map((value) => value);
 
-    topics_widget = list_render.create(container, mapped_topic_values, {
+    topics_widget = ListWidget.create(container, mapped_topic_values, {
         name: "recent_topics_table",
         parent_container: $("#recent_topics_table"),
         modifier(item) {
