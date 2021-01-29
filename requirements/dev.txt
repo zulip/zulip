@@ -63,15 +63,6 @@ automat==20.2.0 \
     --hash=sha256:7979803c74610e11ef0c0d68a2942b152df52da55336e0c9d58daf1831cbdf33 \
     --hash=sha256:b6feb6455337df834f6c9962d6ccf771515b7d939bca142b29c20c2376bc6111
     # via twisted
-aws-sam-translator==1.33.0 \
-    --hash=sha256:505d18b0bad8702bfba80fc5bc78d9c4b003ab009a9e42648561bdf1fd67bf01 \
-    --hash=sha256:89c5c997164231b847634d8034d3534d3a048d88f4b66b2897f6251366e640f5 \
-    --hash=sha256:9f3767614746a38300ee988ef70d6f862e71e59ea536252bbf9a319daaac1fff
-    # via cfn-lint
-aws-xray-sdk==2.6.0 \
-    --hash=sha256:076f7c610cd3564bbba3507d43e328fb6ff4a2e841d3590f39b2c3ce99d41e1d \
-    --hash=sha256:abf5b90f740e1f402e23414c9670e59cb9772e235e271fef2bce62b9100cbc77
-    # via moto
 babel==2.9.0 \
     --hash=sha256:9d35c22fcc79893c3ecc85ac4a56cde1ecf3f19c540bba0922308a6c06ca6fa5 \
     --hash=sha256:da031ab54472314f210b0adcff1588ee5d1d1d0ba4dbd07b94dba82bde791e05
@@ -95,17 +86,11 @@ boto3==1.16.59 \
     --hash=sha256:f8a2f0bf929af92c4d254d1e495f6642dd335818cc7172e1bdc3dfe28655fb94
     # via
     #   -r requirements/common.in
-    #   aws-sam-translator
     #   moto
-boto==2.49.0 \
-    --hash=sha256:147758d41ae7240dc989f0039f27da8ca0d53734be0eb869ef16e3adcfa462e8 \
-    --hash=sha256:ea0d3b40a2d852767be77ca343b58a9e3a4b00d9db440efb8da74b4e58025e5a
-    # via moto
 botocore==1.19.59 \
     --hash=sha256:33959aa19cb6d336c47495c871b00d8670de0023b53bbbbd25790ba0bc5cefe9 \
     --hash=sha256:67d273b5dcc5033edb2def244ecab51ca24351becf5c1644de279e5653e4e932
     # via
-    #   aws-xray-sdk
     #   boto3
     #   moto
     #   s3transfer
@@ -198,10 +183,6 @@ cffi==1.14.4 \
     #   argon2-cffi
     #   cairocffi
     #   cryptography
-cfn-lint==0.44.5 \
-    --hash=sha256:1966fc96d2c70db70b525d495a6a912e223802b4d33bfd9876992cdb9bdaaf44 \
-    --hash=sha256:6889c171eb2bbbe9e175149d8bada8ae627137748c42b04581e79469dc6b35e7
-    # via moto
 chardet==4.0.0 \
     --hash=sha256:0d6f53a15db4120f2b08c94f11e7d93d2c911ee118b6b30a04ec3ee8310179fa \
     --hash=sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5
@@ -306,12 +287,10 @@ cryptography==3.3.1 \
     #   apns2
     #   moto
     #   pyopenssl
-    #   python-jose
     #   requests
     #   scrapy
     #   service-identity
     #   social-auth-core
-    #   sshpubkeys
 cssselect2==0.4.1 \
     --hash=sha256:2f4a9f20965367bae459e3bb42561f7927e0cfe5b7ea1692757cf67ef5d7dace \
     --hash=sha256:93fbb9af860e95dd40bf18c3b2b6ed99189a07c0f29ba76f9c5be71344664ec8
@@ -346,7 +325,6 @@ decorator==4.4.2 \
     # via
     #   -r requirements/common.in
     #   ipython
-    #   networkx
     #   traitlets
 defusedxml==0.6.0 \
     --hash=sha256:6687150770438374ab581bb7a1b327a847dd9c5749e396102de3fad4e8a3ef93 \
@@ -414,23 +392,12 @@ django[argon2]==3.1.5 \
     #   django-phonenumber-field
     #   django-sendfile2
     #   django-two-factor-auth
-docker==4.4.1 \
-    --hash=sha256:0604a74719d5d2de438753934b755bfcda6f62f49b8e4b30969a4b0a2a8a1220 \
-    --hash=sha256:e455fa49aabd4f22da9f4e1c1f9d16308286adc60abaf64bf3e1feafaed81d06
-    # via moto
 docutils==0.16 \
     --hash=sha256:0c5b78adfbf7762415433f5515cd5c9e762339e23369dbe8000d84a4bf4ab3af \
     --hash=sha256:c2de3a60e9e7d07be26b7f2b00ca0309c207e06c100f9cc2a94931fc75a478fc
     # via
     #   recommonmark
     #   sphinx
-ecdsa==0.14.1 \
-    --hash=sha256:64c613005f13efec6541bb0a33290d0d03c27abab5f15fbab20fb0ee162bdd8e \
-    --hash=sha256:e108a5fe92c67639abae3260e43561af914e7fd0d27bae6d2ec1312ae7934dfe
-    # via
-    #   moto
-    #   python-jose
-    #   sshpubkeys
 fakeldap==0.6.2 \
     --hash=sha256:b8def9b4b0cbb4944297060d3da38f57665bb454e650bee1543bfda81954dc22 \
     --hash=sha256:cb7f44f1ef1b7dbabadc329e641e9853da2f414d28fa4fa70fdeed9a3e85e6cf
@@ -450,9 +417,7 @@ flask==1.1.2 \
     #   flask-graphql
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d
-    # via
-    #   aws-xray-sdk
-    #   python-twitter
+    # via python-twitter
 gitlint==0.15.0 \
     --hash=sha256:aae7e966d765a818d941398f2d3aff6ec7f30a7251dd5c915846b7e82f4f7776 \
     --hash=sha256:cf4881764c503845e24b6d8ce0c3bb28f37209dffebb4a25b84374356d72736a
@@ -515,7 +480,6 @@ idna==2.10 \
     --hash=sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0
     # via
     #   hyperlink
-    #   moto
     #   requests
 ijson==3.1.3 \
     --hash=sha256:03329c9077ff4ee67047f8a5b02591ad638ec2a249f50a7e294a8890484f7141 \
@@ -593,12 +557,6 @@ importlib-metadata==3.4.0 ; python_version < "3.8" \
     #   jsonpickle
     #   jsonschema
     #   markdown
-importlib-resources==3.3.1 ; python_version < "3.7" \
-    --hash=sha256:0ed250dbd291947d1a298e89f39afcc477d5a6624770503034b72588601bcc05 \
-    --hash=sha256:42068585cc5e8c2bf0a17449817401102a5125cbfbb26bb0f43cde1568f6f2df
-    # via
-    #   -r requirements/dev.in
-    #   cfn-lint
 incremental==17.5.0 \
     --hash=sha256:717e12246dddf231a349175f48d74d93e2897244939173b01974ab6661406b9f \
     --hash=sha256:7b751696aaf36eebfab537e458929e194460051ccad279c72b755a167eebd4b3
@@ -658,23 +616,10 @@ jmespath==0.10.0 \
     #   boto3
     #   botocore
     #   itemloaders
-jsondiff==1.2.0 \
-    --hash=sha256:34941bc431d10aa15828afe1cbb644977a114e75eef6cc74fb58951312326303
-    # via moto
-jsonpatch==1.28 \
-    --hash=sha256:da3831be60919e8c98564acfc1fa918cb96e7c9750b0428388483f04d0d1c5a7 \
-    --hash=sha256:e930adc932e4d36087dbbf0f22e1ded32185dfb20662f2e3dd848677a5295a14
-    # via cfn-lint
 jsonpickle==1.5.0 \
     --hash=sha256:1bd34a2ae8e51d3adbcafe83dc2d5cc81be53ada8bb16959ca6aca499bceada2 \
     --hash=sha256:423d7b5e6c606d4c0efd93819913191e375f3a23c0874f39df94d2e20dd21c93
-    # via
-    #   aws-xray-sdk
-    #   python-digitalocean
-jsonpointer==2.0 \
-    --hash=sha256:c192ba86648e05fdae4f08a17ec25180a9aef5008d973407b581798a83975362 \
-    --hash=sha256:ff379fa021d1b81ab539f5ec467c7745beb1a5671463f9dcc2b2d458bd361c1e
-    # via jsonpatch
+    # via python-digitalocean
 jsonref==0.2 \
     --hash=sha256:b1e82fa0b62e2c2796a13e5401fe51790b248f6d9bf9d7212a3e31a3501b291f \
     --hash=sha256:f3c45b121cf6257eafabdc3a8008763aed1cd7da06dbabc59a9e4d2a5e4e6697
@@ -683,8 +628,6 @@ jsonschema==3.2.0 \
     --hash=sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163 \
     --hash=sha256:c8a85b28d377cc7737e46e2d9f2b4f44ee3c0e1deac6bf46ddefc7187d30797a
     # via
-    #   aws-sam-translator
-    #   cfn-lint
     #   openapi-schema-validator
     #   openapi-spec-validator
     #   semgrep
@@ -694,9 +637,7 @@ jsx-lexer==0.0.8 \
     # via -r requirements/common.in
 junit-xml==1.9 \
     --hash=sha256:ec5ca1a55aefdd76d28fcc0b135251d156c7106fa979686a4b48d62b761b4732
-    # via
-    #   cfn-lint
-    #   semgrep
+    # via semgrep
 lazy-object-proxy==1.5.2 \
     --hash=sha256:1d33d6f789697f401b75ce08e73b1de567b947740f768376631079290118ad39 \
     --hash=sha256:2f2de8f8ac0be3e40d17730e0600619d35c78c13a099ea91ef7fb4ad944ce694 \
@@ -854,9 +795,9 @@ matrix-client==0.3.2 \
     --hash=sha256:2855a2614a177db66f9bc3ba38cbd2876041456f663c334f72a160ab6bb11c49 \
     --hash=sha256:dce3ccb8665df0d519f08e07a16e6d3f9fab3a947df4b7a7c4bb26573d68f2d5
     # via zulip
-mock==4.0.3 \
-    --hash=sha256:122fcb64ee37cfad5b3f48d7a7d51875d7031aaf3d8be7c42e2bee25044eee62 \
-    --hash=sha256:7d3fbbde18228f4ff2f1f119a45cdffa458b4c0dee32eb4d2bb2f82554bac7bc
+mock==4.0.2 \
+    --hash=sha256:3f9b2c0196c60d21838f307f5825a7b86b678cedc58ab9e50a8988187b4d81e0 \
+    --hash=sha256:dd33eb70232b6118298d516bbcecd26704689c386594f0f3c4f13867b2c56f72
     # via moto
 more-itertools==8.6.0 \
     --hash=sha256:8e1a2a43b2f2727425f2b5839587ae37093f19153dc26c0927d1048ff6557330 \
@@ -864,9 +805,9 @@ more-itertools==8.6.0 \
     # via
     #   moto
     #   openapi-core
-moto==1.3.16 \
-    --hash=sha256:6c686b1f117563391957ce47c2106bc3868783d59d0e004d2446dce875bec07f \
-    --hash=sha256:f51903b6b532f6c887b111b3343f6925b77eef0505a914138d98290cf3526df9
+moto==1.3.17.dev230 \
+    --hash=sha256:03e93180b365dd8f169ee13bbba680a1d83939d4324669c49d0a7c121453e3a5 \
+    --hash=sha256:6f32a1972cca5fd291c17810b25a36eecf8df84053daf579ec0a555f3b95aed2
     # via -r requirements/dev.in
 munch==2.5.0 \
     --hash=sha256:2d735f6f24d4dba3417fa448cae40c6e896ec1fdab6cdb5e6510999758a4dbd2 \
@@ -904,10 +845,6 @@ mypy==0.800 \
     # via
     #   -r requirements/mypy.in
     #   sqlalchemy-stubs
-networkx==2.5 \
-    --hash=sha256:7978955423fbc9639c10498878be59caf99b44dc304c2286162fd24b458c1602 \
-    --hash=sha256:8c5812e9f798d37c50570d15c4a69d5710a18d77bafc903ee9c5fba7454c616c
-    # via cfn-lint
 oauthlib==3.1.0 \
     --hash=sha256:bee41cc35fcca6e988463cacc3bcb8a96224f470ca547e697b604cc697b2f889 \
     --hash=sha256:df884cd6cbe20e32633f1db1072e9356f53638e4361bef4e8b03c9127c9328ea
@@ -1117,9 +1054,7 @@ pyasn1==0.4.8 \
     --hash=sha256:aef77c9fb94a3ac588e87841208bdec464471d9871bd5050a287cc9a475cd0ba
     # via
     #   pyasn1-modules
-    #   python-jose
     #   python-ldap
-    #   rsa
     #   service-identity
 pycodestyle==2.6.0 \
     --hash=sha256:2295e7b2f6b5bd100585ebcb1f616591b652db8a741695b3d8f5d28bdc934367 \
@@ -1216,10 +1151,6 @@ python-digitalocean==1.16.0 \
 python-gcm==0.4 \
     --hash=sha256:511c35fc5ae829f7fc3cbdb45c4ec3fda02f85e4fae039864efe82682ccb9c18
     # via -r requirements/common.in
-python-jose[cryptography]==3.2.0 \
-    --hash=sha256:4e4192402e100b5fb09de5a8ea6bcc39c36ad4526341c123d401e2561720335b \
-    --hash=sha256:67d7dfff599df676b04a996520d9be90d6cdb7e6dd10b4c7cacc0c3e2e92f2be
-    # via moto
 python-ldap==3.3.1 \
     --hash=sha256:4711cacf013e298754abd70058ccc995758177fb425f1c2d30e71adfc1d00aa5
     # via
@@ -1281,9 +1212,7 @@ pyyaml==5.4.1 \
     --hash=sha256:e4fac90784481d221a8e4b1162afa7c47ed953be40d31ab4629ae917510051df \
     --hash=sha256:fa5ae20527d8e831e8230cbffd9f8fe952815b2b7dae6ffec25318803a7528fc
     # via
-    #   cfn-lint
     #   libcst
-    #   moto
     #   openapi-spec-validator
 qrcode==6.1 \
     --hash=sha256:3996ee560fc39532910603704c82980ff6d4d5d629f9c3f25f34174ce8606cf5 \
@@ -1356,7 +1285,6 @@ requests[security]==2.25.1 \
     --hash=sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e
     # via
     #   -r requirements/common.in
-    #   docker
     #   matrix-client
     #   moto
     #   premailer
@@ -1372,16 +1300,12 @@ requests[security]==2.25.1 \
     #   stripe
     #   twilio
     #   zulip
-responses==0.12.0 \
-    --hash=sha256:0de50fbf600adf5ef9f0821b85cc537acca98d66bc7776755924476775c1989c \
-    --hash=sha256:e80d5276011a4b79ecb62c5f82ba07aa23fb31ecbc95ee7cad6de250a3c97444
+responses==0.12.1 \
+    --hash=sha256:2e5764325c6b624e42b428688f2111fea166af46623cb0127c05f6afb14d3457 \
+    --hash=sha256:ef265bd3200bdef5ec17912fc64a23570ba23597fd54ca75c18650fa1699213d
     # via
     #   -r requirements/dev.in
     #   moto
-rsa==4.7 \
-    --hash=sha256:69805d6b69f56eb05b62daea3a7dbd7aa44324ad1306445e05da8060232d00f4 \
-    --hash=sha256:a8774e55b59fd9fc893b0d05e9bfc6f47081f46ff5b46f39ccf24631b7be356b
-    # via python-jose
 ruamel.yaml.clib==0.2.2 \
     --hash=sha256:058a1cc3df2a8aecc12f983a48bda99315cebf55a3b3a5463e37bb599b05727b \
     --hash=sha256:1236df55e0f73cd138c0eca074ee086136c3f16a97c2ac719032c050f7e0622f \
@@ -1458,12 +1382,8 @@ six==1.15.0 \
     # via
     #   argon2-cffi
     #   automat
-    #   aws-sam-translator
-    #   cfn-lint
     #   cryptography
     #   django-bitfield
-    #   docker
-    #   ecdsa
     #   graphene
     #   graphene-sqlalchemy
     #   graphql-core
@@ -1484,7 +1404,6 @@ six==1.15.0 \
     #   python-binary-memcached
     #   python-dateutil
     #   python-debian
-    #   python-jose
     #   qrcode
     #   responses
     #   singledispatch
@@ -1494,7 +1413,6 @@ six==1.15.0 \
     #   traitlets
     #   twilio
     #   w3lib
-    #   websocket-client
     #   zulip
 snakeviz==2.1.0 \
     --hash=sha256:8ce375b18ae4a749516d7e6c6fbbf8be6177c53974f53534d8eadb646cd279b1 \
@@ -1609,10 +1527,6 @@ sqlparse==0.4.1 \
     --hash=sha256:017cde379adbd6a1f15a61873f43e8274179378e95ef3fede90b5aa64d304ed0 \
     --hash=sha256:0f91fd2e829c44362cbcfab3e9ae12e22badaa8a29ad5ff599f9ec109f0454e8
     # via django
-sshpubkeys==3.3.0 \
-    --hash=sha256:41fbaf0e57bc0cf7e0139b71146de59b80aa9e14a97d2278417571e120d6b13e \
-    --hash=sha256:89e10a0caf38407426a05e3f5b5243d6e2f9575d6af45e9321291d20bcfca8f7
-    # via moto
 statsd==3.3.0 \
     --hash=sha256:c610fb80347fca0ef62666d241bce64184bd7cc1efe582f9690e045c25535eaa \
     --hash=sha256:e3e6db4c246f7c59003e51c9720a51a7f39a396541cb9b147ff4b14d15b5dd1f
@@ -1803,10 +1717,6 @@ webencodings==0.5.1 \
     # via
     #   cssselect2
     #   tinycss2
-websocket-client==0.57.0 \
-    --hash=sha256:0fc45c961324d79c781bab301359d5a1b00b13ad1b10415a4780229ef71a5549 \
-    --hash=sha256:d735b91d6d1692a6a181f2a8c9e0238e5f6373356f561bb9dc4c7af36f452010
-    # via docker
 werkzeug==1.0.1 \
     --hash=sha256:2de2a5db0baeae7b2d2664949077c2ac63fbd16d98da0ff71837f7d1dea3fd43 \
     --hash=sha256:6c80b1e5ad3665290ea39320b91e1be1e0d5f60652b964a3070216de83d2e47c
@@ -1818,9 +1728,6 @@ wheel==0.36.2 \
     --hash=sha256:78b5b185f0e5763c26ca1e324373aadd49182ca90e825f7853f4b2509215dc0e \
     --hash=sha256:e11eefd162658ea59a60a0f6c7d493a7190ea4b9a85e335b33489d9f17e0245e
     # via -r requirements/pip.in
-wrapt==1.12.1 \
-    --hash=sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7
-    # via aws-xray-sdk
 xmlsec==1.3.9 \
     --hash=sha256:252f79ed4482d6eefcca62c3bfc99b8d95c07abd846262d854a207ec4d67fac5 \
     --hash=sha256:31884dc97cc34cf1681a0f239f613969e61f9a01f4c2d2a62e53d68216fe42d6 \
@@ -1897,7 +1804,6 @@ zipp==3.4.0 \
     --hash=sha256:ed5eee1974372595f9e416cc7bbeeb12335201d8081ca8a0743c954d4446e5cb
     # via
     #   importlib-metadata
-    #   importlib-resources
     #   moto
 zope.interface==5.2.0 \
     --hash=sha256:05a97ba92c1c7c26f25c9f671aa1ef85ffead6cdad13770e5b689cf983adc7e1 \
