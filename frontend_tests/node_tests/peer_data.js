@@ -8,7 +8,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const peer_data = zrequire("peer_data");
@@ -118,8 +118,7 @@ run_test("subscribers", () => {
     assert(!stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
 
     // add
-    let ok = peer_data.add_subscriber(sub.stream_id, brutus.user_id);
-    assert(ok);
+    peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     assert(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
     assert.equal(peer_data.get_subscriber_count(sub.stream_id), 1);
@@ -134,7 +133,7 @@ run_test("subscribers", () => {
     assert.equal(peer_data.get_subscriber_count(sub.stream_id), 1);
 
     // remove
-    ok = peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
+    let ok = peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
     assert(ok);
     assert(!stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
@@ -144,15 +143,15 @@ run_test("subscribers", () => {
 
     blueslip.expect("warn", "Undefined user_id passed to function is_user_subscribed");
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, undefined), undefined);
+    blueslip.reset();
 
     // Verify noop for bad stream when removing subscriber
     const bad_stream_id = 999999;
-    blueslip.expect(
-        "warn",
-        "We got a remove_subscriber call for an untracked stream " + bad_stream_id,
-    );
+    blueslip.expect("warn", "We called get_user_set for an untracked stream: " + bad_stream_id);
+    blueslip.expect("warn", "We tried to remove invalid subscriber: 104");
     ok = peer_data.remove_subscriber(bad_stream_id, brutus.user_id);
     assert(!ok);
+    blueslip.reset();
 
     // verify that removing an already-removed subscriber is a noop
     blueslip.expect("warn", "We tried to remove invalid subscriber: 104");
@@ -161,6 +160,7 @@ run_test("subscribers", () => {
     assert(!stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
     sub = stream_data.get_sub("Rome");
     assert.equal(peer_data.get_subscriber_count(sub.stream_id), 0);
+    blueslip.reset();
 
     // Verify defensive code in set_subscribers, where the second parameter
     // can be undefined.
@@ -172,8 +172,7 @@ run_test("subscribers", () => {
     // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
     stream_data.update_calculated_fields(sub);
-    ok = peer_data.add_subscriber(sub.stream_id, brutus.user_id);
-    assert(ok);
+    peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), true);
     peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), false);
@@ -190,17 +189,18 @@ run_test("subscribers", () => {
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), undefined);
     peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
     assert.equal(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id), undefined);
+    blueslip.reset();
 
-    // Verify that we don't crash and return false for a bad stream.
-    blueslip.expect("warn", "We got an add_subscriber call for an untracked stream: 9999999");
-    ok = peer_data.add_subscriber(9999999, brutus.user_id);
-    assert(!ok);
+    // Verify that we don't crash for a bad stream.
+    blueslip.expect("warn", "We called get_user_set for an untracked stream: 9999999");
+    peer_data.add_subscriber(9999999, brutus.user_id);
+    blueslip.reset();
 
-    // Verify that we don't crash and return false for a bad user id.
-    blueslip.expect("error", "Unknown user_id in get_by_user_id: 9999999");
-    blueslip.expect("error", "We tried to add invalid subscriber: 9999999");
-    ok = peer_data.add_subscriber(sub.stream_id, 9999999);
-    assert(!ok);
+    // Verify that we don't crash for a bad user id.
+    blueslip.expect("error", "Unknown user_id in get_by_user_id: 88888");
+    blueslip.expect("warn", "We tried to add invalid subscriber: 88888");
+    peer_data.add_subscriber(sub.stream_id, 88888);
+    blueslip.reset();
 });
 
 run_test("get_subscriber_count", () => {
@@ -211,8 +211,8 @@ run_test("get_subscriber_count", () => {
     };
     stream_data.clear_subscriptions();
 
-    blueslip.expect("warn", "We got a get_subscriber_count call for an untracked stream: 102");
-    assert.equal(peer_data.get_subscriber_count(india.stream_id), undefined);
+    blueslip.expect("warn", "We called get_user_set for an untracked stream: 102");
+    assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
 
     stream_data.add_sub(india);
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
@@ -249,13 +249,6 @@ run_test("is_subscriber_subset", () => {
     const sub_b = make_sub(302, [2, 3]);
     const sub_c = make_sub(303, [1, 2, 3]);
 
-    // The bogus case should not come up in normal
-    // use.
-    // We simply punt on any calculation if
-    // a stream has no subscriber info (like
-    // maybe Zephyr?).
-    const bogus = {}; // no subscribers
-
     const matrix = [
         [sub_a, sub_a, true],
         [sub_a, sub_b, false],
@@ -266,33 +259,21 @@ run_test("is_subscriber_subset", () => {
         [sub_c, sub_a, false],
         [sub_c, sub_b, false],
         [sub_c, sub_c, true],
-        [bogus, bogus, false],
     ];
 
     for (const row of matrix) {
         assert.equal(peer_data.is_subscriber_subset(row[0].stream_id, row[1].stream_id), row[2]);
     }
-});
 
-run_test("warn if subscribers are missing", () => {
-    // This should only happen in this contrived test situation.
-    stream_data.clear_subscriptions();
-    const sub = {
-        name: "test",
-        stream_id: 3,
-        can_access_subscribers: true,
-    };
+    // Two untracked streams should never be passed into us.
+    blueslip.expect("warn", "We called get_user_set for an untracked stream: 88888");
+    blueslip.expect("warn", "We called get_user_set for an untracked stream: 99999");
+    peer_data.is_subscriber_subset(99999, 88888);
+    blueslip.reset();
 
-    with_field(
-        stream_data,
-        "get_sub_by_id",
-        () => sub,
-        () => {
-            blueslip.expect("warn", "We called is_user_subscribed for an untracked stream: 3");
-            stream_data.is_user_subscribed(sub.stream_id, me.user_id);
-
-            blueslip.expect("warn", "We called get_subscribers for an untracked stream: 3");
-            assert.deepEqual(peer_data.get_subscribers(sub.stream_id), []);
-        },
-    );
+    // Warn about hypothetical undefined stream_ids.
+    blueslip.expect("error", "You must pass ids as numbers to peer_data. id = undefined");
+    blueslip.expect("warn", "We called get_user_set for an untracked stream: undefined");
+    peer_data.is_subscriber_subset(undefined, sub_a.stream_id);
+    blueslip.reset();
 });

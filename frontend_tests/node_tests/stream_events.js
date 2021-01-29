@@ -420,7 +420,7 @@ run_test("remove_deactivated_user_from_all_streams", () => {
     assert(!stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
 
     // verify that deactivating user should unsubscribe user from all streams
-    assert(peer_data.add_subscriber(dev_help.stream_id, george.user_id));
+    peer_data.add_subscriber(dev_help.stream_id, george.user_id);
     assert(stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
 
     stream_events.remove_deactivated_user_from_all_streams(george.user_id);

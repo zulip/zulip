@@ -1018,7 +1018,9 @@ run_test("warn_if_private_stream_is_linked", () => {
     denmark = {
         invite_only: true,
         name: "Denmark",
+        stream_id: 22,
     };
+    stream_data.add_sub(denmark);
 
     compose.warn_if_private_stream_is_linked(denmark);
     assert.equal($("#compose_private_stream_alert").visible(), true);
