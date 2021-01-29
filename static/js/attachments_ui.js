@@ -85,7 +85,7 @@ function render_attachments_ui() {
     const uploaded_files_table = $("#uploaded_files_table").expectOne();
     const $search_input = $("#upload_file_search");
 
-    list_render.create(uploaded_files_table, attachments, {
+    ListWidget.create(uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         modifier(attachment) {
             return render_uploaded_files_list({attachment});
@@ -132,7 +132,7 @@ exports.update_attachments = function (event) {
     }
     upload_space_used = event.upload_space_used;
     // TODO: This is inefficient and we should be able to do some sort
-    // of incremental list_render update instead.
+    // of incremental ListWidget update instead.
     render_attachments_ui();
 };
 

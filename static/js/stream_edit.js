@@ -339,7 +339,7 @@ function show_subscription_settings(sub) {
         return user_pill.filter_taken_users(potential_subscribers, exports.pill_widget);
     }
 
-    list_render.create(list, users, {
+    ListWidget.create(list, users, {
         name: "stream_subscribers/" + stream_id,
         modifier(item) {
             return format_member_list_elem(item);

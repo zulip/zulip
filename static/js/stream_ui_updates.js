@@ -201,12 +201,12 @@ exports.update_subscribers_list = function (sub) {
 
         /*
             We try to find a subscribers list that is already in the
-            cache that list_render.js maintains.  The list we are
+            cache that list_widget.js maintains.  The list we are
             looking for would have been created in the function
             stream_edit.show_subscription_settings, using the same
             naming scheme as below for the `name` parameter.
         */
-        const subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
+        const subscribers_list = ListWidget.get("stream_subscribers/" + sub.stream_id);
 
         // Changing the data clears the rendered list and the list needs to be re-rendered.
         // Perform re-rendering only when the stream settings form of the corresponding

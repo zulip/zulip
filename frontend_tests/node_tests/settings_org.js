@@ -68,7 +68,7 @@ const _realm_logo = {
     build_realm_logo_widget: noop,
 };
 
-const _list_render = {
+const _ListWidget = {
     create: () => ({init: noop}),
 };
 
@@ -82,7 +82,7 @@ set_global("page_params", _page_params);
 set_global("realm_icon", _realm_icon);
 set_global("realm_logo", _realm_logo);
 set_global("ui_report", _ui_report);
-set_global("list_render", _list_render);
+set_global("ListWidget", _ListWidget);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");

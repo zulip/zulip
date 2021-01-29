@@ -26,7 +26,7 @@ exports.build_default_stream_table = function () {
     const stream_ids = stream_data.get_default_stream_ids();
     const subs = stream_ids.map((stream_id) => stream_data.get_sub_by_id(stream_id));
 
-    list_render.create(table, subs, {
+    ListWidget.create(table, subs, {
         name: "default_streams_list",
         modifier(item) {
             return render_admin_default_streams_list({
