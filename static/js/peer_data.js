@@ -64,7 +64,7 @@ export function potential_subscribers(stream_id) {
         may be moot now for other reasons.)
     */
 
-    const subscribers = stream_subscribers.get(stream_id);
+    const subscribers = get_user_set(stream_id);
 
     function is_potential_subscriber(person) {
         // Use verbose style to force better test
@@ -96,7 +96,6 @@ export function get_subscribers(stream_id) {
 export function set_subscribers(stream_id, user_ids) {
     const subscribers = new LazySet(user_ids || []);
     stream_subscribers.set(stream_id, subscribers);
-    return subscribers;
 }
 
 export function add_subscriber(stream_id, user_id) {
