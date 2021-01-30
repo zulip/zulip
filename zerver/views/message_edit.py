@@ -53,6 +53,14 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
             del entry["prev_rendered_content_version"]
             prev_content = entry["prev_content"]
             prev_rendered_content = entry["prev_rendered_content"]
+            # mypy infers that prev_rendered_content is of type Optional[str]
+            # based on the assignment near the top of this function, because
+            # message.rendered_content is of that type, as of the writing of
+            # this comment. However, after the assignment immediately above,
+            # prev_rendered_content will always be a string (barring bad data
+            # in the database). The assertion below is necessary because mypy
+            # will otherwise complain that an Optional[str] variable is being
+            # used where a str variable is required.
             assert prev_rendered_content is not None
             entry["content_html_diff"] = highlight_html_differences(
                 prev_rendered_content, entry["rendered_content"], message.id
