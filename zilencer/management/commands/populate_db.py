@@ -387,11 +387,11 @@ class Command(BaseCommand):
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict: Dict[str, Dict[str, Any]] = {
-                "Verona": {"description": "A city in Italy"},
-                "Denmark": {"description": "A Scandinavian country"},
-                "Scotland": {"description": "Located in the United Kingdom"},
-                "Venice": {"description": "A northeastern Italian city"},
-                "Rome": {"description": "Yet another Italian city", "is_web_public": True},
+                "Verona": {"description": "A ~~country~~ **city** in *Italy*"},
+                "Denmark": {"description": "A [Scandinavian](http://www.google.com/search?q=scandinavia) country :up:"},
+                "Scotland": {"description": "Located in the [United Kingdom](https://en.wikipedia.org/wiki/United_Kingdom)"},
+                "Venice": {"description": "A northeastern **Italian** city"},
+                "Rome": {"description": "Yet another ***Italian*** city :city:", "is_web_public": True},
             }
 
             bulk_create_streams(zulip_realm, stream_dict)
@@ -597,14 +597,14 @@ class Command(BaseCommand):
                 # when running populate_db for the test suite
 
                 zulip_stream_dict: Dict[str, Dict[str, Any]] = {
-                    "devel": {"description": "For developing"},
+                    "devel": {"description": "For [developing](https://zulip.readthedocs.io/en/latest/development/index.html) :work_in_progress:"},
                     "all": {"description": "For **everything**"},
                     "announce": {"description": "For announcements",
                                  'stream_post_policy': Stream.STREAM_POST_POLICY_ADMINS},
-                    "design": {"description": "For design"},
-                    "support": {"description": "For support"},
+                    "design": {"description": "For ***design*** :sparkle:"},
+                    "support": {"description": "For support :+1:"},
                     "social": {"description": "For socializing"},
-                    "test": {"description": "For testing `code`"},
+                    "test": {"description": "For [testing](https://zulip.readthedocs.io/en/latest/testing/index.html) :at_work: `code`"},
                     "errors": {"description": "For errors"},
                     "sales": {"description": "For sales discussion"},
                 }
@@ -622,7 +622,7 @@ class Command(BaseCommand):
                     extra_stream_name = 'Extra Stream ' + number_str
 
                     zulip_stream_dict[extra_stream_name] = {
-                        "description": "Auto-generated extra stream.",
+                        "description": "Auto-generated extra stream for *testing* `code`.",
                     }
 
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
