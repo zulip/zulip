@@ -2,9 +2,6 @@ const {LazySet} = require("./lazy_set");
 const people = require("./people");
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
-// We maintain the invariant that this has keys for all all stream_ids
-// that we track in the other data structures.  We intialize it during
-// clear_subscriptions.
 let stream_subscribers;
 
 function assert_number(id) {
@@ -14,14 +11,17 @@ function assert_number(id) {
 }
 
 function get_user_set(stream_id) {
-    assert_number(stream_id);
-
     // This is an internal function to get the LazySet of users.
     // We create one on the fly as necessary, but we warn in that case.
+    assert_number(stream_id);
+
+    if (!stream_data.get_sub_by_id(stream_id)) {
+        blueslip.warn("We called get_user_set for an untracked stream: " + stream_id);
+    }
+
     let subscribers = stream_subscribers.get(stream_id);
 
     if (subscribers === undefined) {
-        blueslip.warn("We called get_user_set for an untracked stream: " + stream_id);
         subscribers = new LazySet([]);
         stream_subscribers.set(stream_id, subscribers);
     }
@@ -31,12 +31,6 @@ function get_user_set(stream_id) {
 
 export function clear() {
     stream_subscribers = new Map();
-}
-
-export function maybe_clear_subscribers(stream_id) {
-    if (!stream_subscribers.has(stream_id)) {
-        set_subscribers(stream_id, []);
-    }
 }
 
 export function is_subscriber_subset(stream_id1, stream_id2) {

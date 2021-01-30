@@ -972,6 +972,8 @@ run_test("warn_if_private_stream_is_linked", () => {
         stream_id: 100,
         name: "Denmark",
     };
+    stream_data.add_sub(denmark);
+
     peer_data.set_subscribers(denmark.stream_id, [1, 2, 3]);
 
     function test_noop_case(invite_only) {

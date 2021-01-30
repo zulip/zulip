@@ -240,7 +240,11 @@ run_test("get_subscriber_count", () => {
 
 run_test("is_subscriber_subset", () => {
     function make_sub(stream_id, user_ids) {
-        const sub = {stream_id};
+        const sub = {
+            stream_id,
+            name: `stream ${stream_id}`,
+        };
+        stream_data.add_sub(sub);
         peer_data.set_subscribers(sub.stream_id, user_ids);
         return sub;
     }
