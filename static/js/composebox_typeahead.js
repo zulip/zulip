@@ -394,6 +394,10 @@ exports.slash_commands = [
         text: i18n.t("/settings (Load settings menu)"),
         name: "settings",
     },
+    {
+        text: i18n.t("/todo (Create a todo list)"),
+        name: "todo",
+    },
 ];
 
 exports.filter_and_sort_mentions = function (is_silent, query, opts) {
