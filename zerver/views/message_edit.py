@@ -24,6 +24,7 @@ from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
+from zerver.lib.widget import is_widget_message
 from zerver.models import Message, Realm, UserProfile
 
 
@@ -138,6 +139,10 @@ def update_message_backend(
         pass
     else:
         raise JsonableError(_("You don't have permission to edit this message"))
+
+    # Right now, we prevent users from editing widgets.
+    if content is not None and is_widget_message(message):
+        return json_error(_("Widgets cannot be edited."))
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
