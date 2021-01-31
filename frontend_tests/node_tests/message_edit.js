@@ -68,6 +68,10 @@ run_test("get_editability", () => {
     // is true, we can edit the topic if there is one.
     message.type = "stream";
     assert.equal(get_editability(message, 45), editability_types.TOPIC_ONLY);
+    // Right now, we prevent users from editing widgets.
+    message.submessages = ["/poll"];
+    assert.equal(get_editability(message, 45), editability_types.TOPIC_ONLY);
+    delete message.submessages;
     message.type = "private";
     assert.equal(get_editability(message, 45), editability_types.NO_LONGER);
     // If we don't pass a second argument, treat it as 0

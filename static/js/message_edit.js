@@ -78,6 +78,13 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     );
 }
 
+function is_widget_message(message) {
+    if (message.submessages && message.submessages.length !== 0) {
+        return true;
+    }
+    return false;
+}
+
 export function get_editability(message, edit_limit_seconds_buffer = 0) {
     if (!message) {
         return editability_types.NO;
@@ -85,6 +92,7 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
     if (!is_topic_editable(message, edit_limit_seconds_buffer)) {
         return editability_types.NO;
     }
+
     if (message.failed_request) {
         // TODO: For completely failed requests, we should be able
         //       to "edit" the message, but it won't really be like
@@ -104,7 +112,11 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
         return editability_types.NO;
     }
 
-    if (page_params.realm_message_content_edit_limit_seconds === 0 && message.sent_by_me) {
+    if (
+        page_params.realm_message_content_edit_limit_seconds === 0 &&
+        message.sent_by_me &&
+        !is_widget_message(message)
+    ) {
         return editability_types.FULL;
     }
 
@@ -117,7 +129,8 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
             edit_limit_seconds_buffer +
             (message.timestamp - Date.now() / 1000) >
             0 &&
-        message.sent_by_me
+        message.sent_by_me &&
+        !is_widget_message(message)
     ) {
         return editability_types.FULL;
     }
@@ -345,6 +358,7 @@ function edit_message(row, raw_content) {
             message_id: message.id,
             is_editable,
             is_content_editable: editability === editability_types.FULL,
+            is_widget_message: is_widget_message(message),
             has_been_editable: editability !== editability_types.NO,
             topic: message.topic,
             content: raw_content,
