@@ -140,7 +140,6 @@ exports.clear_subscriptions = function () {
     // it should only be used in tests.
     stream_info = new BinaryDict((sub) => sub.subscribed);
     subs_by_stream_id = new Map();
-    peer_data.clear();
 };
 
 exports.clear_subscriptions();

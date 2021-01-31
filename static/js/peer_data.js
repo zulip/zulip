@@ -2,7 +2,7 @@ const {LazySet} = require("./lazy_set");
 const people = require("./people");
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
-let stream_subscribers;
+const stream_subscribers = new Map();
 
 function assert_number(id) {
     if (typeof id !== "number") {
@@ -27,10 +27,6 @@ function get_user_set(stream_id) {
     }
 
     return subscribers;
-}
-
-export function clear() {
-    stream_subscribers = new Map();
 }
 
 export function is_subscriber_subset(stream_id1, stream_id2) {
