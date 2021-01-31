@@ -29,62 +29,65 @@ const me = {
 };
 
 // set up user data
+const fred = {
+    email: "fred@zulip.com",
+    full_name: "Fred",
+    user_id: 101,
+};
+const gail = {
+    email: "gail@zulip.com",
+    full_name: "Gail",
+    user_id: 102,
+};
+const george = {
+    email: "george@zulip.com",
+    full_name: "George",
+    user_id: 103,
+};
+
+people.add_active_user(fred);
+people.add_active_user(gail);
+people.add_active_user(george);
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
+
+const devel = {name: "devel", subscribed: false, stream_id: 1};
+const rome = {name: "Rome", subscribed: true, stream_id: 1001};
+stream_data.add_sub(devel);
+stream_data.add_sub(rome);
 
 function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);
 }
 
 run_test("unsubscribe", () => {
-    stream_data.clear_subscriptions();
-
-    let sub = {name: "devel", subscribed: false, stream_id: 1};
+    // verify clean slate
+    assert(!stream_data.is_subscribed("devel"));
 
     // set up our subscription
-    stream_data.add_sub(sub);
-    sub.subscribed = true;
-    peer_data.set_subscribers(sub.stream_id, [me.user_id]);
+    devel.subscribed = true;
+    peer_data.set_subscribers(devel.stream_id, [me.user_id]);
 
     // ensure our setup is accurate
     assert(stream_data.is_subscribed("devel"));
 
     // DO THE UNSUBSCRIBE HERE
-    stream_data.unsubscribe_myself(sub);
-    assert(!sub.subscribed);
+    stream_data.unsubscribe_myself(devel);
+    assert(!devel.subscribed);
     assert(!stream_data.is_subscribed("devel"));
-    assert(!contains_sub(stream_data.subscribed_subs(), sub));
-    assert(contains_sub(stream_data.unsubscribed_subs(), sub));
+    assert(!contains_sub(stream_data.subscribed_subs(), devel));
+    assert(contains_sub(stream_data.unsubscribed_subs(), devel));
 
     // make sure subsequent calls work
-    sub = stream_data.get_sub("devel");
+    const sub = stream_data.get_sub("devel");
     assert(!sub.subscribed);
 });
 
 run_test("subscribers", () => {
-    stream_data.clear_subscriptions();
-    let sub = {name: "Rome", subscribed: true, stream_id: 1001};
+    const sub = rome;
 
-    stream_data.add_sub(sub);
-
-    const fred = {
-        email: "fred@zulip.com",
-        full_name: "Fred",
-        user_id: 101,
-    };
-    const not_fred = {
-        email: "not_fred@zulip.com",
-        full_name: "Not Fred",
-        user_id: 102,
-    };
-    const george = {
-        email: "george@zulip.com",
-        full_name: "George",
-        user_id: 103,
-    };
-    people.add_active_user(fred);
-    people.add_active_user(not_fred);
-    people.add_active_user(george);
+    // verify setup
+    assert(stream_data.is_subscribed(sub.name));
 
     function potential_subscriber_ids() {
         const users = peer_data.potential_subscribers(sub.stream_id);
@@ -94,7 +97,7 @@ run_test("subscribers", () => {
     assert.deepEqual(potential_subscriber_ids(), [
         me.user_id,
         fred.user_id,
-        not_fred.user_id,
+        gail.user_id,
         george.user_id,
     ]);
 
@@ -103,9 +106,9 @@ run_test("subscribers", () => {
     assert(stream_data.is_user_subscribed(sub.stream_id, me.user_id));
     assert(stream_data.is_user_subscribed(sub.stream_id, fred.user_id));
     assert(stream_data.is_user_subscribed(sub.stream_id, george.user_id));
-    assert(!stream_data.is_user_subscribed(sub.stream_id, not_fred.user_id));
+    assert(!stream_data.is_user_subscribed(sub.stream_id, gail.user_id));
 
-    assert.deepEqual(potential_subscriber_ids(), [not_fred.user_id]);
+    assert.deepEqual(potential_subscriber_ids(), [gail.user_id]);
 
     peer_data.set_subscribers(sub.stream_id, []);
 
@@ -120,7 +123,6 @@ run_test("subscribers", () => {
     // add
     peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     assert(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
-    sub = stream_data.get_sub("Rome");
     assert.equal(peer_data.get_subscriber_count(sub.stream_id), 1);
     const sub_email = "Rome:214125235@zulipdev.com:9991";
     stream_data.update_stream_email_address(sub, sub_email);
@@ -129,14 +131,12 @@ run_test("subscribers", () => {
     // verify that adding an already-added subscriber is a noop
     peer_data.add_subscriber(sub.stream_id, brutus.user_id);
     assert(stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
-    sub = stream_data.get_sub("Rome");
     assert.equal(peer_data.get_subscriber_count(sub.stream_id), 1);
 
     // remove
     let ok = peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
     assert(ok);
     assert(!stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
-    sub = stream_data.get_sub("Rome");
     assert.equal(peer_data.get_subscriber_count(sub.stream_id), 0);
 
     // verify that checking subscription with undefined user id
@@ -158,7 +158,6 @@ run_test("subscribers", () => {
     ok = peer_data.remove_subscriber(sub.stream_id, brutus.user_id);
     assert(!ok);
     assert(!stream_data.is_user_subscribed(sub.stream_id, brutus.user_id));
-    sub = stream_data.get_sub("Rome");
     assert.equal(peer_data.get_subscriber_count(sub.stream_id), 0);
     blueslip.reset();
 
@@ -217,24 +216,12 @@ run_test("get_subscriber_count", () => {
     stream_data.add_sub(india);
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
 
-    const fred = {
-        email: "fred@zulip.com",
-        full_name: "Fred",
-        user_id: 101,
-    };
-    people.add_active_user(fred);
-    peer_data.add_subscriber(india.stream_id, 102);
+    peer_data.add_subscriber(india.stream_id, fred.user_id);
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 1);
-    const george = {
-        email: "george@zulip.com",
-        full_name: "George",
-        user_id: 103,
-    };
-    people.add_active_user(george);
-    peer_data.add_subscriber(india.stream_id, 103);
+    peer_data.add_subscriber(india.stream_id, george.user_id);
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 2);
 
-    peer_data.remove_subscriber(india.stream_id, 103);
+    peer_data.remove_subscriber(india.stream_id, george.user_id);
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 1);
 });
 
