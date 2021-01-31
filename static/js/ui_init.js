@@ -482,7 +482,7 @@ exports.initialize_everything = function () {
 };
 
 $(() => {
-    const finish = blueslip.start_timing("initialize_everything");
-    exports.initialize_everything();
-    finish();
+    blueslip.measure_time("initialize_everything", () => {
+        exports.initialize_everything();
+    });
 });

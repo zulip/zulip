@@ -258,16 +258,18 @@ exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
 
-    const finish = blueslip.start_timing("render new stream users");
-    const all_users = people.get_people_for_stream_create();
-    // Add current user on top of list
-    all_users.unshift(people.get_by_user_id(page_params.user_id));
-    const html = render_new_stream_users({
-        users: all_users,
-        streams: stream_data.get_streams_for_settings_page(),
-        is_admin: page_params.is_admin,
+    let html;
+
+    blueslip.measure_time("render new stream users", () => {
+        const all_users = people.get_people_for_stream_create();
+        // Add current user on top of list
+        all_users.unshift(people.get_by_user_id(page_params.user_id));
+        html = render_new_stream_users({
+            users: all_users,
+            streams: stream_data.get_streams_for_settings_page(),
+            is_admin: page_params.is_admin,
+        });
     });
-    finish();
 
     const container = $("#people_to_add");
     container.html(html);
