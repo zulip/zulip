@@ -112,11 +112,9 @@ exports.build_user_sidebar = function () {
 
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
-    const finish = blueslip.start_timing("buddy_list.populate");
-    buddy_list.populate({
-        keys: user_ids,
+    blueslip.measure_time("buddy_list.populate", () => {
+        buddy_list.populate({keys: user_ids});
     });
-    finish();
 
     return user_ids; // for testing
 };

@@ -186,7 +186,6 @@ exports.create = function ($container, list, opts) {
 
         const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
-        const finish = blueslip.start_timing("ListWidget " + opts.name);
         let html = "";
         for (const item of slice) {
             const s = opts.modifier(item);
@@ -201,8 +200,6 @@ exports.create = function ($container, list, opts) {
                 html += s;
             }
         }
-
-        finish();
 
         $container.append($(html));
         meta.offset += load_count;

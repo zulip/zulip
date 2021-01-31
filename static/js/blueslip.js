@@ -251,14 +251,12 @@ exports.error = function blueslip_error(msg, more_info, stack) {
 
 exports.timings = new Map();
 
-exports.start_timing = function (label) {
+exports.measure_time = function (label, f) {
     const t1 = performance.now();
-
-    return function () {
-        const t2 = performance.now();
-        const elapsed = t2 - t1;
-        exports.timings.set(label, elapsed);
-    };
+    f();
+    const t2 = performance.now();
+    const elapsed = t2 - t1;
+    exports.timings.set(label, elapsed);
 };
 
 // Produces an easy-to-read preview on an HTML element.  Currently
