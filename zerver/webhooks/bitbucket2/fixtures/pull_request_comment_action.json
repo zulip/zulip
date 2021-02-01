@@ -25,7 +25,7 @@
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
          "display_name":"Tomasz",
          "type":"user",
-         "username":"kolaszek"
+         "nickname":"Tomasz Kolaszek"
       },
       "updated_on":"2016-07-04T20:47:38.608171+00:00",
       "content":{
@@ -78,7 +78,7 @@
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
          "display_name":"Tomasz",
          "type":"user",
-         "username":"kolaszek"
+         "nickname":"Tomasz Kolaszek"
       },
       "full_name":"kolaszek/repository-name",
       "name":"Repository name",
@@ -100,7 +100,7 @@
       "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
       "display_name":"Tomasz",
       "type":"user",
-      "username":"kolaszek"
+      "nickname":"Tomasz Kolaszek"
    },
    "pullrequest":{
       "title":"new commit",
@@ -138,7 +138,7 @@
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
          "display_name":"Tomasz",
          "type":"user",
-         "username":"kolaszek"
+         "nickname":"Tomasz Kolaszek"
       },
       "type":"pullrequest",
       "merge_commit":null,
@@ -224,7 +224,7 @@
                "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
                "display_name":"Tomasz",
                "type":"user",
-               "username":"kolaszek"
+               "nickname":"Tomasz Kolaszek"
             }
          }
       ]

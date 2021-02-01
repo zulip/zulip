@@ -431,7 +431,6 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.assertEqual(get_user_info({}), "Unknown user")
 
         dct = dict(
-            username="asmith",
             nickname= "alice",
             noisy_field="whatever",
             display_name="Alice Smith",
@@ -442,8 +441,5 @@ class Bitbucket2HookTests(WebhookTestCase):
 
         self.assertEqual(get_user_info(dct), "alice")
         del dct["nickname"]
-
-        self.assertEqual(get_user_info(dct), "asmith")
-        del dct["username"]
 
         self.assertEqual(get_user_info(dct), "Unknown user")

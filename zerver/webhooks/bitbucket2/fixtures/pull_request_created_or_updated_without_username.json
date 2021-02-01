@@ -94,7 +94,7 @@
             }
          },
          "display_name":"Tomasz",
-         "username":"kolaszek"
+         "nickname":"Tomasz Kolaszek"
       },
       "task_count":0,
       "title":"new commit",
@@ -134,7 +134,7 @@
          }
       },
       "display_name":"Tomasz",
-      "username":"kolaszek"
+      "nickname":"Tomasz Kolaszek"
    },
    "repository":{
       "website":"",
@@ -170,7 +170,7 @@
             }
          },
          "display_name":"Tomasz",
-         "username":"kolaszek"
+         "nickname":"Tomasz Kolaszek"
       }
    }
 }
