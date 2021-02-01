@@ -21,15 +21,18 @@ from zerver.lib.validator import check_bool, check_string_in, to_non_negative_in
 from zerver.models import Message, UserProfile
 
 
-def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Message) -> None:
+def fill_edit_history_entries(
+    message_history: List[Dict[str, Any]], message: Message
+) -> List[Dict[str, Any]]:
     """This fills out the message edit history entries from the database,
     which are designed to have the minimum data possible, to instead
     have the current topic + content as of that time, plus data on
     whatever changed.  This makes it much simpler to do future
     processing.
-
-    Note that this mutates what is passed to it, which is sorta a bad pattern.
     """
+
+    filled_message_history: List[Dict[str, Any]] = []
+
     prev_content = message.content
     prev_rendered_content = message.rendered_content
     prev_topic = message.topic_name()
@@ -41,18 +44,20 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
         assert datetime_to_timestamp(message.last_edit_time) == message_history[0]["timestamp"]
 
     for entry in message_history:
-        entry["topic"] = prev_topic
-        if LEGACY_PREV_TOPIC in entry:
-            prev_topic = entry[LEGACY_PREV_TOPIC]
-            entry["prev_topic"] = prev_topic
-            del entry[LEGACY_PREV_TOPIC]
+        filled_entry = entry.copy()
 
-        entry["content"] = prev_content
-        entry["rendered_content"] = prev_rendered_content
-        if "prev_content" in entry:
-            del entry["prev_rendered_content_version"]
-            prev_content = entry["prev_content"]
-            prev_rendered_content = entry["prev_rendered_content"]
+        filled_entry["topic"] = prev_topic
+        if LEGACY_PREV_TOPIC in entry:  # TODO: entry or filled_entry
+            prev_topic = entry[LEGACY_PREV_TOPIC]
+            filled_entry["prev_topic"] = prev_topic
+            del filled_entry[LEGACY_PREV_TOPIC]
+
+        filled_entry["content"] = prev_content
+        filled_entry["rendered_content"] = prev_rendered_content
+        if "prev_content" in entry:  # TODO: entry or filled_entry
+            del filled_entry["prev_rendered_content_version"]
+            prev_content = filled_entry["prev_content"]
+            prev_rendered_content = filled_entry["prev_rendered_content"]
             # mypy infers that prev_rendered_content is of type Optional[str]
             # based on the assignment near the top of this function, because
             # message.rendered_content is of that type, as of the writing of
@@ -62,11 +67,13 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
             # will otherwise complain that an Optional[str] variable is being
             # used where a str variable is required.
             assert prev_rendered_content is not None
-            entry["content_html_diff"] = highlight_html_differences(
-                prev_rendered_content, entry["rendered_content"], message.id
+            filled_entry["content_html_diff"] = highlight_html_differences(
+                prev_rendered_content, filled_entry["rendered_content"], message.id
             )
 
-    message_history.append(
+        filled_message_history.append(filled_entry)
+
+    filled_message_history.append(
         dict(
             topic=prev_topic,
             content=prev_content,
@@ -75,6 +82,8 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
             user_id=message.sender_id,
         )
     )
+
+    return filled_message_history
 
 
 @has_request_variables
@@ -94,8 +103,8 @@ def get_message_edit_history(
         message_edit_history = []
 
     # Fill in all the extra data that will make it usable
-    fill_edit_history_entries(message_edit_history, message)
-    return json_success({"message_history": list(reversed(message_edit_history))})
+    filled_message_edit_history = fill_edit_history_entries(message_edit_history, message)
+    return json_success({"message_history": list(reversed(filled_message_edit_history))})
 
 
 PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
