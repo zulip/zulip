@@ -15,7 +15,7 @@
       "display_name":"Tomasz",
       "type":"user",
       "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
-      "username":"kolaszek",
+      "nickname":"Tomasz Kolaszek",
       "location":null,
       "created_on":"2016-06-29T17:51:47.001868+00:00"
    },
@@ -366,7 +366,7 @@
    },
    "repository":{
       "owner":{
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "links":{
             "self":{
                "href":"https://api.bitbucket.org/2.0/users/kolaszek"

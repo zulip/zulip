@@ -12,7 +12,7 @@
             "href":"https://api.bitbucket.org/2.0/users/kolaszek"
          }
       },
-      "username":"kolaszek",
+      "nickname":"Tomasz Kolaszek",
       "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
       "display_name":"Tomasz"
    },
@@ -48,7 +48,7 @@
                "href":"https://api.bitbucket.org/2.0/users/kolaszek"
             }
          },
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
          "display_name":"Tomasz"
       }
