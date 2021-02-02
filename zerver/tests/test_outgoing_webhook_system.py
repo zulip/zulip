@@ -86,7 +86,7 @@ class DoRestCallTests(ZulipTestCase):
 The webhook got a response with status code *500*.''')
 
         assert bot_user.bot_owner is not None
-        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.id)
+        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
 
     def test_fail_request(self) -> None:
         bot_user = self.example_user('outgoing_webhook_bot')
@@ -111,7 +111,7 @@ The webhook got a response with status code *500*.''')
 The webhook got a response with status code *400*.''')
 
         assert bot_user.bot_owner is not None
-        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.id)
+        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
 
     def test_headers(self) -> None:
         bot_user = self.example_user('outgoing_webhook_bot')
@@ -149,7 +149,7 @@ The webhook got a response with status code *400*.''')
             self.assertIn(error_text, bot_owner_notification.content)
             self.assertIn('triggered', bot_owner_notification.content)
             assert bot_user.bot_owner is not None
-            self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.id)
+            self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
 
         with self.assertLogs(level="INFO") as i:
             helper(side_effect=timeout_error, error_text='A timeout occurred.')
@@ -188,7 +188,7 @@ When trying to send a request to the webhook service, an exception of type Reque
 I'm a generic exception :(
 ```''')
         assert bot_user.bot_owner is not None
-        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.id)
+        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
 
 class TestOutgoingWebhookMessaging(ZulipTestCase):
     def create_outgoing_bot(self, bot_owner: UserProfile) -> UserProfile:

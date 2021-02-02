@@ -371,7 +371,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         msg = self.get_last_message()
         self.assertEqual("Test message", msg.content)
-        self.assertEqual(msg.recipient_id, self.example_user("othello").id)
+        self.assertEqual(msg.recipient_id, self.example_user("othello").recipient_id)
 
     def test_group_personal_message_by_id(self) -> None:
         """
