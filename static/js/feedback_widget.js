@@ -123,13 +123,18 @@ export function show(opts) {
 
     set_up_handlers();
 
-    meta.undo = opts.on_undo;
-
     // add a four second delay before closing up.
     meta.hide_me_time = Date.now() + 4000;
 
     meta.$container.find(".feedback_title").text(opts.title_text);
-    meta.$container.find(".feedback_undo").text(opts.undo_button_text);
+
+    if (opts.on_undo) {
+        meta.undo = opts.on_undo;
+        meta.$container.find(".feedback_undo").text(opts.undo_button_text);
+    } else {
+        meta.$container.find(".feedback_undo").hide();
+    }
+
     opts.populate(meta.$container.find(".feedback_content"));
 
     animate.fadeIn();
