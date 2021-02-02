@@ -486,6 +486,14 @@ input[type="checkbox"] {
     border-left: 0;
 }
 
+.alert-word {
+    width: 80%;
+}
+
+.alert-word.delete {
+    width: 10%;
+}
+
 .alert-word-information-box {
     position: relative;
     padding: 7px;
@@ -1854,7 +1862,6 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         width: 120px;
         padding: 0;
         text-align: center;
-        margin: auto;
         margin: auto;
     }
 
