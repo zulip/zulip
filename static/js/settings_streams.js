@@ -135,10 +135,30 @@ export function build_page() {
     $(".default-stream-form").on("click", "#do_submit_stream", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const default_stream_input = $(".create_default_stream");
-        make_stream_default(stream_data.get_stream_id(default_stream_input.val()));
+        const default_stream_input = $(".create_default_stream").val().trim();
+        const default_stream_status = $("#admin-default-stream-status");
+        const stream_id = stream_data.get_stream_id(default_stream_input);
+
         // Clear value inside input box
-        default_stream_input[0].value = "";
+
+        // TODO: It's not clear the right decision is to remove this
+        // except in the `success` handler.
+        $(".create_default_stream").val("");
+
+        if (stream_id === undefined) {
+            ui_report.client_error(i18n.t("Failed: Stream doesn't exist."), default_stream_status);
+            return;
+        }
+
+        if (stream_data.get_default_stream_ids().includes(stream_id)) {
+            ui_report.client_error(
+                i18n.t("Failed: Default Stream already exist."),
+                default_stream_status,
+            );
+            return;
+        }
+
+        make_stream_default(stream_id);
     });
 
     $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
