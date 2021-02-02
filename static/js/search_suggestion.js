@@ -478,6 +478,11 @@ function get_is_filter_suggestions(last, operators) {
             description: "unread messages",
             invalid: [{operator: "is", operand: "unread"}],
         },
+        {
+            search_string: "is:muted",
+            description: "muted messages",
+            invalid: [{operator: "is", operand: "muted"}],
+        },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
 }
