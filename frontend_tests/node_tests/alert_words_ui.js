@@ -136,11 +136,11 @@ run_test("remove_alert_word", (override) => {
     const remove_func = word_list.get_on_handler("click", ".remove-alert-word");
 
     const remove_alert_word = $(".remove-alert-word");
-    const list_item = $("li.alert-word-item");
+    const list_item = $("tr.alert-word-item");
     const val_item = $("span.value");
     val_item.text(i18n.t("zot"));
 
-    remove_alert_word.set_parents_result("li", list_item);
+    remove_alert_word.set_parents_result("tr", list_item);
     list_item.set_find_results(".value", val_item);
 
     const event = {

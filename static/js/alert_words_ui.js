@@ -62,7 +62,6 @@ function add_alert_word(alert_word) {
 
 function remove_alert_word(alert_word) {
     const words_to_be_removed = [alert_word];
-
     channel.del({
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_removed)},
@@ -86,7 +85,7 @@ export function set_up_alert_words() {
     });
 
     $("#alert_words_list").on("click", ".remove-alert-word", (event) => {
-        const word = $(event.currentTarget).parents("li").find(".value").text();
+        const word = $(event.currentTarget).parents("tr").find(".value").text().trim();
         remove_alert_word(word);
     });
 
@@ -95,7 +94,6 @@ export function set_up_alert_words() {
         // Handle Enter (13) as "add".
         if (key === 13) {
             event.preventDefault();
-
             const word = $(event.target).val();
             add_alert_word(word);
         }
