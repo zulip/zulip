@@ -27,5 +27,14 @@
             </div>
         </div>
     </form>
-    <ul id="alert_words_list"></ul>
+    <div class="progressive-table-wrapper" data-simplebar>
+        <table class="table table-condensed table-striped wrapped-table">
+            <thead>
+                <th class="active">{{t "Word" }}</th>
+                <th>{{t "Delete" }}</th>
+            </thead>
+            <tbody id="alert_words_list" class="alert_words_list required-text thick"
+              data-empty="{{t 'There are no current alert words.' }}"></tbody>
+        </table>
+    </div>
 </div>
