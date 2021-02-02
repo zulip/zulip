@@ -38,7 +38,7 @@ apt-get -y install "${pre_setup_deps[@]}"
 SCRIPTS_PATH="$(cd "$(dirname "$(dirname "$0")")" && pwd)"
 
 release=$(lsb_release -sc)
-if [[ "$release" =~ ^(bionic|cosmic|disco|eoan|focal)$ ]]; then
+if [[ "$release" =~ ^(bionic|cosmic|disco|eoan|focal|groovy)$ ]]; then
     distribution=ubuntu
     apt-key add "$SCRIPTS_PATH"/setup/pgdg.asc
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
