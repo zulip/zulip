@@ -913,9 +913,11 @@ input[type="checkbox"] {
         float: left;
     }
 
-    .edit-alert-words-buttons{
+    .edit-alert-word-buttons{
         float: left;
     }
+
+
 
     .remove-alert-word {
         position: absolute;
