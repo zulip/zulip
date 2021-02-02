@@ -78,7 +78,7 @@ h3 .fa-question-circle-o {
         #pw_strength {
             width: 140px;
             height: 8px;
-            margin: 6px 0 0 0;
+            margin: 6px 0 0;
         }
     }
     .button {
@@ -231,7 +231,7 @@ td .button {
     .settings-section-title {
         font-size: 1.4em;
         font-weight: 500;
-        margin: 10px 0 10px 0;
+        margin: 10px 0;
 
         &.transparent {
             background-color: transparent;
@@ -269,7 +269,7 @@ td .button {
                 display: inline-block;
                 position: absolute;
                 padding-top: 3px;
-                font: normal normal normal 12px/1 FontAwesome;
+                font: normal normal normal 12px / 1 FontAwesome;
                 font-size: inherit;
             }
 
@@ -400,7 +400,7 @@ td .button {
 
 .button,
 .input-group {
-    margin: 0 0 20px 0;
+    margin: 0 0 20px;
 }
 
 .input-group {
@@ -432,7 +432,7 @@ input[type="checkbox"] {
     }
 
     .inline-block {
-        margin: -2px 0 0 0;
+        margin: -2px 0 0;
     }
 }
 
@@ -620,8 +620,7 @@ input[type="checkbox"] {
 #account-settings-status {
     text-align: center;
     width: 50%;
-    margin: auto;
-    margin-bottom: 20px;
+    margin: auto auto 20px;
 }
 
 .add-new-emoji-box,
@@ -691,7 +690,7 @@ input[type="checkbox"] {
 
 #admin-filter-pattern-status,
 #admin-filter-format-status {
-    margin: 20px 0 0 0;
+    margin: 20px 0 0;
 }
 
 .progressive-table-wrapper {
@@ -857,7 +856,7 @@ input[type="checkbox"] {
     }
 
     .buttons {
-        margin: 10px 0 5px 0;
+        margin: 10px 0 5px;
     }
 }
 
@@ -913,11 +912,9 @@ input[type="checkbox"] {
         float: left;
     }
 
-    .edit-alert-word-buttons{
+    .edit-alert-word-buttons {
         float: left;
     }
-
-
 
     .remove-alert-word {
         position: absolute;
@@ -933,7 +930,6 @@ input[type="checkbox"] {
     }
 
     .alert_word_listing .value {
-        
         word-wrap: break-word;
         word-break: break-all;
         white-space: normal;
@@ -958,7 +954,7 @@ input[type="checkbox"] {
 
     label {
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
-        padding: 8px 0 10px 0;
+        padding: 8px 0 10px;
 
         &:last-of-type {
             border-bottom: none;
@@ -1204,7 +1200,7 @@ input[type="checkbox"] {
 
     input.search {
         font-size: 0.9rem;
-        margin: 10px 0 20px 0;
+        margin: 10px 0 20px;
     }
 
     .form-sidebar {
@@ -1331,7 +1327,7 @@ input[type="checkbox"] {
             .icon {
                 width: 18px;
                 height: 18px;
-                margin: 10px 10px;
+                margin: 10px;
                 text-align: center;
 
                 font-size: 1.4em;
@@ -1694,7 +1690,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 @supports (-moz-appearance: none) {
     #settings_page select {
         appearance: none;
-        background: hsl(0, 0%, 100%) url(../images/dropdown.png) right / 20px
+        background: hsl(0, 0%, 100%) url("../images/dropdown.png") right / 20px
             no-repeat;
         padding-right: 20px;
     }
@@ -1791,7 +1787,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 
     .subsection-failed-status p {
-        margin: 5px 0 0 0;
+        margin: 5px 0 0;
     }
 }
 
@@ -1857,10 +1853,9 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         display: block;
         width: 120px;
         padding: 0;
-        padding-top: 0;
         text-align: center;
         margin: auto;
-        float: none;
+        margin: auto;
     }
 
     #filter-settings .new-filter-form .controls,
@@ -1871,7 +1866,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
     #settings_page .save-button-controls {
         display: block;
-        margin: 10px 0 0 0;
+        margin: 10px 0 0;
     }
 }
 
@@ -1883,7 +1878,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 }
 
-@media only screen and (max-width: $lg_max) {
+@media only screen and(max-width: $lg_max) {
     /* Show bot-information-box at full width on small
        screen sizes. Not having this media query breaks the
        information box */
