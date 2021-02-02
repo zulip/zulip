@@ -908,9 +908,22 @@ input[type="checkbox"] {
 #alert_words_list {
     margin: 0;
 
+    .alert-word-information-box {
+        min-width: 98%;
+        float: left;
+    }
+
+    .edit-alert-words-buttons{
+        float: left;
+    }
+
+    .remove-alert-word {
+        position: absolute;
+        margin-top: 0.5%;
+    }
+
     li {
         list-style-type: none;
-
         &.alert-word-item:first-child {
             background: none;
             margin-top: 8px;
@@ -918,7 +931,7 @@ input[type="checkbox"] {
     }
 
     .alert_word_listing .value {
-        display: block;
+        
         word-wrap: break-word;
         word-break: break-all;
         white-space: normal;
@@ -928,9 +941,7 @@ input[type="checkbox"] {
 #alert_words_list,
 #attachments_list {
     .edit-attachment-buttons {
-        position: absolute;
-        right: 20px;
-        top: 0;
+        display: inline-block;
     }
 }
 
