@@ -411,6 +411,7 @@ run_test("empty_query_suggestions", () => {
         "has:link",
         "has:image",
         "has:attachment",
+        "has:widget",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -427,6 +428,7 @@ run_test("empty_query_suggestions", () => {
     assert.equal(describe("has:link"), "Messages with one or more link");
     assert.equal(describe("has:image"), "Messages with one or more image");
     assert.equal(describe("has:attachment"), "Messages with one or more attachment");
+    assert.equal(describe("has:widget"), "Messages with one or more widget");
 });
 
 run_test("has_suggestions", () => {
@@ -441,7 +443,7 @@ run_test("has_suggestions", () => {
     };
 
     let suggestions = get_suggestions("", query);
-    let expected = ["h", "has:link", "has:image", "has:attachment"];
+    let expected = ["h", "has:link", "has:image", "has:attachment", "has:widget"];
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
@@ -451,20 +453,22 @@ run_test("has_suggestions", () => {
     assert.equal(describe("has:link"), "Messages with one or more link");
     assert.equal(describe("has:image"), "Messages with one or more image");
     assert.equal(describe("has:attachment"), "Messages with one or more attachment");
+    assert.equal(describe("has:widget"), "Messages with one or more widget");
 
     query = "-h";
     suggestions = get_suggestions("", query);
-    expected = ["-h", "-has:link", "-has:image", "-has:attachment"];
+    expected = ["-h", "-has:link", "-has:image", "-has:attachment", "-has:widget"];
     assert.deepEqual(suggestions.strings, expected);
     assert.equal(describe("-has:link"), "Exclude messages with one or more link");
     assert.equal(describe("-has:image"), "Exclude messages with one or more image");
     assert.equal(describe("-has:attachment"), "Exclude messages with one or more attachment");
+    assert.equal(describe("-has:widget"), "Exclude messages with one or more widget");
 
     // operand suggestions follow.
 
     query = "has:";
     suggestions = get_suggestions("", query);
-    expected = ["has:link", "has:image", "has:attachment"];
+    expected = ["has:link", "has:image", "has:attachment", "has:widget"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "has:im";
@@ -550,6 +554,7 @@ run_test("check_is_suggestions", () => {
         "has:link",
         "has:image",
         "has:attachment",
+        "has:widget",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -565,6 +570,7 @@ run_test("check_is_suggestions", () => {
         "has:link",
         "has:image",
         "has:attachment",
+        "has:widget",
     ];
     assert.deepEqual(suggestions.strings, expected);
 

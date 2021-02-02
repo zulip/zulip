@@ -71,6 +71,8 @@ function message_matches_search_term(message, operator, operand) {
                 return message_util.message_has_link(message);
             } else if (operand === "attachment") {
                 return message_util.message_has_attachment(message);
+            } else if (operand === "widget") {
+                return message_util.message_has_widget(message);
             }
             return false; // has:something_else returns false
         case "is":
@@ -845,6 +847,7 @@ class Filter {
             "has-link",
             "has-image",
             "has-attachment",
+            "has-widget",
             "search",
         ];
 
@@ -961,6 +964,7 @@ class Filter {
                     "links",
                     "attachment",
                     "attachments",
+                    "widget",
                 ];
                 if (!valid_has_operands.includes(operand)) {
                     return "invalid " + operand + " operand for has operator";

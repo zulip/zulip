@@ -494,6 +494,11 @@ function get_has_filter_suggestions(last, operators) {
             description: "messages with one or more attachment",
             invalid: [{operator: "has", operand: "attachment"}],
         },
+        {
+            search_string: "has:widget",
+            description: "messages with one or more widget",
+            invalid: [{operator: "has", operand: "widget"}],
+        },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
 }
