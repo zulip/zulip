@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Zulip'
-copyright = '2015–2020, The Zulip Team'
+copyright = '2012–2015 Dropbox, Inc., 2015–2021 Kandra Labs, Inc., and contributors'
 author = 'The Zulip Team'
 
 # The version info for the project you're documenting, acts as replacement for
