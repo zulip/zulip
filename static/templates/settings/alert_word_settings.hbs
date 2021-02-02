@@ -27,5 +27,15 @@
             </div>
         </div>
     </form>
-    <ul id="alert_words_list"></ul>
+    <!--<ul id="alert_words_list"></ul>-->
+    <div class="progressive-table-wrapper" data-simplebar>
+        <table class="table table-condensed table-striped wrapped-table">
+            <thead>
+                <th class="active" data-sort="alphabetic" data-sort-prop="full_name">{{t "Word" }}</th>
+                <th class="user_role" data-sort="role">{{t "Delete" }}</th>
+            </thead>
+            <tbody id="alert_words_list" class="alert_words_list required-text thick"
+              data-empty="{{t 'No users match your current filter.' }}"></tbody>
+        </table>
+    </div>
 </div>
