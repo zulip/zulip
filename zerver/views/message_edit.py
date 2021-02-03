@@ -113,6 +113,14 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     message, ignored_user_message = access_message(user_profile, message_id)
     is_no_topic_msg = (message.topic_name() == "(no topic)")
 
+    # Normalize topic and content.
+    if topic_name is not None:
+        topic_name = topic_name.strip()
+    if content is not None:
+        if content.rstrip() == "":
+            content = "(deleted)"
+        content = normalize_body(content)
+
     # You only have permission to edit a message if:
     # 1. You sent it, OR:
     # 2. This is a topic-only edit for a (no topic) message, OR:
@@ -150,20 +158,16 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
 
     if topic_name is None and content is None and stream_id is None:
         return json_error(_("Nothing to change"))
-    if topic_name is not None:
-        topic_name = topic_name.strip()
-        if topic_name == "":
-            raise JsonableError(_("Topic can't be empty"))
+
+    if topic_name is not None and topic_name == "":
+        raise JsonableError(_("Topic can't be empty"))
+
     rendered_content = None
     links_for_embed: Set[str] = set()
     prior_mention_user_ids: Set[int] = set()
     mention_user_ids: Set[int] = set()
     mention_data: Optional[MentionData] = None
     if content is not None:
-        if content.rstrip() == "":
-            content = "(deleted)"
-        content = normalize_body(content)
-
         mention_data = MentionData(
             realm_id=user_profile.realm.id,
             content=content,
