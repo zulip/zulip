@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 39**
+
+* Include `orig_subject` in update message events where the stream is
+changed, in addition to the existing inclusion when the topic is changed.
+NOTE: This change happened between feature levels 9 and 10, but due to
+an error, did not receive its own feature level at the time.
+
 **Feature level 38**
 
 * [`POST /register`](/api/register-queue): Increased

@@ -1843,8 +1843,15 @@ paths:
                                 orig_subject:
                                   type: string
                                   description: |
-                                    The original topic of the message. Only present if the topic of the message
-                                    was changed.
+                                    The original topic of the message. Present if either the topic or the
+                                    stream of the message has changed, or both.
+
+                                    **Changes**: Before Zulip 3.0, this was only present if a topic edit had
+                                    been specified. As of 3.0, it's also present if a stream edit has been
+                                    specified. The change happened between feature levels 9 and 10, but due to
+                                    an error, did not receive its own feature level at the time. It now has
+                                    feature level 39.
+
                                 subject:
                                   type: string
                                   description: |
