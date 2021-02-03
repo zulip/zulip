@@ -69,7 +69,9 @@ preparing a new release.
     the present release with a `+git` suffix, e.g. `4.0+git`.
   * On master, update `ZULIP_VERSION` to the future major release with
     a `-dev+git` suffix, e.g. `5.0-dev+git`.  Make a Git tag for this
-    update commit with a `-dev` suffix, e.g. `5.0-dev`.
+    update commit with a `-dev` suffix, e.g. `5.0-dev`.  Push the tag
+    to both zulip.git and zulip-internal.git to get a correct version
+    number for future Cloud deployments.
 * Following a minor release (e.g. 3.2):
   * On the release branch, update `ZULIP_VERSION` to the present
     release with a `+git` suffix, e.g. `3.2+git`.
