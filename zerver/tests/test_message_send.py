@@ -2093,3 +2093,74 @@ class CheckMessageTest(ZulipTestCase):
         test_bot.realm.deactivated = True
         send_rate_limited_pm_notification_to_bot_owner(test_bot, good_realm, content)
         self.assertEqual(test_bot.last_reminder, None)
+
+    def test_bot_pm_feature_for_private_stream(self) -> None:
+        """We send a PM to a bot's owner if their bot tries to send a
+        message to a stream and is unauthorized to it and bot owner
+        is also not subscribed to that stream"""
+
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+
+        test_bot = do_create_user(
+            email='test-bot@zulip.com',
+            password='',
+            realm=cordelia.realm,
+            full_name='Test Bot',
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=cordelia,
+        )
+
+        stream_name = 'private_stream'
+        topic_name = 'test'
+        self.make_stream(stream_name, invite_only=True)
+        stream_id = self.get_stream_id(stream_name)
+        self.unsubscribe(cordelia, stream_name)
+
+        # This make sure that the stream has atleast one subscriber
+        self.subscribe(hamlet, stream_name)
+
+        sender = test_bot
+        client = make_client(name="test suite")
+        message_content = 'whatever'
+        addressee = Addressee.for_stream_name(stream_name, topic_name)
+        old_count = message_stream_count(cordelia)
+
+        # Try sending to private stream to which bot is not subscribed;
+        # this should send an error to the bot owner that the
+        # bot is not authorized
+        with self.assertRaises(JsonableError):
+            check_message(sender, client, addressee, message_content)
+
+        new_count = message_stream_count(cordelia)
+        self.assertEqual(new_count, old_count + 1)
+        self.assertIn("not authorized to that stream.", most_recent_message(cordelia).content)
+
+        # Subscribing the bot to private stream; this should not send
+        # any error to the bot owner
+        self.subscribe(sender, stream_name)
+        ret = check_message(sender, client, addressee, message_content)
+        self.assertEqual(ret['message'].sender.id, sender.id)
+
+        new_count = message_stream_count(cordelia)
+        self.assertEqual(new_count, old_count + 1)
+
+        assert(sender.last_reminder is not None)
+        sender.last_reminder = sender.last_reminder - datetime.timedelta(hours=1)
+        sender.save(update_fields=["last_reminder"])
+        self.unsubscribe(sender, stream_name)
+
+        addressee = Addressee.for_stream_id(stream_id, topic_name)
+        with self.assertRaises(JsonableError):
+            check_message(sender, client, addressee, message_content)
+
+        new_count = message_stream_count(cordelia)
+        self.assertEqual(new_count, old_count + 2)
+        self.assertIn("not authorized to that stream.", most_recent_message(cordelia).content)
+
+        self.subscribe(sender, stream_name)
+        ret = check_message(sender, client, addressee, message_content)
+        self.assertEqual(ret['message'].sender.id, sender.id)
+
+        new_count = message_stream_count(cordelia)
+        self.assertEqual(new_count, old_count + 2)
