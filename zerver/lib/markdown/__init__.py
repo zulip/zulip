@@ -1887,11 +1887,11 @@ class Markdown(markdown.Markdown):
     ) -> None:
         # define default configs
         self.config = {
-            "realm_filters": [realm_filters,
-                              f"Realm-specific filters for realm_filters_key {realm_filters_key}"],
-            "realm": [realm_filters_key, "Realm id"],
-            "code_block_processor_disabled": [email_gateway,
-                                              "Disabled for email gateway"],
+            "realm_filters": (realm_filters,
+                              f"Realm-specific filters for realm_filters_key {realm_filters_key}"),
+            "realm": (realm_filters_key, "Realm id"),
+            "code_block_processor_disabled": (email_gateway,
+                                              "Disabled for email gateway"),
         }
 
         super().__init__(
