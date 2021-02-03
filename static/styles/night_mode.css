@@ -459,6 +459,12 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    .nav > li > a:hover,
+    .nav > li > a:focus {
+        text-decoration: none;
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
+
     thead,
     .drafts-container .drafts-header,
     .recent_topics_container .recent_topics_header,
