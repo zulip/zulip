@@ -1,6 +1,7 @@
 "use strict";
 
 const Handlebars = require("handlebars/runtime");
+const _ = require("lodash");
 
 const render_compose_all_everyone = require("../templates/compose_all_everyone.hbs");
 const render_compose_announce = require("../templates/compose_announce.hbs");
@@ -901,7 +902,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
             // Handle previews of /me messages
             rendered_preview_html =
                 "<p><strong>" +
-                page_params.full_name +
+                _.escape(page_params.full_name) +
                 "</strong>" +
                 rendered_content.slice("<p>/me".length);
         } else {
