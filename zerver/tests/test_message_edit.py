@@ -723,114 +723,70 @@ class EditMessageTest(EditMessageTestCase):
     def test_edit_cases(self) -> None:
         """This test verifies the accuracy of construction of Zulip's edit
         history data structures."""
-        self.login("hamlet")
         hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        self.login_user(hamlet)
+        logged_in_user = hamlet
+
+        initial_topic, initial_content = "topic 1", "content 1"
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Denmark", topic_name="topic 1", content="content 1"
-        )
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-                "content": "content 2",
-            },
-        )
-        self.assert_json_success(result)
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0]["prev_content"], "content 1")
-        self.assertEqual(history[0]["user_id"], hamlet.id)
-        self.assertEqual(
-            set(history[0].keys()),
-            {
-                "timestamp",
-                "prev_content",
-                "user_id",
-                "prev_rendered_content",
-                "prev_rendered_content_version",
-            },
+            hamlet, "Scotland", topic_name=initial_topic, content=initial_content
         )
 
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-                "topic": "topic 2",
-            },
-        )
-        self.assert_json_success(result)
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 1")
-        self.assertEqual(history[0]["user_id"], hamlet.id)
-        self.assertEqual(set(history[0].keys()), {"timestamp", LEGACY_PREV_TOPIC, "user_id"})
+        substeps = [
+            # (user, edit_dict)
+            (hamlet, {"content": "content 2"}),
+            (hamlet, {"topic": "topic 2"}),
+            (hamlet, {"content": "content 3", "topic": "topic 3"}),
+            (hamlet, {"content": "content 4"}),
+            (iago, {"topic": "topic 4"}),
+        ]
 
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-                "content": "content 3",
-                "topic": "topic 3",
-            },
-        )
-        self.assert_json_success(result)
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0]["prev_content"], "content 2")
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 2")
-        self.assertEqual(history[0]["user_id"], hamlet.id)
-        self.assertEqual(
-            set(history[0].keys()),
-            {
-                "timestamp",
-                LEGACY_PREV_TOPIC,
-                "prev_content",
-                "user_id",
-                "prev_rendered_content",
-                "prev_rendered_content_version",
-            },
-        )
+        base_keys = ("user_id", "timestamp")
+        EDIT_NAME_TO_PREV_NAME = {
+            "topic": LEGACY_PREV_TOPIC,
+            "content": "prev_content",
+        }
+        prev = {
+            LEGACY_PREV_TOPIC: initial_topic,
+            "prev_content": initial_content,
+        }
+        expected_message_history = []
+        for user, edit_dict in substeps:
+            if logged_in_user != user:
+                self.login_user(user)
+                logged_in_user = user
 
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-                "content": "content 4",
-            },
-        )
-        self.assert_json_success(result)
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0]["prev_content"], "content 3")
-        self.assertEqual(history[0]["user_id"], hamlet.id)
-        self.assertEqual(
-            set(history[0].keys()),
-            {
-                "timestamp",
-                "prev_content",
-                "user_id",
-                "prev_rendered_content",
-                "prev_rendered_content_version",
-            },
-        )
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {
+                    "message_id": msg_id,
+                    **edit_dict,
+                },
+            )
 
-        self.login("iago")
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-                "topic": "topic 4",
-            },
-        )
-        self.assert_json_success(result)
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
-        self.assertEqual(history[0]["user_id"], self.example_user("iago").id)
-        self.assertEqual(set(history[0].keys()), {"timestamp", LEGACY_PREV_TOPIC, "user_id"})
+            self.assert_json_success(result)
 
+            latest_edit = orjson.loads(Message.objects.get(id=msg_id).edit_history)[0]
+            expected_entries = set(base_keys)
+            for edit_name in edit_dict:
+                prev_name = EDIT_NAME_TO_PREV_NAME[edit_name]
+                self.assertEqual(latest_edit[prev_name], prev[prev_name])
+                prev[prev_name] = edit_dict[edit_name]
+                expected_entries.add(prev_name)
+
+            self.assertEqual(latest_edit["user_id"], user.id)
+
+            if "prev_content" in expected_entries:
+                expected_entries.update({"prev_rendered_content", "prev_rendered_content_version"})
+            self.assertEqual(set(latest_edit.keys()), expected_entries)
+
+            expected_message_history.append(latest_edit)
+
+        expected_message_history.reverse()
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
-        self.assertEqual(history[2][LEGACY_PREV_TOPIC], "topic 2")
-        self.assertEqual(history[3][LEGACY_PREV_TOPIC], "topic 1")
-        self.assertEqual(history[1]["prev_content"], "content 3")
-        self.assertEqual(history[2]["prev_content"], "content 2")
-        self.assertEqual(history[4]["prev_content"], "content 1")
+        self.assertEqual(expected_message_history, history)
 
         # Now, we verify that the edit history data sent back has the
         # correct filled-out fields
