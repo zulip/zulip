@@ -2,6 +2,7 @@
 
 const autosize = require("autosize");
 const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
+const _ = require("lodash");
 const moment = require("moment");
 
 const pygments_data = require("../generated/pygments_data.json");
@@ -978,7 +979,7 @@ exports.compose_trigger_selection = function (event) {
     return false;
 };
 
-function get_header_text() {
+function get_header_html() {
     let tip_text = "";
     switch (this.completing) {
         case "stream":
@@ -998,7 +999,7 @@ function get_header_text() {
         default:
             return false;
     }
-    return "<em>" + tip_text + "</em>";
+    return `<em>${_.escape(tip_text)}</em>`;
 }
 
 exports.initialize_compose_typeahead = function (selector) {
@@ -1034,7 +1035,7 @@ exports.initialize_compose_typeahead = function (selector) {
         completions,
         automated: exports.compose_automated_selection,
         trigger_selection: exports.compose_trigger_selection,
-        header: get_header_text,
+        header: get_header_html,
     });
 };
 
