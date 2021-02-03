@@ -114,7 +114,6 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     is_no_topic_msg = (message.topic_name() == "(no topic)")
 
     # You only have permission to edit a message if:
-    # you change this value also change those two parameters in message_edit.js.
     # 1. You sent it, OR:
     # 2. This is a topic-only edit for a (no topic) message, OR:
     # 3. This is a topic-only edit and you are an admin, OR:
