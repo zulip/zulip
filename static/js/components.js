@@ -23,15 +23,12 @@ exports.toggle = function (opts) {
         for (const [i, value] of opts.values.entries()) {
             // create a tab with a tab-id so they don't have to be referenced
             // by text value which can be inconsistent.
-            const tab = $(
-                "<div class='ind-tab' data-tab-key='" +
-                    value.key +
-                    "' data-tab-id='" +
-                    i +
-                    "' tabindex='0'>" +
-                    value.label +
-                    "</div>",
-            );
+            const tab = $("<div>", {
+                class: "ind-tab",
+                "data-tab-key": value.key,
+                "data-tab-id": i,
+                tabindex: 0,
+            }).text(value.label);
 
             // add proper classes for styling in CSS.
             if (i === 0) {
