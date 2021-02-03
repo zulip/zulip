@@ -2,6 +2,7 @@
 
 const _ = require("lodash");
 
+const render_hotspot_icon = require("../templates/hotspot_icon.hbs");
 const render_hotspot_overlay = require("../templates/hotspot_overlay.hbs");
 const render_intro_reply_hotspot = require("../templates/intro_reply_hotspot.hbs");
 
@@ -218,14 +219,9 @@ function insert_hotspot_into_DOM(hotspot) {
         img: WHALE,
     });
 
-    const hotspot_icon_HTML =
-        '<div class="hotspot-icon" id="hotspot_' +
-        hotspot.name +
-        '_icon">' +
-        '<span class="dot"></span>' +
-        '<span class="pulse"></span>' +
-        '<div class="bounce"><span class="bounce-icon">?</span></div>' +
-        "</div>";
+    const hotspot_icon_HTML = render_hotspot_icon({
+        name: hotspot.name,
+    });
 
     setTimeout(() => {
         $("body").prepend(hotspot_icon_HTML);
