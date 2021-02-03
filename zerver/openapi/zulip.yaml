@@ -3862,7 +3862,7 @@ paths:
         `PATCH {{ api_url }}/v1/messages/{msg_id}`
 
         `{msg_id}` in the above URL should be replaced with the ID of the
-        message you wish you update.
+        message you wish to update.
       parameters:
         - $ref: "#/components/parameters/MessageId"
         - $ref: "#/components/parameters/Topic"
