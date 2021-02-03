@@ -19,10 +19,10 @@ exports.make_indicator = function (outer_container, opts) {
         // Create some additional containers to facilitate absolutely
         // positioned spinners.
         const container_id = container.attr("id");
-        let inner_container = $('<div id="' + container_id + '_box_container"></div>');
+        let inner_container = $("<div>", {id: `${container_id}_box_container`});
         container.append(inner_container);
         container = inner_container;
-        inner_container = $('<div id="' + container_id + '_box"></div>');
+        inner_container = $("<div>", {id: `${container_id}_box`});
         container.append(inner_container);
         container = inner_container;
     }
