@@ -108,7 +108,7 @@ function update_custom_profile_field(field, method) {
     }
 
     const spinner_element = $(
-        '.custom_user_field[data-field-id="' + field_id + '"] .custom-field-status',
+        `.custom_user_field[data-field-id="${CSS.escape(field_id)}"] .custom-field-status`,
     ).expectOne();
     settings_ui.do_settings_change(
         method,
@@ -230,7 +230,7 @@ exports.initialize_custom_user_type_fields = function (
         // pill container for that field and proceed further
         if (field.type === field_types.USER.id && (field_value_raw || is_editable)) {
             const pill_container = $(element_id)
-                .find('.custom_user_field[data-field-id="' + field.id + '"] .pill-container')
+                .find(`.custom_user_field[data-field-id="${CSS.escape(field.id)}"] .pill-container`)
                 .expectOne();
             const pills = user_pill.create_pills(pill_container);
 

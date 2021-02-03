@@ -154,10 +154,10 @@ function test_realms_domain_modal(add_realm_domain) {
 }
 
 function createSaveButtons(subsection) {
-    const stub_save_button_header = $(`#org-${subsection}`);
+    const stub_save_button_header = $(`#org-${CSS.escape(subsection)}`);
     const save_button_controls = $(".save-button-controls");
-    const stub_save_button = $(`#org-submit-${subsection}`);
-    const stub_discard_button = $(`#org-discard-${subsection}`);
+    const stub_save_button = $(`#org-submit-${CSS.escape(subsection)}`);
+    const stub_discard_button = $(`#org-discard-${CSS.escape(subsection)}`);
     const stub_save_button_text = $(".save-discard-widget-button-text");
     stub_save_button_header.set_find_results(
         ".subsection-failed-status p",
@@ -169,7 +169,7 @@ function createSaveButtons(subsection) {
     stub_save_button_header.set_find_results(".save-button-controls", save_button_controls);
     stub_save_button_header.set_find_results(
         ".subsection-changes-discard .button",
-        $(`#org-discard-${subsection}`),
+        $(`#org-discard-${CSS.escape(subsection)}`),
     );
     save_button_controls.set_find_results(".discard-button", stub_discard_button);
     const props = {};
@@ -222,7 +222,7 @@ function test_submit_settings_form(submit_form) {
     };
 
     let subsection = "other-permissions";
-    ev.currentTarget = `#org-submit-${subsection}`;
+    ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
     let stubs = createSaveButtons(subsection);
     let save_button = stubs.save_button;
     save_button.attr("id", `org-submit-${subsection}`);
@@ -253,7 +253,7 @@ function test_submit_settings_form(submit_form) {
     email_address_visibility_elem.attr("id", "id_realm_email_address_visibility");
     email_address_visibility_elem.data = () => "number";
 
-    let subsection_elem = $(`#org-${subsection}`);
+    let subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     subsection_elem.closest = () => subsection_elem;
     subsection_elem.set_find_results(".prop-element", [
         bot_creation_policy_elem,
@@ -277,7 +277,7 @@ function test_submit_settings_form(submit_form) {
     assert.deepEqual(data, expected_value);
 
     subsection = "user-defaults";
-    ev.currentTarget = `#org-submit-${subsection}`;
+    ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
     stubs = createSaveButtons(subsection);
     save_button = stubs.save_button;
     save_button.attr("id", `org-submit-${subsection}`);
@@ -291,7 +291,7 @@ function test_submit_settings_form(submit_form) {
     realm_default_twenty_four_hour_time_elem.attr("id", "id_realm_default_twenty_four_hour_time");
     realm_default_twenty_four_hour_time_elem.data = () => "boolean";
 
-    subsection_elem = $(`#org-${subsection}`);
+    subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     subsection_elem.closest = () => subsection_elem;
     subsection_elem.set_find_results(".prop-element", [
         realm_default_language_elem,
@@ -1017,7 +1017,7 @@ run_test("misc", () => {
         $.create("<disable button>"),
     );
     for (const name of widget_settings) {
-        const elem = $.create(`#${name}_widget #${name}_name`);
+        const elem = $.create(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`);
         elem.closest = () => dropdown_list_parent;
     }
 
@@ -1030,7 +1030,7 @@ run_test("misc", () => {
     settings_org.init_dropdown_widgets();
 
     let setting_name = "realm_notifications_stream_id";
-    let elem = $(`#${setting_name}_widget #${setting_name}_name`);
+    let elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     elem.closest = function () {
         return stub_notification_disable_parent;
     };
@@ -1047,7 +1047,7 @@ run_test("misc", () => {
     assert(elem.hasClass("text-warning"));
 
     setting_name = "realm_signup_notifications_stream_id";
-    elem = $(`#${setting_name}_widget #${setting_name}_name`);
+    elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     elem.closest = function () {
         return stub_notification_disable_parent;
     };

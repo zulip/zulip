@@ -82,7 +82,7 @@ exports.update_regular_sub_settings = function (sub) {
     if (!stream_edit.is_sub_settings_active(sub)) {
         return;
     }
-    const $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
+    const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
     if (sub.subscribed) {
         if ($settings.find(".email-address").val().length === 0) {
             // Rerender stream email address, if not.
@@ -113,7 +113,7 @@ exports.update_notification_setting_checkbox = function (notification_name) {
         return;
     }
     const stream_id = stream_row.data("stream-id");
-    $(`#${notification_name}_${stream_id}`).prop(
+    $(`#${CSS.escape(notification_name)}_${CSS.escape(stream_id)}`).prop(
         "checked",
         stream_data.receives_notifications(stream_id, notification_name),
     );

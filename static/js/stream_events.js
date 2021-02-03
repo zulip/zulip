@@ -7,7 +7,7 @@ const peer_data = require("./peer_data");
 // doing so is unnecessary with the current code.  Ideally, we'd do a
 // refactor to address that, however.
 function update_stream_setting(sub, value, setting) {
-    const setting_checkbox = $("#" + setting + "_" + sub.stream_id);
+    const setting_checkbox = $(`#${CSS.escape(setting)}_${CSS.escape(sub.stream_id)}`);
     setting_checkbox.prop("checked", value);
     sub[setting] = value;
 }

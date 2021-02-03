@@ -95,7 +95,7 @@ run_test("update_property", (override) => {
     }
 
     function checkbox_for(property) {
-        return $(`#${property}_${stream_id}`);
+        return $(`#${CSS.escape(property)}_${CSS.escape(stream_id)}`);
     }
 
     // Test desktop notifications

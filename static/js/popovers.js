@@ -580,7 +580,7 @@ exports.render_actions_remind_popover = function (element, id) {
         });
         elt.popover("show");
         current_flatpickr_instance = $(
-            '.remind.custom[data-message-id="' + message.id + '"]',
+            `.remind.custom[data-message-id="${CSS.escape(message.id)}"]`,
         ).flatpickr({
             enableTime: true,
             clickOpens: false,
@@ -1226,7 +1226,7 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".copy_link", function (e) {
         exports.hide_actions_popover();
         const message_id = $(this).attr("data-message-id");
-        const row = $("[zid='" + message_id + "']");
+        const row = $(`[zid='${CSS.escape(message_id)}']`);
         row.find(".alert-msg")
             .text(i18n.t("Copied!"))
             .css("display", "block")

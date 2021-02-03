@@ -77,7 +77,7 @@ function revive_current_focus() {
         set_default_focus();
     } else {
         current_focus_elem = $("#recent_topics_filter_buttons").find(
-            "[data-filter='" + filter_button + "']",
+            `[data-filter='${CSS.escape(filter_button)}']`,
         );
         current_focus_elem.trigger("focus");
     }
@@ -211,7 +211,7 @@ function format_topic(topic_data) {
 function get_topic_row(topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
     const topic_key = get_topic_key(msg.stream_id, msg.topic);
-    return $("#" + $.escapeSelector("recent_topic:" + topic_key));
+    return $(`#${CSS.escape("recent_topic:" + topic_key)}`);
 }
 
 exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_stream_id) {
@@ -326,7 +326,9 @@ exports.set_filter = function (filter) {
     // set `filters`.
 
     // Get the button which was clicked.
-    const filter_elem = $("#recent_topics_filter_buttons").find('[data-filter="' + filter + '"]');
+    const filter_elem = $("#recent_topics_filter_buttons").find(
+        `[data-filter="${CSS.escape(filter)}"]`,
+    );
 
     // If user clicks `All`, we clear all filters.
     if (filter === "all" && filters.size !== 0) {
@@ -350,7 +352,7 @@ function show_selected_filters() {
     } else {
         for (const filter of filters) {
             $("#recent_topics_filter_buttons")
-                .find('[data-filter="' + filter + '"]')
+                .find(`[data-filter="${CSS.escape(filter)}"]`)
                 .addClass("btn-recent-selected");
         }
     }

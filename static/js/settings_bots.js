@@ -42,7 +42,7 @@ const focus_tab = {
 };
 
 exports.get_bot_info_div = function (bot_id) {
-    const sel = '.bot_info[data-user-id="' + bot_id + '"]';
+    const sel = `.bot_info[data-user-id="${CSS.escape(bot_id)}"]`;
     return $(sel).expectOne();
 };
 
@@ -229,7 +229,7 @@ exports.set_up = function () {
     const selected_embedded_bot = "converter";
     $("#select_service_name").val(selected_embedded_bot); // TODO: Use 'select a bot'.
     $("#config_inputbox").children().hide();
-    $("[name*='" + selected_embedded_bot + "']").show();
+    $(`[name*='${CSS.escape(selected_embedded_bot)}']`).show();
 
     $("#download_botserverrc").on("click", function () {
         const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -293,7 +293,7 @@ exports.set_up = function () {
             } else if (bot_type === EMBEDDED_BOT_TYPE) {
                 formData.append("service_name", service_name);
                 const config_data = {};
-                $("#config_inputbox [name*='" + service_name + "'] input").each(function () {
+                $(`#config_inputbox [name*='${CSS.escape(service_name)}'] input`).each(function () {
                     config_data[$(this).attr("name")] = $(this).val();
                 });
                 formData.append("config_data", JSON.stringify(config_data));
@@ -317,7 +317,7 @@ exports.set_up = function () {
                     $("#create_payload_url").val("");
                     $("#payload_url_inputbox").hide();
                     $("#config_inputbox").hide();
-                    $("[name*='" + service_name + "'] input").each(function () {
+                    $(`[name*='${CSS.escape(service_name)}'] input`).each(function () {
                         $(this).val("");
                     });
                     $("#create_bot_type").val(GENERIC_BOT_TYPE);
@@ -362,7 +362,7 @@ exports.set_up = function () {
     $("#select_service_name").on("change", () => {
         $("#config_inputbox").children().hide();
         const selected_bot = $("#select_service_name :selected").val();
-        $("[name*='" + selected_bot + "']").show();
+        $(`[name*='${CSS.escape(selected_bot)}']`).show();
     });
 
     $("#active_bots_list").on("click", "button.delete_bot", (e) => {

@@ -80,9 +80,9 @@ export default function render_tabs() {
             continue;
         }
         // Set as the loading template for now, and load when clicked.
-        $("#tab-" + tab_name).html($("#loading-template").html());
+        $(`#tab-${CSS.escape(tab_name)}`).html($("#loading-template").html());
 
-        $("#" + tab_name).on("click", () => {
+        $(`#${CSS.escape(tab_name)}`).on("click", () => {
             if (!loaded_repos.includes(repo_name)) {
                 const html = contributors_list
                     .filter((c) => c[repo_name])
@@ -100,7 +100,7 @@ export default function render_tabs() {
                     )
                     .join("");
 
-                $("#tab-" + tab_name).html(html);
+                $(`#tab-${CSS.escape(tab_name)}`).html(html);
 
                 loaded_repos.push(repo_name);
             }

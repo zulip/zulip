@@ -39,8 +39,8 @@ function update_table_stream_color(table, stream_name, color) {
 }
 
 function update_stream_sidebar_swatch_color(id, color) {
-    $("#stream_sidebar_swatch_" + id).css("background-color", color);
-    $("#stream_sidebar_privacy_swatch_" + id).css("color", color);
+    $(`#stream_sidebar_swatch_${CSS.escape(id)}`).css("background-color", color);
+    $(`#stream_sidebar_privacy_swatch_${CSS.escape(id)}`).css("color", color);
 }
 
 function update_historical_message_color(stream_name, color) {
@@ -77,20 +77,23 @@ exports.update_stream_color = function (sub, color, opts) {
     sub.color = color;
     const stream_id = sub.stream_id;
     // The swatch in the subscription row header.
-    $(".stream-row[data-stream-id='" + stream_id + "'] .icon").css("background-color", color);
+    $(`.stream-row[data-stream-id='${CSS.escape(stream_id)}'] .icon`).css(
+        "background-color",
+        color,
+    );
     // The swatch in the color picker.
     exports.set_colorpicker_color(
         $(
-            "#subscription_overlay .subscription_settings[data-stream-id='" +
-                stream_id +
-                "'] .colorpicker",
+            `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
+                stream_id,
+            )}'] .colorpicker`,
         ),
         color,
     );
     $(
-        "#subscription_overlay .subscription_settings[data-stream-id='" +
-            stream_id +
-            "'] .large-icon",
+        `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
+            stream_id,
+        )}'] .large-icon`,
     ).css("color", color);
 
     if (opts.update_historical) {

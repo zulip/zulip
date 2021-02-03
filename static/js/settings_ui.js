@@ -77,13 +77,13 @@ exports.do_settings_change = function (request_method, url, data, status_element
 //   when main setting unchecked.
 exports.disable_sub_setting_onchange = function (is_checked, sub_setting_id, disable_on_uncheck) {
     if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
-        $("#" + sub_setting_id).prop("disabled", false);
-        $("#" + sub_setting_id + "_label")
+        $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", false);
+        $(`#${CSS.escape(sub_setting_id)}_label`)
             .parent()
             .removeClass("control-label-disabled");
     } else if ((is_checked && !disable_on_uncheck) || (!is_checked && disable_on_uncheck)) {
-        $("#" + sub_setting_id).prop("disabled", true);
-        $("#" + sub_setting_id + "_label")
+        $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", true);
+        $(`#${CSS.escape(sub_setting_id)}_label`)
             .parent()
             .addClass("control-label-disabled");
     }

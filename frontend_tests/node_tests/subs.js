@@ -111,7 +111,7 @@ run_test("filter_table", () => {
     const sub_stubs = [];
 
     for (const data of populated_subs) {
-        const sub_row = ".stream-row-" + data.elem;
+        const sub_row = `.stream-row-${CSS.escape(data.elem)}`;
         sub_stubs.push(sub_row);
 
         $(sub_row).attr("data-stream-id", data.stream_id);
@@ -149,7 +149,7 @@ run_test("filter_table", () => {
 
     // Filtering has the side effect of setting the "active" class
     // on our current stream, even if it doesn't match the filter.
-    const denmark_row = $(`.stream-row[data-stream-id='${denmark_stream_id}']`);
+    const denmark_row = $(`.stream-row[data-stream-id='${CSS.escape(denmark_stream_id)}']`);
     // sanity check it's not set to active
     assert(!denmark_row.hasClass("active"));
 

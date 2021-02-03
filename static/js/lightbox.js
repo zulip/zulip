@@ -281,7 +281,9 @@ exports.initialize = function () {
 
     $("#lightbox_overlay").on("click", ".image-list .image", function () {
         const $image_list = $(this).parent();
-        const $original_image = $(".message_row img[src='" + $(this).attr("data-src") + "']");
+        const $original_image = $(
+            `.message_row img[src='${CSS.escape($(this).attr("data-src"))}']`,
+        );
 
         exports.open($original_image);
 

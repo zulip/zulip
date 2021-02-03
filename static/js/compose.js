@@ -1191,7 +1191,7 @@ exports.initialize = function () {
         // compose box.
         const edit_message_id = $(e.target).attr("data-message-id");
         if (edit_message_id !== undefined) {
-            target_textarea = $("#message_edit_content_" + edit_message_id);
+            target_textarea = $(`#message_edit_content_${CSS.escape(edit_message_id)}`);
         }
 
         let video_call_link;

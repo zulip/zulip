@@ -40,7 +40,9 @@ exports.setup_subscriptions_tab_hash = function (tab_key_value) {
 
 exports.settings_for_sub = function (sub) {
     return $(
-        "#subscription_overlay .subscription_settings[data-stream-id='" + sub.stream_id + "']",
+        `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
+            sub.stream_id,
+        )}']`,
     );
 };
 
@@ -168,7 +170,9 @@ function format_member_list_elem(person) {
 
 function get_subscriber_list(sub_row) {
     const stream_id_str = sub_row.data("stream-id");
-    return $('.subscription_settings[data-stream-id="' + stream_id_str + '"] .subscriber-list');
+    return $(
+        `.subscription_settings[data-stream-id="${CSS.escape(stream_id_str)}"] .subscriber-list`,
+    );
 }
 
 exports.update_stream_name = function (sub, new_name) {
@@ -294,9 +298,9 @@ function show_subscription_settings(sub) {
     stream_ui_updates.update_add_subscriptions_elements(sub);
 
     const container = $(
-        "#subscription_overlay .subscription_settings[data-stream-id='" +
-            stream_id +
-            "'] .pill-container",
+        `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
+            stream_id,
+        )}'] .pill-container`,
     );
 
     function create_item_from_text(text, current_items) {
@@ -345,7 +349,7 @@ function show_subscription_settings(sub) {
             return format_member_list_elem(item);
         },
         filter: {
-            element: $("[data-stream-id='" + stream_id + "'] .search"),
+            element: $(`[data-stream-id='${CSS.escape(stream_id)}'] .search`),
             predicate(item, value) {
                 const person = item;
 
@@ -433,7 +437,11 @@ function stream_is_muted_changed(e) {
     const sub_settings = exports.settings_for_sub(sub);
     const notification_checkboxes = sub_settings.find(".sub_notification_setting");
 
-    subs.set_muted(sub, e.target.checked, `#stream_change_property_status${sub.stream_id}`);
+    subs.set_muted(
+        sub,
+        e.target.checked,
+        `#stream_change_property_status${CSS.escape(sub.stream_id)}`,
+    );
     sub_settings.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
     notification_checkboxes.toggleClass("muted-sub", sub.is_muted);
     notification_checkboxes.find("input[type='checkbox']").prop("disabled", sub.is_muted);
@@ -447,7 +455,7 @@ exports.stream_setting_changed = function (e, from_notification_settings) {
     const sub = get_sub_for_target(e.target);
     const status_element = from_notification_settings
         ? $(e.target).closest(".subsection-parent").find(".alert-notification")
-        : $("#stream_change_property_status" + sub.stream_id);
+        : $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`);
     const setting = e.target.name;
     if (!sub) {
         blueslip.error("undefined sub in stream_setting_changed()");
@@ -796,7 +804,7 @@ exports.initialize = function () {
         const sub = get_sub_for_target(e.target);
         // Makes sure we take the correct stream_row.
         const stream_row = $(
-            "#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']",
+            `#subscriptions_table div.stream-row[data-stream-id='${CSS.escape(sub.stream_id)}']`,
         );
         subs.sub_or_unsub(sub, stream_row);
 

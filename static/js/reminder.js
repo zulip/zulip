@@ -106,7 +106,7 @@ exports.schedule_message = function (request) {
 };
 
 exports.do_set_reminder_for_message = function (message_id, timestamp) {
-    const row = $("[zid='" + message_id + "']");
+    const row = $(`[zid='${CSS.escape(message_id)}']`);
     function error() {
         row.find(".alert-msg")
             .text(i18n.t("Reminder not set!"))

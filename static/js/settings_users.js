@@ -66,7 +66,7 @@ function sort_last_active(a, b) {
 }
 
 function get_user_info_row(user_id) {
-    return $("tr.user_row[data-user-id='" + user_id + "']");
+    return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
 }
 
 function set_user_role_dropdown(person) {
@@ -258,7 +258,7 @@ section.bots.create_table = () => {
         name: "admin_bot_list",
         get_item: bot_info,
         modifier: render_admin_user_list,
-        html_selector: (item) => `tr[data-user-id='${item}']`,
+        html_selector: (item) => `tr[data-user-id='${CSS.escape(item)}']`,
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
@@ -403,7 +403,7 @@ function open_human_form(person) {
     set_user_role_dropdown(person);
     if (!page_params.is_owner) {
         $("#user-role-select")
-            .find("option[value=" + settings_config.user_role_values.owner.code + "]")
+            .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
             .hide();
     }
 

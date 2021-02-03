@@ -63,11 +63,11 @@ function adjust_font_sizing() {
 function update_path() {
     let next_path;
     if (state.integration) {
-        next_path = $('.integration-lozenge[data-name="' + state.integration + '"]')
+        next_path = $(`.integration-lozenge[data-name="${CSS.escape(state.integration)}"]`)
             .closest("a")
             .attr("href");
     } else if (state.category) {
-        next_path = $('.integration-category[data-category="' + state.category + '"]')
+        next_path = $(`.integration-category[data-category="${CSS.escape(state.category)}"]`)
             .closest("a")
             .attr("href");
     } else {
@@ -82,7 +82,7 @@ function update_categories() {
     $(".integration-lozenges").css("opacity", 0);
 
     $(".integration-category").removeClass("selected");
-    $('[data-category="' + state.category + '"]').addClass("selected");
+    $(`[data-category="${CSS.escape(state.category)}"]`).addClass("selected");
 
     const $dropdown_label = $(".integration-categories-dropdown .dropdown-category-label");
     if (state.category === INITIAL_STATE.category) {
@@ -132,10 +132,12 @@ const update_integrations = _.debounce(() => {
 }, 50);
 
 function hide_catalog_show_integration() {
-    const $lozenge_icon = $(".integration-lozenge.integration-" + state.integration).clone(false);
+    const $lozenge_icon = $(
+        `.integration-lozenge.integration-${CSS.escape(state.integration)}`,
+    ).clone(false);
     $lozenge_icon.removeClass("legacy");
 
-    const categories = $(".integration-" + state.integration)
+    const categories = $(`.integration-${CSS.escape(state.integration)}`)
         .data("categories")
         .slice(1, -1)
         .split(",")
@@ -162,10 +164,10 @@ function hide_catalog_show_integration() {
             display: "flex",
         });
         $(".integration-instructions").css("display", "none");
-        $("#" + state.integration + ".integration-instructions .help-content").html(doc);
+        $(`#${CSS.escape(state.integration)}.integration-instructions .help-content`).html(doc);
         $("#integration-instruction-block .integration-lozenge").remove();
         $("#integration-instruction-block").append($lozenge_icon).css("display", "flex");
-        $(".integration-instructions#" + state.integration).css("display", "block");
+        $(`.integration-instructions#${CSS.escape(state.integration)}`).css("display", "block");
 
         $("html, body").animate({scrollTop: 0}, {duration: 200});
         $("#integration-instructions-group").animate({opacity: 1}, {duration: 300});

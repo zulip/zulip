@@ -5,13 +5,13 @@ const {strict: assert} = require("assert");
 const common = require("../puppeteer_lib/common");
 
 async function wait_for_tab(page, tab) {
-    const tab_slector = `#${tab}.tab-pane.active`;
+    const tab_slector = `#${CSS.escape(tab)}.tab-pane.active`;
     await page.waitForSelector(tab_slector, {visible: true});
 }
 
 async function navigate_to(page, click_target, tab) {
     console.log("Visiting #" + click_target);
-    await page.click(`a[href='#${click_target}']`);
+    await page.click(`a[href='#${CSS.escape(click_target)}']`);
 
     await wait_for_tab(page, tab);
 }

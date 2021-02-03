@@ -1,5 +1,6 @@
 import "core-js/features/promise";
 import "core-js/features/symbol";
+import "css.escape";
 import "../../../tools/debug-require";
 import "jquery";
 import "../page_params";

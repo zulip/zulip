@@ -186,7 +186,7 @@ function build_stream_popover(opts) {
     });
 
     $(elt).popover("show");
-    const popover = $(".streams_popover[data-stream-id=" + stream_id + "]");
+    const popover = $(`.streams_popover[data-stream-id="${CSS.escape(stream_id)}"]`);
 
     update_spectrum(popover, (colorpicker) => {
         colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);

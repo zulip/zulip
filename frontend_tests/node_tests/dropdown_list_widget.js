@@ -21,8 +21,8 @@ const setup_zjquery_data = (name) => {
     const input_group = $(".input_group");
     const reset_button = $(".dropdown_list_reset_button");
     input_group.set_find_results(".dropdown_list_reset_button:enabled", reset_button);
-    $(`#${name}_widget #${name}_name`).closest = () => input_group;
-    const $widget = $(`#${name}_widget #${name}_name`);
+    $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`).closest = () => input_group;
+    const $widget = $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`);
     return {reset_button, $widget};
 };
 

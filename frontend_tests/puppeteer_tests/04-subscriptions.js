@@ -6,7 +6,7 @@ const common = require("../puppeteer_lib/common");
 
 async function user_checkbox(page, name) {
     const user_id = await common.get_user_id_from_name(page, name);
-    return `#user-checkboxes [data-user-id="${user_id}"]`;
+    return `#user-checkboxes [data-user-id="${CSS.escape(user_id)}"]`;
 }
 
 async function user_span(page, name) {
@@ -15,7 +15,7 @@ async function user_span(page, name) {
 
 async function stream_checkbox(page, stream_name) {
     const stream_id = await common.get_stream_id(page, stream_name);
-    return `#stream-checkboxes [data-stream-id="${stream_id}"]`;
+    return `#stream-checkboxes [data-stream-id="${CSS.escape(stream_id)}"]`;
 }
 
 async function stream_span(page, stream_name) {

@@ -156,7 +156,7 @@ exports.update_page = function () {
             continue;
         }
 
-        $("#" + setting).prop("checked", page_params[setting]);
+        $(`#${CSS.escape(setting)}`).prop("checked", page_params[setting]);
     }
     rerender_ui();
 };

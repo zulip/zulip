@@ -178,7 +178,7 @@ function handle_keydown(e) {
         let target_sel;
 
         if (e.target.id) {
-            target_sel = "#" + e.target.id;
+            target_sel = `#${CSS.escape(e.target.id)}`;
         }
 
         const on_stream = target_sel === "#stream_message_recipient_stream";

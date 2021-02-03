@@ -348,6 +348,7 @@
         {
             "files": ["frontend_tests/**"],
             "globals": {
+                "CSS": false,
                 "document": false,
                 "navigator": false,
                 "window": false

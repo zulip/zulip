@@ -193,7 +193,7 @@ exports.update_timestamps = function () {
 
         for (const entry of to_process) {
             const className = entry.className;
-            const elements = $("." + className);
+            const elements = $(`.${CSS.escape(className)}`);
             // The element might not exist any more (because it
             // was in the zfilt table, or because we added
             // messages above it and re-collapsed).

@@ -156,7 +156,7 @@ const events = function () {
     // pop the last element to get the current section (eg. `features`).
     const location = window.location.pathname.replace(/\/#*$/, "").split(/\//).pop();
 
-    $("[data-on-page='" + location + "']").addClass("active");
+    $(`[data-on-page='${CSS.escape(location)}']`).addClass("active");
 
     $("body").on("click", (e) => {
         const $e = $(e.target);

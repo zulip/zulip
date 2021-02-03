@@ -535,9 +535,6 @@ exports.make_zjquery = function (opts) {
     zjquery.clear_all_elements = function () {
         elems.clear();
     };
-    zjquery.escapeSelector = function (s) {
-        return s;
-    };
 
     return zjquery;
 };

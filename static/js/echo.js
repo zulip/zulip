@@ -367,8 +367,8 @@ function abort_message(message) {
 }
 
 exports.initialize = function () {
-    function on_failed_action(action, callback) {
-        $("#main_div").on("click", "." + action + "-failed-message", function (e) {
+    function on_failed_action(selector, callback) {
+        $("#main_div").on("click", selector, function (e) {
             e.stopPropagation();
             popovers.hide_all();
             const row = $(this).closest(".message_row");
@@ -387,8 +387,8 @@ exports.initialize = function () {
         });
     }
 
-    on_failed_action("remove", abort_message);
-    on_failed_action("refresh", resend_message);
+    on_failed_action(".remove-failed-message", abort_message);
+    on_failed_action(".refresh-failed-message", resend_message);
 };
 
 window.echo = exports;

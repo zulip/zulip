@@ -659,7 +659,7 @@ class MessageListView {
             save_scroll_position();
 
             for (const message_group of message_actions.rerender_groups) {
-                const old_message_group = $("#" + message_group.message_group_id);
+                const old_message_group = $(`#${CSS.escape(message_group.message_group_id)}`);
                 // Remove the top date_row, we'll re-add it after rendering
                 old_message_group.prev(".date_row").remove();
 

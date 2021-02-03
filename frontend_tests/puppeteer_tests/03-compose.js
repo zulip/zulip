@@ -132,7 +132,7 @@ async function test_narrow_to_private_messages_with_cordelia(page) {
 async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page) {
     const recipients = ["cordelia@zulip.com", "othello@zulip.com"];
     const multiple_recipients_pm = "A huddle to check spaces";
-    const pm_selector = `.messagebox:contains('${multiple_recipients_pm}')`;
+    const pm_selector = `.messagebox:contains('${CSS.escape(multiple_recipients_pm)}')`;
     await common.send_message(page, "private", {
         recipient: recipients.join(", "),
         outside_view: true,

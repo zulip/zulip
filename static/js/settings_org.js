@@ -210,11 +210,11 @@ const simple_dropdown_properties = [
 ];
 
 function set_property_dropdown_value(property_name) {
-    $("#id_" + property_name).val(get_property_value(property_name));
+    $(`#id_${CSS.escape(property_name)}`).val(get_property_value(property_name));
 }
 
 function change_element_block_display_property(elem_id, show_element) {
-    const elem = $("#" + elem_id);
+    const elem = $(`#${CSS.escape(elem_id)}`);
     if (show_element) {
         elem.parent().show();
     } else {
@@ -433,7 +433,7 @@ exports.sync_realm_settings = function (property) {
     } else if (property === "invite_required" || property === "invite_by_admins_only") {
         property = "user_invite_restriction";
     }
-    const element = $("#id_realm_" + property);
+    const element = $(`#id_realm_${CSS.escape(property)}`);
     if (element.length) {
         discard_property_element_changes(element);
     }

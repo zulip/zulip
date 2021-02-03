@@ -3,6 +3,7 @@
 const Module = require("module");
 const path = require("path");
 
+require("css.escape");
 const Handlebars = require("handlebars/runtime");
 const _ = require("lodash");
 

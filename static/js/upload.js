@@ -58,27 +58,29 @@ exports.get_item = function (key, config) {
         }
         switch (key) {
             case "textarea":
-                return $("#message_edit_content_" + config.row);
+                return $(`#message_edit_content_${CSS.escape(config.row)}`);
             case "send_button":
-                return $("#message_edit_content_" + config.row)
+                return $(`#message_edit_content_${CSS.escape(config.row)}`)
                     .closest("#message_edit_form")
                     .find(".message_edit_save");
             case "send_status_identifier":
-                return "#message-edit-send-status-" + config.row;
+                return `#message-edit-send-status-${CSS.escape(config.row)}`;
             case "send_status":
-                return $("#message-edit-send-status-" + config.row);
+                return $(`#message-edit-send-status-${CSS.escape(config.row)}`);
             case "send_status_close_button":
-                return $("#message-edit-send-status-" + config.row).find(".send-status-close");
+                return $(`#message-edit-send-status-${CSS.escape(config.row)}`).find(
+                    ".send-status-close",
+                );
             case "send_status_message":
-                return $("#message-edit-send-status-" + config.row).find(".error-msg");
+                return $(`#message-edit-send-status-${CSS.escape(config.row)}`).find(".error-msg");
             case "file_input_identifier":
-                return "#message_edit_file_input_" + config.row;
+                return `#message_edit_file_input_${CSS.escape(config.row)}`;
             case "source":
                 return "message-edit-file-input";
             case "drag_drop_container":
                 return $("#message_edit_form");
             case "markdown_preview_hide_button":
-                return $("#undo_markdown_preview_" + config.row);
+                return $(`#undo_markdown_preview_${CSS.escape(config.row)}`);
             default:
                 throw new Error(`Invalid key name for mode "${config.mode}"`);
         }
