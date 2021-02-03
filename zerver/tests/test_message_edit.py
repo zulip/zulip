@@ -799,6 +799,16 @@ class EditMessageTest(EditMessageTestCase):
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]["prev_content"], "content 3")
         self.assertEqual(history[0]["user_id"], hamlet.id)
+        self.assertEqual(
+            set(history[0].keys()),
+            {
+                "timestamp",
+                "prev_content",
+                "user_id",
+                "prev_rendered_content",
+                "prev_rendered_content_version",
+            },
+        )
 
         self.login("iago")
         result = self.client_patch(
@@ -812,6 +822,7 @@ class EditMessageTest(EditMessageTestCase):
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
         self.assertEqual(history[0]["user_id"], self.example_user("iago").id)
+        self.assertEqual(set(history[0].keys()), {"timestamp", LEGACY_PREV_TOPIC, "user_id"})
 
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
