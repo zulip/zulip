@@ -624,10 +624,10 @@ run_test("uppy_events", () => {
     on_restriction_failed_callback(file, null, null);
     assert(compose_ui_replace_syntax_called);
     compose_ui_replace_syntax_called = false;
-    $("#comepose-textarea").val("user modified text");
+    $("#compose-textarea").val("user modified text");
     on_restriction_failed_callback(file, null, null);
     assert(compose_ui_replace_syntax_called);
-    assert.equal($("#comepose-textarea").val(), "user modified text");
+    assert.equal($("#compose-textarea").val(), "user modified text");
 
     state = {
         type: "error",
@@ -674,11 +674,11 @@ run_test("uppy_events", () => {
     assert(show_error_message_called);
     assert(compose_ui_replace_syntax_called);
     show_error_message_called = false;
-    $("#comepose-textarea").val("user modified text");
+    $("#compose-textarea").val("user modified text");
     uppy_cancel_all_called = false;
     on_upload_error_callback(file, null);
     assert(uppy_cancel_all_called);
     assert(show_error_message_called);
     assert(compose_ui_replace_syntax_called);
-    assert.equal($("#comepose-textarea").val(), "user modified text");
+    assert.equal($("#compose-textarea").val(), "user modified text");
 });
