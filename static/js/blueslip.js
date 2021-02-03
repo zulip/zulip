@@ -253,10 +253,11 @@ exports.timings = new Map();
 
 exports.measure_time = function (label, f) {
     const t1 = performance.now();
-    f();
+    const ret = f();
     const t2 = performance.now();
     const elapsed = t2 - t1;
     exports.timings.set(label, elapsed);
+    return ret;
 };
 
 // Produces an easy-to-read preview on an HTML element.  Currently
