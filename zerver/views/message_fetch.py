@@ -48,7 +48,7 @@ from zerver.lib.streams import (
     get_web_public_streams_queryset,
 )
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, topic_column_sa, topic_match_sa
-from zerver.lib.topic_mutes import exclude_topic_mutes
+from zerver.lib.topic_mutes import get_topic_mutes_conditions
 from zerver.lib.types import Validator
 from zerver.lib.utils import statsd
 from zerver.lib.validator import (
@@ -205,7 +205,7 @@ class NarrowBuilder:
         assert self.user_profile is not None
 
         if operand == "home":
-            conditions = exclude_muting_conditions(self.user_profile, [])
+            conditions = get_muting_conditions(self.user_profile, [], not_)
             return query.where(and_(*conditions))
         elif operand == "all":
             return query
@@ -234,6 +234,9 @@ class NarrowBuilder:
         elif operand == "alerted":
             cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0
             return query.where(maybe_negate(cond))
+        elif operand == "muted":
+            conditions = get_muting_conditions(self.user_profile, [], maybe_negate)
+            return query.where(and_(*conditions))
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
     _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -721,8 +724,8 @@ def get_stream_from_narrow_access_unchecked(
     return None
 
 
-def exclude_muting_conditions(
-    user_profile: UserProfile, narrow: OptionalNarrowListT
+def get_muting_conditions(
+    user_profile: UserProfile, narrow: OptionalNarrowListT, maybe_negate: ConditionTransform
 ) -> List[ClauseElement]:
     conditions = []
     stream_id = None
@@ -746,10 +749,10 @@ def exclude_muting_conditions(
         muted_recipient_ids = [row["recipient_id"] for row in rows]
         if len(muted_recipient_ids) > 0:
             # Only add the condition if we have muted streams to simplify/avoid warnings.
-            condition = not_(column("recipient_id", Integer).in_(muted_recipient_ids))
+            condition = maybe_negate(column("recipient_id", Integer).in_(muted_recipient_ids))
             conditions.append(condition)
 
-    conditions = exclude_topic_mutes(conditions, user_profile, stream_id)
+    conditions = get_topic_mutes_conditions(conditions, user_profile, stream_id, maybe_negate)
 
     return conditions
 
@@ -839,7 +842,7 @@ def find_first_unread_anchor(
     # flag for the user.
     need_user_message = True
 
-    # Because we will need to call exclude_muting_conditions, unless
+    # Because we will need to call get_muting_conditions with negation, unless
     # the user hasn't muted anything, we will need to include Message
     # in our query.  It may be worth eventually adding an optimization
     # for the case of a user who hasn't muted anything to avoid the
@@ -865,7 +868,7 @@ def find_first_unread_anchor(
 
     # We exclude messages on muted topics when finding the first unread
     # message in this narrow
-    muting_conditions = exclude_muting_conditions(user_profile, narrow)
+    muting_conditions = get_muting_conditions(user_profile, narrow, not_)
     if muting_conditions:
         condition = and_(condition, *muting_conditions)
 

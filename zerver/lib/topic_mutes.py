@@ -2,11 +2,13 @@ import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from django.utils.timezone import now as timezone_now
-from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
+from sqlalchemy.sql import ClauseElement, and_, column, or_
 
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import topic_match_sa
 from zerver.models import MutedTopic, UserProfile, get_stream
+
+ConditionTransform = Callable[[ClauseElement], ClauseElement]
 
 
 def get_topic_mutes(user_profile: UserProfile) -> List[Tuple[str, str, float]]:
@@ -85,8 +87,11 @@ def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -
     return is_muted
 
 
-def exclude_topic_mutes(
-    conditions: List[ClauseElement], user_profile: UserProfile, stream_id: Optional[int]
+def get_topic_mutes_conditions(
+    conditions: List[ClauseElement],
+    user_profile: UserProfile,
+    stream_id: Optional[int],
+    maybe_negate: ConditionTransform,
 ) -> List[ClauseElement]:
     query = MutedTopic.objects.filter(
         user_profile=user_profile,
@@ -113,7 +118,7 @@ def exclude_topic_mutes(
         topic_cond = topic_match_sa(topic_name)
         return and_(stream_cond, topic_cond)
 
-    condition = not_(or_(*list(map(mute_cond, rows))))
+    condition = maybe_negate(or_(*list(map(mute_cond, rows))))
     return [*conditions, condition]
 
 

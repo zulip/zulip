@@ -260,6 +260,14 @@ function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
     is_operator = [{operator: "is", operand: "unread", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
     assert(!filter.can_mark_messages_read());
+
+    is_operator = [{operator: "is", operand: "muted"}];
+    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    assert(!filter.can_mark_messages_read());
+
+    is_operator = [{operator: "is", operand: "muted", negated: true}];
+    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    assert(!filter.can_mark_messages_read());
 }
 
 function assert_not_mark_read_when_searching(additional_operators_to_test) {
@@ -600,6 +608,12 @@ test("predicate_basics", () => {
     assert(predicate({}));
 
     const unknown_stream_id = 999;
+    predicate = get_predicate([["is", "muted"]]);
+    assert(predicate({stream_id: unknown_stream_id, stream: "unknown"}));
+    assert(!predicate({type: "private"}));
+    page_params.narrow_stream = "kiosk";
+    assert(!predicate({stream: "kiosk"}));
+
     predicate = get_predicate([["in", "home"]]);
     assert(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
     assert(predicate({type: "private"}));

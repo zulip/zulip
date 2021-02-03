@@ -8,7 +8,7 @@ from django.db import connection
 from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
-from sqlalchemy.sql import Select, and_, column, select, table
+from sqlalchemy.sql import Select, and_, column, not_, select, table
 from sqlalchemy.sql.elements import ClauseElement
 
 from analytics.lib.counts import COUNT_STATS
@@ -54,9 +54,9 @@ from zerver.views.message_fetch import (
     LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperator,
     NarrowBuilder,
-    exclude_muting_conditions,
     find_first_unread_anchor,
     get_messages_backend,
+    get_muting_conditions,
     ok_to_include_history,
     post_process_limited_query,
 )
@@ -247,6 +247,16 @@ class NarrowBuilderTest(ZulipTestCase):
             param_2=0,
         )
         self._do_add_term_test(term, where_clause, params)
+
+    def test_add_term_using_is_operator_and_muted_operand(self) -> None:
+        mute_stream(self.realm, self.user_profile, "Verona")
+        term = dict(operator="is", operand="muted")
+        self._do_add_term_test(term, "WHERE recipient_id IN (%(recipient_id_1)s)")
+
+    def test_add_term_using_is_operator_and_muted_operand_and_negated(self) -> None:  # NEGATED
+        mute_stream(self.realm, self.user_profile, "Verona")
+        term = dict(operator="is", operand="muted", negated=True)
+        self._do_add_term_test(term, "WHERE recipient_id NOT IN (%(recipient_id_1)s)")
 
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = dict(operator="is", operand="non_supported")
@@ -3250,7 +3260,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(queries), 1)
         self.assertIn(f"AND zerver_message.id = {LARGER_THAN_MAX_MESSAGE_ID}", queries[0]["sql"])
 
-    def test_exclude_muting_conditions(self) -> None:
+    def test_get_muting_conditions(self) -> None:
         realm = get_realm("zulip")
         self.make_stream("web stuff")
         user_profile = self.example_user("hamlet")
@@ -3263,19 +3273,19 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
         set_topic_mutes(user_profile, muted_topics)
 
-        # If nothing relevant is muted, then exclude_muting_conditions()
+        # If nothing relevant is muted, then get_muting_conditions() with negation
         # should return an empty list.
         narrow: List[Dict[str, object]] = [
             dict(operator="stream", operand="Scotland"),
         ]
-        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        muting_conditions = get_muting_conditions(user_profile, narrow, not_)
         self.assertEqual(muting_conditions, [])
 
         # Also test that passing stream ID works
         narrow = [
             dict(operator="stream", operand=get_stream("Scotland", realm).id),
         ]
-        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        muting_conditions = get_muting_conditions(user_profile, narrow, not_)
         self.assertEqual(muting_conditions, [])
 
         # Ok, now set up our muted topics to include a topic relevant to our narrow.
@@ -3290,7 +3300,7 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator="stream", operand="Scotland"),
         ]
 
-        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        muting_conditions = get_muting_conditions(user_profile, narrow, not_)
         query = select([column("id").label("message_id")], None, table("zerver_message"))
         query = query.where(*muting_conditions)
         expected_query = """\
@@ -3315,7 +3325,7 @@ WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_
             dict(operator="stream", operand="bogus-stream-name"),
         ]
 
-        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        muting_conditions = get_muting_conditions(user_profile, narrow, not_)
         query = select([column("id")], None, table("zerver_message"))
         query = query.where(and_(*muting_conditions))
 
