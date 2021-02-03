@@ -96,6 +96,8 @@ elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
     POSTGRESQL_VERSION = "11"
 elif vendor == "ubuntu" and os_version == "20.04":  # focal
     POSTGRESQL_VERSION = "12"
+elif vendor == "neon" and os_version == "20.04":  # KDE Neon
+    POSTGRESQL_VERSION = "12"
 elif vendor == "fedora" and os_version == "29":
     POSTGRESQL_VERSION = "10"
 elif vendor == "rhel" and os_version.startswith("7."):
