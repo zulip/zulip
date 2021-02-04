@@ -44,7 +44,7 @@ const frontend = {
     subscribed: false,
     color: "yellow",
     name: "frontend",
-    stream_id: 1,
+    stream_id: 101,
     is_muted: true,
     invite_only: false,
 };
@@ -56,6 +56,8 @@ const frontend_filter_terms = [{operator: "stream", operand: "frontend"}];
 const frontend_filter = new Filter(frontend_filter_terms);
 
 run_test("update_property", (override) => {
+    const stream_id = frontend.stream_id;
+
     // Invoke error for non-existent stream/property
     {
         let errors = 0;
@@ -66,7 +68,7 @@ run_test("update_property", (override) => {
         stream_events.update_property(99, "color", "blue");
         assert.equal(errors, 1);
 
-        stream_events.update_property(1, "not_real", 42);
+        stream_events.update_property(stream_id, "not_real", 42);
         assert.equal(errors, 2);
     }
 
@@ -74,9 +76,9 @@ run_test("update_property", (override) => {
     {
         with_stub((stub) => {
             override("stream_color.update_stream_color", stub.f);
-            stream_events.update_property(1, "color", "blue");
+            stream_events.update_property(stream_id, "color", "blue");
             const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.sub.stream_id, stream_id);
             assert.equal(args.val, "blue");
         });
     }
@@ -85,50 +87,54 @@ run_test("update_property", (override) => {
     {
         with_stub((stub) => {
             override("stream_muting.update_is_muted", stub.f);
-            stream_events.update_property(1, "in_home_view", false);
+            stream_events.update_property(stream_id, "in_home_view", false);
             const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.sub.stream_id, stream_id);
             assert.equal(args.val, true);
         });
     }
 
+    function checkbox_for(property) {
+        return $(`#${property}_${stream_id}`);
+    }
+
     // Test desktop notifications
-    stream_events.update_property(1, "desktop_notifications", true);
+    stream_events.update_property(stream_id, "desktop_notifications", true);
     assert.equal(frontend.desktop_notifications, true);
-    let checkbox = $("#desktop_notifications_1");
+    let checkbox = checkbox_for("desktop_notifications");
     assert.equal(checkbox.prop("checked"), true);
 
     // Tests audible notifications
-    stream_events.update_property(1, "audible_notifications", true);
+    stream_events.update_property(stream_id, "audible_notifications", true);
     assert.equal(frontend.audible_notifications, true);
-    checkbox = $("#audible_notifications_1");
+    checkbox = checkbox_for("audible_notifications");
     assert.equal(checkbox.prop("checked"), true);
 
     // Tests push notifications
-    stream_events.update_property(1, "push_notifications", true);
+    stream_events.update_property(stream_id, "push_notifications", true);
     assert.equal(frontend.push_notifications, true);
-    checkbox = $("#push_notifications_1");
+    checkbox = checkbox_for("push_notifications");
     assert.equal(checkbox.prop("checked"), true);
 
     // Tests email notifications
-    stream_events.update_property(1, "email_notifications", true);
+    stream_events.update_property(stream_id, "email_notifications", true);
     assert.equal(frontend.email_notifications, true);
-    checkbox = $("#email_notifications_1");
+    checkbox = checkbox_for("email_notifications");
     assert.equal(checkbox.prop("checked"), true);
 
     // Tests wildcard_mentions_notify notifications
-    stream_events.update_property(1, "wildcard_mentions_notify", true);
+    stream_events.update_property(stream_id, "wildcard_mentions_notify", true);
     assert.equal(frontend.wildcard_mentions_notify, true);
-    checkbox = $("#wildcard_mentions_notify_1");
+    checkbox = checkbox_for("wildcard_mentions_notify");
     assert.equal(checkbox.prop("checked"), true);
 
     // Test name change
     {
         with_stub((stub) => {
             override("subs.update_stream_name", stub.f);
-            stream_events.update_property(1, "name", "the frontend");
+            stream_events.update_property(stream_id, "name", "the frontend");
             const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.sub.stream_id, stream_id);
             assert.equal(args.val, "the frontend");
         });
     }
@@ -137,24 +143,24 @@ run_test("update_property", (override) => {
     {
         with_stub((stub) => {
             override("subs.update_stream_description", stub.f);
-            stream_events.update_property(1, "description", "we write code", {
+            stream_events.update_property(stream_id, "description", "we write code", {
                 rendered_description: "we write code",
             });
             const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.sub.stream_id, stream_id);
             assert.equal(args.val, "we write code");
         });
     }
 
     // Test email address change
-    stream_events.update_property(1, "email_address", "zooly@zulip.com");
+    stream_events.update_property(stream_id, "email_address", "zooly@zulip.com");
     assert.equal(frontend.email_address, "zooly@zulip.com");
 
     // Test pin to top
     {
         override("stream_list.refresh_pinned_or_unpinned_stream", noop);
-        stream_events.update_property(1, "pin_to_top", true);
-        checkbox = $("#pin_to_top_1");
+        stream_events.update_property(stream_id, "pin_to_top", true);
+        checkbox = checkbox_for("pin_to_top");
         assert.equal(checkbox.prop("checked"), true);
     }
 
@@ -162,11 +168,11 @@ run_test("update_property", (override) => {
     {
         with_stub((stub) => {
             override("subs.update_stream_privacy", stub.f);
-            stream_events.update_property(1, "invite_only", true, {
+            stream_events.update_property(stream_id, "invite_only", true, {
                 history_public_to_subscribers: true,
             });
             const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.sub.stream_id, stream_id);
             assert.deepEqual(args.val, {
                 invite_only: true,
                 history_public_to_subscribers: true,
@@ -179,12 +185,12 @@ run_test("update_property", (override) => {
         with_stub((stub) => {
             override("subs.update_stream_post_policy", stub.f);
             stream_events.update_property(
-                1,
+                stream_id,
                 "stream_post_policy",
                 stream_data.stream_post_policy_values.admins.code,
             );
             const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.sub.stream_id, stream_id);
             assert.equal(args.val, stream_data.stream_post_policy_values.admins.code);
         });
     }
@@ -193,9 +199,9 @@ run_test("update_property", (override) => {
     {
         with_stub((stub) => {
             override("subs.update_message_retention_setting", stub.f);
-            stream_events.update_property(1, "message_retention_days", 20);
+            stream_events.update_property(stream_id, "message_retention_days", 20);
             const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.sub.stream_id, stream_id);
             assert.equal(args.val, 20);
         });
     }
@@ -264,7 +270,7 @@ run_test("marked_subscribed", (override) => {
         assert.deepEqual(args.messages, ["msg"]);
 
         args = stream_list_stub.get_args("sub");
-        assert.equal(args.sub.stream_id, 1);
+        assert.equal(args.sub.stream_id, frontend.stream_id);
         assert.equal(message_view_header_stub.num_calls, 1);
 
         assert.equal(list_updated, true);
@@ -289,7 +295,7 @@ run_test("marked_subscribed", (override) => {
             override("subs.set_color", stub.f);
             stream_events.mark_subscribed(frontend, [], undefined);
             const args = stub.get_args("id", "color");
-            assert.equal(args.id, 1);
+            assert.equal(args.id, frontend.stream_id);
             assert.equal(args.color, "green");
             assert.equal(warnings, 1);
         });
