@@ -184,6 +184,22 @@ run_test("basics", () => {
     assert(filter.contains_only_private_messages());
     assert(!filter.has_operator("search"));
     assert(filter.can_apply_locally());
+
+    assert(Filter.check_operand_valid("stream", "foo"));
+    assert(Filter.check_operand_valid("in", "home"));
+    assert(Filter.check_operand_valid("in", "all"));
+    assert(Filter.check_operand_valid("streams", "public"));
+    assert(Filter.check_operand_valid("streams", "web-public"));
+    assert(Filter.check_operand_valid("is", "mentioned"));
+    assert(Filter.check_operand_valid("is", "starred"));
+    assert(Filter.check_operand_valid("is", "alerted"));
+    assert(Filter.check_operand_valid("is", "private"));
+    assert(Filter.check_operand_valid("is", "unread"));
+    assert(Filter.check_operand_valid("has", "link"));
+    assert(Filter.check_operand_valid("has", "image"));
+    assert(Filter.check_operand_valid("has", "attachment"));
+    assert(!Filter.check_operand_valid("in", "foo"));
+    assert(!Filter.check_operand_valid("streams", "foo"));
 });
 
 function assert_not_mark_read_with_has_operands(additional_operators_to_test) {
@@ -955,6 +971,10 @@ run_test("parse", () => {
         {operator: "stream", operand: "separated"},
         {operator: "topic", operand: "with space"},
     ];
+    _test();
+
+    string = "is:invalid";
+    operators = [{operator: "search", operand: "is:invalid"}];
     _test();
 });
 

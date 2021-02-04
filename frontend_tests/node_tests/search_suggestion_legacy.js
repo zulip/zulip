@@ -468,17 +468,17 @@ run_test("has_suggestions", () => {
 
     query = "has:";
     suggestions = get_suggestions("", query);
-    expected = ["has:link", "has:image", "has:attachment"];
+    expected = ["has:", "has:link", "has:image", "has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "has:im";
     suggestions = get_suggestions("", query);
-    expected = ["has:image"];
+    expected = ["has:im", "has:image"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-has:im";
     suggestions = get_suggestions("", query);
-    expected = ["-has:image"];
+    expected = ["-has:im", "-has:image"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "att";
@@ -489,6 +489,7 @@ run_test("has_suggestions", () => {
     query = "stream:Denmark is:alerted has:lin";
     suggestions = get_suggestions("", query);
     expected = [
+        "stream:Denmark is:alerted has:lin",
         "stream:Denmark is:alerted has:link",
         "stream:Denmark is:alerted",
         "stream:Denmark",
@@ -545,17 +546,17 @@ run_test("check_is_suggestions", () => {
 
     query = "is:";
     suggestions = get_suggestions("", query);
-    expected = ["is:private", "is:starred", "is:mentioned", "is:alerted", "is:unread"];
+    expected = ["is:", "is:private", "is:starred", "is:mentioned", "is:alerted", "is:unread"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:st";
     suggestions = get_suggestions("", query);
-    expected = ["is:starred"];
+    expected = ["is:st", "is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-is:st";
     suggestions = get_suggestions("", query);
-    expected = ["-is:starred"];
+    expected = ["-is:st", "-is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "st";
@@ -565,7 +566,12 @@ run_test("check_is_suggestions", () => {
 
     query = "stream:Denmark has:link is:sta";
     suggestions = get_suggestions("", query);
-    expected = ["stream:Denmark has:link is:starred", "stream:Denmark has:link", "stream:Denmark"];
+    expected = [
+        "stream:Denmark has:link is:sta",
+        "stream:Denmark has:link is:starred",
+        "stream:Denmark has:link",
+        "stream:Denmark",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 });
 

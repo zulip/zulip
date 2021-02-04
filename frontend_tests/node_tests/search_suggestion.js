@@ -464,17 +464,17 @@ run_test("has_suggestions", () => {
 
     query = "has:";
     suggestions = get_suggestions("", query);
-    expected = ["has:link", "has:image", "has:attachment"];
+    expected = ["has:", "has:link", "has:image", "has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "has:im";
     suggestions = get_suggestions("", query);
-    expected = ["has:image"];
+    expected = ["has:im", "has:image"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-has:im";
     suggestions = get_suggestions("", query);
-    expected = ["-has:image"];
+    expected = ["-has:im", "-has:image"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "att";
@@ -485,7 +485,7 @@ run_test("has_suggestions", () => {
     query = "has:lin";
     const base_query = "stream:Denmark is:alerted";
     suggestions = get_suggestions(base_query, query);
-    expected = ["has:link"];
+    expected = ["has:lin", "has:link"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -572,17 +572,17 @@ run_test("check_is_suggestions", () => {
 
     query = "is:";
     suggestions = get_suggestions("", query);
-    expected = ["is:private", "is:starred", "is:mentioned", "is:alerted", "is:unread"];
+    expected = ["is:", "is:private", "is:starred", "is:mentioned", "is:alerted", "is:unread"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:st";
     suggestions = get_suggestions("", query);
-    expected = ["is:starred"];
+    expected = ["is:st", "is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-is:st";
     suggestions = get_suggestions("", query);
-    expected = ["-is:starred"];
+    expected = ["-is:st", "-is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "st";
@@ -593,7 +593,7 @@ run_test("check_is_suggestions", () => {
     query = "is:sta";
     base_query = "stream:Denmark has:link";
     suggestions = get_suggestions(base_query, query);
-    expected = ["is:starred"];
+    expected = ["is:sta", "is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 });
 

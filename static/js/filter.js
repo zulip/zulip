@@ -316,7 +316,11 @@ class Filter {
                 // operator is known.  If it is not known, then we treat
                 // it as a search for the given string (which may contain
                 // a `:`), not as a search operator.
-                if (Filter.operator_to_prefix(operator, negated) === "") {
+                if (
+                    Filter.operator_to_prefix(operator, negated) === "" ||
+                    (Filter.operator_to_prefix(operator, negated) !== "" &&
+                        !Filter.check_operand_valid(operator, operand))
+                ) {
                     // Put it as a search term, to not have duplicate operators
                     search_term.push(token);
                     continue;
@@ -980,6 +984,42 @@ class Filter {
 
     static describe(operators) {
         return Handlebars.Utils.escapeExpression(Filter.describe_unescaped(operators));
+    }
+
+    static check_operand_valid(operator, operand) {
+        operator = Filter.canonicalize_operator(operator);
+        operand = operand.toString().toLowerCase();
+
+        switch (operator) {
+            case "streams":
+                if (operand === "public" || operand === "web-public") {
+                    return true;
+                }
+                return false;
+            case "is":
+                if (
+                    operand === "alerted" ||
+                    operand === "mentioned" ||
+                    operand === "starred" ||
+                    operand === "private" ||
+                    operand === "unread"
+                ) {
+                    return true;
+                }
+                return false;
+            case "has":
+                if (operand === "link" || operand === "image" || operand === "attachment") {
+                    return true;
+                }
+                return false;
+            case "in":
+                if (operand === "home" || operand === "all") {
+                    return true;
+                }
+                return false;
+            default:
+                return true;
+        }
     }
 }
 
