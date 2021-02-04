@@ -1160,7 +1160,7 @@ def get_recent_conversations_recipient_id(user_profile: UserProfile,
     get_recent_private_conversations would have used to record that
     message in its data structure.
     """
-    my_recipient_id = user_profile.id
+    my_recipient_id = user_profile.recipient_id
     if recipient_id == my_recipient_id:
         return UserProfile.objects.values_list('recipient_id', flat=True).get(id=sender_id)
     return recipient_id
