@@ -8,14 +8,14 @@
         overflow: hidden;
         background-color: hsl(0, 0%, 100%);
 
-        @media (max-width: $ml_max) {
+        @media (width < $ml_min) {
             width: 100%;
         }
     }
 
     input.user_status {
         width: 336px;
-        @media (max-width: $ml_max) {
+        @media (width < $ml_min) {
             width: 94%;
         }
     }

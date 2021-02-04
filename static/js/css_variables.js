@@ -22,14 +22,5 @@ module.exports = {
         ml_min: ml + "px",
         mm_min: mm + "px",
         ms_min: ms + "px",
-
-        xs_max: xs - 1 + "px",
-        sm_max: sm - 1 + "px",
-        md_max: md - 1 + "px",
-        lg_max: lg - 1 + "px",
-        xl_max: xl - 1 + "px",
-        ml_max: ml - 1 + "px",
-        mm_max: mm - 1 + "px",
-        ms_max: ms - 1 + "px",
     },
 };

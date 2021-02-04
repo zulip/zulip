@@ -1584,7 +1584,7 @@ div.focused_table {
         padding: 12px 6px;
         overflow: hidden;
         text-overflow: ellipsis;
-        @media (max-width: $sm_max) {
+        @media (width < $sm_min) {
             padding: 7px 3.5px; /* based on having ~41.66% decrease */
         }
         i {
@@ -1639,14 +1639,14 @@ div.focused_table {
             height: 50%;
             color: hsl(0, 0%, 88%);
             font-size: 20px;
-            @media (max-width: $sm_max) {
+            @media (width < $sm_min) {
                 top: 10%;
             }
         }
 
         &::before {
             left: -3px;
-            @media (max-width: $sm_max) {
+            @media (width < $sm_min) {
                 /* this ensures the before "|" doesn't overlap
                    with the stream name text on small narrows */
                 left: 0;
@@ -1671,7 +1671,7 @@ div.focused_table {
         padding: 12px 0;
         padding-left: 10px;
 
-        @media (max-width: $sm_max) {
+        @media (width < $sm_min) {
             padding: 7px 0;
             padding-left: 10px;
         }
@@ -1689,7 +1689,7 @@ div.focused_table {
         font-size: 20px;
 
         padding: 10px 15px 0 0;
-        @media (max-width: $sm_max) {
+        @media (width < $sm_min) {
             padding: 5px 15px 0 0;
         }
     }
@@ -1827,13 +1827,13 @@ div.focused_table {
         padding: 0;
     }
 
-    @media (min-width: $sm_min) {
+    @media (width >= $sm_min) {
         .pill {
             padding: 2px 0 2px 0 !important;
             font-size: 14px;
         }
     }
-    @media (max-width: $sm_max) {
+    @media (width < $sm_min) {
         #search_arrows .pill {
             line-height: 20px;
 
@@ -2600,7 +2600,7 @@ select.inline_select_topic_edit {
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */
-@media (max-width: $xl_max) {
+@media (width < $xl_min) {
     .app-main,
     .header-main {
         min-width: 750px;
@@ -2680,7 +2680,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: $md_max) {
+@media (width < $md_min) {
     body {
         padding: 0;
     }
@@ -2778,7 +2778,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: $sm_max) {
+@media (width < $sm_min) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
         margin-top: 31px;
@@ -2883,7 +2883,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: $mm_max) {
+@media (width < $mm_min) {
     html {
         overflow-x: hidden;
     }
@@ -2896,7 +2896,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: $md_max) {
+@media (width < $md_min) {
     #feedback_container {
         width: calc(90% - 30px);
         left: 5%;

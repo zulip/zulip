@@ -9528,6 +9528,10 @@ postcss-loader@^4.0.2:
     schema-utils "^3.0.0"
     semver "^7.3.4"
 
+"postcss-media-minmax@https://github.com/andersk/postcss-media-minmax.git#01239f17f4a9872ace1dd133cee526a7de4ac9f5":
+  version "5.0.0"
+  resolved "https://github.com/andersk/postcss-media-minmax.git#01239f17f4a9872ace1dd133cee526a7de4ac9f5"
+
 postcss-media-query-parser@^0.2.3:
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/postcss-media-query-parser/-/postcss-media-query-parser-0.2.3.tgz#27b39c6f4d94f81b1a73b8f76351c609e5cef244"

@@ -11,6 +11,7 @@ module.exports = {
             variables: media_breakpoints,
         },
         "postcss-calc": {},
+        "postcss-media-minmax": {},
         autoprefixer: {},
     },
 };
