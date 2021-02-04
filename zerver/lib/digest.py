@@ -184,8 +184,8 @@ def get_hot_topics(
         topic for topic in all_topics
         if topic.stream_id() in stream_ids
     ]
-    topics_by_diversity = sorted(topics, key=lambda dt: dt.diversity())
-    topics_by_length = sorted(topics, key=lambda dt: dt.length())
+    topics_by_diversity = sorted(topics, key=lambda dt: dt.diversity(), reverse=True)
+    topics_by_length = sorted(topics, key=lambda dt: dt.length(), reverse=True)
 
     # Start with the two most diverse topics.
     hot_topics = topics_by_diversity[:2]
