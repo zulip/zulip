@@ -195,7 +195,7 @@ def get_hot_topics(
     for topic in topics_by_length:
         if topic not in hot_topics:
             hot_topics.append(topic)
-        if len(hot_topics) >= 4:
+        if len(hot_topics) == 4:
             break
 
     return hot_topics
