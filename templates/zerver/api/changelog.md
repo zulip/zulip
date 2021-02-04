@@ -13,6 +13,7 @@ below features are supported.
 **Feature level 44**
 
 * The `remove event` for `realm_bot` is renamed to `deactivate`.
+* The `delete` event for `realm_bot` is renamed to `change_owner`.
 
 **Feature level 43**
 
@@ -37,7 +38,6 @@ below features are supported.
 **Feature level 39**
 
 * Added new [GET /users/{email}](/api/get-user-by-email) endpoint.
-* The `remove event` for `realm_bot` is renamed to `deactivate`.
 
 **Feature level 38**
 

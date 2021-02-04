@@ -3804,7 +3804,7 @@ def do_change_bot_owner(
             user_profile.realm,
             dict(
                 type="realm_bot",
-                op="delete",
+                op="change_owner",
                 bot=dict(
                     user_id=user_profile.id,
                 ),

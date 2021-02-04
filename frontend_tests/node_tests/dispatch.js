@@ -427,8 +427,9 @@ run_test("realm_bot remove", (override) => {
 });
 
 run_test("realm_bot delete", () => {
-    const event = event_fixtures.realm_bot__delete;
-    // We don't handle live updates for delete events, this is a noop.
+    // This used to be delete event for bot but changed to change_owner
+    // due to confusions in it's name and action it performs.
+    const event = event_fixtures.realm_bot__change_owner;
     dispatch(event);
 });
 

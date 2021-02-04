@@ -2705,7 +2705,7 @@ paths:
                                 op:
                                   type: string
                                   enum:
-                                    - delete
+                                    - change_owner
                                 bot:
                                   type: object
                                   description: |
@@ -2718,7 +2718,7 @@ paths:
                               example:
                                 {
                                   "type": "realm_bot",
-                                  "op": "delete",
+                                  "op": "change_owner",
                                   "bot":
                                     {"user_id": 35, "full_name": "Foo Bot"},
                                   "id": 1,
