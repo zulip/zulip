@@ -106,7 +106,7 @@ class TestEmbeddedBotFailures(ZulipTestCase):
                 content=f"@**{bot_profile.full_name}** foo",
                 topic_name="bar",
             )
-            self.assertRegexpMatches(
+            self.assertEqual(
                 m.output[0],
-                r"ERROR:root:Error: User [0-9]* has bot with invalid embedded bot service invalid",
+                f"ERROR:root:Error: User {bot_profile.id} has bot with invalid embedded bot service invalid",
             )
