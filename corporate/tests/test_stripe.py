@@ -1278,9 +1278,9 @@ class StripeTest(StripeTestCase):
             with self.assertRaises(BillingError) as context:
                 self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
         self.assertEqual("subscribing with existing subscription", context.exception.description)
-        self.assertRegexpMatches(
+        self.assertEqual(
             m.output[0],
-            r"WARNING:corporate.stripe:Customer <Customer <Realm: zulip \d*> id> trying to upgrade, but has an active subscription",
+            f"WARNING:corporate.stripe:Customer <Customer <Realm: zulip {hamlet.realm.id}> id> trying to upgrade, but has an active subscription",
         )
         self.assertEqual(len(m.output), 1)
 
@@ -1735,10 +1735,11 @@ class StripeTest(StripeTestCase):
             response = self.client_post(
                 "/json/billing/plan/change", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
             )
-            self.assertRegexpMatches(
-                m.output[0],
-                r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: \d*",
-            )
+            stripe_customer_id = Customer.objects.get(realm=user.realm).id
+            new_plan = get_current_plan_by_realm(user.realm)
+            assert new_plan is not None
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            self.assertEqual(m.output[0], expected_log)
         self.assert_json_success(response)
 
         # Verify that we still write LicenseLedger rows during the remaining
@@ -1815,15 +1816,17 @@ class StripeTest(StripeTestCase):
         self.assertEqual(monthly_plan.automanage_licenses, True)
         self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.MONTHLY)
 
+        stripe_customer_id = Customer.objects.get(realm=user.realm).id
+        new_plan = get_current_plan_by_realm(user.realm)
+        assert new_plan is not None
+
         with self.assertLogs("corporate.stripe", "INFO") as m:
             response = self.client_post(
                 "/json/billing/plan/change",
                 {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
             )
-            self.assertRegexpMatches(
-                m.output[0],
-                r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 4",
-            )
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}"
+            self.assertEqual(m.output[0], expected_log)
         self.assert_json_success(response)
         monthly_plan.refresh_from_db()
         self.assertEqual(monthly_plan.status, CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE)
@@ -1998,14 +2001,17 @@ class StripeTest(StripeTestCase):
         assert monthly_plan is not None
         self.assertEqual(monthly_plan.automanage_licenses, False)
         self.assertEqual(monthly_plan.billing_schedule, CustomerPlan.MONTHLY)
+        stripe_customer_id = Customer.objects.get(realm=user.realm).id
+        new_plan = get_current_plan_by_realm(user.realm)
+        assert new_plan is not None
         with self.assertLogs("corporate.stripe", "INFO") as m:
             response = self.client_post(
                 "/json/billing/plan/change",
                 {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
             )
-            self.assertRegexpMatches(
+            self.assertEqual(
                 m.output[0],
-                r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 4",
+                f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}",
             )
         self.assert_json_success(response)
         monthly_plan.refresh_from_db()
@@ -2101,10 +2107,11 @@ class StripeTest(StripeTestCase):
             response = self.client_post(
                 "/json/billing/plan/change", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
             )
-            self.assertRegexpMatches(
-                m.output[0],
-                r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 2",
-            )
+            stripe_customer_id = Customer.objects.get(realm=user.realm).id
+            new_plan = get_current_plan_by_realm(user.realm)
+            assert new_plan is not None
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            self.assertEqual(m.output[0], expected_log)
         self.assert_json_success(response)
         self.assertEqual(
             CustomerPlan.objects.first().status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
@@ -2113,10 +2120,8 @@ class StripeTest(StripeTestCase):
             response = self.client_post(
                 "/json/billing/plan/change", {"status": CustomerPlan.ACTIVE}
             )
-            self.assertRegexpMatches(
-                m.output[0],
-                r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 1",
-            )
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.ACTIVE}"
+            self.assertEqual(m.output[0], expected_log)
         self.assert_json_success(response)
         self.assertEqual(CustomerPlan.objects.first().status, CustomerPlan.ACTIVE)
 
@@ -2134,13 +2139,14 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
         with self.assertLogs("corporate.stripe", "INFO") as m:
+            stripe_customer_id = Customer.objects.get(realm=user.realm).id
+            new_plan = get_current_plan_by_realm(user.realm)
+            assert new_plan is not None
             self.client_post(
                 "/json/billing/plan/change", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
             )
-            self.assertRegexpMatches(
-                m.output[0],
-                r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 2",
-            )
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            self.assertEqual(m.output[0], expected_log)
 
         plan = CustomerPlan.objects.first()
         self.assertIsNotNone(plan.next_invoice_date)
@@ -2207,19 +2213,20 @@ class StripeTest(StripeTestCase):
             self.client_post(
                 "/json/billing/plan/change", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
             )
-            self.assertRegexpMatches(
-                m.output[0],
-                r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 2",
-            )
+            stripe_customer_id = Customer.objects.get(realm=user.realm).id
+            new_plan = get_current_plan_by_realm(user.realm)
+            assert new_plan is not None
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            self.assertEqual(m.output[0], expected_log)
 
         with self.assertRaises(BillingError) as context, self.assertLogs(
             "corporate.stripe", "WARNING"
         ) as m:
             with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
                 self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
-        self.assertRegexpMatches(
+        self.assertEqual(
             m.output[0],
-            r"WARNING:corporate.stripe:Customer <Customer <Realm: zulip \d*> id> trying to upgrade, but has an active subscription",
+            f"WARNING:corporate.stripe:Customer <Customer <Realm: zulip {user.realm.id}> id> trying to upgrade, but has an active subscription",
         )
         self.assertEqual(context.exception.description, "subscribing with existing subscription")
 
