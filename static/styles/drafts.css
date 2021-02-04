@@ -11,7 +11,7 @@
     display: flex;
     flex-direction: column;
 
-    @media (max-width: $md_max) {
+    @media (width < $md_min) {
         height: 95%;
         max-width: none;
         width: 90%;
@@ -111,7 +111,7 @@
             right: -80px;
             font-size: 0.9em;
 
-            @media (max-width: $sm_max) {
+            @media (width < $sm_min) {
                 right: 0;
             }
 

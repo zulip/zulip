@@ -1352,7 +1352,7 @@ input.new-organization-button {
     margin-bottom: 25px !important;
 }
 
-@media (max-width: 800px) {
+@media (width <= 800px) {
     .app.help {
         .markdown {
             width: 100vw;
@@ -1426,7 +1426,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 815px) {
+@media (width <= 815px) {
     .footer {
         width: 450px;
         margin-left: auto;
@@ -1438,7 +1438,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 767px) {
+@media (width <= 767px) {
     body {
         padding: 0 !important;
     }
@@ -1489,7 +1489,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 558px) {
+@media (width <= 558px) {
     .team {
         .bdfl {
             .profile-name,
@@ -1500,7 +1500,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 500px) {
+@media (width <= 500px) {
     .app.help {
         .sidebar {
             top: 39px;
@@ -1555,7 +1555,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 475px) {
+@media (width <= 475px) {
     .footer {
         width: auto;
 
@@ -1566,7 +1566,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 400px) {
+@media (width <= 400px) {
     .footer {
         section {
             width: calc(100% - 40px);

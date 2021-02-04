@@ -52,6 +52,7 @@
     "postcss-calc": "^8.0.0",
     "postcss-extend-rule": "^3.0.0",
     "postcss-loader": "^4.0.2",
+    "postcss-media-minmax": "https://github.com/andersk/postcss-media-minmax.git#01239f17f4a9872ace1dd133cee526a7de4ac9f5",
     "postcss-nested": "^5.0.0",
     "postcss-simple-vars": "^6.0.0",
     "regenerator-runtime": "^0.13.3",

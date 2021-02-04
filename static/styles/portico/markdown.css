@@ -142,7 +142,7 @@
             margin: 0 0 2px;
         }
 
-        @media (max-width: 500px) {
+        @media (width <= 500px) {
             margin-left: 0;
         }
     }
@@ -173,7 +173,7 @@
             vertical-align: middle;
         }
 
-        @media (max-width: 500px) {
+        @media (width <= 500px) {
             padding: 10px;
         }
     }

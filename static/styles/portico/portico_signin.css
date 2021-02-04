@@ -1036,25 +1036,25 @@ button#register_auth_button_gitlab {
 
 /* -- media queries -- */
 
-@media (max-width: 950px) {
+@media (width <= 950px) {
     .split-view .left-side {
         width: 400px;
     }
 }
 
-@media (max-width: 850px) {
+@media (width <= 850px) {
     .split-view .left-side {
         width: 350px;
     }
 }
 
-@media (max-width: 815px) {
+@media (width <= 815px) {
     .flex {
         min-height: calc(100vh - 530px);
     }
 }
 
-@media (max-width: 795px) {
+@media (width <= 795px) {
     .register-account #registration {
         padding: 10px;
     }
@@ -1116,7 +1116,7 @@ button#register_auth_button_gitlab {
     }
 }
 
-@media (max-width: 500px) {
+@media (width <= 500px) {
     .new-style .get-started {
         font-size: 1.6em;
     }
@@ -1160,7 +1160,7 @@ button#register_auth_button_gitlab {
     }
 }
 
-@media (max-width: 400px) {
+@media (width <= 400px) {
     .flex {
         min-height: calc(100vh - 560px);
     }
