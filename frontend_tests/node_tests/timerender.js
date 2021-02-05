@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {getTime} = require("date-fns");
+const MockDate = require("mockdate");
 const XDate = require("xdate");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
@@ -146,17 +146,16 @@ run_test("get_timestamp_for_flatpickr", () => {
     const iso_timestamp = "2017-05-18T07:12:53Z"; // ISO 8601 date format
     const func = timerender.get_timestamp_for_flatpickr;
     // Freeze time for testing.
-    const date_now = Date.now;
-    Date.now = () => new Date("2020-07-07T10:00:00Z").getTime();
+    MockDate.set(new Date("2020-07-07T10:00:00Z").getTime());
 
     // Invalid timestamps should show current time.
-    assert.equal(func("random str").valueOf(), getTime(new Date()));
+    assert.equal(func("random str").valueOf(), Date.now());
 
     // Valid ISO timestamps should return Date objects.
-    assert.equal(func(iso_timestamp).valueOf(), getTime(new Date(unix_timestamp)));
+    assert.equal(func(iso_timestamp).valueOf(), new Date(unix_timestamp).getTime());
 
     // Restore the Date object.
-    Date.now = date_now;
+    MockDate.reset();
 });
 
 run_test("absolute_time_12_hour", () => {
