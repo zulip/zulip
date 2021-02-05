@@ -1693,6 +1693,12 @@ label.label-title {
         }
     }
 
+    .api-field-type {
+        text-transform: lowercase;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
     .api-argument-example-label {
         font-style: italic;
     }
@@ -1717,16 +1723,9 @@ label.label-title {
         font-size: 12px;
         color: hsl(0, 50%, 60%);
     }
-
-    .api-argument-datatype {
-        text-transform: lowercase;
-        font-weight: 600;
-        font-size: 14px;
-        color: hsl(176, 46.4%, 41%);
-    }
 }
 
-.api-response-datatype {
+.api-field-type {
     color: hsl(176, 46.4%, 41%);
 }
 
