@@ -1,7 +1,6 @@
 "use strict";
 
 const ClipboardJS = require("clipboard");
-const XDate = require("xdate");
 
 const render_message_edit_form = require("../templates/message_edit_form.hbs");
 const render_topic_edit_form = require("../templates/topic_edit_form.hbs");
@@ -32,8 +31,6 @@ const editability_types = {
 exports.editability_types = editability_types;
 
 function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
-    const now = new XDate();
-
     if (!page_params.realm_allow_message_editing) {
         // If message editing is disabled, so is topic editing.
         return false;
@@ -55,7 +52,7 @@ function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     return (
         page_params.realm_community_topic_editing_limit_seconds +
             edit_limit_seconds_buffer +
-            now.diffSeconds(message.timestamp * 1000) >
+            (message.timestamp - Date.now() / 1000) >
         0
     );
 }
@@ -94,11 +91,10 @@ function get_editability(message, edit_limit_seconds_buffer = 0) {
         return editability_types.NO;
     }
 
-    const now = new XDate();
     if (
         page_params.realm_message_content_edit_limit_seconds +
             edit_limit_seconds_buffer +
-            now.diffSeconds(message.timestamp * 1000) >
+            (message.timestamp - Date.now() / 1000) >
             0 &&
         message.sent_by_me
     ) {
@@ -134,15 +130,13 @@ exports.get_deletability = function (message) {
         return true;
     }
 
-    if (page_params.realm_allow_message_deleting) {
-        const now = new XDate();
-        if (
-            page_params.realm_message_content_delete_limit_seconds +
-                now.diffSeconds(message.timestamp * 1000) >
+    if (
+        page_params.realm_allow_message_deleting &&
+        page_params.realm_message_content_delete_limit_seconds +
+            (message.timestamp - Date.now() / 1000) >
             0
-        ) {
-            return true;
-        }
+    ) {
+        return true;
     }
     return false;
 };
@@ -420,10 +414,9 @@ function edit_message(row, raw_content) {
         // If you change this number also change edit_limit_buffer in
         // zerver.views.message_edit.update_message_backend
         const min_seconds_to_edit = 10;
-        const now = new XDate();
         let seconds_left =
             page_params.realm_message_content_edit_limit_seconds +
-            now.diffSeconds(message.timestamp * 1000);
+            (message.timestamp - Date.now() / 1000);
         seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
         // I believe this needs to be defined outside the countdown_timer, since

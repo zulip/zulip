@@ -74,7 +74,6 @@
     "webpack-cli": "^3.3.2",
     "webpack4-bundle-tracker": "^0.0.1-beta",
     "winchan": "^0.2.1",
-    "xdate": "^0.8.2",
     "xvfb": "^0.4.0",
     "zxcvbn": "^4.4.2"
   },

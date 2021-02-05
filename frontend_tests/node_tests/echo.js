@@ -2,16 +2,19 @@
 
 const {strict: assert} = require("assert");
 
+const MockDate = require("mockdate");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
+set_global("local_message", {});
 set_global("markdown", {});
-set_global("local_message", {
-    now: () => "timestamp",
-});
 set_global("page_params", {});
+
+const fake_now = 555;
+MockDate.set(new Date(fake_now * 1000));
 
 zrequire("echo");
 const people = zrequire("people");
@@ -207,7 +210,7 @@ run_test("insert_local_message", () => {
 
     local_message.insert_message = (message) => {
         assert.equal(message.display_recipient, "general");
-        assert.equal(message.timestamp, "timestamp");
+        assert.equal(message.timestamp, fake_now);
         assert.equal(message.sender_email, "iago@zulip.com");
         assert.equal(message.sender_full_name, "Iago");
         assert.equal(message.sender_id, 123);
@@ -248,3 +251,5 @@ run_test("insert_local_message", () => {
     assert(apply_markdown_called);
     assert(insert_message_called);
 });
+
+MockDate.reset();

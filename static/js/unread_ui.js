@@ -1,7 +1,5 @@
 "use strict";
 
-const XDate = require("xdate");
-
 let last_mention_count = 0;
 
 function do_new_messages_animation(li) {
@@ -67,7 +65,7 @@ exports.should_display_bankruptcy_banner = function () {
         return false;
     }
 
-    const now = new XDate(true).getTime() / 1000;
+    const now = Date.now() / 1000;
     if (
         page_params.unread_msgs.count > 500 &&
         now - page_params.furthest_read_time > 60 * 60 * 24 * 2

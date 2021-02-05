@@ -1,7 +1,5 @@
 "use strict";
 
-const XDate = require("xdate");
-
 const render_settings_upload_space_stats = require("../templates/settings/upload_space_stats.hbs");
 const render_uploaded_files_list = require("../templates/uploaded_files_list.hbs");
 
@@ -112,7 +110,7 @@ function render_attachments_ui() {
 
 function format_attachment_data(new_attachments) {
     for (const attachment of new_attachments) {
-        const time = new XDate(attachment.create_time);
+        const time = new Date(attachment.create_time);
         attachment.create_time_str = timerender.render_now(time).time_str;
         attachment.size_str = exports.bytes_to_size(attachment.size);
     }

@@ -1,6 +1,6 @@
 "use strict";
 
-const XDate = require("xdate");
+const {format, isSameDay} = require("date-fns");
 
 const render_message_edit_history = require("../templates/message_edit_history.hbs");
 
@@ -12,16 +12,15 @@ exports.fetch_and_render_message_history = function (message) {
         data: {message_id: JSON.stringify(message.id)},
         success(data) {
             const content_edit_history = [];
-            let prev_datestamp = null;
+            let prev_time = null;
 
             for (const [index, msg] of data.message_history.entries()) {
                 // Format times and dates nicely for display
-                const time = new XDate(msg.timestamp * 1000);
-                const datestamp = time.toDateString();
+                const time = new Date(msg.timestamp * 1000);
                 const item = {
                     timestamp: timerender.stringify_time(time),
-                    display_date: time.toString("MMMM d, yyyy"),
-                    show_date_row: datestamp !== prev_datestamp,
+                    display_date: format(time, "MMMM d, yyyy"),
+                    show_date_row: prev_time === null || !isSameDay(time, prev_time),
                 };
 
                 if (msg.user_id) {
@@ -51,7 +50,7 @@ exports.fetch_and_render_message_history = function (message) {
 
                 content_edit_history.push(item);
 
-                prev_datestamp = datestamp;
+                prev_time = time;
             }
             $("#message-history").attr("data-message-id", message.id);
             $("#message-history").html(

@@ -173,7 +173,7 @@ exports.user_last_seen_time_status = function (user_id) {
     if (last_active_date === undefined) {
         return i18n.t("More than 2 weeks ago");
     }
-    return timerender.last_seen_status_from_date(last_active_date.clone());
+    return timerender.last_seen_status_from_date(last_active_date);
 };
 
 exports.info_for = function (user_id) {

@@ -405,7 +405,6 @@ run_test("user_timezone", () => {
     page_params.twenty_four_hour_time = true;
     assert.equal(people.get_user_time(me.user_id), "0:09");
 
-    expected_pref.format = "h:mm A";
     page_params.twenty_four_hour_time = false;
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
 });

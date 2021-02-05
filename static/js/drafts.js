@@ -2,7 +2,6 @@
 
 const {subDays} = require("date-fns");
 const Handlebars = require("handlebars/runtime");
-const XDate = require("xdate");
 
 const render_draft_table_body = require("../templates/draft_table_body.hbs");
 
@@ -221,7 +220,7 @@ exports.remove_old_drafts = function () {
 exports.format_draft = function (draft) {
     const id = draft.id;
     let formatted;
-    const time = new XDate(draft.updatedAt);
+    const time = new Date(draft.updatedAt);
     let time_stamp = timerender.render_now(time).time_str;
     if (time_stamp === i18n.t("Today")) {
         time_stamp = timerender.stringify_time(time);

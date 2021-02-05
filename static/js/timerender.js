@@ -1,24 +1,18 @@
 "use strict";
 
-const {format, parseISO, isValid} = require("date-fns");
-const XDate = require("xdate");
+const {
+    differenceInMinutes,
+    differenceInCalendarDays,
+    format,
+    formatISO,
+    isValid,
+    parseISO,
+    startOfToday,
+} = require("date-fns");
 
 let next_timerender_id = 0;
 
-const set_to_start_of_day = function (time) {
-    return time.setMilliseconds(0).setSeconds(0).setMinutes(0).setHours(0);
-};
-
-function calculate_days_old_from_time(time, today) {
-    const start_of_today = set_to_start_of_day(today ? today.clone() : new XDate());
-    const start_of_other_day = set_to_start_of_day(time.clone());
-    const days_old = Math.round(start_of_other_day.diffDays(start_of_today));
-    const is_older_year = start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
-
-    return {days_old, is_older_year};
-}
-
-// Given an XDate object 'time', returns an object:
+// Given a Date object 'time', returns an object:
 // {
 //      time_str:        a string for the current human-formatted version
 //      formal_time_str: a string for the current formally formatted version
@@ -26,13 +20,13 @@ function calculate_days_old_from_time(time, today) {
 //      needs_update:    a boolean for if it will need to be updated when the
 //                       day changes
 // }
-exports.render_now = function (time, today) {
+exports.render_now = function (time, today = new Date()) {
     let time_str = "";
     let needs_update = false;
     // render formal time to be used as title attr tooltip
     // "\xa0" is U+00A0 NO-BREAK SPACE.
     // Can't use &nbsp; as that represents the literal string "&nbsp;".
-    const formal_time_str = time.toString("dddd,\u00A0MMMM\u00A0d,\u00A0yyyy");
+    const formal_time_str = format(time, "EEEE,\u00A0MMMM\u00A0d,\u00A0yyyy");
 
     // How many days old is 'time'? 0 = today, 1 = yesterday, 7 = a
     // week ago, -1 = tomorrow, etc.
@@ -40,7 +34,7 @@ exports.render_now = function (time, today) {
     // Presumably the result of diffDays will be an integer in this
     // case, but round it to be sure before comparing to integer
     // constants.
-    const {days_old, is_older_year} = calculate_days_old_from_time(time, today);
+    const days_old = differenceInCalendarDays(today, time);
 
     if (days_old === 0) {
         time_str = i18n.t("Today");
@@ -48,15 +42,15 @@ exports.render_now = function (time, today) {
     } else if (days_old === 1) {
         time_str = i18n.t("Yesterday");
         needs_update = true;
-    } else if (is_older_year) {
+    } else if (time.getFullYear() !== today.getFullYear()) {
         // For long running servers, searching backlog can get ambiguous
         // without a year stamp. Only show year if message is from an older year
-        time_str = time.toString("MMM\u00A0dd,\u00A0yyyy");
+        time_str = format(time, "MMM\u00A0dd,\u00A0yyyy");
         needs_update = false;
     } else {
         // For now, if we get a message from tomorrow, we don't bother
         // rewriting the timestamp when it gets to be tomorrow.
-        time_str = time.toString("MMM\u00A0dd");
+        time_str = format(time, "MMM\u00A0dd");
         needs_update = false;
     }
     return {
@@ -67,19 +61,16 @@ exports.render_now = function (time, today) {
 };
 
 // Current date is passed as an argument for unit testing
-exports.last_seen_status_from_date = function (last_active_date, current_date) {
-    if (typeof current_date === "undefined") {
-        current_date = new XDate();
-    }
-
-    const minutes = Math.floor(last_active_date.diffMinutes(current_date));
+exports.last_seen_status_from_date = function (last_active_date, current_date = new Date()) {
+    const minutes = differenceInMinutes(current_date, last_active_date);
     if (minutes <= 2) {
         return i18n.t("Just now");
     }
     if (minutes < 60) {
         return i18n.t("__minutes__ minutes ago", {minutes});
     }
-    const {days_old, is_older_year} = calculate_days_old_from_time(last_active_date, current_date);
+
+    const days_old = differenceInCalendarDays(current_date, last_active_date);
     const hours = Math.floor(minutes / 60);
 
     if (days_old === 0) {
@@ -95,27 +86,31 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
 
     if (days_old < 90) {
         return i18n.t("__days_old__ days ago", {days_old});
-    } else if (days_old > 90 && days_old < 365 && !is_older_year) {
+    } else if (
+        days_old > 90 &&
+        days_old < 365 &&
+        last_active_date.getFullYear() === current_date.getFullYear()
+    ) {
         // Online more than 90 days ago, in the same year
         return i18n.t("__last_active_date__", {
-            last_active_date: last_active_date.toString("MMM\u00A0dd"),
+            last_active_date: format(last_active_date, "MMM\u00A0dd"),
         });
     }
     return i18n.t("__last_active_date__", {
-        last_active_date: last_active_date.toString("MMM\u00A0dd,\u00A0yyyy"),
+        last_active_date: format(last_active_date, "MMM\u00A0dd,\u00A0yyyy"),
     });
 };
 
 // List of the dates that need to be updated when the day changes.
 // Each timestamp is represented as a list of length 2:
-//   [id of the span element, XDate representing the time]
+//   [id of the span element, Date representing the time]
 let update_list = [];
 
-// The time at the beginning of the next day, when the timestamps are updated.
-// Represented as an XDate with hour, minute, second, millisecond 0.
-let next_update;
+// The time at the beginning of the day, when the timestamps were updated.
+// Represented as a Date with hour, minute, second, millisecond 0.
+let last_update;
 exports.initialize = function () {
-    next_update = set_to_start_of_day(new XDate()).addDays(1);
+    last_update = startOfToday();
 };
 
 // time_above is an optional argument, to support dates that look like:
@@ -143,7 +138,7 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
     return elem.attr("title", rendered_time.formal_time_str);
 }
 
-// Given an XDate object 'time', return a DOM node that initially
+// Given an Date object 'time', return a DOM node that initially
 // displays the human-formatted date, and is updated automatically as
 // necessary (e.g. changing "Today" to "Yesterday" to "Jul 1").
 // If two dates are given, it renders them as:
@@ -186,8 +181,8 @@ exports.render_markdown_timestamp = function (time, text) {
 // This isn't expected to be called externally except manually for
 // testing purposes.
 exports.update_timestamps = function () {
-    const now = new XDate();
-    if (now >= next_update) {
+    const today = startOfToday();
+    if (today !== last_update) {
         const to_process = update_list;
         update_list = [];
 
@@ -201,9 +196,9 @@ exports.update_timestamps = function () {
                 for (const element of elements) {
                     const time = entry.time;
                     const time_above = entry.time_above;
-                    const rendered_time = exports.render_now(time);
+                    const rendered_time = exports.render_now(time, today);
                     if (time_above) {
-                        const rendered_time_above = exports.render_now(time_above);
+                        const rendered_time_above = exports.render_now(time_above, today);
                         render_date_span($(element), rendered_time, rendered_time_above);
                     } else {
                         render_date_span($(element), rendered_time);
@@ -218,7 +213,7 @@ exports.update_timestamps = function () {
             }
         }
 
-        next_update = set_to_start_of_day(now.clone().addDays(1));
+        last_update = today;
     }
 };
 
@@ -227,7 +222,7 @@ setInterval(exports.update_timestamps, 60 * 1000);
 // Transform a Unix timestamp into a ISO 8601 formatted date string.
 //   Example: 1978-10-31T13:37:42Z
 exports.get_full_time = function (timestamp) {
-    return new XDate(timestamp * 1000).toISOString();
+    return formatISO(timestamp * 1000);
 };
 
 exports.get_timestamp_for_flatpickr = (timestring) => {
@@ -247,9 +242,9 @@ exports.get_timestamp_for_flatpickr = (timestring) => {
 
 exports.stringify_time = function (time) {
     if (page_params.twenty_four_hour_time) {
-        return time.toString("HH:mm");
+        return format(time, "HH:mm");
     }
-    return time.toString("h:mm TT");
+    return format(time, "h:mm a");
 };
 
 // this is for rendering absolute time based off the preferences for twenty-four
@@ -318,7 +313,7 @@ exports.get_full_datetime = function (time) {
     };
 };
 
-// XDate.toLocaleDateString and XDate.toLocaleTimeString are
+// Date.toLocaleDateString and Date.toLocaleTimeString are
 // expensive, so we delay running the following code until we need
 // the full date and time strings.
 exports.set_full_datetime = function timerender_set_full_datetime(message, time_elem) {
@@ -326,7 +321,7 @@ exports.set_full_datetime = function timerender_set_full_datetime(message, time_
         return;
     }
 
-    const time = new XDate(message.timestamp * 1000);
+    const time = new Date(message.timestamp * 1000);
     const full_datetime = exports.get_full_datetime(time);
 
     message.full_date_str = full_datetime.date;

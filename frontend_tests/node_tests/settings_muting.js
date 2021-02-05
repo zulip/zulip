@@ -7,7 +7,6 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
-set_global("XDate", zrequire("XDate", "xdate"));
 
 zrequire("timerender");
 zrequire("settings_muting");

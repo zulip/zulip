@@ -1,7 +1,5 @@
 "use strict";
 
-const XDate = require("xdate");
-
 const render_recent_topic_row = require("../templates/recent_topic_row.hbs");
 const render_recent_topics_filters = require("../templates/recent_topics_filters.hbs");
 const render_recent_topics_body = require("../templates/recent_topics_table.hbs");
@@ -167,7 +165,7 @@ function format_topic(topic_data) {
         return {};
     }
     const topic = last_msg.topic;
-    const time = new XDate(last_msg.timestamp * 1000);
+    const time = new Date(last_msg.timestamp * 1000);
     const last_msg_time = timerender.last_seen_status_from_date(time);
     const full_datetime = timerender.get_full_datetime(time);
 

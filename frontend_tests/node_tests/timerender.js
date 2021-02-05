@@ -2,8 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {add} = require("date-fns");
 const MockDate = require("mockdate");
-const XDate = require("xdate");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -17,7 +17,7 @@ set_global("page_params", {
 zrequire("timerender");
 
 run_test("render_now_returns_today", () => {
-    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     const expected = {
         time_str: i18n.t("Today"),
         formal_time_str: "Friday, April 12, 2019",
@@ -30,8 +30,8 @@ run_test("render_now_returns_today", () => {
 });
 
 run_test("render_now_returns_yesterday", () => {
-    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    const yesterday = today.clone().addDays(-1);
+    const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const yesterday = add(today, {days: -1});
     const expected = {
         time_str: i18n.t("Yesterday"),
         formal_time_str: "Thursday, April 11, 2019",
@@ -44,8 +44,8 @@ run_test("render_now_returns_yesterday", () => {
 });
 
 run_test("render_now_returns_year", () => {
-    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    const year_ago = today.clone().addYears(-1);
+    const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const year_ago = add(today, {years: -1});
     const expected = {
         time_str: "Apr 12, 2018",
         formal_time_str: "Thursday, April 12, 2018",
@@ -58,8 +58,8 @@ run_test("render_now_returns_year", () => {
 });
 
 run_test("render_now_returns_month_and_day", () => {
-    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    const three_months_ago = today.clone().addMonths(-3, true);
+    const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const three_months_ago = add(today, {months: -3});
     const expected = {
         time_str: "Jan 12",
         formal_time_str: "Saturday, January 12, 2019",
@@ -72,22 +72,22 @@ run_test("render_now_returns_month_and_day", () => {
 });
 
 run_test("render_now_returns_year_with_year_boundary", () => {
-    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    const three_months_ago = today.clone().addMonths(-6, true);
+    const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const six_months_ago = add(today, {months: -6});
     const expected = {
         time_str: "Oct 12, 2018",
         formal_time_str: "Friday, October 12, 2018",
         needs_update: false,
     };
-    const actual = timerender.render_now(three_months_ago, today);
+    const actual = timerender.render_now(six_months_ago, today);
     assert.equal(actual.time_str, expected.time_str);
     assert.equal(actual.formal_time_str, expected.formal_time_str);
     assert.equal(actual.needs_update, expected.needs_update);
 });
 
 run_test("render_date_renders_time_html", () => {
-    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    const message_time = today.clone();
+    const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const message_time = today;
     const expected_html = i18n.t("Today");
 
     const attrs = {};
@@ -110,9 +110,9 @@ run_test("render_date_renders_time_html", () => {
 });
 
 run_test("render_date_renders_time_above_html", () => {
-    const today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
-    const message_time = today.clone();
-    const message_time_above = today.clone().addDays(-1);
+    const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
+    const message_time = today;
+    const message_time_above = add(today, {days: -1});
 
     const span_stub = $("<span />");
 
@@ -244,60 +244,59 @@ run_test("set_full_datetime", () => {
 
 run_test("last_seen_status_from_date", () => {
     // Set base_date to March 1 2016 12.30 AM (months are zero based)
-    let base_date = new XDate(2016, 2, 1, 0, 30);
+    let base_date = new Date(2016, 2, 1, 0, 30);
 
-    function assert_same(modifier, expected_status) {
-        let past_date = base_date.clone();
-        past_date = modifier(past_date);
+    function assert_same(duration, expected_status) {
+        const past_date = add(base_date, duration);
         const actual_status = timerender.last_seen_status_from_date(past_date, base_date);
         assert.equal(actual_status, expected_status);
     }
 
-    assert_same((d) => d.addSeconds(-20), i18n.t("Just now"));
+    assert_same({seconds: -20}, i18n.t("Just now"));
 
-    assert_same((d) => d.addMinutes(-1), i18n.t("Just now"));
+    assert_same({minutes: -1}, i18n.t("Just now"));
 
-    assert_same((d) => d.addMinutes(-2), i18n.t("Just now"));
+    assert_same({minutes: -2}, i18n.t("Just now"));
 
-    assert_same((d) => d.addMinutes(-30), i18n.t("30 minutes ago"));
+    assert_same({minutes: -30}, i18n.t("30 minutes ago"));
 
-    assert_same((d) => d.addHours(-1), i18n.t("Yesterday"));
+    assert_same({hours: -1}, i18n.t("Yesterday"));
 
-    assert_same((d) => d.addHours(-2), i18n.t("Yesterday"));
+    assert_same({hours: -2}, i18n.t("Yesterday"));
 
-    assert_same((d) => d.addHours(-20), i18n.t("Yesterday"));
+    assert_same({hours: -20}, i18n.t("Yesterday"));
 
-    assert_same((d) => d.addDays(-1), i18n.t("Yesterday"));
+    assert_same({days: -1}, i18n.t("Yesterday"));
 
-    assert_same((d) => d.addDays(-2), i18n.t("2 days ago"));
+    assert_same({days: -2}, i18n.t("2 days ago"));
 
-    assert_same((d) => d.addDays(-61), i18n.t("61 days ago"));
+    assert_same({days: -61}, i18n.t("61 days ago"));
 
-    assert_same((d) => d.addDays(-300), i18n.t("May 06,\u00A02015"));
+    assert_same({days: -300}, i18n.t("May 06,\u00A02015"));
 
-    assert_same((d) => d.addDays(-366), i18n.t("Mar 01,\u00A02015"));
+    assert_same({days: -366}, i18n.t("Mar 01,\u00A02015"));
 
-    assert_same((d) => d.addYears(-3), i18n.t("Mar 01,\u00A02013"));
+    assert_same({years: -3}, i18n.t("Mar 01,\u00A02013"));
 
     // Set base_date to May 1 2016 12.30 AM (months are zero based)
-    base_date = new XDate(2016, 4, 1, 0, 30);
+    base_date = new Date(2016, 4, 1, 0, 30);
 
-    assert_same((d) => d.addDays(-91), i18n.t("Jan\u00A031"));
+    assert_same({days: -91}, i18n.t("Jan\u00A031"));
 
     // Set base_date to May 1 2016 10.30 PM (months are zero based)
-    base_date = new XDate(2016, 4, 2, 23, 30);
+    base_date = new Date(2016, 4, 2, 23, 30);
 
-    assert_same((d) => d.addHours(-1), i18n.t("An hour ago"));
+    assert_same({hours: -1}, i18n.t("An hour ago"));
 
-    assert_same((d) => d.addHours(-2), i18n.t("2 hours ago"));
+    assert_same({hours: -2}, i18n.t("2 hours ago"));
 
-    assert_same((d) => d.addHours(-12), i18n.t("12 hours ago"));
+    assert_same({hours: -12}, i18n.t("12 hours ago"));
 
-    assert_same((d) => d.addHours(-24), i18n.t("Yesterday"));
+    assert_same({hours: -24}, i18n.t("Yesterday"));
 });
 
 run_test("set_full_datetime", () => {
-    let time = new XDate(1549958107000); // Tuesday 2/12/2019 07:55:07 AM (UTC+0)
+    let time = new Date(1549958107000); // Tuesday 2/12/2019 07:55:07 AM (UTC+0)
     let time_str = timerender.stringify_time(time);
     let expected = "07:55";
     assert.equal(time_str, expected);
@@ -307,7 +306,7 @@ run_test("set_full_datetime", () => {
     expected = "7:55 AM";
     assert.equal(time_str, expected);
 
-    time = new XDate(1549979707000); // Tuesday 2/12/2019 13:55:07 PM (UTC+0)
+    time = new Date(1549979707000); // Tuesday 2/12/2019 13:55:07 PM (UTC+0)
     page_params.twenty_four_hour_time = false;
     time_str = timerender.stringify_time(time);
     expected = "1:55 PM";

@@ -1,7 +1,5 @@
 "use strict";
 
-const XDate = require("xdate");
-
 const people = require("./people");
 
 // This module just manages data.  See activity.js for
@@ -245,8 +243,7 @@ exports.last_active_date = function (user_id) {
         return undefined;
     }
 
-    const date = new XDate(info.last_active * 1000);
-    return date;
+    return new Date(info.last_active * 1000);
 };
 
 exports.initialize = function (params) {

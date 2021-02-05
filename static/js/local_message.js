@@ -1,16 +1,8 @@
 "use strict";
 
-const XDate = require("xdate");
-
 function truncate_precision(float) {
     return Number.parseFloat(float.toFixed(3));
 }
-
-exports.now = function () {
-    const timestamp = new XDate().getTime() / 1000;
-
-    return timestamp;
-};
 
 exports.insert_message = function (message) {
     // It is a little bit funny to go through the message_events

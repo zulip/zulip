@@ -1,7 +1,7 @@
 "use strict";
 
+const {isSameDay} = require("date-fns");
 const _ = require("lodash");
-const XDate = require("xdate");
 
 const render_bookend = require("../templates/bookend.hbs");
 const render_message_group = require("../templates/message_group.hbs");
@@ -16,10 +16,7 @@ function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
     }
-    const earlier_time = new XDate(earlier_msg.msg.timestamp * 1000);
-    const later_time = new XDate(later_msg.msg.timestamp * 1000);
-
-    return earlier_time.toDateString() === later_time.toDateString();
+    return isSameDay(earlier_msg.msg.timestamp * 1000, later_msg.msg.timestamp * 1000);
 }
 
 function same_sender(a, b) {
@@ -37,20 +34,20 @@ function same_recipient(a, b) {
 }
 
 function render_group_display_date(group, message_container) {
-    const time = new XDate(message_container.msg.timestamp * 1000);
-    const today = new XDate();
+    const time = new Date(message_container.msg.timestamp * 1000);
+    const today = new Date();
     const date_element = timerender.render_date(time, undefined, today)[0];
 
     group.date = date_element.outerHTML;
 }
 
 function update_group_date_divider(group, message_container, prev) {
-    const time = new XDate(message_container.msg.timestamp * 1000);
-    const today = new XDate();
+    const time = new Date(message_container.msg.timestamp * 1000);
+    const today = new Date();
 
     if (prev !== undefined) {
-        const prev_time = new XDate(prev.msg.timestamp * 1000);
-        if (time.toDateString() !== prev_time.toDateString()) {
+        const prev_time = new Date(prev.msg.timestamp * 1000);
+        if (!isSameDay(time, prev_time)) {
             // NB: group_date_divider_html is HTML, inserted into the document without escaping.
             group.group_date_divider_html = timerender.render_date(
                 time,
@@ -87,9 +84,9 @@ function update_message_date_divider(opts) {
         return;
     }
 
-    const prev_time = new XDate(prev_msg_container.msg.timestamp * 1000);
-    const curr_time = new XDate(curr_msg_container.msg.timestamp * 1000);
-    const today = new XDate();
+    const prev_time = new Date(prev_msg_container.msg.timestamp * 1000);
+    const curr_time = new Date(curr_msg_container.msg.timestamp * 1000);
+    const today = new Date();
 
     curr_msg_container.want_date_divider = true;
     curr_msg_container.date_divider_html = timerender.render_date(
@@ -100,7 +97,7 @@ function update_message_date_divider(opts) {
 }
 
 function set_timestr(message_container) {
-    const time = new XDate(message_container.msg.timestamp * 1000);
+    const time = new Date(message_container.msg.timestamp * 1000);
     message_container.timestr = timerender.stringify_time(time);
 }
 
@@ -182,8 +179,8 @@ class MessageListView {
             last_edit_timestamp = message_container.msg.last_edit_timestamp;
         }
         if (last_edit_timestamp !== undefined) {
-            const last_edit_time = new XDate(last_edit_timestamp * 1000);
-            const today = new XDate();
+            const last_edit_time = new Date(last_edit_timestamp * 1000);
+            const today = new Date();
             return (
                 timerender.render_date(last_edit_time, undefined, today)[0].textContent +
                 " at " +
