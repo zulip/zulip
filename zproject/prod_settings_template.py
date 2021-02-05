@@ -127,6 +127,102 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
 
+# LDAP integration.
+#
+# Zulip supports retrieving information about users via LDAP, and
+# optionally using LDAP as an authentication mechanism.
+
+import ldap
+from django_auth_ldap.config import LDAPSearch
+
+# Connecting to the LDAP server.
+#
+# For detailed instructions, see the Zulip documentation:
+#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
+
+# The LDAP server to connect to.  Setting this enables Zulip
+# automatically fetching each new user's name from LDAP.
+# Example: "ldaps://ldap.example.com"
+AUTH_LDAP_SERVER_URI = ""
+
+# The DN of the user to bind as (i.e., authenticate as) in order to
+# query LDAP.  If unset, Zulip does an anonymous bind.
+AUTH_LDAP_BIND_DN = ""
+
+# Passwords and secrets are not stored in this file.  The password
+# corresponding to AUTH_LDAP_BIND_DN goes in `/etc/zulip/zulip-secrets.conf`.
+# In that file, set `auth_ldap_bind_password`.  For example:
+#   auth_ldap_bind_password = abcd1234
+
+# Mapping user info from LDAP to Zulip.
+#
+# For detailed instructions, see the Zulip documentation:
+#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
+
+# The LDAP search query to find a given user.
+#
+# The arguments to `LDAPSearch` are (base DN, scope, filter).  In the
+# filter, the string `%(user)s` is a Python placeholder.  The Zulip
+# server will replace this with the user's Zulip username, i.e. the
+# name they type into the Zulip login form.
+#
+# For more details and alternatives, see the documentation linked above.
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                   ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+
+# Configuration to lookup a user's LDAP data given their email address
+# (For Zulip reverse mapping).  If users log in as e.g. "sam" when
+# their email address is "sam@example.com", set LDAP_APPEND_DOMAIN to
+# "example.com".  Otherwise, leave LDAP_APPEND_DOMAIN=None and set
+# AUTH_LDAP_REVERSE_EMAIL_SEARCH and AUTH_LDAP_USERNAME_ATTR below.
+#LDAP_APPEND_DOMAIN = None
+
+# LDAP attribute to find a user's email address.
+#
+# Leave as None if users log in with their email addresses,
+# or if using LDAP_APPEND_DOMAIN.
+#LDAP_EMAIL_ATTR = None
+
+# AUTH_LDAP_REVERSE_EMAIL_SEARCH works like AUTH_LDAP_USER_SEARCH and
+# should query an LDAP user given their email address.  It and
+# AUTH_LDAP_USERNAME_ATTR are required when LDAP_APPEND_DOMAIN is None.
+#AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+#                                            ldap.SCOPE_SUBTREE, "(email=%(email)s)")
+
+# AUTH_LDAP_USERNAME_ATTR should be the Zulip username attribute
+# (defined in AUTH_LDAP_USER_SEARCH).
+#AUTH_LDAP_USERNAME_ATTR = "uid"
+
+# This map defines how to populate attributes of a Zulip user from LDAP.
+#
+# The format is `zulip_name: ldap_name`; each entry maps a Zulip
+# concept (on the left) to the LDAP attribute name (on the right) your
+# LDAP database uses for the same concept.
+AUTH_LDAP_USER_ATTR_MAP = {
+    # full_name is required; common values include "cn" or "displayName".
+    # If names are encoded in your LDAP directory as first and last
+    # name, you can instead specify first_name and last_name, and
+    # Zulip will combine those to construct a full_name automatically.
+    "full_name": "cn",
+    # "first_name": "fn",
+    # "last_name": "ln",
+
+    # Profile pictures can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
+    # "avatar": "thumbnailPhoto",
+
+    # This line is for having Zulip to automatically deactivate users
+    # who are disabled in LDAP/Active Directory (and reactivate users who are not).
+    # See docs for usage details and precise semantics.
+    # "userAccountControl": "userAccountControl",
+}
+
+# Whether to automatically deactivate users not found in LDAP. If LDAP
+# is the only authentication method, then this setting defaults to
+# True.  If other authentication methods are enabled, it defaults to
+# False.
+#LDAP_DEACTIVATE_NON_MATCHING_USERS = True
+
+
 ########
 # Google OAuth.
 #
@@ -541,106 +637,6 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 # The IMAP folder name to check for emails. All emails sent to EMAIL_GATEWAY_PATTERN above
 # must be delivered to this folder
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
-
-
-################
-# LDAP integration.
-#
-# Zulip supports retrieving information about users via LDAP, and
-# optionally using LDAP as an authentication mechanism.
-
-import ldap
-from django_auth_ldap.config import LDAPSearch
-
-########
-# LDAP integration, part 1: Connecting to the LDAP server.
-#
-# For detailed instructions, see the Zulip documentation:
-#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
-
-# The LDAP server to connect to.  Setting this enables Zulip
-# automatically fetching each new user's name from LDAP.
-# Example: "ldaps://ldap.example.com"
-AUTH_LDAP_SERVER_URI = ""
-
-# The DN of the user to bind as (i.e., authenticate as) in order to
-# query LDAP.  If unset, Zulip does an anonymous bind.
-AUTH_LDAP_BIND_DN = ""
-
-# Passwords and secrets are not stored in this file.  The password
-# corresponding to AUTH_LDAP_BIND_DN goes in `/etc/zulip/zulip-secrets.conf`.
-# In that file, set `auth_ldap_bind_password`.  For example:
-#   auth_ldap_bind_password = abcd1234
-
-
-########
-# LDAP integration, part 2: Mapping user info from LDAP to Zulip.
-#
-# For detailed instructions, see the Zulip documentation:
-#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
-
-# The LDAP search query to find a given user.
-#
-# The arguments to `LDAPSearch` are (base DN, scope, filter).  In the
-# filter, the string `%(user)s` is a Python placeholder.  The Zulip
-# server will replace this with the user's Zulip username, i.e. the
-# name they type into the Zulip login form.
-#
-# For more details and alternatives, see the documentation linked above.
-AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                   ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
-
-# Configuration to lookup a user's LDAP data given their email address
-# (For Zulip reverse mapping).  If users log in as e.g. "sam" when
-# their email address is "sam@example.com", set LDAP_APPEND_DOMAIN to
-# "example.com".  Otherwise, leave LDAP_APPEND_DOMAIN=None and set
-# AUTH_LDAP_REVERSE_EMAIL_SEARCH and AUTH_LDAP_USERNAME_ATTR below.
-#LDAP_APPEND_DOMAIN = None
-
-# LDAP attribute to find a user's email address.
-#
-# Leave as None if users log in with their email addresses,
-# or if using LDAP_APPEND_DOMAIN.
-#LDAP_EMAIL_ATTR = None
-
-# AUTH_LDAP_REVERSE_EMAIL_SEARCH works like AUTH_LDAP_USER_SEARCH and
-# should query an LDAP user given their email address.  It and
-# AUTH_LDAP_USERNAME_ATTR are required when LDAP_APPEND_DOMAIN is None.
-#AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-#                                            ldap.SCOPE_SUBTREE, "(email=%(email)s)")
-
-# AUTH_LDAP_USERNAME_ATTR should be the Zulip username attribute
-# (defined in AUTH_LDAP_USER_SEARCH).
-#AUTH_LDAP_USERNAME_ATTR = "uid"
-
-# This map defines how to populate attributes of a Zulip user from LDAP.
-#
-# The format is `zulip_name: ldap_name`; each entry maps a Zulip
-# concept (on the left) to the LDAP attribute name (on the right) your
-# LDAP database uses for the same concept.
-AUTH_LDAP_USER_ATTR_MAP = {
-    # full_name is required; common values include "cn" or "displayName".
-    # If names are encoded in your LDAP directory as first and last
-    # name, you can instead specify first_name and last_name, and
-    # Zulip will combine those to construct a full_name automatically.
-    "full_name": "cn",
-    # "first_name": "fn",
-    # "last_name": "ln",
-
-    # Profile pictures can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
-    # "avatar": "thumbnailPhoto",
-
-    # This line is for having Zulip to automatically deactivate users
-    # who are disabled in LDAP/Active Directory (and reactivate users who are not).
-    # See docs for usage details and precise semantics.
-    # "userAccountControl": "userAccountControl",
-}
-
-# Whether to automatically deactivate users not found in LDAP. If LDAP
-# is the only authentication method, then this setting defaults to
-# True.  If other authentication methods are enabled, it defaults to
-# False.
-#LDAP_DEACTIVATE_NON_MATCHING_USERS = True
 
 
 ################
