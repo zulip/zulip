@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const XDate = require("xdate");
-
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -307,7 +305,7 @@ run_test("format_drafts", (override) => {
 
     const stub_render_now = timerender.render_now;
     timerender.render_now = function (time) {
-        return stub_render_now(time, new XDate(1549958107000));
+        return stub_render_now(time, new Date(1549958107000));
     };
 
     stub_templates((template_name, data) => {

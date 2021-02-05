@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {JSDOM} = require("jsdom");
+const MockDate = require("mockdate");
 const rewiremock = require("rewiremock/node");
 
 const {stub_templates} = require("../zjsunit/handlebars");
@@ -70,6 +71,9 @@ set_global("ui_util", {});
 // automatically converted to server relative links.
 document.location.protocol = "https:";
 document.location.host = "foo.com";
+
+const fake_now = 555;
+MockDate.set(new Date(fake_now * 1000));
 
 zrequire("zcommand");
 zrequire("compose_ui");
@@ -745,11 +749,9 @@ run_test("send_message", () => {
         };
 
         const server_message_id = 127;
-        const fake_now = 555;
         local_message.insert_message = (message) => {
             assert.equal(message.timestamp, fake_now);
         };
-        local_message.now = () => fake_now;
 
         markdown.apply_markdown = () => {};
         markdown.add_topic_links = () => {};
@@ -1950,3 +1952,5 @@ run_test("test_video_chat_button_toggle", () => {
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), true);
 });
+
+MockDate.reset();

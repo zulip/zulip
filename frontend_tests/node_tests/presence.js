@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const XDate = require("xdate");
-
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
@@ -183,7 +181,7 @@ run_test("set_presence_info", () => {
         last_active: recent,
     });
     assert.equal(presence.get_status(alice.user_id), "active");
-    assert.deepEqual(presence.last_active_date(alice.user_id), new XDate(recent * 1000));
+    assert.deepEqual(presence.last_active_date(alice.user_id), new Date(recent * 1000));
 
     assert.deepEqual(presence.presence_info.get(fred.user_id), {status: "idle", last_active: now});
     assert.equal(presence.get_status(fred.user_id), "idle");
@@ -288,7 +286,7 @@ run_test("last_active_date", () => {
 
     assert.equal(presence.last_active_date(unknown_id), undefined);
     assert.equal(presence.last_active_date(fred.user_id), undefined);
-    assert.deepEqual(presence.last_active_date(alice.user_id), new XDate(500 * 1000));
+    assert.deepEqual(presence.last_active_date(alice.user_id), new Date(500 * 1000));
 });
 
 run_test("update_info_from_event", () => {

@@ -1,7 +1,5 @@
 "use strict";
 
-const XDate = require("xdate");
-
 const {FoldDict} = require("./fold_dict");
 
 const muted_topics = new Map();
@@ -42,7 +40,7 @@ exports.get_muted_topics = function () {
         const stream = stream_data.maybe_get_stream_name(stream_id);
         for (const topic of sub_dict.keys()) {
             const date_muted = sub_dict.get(topic);
-            const date_muted_str = timerender.render_now(new XDate(date_muted)).time_str;
+            const date_muted_str = timerender.render_now(new Date(date_muted)).time_str;
             topics.push({
                 stream_id,
                 stream,
