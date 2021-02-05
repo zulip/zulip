@@ -1,5 +1,6 @@
 "use strict";
 
+const {subDays} = require("date-fns");
 const Handlebars = require("handlebars/runtime");
 const XDate = require("xdate");
 
@@ -208,7 +209,7 @@ exports.restore_draft = function (draft_id) {
 const DRAFT_LIFETIME = 30;
 
 exports.remove_old_drafts = function () {
-    const old_date = new Date().setDate(new Date().getDate() - DRAFT_LIFETIME);
+    const old_date = subDays(new Date(), DRAFT_LIFETIME).getTime();
     const drafts = draft_model.get();
     for (const [id, draft] of Object.entries(drafts)) {
         if (draft.updatedAt < old_date) {
