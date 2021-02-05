@@ -580,7 +580,7 @@ exports.render_actions_remind_popover = function (element, id) {
         });
         elt.popover("show");
         current_flatpickr_instance = $(
-            '.remind.custom[data-message-id="' + message.id + '"]',
+            `.remind.custom[data-message-id="${CSS.escape(message.id)}"]`,
         ).flatpickr({
             enableTime: true,
             clickOpens: false,
@@ -897,10 +897,10 @@ exports.register_click_handlers = function () {
             const url_prefix = playground_info[0].url_prefix;
             view_in_playground_button.attr("href", url_prefix + encodeURIComponent(extracted_code));
         } else {
-            playground_info.forEach(($playground) => {
+            for (const $playground of playground_info) {
                 $playground.playground_url =
                     $playground.url_prefix + encodeURIComponent(extracted_code);
-            });
+            }
             exports.toggle_playground_link_popover(this, playground_info);
         }
     });
@@ -1226,7 +1226,7 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".copy_link", function (e) {
         exports.hide_actions_popover();
         const message_id = $(this).attr("data-message-id");
-        const row = $("[zid='" + message_id + "']");
+        const row = $(`[zid='${CSS.escape(message_id)}']`);
         row.find(".alert-msg")
             .text(i18n.t("Copied!"))
             .css("display", "block")
@@ -1309,11 +1309,11 @@ exports.hide_all_except_sidebars = function () {
     exports.hide_playground_links_popover();
 
     // look through all the popovers that have been added and removed.
-    list_of_popovers.forEach(($o) => {
+    for (const $o of list_of_popovers) {
         if (!document.body.contains($o.$element[0]) && $o.$tip) {
             $o.$tip.remove();
         }
-    });
+    }
     list_of_popovers = [];
 };
 

@@ -31,9 +31,8 @@ const editability_types = {
 };
 exports.editability_types = editability_types;
 
-function is_topic_editable(message, edit_limit_seconds_buffer) {
+function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     const now = new XDate();
-    edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
 
     if (!page_params.realm_allow_message_editing) {
         // If message editing is disabled, so is topic editing.
@@ -61,8 +60,7 @@ function is_topic_editable(message, edit_limit_seconds_buffer) {
     );
 }
 
-function get_editability(message, edit_limit_seconds_buffer) {
-    edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
+function get_editability(message, edit_limit_seconds_buffer = 0) {
     if (!message) {
         return editability_types.NO;
     }
@@ -177,6 +175,7 @@ exports.show_topic_edit_spinner = function (row) {
     spinner.css({height: ""});
     $(".topic_edit_save").hide();
     $(".topic_edit_cancel").hide();
+    $(".topic_edit_spinner").show();
 };
 
 exports.hide_topic_move_spinner = function () {
@@ -346,9 +345,9 @@ function edit_message(row, raw_content) {
 
     form.on("keydown", handle_message_row_edit_keydown);
 
-    upload.feature_check($("#attach_files_" + rows.id(row)));
+    upload.feature_check($(`#attach_files_${CSS.escape(rows.id(row))}`));
 
-    const message_edit_stream = row.find("#select_stream_id_" + message.id);
+    const message_edit_stream = row.find(`#select_stream_id_${CSS.escape(message.id)}`);
     const stream_header_colorblock = row.find(".stream_header_colorblock");
     const message_edit_content = row.find("textarea.message_edit_content");
     const message_edit_topic = row.find("input.message_edit_topic");
@@ -382,7 +381,7 @@ function edit_message(row, raw_content) {
         new ClipboardJS(copy_message[0]);
     } else if (editability === editability_types.FULL) {
         copy_message.remove();
-        const edit_id = "#message_edit_content_" + rows.id(row);
+        const edit_id = `#message_edit_content_${CSS.escape(rows.id(row))}`;
         const listeners = resize.watch_manual_resize(edit_id);
         if (listeners) {
             currently_editing_messages.get(rows.id(row)).listeners = listeners;
@@ -551,6 +550,7 @@ exports.start_topic_edit = function (recipient_row) {
     const form = $(render_topic_edit_form());
     current_msg_list.show_edit_topic_on_recipient_row(recipient_row, form);
     form.on("keydown", handle_inline_topic_edit_keydown);
+    $(".topic_edit_spinner").hide();
     const msg_id = rows.id_for_recipient_row(recipient_row);
     const message = current_msg_list.get(msg_id);
     let topic = message.topic;
@@ -576,7 +576,7 @@ exports.end_message_row_edit = function (row) {
 
         // Clean up resize event listeners
         const listeners = currently_editing_messages.get(message.id).listeners;
-        const edit_box = document.querySelector("#message_edit_content_" + message.id);
+        const edit_box = document.querySelector(`#message_edit_content_${CSS.escape(message.id)}`);
         if (listeners !== undefined) {
             // Event listeners to cleanup are only set in some edit types
             edit_box.removeEventListener("mousedown", listeners[0]);
@@ -670,7 +670,7 @@ exports.save_message_row_edit = function (row) {
         new_topic = row.find(".message_edit_topic").val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
 
-        new_stream_id = Number.parseInt($("#select_stream_id_" + message_id).val(), 10);
+        new_stream_id = Number.parseInt($(`#select_stream_id_${CSS.escape(message_id)}`).val(), 10);
         stream_changed = new_stream_id !== old_stream_id;
     }
     // Editing a not-yet-acked message (because the original send attempt failed)

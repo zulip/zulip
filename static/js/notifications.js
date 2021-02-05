@@ -190,7 +190,7 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
         })
         .show();
 
-    $(".notification[data-message-id='" + message.id + "']")
+    $(`.notification[data-message-id='${CSS.escape(message.id)}']`)
         .expectOne()
         .data("narrow", {
             raw_operators,

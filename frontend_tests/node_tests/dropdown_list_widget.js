@@ -11,18 +11,18 @@ zrequire("scroll_util");
 set_global("$", make_zjquery());
 
 const noop = () => {};
-const _list_render = {
+const _ListWidget = {
     create: () => ({init: noop}),
 };
-set_global("list_render", _list_render);
+set_global("ListWidget", _ListWidget);
 
 const setup_zjquery_data = (name) => {
     $.clear_all_elements();
     const input_group = $(".input_group");
     const reset_button = $(".dropdown_list_reset_button");
     input_group.set_find_results(".dropdown_list_reset_button:enabled", reset_button);
-    $(`#${name}_widget #${name}_name`).closest = () => input_group;
-    const $widget = $(`#${name}_widget #${name}_name`);
+    $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`).closest = () => input_group;
+    const $widget = $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`);
     return {reset_button, $widget};
 };
 

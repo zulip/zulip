@@ -1066,7 +1066,7 @@ class GetOldMessagesTest(ZulipTestCase):
                                   **kwargs)
         self.assert_json_success(payload)
         self.assertEqual(set(payload["Cache-Control"].split(", ")),
-                         {"must-revalidate", "no-store", "no-cache", "max-age=0"})
+                         {"must-revalidate", "no-store", "no-cache", "max-age=0", "private"})
 
         result = orjson.loads(payload.content)
 

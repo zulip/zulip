@@ -309,7 +309,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "topic": "Test topic"})
-        self.assert_json_error(result, "Stream '&amp;&lt;&quot;&#39;&gt;&lt;non-existent&gt;' does not exist")
+        self.assert_json_error(result, "Stream '&amp;&lt;&quot;&#x27;&gt;&lt;non-existent&gt;' does not exist")
 
     def test_personal_message(self) -> None:
         """

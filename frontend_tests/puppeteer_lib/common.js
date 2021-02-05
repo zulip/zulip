@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 const path = require("path");
 
+require("css.escape");
 const puppeteer = require("puppeteer");
 
 const {test_credentials} = require("../../var/puppeteer/test_credentials");
@@ -314,7 +315,7 @@ class CommonUtils {
     async send_message(page, type, params) {
         // If a message is outside the view, we do not need
         // to wait for it to be processed later.
-        const {outside_view} = params;
+        const outside_view = params.outside_view;
         delete params.outside_view;
 
         // Compose box content should be empty before sending the message.
@@ -381,9 +382,8 @@ class CommonUtils {
      */
     async get_rendered_messages(page, table = "zhome") {
         return await page.evaluate((table) => {
-            const data = [];
-            const $recipient_rows = $(`#${table}`).find(".recipient_row");
-            $.map($recipient_rows, (element) => {
+            const $recipient_rows = $(`#${CSS.escape(table)}`).find(".recipient_row");
+            return $recipient_rows.toArray().map((element) => {
                 const $el = $(element);
                 const stream_name = $el.find(".stream_label").text().trim();
                 const topic_name = $el.find(".stream_topic a").text().trim();
@@ -395,15 +395,13 @@ class CommonUtils {
                     key = `${stream_name} > ${topic_name}`;
                 }
 
-                const messages = [];
-                $.map($el.find(".message_row .message_content"), (message_row) => {
-                    messages.push(message_row.textContent.trim());
-                });
+                const messages = $el
+                    .find(".message_row .message_content")
+                    .toArray()
+                    .map((message_row) => message_row.textContent.trim());
 
-                data.push([key, messages]);
+                return [key, messages];
             });
-
-            return data;
         }, table);
     }
 
@@ -413,7 +411,7 @@ class CommonUtils {
     // The method will only check that all the messages in the
     // messages array passed exist in the order they are passed.
     async check_messages_sent(page, table, messages) {
-        await page.waitForSelector("#" + table, {visible: true});
+        await page.waitForSelector(`#${CSS.escape(table)}`, {visible: true});
         const rendered_messages = await this.get_rendered_messages(page, table);
 
         // We only check the last n messages because if we run
@@ -455,7 +453,7 @@ class CommonUtils {
 
                 const tah = $(field_selector).data().typeahead;
                 tah.mouseenter({
-                    currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
+                    currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
                 });
                 tah.select();
             },

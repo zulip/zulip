@@ -26,17 +26,19 @@ exports.show_subs_pane = {
 };
 
 exports.check_button_for_sub = function (sub) {
-    return $(".stream-row[data-stream-id='" + sub.stream_id + "'] .check");
+    return $(`.stream-row[data-stream-id='${CSS.escape(sub.stream_id)}'] .check`);
 };
 
 exports.row_for_stream_id = function (stream_id) {
-    return $(".stream-row[data-stream-id='" + stream_id + "']");
+    return $(`.stream-row[data-stream-id='${CSS.escape(stream_id)}']`);
 };
 
 exports.settings_button_for_sub = function (sub) {
     // We don't do expectOne() here, because this button is only
     // visible if the user has that stream selected in the streams UI.
-    return $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] .subscribe-button");
+    return $(
+        `.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}'] .subscribe-button`,
+    );
 };
 
 function get_row_data(row) {
@@ -213,7 +215,6 @@ exports.rerender_subscriptions_settings = function (sub) {
         blueslip.error("Undefined sub passed to function rerender_subscriptions_settings");
         return;
     }
-    stream_data.update_subscribers_count(sub);
     stream_ui_updates.update_subscribers_count(sub);
     stream_ui_updates.update_subscribers_list(sub);
 };
@@ -237,8 +238,10 @@ exports.add_sub_to_table = function (sub) {
         return;
     }
 
-    const html = render_subscription(sub);
+    const setting_sub = stream_data.get_sub_for_settings(sub);
+    const html = render_subscription(setting_sub);
     const settings_html = render_subscription_settings(sub);
+
     if (stream_create.get_name() === sub.name) {
         ui.get_content_element($(".streams-list")).prepend(html);
         ui.reset_scrollbar($(".streams-list"));
@@ -283,11 +286,12 @@ exports.remove_stream = function (stream_id) {
 exports.update_settings_for_subscribed = function (sub) {
     stream_ui_updates.update_add_subscriptions_elements(sub);
     $(
-        ".subscription_settings[data-stream-id='" + sub.stream_id + "'] #preview-stream-button",
+        `.subscription_settings[data-stream-id='${CSS.escape(
+            sub.stream_id,
+        )}'] #preview-stream-button`,
     ).show();
 
     if (exports.is_sub_already_present(sub)) {
-        stream_data.update_subscribers_count(sub);
         stream_ui_updates.update_stream_row_in_settings_tab(sub);
         stream_ui_updates.update_subscribers_count(sub, true);
         stream_ui_updates.update_check_button_for_sub(sub);
@@ -400,15 +404,15 @@ function get_stream_id_buckets(stream_ids, query) {
 }
 
 exports.populate_stream_settings_left_panel = function () {
-    const sub_rows = stream_data.get_updated_unsorted_subs();
+    const html = blueslip.measure_time("render left panel", () => {
+        const sub_rows = stream_data.get_updated_unsorted_subs();
 
-    const template_data = {
-        subscriptions: sub_rows,
-    };
+        const template_data = {
+            subscriptions: sub_rows,
+        };
 
-    const finish = blueslip.start_timing("render_subscriptions");
-    const html = render_subscriptions(template_data);
-    finish();
+        return render_subscriptions(template_data);
+    });
 
     ui.get_content_element($("#subscriptions_table .streams-list")).html(html);
 };

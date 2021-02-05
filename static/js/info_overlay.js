@@ -15,8 +15,8 @@ exports.set_up_toggler = function () {
         ],
         callback(name, key) {
             $(".overlay-modal").hide();
-            $("#" + key).show();
-            ui.get_scroll_element($("#" + key).find(".modal-body")).trigger("focus");
+            $(`#${CSS.escape(key)}`).show();
+            ui.get_scroll_element($(`#${CSS.escape(key)}`).find(".modal-body")).trigger("focus");
         },
     };
 
@@ -26,7 +26,7 @@ exports.set_up_toggler = function () {
 
     const modals = opts.values.map((item) => {
         const key = item.key; // e.g. message-formatting
-        const modal = $("#" + key).find(".modal-body");
+        const modal = $(`#${CSS.escape(key)}`).find(".modal-body");
         return modal;
     });
 

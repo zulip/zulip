@@ -61,9 +61,9 @@ exports.clear_zulip_refs = function () {
 };
 
 exports.restore = function () {
-    requires.forEach((fn) => {
+    for (const fn of requires) {
         delete require.cache[require.resolve(fn)];
-    });
+    }
     Object.assign(global, old_globals);
     old_globals = {};
     for (const name of new_globals) {

@@ -349,7 +349,7 @@ run_test("get_reaction_section", () => {
     const message_row = $.create("some-message-row");
     const message_reactions = $.create("our-reactions-section");
 
-    message_table.set_find_results("[zid='555']", message_row);
+    message_table.set_find_results(`[zid='${CSS.escape(555)}']`, message_row);
     message_row.set_find_results(".message_reactions", message_reactions);
 
     const section = reactions.get_reaction_section(555);
@@ -439,7 +439,7 @@ run_test("add_and_remove_reaction", () => {
     reaction_element.set_find_results(".message_reaction_count", count_element);
 
     message_reactions.find = function (selector) {
-        assert.equal(selector, "[data-reaction-id='unicode_emoji,1f3b1']");
+        assert.equal(selector, "[data-reaction-id='unicode_emoji\\,1f3b1']");
         return reaction_element;
     };
 
@@ -506,7 +506,7 @@ run_test("add_and_remove_reaction", () => {
     };
 
     message_reactions.find = function (selector) {
-        assert.equal(selector, "[data-reaction-id='realm_emoji,991']");
+        assert.equal(selector, "[data-reaction-id='realm_emoji\\,991']");
         return reaction_element;
     };
     reaction_element.prop = function () {};

@@ -286,7 +286,7 @@ function buddy_list_add(user_id, stub) {
         stub.attr("data-user-id", user_id);
     }
     stub.length = 1;
-    const sel = `li.user_sidebar_entry[data-user-id='${user_id}']`;
+    const sel = `li.user_sidebar_entry[data-user-id='${CSS.escape(user_id)}']`;
     $("#user_presences").set_find_results(sel, stub);
 }
 

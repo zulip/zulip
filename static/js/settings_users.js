@@ -66,7 +66,7 @@ function sort_last_active(a, b) {
 }
 
 function get_user_info_row(user_id) {
-    return $("tr.user_row[data-user-id='" + user_id + "']");
+    return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
 }
 
 function set_user_role_dropdown(person) {
@@ -254,11 +254,11 @@ section.bots.create_table = () => {
     $bots_table.hide();
     const bot_user_ids = bot_data.all_user_ids();
 
-    bot_list_widget = list_render.create($bots_table, bot_user_ids, {
+    bot_list_widget = ListWidget.create($bots_table, bot_user_ids, {
         name: "admin_bot_list",
         get_item: bot_info,
         modifier: render_admin_user_list,
-        html_selector: (item) => `tr[data-user-id='${item}']`,
+        html_selector: (item) => `tr[data-user-id='${CSS.escape(item)}']`,
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
@@ -287,7 +287,7 @@ section.bots.create_table = () => {
 
 section.active.create_table = (active_users) => {
     const $users_table = $("#admin_users_table");
-    list_render.create($users_table, active_users, {
+    ListWidget.create($users_table, active_users, {
         name: "users_table_list",
         get_item: people.get_by_user_id,
         modifier(item) {
@@ -315,7 +315,7 @@ section.active.create_table = (active_users) => {
 
 section.deactivated.create_table = (deactivated_users) => {
     const $deactivated_users_table = $("#admin_deactivated_users_table");
-    list_render.create($deactivated_users_table, deactivated_users, {
+    ListWidget.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
         get_item: people.get_by_user_id,
         modifier(item) {
@@ -403,7 +403,7 @@ function open_human_form(person) {
     set_user_role_dropdown(person);
     if (!page_params.is_owner) {
         $("#user-role-select")
-            .find("option[value=" + settings_config.user_role_values.owner.code + "]")
+            .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
             .hide();
     }
 

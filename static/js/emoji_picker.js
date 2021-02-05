@@ -194,7 +194,7 @@ function get_selected_emoji() {
 
 function get_rendered_emoji(section, index) {
     const emoji_id = get_emoji_id(section, index);
-    const emoji = $(".emoji-popover-emoji[data-emoji-id='" + emoji_id + "']");
+    const emoji = $(`.emoji-popover-emoji[data-emoji-id='${CSS.escape(emoji_id)}']`);
     if (emoji.length > 0) {
         return emoji;
     }
@@ -546,11 +546,11 @@ exports.emoji_select_tab = function (elt) {
     const scrollheight = elt.prop("scrollHeight");
     const elt_height = elt.height();
     let currently_selected = "";
-    section_head_offsets.forEach((o) => {
+    for (const o of section_head_offsets) {
         if (scrolltop + elt_height / 2 >= o.position_y) {
             currently_selected = o.section;
         }
-    });
+    }
     // Handles the corner case of the last category being
     // smaller than half of the emoji picker height.
     if (elt_height + scrolltop === scrollheight) {
@@ -562,7 +562,9 @@ exports.emoji_select_tab = function (elt) {
     }
     if (currently_selected) {
         $(".emoji-popover-tab-item.active").removeClass("active");
-        $('.emoji-popover-tab-item[data-tab-name="' + currently_selected + '"]').addClass("active");
+        $(`.emoji-popover-tab-item[data-tab-name="${CSS.escape(currently_selected)}"]`).addClass(
+            "active",
+        );
     }
 };
 
@@ -674,7 +676,7 @@ exports.register_click_handlers = function () {
         // The following check will return false if emoji was not selected in
         // message edit form.
         if (edit_message_id !== null) {
-            const edit_message_textarea = $("#message_edit_content_" + edit_message_id);
+            const edit_message_textarea = $(`#message_edit_content_${CSS.escape(edit_message_id)}`);
             // Assign null to edit_message_id so that the selection of emoji in new
             // message composition form works correctly.
             edit_message_id = null;

@@ -300,9 +300,9 @@ exports.make_new_elem = function (selector, opts) {
         },
         removeClass(class_names) {
             class_names = class_names.split(" ");
-            class_names.forEach((class_name) => {
+            for (const class_name of class_names) {
                 classes.delete(class_name);
-            });
+            }
             return self;
         },
         remove() {
@@ -534,9 +534,6 @@ exports.make_zjquery = function (opts) {
 
     zjquery.clear_all_elements = function () {
         elems.clear();
-    };
-    zjquery.escapeSelector = function (s) {
-        return s;
     };
 
     return zjquery;

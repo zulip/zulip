@@ -7,12 +7,12 @@ exports.create_ajax_request = function (
     numeric_inputs = [],
     redirect_to = "/billing",
 ) {
-    const form = $("#" + form_name + "-form");
-    const form_loading_indicator = "#" + form_name + "_loading_indicator";
-    const form_input_section = "#" + form_name + "-input-section";
-    const form_success = "#" + form_name + "-success";
-    const form_error = "#" + form_name + "-error";
-    const form_loading = "#" + form_name + "-loading";
+    const form = $(`#${CSS.escape(form_name)}-form`);
+    const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
+    const form_input_section = `#${CSS.escape(form_name)}-input-section`;
+    const form_success = `#${CSS.escape(form_name)}-success`;
+    const form_error = `#${CSS.escape(form_name)}-error`;
+    const form_loading = `#${CSS.escape(form_name)}-loading`;
 
     const zulip_limited_section = "#zulip-limited-section";
     const free_trial_alert_message = "#free-trial-alert-message";
@@ -32,13 +32,13 @@ exports.create_ajax_request = function (
         data.stripe_token = JSON.stringify(stripe_token.id);
     }
 
-    form.serializeArray().forEach((item) => {
+    for (const item of form.serializeArray()) {
         if (numeric_inputs.includes(item.name)) {
             data[item.name] = item.value;
         } else {
             data[item.name] = JSON.stringify(item.value);
         }
-    });
+    }
 
     $.post({
         url,
@@ -103,27 +103,27 @@ exports.show_license_section = function (license) {
     $("#automatic_license_count").prop("disabled", true);
     $("#manual_license_count").prop("disabled", true);
 
-    const section_id = "#license-" + license + "-section";
+    const section_id = `#license-${CSS.escape(license)}-section`;
     $(section_id).show();
-    const input_id = "#" + license + "_license_count";
+    const input_id = `#${CSS.escape(license)}_license_count`;
     $(input_id).prop("disabled", false);
 };
 
 let current_page;
 
 function handle_hashchange() {
-    $("#" + current_page + '-tabs.nav a[href="' + location.hash + '"]').tab("show");
+    $(`#${CSS.escape(current_page)}-tabs.nav a[href="${CSS.escape(location.hash)}"]`).tab("show");
     $("html").scrollTop(0);
 }
 
 exports.set_tab = function (page) {
     const hash = location.hash;
     if (hash) {
-        $("#" + page + '-tabs.nav a[href="' + hash + '"]').tab("show");
+        $(`#${CSS.escape(page)}-tabs.nav a[href="${CSS.escape(hash)}"]`).tab("show");
         $("html").scrollTop(0);
     }
 
-    $("#" + page + "-tabs.nav-tabs a").on("click", function () {
+    $(`#${CSS.escape(page)}-tabs.nav-tabs a`).on("click", function () {
         location.hash = this.hash;
     });
 

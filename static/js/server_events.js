@@ -102,7 +102,9 @@ function get_events_success(events) {
         try {
             messages = echo.process_from_server(messages);
             if (messages.length > 0) {
-                messages.forEach(message_store.set_message_booleans);
+                for (const message of messages) {
+                    message_store.set_message_booleans(message);
+                }
 
                 const sent_by_this_client = messages.some((msg) =>
                     sent_messages.messages.has(msg.local_id),

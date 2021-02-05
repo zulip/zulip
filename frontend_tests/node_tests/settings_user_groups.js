@@ -90,12 +90,12 @@ run_test("can_edit", () => {
     assert(settings_user_groups.can_edit(1));
 });
 
-const user_group_selector = "#user-groups #1";
-const cancel_selector = "#user-groups #1 .save-status.btn-danger";
-const saved_selector = "#user-groups #1 .save-status.sea-green";
-const name_selector = "#user-groups #1 .name";
-const description_selector = "#user-groups #1 .description";
-const instructions_selector = "#user-groups #1 .save-instructions";
+const user_group_selector = `#user-groups #${CSS.escape(1)}`;
+const cancel_selector = `#user-groups #${CSS.escape(1)} .save-status.btn-danger`;
+const saved_selector = `#user-groups #${CSS.escape(1)} .save-status.sea-green`;
+const name_selector = `#user-groups #${CSS.escape(1)} .name`;
+const description_selector = `#user-groups #${CSS.escape(1)} .description`;
+const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
 run_test("populate_user_groups", () => {
     const realm_user_group = {
@@ -169,7 +169,7 @@ run_test("populate_user_groups", () => {
 
     const all_pills = new Map();
 
-    const pill_container_stub = $('.pill-container[data-group-pills="1"]');
+    const pill_container_stub = $(`.pill-container[data-group-pills="${CSS.escape(1)}"]`);
     pills.appendValidatedData = function (item) {
         const id = item.user_id;
         assert(!all_pills.has(id));
@@ -397,7 +397,7 @@ run_test("with_external_user", () => {
     set_global("$", make_zjquery());
 
     let user_group_find_called = 0;
-    const user_group_stub = $('div.user-group[id="1"]');
+    const user_group_stub = $(`div.user-group[id="${CSS.escape(1)}"]`);
     const name_field_stub = $.create("fake-name-field");
     const description_field_stub = $.create("fake-description-field");
     const input_stub = $.create("fake-input");
@@ -413,7 +413,7 @@ run_test("with_external_user", () => {
         throw new Error(`Unknown element ${elem}`);
     };
 
-    const pill_container_stub = $('.pill-container[data-group-pills="1"]');
+    const pill_container_stub = $(`.pill-container[data-group-pills="${CSS.escape(1)}"]`);
     const pill_stub = $.create("fake-pill");
     let pill_container_find_called = 0;
     pill_container_stub.find = function (elem) {

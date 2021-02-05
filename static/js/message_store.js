@@ -43,37 +43,39 @@ exports.get = function get(message_id) {
 };
 
 exports.each = function (f) {
-    stored_messages.forEach(f);
+    for (const [id, message] of stored_messages) {
+        f(message, id);
+    }
 };
 
 exports.get_pm_emails = function (message) {
-    function email(user_id) {
-        const person = people.get_by_user_id(user_id);
-        if (!person) {
-            blueslip.error("Unknown user id " + user_id);
-            return "?";
-        }
-        return person.email;
-    }
-
     const user_ids = people.pm_with_user_ids(message);
-    const emails = user_ids.map(email).sort();
+    const emails = user_ids
+        .map((user_id) => {
+            const person = people.get_by_user_id(user_id);
+            if (!person) {
+                blueslip.error("Unknown user id " + user_id);
+                return "?";
+            }
+            return person.email;
+        })
+        .sort();
 
     return emails.join(", ");
 };
 
 exports.get_pm_full_names = function (message) {
-    function name(user_id) {
-        const person = people.get_by_user_id(user_id);
-        if (!person) {
-            blueslip.error("Unknown user id " + user_id);
-            return "?";
-        }
-        return person.full_name;
-    }
-
     const user_ids = people.pm_with_user_ids(message);
-    const names = user_ids.map(name).sort();
+    const names = user_ids
+        .map((user_id) => {
+            const person = people.get_by_user_id(user_id);
+            if (!person) {
+                blueslip.error("Unknown user id " + user_id);
+                return "?";
+            }
+            return person.full_name;
+        })
+        .sort();
 
     return names.join(", ");
 };

@@ -3,7 +3,8 @@
 const peer_data = require("./peer_data");
 
 function display_pill(sub) {
-    return "#" + sub.name + ": " + sub.subscriber_count + " users";
+    const sub_count = peer_data.get_subscriber_count(sub.stream_id);
+    return "#" + sub.name + ": " + sub_count + " users";
 }
 
 exports.create_item_from_stream_name = function (stream_name, current_items) {

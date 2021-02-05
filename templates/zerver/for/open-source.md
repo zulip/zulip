@@ -92,12 +92,13 @@ particularly useful to open source communities.
 
 ### Free hosting at zulip.com.
 
-The hosting is supported by (and is identical to) zulip.com’s
-commercial offerings. This offer extends to any community involved in
-supporting free and open source software: development projects,
-foundations, meetups, hackathons, conference committees, and more. If
-you’re not sure whether your organization qualifies, send us an email
-at support@zulip.com.
+Zulip sponsors free hosting for hundreds of open source projects,
+supported by (and is identical to) zulip.com’s commercial
+offerings. This offer extends to any community involved in supporting
+free and open source software: development projects, foundations,
+meetups, hackathons, conference committees, and more. If you’re not
+sure whether your organization qualifies, send us an email at
+support@zulip.com.
 
 ### Moderation suite.
 

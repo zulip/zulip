@@ -2,8 +2,8 @@
 set -e
 
 usage() {
-    cat >&2 <<EOF
-usage: $0 PULL_REQUEST_ID [REMOTE]
+    cat <<EOF
+usage: $0 [--merge] PULL_REQUEST_ID [REMOTE]
 
 Force-push our HEAD to the given GitHub pull request branch.
 
@@ -12,6 +12,8 @@ after tweaking the branch and/or rebasing to latest.  This causes
 GitHub to see the subsequent push to master as representing a
 merge of the PR, rather than requiring the PR to be manually
 (and to the casual observer misleadingly) closed instead.
+
+With --merge, also go ahead and merge the PR.
 
 REMOTE defaults to the value of the Git config variable
 \`zulip.zulipRemote\` if set, else to \`upstream\`.
@@ -22,8 +24,29 @@ branch is updated to reflect the pushed version.
 
 See also \`reset-to-pull-request\`.
 EOF
-    exit 1
 }
+
+args="$(getopt -o '' --long help,merge -n "$0" -- "$@")"
+eval "set -- $args"
+
+merge=
+
+while true; do
+    case "$1" in
+        --help)
+            usage
+            exit 0
+            ;;
+        --merge)
+            merge=t
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
 
 remote_default="$(git config zulip.zulipRemote || echo upstream)"
 pseudo_remote="$(git config zulip.prPseudoRemote || echo)"
@@ -32,7 +55,8 @@ pr_id="$1"
 remote="${2:-"$remote_default"}"
 
 if [ -z "$pr_id" ]; then
-    usage
+    usage >&2
+    exit 1
 fi
 
 if ! jq --version >/dev/null 2>&1; then
@@ -91,6 +115,15 @@ if [ "$(pr_jq .maintainer_can_modify)" != "true" ]; then
     exit 1
 fi
 
+if [ "$merge" ]; then
+    pr_base_ref="$(pr_jq -r .base.ref)"
+    git fetch -- "$remote"
+    if ! git merge-base --is-ancestor -- "$remote/$pr_base_ref" @; then
+        echo "error: You need to rebase on $remote/$pr_base_ref first" >&2
+        exit 1
+    fi
+fi
+
 pr_head_repo_fq="$(pr_jq -r .head.repo.full_name)"
 pr_head_refname="$(pr_jq -r .head.ref)"
 
@@ -106,4 +139,20 @@ git push git@github.com:"$pr_head_repo_fq" +@:"$pr_head_refname"
 if [ -n "$tracking_ref" ]; then
     set -x
     git update-ref "$tracking_ref" @
+fi
+
+if [ "$merge" ]; then
+    tries=10
+    sha="$(git rev-parse @)"
+    while
+        out=$(git ls-remote -- "$remote" "refs/pull/$pr_id/head")
+        [ "$out" != "$sha	refs/pull/$pr_id/head" ]
+    do
+        if ! ((--tries)); then
+            echo 'error: Push was not observed in PR' >&2
+            exit 1
+        fi
+        sleep 1
+    done
+    git push -- "$remote" "@:$pr_base_ref"
 fi

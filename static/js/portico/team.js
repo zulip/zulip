@@ -20,9 +20,9 @@ const loaded_repos = [];
 
 function calculate_total_commits(contributor) {
     let commits = 0;
-    Object.keys(repo_name_to_tab_name).forEach((repo_name) => {
+    for (const repo_name of Object.keys(repo_name_to_tab_name)) {
         commits += contributor[repo_name] || 0;
-    });
+    }
     return commits;
 }
 
@@ -60,7 +60,7 @@ function get_display_name(contributor) {
 //   - Display full name instead of GitHub username.
 export default function render_tabs() {
     const template = _.template($("#contributors-template").html());
-    const total_tab_html = _.chain(contributors_list)
+    const total_tab_html = contributors_list
         .map((c) => ({
             name: get_display_name(c),
             github_username: c.github_username,
@@ -68,10 +68,8 @@ export default function render_tabs() {
             profile_url: get_profile_url(c),
             commits: calculate_total_commits(c),
         }))
-        .sortBy("commits")
-        .reverse()
+        .sort((a, b) => (a.commits < b.commits ? 1 : a.commits > b.commits ? -1 : 0))
         .map((c) => template(c))
-        .value()
         .join("");
 
     $("#tab-total").html(total_tab_html);
@@ -82,14 +80,15 @@ export default function render_tabs() {
             continue;
         }
         // Set as the loading template for now, and load when clicked.
-        $("#tab-" + tab_name).html($("#loading-template").html());
+        $(`#tab-${CSS.escape(tab_name)}`).html($("#loading-template").html());
 
-        $("#" + tab_name).on("click", () => {
+        $(`#${CSS.escape(tab_name)}`).on("click", () => {
             if (!loaded_repos.includes(repo_name)) {
-                const html = _.chain(contributors_list)
-                    .filter(repo_name)
-                    .sortBy(repo_name)
-                    .reverse()
+                const html = contributors_list
+                    .filter((c) => c[repo_name])
+                    .sort((a, b) =>
+                        a[repo_name] < b[repo_name] ? 1 : a[repo_name] > b[repo_name] ? -1 : 0,
+                    )
                     .map((c) =>
                         template({
                             name: get_display_name(c),
@@ -99,10 +98,9 @@ export default function render_tabs() {
                             commits: c[repo_name],
                         }),
                     )
-                    .value()
                     .join("");
 
-                $("#tab-" + tab_name).html(html);
+                $(`#tab-${CSS.escape(tab_name)}`).html(html);
 
                 loaded_repos.push(repo_name);
             }

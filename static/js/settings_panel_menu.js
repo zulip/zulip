@@ -47,7 +47,7 @@ class SettingsPanelMenu {
     }
 
     li_for_section(section) {
-        const li = $("#settings_overlay_container li[data-section='" + section + "']");
+        const li = $(`#settings_overlay_container li[data-section='${CSS.escape(section)}']`);
         return li;
     }
 
@@ -76,8 +76,7 @@ class SettingsPanelMenu {
 
     enter_panel() {
         const panel = this.get_panel();
-        const sel = "input:visible,button:visible,select:visible";
-        const panel_elem = panel.find(sel).first();
+        const panel_elem = panel.find("input:visible,button:visible,select:visible").first();
 
         panel_elem.trigger("focus");
         return true;
@@ -124,7 +123,7 @@ class SettingsPanelMenu {
 
     get_panel() {
         const section = this.curr_li.data("section");
-        const sel = "[data-name='" + section + "']";
+        const sel = `[data-name='${CSS.escape(section)}']`;
         const panel = $(".settings-section" + sel);
         return panel;
     }

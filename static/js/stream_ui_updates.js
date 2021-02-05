@@ -82,7 +82,7 @@ exports.update_regular_sub_settings = function (sub) {
     if (!stream_edit.is_sub_settings_active(sub)) {
         return;
     }
-    const $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
+    const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
     if (sub.subscribed) {
         if ($settings.find(".email-address").val().length === 0) {
             // Rerender stream email address, if not.
@@ -113,7 +113,7 @@ exports.update_notification_setting_checkbox = function (notification_name) {
         return;
     }
     const stream_id = stream_row.data("stream-id");
-    $(`#${notification_name}_${stream_id}`).prop(
+    $(`#${CSS.escape(notification_name)}_${CSS.escape(stream_id)}`).prop(
         "checked",
         stream_data.receives_notifications(stream_id, notification_name),
     );
@@ -174,16 +174,22 @@ exports.update_subscribers_count = function (sub, just_subscribed) {
         // If the streams overlay isn't open, we don't need to rerender anything.
         return;
     }
+
     const stream_row = subs.row_for_stream_id(sub.stream_id);
+    const sub_count = peer_data.get_subscriber_count(sub.stream_id);
+
     if (
         !sub.can_access_subscribers ||
         (just_subscribed && sub.invite_only) ||
         page_params.is_guest
     ) {
-        const rendered_sub_count = render_subscription_count(sub);
+        const rendered_sub_count = render_subscription_count({
+            can_access_subscribers: sub.can_access_subscribers,
+            subscriber_count: sub_count,
+        });
         stream_row.find(".subscriber-count").expectOne().html(rendered_sub_count);
     } else {
-        stream_row.find(".subscriber-count-text").expectOne().text(sub.subscriber_count);
+        stream_row.find(".subscriber-count-text").expectOne().text(sub_count);
     }
 };
 
@@ -201,12 +207,12 @@ exports.update_subscribers_list = function (sub) {
 
         /*
             We try to find a subscribers list that is already in the
-            cache that list_render.js maintains.  The list we are
+            cache that list_widget.js maintains.  The list we are
             looking for would have been created in the function
             stream_edit.show_subscription_settings, using the same
             naming scheme as below for the `name` parameter.
         */
-        const subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
+        const subscribers_list = ListWidget.get("stream_subscribers/" + sub.stream_id);
 
         // Changing the data clears the rendered list and the list needs to be re-rendered.
         // Perform re-rendering only when the stream settings form of the corresponding

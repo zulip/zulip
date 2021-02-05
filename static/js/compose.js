@@ -187,12 +187,11 @@ exports.abort_xhr = function () {
 exports.zoom_token_callbacks = new Map();
 exports.video_call_xhrs = new Map();
 
-exports.abort_video_callbacks = function (edit_message_id) {
-    const key = edit_message_id || "";
-    exports.zoom_token_callbacks.delete(key);
-    if (exports.video_call_xhrs.has(key)) {
-        exports.video_call_xhrs.get(key).abort();
-        exports.video_call_xhrs.delete(key);
+exports.abort_video_callbacks = function (edit_message_id = "") {
+    exports.zoom_token_callbacks.delete(edit_message_id);
+    if (exports.video_call_xhrs.has(edit_message_id)) {
+        exports.video_call_xhrs.get(edit_message_id).abort();
+        exports.video_call_xhrs.delete(edit_message_id);
     }
 };
 
@@ -981,11 +980,15 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
         return;
     }
 
-    if (peer_data.is_subscriber_subset(compose_stream.stream_id, linked_stream.stream_id)) {
-        // Don't warn if subscribers list of current compose_stream is
-        // a subset of linked_stream's subscribers list, because
-        // everyone will be subscribed to the linked stream and so
-        // knows it exists.
+    // Don't warn if subscribers list of current compose_stream is
+    // a subset of linked_stream's subscribers list, because
+    // everyone will be subscribed to the linked stream and so
+    // knows it exists.  (But always warn Zephyr users, since
+    // we may not know their stream's subscribers.)
+    if (
+        peer_data.is_subscriber_subset(compose_stream.stream_id, linked_stream.stream_id) &&
+        !page_params.realm_is_zephyr_mirror_realm
+    ) {
         return;
     }
 
@@ -1188,7 +1191,7 @@ exports.initialize = function () {
         // compose box.
         const edit_message_id = $(e.target).attr("data-message-id");
         if (edit_message_id !== undefined) {
-            target_textarea = $("#message_edit_content_" + edit_message_id);
+            target_textarea = $(`#message_edit_content_${CSS.escape(edit_message_id)}`);
         }
 
         let video_call_link;

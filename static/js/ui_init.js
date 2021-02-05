@@ -231,7 +231,10 @@ exports.initialize_kitchen_sink_stuff = function () {
                     selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
                         messages.map((message) => message.id),
-                        _.chain(current_msg_list.all_messages()).pluck("id").clone().value().sort(),
+                        current_msg_list
+                            .all_messages()
+                            .map((message) => message.id)
+                            .sort(),
                     ),
                     found_in_dom: row_from_dom.length,
                 });
@@ -479,7 +482,7 @@ exports.initialize_everything = function () {
 };
 
 $(() => {
-    const finish = blueslip.start_timing("initialize_everything");
-    exports.initialize_everything();
-    finish();
+    blueslip.measure_time("initialize_everything", () => {
+        exports.initialize_everything();
+    });
 });

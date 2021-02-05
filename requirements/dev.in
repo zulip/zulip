@@ -6,7 +6,7 @@
 -r docs.in
 
 # moto s3 mock
-moto
+moto>=1.3.17.dev221  # https://github.com/spulec/moto/issues/3460
 
 # Needed for running tools/run-dev.py
 Twisted
@@ -62,7 +62,6 @@ https://github.com/zulip/zulint/archive/e8c7e42440e8b1a2e58316e16437e815cacfd495
 # generate different locked files if executed with Python ≥ 3.7, so
 # despite being dependent packages, they have to be added separately.
 importlib-metadata;python_version<"3.8"  # for jsonpickle, jsonschema
-importlib-resources;python_version<"3.7"  # for cfn-lint
 
 # Needed for using integration logo svg files as bot avatars
 cairosvg

@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
-from django.contrib.auth.views import INTERNAL_RESET_URL_TOKEN
+from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
@@ -344,7 +344,7 @@ class PasswordResetTest(ZulipTestCase):
             email, url_pattern=settings.EXTERNAL_HOST + r"(\S\S+)")
         result = self.client_get(password_reset_url)
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.endswith(f'/{INTERNAL_RESET_URL_TOKEN}/'))
+        self.assertTrue(result.url.endswith(f'/{PasswordResetConfirmView.reset_url_token}/'))
 
         final_reset_url = result.url
         result = self.client_get(final_reset_url)
@@ -426,9 +426,9 @@ class PasswordResetTest(ZulipTestCase):
         do_deactivate_realm(user_profile.realm)
 
         # start the password reset process by supplying an email address
-        with patch('logging.info') as mock_logging:
+        with self.assertLogs(level="INFO") as m:
             result = self.client_post('/accounts/password/reset/', {'email': email})
-            mock_logging.assert_called_once()
+            self.assertEqual(m.output, ["INFO:root:Realm is deactivated"])
 
         # check the redirect link telling you to check mail for password reset link
         self.assertEqual(result.status_code, 302)
@@ -523,9 +523,9 @@ class PasswordResetTest(ZulipTestCase):
     def test_ldap_auth_only(self) -> None:
         """If the email auth backend is not enabled, password reset should do nothing"""
         email = self.example_email("hamlet")
-        with patch('logging.info') as mock_logging:
+        with self.assertLogs(level="INFO") as m:
             result = self.client_post('/accounts/password/reset/', {'email': email})
-            mock_logging.assert_called_once()
+            self.assertEqual(m.output, ["INFO:root:Password reset attempted for hamlet@zulip.com even though password auth is disabled."])
 
         # check the redirect link telling you to check mail for password reset link
         self.assertEqual(result.status_code, 302)
@@ -547,21 +547,20 @@ class PasswordResetTest(ZulipTestCase):
         # If the domain matches, we don't generate an email
         with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
             email = self.example_email("hamlet")
-            with patch('logging.info') as mock_logging:
+            with self.assertLogs(level="INFO") as m:
                 result = self.client_post('/accounts/password/reset/', {'email': email})
-                mock_logging.assert_called_once_with("Password reset not allowed for user in LDAP domain")
+                self.assertEqual(m.output, ["INFO:root:Password reset not allowed for user in LDAP domain"])
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 0)
 
         # If the domain doesn't match, we do generate an email
         with self.settings(LDAP_APPEND_DOMAIN="example.com"):
             email = self.example_email("hamlet")
-            with patch('logging.info') as mock_logging:
-                result = self.client_post('/accounts/password/reset/', {'email': email})
-                self.assertEqual(result.status_code, 302)
-                self.assertTrue(result["Location"].endswith(
-                    "/accounts/password/reset/done/"))
-                result = self.client_get(result["Location"])
+            result = self.client_post('/accounts/password/reset/', {'email': email})
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result["Location"].endswith(
+                "/accounts/password/reset/done/"))
+            result = self.client_get(result["Location"])
 
         body = self.get_reset_mail_body()
         self.assertIn('reset your password', body)
@@ -650,9 +649,9 @@ class LoginTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_login_wrong_subdomain(self) -> None:
-        with patch("logging.warning") as mock_warning:
+        with self.assertLogs(level="WARNING") as m:
             result = self.login_with_return(self.mit_email("sipbtest"), "xxx")
-            mock_warning.assert_called_once()
+            self.assertEqual(m.output, ["WARNING:root:User sipbtest@mit.edu attempted password login to wrong subdomain zulip"])
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Your Zulip account is not a member of the "
                                 "organization associated with this subdomain.", result)
@@ -681,7 +680,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 72)
+        self.assertEqual(len(queries), 70)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
@@ -961,7 +960,7 @@ class InviteUserTest(InviteUserBase):
         #       the large number of queries), so I just
         #       use an approximate equality check.
         actual_count = len(queries)
-        expected_count = 281
+        expected_count = 251
         if abs(actual_count - expected_count) > 1:
             raise AssertionError(f'''
                 Unexpected number of queries:
@@ -1250,7 +1249,7 @@ earl-test@zulip.com""", ["Denmark"]))
         self.invite(invitee_emails, ["Denmark"])
         invitee_emails = ", ".join(str(i) for i in range(get_realm("zulip").max_invites - 1))
         self.assert_json_error(self.invite(invitee_emails, ["Denmark"]),
-                               "You do not have enough remaining invites. "
+                               "You do not have enough remaining invites for today. "
                                "Please contact desdemona+admin@zulip.com to have your limit raised. "
                                "No invitations were sent.")
 
@@ -2687,17 +2686,12 @@ class UserSignUpTest(InviteUserBase):
             side_effect=smtplib.SMTPException('uh oh'),
         )
 
-        error_mock = patch('logging.error')
-
-        with smtp_mock, error_mock as err:
+        with smtp_mock, self.assertLogs(level="ERROR") as m:
             result = self.client_post('/accounts/home/', {'email': email})
 
         self._assert_redirected_to(result, '/config-error/smtp')
 
-        self.assertEqual(
-            err.call_args_list[0][0],
-            ('Error in accounts_home: %s', 'uh oh'),
-        )
+        self.assertEqual(m.output, ['ERROR:root:Error in accounts_home: uh oh'])
 
     def test_bad_email_configuration_for_create_realm(self) -> None:
         """
@@ -2710,17 +2704,11 @@ class UserSignUpTest(InviteUserBase):
             side_effect=smtplib.SMTPException('uh oh'),
         )
 
-        error_mock = patch('logging.error')
-
-        with smtp_mock, error_mock as err:
+        with smtp_mock, self.assertLogs(level="ERROR") as m:
             result = self.client_post('/new/', {'email': email})
 
         self._assert_redirected_to(result, '/config-error/smtp')
-
-        self.assertEqual(
-            err.call_args_list[0][0],
-            ('Error in create_realm: %s', 'uh oh'),
-        )
+        self.assertEqual(m.output, ['ERROR:root:Error in create_realm: uh oh'])
 
     def test_user_default_language_and_timezone(self) -> None:
         """
@@ -3226,14 +3214,14 @@ class UserSignUpTest(InviteUserBase):
             return_data['invalid_subdomain'] = True
 
         with patch('zerver.views.registration.authenticate', side_effect=invalid_subdomain):
-            with patch('logging.error') as mock_error:
+            with self.assertLogs(level="ERROR") as m:
                 result = self.client_post(
                     '/accounts/register/',
                     {'password': password,
                      'full_name': 'New User',
                      'key': find_key_by_email(email),
                      'terms': True})
-        mock_error.assert_called_once()
+                self.assertEqual(m.output, ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"])
         self.assertEqual(result.status_code, 302)
 
     def test_replace_subdomain_in_confirmation_link(self) -> None:
@@ -3723,18 +3711,15 @@ class UserSignUpTest(InviteUserBase):
                 LDAP_APPEND_DOMAIN='example.com',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            with patch('zerver.views.registration.logging.warning') as mock_warning:
+            with self.assertLogs(level="WARNING") as m:
                 result = self.submit_reg_form_for_user(
                     email,
                     password,
                     from_confirmation="1",
                     # Pass HTTP_HOST for the target subdomain
                     HTTP_HOST=subdomain + ".testserver")
-                self.assertEqual(result.status_code, 200)
-                mock_warning.assert_called_once_with(
-                    "New account email %s could not be found in LDAP",
-                    "newuser@zulip.com",
-                )
+            self.assertEqual(result.status_code, 200)
+            self.assertEqual(m.output, ['WARNING:root:New account email newuser@zulip.com could not be found in LDAP'])
             with self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
                 result = self.submit_reg_form_for_user(email,
                                                        password,
@@ -3815,7 +3800,7 @@ class UserSignUpTest(InviteUserBase):
                 LDAP_EMAIL_ATTR='mail',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            with patch('zerver.views.registration.logging.warning') as mock_warning:
+            with self.assertLogs(level="WARNING") as m:
                 result = self.submit_reg_form_for_user(
                     email,
                     password,
@@ -3823,10 +3808,7 @@ class UserSignUpTest(InviteUserBase):
                     # Pass HTTP_HOST for the target subdomain
                     HTTP_HOST=subdomain + ".testserver")
                 self.assertEqual(result.status_code, 200)
-                mock_warning.assert_called_once_with(
-                    "New account email %s could not be found in LDAP",
-                    "nonexistent@zulip.com",
-                )
+                self.assertEqual(m.output, ['WARNING:root:New account email nonexistent@zulip.com could not be found in LDAP'])
 
             with self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
                 result = self.submit_reg_form_for_user(email,

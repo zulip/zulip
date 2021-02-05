@@ -1281,6 +1281,10 @@ run_test("begins_typeahead", () => {
     assert_typeahead_equals("abc/po", false);
     assert_typeahead_equals("hello /poll", false);
     assert_typeahead_equals("\n/pol", false);
+    assert_typeahead_equals("/todo", composebox_typeahead.slash_commands);
+    assert_typeahead_equals("my /todo", false);
+    assert_typeahead_equals("\n/to", false);
+    assert_typeahead_equals(" /tod", false);
 
     assert_typeahead_equals("x/", false);
     assert_typeahead_equals("```", false);
@@ -1338,13 +1342,13 @@ run_test("begins_typeahead", () => {
     assert_typeahead_equals("```test", "ing", false);
     assert_typeahead_equals("~~~test", "ing", false);
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
-    terminal_symbols.split().forEach((symbol) => {
+    for (const symbol of terminal_symbols.split()) {
         assert_stream_list("#test", symbol);
         assert_typeahead_equals("@test", symbol, all_mentions);
         assert_typeahead_equals(":test", symbol, emoji_list);
         assert_typeahead_equals("```test", symbol, lang_list);
         assert_typeahead_equals("~~~test", symbol, lang_list);
-    });
+    }
 });
 
 run_test("tokenizing", () => {

@@ -57,18 +57,18 @@ exports.populate_user_groups = function () {
                 },
             }),
         );
-        const pill_container = $('.pill-container[data-group-pills="' + data.id + '"]');
+        const pill_container = $(`.pill-container[data-group-pills="${CSS.escape(data.id)}"]`);
         const pills = user_pill.create_pills(pill_container);
 
         function get_pill_user_ids() {
             return user_pill.get_user_ids(pills);
         }
 
-        const userg = $('div.user-group[id="' + data.id + '"]');
-        data.members.forEach((user_id) => {
+        const userg = $(`div.user-group[id="${CSS.escape(data.id)}"]`);
+        for (const user_id of data.members) {
             const user = people.get_by_user_id(user_id);
             user_pill.append_user(user, pills);
-        });
+        }
 
         function update_membership(group_id) {
             if (exports.can_edit(group_id)) {
@@ -97,13 +97,13 @@ exports.populate_user_groups = function () {
             const group_data = user_groups.get_user_group_from_id(data.id);
             const original_group = Array.from(group_data.members);
             const same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
-            const description = $("#user-groups #" + data.id + " .description")
+            const description = $(`#user-groups #${CSS.escape(data.id)} .description`)
                 .text()
                 .trim();
-            const name = $("#user-groups #" + data.id + " .name")
+            const name = $(`#user-groups #${CSS.escape(data.id)} .name`)
                 .text()
                 .trim();
-            const user_group_status = $("#user-groups #" + data.id + " .user-group-status");
+            const user_group_status = $(`#user-groups #${CSS.escape(data.id)} .user-group-status`);
 
             if (user_group_status.is(":visible")) {
                 return false;
@@ -123,9 +123,9 @@ exports.populate_user_groups = function () {
             if (!exports.can_edit(data.id)) {
                 return;
             }
-            const cancel_button = $("#user-groups #" + data.id + " .save-status.btn-danger");
-            const saved_button = $("#user-groups #" + data.id + " .save-status.sea-green");
-            const save_instructions = $("#user-groups #" + data.id + " .save-instructions");
+            const cancel_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.btn-danger`);
+            const saved_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.sea-green`);
+            const save_instructions = $(`#user-groups #${CSS.escape(data.id)} .save-instructions`);
 
             if (is_user_group_changed() && !cancel_button.is(":visible")) {
                 saved_button.fadeOut(0);
@@ -138,9 +138,9 @@ exports.populate_user_groups = function () {
         }
 
         function show_saved_button() {
-            const cancel_button = $("#user-groups #" + data.id + " .save-status.btn-danger");
-            const saved_button = $("#user-groups #" + data.id + " .save-status.sea-green");
-            const save_instructions = $("#user-groups #" + data.id + " .save-instructions");
+            const cancel_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.btn-danger`);
+            const saved_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.sea-green`);
+            const save_instructions = $(`#user-groups #${CSS.escape(data.id)} .save-instructions`);
             if (!saved_button.is(":visible")) {
                 cancel_button.fadeOut(0);
                 save_instructions.fadeOut(0);
@@ -175,12 +175,12 @@ exports.populate_user_groups = function () {
         }
 
         function save_name_desc() {
-            const user_group_status = $("#user-groups #" + data.id + " .user-group-status");
+            const user_group_status = $(`#user-groups #${CSS.escape(data.id)} .user-group-status`);
             const group_data = user_groups.get_user_group_from_id(data.id);
-            const description = $("#user-groups #" + data.id + " .description")
+            const description = $(`#user-groups #${CSS.escape(data.id)} .description`)
                 .text()
                 .trim();
-            const name = $("#user-groups #" + data.id + " .name")
+            const name = $(`#user-groups #${CSS.escape(data.id)} .name`)
                 .text()
                 .trim();
 
@@ -203,8 +203,10 @@ exports.populate_user_groups = function () {
                     xhr.responseText = JSON.stringify({msg: errors});
                     ui_report.error(i18n.t("Failed"), xhr, user_group_status);
                     update_cancel_button();
-                    $("#user-groups #" + data.id + " .name").text(group_data.name);
-                    $("#user-groups #" + data.id + " .description").text(group_data.description);
+                    $(`#user-groups #${CSS.escape(data.id)} .name`).text(group_data.name);
+                    $(`#user-groups #${CSS.escape(data.id)} .description`).text(
+                        group_data.description,
+                    );
                 },
             });
         }
@@ -219,7 +221,7 @@ exports.populate_user_groups = function () {
                 [".pill-container", ".name", ".description", ".input", ".delete"],
                 except_class,
             );
-            if ($(event.relatedTarget).closest("#user-groups #" + data.id).length) {
+            if ($(event.relatedTarget).closest(`#user-groups #${CSS.escape(data.id)}`).length) {
                 return blur_exceptions.some(
                     (class_name) => $(event.relatedTarget).closest(class_name).length,
                 );
@@ -236,7 +238,7 @@ exports.populate_user_groups = function () {
                 return;
             }
             if (
-                $(event.relatedTarget).closest("#user-groups #" + data.id) &&
+                $(event.relatedTarget).closest(`#user-groups #${CSS.escape(data.id)}`) &&
                 $(event.relatedTarget).closest(".save-status.btn-danger").length
             ) {
                 exports.reload();
@@ -246,21 +248,21 @@ exports.populate_user_groups = function () {
             save_members();
         }
 
-        $("#user-groups #" + data.id).on("blur", ".input", (event) => {
+        $(`#user-groups #${CSS.escape(data.id)}`).on("blur", ".input", (event) => {
             auto_save(".input", event);
         });
 
-        $("#user-groups #" + data.id).on("blur", ".name", (event) => {
+        $(`#user-groups #${CSS.escape(data.id)}`).on("blur", ".name", (event) => {
             auto_save(".name", event);
         });
-        $("#user-groups #" + data.id).on("input", ".name", () => {
+        $(`#user-groups #${CSS.escape(data.id)}`).on("input", ".name", () => {
             update_cancel_button();
         });
 
-        $("#user-groups #" + data.id).on("blur", ".description", (event) => {
+        $(`#user-groups #${CSS.escape(data.id)}`).on("blur", ".description", (event) => {
             auto_save(".description", event);
         });
-        $("#user-groups #" + data.id).on("input", ".description", () => {
+        $(`#user-groups #${CSS.escape(data.id)}`).on("input", ".description", () => {
             update_cancel_button();
         });
 

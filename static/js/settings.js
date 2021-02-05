@@ -101,7 +101,9 @@ exports.launch = function (section) {
 };
 
 exports.set_settings_header = function (key) {
-    const header_text = $(`#settings_page .sidebar-list [data-section='${key}'] .text`).text();
+    const header_text = $(
+        `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
+    ).text();
     if (header_text) {
         $(".settings-header h1 .section").text(" / " + header_text);
     } else {

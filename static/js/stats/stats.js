@@ -183,9 +183,9 @@ function populate_messages_sent_over_time(data) {
             document.querySelector("#hover_date").textContent =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null, null];
-            data.points.forEach((trace) => {
+            for (const trace of data.points) {
                 values[trace.curveNumber] = trace.y;
-            });
+            }
             const hover_text_ids = ["#hover_me", "#hover_human", "#hover_bot"];
             const hover_value_ids = ["#hover_me_value", "#hover_human_value", "#hover_bot_value"];
             for (const [i, value] of values.entries()) {
@@ -391,14 +391,14 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
     }
     const labels = labels_.slice();
     const values = [];
-    labels.forEach((label) => {
+    for (const label of labels) {
         if (data.has(label)) {
             values.push(data.get(label));
             data.delete(label);
         } else {
             values.push(0);
         }
-    });
+    }
     if (data.size !== 0) {
         labels[labels.length - 1] = "Other";
         for (const sum of data.values()) {
@@ -443,9 +443,9 @@ function populate_messages_sent_by_client(data) {
     }
     label_values.sort((a, b) => b.value - a.value);
     const labels = [];
-    label_values.forEach((item) => {
+    for (const item of label_values) {
         labels.push(item.label);
-    });
+    }
 
     function make_plot_data(time_series_data, num_steps) {
         const plot_data = compute_summary_chart_data(time_series_data, num_steps, labels);
@@ -732,9 +732,9 @@ function populate_number_of_users(data) {
             document.querySelector("#users_hover_date").textContent =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null, null];
-            data.points.forEach((trace) => {
+            for (const trace of data.points) {
                 values[trace.curveNumber] = trace.y;
-            });
+            }
             const hover_value_ids = [
                 "#users_hover_1day_value",
                 "#users_hover_15day_value",
@@ -865,9 +865,9 @@ function populate_messages_read_over_time(data) {
             document.querySelector("#read_hover_date").textContent =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null];
-            data.points.forEach((trace) => {
+            for (const trace of data.points) {
                 values[trace.curveNumber] = trace.y;
-            });
+            }
             const read_hover_text_ids = ["#read_hover_me", "#read_hover_everyone"];
             const read_hover_value_ids = ["#read_hover_me_value", "#read_hover_everyone_value"];
             for (const [i, value] of values.entries()) {

@@ -12,7 +12,7 @@ function render_lightbox_list_images(preview_source) {
         const images = Array.prototype.slice.call($(".focused_table .message_inline_image img"));
         const $image_list = $("#lightbox_overlay .image-list").html("");
 
-        images.forEach((img) => {
+        for (const img of images) {
             const src = img.getAttribute("src");
             const className = preview_source === src ? "image selected" : "image";
 
@@ -28,7 +28,7 @@ function render_lightbox_list_images(preview_source) {
             // that navigating within the list only needs the `src`
             // attribute used to construct the node object above.
             exports.parse_image_data(img);
-        }, "");
+        }
     }
 }
 
@@ -281,7 +281,9 @@ exports.initialize = function () {
 
     $("#lightbox_overlay").on("click", ".image-list .image", function () {
         const $image_list = $(this).parent();
-        const $original_image = $(".message_row img[src='" + $(this).attr("data-src") + "']");
+        const $original_image = $(
+            `.message_row img[src='${CSS.escape($(this).attr("data-src"))}']`,
+        );
 
         exports.open($original_image);
 

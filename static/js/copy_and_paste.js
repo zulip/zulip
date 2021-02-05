@@ -318,7 +318,7 @@ exports.paste_handler = function (event) {
         if (paste_html && page_params.development_environment) {
             const text = exports.paste_handler_converter(paste_html);
             const mdImageRegex = /^!\[.*]\(.*\)$/;
-            if (text.match(mdImageRegex)) {
+            if (mdImageRegex.test(text)) {
                 // This block catches cases where we are pasting an
                 // image into Zulip, which is handled by upload.js.
                 return;

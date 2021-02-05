@@ -96,7 +96,9 @@ async function test_webhook_bot_creation(page) {
     await page.click("#create_bot_button");
 
     const bot_email = "1-bot@zulip.testserver";
-    const download_zuliprc_selector = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
+    const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
+        bot_email,
+    )}"]`;
     const outgoing_webhook_zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
@@ -122,7 +124,9 @@ async function test_normal_bot_creation(page) {
     await page.click("#create_bot_button");
 
     const bot_email = "2-bot@zulip.testserver";
-    const download_zuliprc_selector = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
+    const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
+        bot_email,
+    )}"]`;
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
@@ -143,10 +147,10 @@ async function test_botserverrc(page) {
 
 async function test_edit_bot_form(page) {
     const bot1_email = "1-bot@zulip.testserver";
-    const bot1_edit_btn = '.open_edit_bot_form[data-email="' + bot1_email + '"]';
+    const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.click(bot1_edit_btn);
 
-    const edit_form_selector = '.edit_bot_form[data-email="' + bot1_email + '"]';
+    const edit_form_selector = `.edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
     const name_field_selector = edit_form_selector + " [name=bot_name]";
     assert(common.get_text_from_selector(page, name_field_selector), "Bot 1");
@@ -183,7 +187,7 @@ async function add_alert_word(page, word) {
 }
 
 async function check_alert_word_added(page, word) {
-    const added_alert_word_selector = `.alert-word-item[data-word='${word}']`;
+    const added_alert_word_selector = `.alert-word-item[data-word='${CSS.escape(word)}']`;
     await page.waitForSelector(added_alert_word_selector, {visible: true});
 }
 
@@ -213,7 +217,7 @@ async function test_duplicate_alert_words_cannot_be_added(page, duplicate_word) 
 }
 
 async function delete_alert_word(page, word) {
-    const delete_btn_selector = `.remove-alert-word[data-word="${word}"]`;
+    const delete_btn_selector = `.remove-alert-word[data-word="${CSS.escape(word)}"]`;
     await page.click(delete_btn_selector);
     await common.assert_selector_doesnt_exist(page, delete_btn_selector);
 }
@@ -239,7 +243,7 @@ async function change_language(page, language_data_code) {
     await page.waitForSelector("#default_language", {visible: true});
     await page.click("#default_language");
     await page.waitForSelector("#default_language_modal", {visible: true});
-    const language_selector = `a[data-code="${language_data_code}"]`;
+    const language_selector = `a[data-code="${CSS.escape(language_data_code)}"]`;
     await page.click(language_selector);
 }
 

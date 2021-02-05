@@ -65,7 +65,7 @@ exports.active_modal = function () {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
         return undefined;
     }
-    return "#" + $(".modal.in").attr("id");
+    return `#${CSS.escape($(".modal.in").attr("id"))}`;
 };
 
 exports.open_overlay = function (opts) {

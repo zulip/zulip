@@ -1481,9 +1481,9 @@ run_test("navbar_helpers", () => {
         },
     ];
 
-    test_cases.forEach((test_case) => {
+    for (const test_case of test_cases) {
         test_helpers(test_case);
-    });
+    }
 
     // TODO: these may be removed, based on design decisions
     const sender_me = [{operator: "sender", operand: "me"}];
@@ -1504,9 +1504,9 @@ run_test("navbar_helpers", () => {
         },
     ];
 
-    redirect_edge_cases.forEach((test_case) => {
+    for (const test_case of redirect_edge_cases) {
         test_redirect_url_with_search(test_case);
-    });
+    }
 
     // TODO: test every single one of the "ALL" redirects from the navbar behaviour table
 

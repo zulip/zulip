@@ -972,6 +972,8 @@ run_test("warn_if_private_stream_is_linked", () => {
         stream_id: 100,
         name: "Denmark",
     };
+    stream_data.add_sub(denmark);
+
     peer_data.set_subscribers(denmark.stream_id, [1, 2, 3]);
 
     function test_noop_case(invite_only) {
@@ -1018,7 +1020,9 @@ run_test("warn_if_private_stream_is_linked", () => {
     denmark = {
         invite_only: true,
         name: "Denmark",
+        stream_id: 22,
     };
+    stream_data.add_sub(denmark);
 
     compose.warn_if_private_stream_is_linked(denmark);
     assert.equal($("#compose_private_stream_alert").visible(), true);

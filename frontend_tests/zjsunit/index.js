@@ -3,6 +3,7 @@
 const Module = require("module");
 const path = require("path");
 
+require("css.escape");
 const Handlebars = require("handlebars/runtime");
 const _ = require("lodash");
 
@@ -75,7 +76,7 @@ function run_one_module(file) {
 test.set_verbose(files.length === 1);
 
 try {
-    files.forEach((file) => {
+    for (const file of files) {
         namespace.set_global("window", window);
         namespace.set_global("to_$", () => window);
         namespace.set_global("location", {
@@ -98,7 +99,7 @@ try {
 
         namespace.restore();
         Handlebars.HandlebarsEnvironment.call(Handlebars);
-    });
+    }
 } catch (error) {
     if (error.stack) {
         console.info(short_tb(error.stack));

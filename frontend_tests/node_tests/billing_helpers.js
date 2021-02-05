@@ -254,12 +254,12 @@ run_test("set_tab", () => {
         scrollTop: 0,
     };
 
-    $('#upgrade-tabs.nav a[href="#billing"]').tab = (action) => {
+    $('#upgrade-tabs.nav a[href="\\#billing"]').tab = (action) => {
         state.show_tab_billing += 1;
         assert.equal(action, "show");
     };
 
-    $('#upgrade-tabs.nav a[href="#payment-method"]').tab = (action) => {
+    $('#upgrade-tabs.nav a[href="\\#payment-method"]').tab = (action) => {
         state.show_tab_payment_method += 1;
         assert.equal(action, "show");
     };

@@ -16,7 +16,7 @@ set_global("hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });
-set_global("list_render", {
+set_global("ListWidget", {
     create: () => ({init: noop}),
 });
 set_global("page_params", {});
@@ -98,8 +98,9 @@ for (const sub of subs) {
 const subscriptions_table_selector = "#subscriptions_table";
 const input_field_stub = $.create(".input");
 
-const sub_settings_selector =
-    "#subscription_overlay .subscription_settings[data-stream-id='" + denmark.stream_id + "']";
+const sub_settings_selector = `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
+    denmark.stream_id,
+)}']`;
 const $sub_settings_container = $.create(sub_settings_selector);
 $sub_settings_container.find = noop;
 $sub_settings_container.find = function () {

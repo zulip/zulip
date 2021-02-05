@@ -8,7 +8,7 @@ async function copy_messages(page, start_message, end_message) {
     return await page.evaluate(
         (start_message, end_message) => {
             function get_message_node(message) {
-                return $('.message_row .message_content:contains("' + message + '")').get(0);
+                return $(`.message_row .message_content:contains("${CSS.escape(message)}")`).get(0);
             }
 
             // select messages from start_message to end_message

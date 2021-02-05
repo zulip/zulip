@@ -114,7 +114,9 @@ exports.build_stream_list = function (force_rerender) {
     topic_list.clear();
     parent.empty();
 
-    stream_groups.pinned_streams.forEach(add_sidebar_li);
+    for (const stream_id of stream_groups.pinned_streams) {
+        add_sidebar_li(stream_id);
+    }
 
     const any_pinned_streams = stream_groups.pinned_streams.length > 0;
     const any_normal_streams = stream_groups.normal_streams.length > 0;
@@ -124,13 +126,17 @@ exports.build_stream_list = function (force_rerender) {
         elems.push('<hr class="stream-split">');
     }
 
-    stream_groups.normal_streams.forEach(add_sidebar_li);
+    for (const stream_id of stream_groups.normal_streams) {
+        add_sidebar_li(stream_id);
+    }
 
     if (any_dormant_streams && any_normal_streams) {
         elems.push('<hr class="stream-split">');
     }
 
-    stream_groups.dormant_streams.forEach(add_sidebar_li);
+    for (const stream_id of stream_groups.dormant_streams) {
+        add_sidebar_li(stream_id);
+    }
 
     parent.append(elems);
 };
@@ -308,9 +314,8 @@ function set_stream_unread_count(stream_id, count) {
 }
 
 exports.update_streams_sidebar = function (force_rerender) {
-    const finish = blueslip.start_timing("build_stream_list");
     exports.build_stream_list(force_rerender);
-    finish();
+
     exports.stream_cursor.redraw();
 
     if (!narrow_state.active()) {
@@ -591,7 +596,11 @@ exports.initiate_search = function () {
 
     const filter = $(".stream-list-filter").expectOne();
 
-    if (!$(".app-main .column-left").hasClass("expanded")) {
+    if (
+        // Check if left column is a popover and is not visible.
+        $("#streamlist-toggle").is(":visible") &&
+        !$(".app-main .column-left").hasClass("expanded")
+    ) {
         popovers.hide_all();
         stream_popover.show_streamlist_sidebar();
     }

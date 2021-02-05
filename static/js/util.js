@@ -218,14 +218,10 @@ exports.is_mobile = function () {
     return new RegExp(regex, "i").test(window.navigator.userAgent);
 };
 
-function to_int(s) {
-    return Number.parseInt(s, 10);
-}
-
 exports.sorted_ids = function (ids) {
     // This mapping makes sure we are using ints, and
     // it also makes sure we don't mutate the list.
-    let id_list = ids.map(to_int);
+    let id_list = ids.map((s) => Number.parseInt(s, 10));
     id_list.sort((a, b) => a - b);
     id_list = _.sortedUniq(id_list);
 

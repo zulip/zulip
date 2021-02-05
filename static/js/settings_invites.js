@@ -45,7 +45,7 @@ function populate_invites(invites_data) {
 
     const invites_table = $("#admin_invites_table").expectOne();
 
-    list_render.create(invites_table, invites_data.invites, {
+    ListWidget.create(invites_table, invites_data.invites, {
         name: "admin_invites_list",
         modifier(item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
@@ -93,10 +93,9 @@ function do_revoke_invite() {
 
     if (modal_invite_id !== meta.invite_id || modal_is_multiuse !== meta.is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
-        ui_report.message(
+        ui_report.client_error(
             i18n.t("Resending encountered an error. Please reload and try again."),
             $("#home-error"),
-            "alert-error",
         );
     }
     $("#revoke_invite_modal").modal("hide");
@@ -196,10 +195,9 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
 
         if (modal_invite_id !== meta.invite_id) {
             blueslip.error("Invite resending canceled due to non-matching fields.");
-            ui_report.message(
+            ui_report.client_error(
                 i18n.t("Resending encountered an error. Please reload and try again."),
                 $("#home-error"),
-                "alert-error",
             );
         }
         $("#resend_invite_modal").modal("hide");

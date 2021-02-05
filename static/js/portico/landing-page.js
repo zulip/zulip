@@ -79,11 +79,11 @@ const apps_events = function () {
         let result;
         const parts = path_parts();
 
-        Object.keys(info).forEach((version) => {
+        for (const version of Object.keys(info)) {
             if (parts.includes(version)) {
                 result = version;
             }
-        });
+        }
 
         result = result || detect_user_os();
         return result;
@@ -156,7 +156,7 @@ const events = function () {
     // pop the last element to get the current section (eg. `features`).
     const location = window.location.pathname.replace(/\/#*$/, "").split(/\//).pop();
 
-    $("[data-on-page='" + location + "']").addClass("active");
+    $(`[data-on-page='${CSS.escape(location)}']`).addClass("active");
 
     $("body").on("click", (e) => {
         const $e = $(e.target);
