@@ -76,7 +76,7 @@ EXTERNAL_HOST = 'zulip.example.com'
 # Passwords and secrets are not stored in this file.  The password
 # for user EMAIL_HOST_USER goes in `/etc/zulip/zulip-secrets.conf`.
 # In that file, set `email_password`.  For example:
-#   email_password = abcd1234
+#email_password = abcd1234
 
 # EMAIL_USE_TLS and EMAIL_PORT are required for most SMTP providers.
 #EMAIL_USE_TLS = True
@@ -152,7 +152,7 @@ AUTH_LDAP_BIND_DN = ""
 # Passwords and secrets are not stored in this file.  The password
 # corresponding to AUTH_LDAP_BIND_DN goes in `/etc/zulip/zulip-secrets.conf`.
 # In that file, set `auth_ldap_bind_password`.  For example:
-#   auth_ldap_bind_password = abcd1234
+#auth_ldap_bind_password = abcd1234
 
 # Mapping user info from LDAP to Zulip.
 #
@@ -450,8 +450,8 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
 # Password strength requirements; learn about configuration at
 # https://zulip.readthedocs.io/en/latest/production/security-model.html.
-# PASSWORD_MIN_LENGTH = 6
-# PASSWORD_MIN_GUESSES = 10000
+#PASSWORD_MIN_LENGTH = 6
+#PASSWORD_MIN_GUESSES = 10000
 
 # Controls whether Zulip sends "new login" email notifications.
 #SEND_LOGIN_EMAILS = True
@@ -552,9 +552,9 @@ CAMO_URI = '/external_content/'
 # By default, Zulip connects to RabbitMQ running locally on the machine,
 # but Zulip also supports connecting to RabbitMQ over the network;
 # to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
-# RABBITMQ_HOST = "127.0.0.1"
+#RABBITMQ_HOST = "127.0.0.1"
 # To use another RabbitMQ user than the default 'zulip', set RABBITMQ_USERNAME here.
-# RABBITMQ_USERNAME = 'zulip'
+#RABBITMQ_USERNAME = 'zulip'
 
 # Memcached configuration
 #
@@ -562,24 +562,24 @@ CAMO_URI = '/external_content/'
 # but Zulip also supports connecting to memcached over the network;
 # to use a remote Memcached instance, set MEMCACHED_LOCATION here.
 # Format HOST:PORT
-# MEMCACHED_LOCATION = 127.0.0.1:11211
+#MEMCACHED_LOCATION = 127.0.0.1:11211
 # To authenticate to memcached, set memcached_password in zulip-secrets.conf,
 # and optionally change the default username 'zulip@localhost' here.
-# MEMCACHED_USERNAME = 'zulip@localhost'
+#MEMCACHED_USERNAME = 'zulip@localhost'
 
 # Redis configuration
 #
 # By default, Zulip connects to Redis running locally on the machine,
 # but Zulip also supports connecting to Redis over the network;
 # to use a remote Redis instance, set REDIS_HOST here.
-# REDIS_HOST = '127.0.0.1'
+#REDIS_HOST = '127.0.0.1'
 # For a different Redis port set the REDIS_PORT here.
-# REDIS_PORT = 6379
+#REDIS_PORT = 6379
 # If you set redis_password in zulip-secrets.conf, Zulip will use that password
 # to connect to the Redis server.
 
 # Controls whether Zulip will rate-limit user requests.
-# RATE_LIMITING = True
+#RATE_LIMITING = True
 
 # By default, Zulip connects to the thumbor (the thumbnailing software
 # we use) service running locally on the machine.  If you're running
@@ -655,4 +655,4 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
 # Controls the Big Blue Button video call integration.  You must also
 # set big_blue_button_secret in zulip-secrets.conf.
-# BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
+#BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
