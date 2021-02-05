@@ -446,6 +446,57 @@ ENABLE_GRAVATAR = True
 #REMOTE_POSTGRES_PORT = '5432'
 #REMOTE_POSTGRES_SSLMODE = 'require'
 
+# The default CAMO_URI of '/external_content/' is served by the camo
+# setup in the default Zulip nginx configuration.  Setting CAMO_URI
+# to '' will disable the Camo integration.
+CAMO_URI = '/external_content/'
+
+# RabbitMQ configuration
+#
+# By default, Zulip connects to RabbitMQ running locally on the machine,
+# but Zulip also supports connecting to RabbitMQ over the network;
+# to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
+# RABBITMQ_HOST = "127.0.0.1"
+# To use another RabbitMQ user than the default 'zulip', set RABBITMQ_USERNAME here.
+# RABBITMQ_USERNAME = 'zulip'
+
+# Memcached configuration
+#
+# By default, Zulip connects to memcached running locally on the machine,
+# but Zulip also supports connecting to memcached over the network;
+# to use a remote Memcached instance, set MEMCACHED_LOCATION here.
+# Format HOST:PORT
+# MEMCACHED_LOCATION = 127.0.0.1:11211
+# To authenticate to memcached, set memcached_password in zulip-secrets.conf,
+# and optionally change the default username 'zulip@localhost' here.
+# MEMCACHED_USERNAME = 'zulip@localhost'
+
+# Redis configuration
+#
+# By default, Zulip connects to Redis running locally on the machine,
+# but Zulip also supports connecting to Redis over the network;
+# to use a remote Redis instance, set REDIS_HOST here.
+# REDIS_HOST = '127.0.0.1'
+# For a different Redis port set the REDIS_PORT here.
+# REDIS_PORT = 6379
+# If you set redis_password in zulip-secrets.conf, Zulip will use that password
+# to connect to the Redis server.
+
+# Controls whether Zulip will rate-limit user requests.
+# RATE_LIMITING = True
+
+# By default, Zulip connects to the thumbor (the thumbnailing software
+# we use) service running locally on the machine.  If you're running
+# thumbor on a different server, you can configure that by setting
+# THUMBOR_URL here.  Setting THUMBOR_URL='' will let Zulip server know that
+# thumbor is not running or configured.
+#THUMBOR_URL = 'http://127.0.0.1:9995'
+#
+# This setting controls whether images shown in Zulip's inline image
+# previews should be thumbnailed by thumbor, which saves bandwidth but
+# can modify the image's appearance.
+#THUMBNAIL_IMAGES = True
+
 # If you want to set a Terms of Service for your server, set the path
 # to your Markdown file, and uncomment the following line.
 #TERMS_OF_SERVICE = '/etc/zulip/terms.md'
@@ -591,59 +642,6 @@ AUTH_LDAP_USER_ATTR_MAP = {
 # False.
 #LDAP_DEACTIVATE_NON_MATCHING_USERS = True
 
-################
-# Miscellaneous settings.
-
-# The default CAMO_URI of '/external_content/' is served by the camo
-# setup in the default Zulip nginx configuration.  Setting CAMO_URI
-# to '' will disable the Camo integration.
-CAMO_URI = '/external_content/'
-
-# RabbitMQ configuration
-#
-# By default, Zulip connects to RabbitMQ running locally on the machine,
-# but Zulip also supports connecting to RabbitMQ over the network;
-# to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
-# RABBITMQ_HOST = "127.0.0.1"
-# To use another RabbitMQ user than the default 'zulip', set RABBITMQ_USERNAME here.
-# RABBITMQ_USERNAME = 'zulip'
-
-# Memcached configuration
-#
-# By default, Zulip connects to memcached running locally on the machine,
-# but Zulip also supports connecting to memcached over the network;
-# to use a remote Memcached instance, set MEMCACHED_LOCATION here.
-# Format HOST:PORT
-# MEMCACHED_LOCATION = 127.0.0.1:11211
-# To authenticate to memcached, set memcached_password in zulip-secrets.conf,
-# and optionally change the default username 'zulip@localhost' here.
-# MEMCACHED_USERNAME = 'zulip@localhost'
-
-# Redis configuration
-#
-# By default, Zulip connects to Redis running locally on the machine,
-# but Zulip also supports connecting to Redis over the network;
-# to use a remote Redis instance, set REDIS_HOST here.
-# REDIS_HOST = '127.0.0.1'
-# For a different Redis port set the REDIS_PORT here.
-# REDIS_PORT = 6379
-# If you set redis_password in zulip-secrets.conf, Zulip will use that password
-# to connect to the Redis server.
-
-# Controls whether Zulip will rate-limit user requests.
-# RATE_LIMITING = True
-
-# By default, Zulip connects to the thumbor (the thumbnailing software
-# we use) service running locally on the machine.  If you're running
-# thumbor on a different server, you can configure that by setting
-# THUMBOR_URL here.  Setting THUMBOR_URL='' will let Zulip server know that
-# thumbor is not running or configured.
-#THUMBOR_URL = 'http://127.0.0.1:9995'
-#
-# This setting controls whether images shown in Zulip's inline image
-# previews should be thumbnailed by thumbor, which saves bandwidth but
-# can modify the image's appearance.
-#THUMBNAIL_IMAGES = True
 
 ################
 # Video call integrations.
