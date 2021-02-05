@@ -92,7 +92,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         table = []
         argument_template = """
 <div class="api-argument" id="parameter-{argument}">
-    <p class="api-argument-name"><strong>{argument}</strong> <span class="api-argument-datatype">{type}</span> {required} {deprecated} <a href="#parameter-{argument}" class="api-argument-hover-link"><i class="fa fa-chain"></i></a></p>
+    <p class="api-argument-name"><strong>{argument}</strong> <span class="api-field-type">{type}</span> {required} {deprecated} <a href="#parameter-{argument}" class="api-argument-hover-link"><i class="fa fa-chain"></i></a></p>
     <div class="api-example">
         <span class="api-argument-example-label">Example</span>: <code>{example}</code>
     </div>
