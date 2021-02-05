@@ -172,7 +172,7 @@ run_test("timestamp", () => {
     const $timestamp_invalid = $.create("timestamp(invalid)");
     $timestamp_invalid.attr("datetime", "invalid");
     $content.set_find_results("time", $array([$timestamp, $timestamp_invalid]));
-    blueslip.expect("error", "Moment could not parse datetime supplied by backend: invalid");
+    blueslip.expect("error", "Could not parse datetime supplied by backend: invalid");
 
     // Initial asserts
     assert.equal($timestamp.text(), "never-been-set");
