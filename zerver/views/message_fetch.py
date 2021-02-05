@@ -736,6 +736,9 @@ def exclude_muting_conditions(
     except Stream.DoesNotExist:
         pass
 
+    # Stream-level muting only applies when looking at views that
+    # include multiple streams, since we do want users to be able to
+    # browser messages within a muted stream.
     if stream_id is None:
         rows = Subscription.objects.filter(
             user_profile=user_profile,
@@ -750,6 +753,15 @@ def exclude_muting_conditions(
             conditions.append(condition)
 
     conditions = exclude_topic_mutes(conditions, user_profile, stream_id)
+
+    # Muted user logic for hiding messages is implemented entirely
+    # client-side. This is by design, as it allows UI to hint that
+    # muted messages exist where their absence might make conversation
+    # difficult to understand. As a result, we do not need to consider
+    # muted users in this server-side logic for returning messages to
+    # clients. (We could in theory exclude PMs from muted users, but
+    # they're likely to be sufficiently rare to not be worth extra
+    # logic/testing here).
 
     return conditions
 

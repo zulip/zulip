@@ -1010,6 +1010,9 @@ def extract_unread_data_from_um_rows(
         if topic_mute_checker(recipient_id, topic):
             return True
 
+        # Messages sent by muted users are never unread, so we don't
+        # need any logic related to muted users here.
+
         return False
 
     huddle_cache: Dict[int, str] = {}
