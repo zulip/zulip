@@ -106,8 +106,30 @@ EXTERNAL_HOST = "zulip.example.com"
 
 
 ################
-## Authentication settings.
+## Email gateway integration.
+##
+## The email gateway integration supports sending messages into Zulip
+## by sending an email.
+## For details, see the documentation:
+##   https://zulip.readthedocs.io/en/latest/production/email-gateway.html
+EMAIL_GATEWAY_PATTERN = ""
 
+## If you are using polling, edit the IMAP settings below:
+##
+## The IMAP login; username here and password as email_gateway_password in
+## zulip-secrets.conf.
+EMAIL_GATEWAY_LOGIN = ""
+## The IMAP server & port to connect to
+EMAIL_GATEWAY_IMAP_SERVER = ""
+EMAIL_GATEWAY_IMAP_PORT = 993
+## The IMAP folder name to check for emails. All emails sent to EMAIL_GATEWAY_PATTERN above
+## must be delivered to this folder
+EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
+
+
+################
+## Authentication settings.
+##
 ## Enable at least one of the following authentication backends.
 ## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html
 ## for documentation on our authentication backends.
@@ -618,27 +640,6 @@ CAMO_URI = "/external_content/"
 ## 4. Fill in the values for twitter_consumer_key, twitter_consumer_secret, twitter_access_token_key,
 ##    and twitter_access_token_secret in /etc/zulip/zulip-secrets.conf.
 
-
-################
-## Email gateway integration.
-##
-## The email gateway integration supports sending messages into Zulip
-## by sending an email.
-## For details, see the documentation:
-##   https://zulip.readthedocs.io/en/latest/production/email-gateway.html
-EMAIL_GATEWAY_PATTERN = ""
-
-## If you are using polling, edit the IMAP settings below:
-##
-## The IMAP login; username here and password as email_gateway_password in
-## zulip-secrets.conf.
-EMAIL_GATEWAY_LOGIN = ""
-## The IMAP server & port to connect to
-EMAIL_GATEWAY_IMAP_SERVER = ""
-EMAIL_GATEWAY_IMAP_PORT = 993
-## The IMAP folder name to check for emails. All emails sent to EMAIL_GATEWAY_PATTERN above
-## must be delivered to this folder
-EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
 
 ################
