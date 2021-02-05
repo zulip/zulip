@@ -1885,14 +1885,9 @@ class Markdown(markdown.Markdown):
         realm_filters_key: int,
         email_gateway: bool,
     ) -> None:
-        # define default configs
-        self.config = {
-            "realm_filters": [realm_filters,
-                              f"Realm-specific filters for realm_filters_key {realm_filters_key}"],
-            "realm": [realm_filters_key, "Realm id"],
-            "code_block_processor_disabled": [email_gateway,
-                                              "Disabled for email gateway"],
-        }
+        self.realm_filters = realm_filters
+        self.realm_filters_key = realm_filters_key
+        self.email_gateway = email_gateway
 
         super().__init__(
             extensions=[
@@ -1945,7 +1940,7 @@ class Markdown(markdown.Markdown):
         parser = BlockParser(self)
         parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 95)
         parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 90)
-        if not self.getConfig('code_block_processor_disabled'):
+        if not self.email_gateway:
             parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 85)
         parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 80)
         # We get priority 75 from 'table' extension
@@ -2014,7 +2009,7 @@ class Markdown(markdown.Markdown):
         return reg
 
     def register_realm_filters(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
-        for (pattern, format_string, id) in self.getConfig("realm_filters"):
+        for (pattern, format_string, id) in self.realm_filters:
             inlinePatterns.register(RealmFilterPattern(pattern, format_string, self),
                                     f'realm_filters/{pattern}', 45)
         return inlinePatterns
@@ -2038,15 +2033,8 @@ class Markdown(markdown.Markdown):
         postprocessors.register(markdown.postprocessors.UnescapePostprocessor(), 'unescape', 10)
         return postprocessors
 
-    def getConfig(self, key: str, default: str='') -> Any:
-        """ Return a setting for the given key or an empty string. """
-        if key in self.config:
-            return self.config[key][0]
-        else:
-            return default
-
     def handle_zephyr_mirror(self) -> None:
-        if self.getConfig("realm") == ZEPHYR_MIRROR_MARKDOWN_KEY:
+        if self.realm_filters_key == ZEPHYR_MIRROR_MARKDOWN_KEY:
             # Disable almost all inline patterns for zephyr mirror
             # users' traffic that is mirrored.  Note that
             # inline_interesting_links is a treeprocessor and thus is
@@ -2117,7 +2105,7 @@ def maybe_update_markdown_engines(realm_filters_key: Optional[int], email_gatewa
         for realm_filters_key, filters in all_filters.items():
             realm_filter_data[realm_filters_key] = filters
             make_md_engine(realm_filters_key, email_gateway)
-        # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
+        # Hack to ensure that realm_filters_key is right for mirrored Zephyrs
         realm_filter_data[ZEPHYR_MIRROR_MARKDOWN_KEY] = []
         make_md_engine(ZEPHYR_MIRROR_MARKDOWN_KEY, False)
     else:
