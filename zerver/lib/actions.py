@@ -2238,8 +2238,6 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
     realm = sender.realm
     if len(user_ids) == 0:
         raise JsonableError(_("Missing parameter: 'to' (recipient)"))
-    elif operator not in ("start", "stop"):
-        raise JsonableError(_("Invalid 'op' value (should be start or stop)"))
 
     """ The next chunk of code will go away when we upgrade old mobile
     users away from versions of mobile that send emails.  For the
