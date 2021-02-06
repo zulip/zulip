@@ -169,6 +169,8 @@ class="fa fa-bars"></i>) icon`
 `smiley face (<i class="fa fa-smile-o"></i>) icon`
 * star (<i class="fa fa-star-o"></i>) icon —
 `star (<i class="fa fa-star-o"></i>) icon`
+* archive <i class="fa fa-archive" aria-hidden="true"></i> icon —
+`archive <i class="fa fa-archive" aria-hidden="true"></i> icon`
 * trash (<i class="fa fa-trash-o"></i>) icon —
 `trash (<i class="fa fa-trash-o"></i>) icon`
 * video-camera (<i class="fa fa-video-camera"></i>) icon —
