@@ -28,7 +28,15 @@ exports.toggle = function (opts) {
                 "data-tab-key": value.key,
                 "data-tab-id": i,
                 tabindex: 0,
-            }).text(value.label);
+            });
+
+            /* istanbul ignore if */
+            if (value.label_html !== undefined) {
+                const html = value.label_html;
+                tab.html(html);
+            } else {
+                tab.text(value.label);
+            }
 
             // add proper classes for styling in CSS.
             if (i === 0) {

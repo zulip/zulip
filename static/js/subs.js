@@ -559,17 +559,19 @@ exports.setup_page = function (callback) {
         exports.sort_toggler = components.toggle({
             values: [
                 {
-                    label: `<i class="fa fa-sort-alpha-asc" title="${i18n.t("Sort by name")}"></i>`,
+                    label_html: `<i class="fa fa-sort-alpha-asc" title="${i18n.t(
+                        "Sort by name",
+                    )}"></i>`,
                     key: "by-stream-name",
                 },
                 {
-                    label: `<i class="fa fa-user-o" title="${i18n.t(
+                    label_html: `<i class="fa fa-user-o" title="${i18n.t(
                         "Sort by number of subscribers",
                     )}"></i>`,
                     key: "by-subscriber-count",
                 },
                 {
-                    label: `<i class="fa fa-bar-chart" title="${i18n.t(
+                    label_html: `<i class="fa fa-bar-chart" title="${i18n.t(
                         "Sort by estimated weekly traffic",
                     )}"></i>`,
                     key: "by-weekly-traffic",

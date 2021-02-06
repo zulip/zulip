@@ -51,6 +51,17 @@ run_test("basics", () => {
             return i;
         };
 
+        self.text = function (text) {
+            assert.equal(
+                text,
+                [
+                    "translated: Keyboard shortcuts",
+                    "translated: Message formatting",
+                    "translated: Search operators",
+                ][i],
+            );
+        };
+
         self.trigger = function (type) {
             if (type === "focus") {
                 focused_tab = i;
@@ -154,19 +165,7 @@ run_test("basics", () => {
                         },
                     ][tab_id],
                 );
-                return {
-                    text: (text) => {
-                        assert.equal(
-                            text,
-                            [
-                                "translated: Keyboard shortcuts",
-                                "translated: Message formatting",
-                                "translated: Search operators",
-                            ][tab_id],
-                        );
-                        return make_tab(tab_id);
-                    },
-                };
+                return make_tab(tab_id);
             }
             default:
                 throw new Error("unknown selector: " + sel);
