@@ -2713,7 +2713,7 @@ class LicenseLedgerTest(StripeTestCase):
         do_deactivate_user(user)
         do_reactivate_user(user)
         # Not a proper use of do_activate_user, but fine for this test
-        do_activate_user(user)
+        do_activate_user(user, acting_user=None)
         ledger_entries = list(
             LicenseLedger.objects.values_list(
                 "is_renewal", "licenses", "licenses_at_next_renewal"
