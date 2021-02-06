@@ -672,7 +672,7 @@ def do_create_user(
     return user_profile
 
 
-def do_activate_user(user_profile: UserProfile, acting_user: Optional[UserProfile] = None) -> None:
+def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     user_profile.is_active = True
     user_profile.is_mirror_dummy = False
     user_profile.set_unusable_password()

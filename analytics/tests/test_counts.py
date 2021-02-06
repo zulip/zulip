@@ -1325,7 +1325,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 "value__sum"
             ],
         )
-        do_activate_user(user)
+        do_activate_user(user, acting_user=None)
         self.assertEqual(
             1,
             RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
@@ -1659,7 +1659,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
             "email4", "password", self.default_realm, "full_name", acting_user=None
         )
         do_deactivate_user(user2)
-        do_activate_user(user3)
+        do_activate_user(user3, acting_user=None)
         do_reactivate_user(user4)
         end_time = floor_to_day(timezone_now()) + self.DAY
         do_fill_count_stat_at_hour(self.stat, end_time)
