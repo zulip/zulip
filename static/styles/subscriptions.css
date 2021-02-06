@@ -712,6 +712,7 @@ form#add_new_subscription {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-right: 12px;
         }
 
         .top-bar .subscriber-count,
