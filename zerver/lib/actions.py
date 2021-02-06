@@ -3096,7 +3096,7 @@ def get_available_notification_sounds() -> List[str]:
         if ext == '.ogg':
             available_notification_sounds.append(root)
 
-    return available_notification_sounds
+    return sorted(available_notification_sounds)
 
 def notify_subscriptions_removed(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
 
