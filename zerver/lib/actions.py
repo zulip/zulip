@@ -614,7 +614,8 @@ def do_create_user(
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     source_profile: Optional[UserProfile] = None,
     realm_creation: bool = False,
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> UserProfile:
 
     user_profile = create_user(

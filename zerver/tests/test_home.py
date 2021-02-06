@@ -487,15 +487,13 @@ class HomeTest(ZulipTestCase):
             full_name=bot_name,
             bot_type=UserProfile.DEFAULT_BOT,
             bot_owner=owner,
+            acting_user=None,
         )
         return user
 
     def create_non_active_user(self, realm: Realm, email: str, name: str) -> UserProfile:
         user = do_create_user(
-            email=email,
-            password="123",
-            realm=realm,
-            full_name=name,
+            email=email, password="123", realm=realm, full_name=name, acting_user=None
         )
 
         # Doing a full-stack deactivation would be expensive here,

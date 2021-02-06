@@ -818,6 +818,7 @@ class ImportExportTest(ZulipTestCase):
             full_name="bot",
             bot_type=UserProfile.EMBEDDED_BOT,
             bot_owner=sample_user,
+            acting_user=None,
         )
         storage = StateHandler(bot_profile)
         storage.put("some key", "some value")

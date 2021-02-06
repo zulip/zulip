@@ -1309,7 +1309,9 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
     def test_active_users_log_by_is_bot(self) -> None:
         property = "active_users_log:is_bot:day"
-        user = do_create_user("email", "password", self.default_realm, "full_name")
+        user = do_create_user(
+            "email", "password", self.default_realm, "full_name", acting_user=None
+        )
         self.assertEqual(
             1,
             RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
@@ -1644,10 +1646,18 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         self.assertTableState(UserCount, ["user", "subgroup"], [[user1, "false"], [user2, "false"]])
 
     def test_end_to_end_with_actions_dot_py(self) -> None:
-        user1 = do_create_user("email1", "password", self.default_realm, "full_name")
-        user2 = do_create_user("email2", "password", self.default_realm, "full_name")
-        user3 = do_create_user("email3", "password", self.default_realm, "full_name")
-        user4 = do_create_user("email4", "password", self.default_realm, "full_name")
+        user1 = do_create_user(
+            "email1", "password", self.default_realm, "full_name", acting_user=None
+        )
+        user2 = do_create_user(
+            "email2", "password", self.default_realm, "full_name", acting_user=None
+        )
+        user3 = do_create_user(
+            "email3", "password", self.default_realm, "full_name", acting_user=None
+        )
+        user4 = do_create_user(
+            "email4", "password", self.default_realm, "full_name", acting_user=None
+        )
         do_deactivate_user(user2)
         do_activate_user(user3)
         do_reactivate_user(user4)
@@ -1761,9 +1771,13 @@ class TestRealmActiveHumans(AnalyticsTestCase):
         )
 
     def test_end_to_end(self) -> None:
-        user1 = do_create_user("email1", "password", self.default_realm, "full_name")
-        user2 = do_create_user("email2", "password", self.default_realm, "full_name")
-        do_create_user("email3", "password", self.default_realm, "full_name")
+        user1 = do_create_user(
+            "email1", "password", self.default_realm, "full_name", acting_user=None
+        )
+        user2 = do_create_user(
+            "email2", "password", self.default_realm, "full_name", acting_user=None
+        )
+        do_create_user("email3", "password", self.default_realm, "full_name", acting_user=None)
         time_zero = floor_to_day(timezone_now()) + self.DAY
         update_user_activity_interval(user1, time_zero)
         update_user_activity_interval(user2, time_zero)

@@ -30,6 +30,7 @@ class TestServiceBotBasics(ZulipTestCase):
             full_name="BarBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
             bot_owner=self.example_user("cordelia"),
+            acting_user=None,
         )
 
         return outgoing_bot
@@ -178,6 +179,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
             full_name="EmbeddedBo1",
             bot_type=UserProfile.EMBEDDED_BOT,
             bot_owner=self.user_profile,
+            acting_user=None,
         )
         self.second_bot_profile = do_create_user(
             email="embedded-bot-2@zulip.com",
@@ -186,6 +188,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
             full_name="EmbeddedBot2",
             bot_type=UserProfile.EMBEDDED_BOT,
             bot_owner=self.user_profile,
+            acting_user=None,
         )
 
     def test_basic_storage_and_retrieval(self) -> None:
@@ -436,6 +439,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             full_name="FooBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
             bot_owner=self.user_profile,
+            acting_user=None,
         )
         self.second_bot_profile = do_create_user(
             email="bar-bot@zulip.com",
@@ -444,6 +448,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             full_name="BarBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
             bot_owner=self.user_profile,
+            acting_user=None,
         )
 
     @for_all_bot_types

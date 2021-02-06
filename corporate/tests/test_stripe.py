@@ -2710,7 +2710,7 @@ class LicenseLedgerTest(StripeTestCase):
 
     def test_user_changes(self) -> None:
         self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
-        user = do_create_user("email", "password", get_realm("zulip"), "name")
+        user = do_create_user("email", "password", get_realm("zulip"), "name", acting_user=None)
         do_deactivate_user(user)
         do_reactivate_user(user)
         # Not a proper use of do_activate_user, but fine for this test

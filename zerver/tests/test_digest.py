@@ -384,6 +384,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             realm,
             "some_bot",
             bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
         )
 
         # Check that bots are not sent emails

@@ -245,6 +245,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             email="whatever",
             realm=bot_owner.realm,
             password=None,
+            acting_user=None,
         )
 
         add_service(

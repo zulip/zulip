@@ -268,10 +268,7 @@ class RealmEmojiTest(ZulipTestCase):
         # having same name can be administered independently.
         realm_1 = do_create_realm("test_realm", "test_realm")
         emoji_author_1 = do_create_user(
-            "abc@example.com",
-            password="abc",
-            realm=realm_1,
-            full_name="abc",
+            "abc@example.com", password="abc", realm=realm_1, full_name="abc", acting_user=None
         )
         self.create_test_emoji("test_emoji", emoji_author_1)
 
