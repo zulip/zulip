@@ -1781,6 +1781,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             self.user_profile.realm,
             "full name",
             prereg_user=prereg_user,
+            acting_user=None,
         )
 
         accepted_invite = PreregistrationUser.objects.filter(

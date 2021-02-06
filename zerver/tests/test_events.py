@@ -667,6 +667,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile.realm,
                 "full name",
                 prereg_user=prereg_user,
+                acting_user=None,
             ),
             state_change_expected=True,
             num_events=4,

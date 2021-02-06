@@ -210,6 +210,7 @@ class MessagePOSTTest(ZulipTestCase):
             realm=non_admin_profile.realm,
             full_name="freebot",
             bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
         )
         self._send_and_verify_message(
             bot_without_owner,
@@ -286,6 +287,7 @@ class MessagePOSTTest(ZulipTestCase):
             realm=non_admin_profile.realm,
             full_name="freebot",
             bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
         )
         self._send_and_verify_message(
             bot_without_owner, stream_name, "New members cannot send to this stream."
@@ -1549,6 +1551,7 @@ class StreamMessagesTest(ZulipTestCase):
             full_name="Normal Bot",
             bot_type=UserProfile.DEFAULT_BOT,
             bot_owner=cordelia,
+            acting_user=None,
         )
 
         content = "test @**Normal Bot** rules"
@@ -2290,6 +2293,7 @@ class CheckMessageTest(ZulipTestCase):
             full_name="",
             bot_type=UserProfile.DEFAULT_BOT,
             bot_owner=parent,
+            acting_user=None,
         )
         bot.last_reminder = None
 

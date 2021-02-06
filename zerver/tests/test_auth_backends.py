@@ -3245,7 +3245,9 @@ class GitHubAuthBackendTest(SocialAuthBase):
         # Now we create the user account with the noreply email and verify that it's
         # possible to sign in to it.
         realm = get_realm("zulip")
-        do_create_user(noreply_email, "password", realm, account_data_dict["name"])
+        do_create_user(
+            noreply_email, "password", realm, account_data_dict["name"], acting_user=None
+        )
         result = self.social_auth_test(
             account_data_dict,
             subdomain="zulip",
@@ -5349,12 +5351,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         test_realm = do_create_realm("test", "test", False)
         hamlet = self.example_user("hamlet")
         email = hamlet.delivery_email
-        hamlet2 = do_create_user(
-            email,
-            None,
-            test_realm,
-            hamlet.full_name,
-        )
+        hamlet2 = do_create_user(email, None, test_realm, hamlet.full_name, acting_user=None)
 
         self.change_ldap_user_attr("hamlet", "cn", "Second Hamlet")
         expected_call_args = [hamlet2, "Second Hamlet", None]

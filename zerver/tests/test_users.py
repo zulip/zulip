@@ -808,6 +808,7 @@ class QueryCountTest(ZulipTestCase):
                         realm=realm,
                         full_name="Fred Flintstone",
                         prereg_user=prereg_user,
+                        acting_user=None,
                     )
 
         self.assert_length(queries, 68)
@@ -1658,6 +1659,7 @@ class RecipientInfoTest(ZulipTestCase):
             realm=realm,
             full_name="",
             bot_type=UserProfile.EMBEDDED_BOT,
+            acting_user=None,
         )
 
         info = get_recipient_info(
@@ -1680,6 +1682,7 @@ class RecipientInfoTest(ZulipTestCase):
             realm=realm,
             full_name="",
             bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
         )
 
         info = get_recipient_info(

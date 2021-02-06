@@ -78,7 +78,7 @@ class TestZulipBaseCommand(ZulipTestCase):
         with self.assertRaisesRegex(CommandError, "server does not contain a user with email"):
             self.command.get_user("invalid_email@example.com", None)
 
-        do_create_user(email, "password", mit_realm, "full_name")
+        do_create_user(email, "password", mit_realm, "full_name", acting_user=None)
 
         with self.assertRaisesRegex(CommandError, "server contains multiple users with that email"):
             self.command.get_user(email, None)

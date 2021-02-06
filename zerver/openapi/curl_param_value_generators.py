@@ -271,6 +271,10 @@ def upload_custom_emoji() -> Dict[str, object]:
 @openapi_param_value_generator(["/users/{user_id}:delete"])
 def deactivate_user() -> Dict[str, object]:
     user_profile = do_create_user(
-        email="testuser@zulip.com", password=None, full_name="test_user", realm=get_realm("zulip")
+        email="testuser@zulip.com",
+        password=None,
+        full_name="test_user",
+        realm=get_realm("zulip"),
+        acting_user=None,
     )
     return {"user_id": user_profile.id}
