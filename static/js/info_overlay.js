@@ -2,15 +2,31 @@ import * as common from "./common";
 import * as components from "./components";
 import * as hashchange from "./hashchange";
 import * as keydown_util from "./keydown_util";
+import * as markdown from "./markdown";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
+import * as rendered_markdown from "./rendered_markdown";
 import * as ui from "./ui";
 
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
 export let toggler;
 
+function render_markdown () {
+    $.each($("#markdown-instructions .apply_markdown"), (id, element) => {
+        const rendering_object = {
+            raw_content: element.textContent,
+        };
+        markdown.apply_markdown(rendering_object);
+        const rendered_element = $('<td class="rendered_markdown">');
+        rendered_element.html(rendering_object.content);
+        rendered_markdown.update_elements(rendered_element);
+        rendered_element.insertAfter(element);
+    });
+};
+
 export function set_up_toggler() {
+    render_markdown();
     const opts = {
         selected: 0,
         child_wants_focus: true,
