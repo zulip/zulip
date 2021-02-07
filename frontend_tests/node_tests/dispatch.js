@@ -203,7 +203,6 @@ run_test("hotspots", (override) => {
 
 run_test("invites_changed", (override) => {
     const event = event_fixtures.invites_changed;
-    $("#admin-invites-list").length = 1;
     with_stub((stub) => {
         override("settings_invites.set_up", stub.f);
         dispatch(event); // stub automatically checks if stub.f is called once

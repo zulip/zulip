@@ -51,15 +51,11 @@ const _pm_list = {
 const _popovers = {
     hide_all_except_sidebars() {},
     hide_all() {},
-    show_userlist_sidebar() {
-        $(".column-right").addClass("expanded");
-    },
+    show_userlist_sidebar() {},
 };
 
 const _stream_popover = {
-    show_streamlist_sidebar() {
-        $(".column-left").addClass("expanded");
-    },
+    show_streamlist_sidebar() {},
 };
 
 const _resize = {
@@ -613,12 +609,10 @@ run_test("initiate_search", () => {
     $(".user-list-filter").trigger("blur");
     simulate_right_column_buddy_list();
     activity.initiate_search();
-    assert.equal($(".column-right").hasClass("expanded"), true);
     assert.equal($(".user-list-filter").is_focused(), true);
 
     simulate_left_column_buddy_list();
     activity.initiate_search();
-    assert.equal($(".column-left").hasClass("expanded"), true);
     assert.equal($(".user-list-filter").is_focused(), true);
 });
 

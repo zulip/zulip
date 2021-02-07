@@ -317,7 +317,6 @@ run_test("format_drafts", (override) => {
 
     override("drafts.open_overlay", noop);
     drafts.set_initial_element = noop;
-    $("#drafts_table .draft-row").length = 0;
 
     drafts.launch();
     timerender.render_now = stub_render_now;
