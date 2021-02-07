@@ -315,41 +315,34 @@ class DummyHandler(AsyncDjangoHandler):
         allocate_handler_id(self)
 
 
-class POSTRequestMock:
-    method = "POST"
-
-    def __init__(self, post_data: Dict[str, Any], user_profile: Optional[UserProfile]) -> None:
-        self.GET: Dict[str, Any] = {}
-
-        # Convert any integer parameters passed into strings, even
-        # though of course the HTTP API would do so.  Ideally, we'd
-        # get rid of this abstraction entirely and just use the HTTP
-        # API directly, but while it exists, we need this code.
-        self.POST: Dict[str, str] = {}
-        for key in post_data:
-            self.POST[key] = str(post_data[key])
-
-        self.user = user_profile
-        self._tornado_handler = DummyHandler()
-        self._log_data: Dict[str, Any] = {}
-        self.META = {"PATH_INFO": "test"}
-        self.path = ""
-
-
 class HostRequestMock:
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
     def __init__(
-        self, user_profile: Optional[UserProfile] = None, host: str = settings.EXTERNAL_HOST
+        self,
+        post_data: Dict[str, Any] = {},
+        user_profile: Optional[UserProfile] = None,
+        host: str = settings.EXTERNAL_HOST,
     ) -> None:
         self.host = host
         self.GET: Dict[str, Any] = {}
+        self.method = ""
+
+        # Convert any integer parameters passed into strings, even
+        # though of course the HTTP API would do so.  Ideally, we'd
+        # get rid of this abstraction entirely and just use the HTTP
+        # API directly, but while it exists, we need this code
         self.POST: Dict[str, Any] = {}
+        for key in post_data:
+            self.POST[key] = str(post_data[key])
+            self.method = "POST"
+
+        self._tornado_handler = DummyHandler()
+        self._log_data: Dict[str, Any] = {}
         self.META = {"PATH_INFO": "test"}
         self.path = ""
         self.user = user_profile
-        self.method = ""
         self.body = ""
         self.content_type = ""
 
@@ -403,8 +396,8 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
             else:
                 extra_info = ""
 
-            if isinstance(info, POSTRequestMock):
-                info = "<POSTRequestMock>"
+            if isinstance(info, HostRequestMock):
+                info = "<HostRequestMock>"
             elif isinstance(info, bytes):
                 info = "<bytes>"
             elif isinstance(info, dict):
