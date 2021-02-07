@@ -87,8 +87,7 @@ run_test("basics", () => {
     });
     assert(appended);
 
-    const alice_li = $.create("alice-li-stub");
-    alice_li.length = 1;
+    const alice_li = {length: 1};
 
     buddy_list.get_li_from_key = (opts) => {
         const key = opts.key;
@@ -163,9 +162,7 @@ run_test("find_li w/force_render", () => {
     // key is not already rendered in DOM, then the
     // widget will call show_key to force-render it.
     const key = "999";
-    const stub_li = $.create("nada");
-
-    stub_li.length = 0;
+    const stub_li = {length: 0};
 
     buddy_list.get_li_from_key = (opts) => {
         assert.equal(opts.key, key);

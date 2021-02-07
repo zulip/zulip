@@ -42,7 +42,7 @@ run_test("pills", () => {
     };
 
     const recipient_stub = $("#private_message_recipient");
-    const pill_container_stub = $('.pill-container[data-before="You and"]');
+    const pill_container_stub = "pill-container";
     recipient_stub.set_parent(pill_container_stub);
     let create_item_handler;
 
