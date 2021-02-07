@@ -321,6 +321,35 @@ exports.initialize = function () {
         e.stopPropagation();
         popovers.hide_all();
     });
+
+    $("body").on("click", ".stream_name_save", (e) => {
+        const stream_name_edit = ".stream-name-editable";
+        stream_edit.start_stream_name_edit(stream_name_edit);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
+
+    $("body").on("click", ".stream_name_cancel", function (e) {
+        const stream_name_edit = ".stream-name-editable";
+        stream_edit.end_stream_name_edit(this, stream_name_edit);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
+
+    $("body").on("click", ".stream_description_save", (e) => {
+        const stream_description_edit = ".stream-description-editable";
+        stream_edit.start_stream_description_edit(stream_description_edit);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
+
+    $("body").on("click", ".stream_description_cancel", (e) => {
+        const stream_description_edit = ".stream-description-editable";
+        stream_edit.end_stream_description_edit(stream_description_edit);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
+
     $("body").on("click", ".copy_message", function (e) {
         const row = $(this).closest(".message_row");
         message_edit.end_message_row_edit(row);
@@ -784,84 +813,6 @@ exports.initialize = function () {
 
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", (e) => e.target.blur());
-
-    (function () {
-        const map = {
-            ".stream-description-editable": {
-                on_start: stream_edit.set_raw_description,
-                on_save: stream_edit.change_stream_description,
-            },
-            ".stream-name-editable": {
-                on_start: null,
-                on_save: stream_edit.change_stream_name,
-            },
-        };
-
-        $(document).on("keydown", ".editable-section", function (e) {
-            e.stopPropagation();
-            // Cancel editing description if Escape key is pressed.
-            if (e.which === 27) {
-                $("[data-finish-editing='.stream-description-editable']").hide();
-                $(this).attr("contenteditable", false);
-                $(this).text($(this).attr("data-prev-text"));
-                $("[data-make-editable]").html("");
-            } else if (e.which === 13) {
-                $(this).siblings(".checkmark").trigger("click");
-            }
-        });
-
-        $(document).on("drop", ".editable-section", () => false);
-
-        $(document).on("input", ".editable-section", function () {
-            // if there are any child nodes, inclusive of <br> which means you
-            // have lines in your description or title, you're doing something
-            // wrong.
-            for (let x = 0; x < this.childNodes.length; x += 1) {
-                if (this.childNodes[x].nodeType !== 3) {
-                    this.textContent = this.textContent.replace(/\n/, "");
-                    break;
-                }
-            }
-        });
-
-        $("body").on("click", "[data-make-editable]", function () {
-            const selector = $(this).attr("data-make-editable");
-            const edit_area = $(this).parent().find(`${selector}`);
-            $(selector).removeClass("stream-name-edit-box");
-            if (edit_area.attr("contenteditable") === "true") {
-                $(`[data-finish-editing='${CSS.escape(selector)}']`).hide();
-                edit_area.attr("contenteditable", false);
-                edit_area.text(edit_area.attr("data-prev-text"));
-                $(this).html("");
-            } else {
-                $(`[data-finish-editing='${CSS.escape(selector)}']`).show();
-
-                $(selector).addClass("stream-name-edit-box");
-                edit_area
-                    .attr("data-prev-text", edit_area.text().trim())
-                    .attr("contenteditable", true);
-
-                if (map[selector].on_start) {
-                    map[selector].on_start(this, edit_area);
-                }
-
-                ui_util.place_caret_at_end(edit_area[0]);
-
-                $(this).html("&times;");
-            }
-        });
-
-        $("body").on("click", "[data-finish-editing]", function (e) {
-            const selector = $(this).attr("data-finish-editing");
-            $(selector).removeClass("stream-name-edit-box");
-            if (map[selector].on_save) {
-                map[selector].on_save(e);
-                $(this).hide();
-                $(this).parent().find(`${selector}`).attr("contenteditable", false);
-                $(`[data-make-editable='${CSS.escape(selector)}']`).html("");
-            }
-        });
-    })();
 
     // HOTSPOTS
 

@@ -10,8 +10,8 @@
             <div class="stream-name">
                 <span title="{{name}}" class="stream-name-editable editable-section" >{{name}}</span>
                 {{#if can_change_name_description}}
-                <span class="editable" data-make-editable=".stream-name-editable"></span>
-                <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
+                <span class="editable stream_name_save"></span>
+                <span class="checkmark stream_name_cancel">✓</span>
                 {{/if}}
             </div>
             <div class="button-group">
@@ -30,8 +30,8 @@
         <div class="stream-description">
             <span class="stream-description-editable editable-section description rendered_markdown" data-no-description="{{t 'No description.' }}">{{rendered_markdown rendered_description}}</span>
             {{#if can_change_name_description}}
-            <span class="editable" data-make-editable=".stream-description-editable"></span>
-            <span class="checkmark" data-finish-editing=".stream-description-editable">✓</span>
+            <span class="editable stream_description_save"></span>
+            <span class="checkmark stream_description_cancel">✓</span>
             {{/if}}
         </div>
         <div class="subscription-type">

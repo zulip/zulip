@@ -581,6 +581,101 @@ function change_stream_privacy(e) {
     });
 }
 
+// here is the code for updating stream-name and stream description.
+
+$(document).on("keydown", ".editable-section", function (e) {
+    e.stopPropagation();
+    // Cancel editing description if Escape key is pressed.
+    if (e.which === 27) {
+        $(".stream_name_cancel").hide();
+        $(".stream_description_cancel").hide();
+        $(this).attr("contenteditable", false);
+        $(this).text($(this).attr("data-prev-text"));
+        $(".stream_name_save").html("");
+        $(".stream_description_save").html("");
+    } else if (e.which === 13) {
+        $(this).siblings(".checkmark").trigger("click");
+    }
+});
+
+$(document).on("drop", ".editable-section", () => false);
+
+$(document).on("input", ".editable-section", function () {
+    // if there are any child nodes, inclusive of <br> which means you
+    // have lines in your description or title, you're doing something
+    // wrong.
+    for (let x = 0; x < this.childNodes.length; x += 1) {
+        if (this.childNodes[x].nodeType !== 3) {
+            this.textContent = this.textContent.replace(/\n/, "");
+            break;
+        }
+    }
+});
+
+exports.start_stream_name_edit = function (selector) {
+    const edit_area = $(this).parent().find(`${selector}`);
+    $(selector).removeClass("stream-name-edit-box");
+    if (edit_area.attr("contenteditable") === "true") {
+        $(".stream_name_cancel").hide();
+        edit_area.attr("contenteditable", false);
+        edit_area.text(edit_area.attr("data-prev-text"));
+        $(this).html("");
+    } else {
+        $(".stream_name_cancel").show();
+
+        $(selector).addClass("stream-name-edit-box");
+        edit_area.attr("data-prev-text", edit_area.text().trim()).attr("contenteditable", true);
+
+        ui_util.place_caret_at_end(edit_area[0]);
+
+        $(this).html("&times;");
+    }
+};
+
+exports.start_stream_description_edit = function (selector) {
+    const edit_area = $(this).parent().find(`${this.selector}`);
+    $(selector).removeClass("stream-name-edit-box");
+    if (edit_area.attr("contenteditable") === "true") {
+        $(".stream_description_cancel").hide();
+        edit_area.attr("contenteditable", false);
+        edit_area.text(edit_area.attr("data-prev-text"));
+        $(this).html("");
+    } else {
+        $(".stream_description_cancel").show();
+
+        $(selector).addClass("stream-name-edit-box");
+        edit_area.attr("data-prev-text", edit_area.text().trim()).attr("contenteditable", true);
+
+        if (selector.set_raw_description) {
+            selector.set_raw_description(this, edit_area);
+        }
+
+        ui_util.place_caret_at_end(edit_area[0]);
+
+        $(this).html("&times;");
+    }
+};
+
+exports.end_stream_name_edit = function (selector, e) {
+    $(selector).removeClass("stream-name-edit-box");
+    if (selector.change_stream_name) {
+        selector.change_stream_name(e);
+        $(this).hide();
+        $(this).parent().find(`${selector}`).attr("contenteditable", false);
+        $(".stream_name_save").html("");
+    }
+};
+
+exports.end_stream_description_edit = function (selector, e) {
+    $(selector).removeClass("stream-name-edit-box");
+    if (selector.change_stream_description) {
+        selector.change_stream_description(e);
+        $(this).hide();
+        $(this).parent().find(`${selector}`).attr("contenteditable", false);
+        $(".stream_description_save").html("");
+    }
+};
+
 exports.change_stream_name = function (e) {
     e.preventDefault();
     const sub_settings = $(e.target).closest(".subscription_settings");
