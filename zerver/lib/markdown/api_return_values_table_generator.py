@@ -77,7 +77,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             # More correctly, we should be doing something that looks at the types;
             # print statements and test_api_doc_endpoint is useful for testing.
             arr = description.split(": ", 1)
-            if data_type != "object" or len(arr) == 1 or '\n' in arr[0]:
+            if len(arr) == 1 or '\n' in arr[0]:
                 return (spacing * " ") + "* " + description
             (key_name, key_description) = arr
             return (spacing * " ") + "* " + key_name + ": " + '<span class="api-response-datatype">' + data_type + "</span> "  + key_description
