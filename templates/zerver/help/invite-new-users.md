@@ -34,8 +34,10 @@ invitation, but require them to authenticate via LDAP.
 
 1. Set **Are invitations required for joining the organization** to **No**.
 
+1. Find the section **Domain restrictions**.
+
 1. Set **Restrict email domains of new users?** to
-   **Restrict to a list of domains**.
+   **Restrict to the domains listed below**.
 
 1. Enter any number of domains. For each domain, check or uncheck
    **Allow subdomains**.
@@ -51,6 +53,8 @@ invitation, but require them to authenticate via LDAP.
 1. Find the section **Joining the organization**.
 
 1. Set **Are invitations required for joining the organization** to **No**.
+
+1. Find the section **Domain restrictions**.
 
 1. Set **Restrict email domains of new users?** to either
    **Don't allow disposable email addresses** (recommended) or **No**.

@@ -8,30 +8,6 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_user_invite_restriction" class="dropdown-title">{{t "Are invitations required for joining the organization?" }}</label>
-                    <select name="realm_user_invite_restriction" id="id_realm_user_invite_restriction" class="prop-element">
-                        <option value="no_invite_required">{{t "No.  Members and admins can send invitations." }}</option>
-                        <option value="no_invite_required_by_admins_only">{{t "No.  Only admins can send invitations." }}</option>
-                        <option value="by_anyone">{{t "Yes. Members and admins can send invitations." }}</option>
-                        <option value="by_admins_only">{{t "Yes. Only admins can send invitations." }}</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label for="realm_org_join_restrictions" class="dropdown-title">{{t "Restrict email domains of new users?" }}</label>
-                    <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element">
-                        <option value="no_restriction">{{t "No restrictions" }}</option>
-                        <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
-                        <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
-                    </select>
-                </div>
-                <div class="dependent-block">
-                    <p id="allowed_domains_label" class="inline-block"></p>
-                    {{#if is_admin }}
-                    <a data-toggle="modal" href="#realm_domains_modal">{{t "[Configure]" }}</a>
-                    {{/if}}
-                </div>
-                <div class="input-group">
                     <label for="realm_waiting_period_setting" class="dropdown-title">
                         {{t "Waiting period before new members turn into full members" }}
                         {{> ../help_link_widget link="/help/restrict-permissions-of-new-members" }}
@@ -49,6 +25,37 @@
                       name="realm_waiting_period_threshold"
                       class="admin-realm-time-limit-input prop-element"
                       value="{{ realm_waiting_period_threshold }}"/>
+                </div>
+
+                <div class="input-group">
+                    <label for="realm_user_invite_restriction" class="dropdown-title">{{t "Are invitations required for joining the organization?" }}</label>
+                    <select name="realm_user_invite_restriction" id="id_realm_user_invite_restriction" class="prop-element">
+                        <option value="no_invite_required">{{t "No.  Members and admins can send invitations." }}</option>
+                        <option value="no_invite_required_by_admins_only">{{t "No.  Only admins can send invitations." }}</option>
+                        <option value="by_anyone">{{t "Yes. Members and admins can send invitations." }}</option>
+                        <option value="by_admins_only">{{t "Yes. Only admins can send invitations." }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-domain-restrictions" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3 class="settings-section-title">{{t "Domain restrictions" }}</h3>
+                {{> settings_save_discard_widget section_name="domain-restrictions" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                <div class="input-group">
+                    <label for="realm_org_join_restrictions" class="dropdown-title">{{t "Restrict email domains of new users?" }}</label>
+                    <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element">
+                        <option value="no_restriction">{{t "No restrictions" }}</option>
+                        <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
+                        <option value="only_selected_domain">{{t "Restrict to the domains listed below" }}</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <p id="zero_domains_warning">There are no domains configured now. This'd restrict anyone from registering.</p>
+                    {{> realm_domains_table }}
                 </div>
             </div>
         </div>

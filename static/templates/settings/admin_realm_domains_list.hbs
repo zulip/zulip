@@ -3,11 +3,11 @@
     <td class="domain">{{domain}}</td>
     <td>
         <label class="checkbox">
-            <input type="checkbox" class="allow-subdomains"
+            <input type="checkbox" class="allow-subdomains no-input-change-detection"
               {{#if allow_subdomains}} checked="checked" {{/if}} />
             <span></span>
         </label>
     </td>
-    <td><button class="button btn-danger small rounded delete_realm_domain">{{t "Remove" }}</button></td>
+    <td><button class="button btn-danger small rounded delete_realm_domain" type="button">{{t "Remove" }}</button></td>
 </tr>
 {{/with}}

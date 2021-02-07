@@ -277,10 +277,12 @@ function set_message_retention_setting_dropdown() {
 function set_org_join_restrictions_dropdown() {
     const value = get_property_value("realm_org_join_restrictions");
     $("#id_realm_org_join_restrictions").val(value);
-    change_element_block_display_property(
-        "allowed_domains_label",
-        value === "only_selected_domain",
-    );
+    const zero_domains_warning = $("#zero_domains_warning");
+    if (value === "only_selected_domain") {
+        zero_domains_warning.show();
+    } else {
+        zero_domains_warning.hide();
+    }
 }
 
 function set_message_content_in_email_notifications_visiblity() {
@@ -298,18 +300,21 @@ function set_digest_emails_weekday_visibility() {
 }
 
 exports.populate_realm_domains = function (realm_domains) {
-    if (!meta.loaded) {
+    if (!meta.loaded || !page_params.is_admin) {
         return;
     }
 
     const domains_list = realm_domains.map((realm_domain) =>
         realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain,
     );
-    let domains = domains_list.join(", ");
-    if (domains.length === 0) {
-        domains = i18n.t("None");
+    const domains = domains_list.join(", ");
+    const zero_domains_warning = $("#zero_domains_warning");
+    const value = get_property_value("realm_org_join_restrictions");
+    if (domains.length === 0 && value === "only_selected_domain") {
+        zero_domains_warning.show();
+    } else {
+        zero_domains_warning.hide();
     }
-    $("#allowed_domains_label").text(i18n.t("Allowed domains: __domains__", {domains}));
 
     const realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
@@ -462,6 +467,11 @@ exports.change_save_button_state = function ($element, state) {
         return;
     }
 
+    if (state !== "error_occured") {
+        $element.find(".subsection-failed-status p").hide();
+        $saveBtn.show();
+    }
+
     let button_text;
     let data_status;
     let is_show;
@@ -490,6 +500,12 @@ exports.change_save_button_state = function ($element, state) {
         button_text = i18n.t("Saved");
         data_status = "saved";
         is_show = false;
+    } else if (state === "error_occured") {
+        data_status = "failed";
+        button_text = "";
+        is_show = false;
+        $element.find(".discard-button").hide();
+        $saveBtn.hide();
     }
 
     $textEl.text(button_text);
@@ -781,7 +797,7 @@ exports.build_page = function () {
             } else if (add_emoji_permission === "by_anyone") {
                 data.add_emoji_by_admins_only = false;
             }
-        } else if (subsection === "org_join") {
+        } else if (subsection === "domain_restrictions") {
             const org_join_restrictions = $("#id_realm_org_join_restrictions").val();
             if (org_join_restrictions === "only_selected_domain") {
                 data.emails_restricted_to_domains = true;
@@ -793,7 +809,7 @@ exports.build_page = function () {
                 data.disallow_disposable_email_addresses = false;
                 data.emails_restricted_to_domains = false;
             }
-
+        } else if (subsection === "org_join") {
             const user_invite_restriction = $("#id_realm_user_invite_restriction").val();
             if (user_invite_restriction === "no_invite_required") {
                 data.invite_required = false;
@@ -905,52 +921,28 @@ exports.build_page = function () {
         );
     });
 
-    $("#id_realm_org_join_restrictions").on("change", (e) => {
-        const org_join_restrictions = e.target.value;
-        const node = $("#allowed_domains_label").parent();
-        if (org_join_restrictions === "only_selected_domain") {
-            node.show();
-            if (page_params.realm_domains.length === 0) {
-                overlays.open_modal("#realm_domains_modal");
-            }
-        } else {
-            node.hide();
-        }
-    });
-
-    $("#id_realm_org_join_restrictions").on("click", (e) => {
-        // This prevents the disappearance of modal when there are
-        // no allowed domains otherwise it gets closed due to
-        // the click event handler attached to `#settings_overlay_container`
-        e.stopPropagation();
-    });
-
-    function fade_status_element(elem) {
-        setTimeout(() => {
-            elem.fadeOut(500);
-        }, 1000);
-    }
-
     $("#realm_domains_table").on("click", ".delete_realm_domain", function () {
         const domain = $(this).parents("tr").find(".domain").text();
         const url = "/json/realm/domains/" + domain;
-        const realm_domains_info = $(".realm_domains_info");
+
+        const subsection_parent = $("#org-domain-restrictions");
+        const save_btn_container = subsection_parent.find(".save-button-controls");
+        const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
+        exports.change_save_button_state(save_btn_container, "saving");
 
         channel.del({
             url,
             success() {
-                ui_report.success(i18n.t("Deleted successfully!"), realm_domains_info);
-                fade_status_element(realm_domains_info);
+                exports.change_save_button_state(save_btn_container, "succeeded");
             },
             error(xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
-                fade_status_element(realm_domains_info);
+                exports.change_save_button_state(save_btn_container, "error_occured");
+                ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
             },
         });
     });
 
     $("#submit-add-realm-domain").on("click", () => {
-        const realm_domains_info = $(".realm_domains_info");
         const widget = $("#add-realm-domain-widget");
         const domain = widget.find(".new-realm-domain").val();
         const allow_subdomains = widget.find(".new-realm-domain-allow-subdomains").prop("checked");
@@ -958,6 +950,10 @@ exports.build_page = function () {
             domain: JSON.stringify(domain),
             allow_subdomains: JSON.stringify(allow_subdomains),
         };
+        const subsection_parent = $("#org-domain-restrictions");
+        const save_btn_container = subsection_parent.find(".save-button-controls");
+        const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
+        exports.change_save_button_state(save_btn_container, "saving");
 
         channel.post({
             url: "/json/realm/domains",
@@ -968,50 +964,36 @@ exports.build_page = function () {
                     "checked",
                     false,
                 );
-                ui_report.success(i18n.t("Added successfully!"), realm_domains_info);
-                fade_status_element(realm_domains_info);
+                exports.change_save_button_state(save_btn_container, "succeeded");
             },
             error(xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
-                fade_status_element(realm_domains_info);
+                exports.change_save_button_state(save_btn_container, "error_occured");
+                ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
             },
         });
     });
 
     $("#realm_domains_table").on("change", ".allow-subdomains", function (e) {
         e.stopPropagation();
-        const realm_domains_info = $(".realm_domains_info");
         const domain = $(this).parents("tr").find(".domain").text();
         const allow_subdomains = $(this).prop("checked");
         const url = "/json/realm/domains/" + domain;
         const data = {
             allow_subdomains: JSON.stringify(allow_subdomains),
         };
-
+        const subsection_parent = $("#org-domain-restrictions");
+        const save_btn_container = subsection_parent.find(".save-button-controls");
+        const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
+        exports.change_save_button_state(save_btn_container, "saving");
         channel.patch({
             url,
             data,
             success() {
-                if (allow_subdomains) {
-                    ui_report.success(
-                        i18n.t("Update successful: Subdomains allowed for __domain__", {
-                            domain,
-                        }),
-                        realm_domains_info,
-                    );
-                } else {
-                    ui_report.success(
-                        i18n.t("Update successful: Subdomains no longer allowed for __domain__", {
-                            domain,
-                        }),
-                        realm_domains_info,
-                    );
-                }
-                fade_status_element(realm_domains_info);
+                exports.change_save_button_state(save_btn_container, "succeeded");
             },
             error(xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
-                fade_status_element(realm_domains_info);
+                exports.change_save_button_state(save_btn_container, "error_occured");
+                ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
             },
         });
     });

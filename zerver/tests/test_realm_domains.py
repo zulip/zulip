@@ -108,10 +108,7 @@ class RealmDomainTest(ZulipTestCase):
         for realm_domain in query.all():
             do_remove_realm_domain(realm_domain)
         self.assertEqual(query.count(), 0)
-        # Deleting last realm_domain should set `emails_restricted_to_domains` to False.
-        # This should be tested on a fresh instance, since the cached objects
-        # would not be updated.
-        self.assertFalse(get_realm('zulip').emails_restricted_to_domains)
+        self.assertTrue(get_realm('zulip').emails_restricted_to_domains)
 
     def test_email_allowed_for_realm(self) -> None:
         realm1 = do_create_realm('testrealm1', 'Test Realm 1', emails_restricted_to_domains=True)

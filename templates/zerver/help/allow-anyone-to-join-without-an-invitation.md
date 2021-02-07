@@ -15,6 +15,8 @@ up so that anyone can join without an invitation.
 
 1. Set **Are invitations required for joining the organization** to **No**.
 
+1. Find the section **Domain restrictions**.
+
 1. Set **Restrict email domains of new users?** to either
    **Don't allow disposable email addresses** (recommended) or **No**.
 
