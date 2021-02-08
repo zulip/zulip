@@ -223,6 +223,8 @@ run_test("start", () => {
         abort_xhr_called = true;
     };
 
+    $("#compose-textarea").set_height(50);
+
     assert_hidden("#compose_controls");
     cancel();
     assert(abort_xhr_called);

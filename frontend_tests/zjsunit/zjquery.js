@@ -152,6 +152,8 @@ exports.make_new_elem = function (selector, opts) {
     let value;
     let css;
     let shown = false;
+    let height;
+
     const find_results = new Map();
     let my_parent;
     const parents_result = new Map();
@@ -234,7 +236,12 @@ exports.make_new_elem = function (selector, opts) {
         hasClass(class_name) {
             return classes.has(class_name);
         },
-        height: noop,
+        height() {
+            if (height === undefined) {
+                throw new Error(`Please call $("${selector}").set_height`);
+            }
+            return height;
+        },
         hide() {
             shown = false;
             return self;
@@ -324,6 +331,9 @@ exports.make_new_elem = function (selector, opts) {
         },
         serializeArray() {
             return self;
+        },
+        set_height(fake_height) {
+            height = fake_height;
         },
         set_parent(parent_elem) {
             my_parent = parent_elem;
