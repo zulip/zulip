@@ -44,12 +44,16 @@ const alice = {
 people.add_active_user(alice);
 
 run_test("get_items", () => {
-    const alice_li = $.create("alice stub");
+    // We don't make alice_li an actual jQuery stub,
+    // because our test only cares that it comes
+    // back from get_items.
+    const alice_li = "alice stub";
     const sel = "li.user_sidebar_entry";
-
-    buddy_list.container.set_find_results(sel, {
-        map: (f) => [f(0, alice_li)],
+    const container = $.create("get_items container", {
+        children: [{to_$: () => alice_li}],
     });
+
+    buddy_list.container.set_find_results(sel, container);
     const items = buddy_list.get_items();
 
     assert.deepEqual(items, [alice_li]);

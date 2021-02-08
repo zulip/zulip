@@ -192,7 +192,7 @@ run_test("sender_hover", (override) => {
         }
     });
 
-    $(".user_popover_email").each = noop;
+    $.create(".user_popover_email", {children: []});
     const image_stubber = make_image_stubber();
     window.location = {
         href: "http://chat.zulip.org/",

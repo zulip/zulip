@@ -324,19 +324,18 @@ run_test("zoom_in_and_zoom_out", () => {
     assert(label1.visible());
     assert(label2.visible());
 
-    $(".stream-filters-label").each = (f) => {
-        f.call(elem(label1));
-        f.call(elem(label2));
-    };
+    $.create(".stream-filters-label", {
+        children: [elem(label1), elem(label2)],
+    });
 
     const splitter = $.create("hr stub");
 
     splitter.show();
     assert(splitter.visible());
 
-    $(".stream-split").each = (f) => {
-        f.call(elem(splitter));
-    };
+    $.create(".stream-split", {
+        children: [elem(splitter)],
+    });
 
     const stream_li1 = $.create("stream1 stub");
     const stream_li2 = $.create("stream2 stub");
@@ -352,10 +351,10 @@ run_test("zoom_in_and_zoom_out", () => {
     stream_li1.hide();
     stream_li2.attr = make_attr("99");
 
-    $("#stream_filters li.narrow-filter").each = (f) => {
-        f.call(elem(stream_li1));
-        f.call(elem(stream_li2));
-    };
+    $.create("#stream_filters li.narrow-filter", {
+        children: [elem(stream_li1), elem(stream_li2)],
+    });
+
     $("#stream-filters-container")[0] = {
         dataset: {},
     };
