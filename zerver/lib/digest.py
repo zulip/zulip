@@ -1,4 +1,5 @@
 import datetime
+import heapq
 import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
@@ -185,15 +186,13 @@ def get_hot_topics(
         topic for topic in all_topics
         if topic.stream_id() in stream_ids
     ]
-    topics_by_diversity = sorted(topics, key=lambda dt: dt.diversity(), reverse=True)
-    topics_by_length = sorted(topics, key=lambda dt: dt.length(), reverse=True)
 
     # Start with the two most diverse topics.
-    hot_topics = topics_by_diversity[:2]
+    hot_topics = heapq.nlargest(2, topics, key=DigestTopic.diversity)
 
     # Pad out our list up to MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST items,
     # using the topics' length (aka message count) as the secondary filter.
-    for topic in topics_by_length:
+    for topic in heapq.nlargest(MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST, topics, key=DigestTopic.length):
         if topic not in hot_topics:
             hot_topics.append(topic)
         if len(hot_topics) == MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST:
