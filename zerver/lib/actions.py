@@ -546,27 +546,43 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: O
         user_set.add((email, full_name, True))
     bulk_create_users(realm, user_set, bot_type)
 
-def do_create_user(email: str, password: Optional[str], realm: Realm, full_name: str,
-                   bot_type: Optional[int]=None, role: Optional[int]=None,
-                   bot_owner: Optional[UserProfile]=None, tos_version: Optional[str]=None,
-                   timezone: str="", avatar_source: str=UserProfile.AVATAR_FROM_GRAVATAR,
-                   default_sending_stream: Optional[Stream]=None,
-                   default_events_register_stream: Optional[Stream]=None,
-                   default_all_public_streams: Optional[bool]=None,
-                   prereg_user: Optional[PreregistrationUser]=None,
-                   default_stream_groups: Sequence[DefaultStreamGroup]=[],
-                   source_profile: Optional[UserProfile]=None,
-                   realm_creation: bool=False,
-                   acting_user: Optional[UserProfile]=None) -> UserProfile:
+def do_create_user(
+    email: str,
+    password: Optional[str],
+    realm: Realm,
+    full_name: str,
+    bot_type: Optional[int]=None,
+    role: Optional[int]=None,
+    bot_owner: Optional[UserProfile]=None,
+    tos_version: Optional[str]=None,
+    timezone: str="",
+    avatar_source: str=UserProfile.AVATAR_FROM_GRAVATAR,
+    default_sending_stream: Optional[Stream]=None,
+    default_events_register_stream: Optional[Stream]=None,
+    default_all_public_streams: Optional[bool]=None,
+    prereg_user: Optional[PreregistrationUser]=None,
+    default_stream_groups: Sequence[DefaultStreamGroup]=[],
+    source_profile: Optional[UserProfile]=None,
+    realm_creation: bool=False,
+    acting_user: Optional[UserProfile]=None,
+) -> UserProfile:
 
-    user_profile = create_user(email=email, password=password, realm=realm,
-                               full_name=full_name,
-                               role=role, bot_type=bot_type, bot_owner=bot_owner,
-                               tos_version=tos_version, timezone=timezone, avatar_source=avatar_source,
-                               default_sending_stream=default_sending_stream,
-                               default_events_register_stream=default_events_register_stream,
-                               default_all_public_streams=default_all_public_streams,
-                               source_profile=source_profile)
+    user_profile = create_user(
+        email=email,
+        password=password,
+        realm=realm,
+        full_name=full_name,
+        role=role,
+        bot_type=bot_type,
+        bot_owner=bot_owner,
+        tos_version=tos_version,
+        timezone=timezone,
+        avatar_source=avatar_source,
+        default_sending_stream=default_sending_stream,
+        default_events_register_stream=default_events_register_stream,
+        default_all_public_streams=default_all_public_streams,
+        source_profile=source_profile,
+    )
 
     event_time = user_profile.date_joined
     if not acting_user:
