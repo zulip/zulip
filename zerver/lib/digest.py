@@ -187,11 +187,8 @@ def get_hot_topics(
         if topic.stream_id() in stream_ids
     ]
 
-    # Start with the two most diverse topics.
     hot_topics = heapq.nlargest(2, topics, key=DigestTopic.diversity)
 
-    # Pad out our list up to MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST items,
-    # using the topics' length (aka message count) as the secondary filter.
     for topic in heapq.nlargest(MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST, topics, key=DigestTopic.length):
         if topic not in hot_topics:
             hot_topics.append(topic)
