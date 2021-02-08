@@ -355,6 +355,52 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_error(result, "You don't have permission to edit this message")
 
+    def test_edit_message_deactivated_stream(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("toDeactivate")
+        self.subscribe(hamlet, stream.name)
+        msg_id = self.send_stream_message(hamlet, stream.name)
+        stream.deactivated = True
+        stream.save()
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "content": "content after edit",
+            },
+        )
+
+        self.assert_json_error(result, "Cannot edit content in deactivated stream.")
+
+    def test_edit_message_no_changes(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+            },
+        )
+        self.assert_json_error(result, "Nothing to change")
+
+    def test_edit_message_no_topic(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": " ",
+            },
+        )
+        self.assert_json_error(result, "Topic can't be empty")
+
     def test_edit_message_no_content(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
@@ -2122,6 +2168,23 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_error(result, "You don't have permission to delete this message")
 
         result = test_delete_message_by_owner(msg_id=msg_id)
+        self.assert_json_success(result)
+
+        # Test if message is in deactivated stream.
+        stream = self.make_stream("toDeactivate")
+        iago = self.example_user("iago")
+        self.subscribe(iago, stream.name)
+        self.subscribe(hamlet, stream.name)
+        msg_id = self.send_stream_message(hamlet, stream.name)
+        stream.deactivated = True
+        stream.save()
+
+        # Regular user
+        result = test_delete_message_by_owner(msg_id)
+        self.assert_json_error(result, "Cannot edit content in deactivated stream.")
+
+        # Admin
+        result = test_delete_message_by_admin(msg_id)
         self.assert_json_success(result)
 
         # Test if time limit is non-zero.

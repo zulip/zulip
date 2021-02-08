@@ -206,6 +206,17 @@ class InvalidJSONError(JsonableError):
         return _("Malformed JSON")
 
 
+class DeactivatedStreamError(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Cannot edit content in deactivated stream.")
+
+
 class OrganizationMemberRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
