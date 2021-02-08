@@ -66,7 +66,18 @@ run_test("copy_data_attribute_value", () => {
     common.copy_data_attribute_value(elem, "admin-emails");
 });
 
-run_test("adjust_mac_shortcuts", () => {
+run_test("adjust_mac_shortcuts non-mac", () => {
+    common.has_mac_keyboard = function () {
+        return false;
+    };
+
+    // The adjust_mac_shortcuts has a really simple guard
+    // at the top, and we just test the early-return behavior
+    // by trying to pass it garbage.
+    common.adjust_mac_shortcuts("selector-that-does-not-exist");
+});
+
+run_test("adjust_mac_shortcuts mac", () => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
@@ -81,41 +92,16 @@ run_test("adjust_mac_shortcuts", () => {
         ["Ctrl + Shift", "⌘ + Shift"],
         ["Ctrl + Backspace + End", "⌘ + Delete + Fn + →"],
     ]);
-    const keys_to_test_non_mac = new Map([
-        ["Backspace", "Backspace"],
-        ["Enter", "Enter"],
-        ["Home", "Home"],
-        ["End", "End"],
-        ["PgUp", "PgUp"],
-        ["PgDn", "PgDn"],
-        ["X + Shift", "X + Shift"],
-        ["⌘ + Return", "⌘ + Return"],
-        ["Ctrl + Shift", "Ctrl + Shift"],
-        ["Ctrl + Backspace + End", "Ctrl + Backspace + End"],
-    ]);
 
-    let key_no;
-    let keys_elem_list = [];
-
-    common.has_mac_keyboard = function () {
-        return false;
-    };
-    key_no = 1;
-    for (const [key, value] of keys_to_test_non_mac) {
-        keys_elem_list.push(get_key_stub_html(key, value, "hotkey_non_mac_" + key_no));
-        key_no += 1;
-    }
-
-    common.adjust_mac_shortcuts(".markdown_content");
-    for (const key_elem of keys_elem_list) {
-        assert(key_elem.text(), key_elem.expected_key());
-    }
-
-    keys_elem_list = [];
-    key_no = 1;
     common.has_mac_keyboard = function () {
         return true;
     };
+
+    $.clear_all_elements();
+
+    const keys_elem_list = [];
+    let key_no = 1;
+
     for (const [key, value] of keys_to_test_mac) {
         keys_elem_list.push(get_key_stub_html(key, value, "hotkey_" + key_no));
         key_no += 1;
