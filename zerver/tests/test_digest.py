@@ -313,7 +313,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # Check that all users without an a UserActivityInterval entry are considered
         # inactive users and get enqueued.
-        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
+        with mock.patch('zerver.worker.queue_processors.bulk_handle_digest_email') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         num_queued_users = len(queue_mock.call_args[0][0])
@@ -328,7 +328,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             )
 
         # Now we expect no users, due to recent activity.
-        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
+        with mock.patch('zerver.worker.queue_processors.bulk_handle_digest_email') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         self.assertEqual(queue_mock.call_count, 0)
@@ -337,7 +337,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         last_visit = timezone_now() - datetime.timedelta(days=7)
         UserActivityInterval.objects.all().update(start=last_visit, end=last_visit)
 
-        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
+        with mock.patch('zerver.worker.queue_processors.bulk_handle_digest_email') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         num_queued_users = len(queue_mock.call_args[0][0])
