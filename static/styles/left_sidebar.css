@@ -450,7 +450,7 @@ li.expanded_private_message {
     }
 }
 
-.show-all-streams {
+.show-all-topics {
     a {
         color: hsl(0, 0%, 20%);
     }

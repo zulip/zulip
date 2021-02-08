@@ -56,7 +56,7 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $(".show-all-streams").on("click", (e) => {
+    $(".show-all-topics").on("click", (e) => {
         exports.zoom_out();
 
         e.preventDefault();
