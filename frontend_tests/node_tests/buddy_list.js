@@ -31,7 +31,7 @@ function init_simulated_scrolling() {
 
     $("#buddy_list_wrapper")[0] = elem;
 
-    $("#buddy_list_wrapper_padding").height = () => 0;
+    $("#buddy_list_wrapper_padding").set_height(0);
 
     return elem;
 }
