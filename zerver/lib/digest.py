@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 log_to_file(logger, settings.DIGEST_LOG_PATH)
 
 DIGEST_CUTOFF = 5
+MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST = 4
 
 TopicKey = Tuple[int, str]
 
@@ -190,12 +191,12 @@ def get_hot_topics(
     # Start with the two most diverse topics.
     hot_topics = topics_by_diversity[:2]
 
-    # Pad out our list up to 4 items, using the topics' length (aka message
-    # count) as the secondary filter.
+    # Pad out our list up to MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST items,
+    # using the topics' length (aka message count) as the secondary filter.
     for topic in topics_by_length:
         if topic not in hot_topics:
             hot_topics.append(topic)
-        if len(hot_topics) == 4:
+        if len(hot_topics) == MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST:
             break
 
     return hot_topics
