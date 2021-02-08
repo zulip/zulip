@@ -225,11 +225,6 @@ exports.make_new_elem = function (selector, opts) {
             }
             throw new Error("Cannot find " + child_selector + " in " + selector);
         },
-        get(idx) {
-            // We have some legacy code that does $('foo').get(0).
-            assert.equal(idx, 0);
-            return selector;
-        },
         get_on_handler(name, child_selector) {
             return event_store.get_on_handler(name, child_selector);
         },
@@ -385,6 +380,15 @@ exports.make_new_elem = function (selector, opts) {
         },
     };
 
+    if (opts.children) {
+        self.map = (f) => opts.children.map((i, elem) => f(elem, i));
+        self.each = (f) => {
+            for (const child of opts.children) {
+                f.call(child);
+            }
+        };
+    }
+
     if (selector[0] === "<") {
         self.html(selector);
     }
@@ -406,9 +410,10 @@ exports.make_zjquery = function (opts) {
     // Our fn structure helps us simulate extending jQuery.
     const fn = {};
 
-    function new_elem(selector) {
+    function new_elem(selector, create_opts) {
         const elem = exports.make_new_elem(selector, {
             silent: opts.silent,
+            ...create_opts,
         });
         Object.assign(elem, fn);
 
@@ -505,10 +510,11 @@ exports.make_zjquery = function (opts) {
         return elems.get(selector);
     };
 
-    zjquery.create = function (name) {
+    zjquery.create = function (name, opts) {
         assert(!elems.has(name), "You already created an object with this name!!");
-        const elem = new_elem(name);
+        const elem = new_elem(name, opts);
         elems.set(name, elem);
+
         return elem;
     };
 
