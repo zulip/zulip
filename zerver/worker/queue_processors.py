@@ -612,7 +612,6 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
     # Who gets a digest is entirely determined by the enqueue_digest_emails
     # management command, not here.
     def consume(self, event: Mapping[str, Any]) -> None:
-        logging.info("Received digest event: %s", event)
         if "user_ids" in event:
             user_ids = event["user_ids"]
         else:

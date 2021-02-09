@@ -88,7 +88,7 @@ def should_process_digest(realm_str: str) -> bool:
 def queue_digest_user_ids(user_ids: List[int], cutoff: datetime.datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {
-        "user_profile_id": user_ids,
+        "user_ids": user_ids,
         "cutoff": cutoff.strftime('%s')
     }
     queue_json_publish("digest_emails", event)
