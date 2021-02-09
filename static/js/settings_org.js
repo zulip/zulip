@@ -597,11 +597,31 @@ exports.signup_notifications_stream_widget = null;
 
 exports.init_dropdown_widgets = () => {
     const streams = stream_data.get_streams_for_settings_page();
+    const stream_options = streams.map((x) => ({
+        name: x.name,
+        value: x.stream_id.toString(),
+    }));
+
+    // If a private stream is set as "realm_notifications_stream_id"
+    // or "realm_signup_notifications_stream_id" and the user doesn't
+    // have access to it, add a option for it.
+    const realm_notifications_stream_id = page_params.realm_notifications_stream_id.toString();
+    const realm_signup_notifications_stream_id = page_params.realm_signup_notifications_stream_id.toString();
+    if (!stream_options.find((x) => x.value === realm_notifications_stream_id)) {
+        stream_options.push({
+            name: "Unknown stream",
+            value: realm_notifications_stream_id,
+        });
+    }
+    if (!stream_options.find((x) => x.value === realm_signup_notifications_stream_id)) {
+        stream_options.push({
+            name: "Unknown stream",
+            value: realm_signup_notifications_stream_id,
+        });
+    }
+
     const notification_stream_options = {
-        data: streams.map((x) => ({
-            name: x.name,
-            value: x.stream_id.toString(),
-        })),
+        data: stream_options,
         on_update: () => {
             exports.save_discard_widget_status_handler($("#org-notifications"));
         },
