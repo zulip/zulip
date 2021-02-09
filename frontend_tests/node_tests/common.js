@@ -25,15 +25,6 @@ $(input).val = (arg) => {
 
 zrequire("common");
 
-function get_key_stub_html(key_text, expected_key, obj_name) {
-    const key_stub = $.create(obj_name);
-    key_stub.text(key_text);
-    key_stub.expected_key = function () {
-        return expected_key;
-    };
-    return key_stub;
-}
-
 run_test("basics", () => {
     common.autofocus("#home");
     assert($("#home").is_focused());
@@ -99,33 +90,30 @@ run_test("adjust_mac_shortcuts mac", () => {
 
     $.clear_all_elements();
 
-    const keys_elem_list = [];
+    const test_items = [];
     let key_no = 1;
 
-    for (const [key, value] of keys_to_test_mac) {
-        keys_elem_list.push(get_key_stub_html(key, value, "hotkey_" + key_no));
+    for (const [old_key, mac_key] of keys_to_test_mac) {
+        const test_item = {};
+        const stub = $.create("hotkey_" + key_no);
+        stub.text(old_key);
+        assert.equal(stub.hasClass("mac-cmd-key"), false);
+        test_item.stub = stub;
+        test_item.mac_key = mac_key;
+        test_item.is_cmd_key = old_key.includes("Ctrl");
+        test_items.push(test_item);
         key_no += 1;
     }
 
-    $(".markdown_content").each = (f) => {
-        for (const key_elem of keys_elem_list) {
-            f.call(key_elem);
-        }
-    };
-    common.adjust_mac_shortcuts(".markdown_content");
-    for (const key_elem of keys_elem_list) {
-        assert.equal(key_elem.text(), key_elem.expected_key());
-    }
+    const children = test_items.map((test_item) => ({to_$: () => test_item.stub}));
 
-    const markdown_hotkey_1 = get_key_stub_html(
-        "Ctrl + Backspace",
-        "⌘ + Delete",
-        "markdown_hotkey_1",
-    );
-    $(".markdown_content").each = (f) => {
-        f.call(markdown_hotkey_1);
-    };
-    common.adjust_mac_shortcuts(".markdown_content", true);
-    assert.equal(markdown_hotkey_1.text(), markdown_hotkey_1.expected_key());
-    assert.equal(markdown_hotkey_1.hasClass("mac-cmd-key"), true);
+    $.create(".markdown_content", {children});
+
+    const require_cmd = true;
+    common.adjust_mac_shortcuts(".markdown_content", require_cmd);
+
+    for (const test_item of test_items) {
+        assert.equal(test_item.stub.hasClass("mac-cmd-key"), test_item.is_cmd_key);
+        assert.equal(test_item.stub.text(), test_item.mac_key);
+    }
 });
