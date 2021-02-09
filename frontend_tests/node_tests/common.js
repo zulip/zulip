@@ -15,9 +15,11 @@ set_global("document", {
     execCommand: noop,
 });
 
+const admin_emails_val = "iago@zulip.com";
+
 $("body").append = noop;
 $(input).val = (arg) => {
-    assert.equal(arg, "iago@zulip.com");
+    assert.equal(arg, admin_emails_val);
     return {
         trigger: noop,
     };
@@ -41,20 +43,25 @@ run_test("phrase_match", () => {
 });
 
 run_test("copy_data_attribute_value", () => {
-    const elem = $.create(".envelope-link");
+    const elem = {};
+    let faded_in = false;
+    let faded_out = false;
+
     elem.data = (key) => {
-        if (key === "admin-emails") {
-            return "iago@zulip.com";
-        }
-        return "";
+        assert.equal(key, "admin-emails");
+        return admin_emails_val;
     };
     elem.fadeOut = (val) => {
         assert.equal(val, 250);
+        faded_out = true;
     };
     elem.fadeIn = (val) => {
         assert.equal(val, 1000);
+        faded_in = true;
     };
     common.copy_data_attribute_value(elem, "admin-emails");
+    assert(faded_in);
+    assert(faded_out);
 });
 
 run_test("adjust_mac_shortcuts non-mac", () => {
