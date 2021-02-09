@@ -639,6 +639,7 @@ exports.set_up = function () {
     });
 
     function upload_avatar(file_input) {
+        // here we can get the edited file as extra parameter sent from upload_Widget.js and then send to server.
         const form_data = new FormData();
 
         form_data.append("csrfmiddlewaretoken", csrf_token);
