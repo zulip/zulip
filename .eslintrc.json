@@ -38,6 +38,7 @@
             }
         ],
         "import/unambiguous": "error",
+        "lines-around-directive": "error",
         "new-cap": "error",
         "no-alert": "error",
         "no-array-constructor": "error",
