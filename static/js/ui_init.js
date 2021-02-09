@@ -124,6 +124,9 @@ exports.initialize_kitchen_sink_stuff = function () {
 
     if (!page_params.left_side_userlist) {
         $("#navbar-buttons").addClass("right-userlist");
+    } else {
+        $("#userlist-toggle").hide();
+        $("#navbar-buttons").removeClass("right-userlist");
     }
 
     if (page_params.high_contrast_mode) {
