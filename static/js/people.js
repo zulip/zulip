@@ -1030,9 +1030,9 @@ export function get_people_for_stream_create() {
     /*
         If you are thinking of reusing this function,
         a better option in most cases is to just
-        call `exports.get_realm_users()` and then
-        filter out the "me" user yourself as part of
-        any other filtering that you are doing.
+        call `get_realm_users()` and then filter out
+        the "me" user yourself as part of any other
+        filtering that you are doing.
 
         In particular, this function does a sort
         that is kinda expensive and may not apply
