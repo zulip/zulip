@@ -632,12 +632,27 @@ li.actual-dropdown-menu > a:focus {
     outline: 0;
 }
 
-li.actual-dropdown-menu i {
+li.actual-dropdown-menu i,
+li.actual-dropdown-menu svg {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
     width: 14px;
     text-align: center;
     margin-right: 3px;
+}
+
+li.actual-dropdown-menu svg {
+    fill: hsl(0, 0%, 27%);
+    transform: translateY(2px);
+}
+
+body.night-mode li.actual-dropdown-menu svg {
+    fill: hsl(0, 0%, 100%);
+}
+
+.menuitem-version:hover > svg,
+.menuitem-version:focus > svg {
+    fill: hsl(0, 0%, 100%);
 }
 
 .settings-dropdown-cog {
