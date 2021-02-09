@@ -178,6 +178,13 @@ exports.make_new_elem = function (selector, opts) {
             attrs.set(name, val);
             return self;
         },
+        css(...args) {
+            if (args.length === 0) {
+                return css || {};
+            }
+            [css] = args;
+            return self;
+        },
         data(name, val) {
             if (val === undefined) {
                 return attrs.get("data-" + name);
@@ -266,6 +273,12 @@ exports.make_new_elem = function (selector, opts) {
             event_store.off(...args);
             return self;
         },
+        offset() {
+            return {
+                top: 0,
+                left: 0,
+            };
+        },
         on(...args) {
             event_store.on(...args);
             return self;
@@ -317,15 +330,11 @@ exports.make_new_elem = function (selector, opts) {
         scrollTop() {
             return self;
         },
-        set_find_results(find_selector, jquery_object) {
-            find_results.set(find_selector, jquery_object);
-        },
-        show() {
-            shown = true;
-            return self;
-        },
         serializeArray() {
             return self;
+        },
+        set_find_results(find_selector, jquery_object) {
+            find_results.set(find_selector, jquery_object);
         },
         set_height(fake_height) {
             height = fake_height;
@@ -335,6 +344,13 @@ exports.make_new_elem = function (selector, opts) {
         },
         set_parents_result(selector, result) {
             parents_result.set(selector, result);
+        },
+        show() {
+            shown = true;
+            return self;
+        },
+        slice() {
+            return self;
         },
         stop() {
             return self;
@@ -359,24 +375,8 @@ exports.make_new_elem = function (selector, opts) {
             [value] = args;
             return self;
         },
-        css(...args) {
-            if (args.length === 0) {
-                return css || {};
-            }
-            [css] = args;
-            return self;
-        },
         visible() {
             return shown;
-        },
-        slice() {
-            return self;
-        },
-        offset() {
-            return {
-                top: 0,
-                left: 0,
-            };
         },
     };
 
