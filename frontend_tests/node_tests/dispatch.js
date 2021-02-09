@@ -28,7 +28,6 @@ set_global("bot_data", {});
 set_global("compose", {});
 set_global("composebox_typeahead", {});
 set_global("current_msg_list", {});
-set_global("emoji", {});
 set_global("emoji_picker", {});
 set_global("home_msg_list", {});
 set_global("hotspots", {});

@@ -23,11 +23,6 @@ set_global("page_params", {
     twenty_four_hour_time: false,
 });
 set_global("home_msg_list", null);
-set_global("people", {
-    small_avatar_url() {
-        return "";
-    },
-});
 set_global("unread", {message_unread() {}});
 // timerender calls setInterval when imported
 set_global("timerender", {

@@ -11,7 +11,6 @@ const {run_test} = require("../zjsunit/test");
 
 const message_store = set_global("message_store", {});
 set_global("page_params", {});
-set_global("settings_data", {});
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
