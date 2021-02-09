@@ -194,36 +194,16 @@ run_test("activate another person poll", () => {
     set_widget_find_result("button.poll-question-remove");
     set_widget_find_result("input.poll-question");
 
-    poll_question_header.toggle = (show) => {
-        assert(show);
-    };
-
-    poll_edit_question.toggle = (show) => {
-        assert(!show);
-    };
-
-    const show_submit = false;
-    poll_question_submit.toggle = (show) => {
-        assert.equal(show, show_submit);
-    };
-
-    poll_question_container.toggle = (show) => {
-        assert(!show);
-    };
-
-    poll_option_container.toggle = (show) => {
-        assert.equal(show, true);
-    };
-
-    poll_please_wait.toggle = (show) => {
-        assert.equal(show, false);
-    };
-
-    poll_author_help.toggle = (show) => {
-        assert(!show);
-    };
-
     poll_widget.activate(opts);
+
+    assert(poll_option_container.visible());
+    assert(poll_question_header.visible());
+
+    assert(!poll_question_container.visible());
+    assert(!poll_question_submit.visible());
+    assert(!poll_edit_question.visible());
+    assert(!poll_please_wait.visible());
+    assert(!poll_author_help.visible());
 
     assert.equal(widget_elem.html(), "widgets/poll_widget");
     assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
@@ -337,36 +317,19 @@ run_test("activate own poll", () => {
 
     set_widget_find_result("button.poll-question-remove");
 
-    poll_question_header.toggle = (show) => {
-        assert(show);
-    };
-
-    poll_edit_question.toggle = (show) => {
-        assert(show);
-    };
-
-    let show_submit = false;
-    poll_question_submit.toggle = (show) => {
-        assert.equal(show, show_submit);
-    };
-
-    poll_question_container.toggle = (show) => {
-        assert(!show);
-    };
-
-    poll_option_container.toggle = (show) => {
-        assert(show);
-    };
-
-    poll_please_wait.toggle = (show) => {
-        assert(!show);
-    };
-
-    poll_author_help.toggle = (show) => {
-        assert(!show);
-    };
+    function assert_visibility() {
+        assert(poll_option_container.visible());
+        assert(poll_question_header.visible());
+        assert(!poll_question_container.visible());
+        assert(poll_edit_question.visible());
+        assert(!poll_please_wait.visible());
+        assert(!poll_author_help.visible());
+    }
 
     poll_widget.activate(opts);
+
+    assert_visibility();
+    assert(!poll_question_submit.visible());
 
     assert.equal(widget_elem.html(), "widgets/poll_widget");
     assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
@@ -376,9 +339,11 @@ run_test("activate own poll", () => {
         /* Testing data sent to server on editing question */
         poll_question_input.val("Is it new?");
         out_data = undefined;
-        show_submit = true;
         poll_question_submit.trigger("click");
         assert.deepEqual(out_data, {type: "question", question: "Is it new?"});
+
+        assert_visibility();
+        assert(poll_question_submit.visible());
 
         poll_option_input.val("");
         out_data = undefined;

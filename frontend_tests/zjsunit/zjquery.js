@@ -364,6 +364,11 @@ exports.make_new_elem = function (selector, opts) {
             }
             return text;
         },
+        toggle(show) {
+            assert([true, false].includes(show));
+            shown = show;
+            return self;
+        },
         trigger(ev) {
             event_store.trigger(self, ev);
             return self;
