@@ -104,6 +104,14 @@
                                 </a>
                             </li>
                             {% endif %}
+                            {% if development_environment %}
+                            <li role="presentation" id="gear_menu_about_zulip">
+                                <a href="#about-zulip" role="menuitem" class="menuitem-version">
+                                    <span class="white_zulip_icon_without_text"></span>
+                                    <span class="about_zulip_text">{{ _("About Zulip") }}</span>
+                                </a>
+                            </li>
+                            {% endif %}
                             <li class="divider" role="presentation"></li>
                             <li role="presentation">
                                 <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">

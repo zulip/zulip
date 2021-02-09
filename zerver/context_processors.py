@@ -49,6 +49,13 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
     }
 
 
+def get_zulip_version_name(zulip_version: str) -> str:
+    if zulip_version.endswith("+git"):
+        return "Zulip " + zulip_version[:-4]
+
+    return "Zulip " + zulip_version
+
+
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
@@ -135,6 +142,8 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "request_language": get_language(),
     }
 
+    ZULIP_VERSION_NAME = get_zulip_version_name(ZULIP_VERSION)
+
     context = {
         "root_domain_landing_page": settings.ROOT_DOMAIN_LANDING_PAGE,
         "custom_logo_url": settings.CUSTOM_LOGO_URL,
@@ -160,6 +169,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "password_min_length": settings.PASSWORD_MIN_LENGTH,
         "password_min_guesses": settings.PASSWORD_MIN_GUESSES,
         "zulip_version": ZULIP_VERSION,
+        "zulip_version_name": ZULIP_VERSION_NAME,
         "user_is_authenticated": user_is_authenticated,
         "settings_path": settings_path,
         "secrets_path": secrets_path,

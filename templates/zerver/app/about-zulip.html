@@ -1,0 +1,16 @@
+<div id="about-zulip" class="overlay flex new-style" tabindex="-1" role="dialog" data-overlay="about-zulip"
+  aria-labelledby="about-zulip-label" aria-hidden="true">
+    <div class="overlay-content modal-bg">
+        <button type="button" class="exit" aria-label="{{ _('Close') }}"><span aria-hidden="true">&times;</span></button>
+        <div class="modal-body">
+            <img class="about-zulip-logo" src="/static/images/logo/zulip-icon-128x128.png" alt="" />
+            <div class="about-zulip-title">Zulip</div>
+            <p class="about-zulip-version">
+                {{zulip_version_name}}
+                <i class="fa fa-copy tippy-zulip-tooltip" data-tippy-content="Copy version" data-tippy-placement="right" data-clipboard-text="{{zulip_version}}"></i>
+            </p>
+            <p>
+              Zulip is <a target="_blank" rel="noopener noreferrer" href="https://github.com/zulip/zulip">open-source software</a>.</p>
+        </div>
+    </div>
+</div>

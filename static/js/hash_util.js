@@ -227,6 +227,7 @@ export function is_overlay_hash(hash) {
         "keyboard-shortcuts",
         "message-formatting",
         "search-operators",
+        "about-zulip",
     ];
     const main_hash = get_hash_category(hash);
 

@@ -699,6 +699,28 @@ li.actual-dropdown-menu i {
     margin-right: 3px;
 }
 
+#gear_menu_about_zulip {
+    .white_zulip_icon_without_text {
+        position: relative;
+        top: 3px;
+        width: 14px;
+        height: 14px;
+        margin-right: 3px;
+        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
+            brightness(20%) contrast(95%);
+    }
+    .about_zulip_text {
+        position: relative;
+        top: 1.4px;
+    }
+
+    :hover {
+        .white_zulip_icon_without_text {
+            filter: none;
+        }
+    }
+}
+
 .settings-dropdown-cog {
     padding: 6px 12px;
 }
@@ -2664,6 +2686,57 @@ select.inline_select_topic_edit {
 /* Hide the up and down arrows in the Flatpickr datepicker year */
 .flatpickr-months .numInputWrapper span {
     display: none;
+}
+
+#about-zulip {
+    .exit {
+        font-size: 1.5rem;
+        font-weight: 600;
+        background-color: transparent;
+        border: none;
+        position: absolute;
+        right: 8px;
+        z-index: 1;
+        color: hsl(0, 0%, 67%);
+    }
+
+    .overlay-content {
+        position: relative;
+        width: 300px;
+        border-radius: 4px;
+    }
+
+    .modal-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .about-zulip-logo {
+        padding-top: 20px;
+        height: 70px;
+    }
+
+    .about-zulip-title {
+        font-weight: 600;
+        padding: 10px;
+    }
+
+    .about-zulip-version {
+        color: hsl(222, 8%, 28%);
+
+        .fa-copy {
+            padding-left: 3px;
+        }
+
+        :hover {
+            cursor: pointer;
+
+            .fa-copy {
+                color: hsl(0, 0%, 0%);
+            }
+        }
+    }
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */
