@@ -18,7 +18,6 @@ set_global("page_params", {});
 
 zrequire("hash_util");
 zrequire("message_store");
-zrequire("people");
 zrequire("stream_data");
 zrequire("user_groups");
 

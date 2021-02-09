@@ -95,7 +95,6 @@ zrequire("overlays");
 zrequire("invite");
 zrequire("message_view_header");
 zrequire("narrow_state");
-zrequire("people");
 zrequire("presence");
 zrequire("search_pill_widget");
 zrequire("user_groups");
@@ -112,7 +111,6 @@ zrequire("tutorial");
 rewiremock.proxy(() => zrequire("notifications"), {
     "../../static/js/favicon": {},
 });
-zrequire("pm_conversations");
 zrequire("pm_list");
 zrequire("list_cursor");
 zrequire("keydown_util");

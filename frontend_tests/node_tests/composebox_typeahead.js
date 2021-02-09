@@ -9,7 +9,6 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 const emoji = zrequire("emoji", "shared/js/emoji");
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
 zrequire("compose_state");
-zrequire("pm_conversations");
 zrequire("templates");
 zrequire("typeahead_helper");
 const people = zrequire("people");

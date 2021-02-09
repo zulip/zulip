@@ -8,7 +8,6 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 const util = zrequire("util");
-zrequire("pm_conversations");
 const people = zrequire("people");
 zrequire("message_store");
 

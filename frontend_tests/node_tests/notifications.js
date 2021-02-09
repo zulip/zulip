@@ -35,7 +35,6 @@ set_global("navigator", _navigator);
 zrequire("alert_words");
 zrequire("muting");
 zrequire("stream_data");
-zrequire("people");
 zrequire("ui");
 zrequire("spoilers");
 spoilers.hide_spoilers_in_notification = () => {};

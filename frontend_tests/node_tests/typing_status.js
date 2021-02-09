@@ -6,7 +6,6 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 zrequire("typing");
-zrequire("people");
 zrequire("compose_pm_pill");
 const typing_status = zrequire("typing_status", "shared/js/typing_status");
 

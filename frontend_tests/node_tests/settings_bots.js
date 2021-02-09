@@ -34,7 +34,6 @@ set_global("avatar", {});
 set_global("$", make_zjquery());
 
 zrequire("bot_data");
-zrequire("people");
 
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
