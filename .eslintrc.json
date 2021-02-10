@@ -139,7 +139,6 @@
                 "alert_words_ui": false,
                 "attachments_ui": false,
                 "avatar": false,
-                "billing": false,
                 "blueslip": false,
                 "bot_data": false,
                 "bridge": false,
