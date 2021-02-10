@@ -137,7 +137,6 @@ declare let topic_list: any;
 declare let top_left_corner: any;
 declare let transmit: any;
 declare let typeahead_helper: any;
-declare let typing_data: any;
 declare let typing_events: any;
 declare let ui: any;
 declare let ui_report: any;

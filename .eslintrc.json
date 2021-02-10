@@ -271,7 +271,6 @@
                 "topic_list": false,
                 "transmit": false,
                 "typeahead_helper": false,
-                "typing_data": false,
                 "typing_events": false,
                 "ui": false,
                 "ui_init": false,
