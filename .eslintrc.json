@@ -272,7 +272,6 @@
                 "stream_list": false,
                 "stream_muting": false,
                 "stream_popover": false,
-                "stream_sort": false,
                 "stream_ui_updates": false,
                 "StripeCheckout": false,
                 "submessage": false,
