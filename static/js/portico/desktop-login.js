@@ -1,5 +1,3 @@
-"use strict";
-
 document.querySelector("#form").addEventListener("submit", () => {
     document.querySelector("#bad-token").hidden = false;
 });
@@ -58,3 +56,4 @@ async function decrypt_manual() {
     document.querySelector("#done").hidden = false;
     window.location.href = "/accounts/login/subdomain/" + encodeURIComponent(token);
 })();
+export {};
