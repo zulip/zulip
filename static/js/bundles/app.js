@@ -132,7 +132,6 @@ import "../settings_account";
 import "../settings_display";
 import "../settings_notifications";
 import "../settings_bots";
-import "../settings_muting";
 import "../settings_sections";
 import "../settings_emoji";
 import "../settings_exports";
