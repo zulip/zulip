@@ -1,5 +1,3 @@
-"use strict";
-
 // Main JavaScript file for the integrations development panel at
 // /devtools/integrations.
 
@@ -375,3 +373,4 @@ $(() => {
 
     $("#topic_name").on("change", update_url);
 });
+export {};
