@@ -82,7 +82,6 @@ stub_templates(() => "some-html");
 ui.get_scroll_element = (element) => element;
 
 zrequire("hash_util");
-zrequire("colorspace");
 zrequire("stream_color");
 zrequire("stream_edit");
 zrequire("color_data");
