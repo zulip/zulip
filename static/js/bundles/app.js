@@ -154,7 +154,6 @@ import "../compose_ui";
 import "../panels";
 import "../recent_topics";
 import "../search_pill_widget";
-import "../spoilers";
 import "../desktop_integration";
 
 // Import styles

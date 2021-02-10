@@ -16,6 +16,7 @@ const invite = require("./invite");
 const markdown_config = require("./markdown_config");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
+const spoilers = require("./spoilers");
 const topic_zoom = require("./topic_zoom");
 const tutorial = require("./tutorial");
 const typing = require("./typing");
