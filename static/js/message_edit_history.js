@@ -1,12 +1,10 @@
-"use strict";
+import render_message_edit_history from "../templates/message_edit_history.hbs";
+
+import * as people from "./people";
 
 const {format, isSameDay} = require("date-fns");
 
-const render_message_edit_history = require("../templates/message_edit_history.hbs");
-
-const people = require("./people");
-
-exports.fetch_and_render_message_history = function (message) {
+export function fetch_and_render_message_history(message) {
     channel.get({
         url: "/json/messages/" + message.id + "/history",
         data: {message_id: JSON.stringify(message.id)},
@@ -67,12 +65,10 @@ exports.fetch_and_render_message_history = function (message) {
             );
         },
     });
-};
+}
 
-exports.show_history = function (message) {
+export function show_history(message) {
     $("#message-history").html("");
     $("#message-edit-history").modal("show");
-    exports.fetch_and_render_message_history(message);
-};
-
-window.message_edit_history = exports;
+    fetch_and_render_message_history(message);
+}

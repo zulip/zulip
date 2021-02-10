@@ -1,6 +1,7 @@
 "use strict";
 
 const huddle_data = require("./huddle_data");
+const message_edit_history = require("./message_edit_history");
 const util = require("./util");
 
 function maybe_add_narrowed_messages(messages, msg_list) {
