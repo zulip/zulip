@@ -53,6 +53,10 @@ aioitertools==0.7.1 \
     --hash=sha256:54a56c7cf3b5290d1cb5e8974353c9f52c677612b5d69a859369a020c53414a3 \
     --hash=sha256:8972308474c41ed5e0636819f948ebff32f2318e70f7e7d23cd208c4357cc773
     # via aiobotocore
+asgiref==3.3.1 \
+    --hash=sha256:5ee950735509d04eb673bd7f7120f8fa1c9e2df495394992c73234d526907e17 \
+    --hash=sha256:7162a3cb30ab0609f1a4c95938fd73e8604f63bdba516a7f7d64b83ff09478f0
+    # via django
 async-timeout==3.0.1 \
     --hash=sha256:0c3c816a028d47f659d6ff5c745cb2acf1f966da1fe5c19c77a70282b25f4c5f \
     --hash=sha256:4291ca197d287d274d0b6cb5d6f8f8f82d434ed288f962539ff18cc9012f9ea3
@@ -80,9 +84,9 @@ django-auth-ldap==2.2.0 \
     --hash=sha256:0ed2d88d81c39be915a9ab53b97ec0a33a3d16055518ab4c9bcffe8236d40370 \
     --hash=sha256:11af1773b08613339d2c3a0cec1308a4d563518f17b1719c3759994d0b4d04bf
     # via -r requirements/thumbor.in
-django==2.2.17 \
-    --hash=sha256:558cb27930defd9a6042133258caf797b2d1dee233959f537e3dc475cb49bd7c \
-    --hash=sha256:cf5370a4d7765a9dd6d42a7b96b53c74f9446cd38209211304b210fe0404b861
+django==3.1.6 \
+    --hash=sha256:169e2e7b4839a7910b393eec127fd7cbae62e80fa55f89c6510426abf673fe5f \
+    --hash=sha256:c6c0462b8b361f8691171af1fb87eceb4442da28477e12200c40420176206ba7
     # via
     #   -r requirements/thumbor.in
     #   django-auth-ldap
@@ -403,7 +407,7 @@ pip==20.2.4 \
     --hash=sha256:51f1c7514530bd5c145d8f13ed936ad6b8bfcb8cf74e10403d0890bc986f0033 \
     --hash=sha256:85c99a857ea0fb0aedf23833d9be5c40cf253fe24443f0829c7b472e23c364a1
     # via -r requirements/pip.in
-setuptools==52.0.0 \
-    --hash=sha256:0a6f1f18249f78cffdad842efadf1ed7b039fa3355d93f3890f56bd66a48cf27 \
-    --hash=sha256:fb3a1ee622509550dbf1d419f241296169d7f09cb1eb5b1736f2f10965932b96
+setuptools==53.0.0 \
+    --hash=sha256:0e86620d658c5ca87a71a283bd308fcaeb4c33e17792ef6f081aec17c171347f \
+    --hash=sha256:1b18ef17d74ba97ac9c0e4b4265f123f07a8ae85d9cd093949fa056d3eeeead5
     # via -r requirements/pip.in
