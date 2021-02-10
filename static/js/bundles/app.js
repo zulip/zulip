@@ -43,7 +43,6 @@ import "../top_left_corner";
 import "../stream_list";
 import "../filter";
 import "../poll_widget";
-import "../todo_widget";
 import "../zform";
 import "../widgetize";
 import "../submessage";
