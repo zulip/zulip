@@ -607,13 +607,13 @@ exports.init_dropdown_widgets = () => {
     // have access to it, add a option for it.
     const realm_notifications_stream_id = page_params.realm_notifications_stream_id.toString();
     const realm_signup_notifications_stream_id = page_params.realm_signup_notifications_stream_id.toString();
-    if (!stream_options.find((x) => x.value === realm_notifications_stream_id)) {
+    if (!stream_options.some((x) => x.value === realm_notifications_stream_id)) {
         stream_options.push({
             name: "Unknown stream",
             value: realm_notifications_stream_id,
         });
     }
-    if (!stream_options.find((x) => x.value === realm_signup_notifications_stream_id)) {
+    if (!stream_options.some((x) => x.value === realm_signup_notifications_stream_id)) {
         stream_options.push({
             name: "Unknown stream",
             value: realm_signup_notifications_stream_id,
