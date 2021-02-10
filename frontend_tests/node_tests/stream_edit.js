@@ -26,9 +26,6 @@ set_global("settings_notifications", {
 set_global("stream_color", {
     set_colorpicker_color: noop,
 });
-set_global("stream_ui_updates", {
-    update_add_subscriptions_elements: noop,
-});
 const typeahead_helper = set_global("typeahead_helper", {});
 const ui = set_global("ui", {
     get_scroll_element: noop,

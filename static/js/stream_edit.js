@@ -13,6 +13,7 @@ const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 const settings_ui = require("./settings_ui");
 const stream_pill = require("./stream_pill");
+const stream_ui_updates = require("./stream_ui_updates");
 const util = require("./util");
 
 function setup_subscriptions_stream_hash(sub) {
