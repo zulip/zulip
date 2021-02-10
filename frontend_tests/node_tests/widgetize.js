@@ -8,7 +8,6 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
 const poll_widget = set_global("poll_widget", {});
-set_global("zform", {});
 set_global("document", "document-stub");
 
 const return_true = () => true;

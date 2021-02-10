@@ -306,7 +306,6 @@
                 "vdom": false,
                 "widgetize": false,
                 "zcommand": false,
-                "zform": false,
                 "zxcvbn": false
             }
         },
