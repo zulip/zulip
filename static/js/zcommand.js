@@ -2,6 +2,8 @@
 
 const marked = require("../third/marked/lib/marked");
 
+const feedback_widget = require("./feedback_widget");
+
 /*
 
 What in the heck is a zcommand?
