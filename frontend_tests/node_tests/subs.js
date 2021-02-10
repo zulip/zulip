@@ -12,7 +12,6 @@ const ui = set_global("ui", {
     get_scroll_element: (element) => element,
 });
 const stream_data = zrequire("stream_data");
-zrequire("search_util");
 set_global("page_params", {});
 
 const denmark_stream_id = 101;

@@ -16,7 +16,6 @@ import "flatpickr/dist/plugins/confirmDate/confirmDate";
 import "../i18n";
 import "../loading";
 import "../vdom";
-import "../search_util";
 import "../keydown_util";
 import "../lightbox_canvas";
 import "../rtl";
