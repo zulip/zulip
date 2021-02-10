@@ -96,6 +96,7 @@ exports.contains_backend_only_syntax = function (content) {
 };
 
 exports.apply_markdown = function (message) {
+    console.trace();
     message_store.init_booleans(message);
 
     const options = {

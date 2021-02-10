@@ -3,7 +3,7 @@
     <button class="poll-vote {{#if current_user_vote}}current-user-vote{{/if}}" data-key="{{ key }}">
         {{ count }}
     </button>
-    <span class="poll-option">{{ option }}</span>
+    <span class="poll-option">{{{ option }}}</span>
     {{#if names}}
     <span class="poll-names">({{ names }})</span>
     {{/if}}
