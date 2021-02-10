@@ -1,6 +1,7 @@
 "use strict";
 
 const people = require("./people");
+const search_pill = require("./search_pill");
 const topic_generator = require("./topic_generator");
 const util = require("./util");
 

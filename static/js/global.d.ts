@@ -96,7 +96,6 @@ declare let rtl: any;
 declare let scroll_bar: any;
 declare let scroll_util: any;
 declare let search: any;
-declare let search_pill: any;
 declare let search_pill_widget: any;
 declare let search_suggestion: any;
 declare let sent_messages: any;

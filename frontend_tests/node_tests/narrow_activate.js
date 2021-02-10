@@ -19,7 +19,6 @@ zrequire("FetchStatus", "js/fetch_status");
 zrequire("MessageListData", "js/message_list_data");
 zrequire("unread");
 const narrow = zrequire("narrow");
-zrequire("search_pill");
 
 const channel = set_global("channel", {});
 set_global("compose", {});
