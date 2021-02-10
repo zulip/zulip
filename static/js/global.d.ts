@@ -140,7 +140,6 @@ declare let ui_util: any;
 declare let unread: any;
 declare let unread_ops: any;
 declare let unread_ui: any;
-declare let upgrade: any;
 declare let upload: any;
 declare let upload_widget: any;
 declare let user_events: any;
