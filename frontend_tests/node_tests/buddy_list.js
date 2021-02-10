@@ -11,7 +11,7 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 set_global("$", make_zjquery());
 const people = zrequire("people");
 zrequire("buddy_data");
-zrequire("buddy_list");
+const buddy_list = zrequire("buddy_list");
 zrequire("ui");
 
 set_global("padded_widget", {

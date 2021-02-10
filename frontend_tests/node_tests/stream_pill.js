@@ -6,8 +6,8 @@ const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const peer_data = zrequire("peer_data");
-zrequire("stream_data");
-zrequire("stream_pill");
+const stream_data = zrequire("stream_data");
+const stream_pill = zrequire("stream_pill");
 
 const denmark = {
     stream_id: 1,

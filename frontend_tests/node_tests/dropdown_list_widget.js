@@ -6,7 +6,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-zrequire("dropdown_list_widget");
+const dropdown_list_widget = zrequire("dropdown_list_widget");
 zrequire("scroll_util");
 set_global("$", make_zjquery());
 

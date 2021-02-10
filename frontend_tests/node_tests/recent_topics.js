@@ -19,7 +19,7 @@ set_global(
 set_global("hashchange", {
     exit_overlay: noop,
 });
-set_global("overlays", {
+const overlays = set_global("overlays", {
     open_overlay: (opts) => {
         overlays.close_callback = opts.on_close;
     },
@@ -55,7 +55,7 @@ set_global("hash_util", {
 set_global("recent_senders", {
     get_topic_recent_senders: () => [1, 2],
 });
-set_global("ListWidget", {
+const ListWidget = set_global("ListWidget", {
     modifier: noop,
     create: (container, mapped_topic_values, opts) => {
         const formatted_topics = [];

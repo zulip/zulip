@@ -9,10 +9,10 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 set_global("$", make_zjquery());
 
 zrequire("timerender");
-zrequire("settings_muting");
-zrequire("stream_data");
-zrequire("muting");
-set_global("muting_ui", {});
+const settings_muting = zrequire("settings_muting");
+const stream_data = zrequire("stream_data");
+const muting = zrequire("muting");
+const muting_ui = set_global("muting_ui", {});
 
 const noop = function () {};
 

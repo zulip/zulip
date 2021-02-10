@@ -5,8 +5,8 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("stream_data");
-zrequire("stream_sort");
+const stream_data = zrequire("stream_data");
+const stream_sort = zrequire("stream_sort");
 
 run_test("no_subscribed_streams", () => {
     assert.equal(stream_sort.sort_groups([]), undefined);

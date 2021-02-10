@@ -9,9 +9,9 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
 
-zrequire("localstorage");
-zrequire("drafts");
-zrequire("timerender");
+const localstorage = zrequire("localstorage");
+const drafts = zrequire("drafts");
+const timerender = zrequire("timerender");
 zrequire("stream_color");
 zrequire("colorspace");
 
@@ -20,7 +20,7 @@ const noop = function () {
     return;
 };
 
-set_global("localStorage", {
+const localStorage = set_global("localStorage", {
     getItem(key) {
         return ls_container.get(key);
     },
@@ -35,7 +35,7 @@ set_global("localStorage", {
     },
 });
 set_global("compose", {});
-set_global("compose_state", {});
+const compose_state = set_global("compose_state", {});
 set_global("stream_data", {
     get_color() {
         return "#FFFFFF";

@@ -7,13 +7,13 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("unread");
-zrequire("stream_data");
+const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 set_global("$", make_zjquery());
 zrequire("message_util", "js/message_util");
-zrequire("Filter", "js/filter");
+const Filter = zrequire("Filter", "js/filter");
 
-set_global("message_store", {});
+const message_store = set_global("message_store", {});
 set_global("page_params", {});
 
 const me = {

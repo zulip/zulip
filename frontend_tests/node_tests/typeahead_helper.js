@@ -14,10 +14,10 @@ const pm_conversations = zrequire("pm_conversations");
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
-zrequire("recent_senders");
+const recent_senders = zrequire("recent_senders");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("stream_data");
+const stream_data = zrequire("stream_data");
 zrequire("narrow");
 zrequire("hash_util");
 

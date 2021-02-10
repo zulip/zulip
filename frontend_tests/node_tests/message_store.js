@@ -9,7 +9,7 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 const util = zrequire("util");
 const people = zrequire("people");
-zrequire("message_store");
+const message_store = zrequire("message_store");
 
 const noop = function () {};
 

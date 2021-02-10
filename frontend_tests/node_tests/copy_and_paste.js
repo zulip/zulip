@@ -10,7 +10,7 @@ const {run_test} = require("../zjsunit/test");
 set_global("page_params", {
     development_environment: true,
 });
-set_global("compose_ui", {});
+const compose_ui = set_global("compose_ui", {});
 
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 const {DOMParser, document} = window;

@@ -25,7 +25,7 @@ $(input).val = (arg) => {
     };
 };
 
-zrequire("common");
+const common = zrequire("common");
 
 run_test("basics", () => {
     common.autofocus("#home");

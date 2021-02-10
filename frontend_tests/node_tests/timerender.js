@@ -14,7 +14,7 @@ set_global("page_params", {
     twenty_four_hour_time: true,
 });
 
-zrequire("timerender");
+const timerender = zrequire("timerender");
 
 run_test("render_now_returns_today", () => {
     const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)

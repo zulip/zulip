@@ -6,8 +6,8 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 zrequire("timerender");
-zrequire("muting");
-zrequire("stream_data");
+const muting = zrequire("muting");
+const stream_data = zrequire("stream_data");
 set_global("page_params", {});
 
 run_test("edge_cases", () => {

@@ -9,10 +9,10 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
 
-set_global("channel", {});
+const channel = set_global("channel", {});
 
-zrequire("alert_words");
-zrequire("alert_words_ui");
+const alert_words = zrequire("alert_words");
+const alert_words_ui = zrequire("alert_words_ui");
 
 alert_words.initialize({
     alert_words: ["foo", "bar"],

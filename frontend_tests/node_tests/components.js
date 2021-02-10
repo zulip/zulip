@@ -8,7 +8,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 zrequire("keydown_util");
-zrequire("components");
+const components = zrequire("components");
 
 const noop = function () {};
 

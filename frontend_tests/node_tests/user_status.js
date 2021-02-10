@@ -5,8 +5,8 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("channel", {});
-zrequire("user_status");
+const channel = set_global("channel", {});
+const user_status = zrequire("user_status");
 
 function initialize() {
     const params = {

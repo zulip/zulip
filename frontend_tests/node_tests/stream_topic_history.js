@@ -5,12 +5,12 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("unread");
-zrequire("stream_data");
-zrequire("stream_topic_history");
+const unread = zrequire("unread");
+const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
 
-set_global("channel", {});
-set_global("message_list", {});
+const channel = set_global("channel", {});
+const message_list = set_global("message_list", {});
 
 run_test("basics", () => {
     const stream_id = 55;

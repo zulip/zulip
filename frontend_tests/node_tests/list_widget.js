@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("list_widget");
+const ListWidget = zrequire("list_widget");
 
 // We need these stubs to get by instanceof checks.
 // The ListWidget library allows you to insert objects
@@ -16,7 +16,7 @@ function Element() {
     return {};
 }
 set_global("Element", Element);
-set_global("ui", {});
+const ui = set_global("ui", {});
 
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.

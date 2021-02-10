@@ -8,8 +8,8 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
-zrequire("user_groups");
-zrequire("stream_data");
+const user_groups = zrequire("user_groups");
+const stream_data = zrequire("stream_data");
 zrequire("timerender");
 set_global("$", make_zjquery());
 

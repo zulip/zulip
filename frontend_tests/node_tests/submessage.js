@@ -5,11 +5,11 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("submessage");
+const submessage = zrequire("submessage");
 
-set_global("channel", {});
-set_global("widgetize", {});
-set_global("message_store", {});
+const channel = set_global("channel", {});
+const widgetize = set_global("widgetize", {});
+const message_store = set_global("message_store", {});
 
 run_test("get_message_events", () => {
     let msg = {};

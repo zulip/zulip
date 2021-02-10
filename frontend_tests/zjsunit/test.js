@@ -26,5 +26,5 @@ exports.run_test = (label, f) => {
         throw error;
     }
     // defensively reset blueslip after each test.
-    blueslip.reset();
+    window.blueslip.reset();
 };

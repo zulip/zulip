@@ -35,9 +35,9 @@ set_global("hotspots", {});
 set_global("markdown", {});
 set_global("message_edit", {});
 set_global("message_events", {});
-set_global("message_list", {});
+const message_list = set_global("message_list", {});
 set_global("muting_ui", {});
-set_global("narrow_state", {});
+const narrow_state = set_global("narrow_state", {});
 set_global("night_mode", {});
 set_global("notifications", {});
 set_global("overlays", {});
@@ -76,20 +76,20 @@ set_global("page_params", {
 });
 
 // For data-oriented modules, just use them, don't stub them.
-zrequire("alert_words");
+const alert_words = zrequire("alert_words");
 zrequire("unread");
 zrequire("stream_topic_history");
 zrequire("stream_list");
 zrequire("message_flags");
-zrequire("message_store");
+const message_store = zrequire("message_store");
 const people = zrequire("people");
 zrequire("starred_messages");
-zrequire("user_status");
+const user_status = zrequire("user_status");
 zrequire("subs");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 
-zrequire("server_events_dispatch");
+const server_events_dispatch = zrequire("server_events_dispatch");
 zrequire("panels");
 
 function dispatch(ev) {

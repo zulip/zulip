@@ -22,16 +22,16 @@ set_global("page_params", {});
 
 set_global("$", make_zjquery());
 
-set_global("compose_pm_pill", {});
+const compose_pm_pill = set_global("compose_pm_pill", {});
 
-set_global("hash_util", {});
+const hash_util = set_global("hash_util", {});
 
 const people = zrequire("people");
-zrequire("compose_ui");
-zrequire("compose");
-zrequire("compose_state");
-zrequire("compose_actions");
-zrequire("stream_data");
+const compose_ui = zrequire("compose_ui");
+const compose = zrequire("compose");
+const compose_state = zrequire("compose_state");
+const compose_actions = zrequire("compose_actions");
+const stream_data = zrequire("stream_data");
 
 set_global("document", "document-stub");
 
@@ -65,7 +65,7 @@ set_global("notifications", {
     clear_compose_notifications: noop,
 });
 
-set_global("compose_fade", {
+const compose_fade = set_global("compose_fade", {
     clear_compose: noop,
 });
 
@@ -73,7 +73,7 @@ set_global("drafts", {
     update_draft: noop,
 });
 
-set_global("narrow_state", {
+const narrow_state = set_global("narrow_state", {
     set_compose_defaults: noop,
 });
 
@@ -367,9 +367,11 @@ run_test("quote_and_reply", () => {
         };
     };
 
-    channel.get = function () {
-        assert.fail("channel.get should not be used if raw_content is present");
-    };
+    set_global("channel", {
+        get() {
+            assert.fail("channel.get should not be used if raw_content is present");
+        },
+    });
 
     quote_and_reply(opts);
 

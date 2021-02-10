@@ -8,9 +8,9 @@ const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-zrequire("compose_ui");
+const compose_ui = zrequire("compose_ui");
 const people = zrequire("people");
-zrequire("user_status");
+const user_status = zrequire("user_status");
 
 set_global("document", {
     execCommand() {

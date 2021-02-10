@@ -38,14 +38,14 @@ const _drafts = {
     delete_draft_after_send: noop,
 };
 
-const _sent_messages = {
+const sent_messages = {
     start_tracking_message: noop,
 };
 const _notifications = {
     notify_above_composebox: noop,
     clear_compose_notifications: noop,
 };
-const _reminder = {
+const reminder = {
     is_deferred_delivery: noop,
 };
 
@@ -53,19 +53,19 @@ set_global("document", _document);
 set_global("drafts", _drafts);
 set_global("navigator", _navigator);
 set_global("notifications", _notifications);
-set_global("reminder", _reminder);
-set_global("sent_messages", _sent_messages);
+set_global("reminder", reminder);
+set_global("sent_messages", sent_messages);
 
-set_global("local_message", {});
-set_global("transmit", {});
-set_global("channel", {});
-set_global("stream_edit", {});
-set_global("markdown", {});
-set_global("loading", {});
+const local_message = set_global("local_message", {});
+const transmit = set_global("transmit", {});
+const channel = set_global("channel", {});
+const stream_edit = set_global("stream_edit", {});
+const markdown = set_global("markdown", {});
+const loading = set_global("loading", {});
 set_global("page_params", {});
-set_global("resize", {});
-set_global("subs", {});
-set_global("ui_util", {});
+const resize = set_global("resize", {});
+const subs = set_global("subs", {});
+const ui_util = set_global("ui_util", {});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -76,25 +76,25 @@ const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));
 
 zrequire("zcommand");
-zrequire("compose_ui");
+const compose_ui = zrequire("compose_ui");
 const peer_data = zrequire("peer_data");
 const util = zrequire("util");
-zrequire("rtl");
+const rtl = zrequire("rtl");
 zrequire("common");
-zrequire("stream_data");
-zrequire("compose_state");
+const stream_data = zrequire("stream_data");
+const compose_state = zrequire("compose_state");
 const people = zrequire("people");
 zrequire("input_pill");
 zrequire("user_pill");
-zrequire("compose_pm_pill");
-zrequire("echo");
-rewiremock.proxy(() => zrequire("compose"), {
+const compose_pm_pill = zrequire("compose_pm_pill");
+const echo = zrequire("echo");
+const compose = rewiremock.proxy(() => zrequire("compose"), {
     "../../static/js/rendered_markdown": {
         update_elements: () => {},
     },
 });
-zrequire("upload");
-zrequire("server_events_dispatch");
+const upload = zrequire("upload");
+const server_events_dispatch = zrequire("server_events_dispatch");
 const settings_config = zrequire("settings_config");
 
 people.small_avatar_url_for_person = function () {

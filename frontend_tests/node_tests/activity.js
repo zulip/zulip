@@ -26,7 +26,7 @@ const _document = {
     },
 };
 
-const _channel = {};
+const channel = {};
 
 const _ui = {
     get_content_element: (element) => element,
@@ -38,7 +38,7 @@ const _keydown_util = {
     },
 };
 
-const _compose_state = {};
+const compose_state = {};
 
 const _scroll_util = {
     scroll_element_into_container: () => {},
@@ -66,8 +66,8 @@ const _resize = {
 set_global("padded_widget", {
     update_padding: () => {},
 });
-set_global("channel", _channel);
-set_global("compose_state", _compose_state);
+set_global("channel", channel);
+set_global("compose_state", compose_state);
 set_global("document", _document);
 set_global("keydown_util", _keydown_util);
 set_global("page_params", _page_params);
@@ -78,18 +78,18 @@ set_global("scroll_util", _scroll_util);
 set_global("stream_popover", _stream_popover);
 set_global("ui", _ui);
 
-zrequire("compose_fade");
+const compose_fade = zrequire("compose_fade");
 zrequire("unread");
 zrequire("hash_util");
-zrequire("narrow");
-zrequire("presence");
+const narrow = zrequire("narrow");
+const presence = zrequire("presence");
 const people = zrequire("people");
-zrequire("buddy_data");
-zrequire("buddy_list");
+const buddy_data = zrequire("buddy_data");
+const buddy_list = zrequire("buddy_list");
 zrequire("user_search");
-zrequire("user_status");
+const user_status = zrequire("user_status");
 zrequire("list_cursor");
-zrequire("activity");
+const activity = zrequire("activity");
 
 const me = {
     email: "me@zulip.com",

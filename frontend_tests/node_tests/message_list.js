@@ -18,7 +18,7 @@ set_global("narrow_state", {});
 set_global("stream_data", {});
 
 zrequire("FetchStatus", "js/fetch_status");
-zrequire("muting");
+const muting = zrequire("muting");
 zrequire("MessageListData", "js/message_list_data");
 zrequire("MessageListView", "js/message_list_view");
 const {MessageList} = zrequire("message_list");

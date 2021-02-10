@@ -7,11 +7,11 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-set_global("ui", {
+const ui = set_global("ui", {
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
 });
-zrequire("stream_data");
+const stream_data = zrequire("stream_data");
 zrequire("search_util");
 set_global("page_params", {});
 
@@ -21,7 +21,7 @@ set_global("location", {
     hash: `#streams/${denmark_stream_id}/announce`,
 });
 
-zrequire("subs");
+const subs = zrequire("subs");
 
 set_global("$", make_zjquery());
 set_global("hash_util", {

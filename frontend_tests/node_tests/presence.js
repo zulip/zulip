@@ -6,14 +6,14 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const people = zrequire("people");
-zrequire("presence");
+const presence = zrequire("presence");
 
 const return_false = function () {
     return false;
 };
 
-set_global("server_events", {});
-set_global("reload_state", {
+const server_events = set_global("server_events", {});
+const reload_state = set_global("reload_state", {
     is_in_progress: return_false,
 });
 

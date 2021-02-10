@@ -6,11 +6,11 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-zrequire("hash_util");
-zrequire("stream_data");
+const hash_util = zrequire("hash_util");
+const stream_data = zrequire("stream_data");
 const people = zrequire("people");
-zrequire("Filter", "js/filter");
-zrequire("narrow_state");
+const Filter = zrequire("Filter", "js/filter");
+const narrow_state = zrequire("narrow_state");
 
 set_global(
     "$",
@@ -18,7 +18,7 @@ set_global(
         silent: true,
     }),
 );
-set_global("ui_report", {
+const ui_report = set_global("ui_report", {
     displayed_error: false,
     error: () => {
         ui_report.displayed_error = true;

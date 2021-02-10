@@ -10,8 +10,8 @@ set_global("$", make_zjquery());
 
 const people = zrequire("people");
 
-zrequire("compose_pm_pill");
-zrequire("input_pill");
+const compose_pm_pill = zrequire("compose_pm_pill");
+const input_pill = zrequire("input_pill");
 zrequire("user_pill");
 
 let pills = {

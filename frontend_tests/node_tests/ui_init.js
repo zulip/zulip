@@ -38,7 +38,7 @@ set_global("document", {
 set_global("csrf_token", "whatever");
 
 set_global("$", () => {});
-set_global("resize", {});
+const resize = set_global("resize", {});
 set_global("page_params", {});
 
 const ignore_modules = [
@@ -69,11 +69,14 @@ const ignore_modules = [
     "unread_ui",
 ];
 
-for (const mod of ignore_modules) {
-    set_global(mod, {
-        initialize: () => {},
-    });
-}
+const {server_events, ui} = Object.fromEntries(
+    ignore_modules.map((mod) => [
+        mod,
+        set_global(mod, {
+            initialize: () => {},
+        }),
+    ]),
+);
 
 util.is_mobile = () => false;
 stub_templates(() => "some-html");
@@ -101,8 +104,8 @@ zrequire("user_groups");
 zrequire("unread");
 zrequire("bot_data");
 zrequire("markdown");
-zrequire("upload");
-zrequire("compose");
+const upload = zrequire("upload");
+const compose = zrequire("compose");
 zrequire("composebox_typeahead");
 zrequire("narrow");
 zrequire("search_suggestion");

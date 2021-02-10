@@ -13,10 +13,10 @@ stub_out_jquery();
 
 zrequire("message_store");
 zrequire("server_events_dispatch");
-zrequire("server_events");
+const server_events = zrequire("server_events");
 zrequire("sent_messages");
 
-set_global("channel", {});
+const channel = set_global("channel", {});
 set_global("home_msg_list", {
     select_id: noop,
     selected_id() {

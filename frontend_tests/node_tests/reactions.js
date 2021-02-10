@@ -15,7 +15,7 @@ const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji", "shared/js/emoji");
 
 const people = zrequire("people");
-zrequire("reactions");
+const reactions = zrequire("reactions");
 
 set_global("page_params", {
     user_id: 5,
@@ -47,8 +47,8 @@ const emoji_params = {
 
 emoji.initialize(emoji_params);
 
-set_global("channel", {});
-set_global("emoji_picker", {
+const channel = set_global("channel", {});
+const emoji_picker = set_global("emoji_picker", {
     hide_emoji_popover() {},
 });
 
@@ -108,7 +108,7 @@ const message = {
     ],
 };
 
-set_global("message_store", {
+const message_store = set_global("message_store", {
     get(message_id) {
         assert.equal(message_id, 1001);
         return message;

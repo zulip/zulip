@@ -80,7 +80,7 @@ const denmark_stream = {
 
 set_global("page_params", {});
 
-zrequire("stream_data");
+const stream_data = zrequire("stream_data");
 
 run_test("verify stream_data persists stream color", () => {
     assert.equal(stream_data.get_sub_by_name("Denmark"), undefined);
@@ -114,19 +114,19 @@ const messages = {
 
 const noop = () => undefined;
 
-set_global("alert_words", {});
+const alert_words = set_global("alert_words", {});
 
 alert_words.process_message = noop;
 
 // We can also bring in real code:
 zrequire("recent_senders");
-zrequire("unread");
-zrequire("stream_topic_history");
+const unread = zrequire("unread");
+const stream_topic_history = zrequire("stream_topic_history");
 zrequire("recent_topics");
 zrequire("overlays");
 
 // And finally require the module that we will test directly:
-zrequire("message_store");
+const message_store = zrequire("message_store");
 
 run_test("message_store", () => {
     const in_message = {...messages.isaac_to_denmark_stream};
@@ -170,7 +170,7 @@ run_test("unread", () => {
 
 // We use the second argument of zrequire to find the location of the
 // Filter class.
-zrequire("Filter", "js/filter");
+const Filter = zrequire("Filter", "js/filter");
 
 run_test("filter", () => {
     const filter_terms = [
@@ -210,7 +210,7 @@ run_test("filter", () => {
 // "filter" abstraction.  If you are in a narrow, we track the
 // state with the narrow_state module.
 
-zrequire("narrow_state");
+const narrow_state = zrequire("narrow_state");
 
 run_test("narrow_state", () => {
     // As we often do, first make assertions about the starting
@@ -308,7 +308,7 @@ run_test("narrow_state", () => {
 
 */
 
-zrequire("server_events_dispatch");
+const server_events_dispatch = zrequire("server_events_dispatch");
 
 // We will use Bob in several tests.
 const bob = {
@@ -429,16 +429,16 @@ function test_helper() {
 
 */
 
-set_global("home_msg_list", {});
-set_global("message_list", {});
+const home_msg_list = set_global("home_msg_list", {});
+const message_list = set_global("message_list", {});
 set_global("message_util", {});
-set_global("notifications", {});
+const notifications = set_global("notifications", {});
 set_global("resize", {});
 set_global("stream_list", {});
 set_global("unread_ops", {});
 set_global("unread_ui", {});
 
-zrequire("message_events");
+const message_events = zrequire("message_events");
 
 run_test("insert_message", (override) => {
     override("pm_list.update_private_messages", noop);
@@ -522,13 +522,11 @@ run_test("insert_message", (override) => {
 
 */
 
-set_global("channel", {});
-set_global("home_msg_list", {});
-set_global("message_list", {});
-set_global("message_viewport", {});
+const channel = set_global("channel", {});
+const message_viewport = set_global("message_viewport", {});
 zrequire("message_flags");
 
-zrequire("unread_ops");
+const unread_ops = zrequire("unread_ops");
 
 run_test("unread_ops", () => {
     (function set_up() {
@@ -608,10 +606,10 @@ run_test("unread_ops", () => {
 
 */
 
-set_global("topic_list", {});
+const topic_list = set_global("topic_list", {});
 
 zrequire("stream_sort");
-zrequire("stream_list");
+const stream_list = zrequire("stream_list");
 
 const social_stream = {
     color: "red",

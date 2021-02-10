@@ -9,14 +9,14 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
-set_global("local_message", {});
-set_global("markdown", {});
+const local_message = set_global("local_message", {});
+const markdown = set_global("markdown", {});
 set_global("page_params", {});
 
 const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));
 
-zrequire("echo");
+const echo = zrequire("echo");
 const people = zrequire("people");
 
 let disparities = [];

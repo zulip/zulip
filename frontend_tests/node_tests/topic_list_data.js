@@ -7,15 +7,15 @@ const _ = require("lodash");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("narrow_state", {});
+const narrow_state = set_global("narrow_state", {});
 set_global("unread", {});
-set_global("muting", {});
+const muting = set_global("muting", {});
 set_global("message_list", {});
 
 zrequire("hash_util");
-zrequire("stream_data");
-zrequire("unread");
-zrequire("stream_topic_history");
+const stream_data = zrequire("stream_data");
+const unread = zrequire("unread");
+const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");
 
 const general = {

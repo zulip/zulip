@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
-zrequire("spoilers");
+const spoilers = zrequire("spoilers");
 
 // This function is taken from rendered_markdown.js and slightly modified.
 const $array = (array) => {

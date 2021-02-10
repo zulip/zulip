@@ -41,8 +41,8 @@ const _page_params = {
     realm_authentication_methods: {},
 };
 
-const _realm_icon = {};
-const _channel = {};
+const realm_icon = set_global("realm_icon", {});
+const channel = set_global("channel", {});
 
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
@@ -52,7 +52,7 @@ stub_templates((name, data) => {
     throw new Error(`Unknown template ${name}`);
 });
 
-const _overlays = {};
+const overlays = set_global("overlays", {});
 
 const _ui_report = {
     success(msg, elem) {
@@ -72,29 +72,26 @@ const _ListWidget = {
     create: () => ({init: noop}),
 };
 
-set_global("channel", _channel);
 set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 set_global("jQuery", _jQuery);
 set_global("loading", _loading);
-set_global("overlays", _overlays);
 set_global("page_params", _page_params);
-set_global("realm_icon", _realm_icon);
 set_global("realm_logo", _realm_logo);
 set_global("ui_report", _ui_report);
 set_global("ListWidget", _ListWidget);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
-zrequire("stream_data");
-rewiremock.proxy(() => zrequire("settings_account"), {
+const stream_data = zrequire("stream_data");
+const settings_account = rewiremock.proxy(() => zrequire("settings_account"), {
     // Setup is only imported to set the
     // setup.password_change_in_progress flag.
     "../../static/js/setup": {},
 });
-zrequire("settings_org");
+const settings_org = zrequire("settings_org");
 zrequire("settings_ui");
-zrequire("dropdown_list_widget");
+const dropdown_list_widget = zrequire("dropdown_list_widget");
 
 run_test("unloaded", () => {
     // This test mostly gets us line coverage, and makes

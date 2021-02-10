@@ -6,9 +6,9 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const people = zrequire("people");
-zrequire("Filter", "js/filter");
-zrequire("stream_data");
-zrequire("narrow_state");
+const Filter = zrequire("Filter", "js/filter");
+const stream_data = zrequire("stream_data");
+const narrow_state = zrequire("narrow_state");
 
 set_global("page_params", {});
 

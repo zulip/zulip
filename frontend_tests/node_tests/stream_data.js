@@ -13,17 +13,17 @@ set_global("page_params", {
     is_guest: false,
 });
 
-zrequire("color_data");
+const color_data = zrequire("color_data");
 zrequire("hash_util");
-zrequire("stream_topic_history");
+const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
-zrequire("stream_color");
-zrequire("stream_data");
+const stream_color = zrequire("stream_color");
+const stream_data = zrequire("stream_data");
 zrequire("FetchStatus", "js/fetch_status");
 zrequire("Filter", "js/filter");
 zrequire("MessageListData", "js/message_list_data");
 zrequire("MessageListView", "js/message_list_view");
-zrequire("message_list");
+const message_list = zrequire("message_list");
 const settings_config = zrequire("settings_config");
 
 const me = {

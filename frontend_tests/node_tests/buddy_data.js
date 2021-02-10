@@ -13,11 +13,11 @@ const _page_params = {};
 set_global("page_params", _page_params);
 set_global("$", make_zjquery());
 const people = zrequire("people");
-zrequire("presence");
-zrequire("user_status");
+const presence = zrequire("presence");
+const user_status = zrequire("user_status");
 
-zrequire("buddy_data");
-set_global("timerender", {});
+const buddy_data = zrequire("buddy_data");
+const timerender = set_global("timerender", {});
 
 // The buddy_data module is mostly tested indirectly through
 // activity.js, but we should feel free to add direct tests

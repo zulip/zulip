@@ -19,18 +19,18 @@ set_global("settings_notifications", _settings_notifications);
 
 set_global("color_data", {});
 set_global("current_msg_list", {});
-set_global("message_util", {});
+const message_util = set_global("message_util", {});
 set_global("stream_color", {});
-set_global("stream_list", {});
+const stream_list = set_global("stream_list", {});
 set_global("stream_muting", {});
-set_global("subs", {});
+let subs = set_global("subs", {});
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("stream_data");
-zrequire("stream_events");
-zrequire("Filter", "js/filter");
-zrequire("narrow_state");
+const stream_data = zrequire("stream_data");
+const stream_events = zrequire("stream_events");
+const Filter = zrequire("Filter", "js/filter");
+const narrow_state = zrequire("narrow_state");
 zrequire("message_view_header");
 
 const george = {
@@ -243,7 +243,7 @@ run_test("marked_subscribed", (override) => {
         },
     });
 
-    set_global("subs", {update_settings_for_subscribed: noop});
+    subs = set_global("subs", {update_settings_for_subscribed: noop});
     set_global("overlays", {streams_open: return_true});
 
     // Test basic dispatching and updating stream color

@@ -87,7 +87,7 @@ try {
         _.throttle = immediate;
         _.debounce = immediate;
 
-        namespace.set_global("blueslip", make_zblueslip());
+        const blueslip = namespace.set_global("blueslip", make_zblueslip());
         namespace.set_global("i18n", stub_i18n);
         namespace.clear_zulip_refs();
 

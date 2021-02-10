@@ -9,12 +9,12 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-zrequire("user_pill");
+const user_pill = zrequire("user_pill");
 zrequire("pill_typeahead");
-zrequire("settings_user_groups");
+const settings_user_groups = zrequire("settings_user_groups");
 
 set_global("$", make_zjquery());
-set_global("confirm_dialog", {});
+const confirm_dialog = set_global("confirm_dialog", {});
 
 const noop = function () {};
 
@@ -25,14 +25,14 @@ const settings_config = zrequire("settings_config");
 
 let create_item_handler;
 
-set_global("channel", {});
-set_global("typeahead_helper", {});
-set_global("user_groups", {
+const channel = set_global("channel", {});
+const typeahead_helper = set_global("typeahead_helper", {});
+const user_groups = set_global("user_groups", {
     get_user_group_from_id: noop,
     remove: noop,
     add: noop,
 });
-set_global("ui_report", {});
+const ui_report = set_global("ui_report", {});
 
 const people = zrequire("people");
 

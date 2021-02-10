@@ -29,17 +29,17 @@ const bot_data_params = {
     ],
 };
 
-set_global("avatar", {});
+const avatar = set_global("avatar", {});
 
 set_global("$", make_zjquery());
 
-zrequire("bot_data");
+const bot_data = zrequire("bot_data");
 
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
 }
 
-rewiremock.proxy(() => zrequire("settings_bots"), {
+const settings_bots = rewiremock.proxy(() => zrequire("settings_bots"), {
     clipboard: ClipboardJS,
 });
 

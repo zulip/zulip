@@ -11,16 +11,16 @@ set_global("document", "document-stub");
 set_global("$", make_zjquery());
 
 zrequire("unread_ui");
-zrequire("Filter", "js/filter");
-zrequire("stream_sort");
+const Filter = zrequire("Filter", "js/filter");
+const stream_sort = zrequire("stream_sort");
 zrequire("colorspace");
-zrequire("stream_color");
+const stream_color = zrequire("stream_color");
 zrequire("hash_util");
-zrequire("unread");
-zrequire("stream_data");
-zrequire("scroll_util");
+const unread = zrequire("unread");
+const stream_data = zrequire("stream_data");
+const scroll_util = zrequire("scroll_util");
 zrequire("list_cursor");
-zrequire("stream_list");
+const stream_list = zrequire("stream_list");
 zrequire("topic_zoom");
 zrequire("ui");
 set_global("page_params", {
@@ -38,7 +38,7 @@ const return_true = function () {
     return true;
 };
 
-set_global("topic_list", {});
+const topic_list = set_global("topic_list", {});
 set_global("overlays", {});
 set_global("popovers", {});
 
@@ -387,10 +387,11 @@ run_test("zoom_in_and_zoom_out", () => {
 
 set_global("$", make_zjquery());
 
+let narrow_state;
 run_test("narrowing", () => {
     initialize_stream_data();
 
-    set_global("narrow_state", {
+    narrow_state = set_global("narrow_state", {
         stream() {
             return "devel";
         },

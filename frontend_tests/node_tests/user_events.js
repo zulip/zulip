@@ -10,7 +10,7 @@ set_global("$", make_zjquery());
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
-zrequire("user_events");
+const user_events = zrequire("user_events");
 
 set_global("activity", {
     redraw() {},
@@ -51,12 +51,12 @@ set_global("compose", {
     update_email() {},
 });
 
-set_global("settings_account", {
+const settings_account = set_global("settings_account", {
     update_email() {},
     update_full_name() {},
 });
 
-set_global("message_live_update", {});
+const message_live_update = set_global("message_live_update", {});
 
 const me = {
     email: "me@example.com",

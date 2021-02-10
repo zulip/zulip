@@ -14,10 +14,10 @@ const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
-set_global("helpers", {
+const helpers = set_global("helpers", {
     set_tab: noop,
 });
-set_global("StripeCheckout", {
+const StripeCheckout = set_global("StripeCheckout", {
     configure: noop,
 });
 

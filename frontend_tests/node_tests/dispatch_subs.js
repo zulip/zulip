@@ -18,8 +18,8 @@ set_global("subs", {});
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 
-zrequire("stream_data");
-zrequire("server_events_dispatch");
+const stream_data = zrequire("stream_data");
+const server_events_dispatch = zrequire("server_events_dispatch");
 
 people.add_active_user(test_user);
 

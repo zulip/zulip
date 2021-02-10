@@ -11,11 +11,11 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 set_global("$", make_zjquery());
 set_global("document", "document-stub");
 
-zrequire("Filter", "js/filter");
+const Filter = zrequire("Filter", "js/filter");
 zrequire("FetchStatus", "js/fetch_status");
 zrequire("MessageListData", "js/message_list_data");
-zrequire("MessageListView", "js/message_list_view");
-zrequire("message_list");
+const MessageListView = zrequire("MessageListView", "js/message_list_view");
+const message_list = zrequire("message_list");
 
 const noop = function () {};
 

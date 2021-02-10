@@ -14,7 +14,7 @@ const {run_test} = require("../zjsunit/test");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 zrequire("hash_util");
-zrequire("stream_data");
+const stream_data = zrequire("stream_data");
 
 set_global("page_params", {
     is_admin: false,

@@ -8,11 +8,11 @@ const {run_test} = require("../zjsunit/test");
 const pm_conversations = zrequire("pm_conversations");
 pm_conversations.recent = {};
 
-zrequire("muting");
-zrequire("unread");
-zrequire("stream_data");
-zrequire("stream_topic_history");
-zrequire("stream_sort");
+const muting = zrequire("muting");
+const unread = zrequire("unread");
+const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
+const stream_sort = zrequire("stream_sort");
 const tg = zrequire("topic_generator");
 
 run_test("streams", () => {

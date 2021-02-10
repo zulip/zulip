@@ -9,7 +9,7 @@ const MockDate = require("mockdate");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("message_store", {});
+const message_store = set_global("message_store", {});
 set_global("page_params", {});
 set_global("settings_data", {});
 

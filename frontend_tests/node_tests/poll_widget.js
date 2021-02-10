@@ -7,7 +7,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-zrequire("poll_widget");
+const poll_widget = zrequire("poll_widget");
 
 set_global("$", make_zjquery());
 

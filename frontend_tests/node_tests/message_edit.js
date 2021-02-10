@@ -12,7 +12,7 @@ set_global("page_params", {
 
 stub_out_jquery();
 
-zrequire("message_edit");
+const message_edit = zrequire("message_edit");
 
 const get_editability = message_edit.get_editability;
 const editability_types = message_edit.editability_types;

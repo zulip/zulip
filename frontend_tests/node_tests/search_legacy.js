@@ -9,7 +9,7 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 set_global("page_params", {
     search_pills_enabled: false,
 });
-zrequire("search");
+const search = zrequire("search");
 zrequire("message_view_header");
 
 const noop = () => {};
@@ -17,13 +17,13 @@ const return_true = () => true;
 const return_false = () => false;
 
 set_global("$", make_zjquery());
-set_global("narrow_state", {});
-set_global("search_suggestion", {});
+const narrow_state = set_global("narrow_state", {});
+const search_suggestion = set_global("search_suggestion", {});
 set_global("ui_util", {
     change_tab_to: noop,
 });
-set_global("narrow", {});
-set_global("Filter", {});
+const narrow = set_global("narrow", {});
+const Filter = set_global("Filter", {});
 
 set_global("setTimeout", (func) => func());
 

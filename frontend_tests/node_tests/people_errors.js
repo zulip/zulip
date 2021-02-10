@@ -13,7 +13,7 @@ const return_false = function () {
 const return_true = function () {
     return true;
 };
-set_global("reload_state", {
+const reload_state = set_global("reload_state", {
     is_in_progress: return_false,
 });
 

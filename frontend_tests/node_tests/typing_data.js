@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("typing_data");
+const typing_data = zrequire("typing_data");
 
 run_test("basics", () => {
     // The typing_data needs to be robust with lists of

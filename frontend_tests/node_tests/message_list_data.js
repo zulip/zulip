@@ -2,16 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const MessageListData = require("../../static/js/message_list_data");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("muting");
+const muting = zrequire("muting");
 zrequire("unread");
 
 zrequire("Filter", "js/filter");
 zrequire("FetchStatus", "js/fetch_status");
-zrequire("MessageListData", "js/message_list_data");
+const MessageListData = zrequire("MessageListData", "js/message_list_data");
 
 set_global("page_params", {});
 

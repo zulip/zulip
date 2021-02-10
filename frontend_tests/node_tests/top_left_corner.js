@@ -8,11 +8,11 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
 
-zrequire("Filter", "js/filter");
+const Filter = zrequire("Filter", "js/filter");
 zrequire("unread_ui");
 const people = zrequire("people");
 
-zrequire("top_left_corner");
+const top_left_corner = zrequire("top_left_corner");
 
 run_test("narrowing", () => {
     // activating narrow

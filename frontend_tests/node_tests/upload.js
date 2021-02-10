@@ -26,10 +26,10 @@ set_global("bridge", false);
 document.location.protocol = "https:";
 document.location.host = "foo.com";
 
-zrequire("compose_ui");
+const compose_ui = zrequire("compose_ui");
 zrequire("compose_state");
 zrequire("compose");
-zrequire("compose_actions");
+const compose_actions = zrequire("compose_actions");
 
 const plugin_stub = {
     prototype: {
@@ -37,7 +37,7 @@ const plugin_stub = {
     },
 };
 
-zrequire("upload");
+let upload = zrequire("upload");
 
 run_test("make_upload_absolute", () => {
     let uri = "/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/kerala.png";
@@ -358,7 +358,7 @@ run_test("uppy_config", () => {
         };
     }
     uppy_stub.Plugin = plugin_stub;
-    rewiremock.proxy(() => require("../../static/js/upload"), {"@uppy/core": uppy_stub});
+    upload = rewiremock.proxy(() => require("../../static/js/upload"), {"@uppy/core": uppy_stub});
     upload.setup_upload({mode: "compose"});
 
     assert.equal(uppy_stub_called, true);
@@ -502,7 +502,7 @@ run_test("uppy_events", () => {
         };
     }
     uppy_stub.Plugin = plugin_stub;
-    rewiremock.proxy(() => require("../../static/js/upload"), {"@uppy/core": uppy_stub});
+    upload = rewiremock.proxy(() => require("../../static/js/upload"), {"@uppy/core": uppy_stub});
     upload.setup_upload({mode: "compose"});
     assert.equal(Object.keys(callbacks).length, 5);
 

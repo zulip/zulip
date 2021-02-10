@@ -9,26 +9,26 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 const util = zrequire("util");
 set_global("$", make_zjquery());
 
-zrequire("narrow_state");
+const narrow_state = zrequire("narrow_state");
 set_global("resize", {
     resize_stream_filters_container: () => {},
 });
-zrequire("stream_data");
+const stream_data = zrequire("stream_data");
 zrequire("Filter", "js/filter");
 zrequire("FetchStatus", "js/fetch_status");
 zrequire("MessageListData", "js/message_list_data");
 zrequire("unread");
-zrequire("narrow");
+const narrow = zrequire("narrow");
 zrequire("search_pill");
 
-set_global("channel", {});
+const channel = set_global("channel", {});
 set_global("compose", {});
 set_global("compose_actions", {});
 set_global("current_msg_list", {});
 set_global("hashchange", {});
 set_global("home_msg_list", {});
-set_global("message_fetch", {});
-set_global("message_list", {
+const message_fetch = set_global("message_fetch", {});
+const message_list = set_global("message_list", {
     set_narrowed(value) {
         this.narrowed = value;
     },
