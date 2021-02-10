@@ -114,7 +114,6 @@ zrequire("keydown_util");
 zrequire("stream_list");
 zrequire("topic_list");
 zrequire("sent_messages");
-zrequire("typing");
 zrequire("top_left_corner");
 zrequire("starred_messages");
 

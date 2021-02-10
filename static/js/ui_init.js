@@ -18,6 +18,7 @@ const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const topic_zoom = require("./topic_zoom");
 const tutorial = require("./tutorial");
+const typing = require("./typing");
 const user_status = require("./user_status");
 const user_status_ui = require("./user_status_ui");
 
