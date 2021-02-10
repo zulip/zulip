@@ -8,6 +8,7 @@ const emoji = require("../shared/js/emoji");
 const fenced_code = require("../shared/js/fenced_code");
 const render_edit_content_button = require("../templates/edit_content_button.hbs");
 
+const copy_and_paste = require("./copy_and_paste");
 const echo = require("./echo");
 const emojisets = require("./emojisets");
 const markdown_config = require("./markdown_config");

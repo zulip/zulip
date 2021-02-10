@@ -45,7 +45,6 @@ const ignore_modules = [
     "activity",
     "click_handlers",
     "compose_pm_pill",
-    "copy_and_paste",
     "drafts",
     "emoji_picker",
     "gear_menu",

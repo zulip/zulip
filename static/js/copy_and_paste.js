@@ -1,6 +1,4 @@
-"use strict";
-
-const TurndownService = require("turndown/lib/turndown.cjs");
+import TurndownService from "turndown/lib/turndown.cjs";
 
 function find_boundary_tr(initial_tr, iterate_row) {
     let j;
@@ -123,7 +121,7 @@ function remove_div(div, ranges, selection) {
     }, 0);
 }
 
-exports.copy_handler = function () {
+export function copy_handler() {
     // This is the main handler for copying message content via
     // `Ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
@@ -140,7 +138,7 @@ exports.copy_handler = function () {
     //   were partially covered by the selection.
 
     const selection = window.getSelection();
-    const analysis = exports.analyze_selection(selection);
+    const analysis = analyze_selection(selection);
     const ranges = analysis.ranges;
     const start_id = analysis.start_id;
     const end_id = analysis.end_id;
@@ -179,9 +177,9 @@ exports.copy_handler = function () {
     select_div(div, selection);
     document.execCommand("copy");
     remove_div(div, ranges, selection);
-};
+}
 
-exports.analyze_selection = function (selection) {
+export function analyze_selection(selection) {
     // Here we analyze our selection to determine if part of a message
     // or multiple messages are selected.
     //
@@ -264,9 +262,9 @@ exports.analyze_selection = function (selection) {
         end_id,
         skip_same_td_check,
     };
-};
+}
 
-exports.paste_handler_converter = function (paste_html) {
+export function paste_handler_converter(paste_html) {
     const turndownService = new TurndownService();
     turndownService.addRule("headings", {
         filter: ["h1", "h2", "h3", "h4", "h5", "h6"],
@@ -300,9 +298,9 @@ exports.paste_handler_converter = function (paste_html) {
     // Removes newlines before the start of a list and between list elements.
     markdown_text = markdown_text.replace(/\n+([*+-])/g, "\n$1");
     return markdown_text;
-};
+}
 
-exports.paste_handler = function (event) {
+export function paste_handler(event) {
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
         // On IE11, ClipboardData isn't defined.  One can instead
@@ -316,7 +314,7 @@ exports.paste_handler = function (event) {
     if (clipboardData.getData) {
         const paste_html = clipboardData.getData("text/html");
         if (paste_html && page_params.development_environment) {
-            const text = exports.paste_handler_converter(paste_html);
+            const text = paste_handler_converter(paste_html);
             const mdImageRegex = /^!\[.*]\(.*\)$/;
             if (mdImageRegex.test(text)) {
                 // This block catches cases where we are pasting an
@@ -328,11 +326,9 @@ exports.paste_handler = function (event) {
             compose_ui.insert_syntax_and_focus(text);
         }
     }
-};
+}
 
-exports.initialize = function () {
-    $("#compose-textarea").on("paste", exports.paste_handler);
-    $("body").on("paste", "#message_edit_form", exports.paste_handler);
-};
-
-window.copy_and_paste = exports;
+export function initialize() {
+    $("#compose-textarea").on("paste", paste_handler);
+    $("body").on("paste", "#message_edit_form", paste_handler);
+}
