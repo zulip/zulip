@@ -7,6 +7,7 @@ const render_subscription_settings = require("../templates/subscription_settings
 const render_subscription_table_body = require("../templates/subscription_table_body.hbs");
 const render_subscriptions = require("../templates/subscriptions.hbs");
 
+const components = require("./components");
 const people = require("./people");
 const search_util = require("./search_util");
 const util = require("./util");
