@@ -39,9 +39,10 @@ class CommonUtils {
             },
 
             async expect(page, expected) {
-                const actual_recipients = await page.evaluate(() =>
-                    compose_state.private_message_recipient(),
-                );
+                const actual_recipients = await page.evaluate(() => {
+                    const compose_state = window.require("./static/js/compose_state");
+                    return compose_state.private_message_recipient();
+                });
                 assert.equal(actual_recipients, expected);
             },
         };
@@ -171,10 +172,10 @@ class CommonUtils {
     }
 
     async get_stream_id(page, stream_name) {
-        return await page.evaluate(
-            (stream_name) => stream_data.get_stream_id(stream_name),
-            stream_name,
-        );
+        return await page.evaluate((stream_name) => {
+            const stream_data = window.require("./static/js/stream_data");
+            return stream_data.get_stream_id(stream_name);
+        }, stream_name);
     }
 
     async get_user_id_from_name(page, name) {
@@ -279,6 +280,7 @@ class CommonUtils {
                     - does it look to have been
                       re-rendered based on server info?
             */
+                const rows = window.require("./static/js/rows");
                 const last_msg = current_msg_list.last();
                 if (last_msg === undefined) {
                     return false;
@@ -359,6 +361,7 @@ class CommonUtils {
 
         // Close the compose box after sending the message.
         await page.evaluate(() => {
+            const compose_actions = window.require("./static/js/compose_actions");
             compose_actions.cancel();
         });
         // Make sure the compose box is closed.

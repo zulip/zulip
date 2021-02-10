@@ -57,7 +57,10 @@ async function test_reload_hash(page) {
 
     const initial_hash = await page.evaluate(() => window.location.hash);
 
-    await page.evaluate(() => reload.initiate({immediate: true}));
+    await page.evaluate(() => {
+        const reload = window.require("./static/js/reload");
+        reload.initiate({immediate: true});
+    });
     await page.waitForSelector("#zfilt", {visible: true});
 
     const page_load_time = await page.evaluate(() => page_params.page_load_time);
@@ -72,7 +75,10 @@ async function navigation_tests(page) {
 
     await navigate_to_settings(page);
 
-    const verona_id = await page.evaluate(() => stream_data.get_stream_id("Verona"));
+    const verona_id = await page.evaluate(() => {
+        const stream_data = window.require("./static/js/stream_data");
+        return stream_data.get_stream_id("Verona");
+    });
     const verona_narrow = `narrow/stream/${verona_id}-Verona`;
 
     await navigate_to(page, verona_narrow, "message_feed_container");

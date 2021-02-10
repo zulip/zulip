@@ -105,7 +105,15 @@
     },
     "overrides": [
         {
-            "files": ["frontend_tests/**", "static/js/**"],
+            "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
+            "globals": {
+                "$": false,
+                "current_msg_list": false,
+                "page_params": false
+            }
+        },
+        {
+            "files": ["frontend_tests/node_tests/**", "frontend_tests/zjsunit/**", "static/js/**"],
             "globals": {
                 "$": false,
                 "FetchStatus": false,
