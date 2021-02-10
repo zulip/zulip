@@ -10,6 +10,7 @@ const render_buddy_list_tooltip_content = require("../templates/buddy_list_toolt
 
 const message_edit_history = require("./message_edit_history");
 const settings_panel_menu = require("./settings_panel_menu");
+const user_status_ui = require("./user_status_ui");
 const util = require("./util");
 
 function convert_enter_to_click(e) {
