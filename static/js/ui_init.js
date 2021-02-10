@@ -11,6 +11,7 @@ const render_edit_content_button = require("../templates/edit_content_button.hbs
 const copy_and_paste = require("./copy_and_paste");
 const echo = require("./echo");
 const emojisets = require("./emojisets");
+const invite = require("./invite");
 const markdown_config = require("./markdown_config");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");

@@ -93,7 +93,6 @@ zrequire("condense");
 zrequire("spoilers");
 zrequire("lightbox");
 zrequire("overlays");
-zrequire("invite");
 zrequire("message_view_header");
 zrequire("narrow_state");
 zrequire("presence");

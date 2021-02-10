@@ -51,7 +51,6 @@ declare let hotspots: any;
 declare let i18n: any;
 declare let info_overlay: any;
 declare let input_pill: any;
-declare let invite: any;
 declare let keydown_util: any;
 declare let lightbox: any;
 declare let list_util: any;

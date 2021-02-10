@@ -101,7 +101,6 @@ import "../hotkey";
 import "../notifications";
 import "../hash_util";
 import "../hashchange";
-import "../invite";
 import "../message_flags";
 import "../starred_messages";
 import "../alert_words";
