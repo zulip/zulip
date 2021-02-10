@@ -147,7 +147,6 @@ import "../admin";
 import "../message_view_header";
 import "../bot_data";
 import "../reactions";
-import "../typing_data";
 import "../typing_events";
 import "../ui_init";
 import "../emoji_picker";

@@ -3,6 +3,7 @@
 const render_typing_notifications = require("../templates/typing_notifications.hbs");
 
 const people = require("./people");
+const typing_data = require("./typing_data");
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 

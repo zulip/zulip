@@ -1,8 +1,7 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import * as util from "./util";
 
-const util = require("./util");
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
 const typist_dct = new Map();
@@ -17,7 +16,7 @@ function get_key(group) {
     return ids.join(",");
 }
 
-exports.add_typist = function (group, typist) {
+export function add_typist(group, typist) {
     const key = get_key(group);
     const current = typist_dct.get(key) || [];
     typist = to_int(typist);
@@ -25,9 +24,9 @@ exports.add_typist = function (group, typist) {
         current.push(typist);
     }
     typist_dct.set(key, util.sorted_ids(current));
-};
+}
 
-exports.remove_typist = function (group, typist) {
+export function remove_typist(group, typist) {
     const key = get_key(group);
     let current = typist_dct.get(key) || [];
 
@@ -40,36 +39,34 @@ exports.remove_typist = function (group, typist) {
 
     typist_dct.set(key, current);
     return true;
-};
+}
 
-exports.get_group_typists = function (group) {
+export function get_group_typists(group) {
     const key = get_key(group);
     return typist_dct.get(key) || [];
-};
+}
 
-exports.get_all_typists = function () {
+export function get_all_typists() {
     let typists = [].concat(...Array.from(typist_dct.values()));
     typists = util.sorted_ids(typists);
     typists = _.sortedUniq(typists);
     return typists;
-};
+}
 
 // The next functions aren't pure data, but it is easy
 // enough to mock the setTimeout/clearTimeout functions.
-exports.clear_inbound_timer = function (group) {
+export function clear_inbound_timer(group) {
     const key = get_key(group);
     const timer = inbound_timer_dict.get(key);
     if (timer) {
         clearTimeout(timer);
         inbound_timer_dict.set(key, undefined);
     }
-};
+}
 
-exports.kickstart_inbound_timer = function (group, delay, callback) {
+export function kickstart_inbound_timer(group, delay, callback) {
     const key = get_key(group);
-    exports.clear_inbound_timer(group);
+    clear_inbound_timer(group);
     const timer = setTimeout(callback, delay);
     inbound_timer_dict.set(key, timer);
-};
-
-window.typing_data = exports;
+}
