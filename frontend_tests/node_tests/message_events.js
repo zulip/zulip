@@ -16,7 +16,6 @@ const stream_topic_history = zrequire("stream_topic_history");
 const unread = zrequire("unread");
 
 set_global("$", make_zjquery());
-const alert_words = set_global("alert_words", {});
 set_global("condense", {});
 set_global("current_msg_list", {});
 set_global("message_edit", {});
@@ -26,8 +25,6 @@ set_global("page_params", {});
 set_global("pm_list", {});
 set_global("stream_list", {});
 set_global("unread_ui", {});
-
-alert_words.process_message = () => {};
 
 const alice = {
     email: "alice@example.com",

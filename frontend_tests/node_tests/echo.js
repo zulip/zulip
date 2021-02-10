@@ -37,10 +37,6 @@ set_global("message_store", {
     update_booleans: () => {},
 });
 
-set_global("alert_words", {
-    process_message: () => {},
-});
-
 set_global("home_msg_list", {
     view: {
         rerender_messages: (msgs) => {

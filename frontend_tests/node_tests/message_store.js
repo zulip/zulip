@@ -16,10 +16,6 @@ const noop = function () {};
 set_global("$", make_zjquery());
 set_global("document", "document-stub");
 
-set_global("alert_words", {
-    process_message: noop,
-});
-
 set_global("stream_topic_history", {
     add_message: noop,
 });

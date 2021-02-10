@@ -114,10 +114,6 @@ const messages = {
 
 const noop = () => undefined;
 
-const alert_words = set_global("alert_words", {});
-
-alert_words.process_message = noop;
-
 // We can also bring in real code:
 zrequire("recent_senders");
 const unread = zrequire("unread");

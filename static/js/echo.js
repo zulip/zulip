@@ -1,3 +1,4 @@
+import * as alert_words from "./alert_words";
 import * as people from "./people";
 import * as util from "./util";
 

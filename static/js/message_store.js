@@ -1,5 +1,6 @@
 "use strict";
 
+const alert_words = require("./alert_words");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const util = require("./util");
