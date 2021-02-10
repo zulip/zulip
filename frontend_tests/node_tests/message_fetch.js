@@ -11,7 +11,7 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 set_global("$", make_zjquery());
 set_global("document", "document-stub");
 
-zrequire("message_fetch");
+const message_fetch = zrequire("message_fetch");
 
 const noop = () => {};
 
@@ -21,9 +21,9 @@ function MessageListView() {
 set_global("MessageListView", MessageListView);
 
 zrequire("FetchStatus", "js/fetch_status");
-zrequire("Filter", "js/filter");
+const Filter = zrequire("Filter", "js/filter");
 zrequire("MessageListData", "js/message_list_data");
-zrequire("message_list");
+const message_list = zrequire("message_list");
 const people = zrequire("people");
 
 set_global("recent_topics", {
@@ -35,7 +35,7 @@ set_global("ui_report", {
     hide_error: noop,
 });
 
-set_global("channel", {});
+const channel = set_global("channel", {});
 set_global("document", "document-stub");
 set_global("message_scroll", {
     show_loading_older: noop,
@@ -44,12 +44,12 @@ set_global("message_scroll", {
     hide_loading_newer: noop,
     update_top_of_narrow_notices: () => {},
 });
-set_global("message_util", {});
-set_global("message_store", {});
-set_global("narrow_state", {});
-set_global("pm_list", {});
-set_global("server_events", {});
-set_global("stream_list", {
+const message_util = set_global("message_util", {});
+const message_store = set_global("message_store", {});
+const narrow_state = set_global("narrow_state", {});
+const pm_list = set_global("pm_list", {});
+const server_events = set_global("server_events", {});
+const stream_list = set_global("stream_list", {
     maybe_scroll_narrow_into_view: () => {},
 });
 

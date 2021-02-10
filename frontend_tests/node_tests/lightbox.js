@@ -6,10 +6,10 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-zrequire("rows");
-zrequire("lightbox");
+const rows = zrequire("rows");
+const lightbox = zrequire("lightbox");
 
-set_global("message_store", {});
+const message_store = set_global("message_store", {});
 set_global("Image", class Image {});
 set_global("overlays", {
     close_overlay: () => {},

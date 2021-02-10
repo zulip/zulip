@@ -6,28 +6,25 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-zrequire("message_events");
-zrequire("message_store");
+const message_events = zrequire("message_events");
+const message_store = zrequire("message_store");
 zrequire("muting");
 const people = zrequire("people");
 zrequire("recent_senders");
-zrequire("stream_data");
-zrequire("stream_topic_history");
-zrequire("unread");
+const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
+const unread = zrequire("unread");
 
 set_global("$", make_zjquery());
-set_global("alert_words", {});
 set_global("condense", {});
 set_global("current_msg_list", {});
 set_global("message_edit", {});
-set_global("message_list", {});
+const message_list = set_global("message_list", {});
 set_global("notifications", {});
 set_global("page_params", {});
 set_global("pm_list", {});
 set_global("stream_list", {});
 set_global("unread_ui", {});
-
-alert_words.process_message = () => {};
 
 const alice = {
     email: "alice@example.com",

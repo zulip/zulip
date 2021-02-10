@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Zulip'
-copyright = '2015–2020, The Zulip Team'
+copyright = '2012–2015 Dropbox, Inc., 2015–2021 Kandra Labs, Inc., and contributors'
 author = 'The Zulip Team'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -124,6 +124,7 @@ else:
 # documentation.
 html_theme_options = {
     'collapse_navigation': False,
+    'logo_only': True
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -138,7 +139,7 @@ html_theme_options = {
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = 'images/zulip-logo.svg'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32

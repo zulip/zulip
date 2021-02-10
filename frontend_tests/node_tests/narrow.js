@@ -7,12 +7,12 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
-zrequire("hash_util");
+const hash_util = zrequire("hash_util");
 zrequire("hashchange");
-zrequire("narrow_state");
+const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
-zrequire("stream_data");
-zrequire("Filter", "js/filter");
+const stream_data = zrequire("stream_data");
+const Filter = zrequire("Filter", "js/filter");
 set_global("page_params", {
     stop_words: ["what", "about"],
 });
@@ -21,7 +21,7 @@ set_global("resize", {
     resize_stream_filters_container: () => {},
 });
 
-zrequire("narrow");
+const narrow = zrequire("narrow");
 
 function set_filter(operators) {
     operators = operators.map((op) => ({
@@ -249,8 +249,8 @@ run_test("show_invalid_narrow_message", () => {
 });
 
 run_test("narrow_to_compose_target", () => {
-    set_global("compose_state", {});
-    set_global("stream_topic_history", {});
+    const compose_state = set_global("compose_state", {});
+    const stream_topic_history = set_global("stream_topic_history", {});
     const args = {called: false};
     const activate_backup = narrow.activate;
     narrow.activate = function (operators, opts) {

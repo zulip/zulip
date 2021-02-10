@@ -140,7 +140,6 @@ exports.clear_subscriptions = function () {
     // it should only be used in tests.
     stream_info = new BinaryDict((sub) => sub.subscribed);
     subs_by_stream_id = new Map();
-    peer_data.clear();
 };
 
 exports.clear_subscriptions();
@@ -211,8 +210,6 @@ exports.add_sub = function (sub) {
     // This function is currently used only by tests.
     // We use create_sub_from_server_data at page load.
     // We use create_streams for new streams in live-update events.
-
-    peer_data.maybe_clear_subscribers(sub.stream_id);
     stream_info.set(sub.name, sub);
     subs_by_stream_id.set(sub.stream_id, sub);
 };
@@ -223,6 +220,25 @@ exports.get_sub = function (stream_name) {
 
 exports.get_sub_by_id = function (stream_id) {
     return subs_by_stream_id.get(stream_id);
+};
+
+exports.validate_stream_ids = function (stream_ids) {
+    const good_ids = [];
+    const bad_ids = [];
+
+    for (const stream_id of stream_ids) {
+        if (subs_by_stream_id.has(stream_id)) {
+            good_ids.push(stream_id);
+        } else {
+            bad_ids.push(stream_id);
+        }
+    }
+
+    if (bad_ids.length > 0) {
+        blueslip.warn(`We have untracked stream_ids: ${bad_ids}`);
+    }
+
+    return good_ids;
 };
 
 exports.get_stream_id = function (name) {
@@ -352,6 +368,25 @@ exports.get_unsorted_subs = function () {
     return Array.from(stream_info.values());
 };
 
+exports.get_sub_for_settings = (sub) => {
+    // Since we make a copy of the sub here, it may eventually
+    // make sense to get the other calculated fields here as
+    // well, instead of using update_calculated_fields everywhere.
+    const sub_count = peer_data.get_subscriber_count(sub.stream_id);
+    return {
+        ...sub,
+        subscriber_count: sub_count,
+    };
+};
+
+function get_subs_for_settings(subs) {
+    // We may eventually add subscribers to the subs here, rather than
+    // delegating, so that we can more efficiently compute subscriber counts
+    // (in bulk).  If that plan appears to have been aborted, feel free to
+    // inline this.
+    return subs.map((sub) => exports.get_sub_for_settings(sub));
+}
+
 exports.get_updated_unsorted_subs = function () {
     // This function is expensive in terms of calculating
     // some values (particularly stream counts) but avoids
@@ -368,7 +403,7 @@ exports.get_updated_unsorted_subs = function () {
         all_subs = all_subs.filter((sub) => sub.subscribed);
     }
 
-    return all_subs;
+    return get_subs_for_settings(all_subs);
 };
 
 exports.num_subscribed_subs = function () {
@@ -423,13 +458,6 @@ exports.get_colors = function () {
     return exports.subscribed_subs().map((sub) => sub.color);
 };
 
-exports.update_subscribers_count = function (sub) {
-    // This is part of an unfortunate legacy hack, where we
-    // put calculated fields onto the sub object instead of
-    // letting callers build their own objects.
-    sub.subscriber_count = peer_data.get_subscriber_count(sub.stream_id);
-};
-
 exports.update_stream_email_address = function (sub, email) {
     sub.email_address = email;
 };
@@ -462,6 +490,8 @@ exports.receives_notifications = function (stream_id, notification_name) {
 };
 
 exports.update_calculated_fields = function (sub) {
+    // Note that we don't calculate subscriber counts here.
+
     sub.is_realm_admin = page_params.is_admin;
     // Admin can change any stream's name & description either stream is public or
     // private, subscribed or unsubscribed.
@@ -485,7 +515,6 @@ exports.update_calculated_fields = function (sub) {
     if (sub.rendered_description !== undefined) {
         sub.rendered_description = sub.rendered_description.replace("<p>", "").replace("</p>", "");
     }
-    exports.update_subscribers_count(sub);
 
     // Apply the defaults for our notification settings for rendering.
     for (const setting of settings_config.stream_specific_notification_settings) {
@@ -602,9 +631,9 @@ exports.all_topics_in_cache = function (sub) {
 exports.set_realm_default_streams = function (realm_default_streams) {
     default_stream_ids.clear();
 
-    realm_default_streams.forEach((stream) => {
+    for (const stream of realm_default_streams) {
         default_stream_ids.add(stream.stream_id);
-    });
+    }
 };
 
 exports.get_default_stream_ids = function () {
@@ -786,7 +815,7 @@ exports.get_streams_for_settings_page = function () {
         exports.update_calculated_fields(sub);
     }
 
-    return all_subs;
+    return get_subs_for_settings(all_subs);
 };
 
 exports.sort_for_stream_settings = function (stream_ids, order) {
@@ -903,12 +932,12 @@ exports.initialize = function (params) {
     color_data.claim_colors(subscriptions);
 
     function populate_subscriptions(subs, subscribed, previously_subscribed) {
-        subs.forEach((sub) => {
+        for (const sub of subs) {
             sub.subscribed = subscribed;
             sub.previously_subscribed = previously_subscribed;
 
             exports.create_sub_from_server_data(sub);
-        });
+        }
     }
 
     exports.set_realm_default_streams(realm_default_streams);

@@ -195,14 +195,14 @@ exports.get_reaction_title_data = function (message_id, local_id) {
 };
 
 exports.get_reaction_section = function (message_id) {
-    const message_element = $(".message_table").find("[zid='" + message_id + "']");
+    const message_element = $(".message_table").find(`[zid='${CSS.escape(message_id)}']`);
     const section = message_element.find(".message_reactions");
     return section;
 };
 
 exports.find_reaction = function (message_id, local_id) {
     const reaction_section = exports.get_reaction_section(message_id);
-    const reaction = reaction_section.find("[data-reaction-id='" + local_id + "']");
+    const reaction = reaction_section.find(`[data-reaction-id='${CSS.escape(local_id)}']`);
     return reaction;
 };
 

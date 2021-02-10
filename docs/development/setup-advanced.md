@@ -157,7 +157,7 @@ eventually eliminate this documentation section altogether).
 You can use
 [our provisioning tool](#installing-directly-on-ubuntu-debian-centos-or-fedora)
 to set up the Zulip development environment on current versions of
-these platforms reliably and easily, so we no long maintain manual
+these platforms reliably and easily, so we no longer maintain manual
 installation instructions for these platforms.
 
 If `tools/provision` doesn't yet support a newer release of Debian or

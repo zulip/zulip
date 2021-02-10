@@ -6,7 +6,7 @@ const common = require("../puppeteer_lib/common");
 
 async function get_stream_li(page, stream_name) {
     const stream_id = await common.get_stream_id(page, stream_name);
-    return `#stream_filters [data-stream-id="${stream_id}"]`;
+    return `#stream_filters [data-stream-id="${CSS.escape(stream_id)}"]`;
 }
 
 async function expect_home(page) {
@@ -343,19 +343,24 @@ async function test_stream_search_filters_stream_list(page) {
 async function test_users_search(page) {
     console.log("Search users using right sidebar");
     async function assert_in_list(page, name) {
-        await page.waitForSelector(`#user_presences li [data-name="${name}"]`, {visible: true});
+        await page.waitForSelector(`#user_presences li [data-name="${CSS.escape(name)}"]`, {
+            visible: true,
+        });
     }
 
     async function assert_selected(page, name) {
-        await page.waitForSelector(`#user_presences li.highlighted_user [data-name="${name}"]`, {
-            visible: true,
-        });
+        await page.waitForSelector(
+            `#user_presences li.highlighted_user [data-name="${CSS.escape(name)}"]`,
+            {
+                visible: true,
+            },
+        );
     }
 
     async function assert_not_selected(page, name) {
         await common.assert_selector_doesnt_exist(
             page,
-            `#user_presences li.highlighted_user [data-name="${name}"]`,
+            `#user_presences li.highlighted_user [data-name="${CSS.escape(name)}"]`,
         );
     }
 

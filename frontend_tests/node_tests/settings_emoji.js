@@ -7,8 +7,8 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
-set_global("upload_widget", {});
-zrequire("settings_emoji");
+const upload_widget = set_global("upload_widget", {});
+const settings_emoji = zrequire("settings_emoji");
 
 run_test("build_emoji_upload_widget", () => {
     let build_widget_stub = false;

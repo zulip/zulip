@@ -28,7 +28,7 @@ set_global("navigator", {
 
 set_global("page_params", {});
 
-set_global("overlays", {});
+let overlays = set_global("overlays", {});
 
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
@@ -51,7 +51,7 @@ set_global("drafts", {});
 set_global("hashchange", {});
 set_global("info_overlay", {});
 set_global("lightbox", {});
-set_global("list_util", {});
+const list_util = set_global("list_util", {});
 set_global("message_edit", {});
 set_global("muting_ui", {});
 set_global("narrow", {});
@@ -225,7 +225,7 @@ run_test("basic_chars", () => {
         all_messages_popped: return_false,
         starred_messages_popped: return_false,
     });
-    set_global("emoji_picker", {
+    const emoji_picker = set_global("emoji_picker", {
         reactions_popped: return_false,
     });
     set_global("hotspots", {
@@ -249,7 +249,7 @@ run_test("basic_chars", () => {
     for (const settings_open of [return_true, return_false]) {
         for (const is_active of [return_true, return_false]) {
             for (const info_overlay_open of [return_true, return_false]) {
-                set_global("overlays", {
+                overlays = set_global("overlays", {
                     is_active,
                     settings_open,
                     info_overlay_open,
@@ -356,7 +356,7 @@ run_test("basic_chars", () => {
     emoji_picker.reactions_popped = return_false;
 
     assert_mapping("G", "navigate.to_end");
-    assert_mapping("M", "muting_ui.toggle_mute");
+    assert_mapping("M", "muting_ui.toggle_topic_mute");
 
     // Test keys that work when a message is selected and
     // also when the message list is empty.

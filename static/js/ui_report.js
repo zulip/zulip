@@ -43,6 +43,10 @@ exports.error = function (response, xhr, status_box, remove_after) {
     exports.message(response, status_box, "alert-error", remove_after);
 };
 
+exports.client_error = function (response, status_box, remove_after) {
+    exports.message(response, status_box, "alert-error", remove_after);
+};
+
 exports.success = function (response, status_box, remove_after) {
     exports.message(response, status_box, "alert-success", remove_after);
 };

@@ -1,7 +1,6 @@
 "use strict";
 
-const moment = require("moment-timezone");
-
+const timezones = require("../generated/timezones.json");
 const render_settings_tab = require("../templates/settings_tab.hbs");
 
 const people = require("./people");
@@ -71,7 +70,7 @@ exports.build_page = function () {
             page_params.enable_sounds || page_params.enable_stream_audible_notifications,
         zuliprc: "zuliprc",
         botserverrc: "botserverrc",
-        timezones: moment.tz.names(),
+        timezones: timezones.timezones,
         can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label: exports.settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
@@ -101,7 +100,9 @@ exports.launch = function (section) {
 };
 
 exports.set_settings_header = function (key) {
-    const header_text = $(`#settings_page .sidebar-list [data-section='${key}'] .text`).text();
+    const header_text = $(
+        `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
+    ).text();
     if (header_text) {
         $(".settings-header h1 .section").text(" / " + header_text);
     } else {

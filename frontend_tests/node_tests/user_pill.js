@@ -6,8 +6,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const people = zrequire("people");
-zrequire("user_pill");
-zrequire("pill_typeahead");
+const user_pill = zrequire("user_pill");
 
 set_global("page_params", {});
 

@@ -5,9 +5,8 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("typing");
-zrequire("people");
-zrequire("compose_pm_pill");
+const typing = zrequire("typing");
+const compose_pm_pill = zrequire("compose_pm_pill");
 const typing_status = zrequire("typing_status", "shared/js/typing_status");
 
 function make_time(secs) {

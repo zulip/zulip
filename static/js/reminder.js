@@ -1,7 +1,5 @@
 "use strict";
 
-const moment = require("moment-timezone");
-
 const people = require("./people");
 const util = require("./util");
 
@@ -37,7 +35,7 @@ function patch_request_for_scheduling(request, message_content, deliver_at, deli
     new_request.content = message_content;
     new_request.deliver_at = deliver_at;
     new_request.delivery_type = delivery_type;
-    new_request.tz_guess = moment.tz.guess();
+    new_request.tz_guess = new Intl.DateTimeFormat().resolvedOptions().timeZone;
     return new_request;
 }
 
@@ -106,7 +104,7 @@ exports.schedule_message = function (request) {
 };
 
 exports.do_set_reminder_for_message = function (message_id, timestamp) {
-    const row = $("[zid='" + message_id + "']");
+    const row = $(`[zid='${CSS.escape(message_id)}']`);
     function error() {
         row.find(".alert-msg")
             .text(i18n.t("Reminder not set!"))

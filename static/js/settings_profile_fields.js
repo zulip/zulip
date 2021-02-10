@@ -5,6 +5,8 @@ const {default: Sortable} = require("sortablejs");
 const render_admin_profile_field_list = require("../templates/admin_profile_field_list.hbs");
 const render_settings_profile_field_choice = require("../templates/settings/profile_field_choice.hbs");
 
+const settings_ui = require("./settings_ui");
+
 const meta = {
     loaded: false,
 };
@@ -209,8 +211,8 @@ function delete_choice_row(e) {
 
 function get_profile_field_info(id) {
     const info = {};
-    info.row = $("tr.profile-field-row[data-profile-field-id='" + id + "']");
-    info.form = $("tr.profile-field-form[data-profile-field-id='" + id + "']");
+    info.row = $(`tr.profile-field-row[data-profile-field-id='${CSS.escape(id)}']`);
+    info.form = $(`tr.profile-field-form[data-profile-field-id='${CSS.escape(id)}']`);
     return info;
 }
 

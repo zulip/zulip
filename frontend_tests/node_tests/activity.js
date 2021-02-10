@@ -26,7 +26,7 @@ const _document = {
     },
 };
 
-const _channel = {};
+const channel = {};
 
 const _ui = {
     get_content_element: (element) => element,
@@ -38,7 +38,7 @@ const _keydown_util = {
     },
 };
 
-const _compose_state = {};
+const compose_state = {};
 
 const _scroll_util = {
     scroll_element_into_container: () => {},
@@ -51,15 +51,11 @@ const _pm_list = {
 const _popovers = {
     hide_all_except_sidebars() {},
     hide_all() {},
-    show_userlist_sidebar() {
-        $(".column-right").addClass("expanded");
-    },
+    show_userlist_sidebar() {},
 };
 
 const _stream_popover = {
-    show_streamlist_sidebar() {
-        $(".column-left").addClass("expanded");
-    },
+    show_streamlist_sidebar() {},
 };
 
 const _resize = {
@@ -70,8 +66,8 @@ const _resize = {
 set_global("padded_widget", {
     update_padding: () => {},
 });
-set_global("channel", _channel);
-set_global("compose_state", _compose_state);
+set_global("channel", channel);
+set_global("compose_state", compose_state);
 set_global("document", _document);
 set_global("keydown_util", _keydown_util);
 set_global("page_params", _page_params);
@@ -82,18 +78,17 @@ set_global("scroll_util", _scroll_util);
 set_global("stream_popover", _stream_popover);
 set_global("ui", _ui);
 
-zrequire("compose_fade");
+const compose_fade = zrequire("compose_fade");
 zrequire("unread");
 zrequire("hash_util");
-zrequire("narrow");
-zrequire("presence");
+const narrow = zrequire("narrow");
+const presence = zrequire("presence");
 const people = zrequire("people");
-zrequire("buddy_data");
-zrequire("buddy_list");
-zrequire("user_search");
-zrequire("user_status");
+const buddy_data = zrequire("buddy_data");
+const buddy_list = zrequire("buddy_list");
+const user_status = zrequire("user_status");
 zrequire("list_cursor");
-zrequire("activity");
+const activity = zrequire("activity");
 
 const me = {
     email: "me@zulip.com",
@@ -286,7 +281,7 @@ function buddy_list_add(user_id, stub) {
         stub.attr("data-user-id", user_id);
     }
     stub.length = 1;
-    const sel = `li.user_sidebar_entry[data-user-id='${user_id}']`;
+    const sel = `li.user_sidebar_entry[data-user-id='${CSS.escape(user_id)}']`;
     $("#user_presences").set_find_results(sel, stub);
 }
 
@@ -613,12 +608,10 @@ run_test("initiate_search", () => {
     $(".user-list-filter").trigger("blur");
     simulate_right_column_buddy_list();
     activity.initiate_search();
-    assert.equal($(".column-right").hasClass("expanded"), true);
     assert.equal($(".user-list-filter").is_focused(), true);
 
     simulate_left_column_buddy_list();
     activity.initiate_search();
-    assert.equal($(".column-left").hasClass("expanded"), true);
     assert.equal($(".user-list-filter").is_focused(), true);
 });
 

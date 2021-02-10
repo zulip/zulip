@@ -1,5 +1,3 @@
-"use strict";
-
 // Main JavaScript file for the integrations development panel at
 // /devtools/integrations.
 
@@ -38,7 +36,7 @@ const clear_handlers = {
 function clear_elements(elements) {
     // Supports strings (a selector to clear) or calling a function
     // (for more complex logic).
-    elements.forEach((element_name) => {
+    for (const element_name of elements) {
         const handler = clear_handlers[element_name];
         if (typeof handler === "string") {
             const element_object = $(handler)[0];
@@ -47,7 +45,7 @@ function clear_elements(elements) {
         } else {
             handler();
         }
-    });
+    }
     return;
 }
 
@@ -102,7 +100,7 @@ function set_results(response) {
     const responses = response.responses;
 
     let data = "Results:\n\n";
-    responses.forEach((response) => {
+    for (const response of responses) {
         if (response.fixture_name !== undefined) {
             data += "Fixture:            " + response.fixture_name;
             data += "\nStatus Code:    " + response.status_code;
@@ -110,7 +108,7 @@ function set_results(response) {
             data += "Status Code:    " + response.status_code;
         }
         data += "\nResponse:       " + response.message + "\n\n";
-    });
+    }
     $("#idp-results")[0].value = data;
 }
 
@@ -142,12 +140,12 @@ function load_fixture_options(integration_name) {
     const fixtures_options_dropdown = $("#fixture_name")[0];
     const fixtures_names = Object.keys(loaded_fixtures.get(integration_name)).sort();
 
-    fixtures_names.forEach((fixture_name) => {
+    for (const fixture_name of fixtures_names) {
         const new_dropdown_option = document.createElement("option");
         new_dropdown_option.value = fixture_name;
         new_dropdown_option.innerHTML = fixture_name;
         fixtures_options_dropdown.add(new_dropdown_option);
-    });
+    }
     load_fixture_body(fixtures_names[0]);
 
     return;
@@ -375,3 +373,4 @@ $(() => {
 
     $("#topic_name").on("change", update_url);
 });
+export {};

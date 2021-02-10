@@ -1,6 +1,8 @@
 "use strict";
 
+const alert_words = require("./alert_words");
 const huddle_data = require("./huddle_data");
+const message_edit_history = require("./message_edit_history");
 const util = require("./util");
 
 function maybe_add_narrowed_messages(messages, msg_list) {
@@ -41,7 +43,9 @@ function maybe_add_narrowed_messages(messages, msg_list) {
             // edited in between when they sent the message and when
             // we hear back from the server and can echo the new
             // message.  Arguably, it's counterproductive complexity.
-            new_messages = new_messages.map(message_store.add_message_metadata);
+            new_messages = new_messages.map((message) =>
+                message_store.add_message_metadata(message),
+            );
 
             message_util.add_new_messages(new_messages, msg_list);
             unread_ops.process_visible();
@@ -61,7 +65,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
 }
 
 exports.insert_new_messages = function insert_new_messages(messages, sent_by_this_client) {
-    messages = messages.map(message_store.add_message_metadata);
+    messages = messages.map((message) => message_store.add_message_metadata(message));
 
     unread.process_loaded_messages(messages);
     huddle_data.process_loaded_messages(messages);
@@ -145,7 +149,7 @@ exports.update_messages = function update_messages(events) {
 
         const new_topic = util.get_edit_event_topic(event);
 
-        const {new_stream_id} = event;
+        const new_stream_id = event.new_stream_id;
 
         // A topic edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message

@@ -16,7 +16,7 @@ set_global("hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });
-set_global("list_render", {
+set_global("ListWidget", {
     create: () => ({init: noop}),
 });
 set_global("page_params", {});
@@ -26,11 +26,8 @@ set_global("settings_notifications", {
 set_global("stream_color", {
     set_colorpicker_color: noop,
 });
-set_global("stream_ui_updates", {
-    update_add_subscriptions_elements: noop,
-});
-set_global("typeahead_helper", {});
-set_global("ui", {
+const typeahead_helper = set_global("typeahead_helper", {});
+const ui = set_global("ui", {
     get_scroll_element: noop,
 });
 set_global("$", make_zjquery());
@@ -38,12 +35,11 @@ set_global("$", make_zjquery());
 zrequire("input_pill");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("pill_typeahead");
 zrequire("subs");
-zrequire("stream_edit");
-zrequire("stream_data");
-zrequire("stream_pill");
-zrequire("user_pill");
+const stream_edit = zrequire("stream_edit");
+const stream_data = zrequire("stream_data");
+const stream_pill = zrequire("stream_pill");
+const user_pill = zrequire("user_pill");
 
 stream_edit.sort_but_pin_current_user_on_top = noop;
 
@@ -98,8 +94,9 @@ for (const sub of subs) {
 const subscriptions_table_selector = "#subscriptions_table";
 const input_field_stub = $.create(".input");
 
-const sub_settings_selector =
-    "#subscription_overlay .subscription_settings[data-stream-id='" + denmark.stream_id + "']";
+const sub_settings_selector = `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
+    denmark.stream_id,
+)}']`;
 const $sub_settings_container = $.create(sub_settings_selector);
 $sub_settings_container.find = noop;
 $sub_settings_container.find = function () {

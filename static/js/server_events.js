@@ -1,6 +1,9 @@
 "use strict";
 
 const _ = require("lodash");
+
+const echo = require("./echo");
+const server_events_dispatch = require("./server_events_dispatch");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
 let waiting_on_homeview_load = true;
@@ -102,7 +105,9 @@ function get_events_success(events) {
         try {
             messages = echo.process_from_server(messages);
             if (messages.length > 0) {
-                messages.forEach(message_store.set_message_booleans);
+                for (const message of messages) {
+                    message_store.set_message_booleans(message);
+                }
 
                 const sent_by_this_client = messages.some((msg) =>
                     sent_messages.messages.has(msg.local_id),

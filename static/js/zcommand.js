@@ -1,6 +1,6 @@
-"use strict";
+import marked from "../third/marked/lib/marked";
 
-const marked = require("../third/marked/lib/marked");
+import * as feedback_widget from "./feedback_widget";
 
 /*
 
@@ -20,7 +20,7 @@ What in the heck is a zcommand?
 
 */
 
-exports.send = function (opts) {
+export function send(opts) {
     const command = opts.command;
     const on_success = opts.on_success;
     const data = {
@@ -36,12 +36,12 @@ exports.send = function (opts) {
             }
         },
         error() {
-            exports.tell_user("server did not respond");
+            tell_user("server did not respond");
         },
     });
-};
+}
 
-exports.tell_user = function (msg) {
+export function tell_user(msg) {
     // This is a bit hacky, but we don't have a super easy API now
     // for just telling users stuff.
     $("#compose-send-status")
@@ -50,10 +50,10 @@ exports.tell_user = function (msg) {
         .stop(true)
         .fadeTo(0, 1);
     $("#compose-error-msg").text(msg);
-};
+}
 
-exports.enter_day_mode = function () {
-    exports.send({
+export function enter_day_mode() {
+    send({
         command: "/day",
         on_success(data) {
             night_mode.disable();
@@ -63,7 +63,7 @@ exports.enter_day_mode = function () {
                     container.html(rendered_msg);
                 },
                 on_undo() {
-                    exports.send({
+                    send({
                         command: "/night",
                     });
                 },
@@ -72,10 +72,10 @@ exports.enter_day_mode = function () {
             });
         },
     });
-};
+}
 
-exports.enter_night_mode = function () {
-    exports.send({
+export function enter_night_mode() {
+    send({
         command: "/night",
         on_success(data) {
             night_mode.enable();
@@ -85,7 +85,7 @@ exports.enter_night_mode = function () {
                     container.html(rendered_msg);
                 },
                 on_undo() {
-                    exports.send({
+                    send({
                         command: "/day",
                     });
                 },
@@ -94,10 +94,10 @@ exports.enter_night_mode = function () {
             });
         },
     });
-};
+}
 
-exports.enter_fluid_mode = function () {
-    exports.send({
+export function enter_fluid_mode() {
+    send({
         command: "/fluid-width",
         on_success(data) {
             scroll_bar.set_layout_width();
@@ -107,7 +107,7 @@ exports.enter_fluid_mode = function () {
                     container.html(rendered_msg);
                 },
                 on_undo() {
-                    exports.send({
+                    send({
                         command: "/fixed-width",
                     });
                 },
@@ -116,10 +116,10 @@ exports.enter_fluid_mode = function () {
             });
         },
     });
-};
+}
 
-exports.enter_fixed_mode = function () {
-    exports.send({
+export function enter_fixed_mode() {
+    send({
         command: "/fixed-width",
         on_success(data) {
             scroll_bar.set_layout_width();
@@ -129,7 +129,7 @@ exports.enter_fixed_mode = function () {
                     container.html(rendered_msg);
                 },
                 on_undo() {
-                    exports.send({
+                    send({
                         command: "/fluid-width",
                     });
                 },
@@ -138,22 +138,22 @@ exports.enter_fixed_mode = function () {
             });
         },
     });
-};
+}
 
-exports.process = function (message_content) {
+export function process(message_content) {
     const content = message_content.trim();
 
     if (content === "/ping") {
         const start_time = new Date();
 
-        exports.send({
+        send({
             command: content,
             on_success() {
                 const end_time = new Date();
                 let diff = end_time - start_time;
                 diff = Math.round(diff);
                 const msg = "ping time: " + diff + "ms";
-                exports.tell_user(msg);
+                tell_user(msg);
             },
         });
         return true;
@@ -161,23 +161,23 @@ exports.process = function (message_content) {
 
     const day_commands = ["/day", "/light"];
     if (day_commands.includes(content)) {
-        exports.enter_day_mode();
+        enter_day_mode();
         return true;
     }
 
     const night_commands = ["/night", "/dark"];
     if (night_commands.includes(content)) {
-        exports.enter_night_mode();
+        enter_night_mode();
         return true;
     }
 
     if (content === "/fluid-width") {
-        exports.enter_fluid_mode();
+        enter_fluid_mode();
         return true;
     }
 
     if (content === "/fixed-width") {
-        exports.enter_fixed_mode();
+        enter_fixed_mode();
         return true;
     }
 
@@ -190,6 +190,4 @@ exports.process = function (message_content) {
     // if we don't see an actual zcommand, so that compose.js
     // knows this is a normal message.
     return false;
-};
-
-window.zcommand = exports;
+}

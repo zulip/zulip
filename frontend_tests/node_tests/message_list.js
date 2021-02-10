@@ -18,7 +18,7 @@ set_global("narrow_state", {});
 set_global("stream_data", {});
 
 zrequire("FetchStatus", "js/fetch_status");
-zrequire("muting");
+const muting = zrequire("muting");
 zrequire("MessageListData", "js/message_list_data");
 zrequire("MessageListView", "js/message_list_view");
 const {MessageList} = zrequire("message_list");
@@ -363,21 +363,24 @@ run_test("bookend", (override) => {
     });
 });
 
-run_test("unmuted_messages", (override) => {
-    const list = new MessageList({});
-
-    const muted_stream_id = 999;
+run_test("filter_muted_topic_messages", () => {
+    const list = new MessageList({
+        excludes_muted_topics: true,
+    });
+    muting.add_muted_topic(1, "muted");
 
     const unmuted = [
         {
             id: 50,
-            stream_id: muted_stream_id,
+            type: "stream",
+            stream_id: 1,
             mentioned: true, // overrides mute
-            topic: "whatever",
+            topic: "muted",
         },
         {
             id: 60,
-            stream_id: 42,
+            type: "stream",
+            stream_id: 1,
             mentioned: false,
             topic: "whatever",
         },
@@ -385,13 +388,12 @@ run_test("unmuted_messages", (override) => {
     const muted = [
         {
             id: 70,
-            stream_id: muted_stream_id,
+            type: "stream",
+            stream_id: 1,
             mentioned: false,
-            topic: "whatever",
+            topic: "muted",
         },
     ];
-
-    override("muting.is_topic_muted", (stream_id) => stream_id === muted_stream_id);
 
     // Make sure unmuted_message filters out the "muted" entry,
     // which we mark as having a muted topic, and not mentioned.
@@ -406,9 +408,6 @@ run_test("add_remove_rerender", () => {
 
     const messages = [{id: 1}, {id: 2}, {id: 3}];
 
-    list.data.unmuted_messages = function (msgs) {
-        return msgs;
-    };
     list.add_messages(messages);
     assert.equal(list.num_items(), 3);
 

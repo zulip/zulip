@@ -8,9 +8,9 @@ const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-zrequire("compose_ui");
+const compose_ui = zrequire("compose_ui");
 const people = zrequire("people");
-zrequire("user_status");
+const user_status = zrequire("user_status");
 
 set_global("document", {
     execCommand() {
@@ -89,14 +89,10 @@ run_test("autosize_textarea", () => {
     }
 
     with_field(autosize, "update", fake_autosize_update, () => {
-        // Call autosize_textarea for the compose box
-        compose_ui.autosize_textarea($("#compose-textarea"));
-        assert.equal(textarea_autosized.textarea, $("#compose-textarea"));
-        assert(textarea_autosized.autosized);
-
         // Call autosize_textarea with an argument
-        compose_ui.autosize_textarea($("#message_edit_content_65"));
-        assert.equal(textarea_autosized.textarea, $("#message_edit_content_65"));
+        const container = "container-stub";
+        compose_ui.autosize_textarea(container);
+        assert.equal(textarea_autosized.textarea, container);
         assert(textarea_autosized.autosized);
     });
 });

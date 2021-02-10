@@ -37,7 +37,6 @@ features:
 - `SubMessage` database table
 - `/json/zcommand` API endpoint
 - `/json/submessage` API endpoint
-- `static/js/zform.js`
 - `static/js/zcommand.js`
 - `static/js/submessage.js`
 - `static/js/poll_widget.js`

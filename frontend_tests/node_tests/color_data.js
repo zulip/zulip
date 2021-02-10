@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("color_data");
+const color_data = zrequire("color_data");
 
 run_test("pick_color", () => {
     color_data.colors = ["blue", "orange", "red", "yellow"];

@@ -1,4 +1,5 @@
 import datetime
+import heapq
 import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 log_to_file(logger, settings.DIGEST_LOG_PATH)
 
 DIGEST_CUTOFF = 5
+MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST = 4
 
 TopicKey = Tuple[int, str]
 
@@ -88,7 +90,7 @@ def should_process_digest(realm_str: str) -> bool:
 def queue_digest_user_ids(user_ids: List[int], cutoff: datetime.datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {
-        "user_profile_id": user_ids,
+        "user_ids": user_ids,
         "cutoff": cutoff.strftime('%s')
     }
     queue_json_publish("digest_emails", event)
@@ -184,18 +186,13 @@ def get_hot_topics(
         topic for topic in all_topics
         if topic.stream_id() in stream_ids
     ]
-    topics_by_diversity = sorted(topics, key=lambda dt: dt.diversity())
-    topics_by_length = sorted(topics, key=lambda dt: dt.length())
 
-    # Start with the two most diverse topics.
-    hot_topics = topics_by_diversity[:2]
+    hot_topics = heapq.nlargest(2, topics, key=DigestTopic.diversity)
 
-    # Pad out our list up to 4 items, using the topics' length (aka message
-    # count) as the secondary filter.
-    for topic in topics_by_length:
+    for topic in heapq.nlargest(MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST, topics, key=DigestTopic.length):
         if topic not in hot_topics:
             hot_topics.append(topic)
-        if len(hot_topics) >= 4:
+        if len(hot_topics) == MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST:
             break
 
     return hot_topics

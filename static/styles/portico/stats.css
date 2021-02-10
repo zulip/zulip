@@ -225,7 +225,7 @@ p {
     }
 }
 
-@media (min-width: 1680px) {
+@media (width >= 1680px) {
     .center-charts {
         width: calc(
             816px * 2

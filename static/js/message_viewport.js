@@ -1,5 +1,6 @@
 "use strict";
 
+const {media_breakpoints} = require("./css_variables");
 const util = require("./util");
 
 let jwindow;
@@ -305,9 +306,8 @@ exports.stop_auto_scrolling = function () {
 exports.is_narrow = function () {
     // This basically returns true when we hide the right sidebar for
     // the left_side_userlist skinny mode.  It would be nice to have a less brittle
-    // test for this.  See the "@media (max-width: 1165px)" section in
-    // media.css.
-    return window.innerWidth <= 1165;
+    // test for this.
+    return window.innerWidth < media_breakpoints.xl_min;
 };
 
 exports.system_initiated_animate_scroll = function (scroll_amount) {
@@ -456,6 +456,14 @@ exports.initialize = function () {
 
     $(document).on("compose_started compose_canceled compose_finished", () => {
         bottom_of_feed.reset();
+    });
+
+    // We stop autoscrolling when the user is clearly in the middle of
+    // doing something.  Be careful, though, if you try to capture
+    // mousemove, then you will have to contend with the autoscroll
+    // itself generating mousemove events.
+    $(document).on("message_selected.zulip wheel", () => {
+        exports.stop_auto_scrolling();
     });
 };
 

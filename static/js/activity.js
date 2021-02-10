@@ -3,6 +3,8 @@
 const _ = require("lodash");
 
 const people = require("./people");
+const {UserSearch} = require("./user_search");
+const user_status = require("./user_status");
 
 /*
     Helpers for detecting user activity and managing user idle states
@@ -112,11 +114,9 @@ exports.build_user_sidebar = function () {
 
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
-    const finish = blueslip.start_timing("buddy_list.populate");
-    buddy_list.populate({
-        keys: user_ids,
+    blueslip.measure_time("buddy_list.populate", () => {
+        buddy_list.populate({keys: user_ids});
     });
-    finish();
 
     return user_ids; // for testing
 };

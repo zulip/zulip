@@ -7,10 +7,10 @@ const {run_test} = require("../zjsunit/test");
 
 zrequire("unread");
 zrequire("unread_ops");
-zrequire("message_flags");
+const message_flags = zrequire("message_flags");
 
-set_global("ui", {});
-set_global("channel", {});
+const ui = set_global("ui", {});
+const channel = set_global("channel", {});
 set_global("starred_messages", {
     add: () => {},
     remove: () => {},

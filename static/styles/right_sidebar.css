@@ -196,7 +196,7 @@
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */
-@media (max-width: 1165px) {
+@media (width < $xl_min) {
     #sidebar-keyboard-shortcuts {
         /* This is supposed to fix this appearing improperly in narrow
         windows.  It's likely the wrong solution; a proper fix likely
@@ -210,14 +210,14 @@
     }
 }
 
-@media (max-width: 775px) {
+@media (width < $md_min) {
     #user_search_section .user-list-filter {
         /* input should be 100% - 6px padding x2 - 1px border x2. */
         width: calc(100% - 12px - 2px);
     }
 }
 
-@media (max-width: 500px) {
+@media (width < $sm_min) {
     #userlist-toggle {
         height: 30px;
         line-height: 30px;

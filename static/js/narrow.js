@@ -1,6 +1,8 @@
 "use strict";
 
 const people = require("./people");
+const search_pill = require("./search_pill");
+const topic_generator = require("./topic_generator");
 const util = require("./util");
 
 let unnarrow_times;
@@ -218,14 +220,14 @@ exports.activate = function (raw_operators, opts) {
     // reflect the upcoming narrow.
     narrow_state.set_current_filter(filter);
 
-    const muting_enabled = narrow_state.muting_enabled();
+    const excludes_muted_topics = narrow_state.excludes_muted_topics();
 
     // Save how far from the pointer the top of the message list was.
     exports.save_pre_narrow_offset_for_reload();
 
     let msg_data = new MessageListData({
         filter: narrow_state.filter(),
-        muting_enabled,
+        excludes_muted_topics,
     });
 
     // Populate the message list if we can apply our filter locally (i.e.
@@ -246,7 +248,7 @@ exports.activate = function (raw_operators, opts) {
         // the block we're about to request from the server instead.
         msg_data = new MessageListData({
             filter: narrow_state.filter(),
-            muting_enabled,
+            excludes_muted_topics,
         });
     }
 

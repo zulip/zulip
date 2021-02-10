@@ -34,8 +34,10 @@ function process_result(data, opts) {
         narrow.show_empty_narrow_message();
     }
 
-    messages.forEach(message_store.set_message_booleans);
-    messages = messages.map(message_store.add_message_metadata);
+    messages = messages.map((message) => {
+        message_store.set_message_booleans(message);
+        return message_store.add_message_metadata(message);
+    });
 
     // In case any of the newly fetched messages are new, add them to
     // our unread data structures.  It's important that this run even
@@ -464,7 +466,7 @@ exports.initialize = function () {
     // without a `table_name` attached.
     const recent_topics_message_list = new message_list.MessageList({
         filter: new Filter([{operator: "in", operand: "home"}]),
-        muting_enabled: true,
+        excludes_muted_topics: true,
     });
     exports.load_messages({
         anchor: "newest",

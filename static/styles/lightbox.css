@@ -253,7 +253,7 @@
     }
 }
 
-@media only screen and (min-width: 320px) and (max-width: 736px) {
+@media only screen and ($ms_min <= width < $md_min) {
     #lightbox_overlay {
         .image-actions {
             float: left;

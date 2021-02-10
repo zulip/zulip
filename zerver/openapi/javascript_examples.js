@@ -301,7 +301,7 @@ add_example(
 
 add_example("update_message_flags", "/messages/flags:post", 200, async (client, console) => {
     // Send 3 messages to run this example on
-    const message_ids = [...new Array(3)];
+    const message_ids = [...Array.from({length: 3})];
     for (let i = 0; i < message_ids.length; i = i + 1) {
         message_ids[i] = await send_test_message(client);
     }

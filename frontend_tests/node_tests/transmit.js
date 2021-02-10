@@ -10,16 +10,16 @@ const noop = function () {};
 
 set_global("$", make_zjquery());
 set_global("page_params", {});
-set_global("channel", {});
-set_global("reload", {});
-set_global("reload_state", {});
-set_global("sent_messages", {
+const channel = set_global("channel", {});
+const reload = set_global("reload", {});
+const reload_state = set_global("reload_state", {});
+const sent_messages = set_global("sent_messages", {
     start_tracking_message: noop,
     report_server_ack: noop,
 });
 
 const people = zrequire("people");
-zrequire("transmit");
+const transmit = zrequire("transmit");
 
 run_test("transmit_message_ajax", () => {
     let success_func_called;

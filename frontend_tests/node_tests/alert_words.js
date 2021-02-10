@@ -10,7 +10,7 @@ const params = {
 };
 
 const people = zrequire("people");
-zrequire("alert_words");
+const alert_words = zrequire("alert_words");
 
 alert_words.initialize(params);
 

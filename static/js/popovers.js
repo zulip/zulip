@@ -1,8 +1,8 @@
 "use strict";
 
 const ClipboardJS = require("clipboard");
+const {parseISO, formatISO, add, set} = require("date-fns");
 const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
-const moment = require("moment");
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
 const render_mobile_message_buttons_popover = require("../templates/mobile_message_buttons_popover.hbs");
@@ -16,9 +16,13 @@ const render_user_info_popover_content = require("../templates/user_info_popover
 const render_user_info_popover_title = require("../templates/user_info_popover_title.hbs");
 const render_user_profile_modal = require("../templates/user_profile_modal.hbs");
 
+const feature_flags = require("./feature_flags");
+const message_edit_history = require("./message_edit_history");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
+const user_status = require("./user_status");
+const user_status_ui = require("./user_status_ui");
 const util = require("./util");
 
 let current_actions_popover_elem;
@@ -143,7 +147,7 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
 
     switch (field_type) {
         case field_types.DATE.id:
-            profile_field.value = moment(field_value.value).format(dateFormat);
+            profile_field.value = dateFormat.format(parseISO(field_value.value));
             break;
         case field_types.USER.id:
             profile_field.id = field.id;
@@ -328,7 +332,7 @@ exports.hide_user_profile = function () {
 exports.show_user_profile = function (user) {
     exports.hide_all();
 
-    const dateFormat = moment.localeData().longDateFormat("LL");
+    const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
     const field_types = page_params.custom_profile_field_types;
     const profile_data = page_params.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types, dateFormat))
@@ -340,7 +344,7 @@ exports.show_user_profile = function (user) {
         profile_data,
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),
-        date_joined: moment(user.date_joined).format(dateFormat),
+        date_joined: dateFormat.format(parseISO(user.date_joined)),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         show_email: settings_data.show_email(),
         user_time: people.get_user_time(user.user_id),
@@ -580,11 +584,11 @@ exports.render_actions_remind_popover = function (element, id) {
         });
         elt.popover("show");
         current_flatpickr_instance = $(
-            '.remind.custom[data-message-id="' + message.id + '"]',
+            `.remind.custom[data-message-id="${CSS.escape(message.id)}"]`,
         ).flatpickr({
             enableTime: true,
             clickOpens: false,
-            defaultDate: moment().format(),
+            defaultDate: "today",
             minDate: "today",
             plugins: [new ConfirmDatePlugin({})],
         });
@@ -897,10 +901,10 @@ exports.register_click_handlers = function () {
             const url_prefix = playground_info[0].url_prefix;
             view_in_playground_button.attr("href", url_prefix + encodeURIComponent(extracted_code));
         } else {
-            playground_info.forEach(($playground) => {
+            for (const $playground of playground_info) {
                 $playground.playground_url =
                     $playground.url_prefix + encodeURIComponent(extracted_code);
-            });
+            }
             exports.toggle_playground_link_popover(this, playground_info);
         }
     });
@@ -1106,27 +1110,31 @@ exports.register_click_handlers = function () {
     }
 
     $("body").on("click", ".remind.in_20m", (e) => {
-        const datestr = moment().add(20, "m").format();
+        const datestr = formatISO(add(new Date(), {minutes: 20}));
         reminder_click_handler(datestr, e);
     });
 
     $("body").on("click", ".remind.in_1h", (e) => {
-        const datestr = moment().add(1, "h").format();
+        const datestr = formatISO(add(new Date(), {hours: 1}));
         reminder_click_handler(datestr, e);
     });
 
     $("body").on("click", ".remind.in_3h", (e) => {
-        const datestr = moment().add(3, "h").format();
+        const datestr = formatISO(add(new Date(), {hours: 3}));
         reminder_click_handler(datestr, e);
     });
 
     $("body").on("click", ".remind.tomo", (e) => {
-        const datestr = moment().add(1, "d").hour(9).minute(0).seconds(0).format();
+        const datestr = formatISO(
+            set(add(new Date(), {days: 1}), {hours: 9, minutes: 0, seconds: 0}),
+        );
         reminder_click_handler(datestr, e);
     });
 
     $("body").on("click", ".remind.nxtw", (e) => {
-        const datestr = moment().add(1, "w").day("monday").hour(9).minute(0).seconds(0).format();
+        const datestr = formatISO(
+            set(add(new Date(), {weeks: 1}), {hours: 9, minutes: 0, seconds: 0}),
+        );
         reminder_click_handler(datestr, e);
     });
 
@@ -1198,7 +1206,7 @@ exports.register_click_handlers = function () {
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         exports.hide_actions_popover();
-        muting_ui.mute(stream_id, topic);
+        muting_ui.mute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1208,7 +1216,7 @@ exports.register_click_handlers = function () {
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         exports.hide_actions_popover();
-        muting_ui.unmute(stream_id, topic);
+        muting_ui.unmute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1226,7 +1234,7 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".copy_link", function (e) {
         exports.hide_actions_popover();
         const message_id = $(this).attr("data-message-id");
-        const row = $("[zid='" + message_id + "']");
+        const row = $(`[zid='${CSS.escape(message_id)}']`);
         row.find(".alert-msg")
             .text(i18n.t("Copied!"))
             .css("display", "block")
@@ -1309,11 +1317,11 @@ exports.hide_all_except_sidebars = function () {
     exports.hide_playground_links_popover();
 
     // look through all the popovers that have been added and removed.
-    list_of_popovers.forEach(($o) => {
+    for (const $o of list_of_popovers) {
         if (!document.body.contains($o.$element[0]) && $o.$tip) {
             $o.$tip.remove();
         }
-    });
+    }
     list_of_popovers = [];
 };
 

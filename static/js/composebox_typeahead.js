@@ -1,8 +1,9 @@
 "use strict";
 
 const autosize = require("autosize");
+const {formatISO} = require("date-fns");
 const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
-const moment = require("moment");
+const _ = require("lodash");
 
 const pygments_data = require("../generated/pygments_data.json");
 const emoji = require("../shared/js/emoji");
@@ -178,7 +179,7 @@ function handle_keydown(e) {
         let target_sel;
 
         if (e.target.id) {
-            target_sel = "#" + e.target.id;
+            target_sel = `#${CSS.escape(e.target.id)}`;
         }
 
         const on_stream = target_sel === "#stream_message_recipient_stream";
@@ -394,6 +395,10 @@ exports.slash_commands = [
         text: i18n.t("/settings (Load settings menu)"),
         name: "settings",
     },
+    {
+        text: i18n.t("/todo (Create a todo list)"),
+        name: "todo",
+    },
 ];
 
 exports.filter_and_sort_mentions = function (is_silent, query, opts) {
@@ -418,10 +423,6 @@ exports.get_pm_people = function (query) {
 exports.get_person_suggestions = function (query, opts) {
     query = typeahead.clean_query_lowercase(query);
 
-    const person_matcher = (item) => exports.query_matches_person(query, item);
-
-    const group_matcher = (item) => query_matches_name_description(query, item);
-
     function filter_persons(all_persons) {
         let persons;
 
@@ -434,7 +435,7 @@ exports.get_person_suggestions = function (query, opts) {
         if (opts.want_broadcast) {
             persons = persons.concat(exports.broadcast_mentions());
         }
-        return persons.filter(person_matcher);
+        return persons.filter((item) => exports.query_matches_person(query, item));
     }
 
     let groups;
@@ -445,7 +446,7 @@ exports.get_person_suggestions = function (query, opts) {
         groups = [];
     }
 
-    const filtered_groups = groups.filter(group_matcher);
+    const filtered_groups = groups.filter((item) => query_matches_name_description(query, item));
 
     /*
         Let's say you're on a big realm and type
@@ -532,8 +533,7 @@ exports.get_sorted_filtered_items = function (query) {
         several years ago.)
     */
 
-    const hacky_this = this;
-    const fetcher = exports.get_candidates.bind(hacky_this);
+    const fetcher = exports.get_candidates.bind(this);
     const big_results = fetcher(query);
 
     if (!big_results) {
@@ -542,10 +542,10 @@ exports.get_sorted_filtered_items = function (query) {
 
     // We are still hacking info onto the "this" from
     // bootstrap.  Yuck.
-    const completing = hacky_this.completing;
-    const token = hacky_this.token;
+    const completing = this.completing;
+    const token = this.token;
 
-    const opts = exports.get_stream_topic_data(hacky_this);
+    const opts = exports.get_stream_topic_data(this);
 
     if (completing === "mention" || completing === "silent_mention") {
         return exports.filter_and_sort_mentions(big_results.is_silent, token, opts);
@@ -754,10 +754,7 @@ const show_flatpickr = (element, callback, default_timestamp) => {
         plugins: [new ConfirmDatePlugin({})],
         positionElement: element,
         dateFormat: "Z",
-        formatDate: (date) => {
-            const dt = moment(date);
-            return dt.local().format();
-        },
+        formatDate: (date) => formatISO(date),
     });
     const container = $($(instance.innerContainer).parent());
     container.on("click", ".flatpickr-calendar", (e) => {
@@ -979,7 +976,7 @@ exports.compose_trigger_selection = function (event) {
     return false;
 };
 
-function get_header_text() {
+function get_header_html() {
     let tip_text = "";
     switch (this.completing) {
         case "stream":
@@ -999,7 +996,7 @@ function get_header_text() {
         default:
             return false;
     }
-    return "<em>" + tip_text + "</em>";
+    return `<em>${_.escape(tip_text)}</em>`;
 }
 
 exports.initialize_compose_typeahead = function (selector) {
@@ -1035,7 +1032,7 @@ exports.initialize_compose_typeahead = function (selector) {
         completions,
         automated: exports.compose_automated_selection,
         trigger_selection: exports.compose_trigger_selection,
-        header: get_header_text,
+        header: get_header_html,
     });
 };
 

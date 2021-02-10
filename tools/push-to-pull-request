@@ -142,5 +142,17 @@ if [ -n "$tracking_ref" ]; then
 fi
 
 if [ "$merge" ]; then
+    tries=10
+    sha="$(git rev-parse @)"
+    while
+        out=$(git ls-remote -- "$remote" "refs/pull/$pr_id/head")
+        [ "$out" != "$sha	refs/pull/$pr_id/head" ]
+    do
+        if ! ((--tries)); then
+            echo 'error: Push was not observed in PR' >&2
+            exit 1
+        fi
+        sleep 1
+    done
     git push -- "$remote" "@:$pr_base_ref"
 fi

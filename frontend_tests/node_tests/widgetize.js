@@ -7,17 +7,15 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
-set_global("poll_widget", {});
-set_global("todo_widget", {});
-set_global("zform", {});
+const poll_widget = set_global("poll_widget", {});
 set_global("document", "document-stub");
 
 const return_true = () => true;
 const return_false = () => false;
 
-zrequire("widgetize");
+const widgetize = zrequire("widgetize");
 
-set_global("narrow_state", {});
+const narrow_state = set_global("narrow_state", {});
 set_global("current_msg_list", {});
 
 run_test("activate", () => {

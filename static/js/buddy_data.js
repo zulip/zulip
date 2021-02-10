@@ -1,6 +1,7 @@
 "use strict";
 
 const people = require("./people");
+const user_status = require("./user_status");
 const util = require("./util");
 /*
 
@@ -173,7 +174,7 @@ exports.user_last_seen_time_status = function (user_id) {
     if (last_active_date === undefined) {
         return i18n.t("More than 2 weeks ago");
     }
-    return timerender.last_seen_status_from_date(last_active_date.clone());
+    return timerender.last_seen_status_from_date(last_active_date);
 };
 
 exports.info_for = function (user_id) {
@@ -286,7 +287,7 @@ function maybe_shrink_list(user_ids, user_filter_text) {
         return user_ids;
     }
 
-    user_ids = user_ids.filter(user_is_recently_active);
+    user_ids = user_ids.filter((user_id) => user_is_recently_active(user_id));
 
     return user_ids;
 }
@@ -327,7 +328,7 @@ exports.get_filtered_and_sorted_user_ids = function (user_filter_text) {
 };
 
 exports.get_items_for_users = function (user_ids) {
-    const user_info = user_ids.map(exports.info_for);
+    const user_info = user_ids.map((user_id) => exports.info_for(user_id));
     compose_fade.update_user_info(user_info, fade_config);
     return user_info;
 };

@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
+from django.db import connection
 from django.db.models import F, Max
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
@@ -251,6 +252,15 @@ class Command(BaseCommand):
         # Get consistent data for backend tests.
         if options["test_suite"]:
             random.seed(0)
+
+            with connection.cursor() as cursor:
+                # Sometimes bugs relating to confusing recipient.id for recipient.type_id
+                # or <object>.id for <object>.recipient_id remain undiscovered by the test suite
+                # due to these numbers happening to coincide in such a way that it makes tests
+                # accidentally pass. By bumping the Recipient.id sequence by a large enough number,
+                # we can have those ids in a completely different range of values than object ids,
+                # eliminatng the possibility of such coincidences.
+                cursor.execute("SELECT setval('zerver_recipient_id_seq', 100)")
 
         # If max_topics is not set, we set it proportional to the
         # number of messages.

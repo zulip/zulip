@@ -2,6 +2,7 @@
 
 const _ = require("lodash");
 
+const render_hotspot_icon = require("../templates/hotspot_icon.hbs");
 const render_hotspot_overlay = require("../templates/hotspot_overlay.hbs");
 const render_intro_reply_hotspot = require("../templates/intro_reply_hotspot.hbs");
 
@@ -75,7 +76,7 @@ exports.post_hotspot_as_read = function (hotspot_name) {
 
 function place_icon(hotspot) {
     const element = $(hotspot.location.element);
-    const icon = $("#hotspot_" + hotspot.name + "_icon");
+    const icon = $(`#hotspot_${CSS.escape(hotspot.name)}_icon`);
 
     if (
         element.length === 0 ||
@@ -106,9 +107,11 @@ function place_popover(hotspot) {
         return;
     }
 
-    const popover_width = $("#hotspot_" + hotspot.name + "_overlay .hotspot-popover").outerWidth();
+    const popover_width = $(
+        `#hotspot_${CSS.escape(hotspot.name)}_overlay .hotspot-popover`,
+    ).outerWidth();
     const popover_height = $(
-        "#hotspot_" + hotspot.name + "_overlay .hotspot-popover",
+        `#hotspot_${CSS.escape(hotspot.name)}_overlay .hotspot-popover`,
     ).outerHeight();
     const el_width = $(hotspot.location.element).outerWidth();
     const el_height = $(hotspot.location.element).outerHeight();
@@ -181,7 +184,7 @@ function place_popover(hotspot) {
 
     // position arrow
     arrow_placement = "arrow-" + arrow_placement;
-    $("#hotspot_" + hotspot.name + "_overlay .hotspot-popover")
+    $(`#hotspot_${CSS.escape(hotspot.name)}_overlay .hotspot-popover`)
         .removeClass("arrow-top arrow-left arrow-bottom arrow-right")
         .addClass(arrow_placement);
 
@@ -202,7 +205,7 @@ function place_popover(hotspot) {
         };
     }
 
-    $("#hotspot_" + hotspot.name + "_overlay .hotspot-popover").css(popover_placement);
+    $(`#hotspot_${CSS.escape(hotspot.name)}_overlay .hotspot-popover`).css(popover_placement);
 }
 
 function insert_hotspot_into_DOM(hotspot) {
@@ -218,14 +221,9 @@ function insert_hotspot_into_DOM(hotspot) {
         img: WHALE,
     });
 
-    const hotspot_icon_HTML =
-        '<div class="hotspot-icon" id="hotspot_' +
-        hotspot.name +
-        '_icon">' +
-        '<span class="dot"></span>' +
-        '<span class="pulse"></span>' +
-        '<div class="bounce"><span class="bounce-icon">?</span></div>' +
-        "</div>";
+    const hotspot_icon_HTML = render_hotspot_icon({
+        name: hotspot.name,
+    });
 
     setTimeout(() => {
         $("body").prepend(hotspot_icon_HTML);
@@ -235,7 +233,7 @@ function insert_hotspot_into_DOM(hotspot) {
         }
 
         // reposition on any event that might update the UI
-        ["resize", "scroll", "onkeydown", "click"].forEach((event_name) => {
+        for (const event_name of ["resize", "scroll", "onkeydown", "click"]) {
             window.addEventListener(
                 event_name,
                 _.debounce(() => {
@@ -245,7 +243,7 @@ function insert_hotspot_into_DOM(hotspot) {
                 }, 10),
                 true,
             );
-        });
+        }
     }, hotspot.delay * 1000);
 }
 
@@ -272,16 +270,16 @@ function close_read_hotspots(new_hotspots) {
     );
 
     for (const hotspot_name of unwanted_hotspots) {
-        exports.close_hotspot_icon($("#hotspot_" + hotspot_name + "_icon"));
+        exports.close_hotspot_icon($(`#hotspot_${CSS.escape(hotspot_name)}_icon`));
     }
 }
 
 exports.load_new = function (new_hotspots) {
     close_read_hotspots(new_hotspots);
-    new_hotspots.forEach((hotspot) => {
+    for (const hotspot of new_hotspots) {
         hotspot.location = HOTSPOT_LOCATIONS.get(hotspot.name);
-    });
-    new_hotspots.forEach(insert_hotspot_into_DOM);
+        insert_hotspot_into_DOM(hotspot);
+    }
 };
 
 exports.initialize = function () {

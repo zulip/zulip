@@ -9,11 +9,13 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.actions import do_create_user
 from zerver.lib.digest import (
+    DigestTopic,
     _enqueue_emails_for_realm,
     bulk_handle_digest_email,
     bulk_write_realm_audit_logs,
     enqueue_emails,
     gather_new_streams,
+    get_hot_topics,
     get_modified_streams,
     get_recent_streams,
 )
@@ -22,6 +24,7 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.models import (
+    Client,
     Message,
     Realm,
     RealmAuditLog,
@@ -313,7 +316,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # Check that all users without an a UserActivityInterval entry are considered
         # inactive users and get enqueued.
-        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
+        with mock.patch('zerver.worker.queue_processors.bulk_handle_digest_email') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         num_queued_users = len(queue_mock.call_args[0][0])
@@ -328,7 +331,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             )
 
         # Now we expect no users, due to recent activity.
-        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
+        with mock.patch('zerver.worker.queue_processors.bulk_handle_digest_email') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         self.assertEqual(queue_mock.call_count, 0)
@@ -337,7 +340,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         last_visit = timezone_now() - datetime.timedelta(days=7)
         UserActivityInterval.objects.all().update(start=last_visit, end=last_visit)
 
-        with mock.patch('zerver.lib.digest.queue_digest_user_ids') as queue_mock:
+        with mock.patch('zerver.worker.queue_processors.bulk_handle_digest_email') as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         num_queued_users = len(queue_mock.call_args[0][0])
@@ -456,3 +459,56 @@ class TestDigestContentInBrowser(ZulipTestCase):
         self.login('hamlet')
         result = self.client_get("/digest/")
         self.assert_in_success_response(["Click here to log in to Zulip and catch up."], result)
+
+class TestDigestTopics(ZulipTestCase):
+    def populate_topic(self, topic: DigestTopic, humans: int, human_messages: int, bots: int, bot_messages: int) -> None:
+        def send_messages(client: Client, users: int, messages: int) -> None:
+            messages_sent = 0
+            while messages_sent < messages:
+                for index, username in enumerate(self.example_user_map, start=1):
+                    topic.add_message(Message(sender=self.example_user(username), sending_client=client))
+                    messages_sent += 1
+                    if messages_sent == messages:
+                        break
+                    if index == users:
+                        break
+
+        send_messages(Client(name="zulipmobile"), humans, human_messages)
+        send_messages(Client(name="bot"), bots, bot_messages)
+
+    def test_get_hot_topics(self) -> None:
+        diverse_topic_a = DigestTopic((1, "5 humans talking"))
+        self.populate_topic(diverse_topic_a, humans=5, human_messages=10, bots=0, bot_messages=0)
+
+        diverse_topic_b = DigestTopic((1, "4 humans talking"))
+        self.populate_topic(diverse_topic_b, humans=4, human_messages=15, bots=0, bot_messages=0)
+
+        diverse_topic_c = DigestTopic((2, "5 humans talking in another stream"))
+        self.populate_topic(diverse_topic_c, humans=5, human_messages=15, bots=0, bot_messages=0)
+
+        diverse_topic_d = DigestTopic((1, "3 humans and 2 bots talking"))
+        self.populate_topic(diverse_topic_d, humans=3, human_messages=15, bots=2, bot_messages=10)
+
+        diverse_topic_e = DigestTopic((1, "3 humans talking"))
+        self.populate_topic(diverse_topic_a, humans=3, human_messages=20, bots=0, bot_messages=0)
+
+        lengthy_topic_a = DigestTopic((1, "2 humans talking a lot"))
+        self.populate_topic(lengthy_topic_a, humans=2, human_messages=40, bots=0, bot_messages=0)
+
+        lengthy_topic_b = DigestTopic((1, "2 humans talking"))
+        self.populate_topic(lengthy_topic_b, humans=2, human_messages=30, bots=0, bot_messages=0)
+
+        lengthy_topic_c = DigestTopic((1, "a human and bot talking"))
+        self.populate_topic(lengthy_topic_c, humans=1, human_messages=20, bots=1, bot_messages=20)
+
+        lengthy_topic_d = DigestTopic((2, "2 humans talking in another stream"))
+        self.populate_topic(lengthy_topic_d, humans=2, human_messages=35, bots=0, bot_messages=0)
+
+        topics = [
+            diverse_topic_a, diverse_topic_b, diverse_topic_c, diverse_topic_d, diverse_topic_e,
+            lengthy_topic_a, lengthy_topic_b, lengthy_topic_c, lengthy_topic_d
+        ]
+        self.assertEqual(get_hot_topics(topics, set([1, 0])), [diverse_topic_a, diverse_topic_b, lengthy_topic_a, lengthy_topic_b])
+        self.assertEqual(get_hot_topics(topics, set([1, 2])), [diverse_topic_a, diverse_topic_c, lengthy_topic_a, lengthy_topic_d])
+        self.assertEqual(get_hot_topics(topics, set([2])), [diverse_topic_c, lengthy_topic_d])
+        self.assertEqual(get_hot_topics(topics, set()), [])

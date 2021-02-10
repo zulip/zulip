@@ -54,6 +54,7 @@ def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
     results["inline-code"] = itertools.cycle(cfg["inline-code"])
     results["code-blocks"] = itertools.cycle(cfg["code-blocks"])
     results["quote-blocks"] = itertools.cycle(cfg["quote-blocks"])
+    results["images"] = itertools.cycle(cfg["images"])
 
     results["lists"] = itertools.cycle(cfg["lists"])
 
@@ -120,8 +121,14 @@ def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
             txt = add_emoji(paragraphs[i], next(gens["emojis"]))
         elif key == "link":
             txt = add_link(paragraphs[i], next(gens["links"]))
-        elif key == "picture":
-            txt = txt      # TODO: implement pictures
+        elif key == "images":
+            # Ideally, this would actually be a 2-step process that
+            # first hits the `upload` endpoint and then adds that URL;
+            # this is the hacky version where we just use inline image
+            # previews of files already in the project (which are the
+            # only files we can link to as being definitely available
+            # even when developing offline).
+            txt = paragraphs[i] + "\n" + next(gens["images"])
 
         results.append(txt)
 

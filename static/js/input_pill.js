@@ -198,15 +198,12 @@ exports.create = function (opts) {
 
             // this is an array to push all the errored values to, so it's drafts
             // of pills for the user to fix.
-            const drafts = [];
-
-            pills.forEach((pill) => {
-                // if this returns `false`, it erroed and we should push it to
-                // the draft pills.
-                if (funcs.appendPill(pill) === false) {
-                    drafts.push(pill);
-                }
-            });
+            const drafts = pills.filter(
+                (pill) =>
+                    // if this returns `false`, it erroed and we should push it to
+                    // the draft pills.
+                    funcs.appendPill(pill) === false,
+            );
 
             store.$input.text(drafts.join(", "));
             // when using the `text` insertion feature with jQuery the caret is

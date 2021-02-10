@@ -386,10 +386,9 @@ class Filter {
     }
 
     operands(operator) {
-        return _.chain(this._operators)
+        return this._operators
             .filter((elem) => !elem.negated && elem.operator === operator)
-            .map((elem) => elem.operand)
-            .value();
+            .map((elem) => elem.operand);
     }
 
     has_negated_operand(operator, operand) {
@@ -700,9 +699,7 @@ class Filter {
     }
 
     _fix_redundant_is_private(terms) {
-        const is_pm_with = (term) => Filter.term_type(term) === "pm-with";
-
-        if (!terms.some(is_pm_with)) {
+        if (!terms.some((term) => Filter.term_type(term) === "pm-with")) {
             return terms;
         }
 
@@ -737,7 +734,7 @@ class Filter {
 
     _build_sorted_term_types() {
         const terms = this._operators;
-        const term_types = terms.map(Filter.term_type);
+        const term_types = terms.map((term) => Filter.term_type(term));
         const sorted_terms = Filter.sorted_term_types(term_types);
         return sorted_terms;
     }

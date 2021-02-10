@@ -17,9 +17,8 @@ zrequire("narrow_state");
 const people = zrequire("people");
 zrequire("presence");
 zrequire("buddy_data");
-zrequire("user_status");
-zrequire("feature_flags");
-zrequire("message_edit");
+const user_status = zrequire("user_status");
+const message_edit = zrequire("message_edit");
 
 const noop = function () {};
 $.fn.popover = noop; // this will get wrapped by our code
@@ -30,7 +29,7 @@ set_global("page_params", {
     realm_email_address_visibility: 3,
     custom_profile_fields: [],
 });
-set_global("rows", {});
+const rows = set_global("rows", {});
 
 set_global("message_viewport", {
     height: () => 500,
@@ -48,11 +47,11 @@ set_global("stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
-set_global("stream_data", {});
+const stream_data = set_global("stream_data", {});
 
 const ClipboardJS = noop;
 
-rewiremock.proxy(() => zrequire("popovers"), {
+const popovers = rewiremock.proxy(() => zrequire("popovers"), {
     clipboard: ClipboardJS,
 });
 
@@ -192,7 +191,7 @@ run_test("sender_hover", (override) => {
         }
     });
 
-    $(".user_popover_email").each = noop;
+    $.create(".user_popover_email", {children: []});
     const image_stubber = make_image_stubber();
     window.location = {
         href: "http://chat.zulip.org/",

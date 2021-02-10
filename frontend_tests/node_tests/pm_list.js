@@ -8,27 +8,26 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
 
-set_global("narrow_state", {});
+const narrow_state = set_global("narrow_state", {});
 set_global("ui", {
     get_content_element: (element) => element,
 });
 set_global("stream_popover", {
     hide_topic_popover() {},
 });
-set_global("unread", {});
-set_global("unread_ui", {});
-set_global("vdom", {
+const unread = set_global("unread", {});
+const unread_ui = set_global("unread_ui", {});
+const vdom = set_global("vdom", {
     render: () => "fake-dom-for-pm-list",
 });
-set_global("pm_list_dom", {});
+const pm_list_dom = set_global("pm_list_dom", {});
 
-zrequire("user_status");
 zrequire("presence");
 zrequire("buddy_data");
 zrequire("hash_util");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
-zrequire("pm_list");
+const pm_list = zrequire("pm_list");
 
 const alice = {
     email: "alice@zulip.com",

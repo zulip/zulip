@@ -7,19 +7,20 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
-set_global("ui", {
+const ui = set_global("ui", {
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
 });
-zrequire("stream_data");
-zrequire("search_util");
+const stream_data = zrequire("stream_data");
 set_global("page_params", {});
 
+const denmark_stream_id = 101;
+
 set_global("location", {
-    hash: "#streams/1/announce",
+    hash: `#streams/${denmark_stream_id}/announce`,
 });
 
-zrequire("subs");
+const subs = zrequire("subs");
 
 set_global("$", make_zjquery());
 set_global("hash_util", {
@@ -45,7 +46,7 @@ run_test("filter_table", () => {
             elem: "denmark",
             subscribed: false,
             name: "Denmark",
-            stream_id: 1,
+            stream_id: denmark_stream_id,
             description: "Copenhagen",
             subscribers: [1],
             stream_weekly_traffic: null,
@@ -55,7 +56,7 @@ run_test("filter_table", () => {
             elem: "poland",
             subscribed: true,
             name: "Poland",
-            stream_id: 2,
+            stream_id: 102,
             description: "monday",
             subscribers: [1, 2, 3],
             stream_weekly_traffic: 13,
@@ -65,7 +66,7 @@ run_test("filter_table", () => {
             elem: "pomona",
             subscribed: true,
             name: "Pomona",
-            stream_id: 3,
+            stream_id: 103,
             description: "college",
             subscribers: [],
             stream_weekly_traffic: 0,
@@ -75,7 +76,7 @@ run_test("filter_table", () => {
             elem: "cpp",
             subscribed: true,
             name: "C++",
-            stream_id: 4,
+            stream_id: 104,
             description: "programming lang",
             subscribers: [1, 2],
             stream_weekly_traffic: 6,
@@ -85,7 +86,7 @@ run_test("filter_table", () => {
             elem: "zzyzx",
             subscribed: true,
             name: "Zzyzx",
-            stream_id: 5,
+            stream_id: 105,
             description: "california town",
             subscribers: [1, 2],
             stream_weekly_traffic: 6,
@@ -109,7 +110,7 @@ run_test("filter_table", () => {
     const sub_stubs = [];
 
     for (const data of populated_subs) {
-        const sub_row = ".stream-row-" + data.elem;
+        const sub_row = `.stream-row-${CSS.escape(data.elem)}`;
         sub_stubs.push(sub_row);
 
         $(sub_row).attr("data-stream-id", data.stream_id);
@@ -145,8 +146,19 @@ run_test("filter_table", () => {
         assert.equal(elem, $("#subscription_overlay .streams-list"));
     };
 
+    // Filtering has the side effect of setting the "active" class
+    // on our current stream, even if it doesn't match the filter.
+    const denmark_row = $(`.stream-row[data-stream-id='${CSS.escape(denmark_stream_id)}']`);
+    // sanity check it's not set to active
+    assert(!denmark_row.hasClass("active"));
+
     // Search with single keyword
     subs.filter_table({input: "Po", subscribed_only: false});
+
+    // The denmark row is active, even though it's not displayed.
+    assert(denmark_row.hasClass("active"));
+
+    // We only display poland and pomona
     assert($(".stream-row-denmark").hasClass("notdisplayed"));
     assert(!$(".stream-row-poland").hasClass("notdisplayed"));
     assert(!$(".stream-row-pomona").hasClass("notdisplayed"));
@@ -302,9 +314,4 @@ run_test("filter_table", () => {
     assert($(".stream-row-pomona").hasClass("notdisplayed"));
     assert($(".stream-row-cpp").hasClass("notdisplayed"));
     assert($(".stream-row-zzyzx").hasClass("notdisplayed"));
-
-    // test selected row set to active
-    $(".stream-row[data-stream-id='1']").removeClass("active");
-    subs.filter_table({input: "", subscribed_only: false});
-    assert($(".stream-row[data-stream-id='1']").hasClass("active"));
 });

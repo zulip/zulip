@@ -1,5 +1,3 @@
-"use strict";
-
 $(() => {
     // This code will be executed when the user visits /emails in
     // development mode and email_log.html is rendered.
@@ -45,3 +43,4 @@ $(() => {
         });
     });
 });
+export {};

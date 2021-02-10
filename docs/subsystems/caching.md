@@ -251,7 +251,7 @@ Zulip makes extensive use of caching of data in the browser and mobile
 apps; details like which users exist, with metadata like names and
 avatars, similar details for streams, recent message history, etc.
 
-These days are fetched in the `/register` endpoint (or `page_params`
+This data is fetched in the `/register` endpoint (or `page_params`
 for the webapp), and kept correct over time.  The key to keeping these
 state up to date is Zulip's
 [real-time events system](../subsystems/events-system.md), which

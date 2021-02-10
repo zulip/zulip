@@ -83,7 +83,7 @@ exports.populate_emoji = function () {
     }
 
     const emoji_table = $("#admin_emoji_table").expectOne();
-    list_render.create(emoji_table, Object.values(emoji_data), {
+    ListWidget.create(emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
         modifier(item) {
             if (item.deactivated !== true) {
@@ -183,11 +183,7 @@ exports.set_up = function () {
             }
 
             if (emoji.name.trim() === "") {
-                ui_report.message(
-                    i18n.t("Failed: Emoji name is required."),
-                    emoji_status,
-                    "alert-error",
-                );
+                ui_report.client_error(i18n.t("Failed: Emoji name is required."), emoji_status);
                 return;
             }
             $("#admin_emoji_submit").prop("disabled", true);

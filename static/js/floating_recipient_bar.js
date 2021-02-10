@@ -1,7 +1,5 @@
 "use strict";
 
-const XDate = require("xdate");
-
 let is_floating_recipient_bar_showing = false;
 
 function top_offset(elem) {
@@ -98,8 +96,8 @@ exports.get_date = function (elem) {
         return undefined;
     }
 
-    const time = new XDate(message.timestamp * 1000);
-    const today = new XDate();
+    const time = new Date(message.timestamp * 1000);
+    const today = new Date();
     const rendered_date = timerender.render_date(time, undefined, today)[0].outerHTML;
 
     return rendered_date;

@@ -421,10 +421,8 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
 # * Fills in some recent historical messages
 # * Notifies other users in realm and Zulip about the signup
 # * Deactivates PreregistrationUser objects
-# * subscribe the user to newsletter if newsletter_data is specified
 def process_new_human_user(user_profile: UserProfile,
                            prereg_user: Optional[PreregistrationUser]=None,
-                           newsletter_data: Optional[Mapping[str, str]]=None,
                            default_stream_groups: Sequence[DefaultStreamGroup]=[],
                            realm_creation: bool=False) -> None:
     realm = user_profile.realm
@@ -491,23 +489,6 @@ def process_new_human_user(user_profile: UserProfile,
     from zerver.lib.onboarding import send_initial_pms
     send_initial_pms(user_profile)
 
-    if newsletter_data is not None:
-        # If the user was created automatically via the API, we may
-        # not want to register them for the newsletter
-        queue_json_publish(
-            "signups",
-            {
-                'email_address': user_profile.delivery_email,
-                'user_id': user_profile.id,
-                'merge_fields': {
-                    'NAME': user_profile.full_name,
-                    'REALM_ID': user_profile.realm_id,
-                    'OPTIN_IP': newsletter_data["IP"],
-                    'OPTIN_TIME': datetime.datetime.isoformat(timezone_now().replace(microsecond=0)),
-                },
-            },
-            lambda event: None)
-
 def notify_created_user(user_profile: UserProfile) -> None:
     user_row = user_profile_to_user_row(user_profile)
     person = format_user_row(user_profile.realm, user_profile, user_row,
@@ -565,28 +546,43 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: O
         user_set.add((email, full_name, True))
     bulk_create_users(realm, user_set, bot_type)
 
-def do_create_user(email: str, password: Optional[str], realm: Realm, full_name: str,
-                   bot_type: Optional[int]=None, role: Optional[int]=None,
-                   bot_owner: Optional[UserProfile]=None, tos_version: Optional[str]=None,
-                   timezone: str="", avatar_source: str=UserProfile.AVATAR_FROM_GRAVATAR,
-                   default_sending_stream: Optional[Stream]=None,
-                   default_events_register_stream: Optional[Stream]=None,
-                   default_all_public_streams: Optional[bool]=None,
-                   prereg_user: Optional[PreregistrationUser]=None,
-                   newsletter_data: Optional[Dict[str, str]]=None,
-                   default_stream_groups: Sequence[DefaultStreamGroup]=[],
-                   source_profile: Optional[UserProfile]=None,
-                   realm_creation: bool=False,
-                   acting_user: Optional[UserProfile]=None) -> UserProfile:
+def do_create_user(
+    email: str,
+    password: Optional[str],
+    realm: Realm,
+    full_name: str,
+    bot_type: Optional[int]=None,
+    role: Optional[int]=None,
+    bot_owner: Optional[UserProfile]=None,
+    tos_version: Optional[str]=None,
+    timezone: str="",
+    avatar_source: str=UserProfile.AVATAR_FROM_GRAVATAR,
+    default_sending_stream: Optional[Stream]=None,
+    default_events_register_stream: Optional[Stream]=None,
+    default_all_public_streams: Optional[bool]=None,
+    prereg_user: Optional[PreregistrationUser]=None,
+    default_stream_groups: Sequence[DefaultStreamGroup]=[],
+    source_profile: Optional[UserProfile]=None,
+    realm_creation: bool=False,
+    acting_user: Optional[UserProfile]=None,
+) -> UserProfile:
 
-    user_profile = create_user(email=email, password=password, realm=realm,
-                               full_name=full_name,
-                               role=role, bot_type=bot_type, bot_owner=bot_owner,
-                               tos_version=tos_version, timezone=timezone, avatar_source=avatar_source,
-                               default_sending_stream=default_sending_stream,
-                               default_events_register_stream=default_events_register_stream,
-                               default_all_public_streams=default_all_public_streams,
-                               source_profile=source_profile)
+    user_profile = create_user(
+        email=email,
+        password=password,
+        realm=realm,
+        full_name=full_name,
+        role=role,
+        bot_type=bot_type,
+        bot_owner=bot_owner,
+        tos_version=tos_version,
+        timezone=timezone,
+        avatar_source=avatar_source,
+        default_sending_stream=default_sending_stream,
+        default_events_register_stream=default_events_register_stream,
+        default_all_public_streams=default_all_public_streams,
+        source_profile=source_profile,
+    )
 
     event_time = user_profile.date_joined
     if not acting_user:
@@ -607,7 +603,6 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
     notify_created_user(user_profile)
     if bot_type is None:
         process_new_human_user(user_profile, prereg_user=prereg_user,
-                               newsletter_data=newsletter_data,
                                default_stream_groups=default_stream_groups,
                                realm_creation=realm_creation)
     return user_profile
@@ -3117,7 +3112,7 @@ def get_available_notification_sounds() -> List[str]:
         if ext == '.ogg':
             available_notification_sounds.append(root)
 
-    return available_notification_sounds
+    return sorted(available_notification_sounds)
 
 def notify_subscriptions_removed(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
 
@@ -5338,7 +5333,7 @@ def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
 
 def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     '''Discourage using invitation emails as a vector for carrying spam.'''
-    msg = _("You do not have enough remaining invites. "
+    msg = _("You do not have enough remaining invites for today. "
             "Please contact {email} to have your limit raised. "
             "No invitations were sent.").format(email=settings.ZULIP_ADMINISTRATOR)
     if not settings.OPEN_REALM_CREATION:

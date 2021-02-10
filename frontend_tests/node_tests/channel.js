@@ -9,9 +9,9 @@ const {run_test} = require("../zjsunit/test");
 
 set_global("$", {});
 
-set_global("reload", {});
+const reload = set_global("reload", {});
 zrequire("reload_state");
-zrequire("channel");
+const channel = zrequire("channel");
 
 const default_stub_xhr = "default-stub-xhr";
 

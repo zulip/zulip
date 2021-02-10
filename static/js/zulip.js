@@ -7,7 +7,7 @@
 const home_msg_list = new message_list.MessageList({
     table_name: "zhome",
     filter: new Filter([{operator: "in", operand: "home"}]),
-    muting_enabled: true,
+    excludes_muted_topics: true,
 });
 
 window.home_msg_list = home_msg_list;

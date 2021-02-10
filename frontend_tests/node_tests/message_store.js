@@ -8,18 +8,13 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 const util = zrequire("util");
-zrequire("pm_conversations");
 const people = zrequire("people");
-zrequire("message_store");
+const message_store = zrequire("message_store");
 
 const noop = function () {};
 
 set_global("$", make_zjquery());
 set_global("document", "document-stub");
-
-set_global("alert_words", {
-    process_message: noop,
-});
 
 set_global("stream_topic_history", {
     add_message: noop,
@@ -170,14 +165,14 @@ run_test("message_booleans_parity", () => {
         const update_message = {topic: "update_booleans"};
         message_store.set_message_booleans(set_message);
         message_store.update_booleans(update_message, flags);
-        Object.keys(expected_message).forEach((key) => {
+        for (const key of Object.keys(expected_message)) {
             assert.equal(
                 set_message[key],
                 expected_message[key],
                 `'${key}' != ${expected_message[key]}`,
             );
             assert.equal(update_message[key], expected_message[key]);
-        });
+        }
         assert.equal(set_message.topic, "set_message_booleans");
         assert.equal(update_message.topic, "update_booleans");
     };

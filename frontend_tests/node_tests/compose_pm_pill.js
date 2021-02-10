@@ -10,8 +10,8 @@ set_global("$", make_zjquery());
 
 const people = zrequire("people");
 
-zrequire("compose_pm_pill");
-zrequire("input_pill");
+const compose_pm_pill = zrequire("compose_pm_pill");
+const input_pill = zrequire("input_pill");
 zrequire("user_pill");
 
 let pills = {
@@ -42,7 +42,7 @@ run_test("pills", () => {
     };
 
     const recipient_stub = $("#private_message_recipient");
-    const pill_container_stub = $('.pill-container[data-before="You and"]');
+    const pill_container_stub = "pill-container";
     recipient_stub.set_parent(pill_container_stub);
     let create_item_handler;
 

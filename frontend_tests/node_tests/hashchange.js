@@ -15,28 +15,28 @@ set_global("location", {
 set_global("to_$", () => window_stub);
 
 const people = zrequire("people");
-zrequire("hash_util");
-zrequire("hashchange");
-zrequire("stream_data");
+const hash_util = zrequire("hash_util");
+const hashchange = zrequire("hashchange");
+const stream_data = zrequire("stream_data");
 zrequire("navigate");
 
 set_global("search", {
     update_button_visibility: () => {},
 });
 set_global("document", "document-stub");
-set_global("history", {});
+const history = set_global("history", {});
 
 set_global("admin", {});
 set_global("drafts", {});
 set_global("favicon", {});
 set_global("floating_recipient_bar", {});
-set_global("info_overlay", {});
+const info_overlay = set_global("info_overlay", {});
 set_global("message_viewport", {});
-set_global("narrow", {});
+const narrow = set_global("narrow", {});
 set_global("overlays", {});
 set_global("settings", {});
 set_global("subs", {});
-set_global("ui_util", {});
+const ui_util = set_global("ui_util", {});
 
 run_test("operators_round_trip", () => {
     let operators;

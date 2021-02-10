@@ -2,6 +2,7 @@
 
 const emojisets = require("./emojisets");
 const settings_config = require("./settings_config");
+const settings_ui = require("./settings_ui");
 
 const meta = {
     loaded: false,
@@ -41,7 +42,7 @@ exports.set_up = function () {
 
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
-    $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
+    $(`.emojiset_choice[value="${CSS.escape(page_params.emojiset)}"]`).prop("checked", true);
 
     $("#default_language_modal [data-dismiss]").on("click", () => {
         overlays.close_modal("#default_language_modal");
@@ -49,7 +50,7 @@ exports.set_up = function () {
 
     const all_display_settings = settings_config.get_all_display_settings();
     for (const setting of all_display_settings.settings.user_display_settings) {
-        $("#" + setting).on("change", function () {
+        $(`#${CSS.escape(setting)}`).on("change", function () {
             const data = {};
             data[setting] = JSON.stringify($(this).prop("checked"));
 

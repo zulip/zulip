@@ -76,7 +76,7 @@ EXTERNAL_HOST = 'zulip.example.com'
 # Passwords and secrets are not stored in this file.  The password
 # for user EMAIL_HOST_USER goes in `/etc/zulip/zulip-secrets.conf`.
 # In that file, set `email_password`.  For example:
-#   email_password = abcd1234
+#email_password = abcd1234
 
 # EMAIL_USE_TLS and EMAIL_PORT are required for most SMTP providers.
 #EMAIL_USE_TLS = True
@@ -126,6 +126,102 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
+
+# LDAP integration.
+#
+# Zulip supports retrieving information about users via LDAP, and
+# optionally using LDAP as an authentication mechanism.
+
+import ldap
+from django_auth_ldap.config import LDAPSearch
+
+# Connecting to the LDAP server.
+#
+# For detailed instructions, see the Zulip documentation:
+#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
+
+# The LDAP server to connect to.  Setting this enables Zulip
+# automatically fetching each new user's name from LDAP.
+# Example: "ldaps://ldap.example.com"
+AUTH_LDAP_SERVER_URI = ""
+
+# The DN of the user to bind as (i.e., authenticate as) in order to
+# query LDAP.  If unset, Zulip does an anonymous bind.
+AUTH_LDAP_BIND_DN = ""
+
+# Passwords and secrets are not stored in this file.  The password
+# corresponding to AUTH_LDAP_BIND_DN goes in `/etc/zulip/zulip-secrets.conf`.
+# In that file, set `auth_ldap_bind_password`.  For example:
+#auth_ldap_bind_password = abcd1234
+
+# Mapping user info from LDAP to Zulip.
+#
+# For detailed instructions, see the Zulip documentation:
+#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
+
+# The LDAP search query to find a given user.
+#
+# The arguments to `LDAPSearch` are (base DN, scope, filter).  In the
+# filter, the string `%(user)s` is a Python placeholder.  The Zulip
+# server will replace this with the user's Zulip username, i.e. the
+# name they type into the Zulip login form.
+#
+# For more details and alternatives, see the documentation linked above.
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                   ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+
+# Configuration to lookup a user's LDAP data given their email address
+# (For Zulip reverse mapping).  If users log in as e.g. "sam" when
+# their email address is "sam@example.com", set LDAP_APPEND_DOMAIN to
+# "example.com".  Otherwise, leave LDAP_APPEND_DOMAIN=None and set
+# AUTH_LDAP_REVERSE_EMAIL_SEARCH and AUTH_LDAP_USERNAME_ATTR below.
+#LDAP_APPEND_DOMAIN = None
+
+# LDAP attribute to find a user's email address.
+#
+# Leave as None if users log in with their email addresses,
+# or if using LDAP_APPEND_DOMAIN.
+#LDAP_EMAIL_ATTR = None
+
+# AUTH_LDAP_REVERSE_EMAIL_SEARCH works like AUTH_LDAP_USER_SEARCH and
+# should query an LDAP user given their email address.  It and
+# AUTH_LDAP_USERNAME_ATTR are required when LDAP_APPEND_DOMAIN is None.
+#AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+#                                            ldap.SCOPE_SUBTREE, "(email=%(email)s)")
+
+# AUTH_LDAP_USERNAME_ATTR should be the Zulip username attribute
+# (defined in AUTH_LDAP_USER_SEARCH).
+#AUTH_LDAP_USERNAME_ATTR = "uid"
+
+# This map defines how to populate attributes of a Zulip user from LDAP.
+#
+# The format is `zulip_name: ldap_name`; each entry maps a Zulip
+# concept (on the left) to the LDAP attribute name (on the right) your
+# LDAP database uses for the same concept.
+AUTH_LDAP_USER_ATTR_MAP = {
+    # full_name is required; common values include "cn" or "displayName".
+    # If names are encoded in your LDAP directory as first and last
+    # name, you can instead specify first_name and last_name, and
+    # Zulip will combine those to construct a full_name automatically.
+    "full_name": "cn",
+    # "first_name": "fn",
+    # "last_name": "ln",
+
+    # Profile pictures can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
+    # "avatar": "thumbnailPhoto",
+
+    # This line is for having Zulip to automatically deactivate users
+    # who are disabled in LDAP/Active Directory (and reactivate users who are not).
+    # See docs for usage details and precise semantics.
+    # "userAccountControl": "userAccountControl",
+}
+
+# Whether to automatically deactivate users not found in LDAP. If LDAP
+# is the only authentication method, then this setting defaults to
+# True.  If other authentication methods are enabled, it defaults to
+# False.
+#LDAP_DEACTIVATE_NON_MATCHING_USERS = True
+
 
 ########
 # Google OAuth.
@@ -354,8 +450,8 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
 # Password strength requirements; learn about configuration at
 # https://zulip.readthedocs.io/en/latest/production/security-model.html.
-# PASSWORD_MIN_LENGTH = 6
-# PASSWORD_MIN_GUESSES = 10000
+#PASSWORD_MIN_LENGTH = 6
+#PASSWORD_MIN_GUESSES = 10000
 
 # Controls whether Zulip sends "new login" email notifications.
 #SEND_LOGIN_EMAILS = True
@@ -446,6 +542,57 @@ ENABLE_GRAVATAR = True
 #REMOTE_POSTGRES_PORT = '5432'
 #REMOTE_POSTGRES_SSLMODE = 'require'
 
+# The default CAMO_URI of '/external_content/' is served by the camo
+# setup in the default Zulip nginx configuration.  Setting CAMO_URI
+# to '' will disable the Camo integration.
+CAMO_URI = '/external_content/'
+
+# RabbitMQ configuration
+#
+# By default, Zulip connects to RabbitMQ running locally on the machine,
+# but Zulip also supports connecting to RabbitMQ over the network;
+# to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
+#RABBITMQ_HOST = "127.0.0.1"
+# To use another RabbitMQ user than the default 'zulip', set RABBITMQ_USERNAME here.
+#RABBITMQ_USERNAME = 'zulip'
+
+# Memcached configuration
+#
+# By default, Zulip connects to memcached running locally on the machine,
+# but Zulip also supports connecting to memcached over the network;
+# to use a remote Memcached instance, set MEMCACHED_LOCATION here.
+# Format HOST:PORT
+#MEMCACHED_LOCATION = 127.0.0.1:11211
+# To authenticate to memcached, set memcached_password in zulip-secrets.conf,
+# and optionally change the default username 'zulip@localhost' here.
+#MEMCACHED_USERNAME = 'zulip@localhost'
+
+# Redis configuration
+#
+# By default, Zulip connects to Redis running locally on the machine,
+# but Zulip also supports connecting to Redis over the network;
+# to use a remote Redis instance, set REDIS_HOST here.
+#REDIS_HOST = '127.0.0.1'
+# For a different Redis port set the REDIS_PORT here.
+#REDIS_PORT = 6379
+# If you set redis_password in zulip-secrets.conf, Zulip will use that password
+# to connect to the Redis server.
+
+# Controls whether Zulip will rate-limit user requests.
+#RATE_LIMITING = True
+
+# By default, Zulip connects to the thumbor (the thumbnailing software
+# we use) service running locally on the machine.  If you're running
+# thumbor on a different server, you can configure that by setting
+# THUMBOR_URL here.  Setting THUMBOR_URL='' will let Zulip server know that
+# thumbor is not running or configured.
+#THUMBOR_URL = 'http://127.0.0.1:9995'
+#
+# This setting controls whether images shown in Zulip's inline image
+# previews should be thumbnailed by thumbor, which saves bandwidth but
+# can modify the image's appearance.
+#THUMBNAIL_IMAGES = True
+
 # If you want to set a Terms of Service for your server, set the path
 # to your Markdown file, and uncomment the following line.
 #TERMS_OF_SERVICE = '/etc/zulip/terms.md'
@@ -493,159 +640,6 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
 
 ################
-# LDAP integration.
-#
-# Zulip supports retrieving information about users via LDAP, and
-# optionally using LDAP as an authentication mechanism.
-
-import ldap
-from django_auth_ldap.config import LDAPSearch
-
-########
-# LDAP integration, part 1: Connecting to the LDAP server.
-#
-# For detailed instructions, see the Zulip documentation:
-#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
-
-# The LDAP server to connect to.  Setting this enables Zulip
-# automatically fetching each new user's name from LDAP.
-# Example: "ldaps://ldap.example.com"
-AUTH_LDAP_SERVER_URI = ""
-
-# The DN of the user to bind as (i.e., authenticate as) in order to
-# query LDAP.  If unset, Zulip does an anonymous bind.
-AUTH_LDAP_BIND_DN = ""
-
-# Passwords and secrets are not stored in this file.  The password
-# corresponding to AUTH_LDAP_BIND_DN goes in `/etc/zulip/zulip-secrets.conf`.
-# In that file, set `auth_ldap_bind_password`.  For example:
-#   auth_ldap_bind_password = abcd1234
-
-
-########
-# LDAP integration, part 2: Mapping user info from LDAP to Zulip.
-#
-# For detailed instructions, see the Zulip documentation:
-#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
-
-# The LDAP search query to find a given user.
-#
-# The arguments to `LDAPSearch` are (base DN, scope, filter).  In the
-# filter, the string `%(user)s` is a Python placeholder.  The Zulip
-# server will replace this with the user's Zulip username, i.e. the
-# name they type into the Zulip login form.
-#
-# For more details and alternatives, see the documentation linked above.
-AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                   ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
-
-# Configuration to lookup a user's LDAP data given their email address
-# (For Zulip reverse mapping).  If users log in as e.g. "sam" when
-# their email address is "sam@example.com", set LDAP_APPEND_DOMAIN to
-# "example.com".  Otherwise, leave LDAP_APPEND_DOMAIN=None and set
-# AUTH_LDAP_REVERSE_EMAIL_SEARCH and AUTH_LDAP_USERNAME_ATTR below.
-#LDAP_APPEND_DOMAIN = None
-
-# LDAP attribute to find a user's email address.
-#
-# Leave as None if users log in with their email addresses,
-# or if using LDAP_APPEND_DOMAIN.
-#LDAP_EMAIL_ATTR = None
-
-# AUTH_LDAP_REVERSE_EMAIL_SEARCH works like AUTH_LDAP_USER_SEARCH and
-# should query an LDAP user given their email address.  It and
-# AUTH_LDAP_USERNAME_ATTR are required when LDAP_APPEND_DOMAIN is None.
-#AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-#                                            ldap.SCOPE_SUBTREE, "(email=%(email)s)")
-
-# AUTH_LDAP_USERNAME_ATTR should be the Zulip username attribute
-# (defined in AUTH_LDAP_USER_SEARCH).
-#AUTH_LDAP_USERNAME_ATTR = "uid"
-
-# This map defines how to populate attributes of a Zulip user from LDAP.
-#
-# The format is `zulip_name: ldap_name`; each entry maps a Zulip
-# concept (on the left) to the LDAP attribute name (on the right) your
-# LDAP database uses for the same concept.
-AUTH_LDAP_USER_ATTR_MAP = {
-    # full_name is required; common values include "cn" or "displayName".
-    # If names are encoded in your LDAP directory as first and last
-    # name, you can instead specify first_name and last_name, and
-    # Zulip will combine those to construct a full_name automatically.
-    "full_name": "cn",
-    # "first_name": "fn",
-    # "last_name": "ln",
-
-    # Profile pictures can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
-    # "avatar": "thumbnailPhoto",
-
-    # This line is for having Zulip to automatically deactivate users
-    # who are disabled in LDAP/Active Directory (and reactivate users who are not).
-    # See docs for usage details and precise semantics.
-    # "userAccountControl": "userAccountControl",
-}
-
-# Whether to automatically deactivate users not found in LDAP. If LDAP
-# is the only authentication method, then this setting defaults to
-# True.  If other authentication methods are enabled, it defaults to
-# False.
-#LDAP_DEACTIVATE_NON_MATCHING_USERS = True
-
-################
-# Miscellaneous settings.
-
-# The default CAMO_URI of '/external_content/' is served by the camo
-# setup in the default Zulip nginx configuration.  Setting CAMO_URI
-# to '' will disable the Camo integration.
-CAMO_URI = '/external_content/'
-
-# RabbitMQ configuration
-#
-# By default, Zulip connects to RabbitMQ running locally on the machine,
-# but Zulip also supports connecting to RabbitMQ over the network;
-# to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
-# RABBITMQ_HOST = "127.0.0.1"
-# To use another RabbitMQ user than the default 'zulip', set RABBITMQ_USERNAME here.
-# RABBITMQ_USERNAME = 'zulip'
-
-# Memcached configuration
-#
-# By default, Zulip connects to memcached running locally on the machine,
-# but Zulip also supports connecting to memcached over the network;
-# to use a remote Memcached instance, set MEMCACHED_LOCATION here.
-# Format HOST:PORT
-# MEMCACHED_LOCATION = 127.0.0.1:11211
-# To authenticate to memcached, set memcached_password in zulip-secrets.conf,
-# and optionally change the default username 'zulip@localhost' here.
-# MEMCACHED_USERNAME = 'zulip@localhost'
-
-# Redis configuration
-#
-# By default, Zulip connects to Redis running locally on the machine,
-# but Zulip also supports connecting to Redis over the network;
-# to use a remote Redis instance, set REDIS_HOST here.
-# REDIS_HOST = '127.0.0.1'
-# For a different Redis port set the REDIS_PORT here.
-# REDIS_PORT = 6379
-# If you set redis_password in zulip-secrets.conf, Zulip will use that password
-# to connect to the Redis server.
-
-# Controls whether Zulip will rate-limit user requests.
-# RATE_LIMITING = True
-
-# By default, Zulip connects to the thumbor (the thumbnailing software
-# we use) service running locally on the machine.  If you're running
-# thumbor on a different server, you can configure that by setting
-# THUMBOR_URL here.  Setting THUMBOR_URL='' will let Zulip server know that
-# thumbor is not running or configured.
-#THUMBOR_URL = 'http://127.0.0.1:9995'
-#
-# This setting controls whether images shown in Zulip's inline image
-# previews should be thumbnailed by thumbor, which saves bandwidth but
-# can modify the image's appearance.
-#THUMBNAIL_IMAGES = True
-
-################
 # Video call integrations.
 #
 # Controls the Zoom video call integration.  See:
@@ -661,4 +655,4 @@ CAMO_URI = '/external_content/'
 
 # Controls the Big Blue Button video call integration.  You must also
 # set big_blue_button_secret in zulip-secrets.conf.
-# BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
+#BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"

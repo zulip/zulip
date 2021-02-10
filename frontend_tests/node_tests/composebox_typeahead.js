@@ -8,16 +8,15 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
-zrequire("compose_state");
-zrequire("pm_conversations");
+const compose_state = zrequire("compose_state");
 zrequire("templates");
-zrequire("typeahead_helper");
+const typeahead_helper = zrequire("typeahead_helper");
 const people = zrequire("people");
-zrequire("user_groups");
-zrequire("stream_data");
-zrequire("user_pill");
-zrequire("compose_pm_pill");
-zrequire("composebox_typeahead");
+const user_groups = zrequire("user_groups");
+const stream_data = zrequire("stream_data");
+const user_pill = zrequire("user_pill");
+const compose_pm_pill = zrequire("compose_pm_pill");
+const composebox_typeahead = zrequire("composebox_typeahead");
 zrequire("recent_senders");
 zrequire("settings_org");
 const settings_config = zrequire("settings_config");
@@ -26,9 +25,9 @@ const settings_config = zrequire("settings_config");
 stream_data.update_calculated_fields = () => {};
 stream_data.set_filter_out_inactives = () => false;
 
-set_global("stream_topic_history", {});
+const stream_topic_history = set_global("stream_topic_history", {});
 
-set_global("message_store", {
+const message_store = set_global("message_store", {
     user_ids: () => [],
 });
 
@@ -175,8 +174,8 @@ stream_data.add_sub(netherland_stream);
 set_global("$", make_zjquery());
 
 set_global("page_params", {});
-set_global("channel", {});
-set_global("compose", {
+const channel = set_global("channel", {});
+const compose = set_global("compose", {
     finish: noop,
 });
 
@@ -1281,6 +1280,10 @@ run_test("begins_typeahead", () => {
     assert_typeahead_equals("abc/po", false);
     assert_typeahead_equals("hello /poll", false);
     assert_typeahead_equals("\n/pol", false);
+    assert_typeahead_equals("/todo", composebox_typeahead.slash_commands);
+    assert_typeahead_equals("my /todo", false);
+    assert_typeahead_equals("\n/to", false);
+    assert_typeahead_equals(" /tod", false);
 
     assert_typeahead_equals("x/", false);
     assert_typeahead_equals("```", false);
@@ -1338,13 +1341,13 @@ run_test("begins_typeahead", () => {
     assert_typeahead_equals("```test", "ing", false);
     assert_typeahead_equals("~~~test", "ing", false);
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
-    terminal_symbols.split().forEach((symbol) => {
+    for (const symbol of terminal_symbols.split()) {
         assert_stream_list("#test", symbol);
         assert_typeahead_equals("@test", symbol, all_mentions);
         assert_typeahead_equals(":test", symbol, emoji_list);
         assert_typeahead_equals("```test", symbol, lang_list);
         assert_typeahead_equals("~~~test", symbol, lang_list);
-    });
+    }
 });
 
 run_test("tokenizing", () => {

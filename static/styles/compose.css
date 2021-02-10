@@ -16,7 +16,7 @@
                 line-height: 1em;
             }
 
-            @media (min-width: 551px) {
+            @media (width >= $sm_min) {
                 display: none;
             }
         }
@@ -33,7 +33,7 @@
             display: none;
         }
 
-        @media (max-width: 550px) {
+        @media (width < $sm_min) {
             .compose_stream_button,
             .compose_private_button {
                 display: none;
@@ -497,20 +497,20 @@ a#undo_markdown_preview {
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */
-@media (max-width: 1165px) {
+@media (width < $xl_min) {
     .compose-content {
         margin-right: 7px;
     }
 }
 
-@media (max-width: 775px) {
+@media (width < $md_min) {
     .compose-content {
         margin-right: 7px;
         margin-left: 7px;
     }
 }
 
-@media (max-width: 370px) {
+@media (width < $mm_min) {
     #stream_message_recipient_topic.recipient_box {
         width: calc(100% - 175px);
         min-width: 95px;

@@ -11,7 +11,7 @@ const _settings_bots = {
 
 set_global("settings_bots", _settings_bots);
 
-zrequire("bot_data");
+const bot_data = zrequire("bot_data");
 const people = zrequire("people");
 
 const me = {

@@ -8,10 +8,20 @@ const emoji = require("../shared/js/emoji");
 const fenced_code = require("../shared/js/fenced_code");
 const render_edit_content_button = require("../templates/edit_content_button.hbs");
 
+const alert_words = require("./alert_words");
+const copy_and_paste = require("./copy_and_paste");
+const echo = require("./echo");
 const emojisets = require("./emojisets");
+const invite = require("./invite");
 const markdown_config = require("./markdown_config");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
+const spoilers = require("./spoilers");
+const topic_zoom = require("./topic_zoom");
+const tutorial = require("./tutorial");
+const typing = require("./typing");
+const user_status = require("./user_status");
+const user_status_ui = require("./user_status_ui");
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -231,7 +241,10 @@ exports.initialize_kitchen_sink_stuff = function () {
                     selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
                         messages.map((message) => message.id),
-                        _.chain(current_msg_list.all_messages()).pluck("id").clone().value().sort(),
+                        current_msg_list
+                            .all_messages()
+                            .map((message) => message.id)
+                            .sort(),
                     ),
                     found_in_dom: row_from_dom.length,
                 });
@@ -479,7 +492,7 @@ exports.initialize_everything = function () {
 };
 
 $(() => {
-    const finish = blueslip.start_timing("initialize_everything");
-    exports.initialize_everything();
-    finish();
+    blueslip.measure_time("initialize_everything", () => {
+        exports.initialize_everything();
+    });
 });

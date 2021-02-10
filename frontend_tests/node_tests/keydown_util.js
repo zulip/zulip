@@ -6,7 +6,7 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
 
-zrequire("keydown_util");
+const keydown_util = zrequire("keydown_util");
 
 run_test("test_early_returns", () => {
     const stub = $.create("stub");

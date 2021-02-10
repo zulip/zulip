@@ -11,7 +11,7 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("page_params", {});
 set_global("$", make_zjquery());
-set_global("loading", {});
+const loading = set_global("loading", {});
 
 const SHORT_TEXT_ID = 1;
 const CHOICE_ID = 3;
@@ -39,7 +39,7 @@ page_params.custom_profile_field_types = {
     },
 };
 
-rewiremock.proxy(() => zrequire("settings_profile_fields"), {
+const settings_profile_fields = rewiremock.proxy(() => zrequire("settings_profile_fields"), {
     sortablejs: {default: {create: () => {}}},
 });
 

@@ -11,7 +11,7 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 set_global("$", make_zjquery());
 const people = zrequire("people");
 zrequire("buddy_data");
-zrequire("buddy_list");
+const buddy_list = zrequire("buddy_list");
 zrequire("ui");
 
 set_global("padded_widget", {
@@ -31,7 +31,7 @@ function init_simulated_scrolling() {
 
     $("#buddy_list_wrapper")[0] = elem;
 
-    $("#buddy_list_wrapper_padding").height = () => 0;
+    $("#buddy_list_wrapper_padding").set_height(0);
 
     return elem;
 }
@@ -44,12 +44,16 @@ const alice = {
 people.add_active_user(alice);
 
 run_test("get_items", () => {
-    const alice_li = $.create("alice stub");
+    // We don't make alice_li an actual jQuery stub,
+    // because our test only cares that it comes
+    // back from get_items.
+    const alice_li = "alice stub";
     const sel = "li.user_sidebar_entry";
-
-    buddy_list.container.set_find_results(sel, {
-        map: (f) => [f(0, alice_li)],
+    const container = $.create("get_items container", {
+        children: [{to_$: () => alice_li}],
     });
+
+    buddy_list.container.set_find_results(sel, container);
     const items = buddy_list.get_items();
 
     assert.deepEqual(items, [alice_li]);
@@ -83,8 +87,7 @@ run_test("basics", () => {
     });
     assert(appended);
 
-    const alice_li = $.create("alice-li-stub");
-    alice_li.length = 1;
+    const alice_li = {length: 1};
 
     buddy_list.get_li_from_key = (opts) => {
         const key = opts.key;
@@ -159,9 +162,7 @@ run_test("find_li w/force_render", () => {
     // key is not already rendered in DOM, then the
     // widget will call show_key to force-render it.
     const key = "999";
-    const stub_li = $.create("nada");
-
-    stub_li.length = 0;
+    const stub_li = {length: 0};
 
     buddy_list.get_li_from_key = (opts) => {
         assert.equal(opts.key, key);

@@ -7,13 +7,13 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("unread");
-zrequire("stream_data");
+const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 set_global("$", make_zjquery());
 zrequire("message_util", "js/message_util");
-zrequire("Filter", "js/filter");
+const Filter = zrequire("Filter", "js/filter");
 
-set_global("message_store", {});
+const message_store = set_global("message_store", {});
 set_global("page_params", {});
 
 const me = {
@@ -731,21 +731,19 @@ run_test("predicate_basics", () => {
     }
 
     const has_link = get_predicate([["has", "link"]]);
-    set_find_results_for_msg_content(img_msg, "a", [$("<a>")]);
+    set_find_results_for_msg_content(img_msg, "a", ["stub"]);
     assert(has_link(img_msg));
-    set_find_results_for_msg_content(non_img_attachment_msg, "a", [$("<a>")]);
+    set_find_results_for_msg_content(non_img_attachment_msg, "a", ["stub"]);
     assert(has_link(non_img_attachment_msg));
-    set_find_results_for_msg_content(link_msg, "a", [$("<a>")]);
+    set_find_results_for_msg_content(link_msg, "a", ["stub"]);
     assert(has_link(link_msg));
     set_find_results_for_msg_content(no_has_filter_matching_msg, "a", false);
     assert(!has_link(no_has_filter_matching_msg));
 
     const has_attachment = get_predicate([["has", "attachment"]]);
-    set_find_results_for_msg_content(img_msg, "a[href^='/user_uploads']", [$("<a>")]);
+    set_find_results_for_msg_content(img_msg, "a[href^='/user_uploads']", ["stub"]);
     assert(has_attachment(img_msg));
-    set_find_results_for_msg_content(non_img_attachment_msg, "a[href^='/user_uploads']", [
-        $("<a>"),
-    ]);
+    set_find_results_for_msg_content(non_img_attachment_msg, "a[href^='/user_uploads']", ["stub"]);
     assert(has_attachment(non_img_attachment_msg));
     set_find_results_for_msg_content(link_msg, "a[href^='/user_uploads']", false);
     assert(!has_attachment(link_msg));
@@ -753,7 +751,7 @@ run_test("predicate_basics", () => {
     assert(!has_attachment(no_has_filter_matching_msg));
 
     const has_image = get_predicate([["has", "image"]]);
-    set_find_results_for_msg_content(img_msg, ".message_inline_image", [$("<img>")]);
+    set_find_results_for_msg_content(img_msg, ".message_inline_image", ["stub"]);
     assert(has_image(img_msg));
     set_find_results_for_msg_content(non_img_attachment_msg, ".message_inline_image", false);
     assert(!has_image(non_img_attachment_msg));
@@ -1481,9 +1479,9 @@ run_test("navbar_helpers", () => {
         },
     ];
 
-    test_cases.forEach((test_case) => {
+    for (const test_case of test_cases) {
         test_helpers(test_case);
-    });
+    }
 
     // TODO: these may be removed, based on design decisions
     const sender_me = [{operator: "sender", operand: "me"}];
@@ -1504,9 +1502,9 @@ run_test("navbar_helpers", () => {
         },
     ];
 
-    redirect_edge_cases.forEach((test_case) => {
+    for (const test_case of redirect_edge_cases) {
         test_redirect_url_with_search(test_case);
-    });
+    }
 
     // TODO: test every single one of the "ALL" redirects from the navbar behaviour table
 

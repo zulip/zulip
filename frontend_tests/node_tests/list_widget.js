@@ -5,10 +5,10 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("list_render");
+const ListWidget = zrequire("list_widget");
 
 // We need these stubs to get by instanceof checks.
-// The list_render library allows you to insert objects
+// The ListWidget library allows you to insert objects
 // that are either jQuery, Element, or just raw HTML
 // strings.  We initially test with raw strings.
 set_global("jQuery", "stub");
@@ -16,7 +16,7 @@ function Element() {
     return {};
 }
 set_global("Element", Element);
-set_global("ui", {});
+const ui = set_global("ui", {});
 
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.
@@ -168,7 +168,7 @@ run_test("scrolling", () => {
     container.html = (html) => {
         assert.equal(html, "");
     };
-    list_render.create(container, items, opts);
+    ListWidget.create(container, items, opts);
 
     assert.deepEqual(container.appended_data.html(), items.slice(0, 80).join(""));
     assert.equal(get_scroll_element_called, true);
@@ -203,7 +203,7 @@ run_test("filtering", () => {
     container.html = (html) => {
         assert.equal(html, "");
     };
-    const widget = list_render.create(container, list, opts);
+    const widget = ListWidget.create(container, list, opts);
 
     let expected_html =
         "<div>apple</div>" +
@@ -242,7 +242,7 @@ run_test("no filtering", () => {
         modifier: (item) => div(item),
         simplebar_container: scroll_container,
     };
-    const widget = list_render.create(container, ["apple", "banana"], opts);
+    const widget = ListWidget.create(container, ["apple", "banana"], opts);
     widget.render();
 
     const expected_html = "<div>apple</div><div>banana</div>";
@@ -278,7 +278,7 @@ function sort_button(opts) {
     const button = {
         data,
         closest: lookup(".progressive-table-wrapper", {
-            data: lookup("list-render", opts.list_name),
+            data: lookup("list-widget", opts.list_name),
         }),
         addClass: (cls) => {
             classList.add(cls);
@@ -319,7 +319,7 @@ run_test("wire up filter element", () => {
         simplebar_container: scroll_container,
     };
 
-    list_render.create(container, lst, opts);
+    ListWidget.create(container, lst, opts);
     filter_element.f.apply({value: "se"});
     assert.equal(container.appended_data.html(), "(JESSE)(moses)(Sean)");
 });
@@ -354,10 +354,10 @@ run_test("sorting", () => {
     };
 
     function html_for(people) {
-        return people.map(opts.modifier).join("");
+        return people.map((item) => opts.modifier(item)).join("");
     }
 
-    list_render.create(container, list, opts);
+    ListWidget.create(container, list, opts);
 
     let button_opts;
     let button;
@@ -445,7 +445,7 @@ run_test("custom sort", () => {
         return a.x * a.y - b.x * b.y;
     }
 
-    list_render.create(container, list, {
+    ListWidget.create(container, list, {
         name: "custom-sort-list",
         modifier: (n) => "(" + n.x + ", " + n.y + ")",
         sort_fields: {
@@ -458,7 +458,7 @@ run_test("custom sort", () => {
 
     assert.deepEqual(container.appended_data.html(), "(6, 7)(1, 43)(4, 11)");
 
-    const widget = list_render.get("custom-sort-list");
+    const widget = ListWidget.get("custom-sort-list");
 
     widget.sort("x_value");
     assert.deepEqual(container.appended_data.html(), "(1, 43)(4, 11)(6, 7)");
@@ -494,13 +494,13 @@ run_test("clear_event_handlers", () => {
     };
 
     // Create it the first time.
-    list_render.create(container, list, opts);
+    ListWidget.create(container, list, opts);
     assert.equal(sort_container.cleared, false);
     assert.equal(scroll_container.cleared, false);
     assert.equal(filter_element.cleared, false);
 
     // The second time we'll clear the old events.
-    list_render.create(container, list, opts);
+    ListWidget.create(container, list, opts);
     assert.equal(sort_container.cleared, true);
     assert.equal(scroll_container.cleared, true);
     assert.equal(filter_element.cleared, true);
@@ -513,24 +513,24 @@ run_test("errors", () => {
     const scroll_container = make_scroll_container();
 
     blueslip.expect("error", "Need opts to create widget.");
-    list_render.create(container, list);
+    ListWidget.create(container, list);
     blueslip.reset();
 
     blueslip.expect("error", "simplebar_container is missing.");
-    list_render.create(container, list, {
+    ListWidget.create(container, list, {
         modifier: "hello world",
     });
     blueslip.reset();
 
     blueslip.expect("error", "get_item should be a function");
-    list_render.create(container, list, {
+    ListWidget.create(container, list, {
         get_item: "not a function",
         simplebar_container: scroll_container,
     });
     blueslip.reset();
 
     blueslip.expect("error", "Filter predicate is not a function.");
-    list_render.create(container, list, {
+    ListWidget.create(container, list, {
         filter: {
             predicate: "wrong type",
         },
@@ -539,7 +539,7 @@ run_test("errors", () => {
     blueslip.reset();
 
     blueslip.expect("error", "Filterer and predicate are mutually exclusive.");
-    list_render.create(container, list, {
+    ListWidget.create(container, list, {
         filter: {
             filterer: () => true,
             predicate: () => true,
@@ -549,7 +549,7 @@ run_test("errors", () => {
     blueslip.reset();
 
     blueslip.expect("error", "Filter filterer is not a function (or missing).");
-    list_render.create(container, list, {
+    ListWidget.create(container, list, {
         filter: {},
         simplebar_container: scroll_container,
     });
@@ -557,7 +557,7 @@ run_test("errors", () => {
 
     container.html = () => {};
     blueslip.expect("error", "List item is not a string: 999");
-    list_render.create(container, list, {
+    ListWidget.create(container, list, {
         modifier: () => 999,
         simplebar_container: scroll_container,
     });
@@ -575,8 +575,8 @@ run_test("sort helpers", () => {
     const bob2 = {name: "bob", id: 2};
     const bob10 = {name: "bob", id: 10};
 
-    const alpha_cmp = list_render.alphabetic_sort("name");
-    const num_cmp = list_render.numeric_sort("id");
+    const alpha_cmp = ListWidget.alphabetic_sort("name");
+    const num_cmp = ListWidget.numeric_sort("id");
 
     assert.equal(alpha_cmp(alice2, alice10), 0);
     assert.equal(alpha_cmp(alice2, bob2), -1);
@@ -594,7 +594,7 @@ run_test("replace_list_data w/filter update", () => {
     const list = [1, 2, 3, 4];
     let num_updates = 0;
 
-    list_render.create(container, list, {
+    ListWidget.create(container, list, {
         name: "replace-list",
         modifier: (n) => "(" + n.toString() + ")",
         filter: {
@@ -610,7 +610,7 @@ run_test("replace_list_data w/filter update", () => {
 
     assert.deepEqual(container.appended_data.html(), "(2)(4)");
 
-    const widget = list_render.get("replace-list");
+    const widget = ListWidget.get("replace-list");
     widget.replace_list_data([5, 6, 7, 8]);
 
     assert.equal(num_updates, 1);
@@ -632,7 +632,7 @@ run_test("opts.get_item", () => {
         get_item: (n) => items[n],
     };
 
-    assert.deepEqual(list_render.get_filtered_items("whatever", list, boring_opts), [
+    assert.deepEqual(ListWidget.get_filtered_items("whatever", list, boring_opts), [
         "one",
         "two",
         "three",
@@ -648,7 +648,7 @@ run_test("opts.get_item", () => {
         },
     };
 
-    assert.deepEqual(list_render.get_filtered_items("t", list, predicate_opts), ["two", "three"]);
+    assert.deepEqual(ListWidget.get_filtered_items("t", list, predicate_opts), ["two", "three"]);
 
     const filterer_opts = {
         get_item: (n) => items[n],
@@ -657,7 +657,7 @@ run_test("opts.get_item", () => {
         },
     };
 
-    assert.deepEqual(list_render.get_filtered_items("t", list, filterer_opts), ["two", "three"]);
+    assert.deepEqual(ListWidget.get_filtered_items("t", list, filterer_opts), ["two", "three"]);
 });
 
 run_test("render item", () => {
@@ -690,12 +690,12 @@ run_test("render item", () => {
         };
     };
 
-    const list = [...new Array(100).keys()];
+    const list = [...Array.from({length: 100}).keys()];
 
     let text = "initial";
     const get_item = (item) => ({text: `${text}: ${item}`, value: item});
 
-    const widget = list_render.create(container, list, {
+    const widget = ListWidget.create(container, list, {
         name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item,
@@ -730,7 +730,7 @@ run_test("render item", () => {
     // Tests below this are for the corner cases, where we abort the rerender.
 
     blueslip.expect("error", "html_selector should be a function.");
-    list_render.create(container, list, {
+    ListWidget.create(container, list, {
         name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item,
@@ -740,7 +740,7 @@ run_test("render item", () => {
     blueslip.reset();
 
     let get_item_called;
-    const widget_2 = list_render.create(container, list, {
+    const widget_2 = ListWidget.create(container, list, {
         name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item: (item) => {
@@ -755,7 +755,7 @@ run_test("render item", () => {
     assert(!get_item_called);
 
     let rendering_item = false;
-    const widget_3 = list_render.create(container, list, {
+    const widget_3 = ListWidget.create(container, list, {
         name: "replace-list",
         modifier: (item) => (rendering_item ? undefined : `${item}\n`),
         get_item,

@@ -16,8 +16,8 @@ const jquery = jQueryFactory(dom.window);
 
 set_global("$", make_zjquery());
 set_global("page_params", {});
-set_global("loading", {});
-set_global("history", {});
+const loading = set_global("loading", {});
+const history = set_global("history", {});
 set_global("document", {
     title: "Zulip",
 });
@@ -27,7 +27,7 @@ set_global("location", {
     hash: "#billing",
 });
 
-zrequire("helpers", "js/billing/helpers");
+const helpers = zrequire("helpers", "js/billing/helpers");
 
 run_test("create_ajax_request", () => {
     const form_loading_indicator = "#autopay_loading_indicator";
@@ -254,12 +254,12 @@ run_test("set_tab", () => {
         scrollTop: 0,
     };
 
-    $('#upgrade-tabs.nav a[href="#billing"]').tab = (action) => {
+    $('#upgrade-tabs.nav a[href="\\#billing"]').tab = (action) => {
         state.show_tab_billing += 1;
         assert.equal(action, "show");
     };
 
-    $('#upgrade-tabs.nav a[href="#payment-method"]').tab = (action) => {
+    $('#upgrade-tabs.nav a[href="\\#payment-method"]').tab = (action) => {
         state.show_tab_payment_method += 1;
         assert.equal(action, "show");
     };

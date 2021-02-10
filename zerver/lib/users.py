@@ -222,18 +222,28 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
         raise JsonableError(_("Insufficient permission"))
     return target
 
-def access_user_by_id(user_profile: UserProfile, user_id: int,
-                      allow_deactivated: bool=False, allow_bots: bool=False,
-                      read_only: bool=False) -> UserProfile:
+def access_user_by_id(
+    user_profile: UserProfile,
+    target_user_id: int,
+    *,
+    allow_deactivated: bool=False,
+    allow_bots: bool=False,
+    for_admin: bool,
+) -> UserProfile:
+    """Master function for accessing another user by ID in API code;
+    verifies the user ID is in the same realm, and if requested checks
+    for administrative privileges, with flags for various special
+    cases.
+    """
     try:
-        target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
+        target = get_user_profile_by_id_in_realm(target_user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
     if target.is_bot and not allow_bots:
         raise JsonableError(_("No such user"))
     if not target.is_active and not allow_deactivated:
         raise JsonableError(_("User is deactivated"))
-    if read_only:
+    if not for_admin:
         # Administrative access is not required just to read a user.
         return target
     if not user_profile.can_admin_user(target):

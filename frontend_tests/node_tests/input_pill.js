@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
-zrequire("input_pill");
+const input_pill = zrequire("input_pill");
 
 zrequire("templates");
 

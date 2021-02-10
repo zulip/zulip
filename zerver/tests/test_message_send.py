@@ -309,7 +309,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "topic": "Test topic"})
-        self.assert_json_error(result, "Stream '&amp;&lt;&quot;&#39;&gt;&lt;non-existent&gt;' does not exist")
+        self.assert_json_error(result, "Stream '&amp;&lt;&quot;&#x27;&gt;&lt;non-existent&gt;' does not exist")
 
     def test_personal_message(self) -> None:
         """
@@ -371,7 +371,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         msg = self.get_last_message()
         self.assertEqual("Test message", msg.content)
-        self.assertEqual(msg.recipient_id, self.example_user("othello").id)
+        self.assertEqual(msg.recipient_id, self.example_user("othello").recipient_id)
 
     def test_group_personal_message_by_id(self) -> None:
         """

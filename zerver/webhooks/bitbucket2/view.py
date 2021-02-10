@@ -411,15 +411,6 @@ def get_user_info(dct: Dict[str, Any]) -> str:
         unsupported_event=True,
     )
 
-    if "username" in dct:
-        # We don't expect this to happen after April 2019; this is
-        # just defensive code, plus it allows us to avoid changing
-        # a bunch of test fixtures.  We will want to delete this code
-        # as soon as we have confidence that we don't get errors
-        # related to display_name/nickname being missing. (see above
-        # code)
-        return dct["username"]
-
     return "Unknown user"
 
 def get_actor_info(payload: Dict[str, Any]) -> str:

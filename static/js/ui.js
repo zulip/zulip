@@ -92,7 +92,10 @@ exports.update_starred_view = function (message_id, new_value) {
             star_container.addClass("empty-star");
         }
         const title_state = starred ? i18n.t("Unstar") : i18n.t("Star");
-        elt.attr("title", i18n.t("__starred_status__ this message", {starred_status: title_state}));
+        elt.attr(
+            "title",
+            i18n.t("__starred_status__ this message (Ctrl + s)", {starred_status: title_state}),
+        );
     });
 };
 

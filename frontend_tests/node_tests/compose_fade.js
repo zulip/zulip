@@ -5,10 +5,10 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("stream_data");
+const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("compose_fade");
+const compose_fade = zrequire("compose_fade");
 
 const me = {
     email: "me@example.com",

@@ -26,10 +26,10 @@ set_global("bridge", false);
 document.location.protocol = "https:";
 document.location.host = "foo.com";
 
-zrequire("compose_ui");
+const compose_ui = zrequire("compose_ui");
 zrequire("compose_state");
 zrequire("compose");
-zrequire("compose_actions");
+const compose_actions = zrequire("compose_actions");
 
 const plugin_stub = {
     prototype: {
@@ -37,7 +37,7 @@ const plugin_stub = {
     },
 };
 
-zrequire("upload");
+let upload = zrequire("upload");
 
 run_test("make_upload_absolute", () => {
     let uri = "/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/kerala.png";
@@ -62,9 +62,12 @@ run_test("get_item", () => {
         $("#undo_markdown_preview"),
     );
 
-    assert.equal(upload.get_item("textarea", {mode: "edit", row: 1}), $("#message_edit_content_1"));
+    assert.equal(
+        upload.get_item("textarea", {mode: "edit", row: 1}),
+        $(`#message_edit_content_${CSS.escape(1)}`),
+    );
 
-    $("#message_edit_content_2").closest = () => {
+    $(`#message_edit_content_${CSS.escape(2)}`).closest = () => {
         $("#message_edit_form").set_find_results(".message_edit_save", $(".message_edit_save"));
         return $("#message_edit_form");
     };
@@ -72,14 +75,14 @@ run_test("get_item", () => {
 
     assert.equal(
         upload.get_item("send_status_identifier", {mode: "edit", row: 11}),
-        "#message-edit-send-status-11",
+        `#message-edit-send-status-${CSS.escape(11)}`,
     );
     assert.equal(
         upload.get_item("send_status", {mode: "edit", row: 75}),
-        $("#message-edit-send-status-75"),
+        $(`#message-edit-send-status-${CSS.escape(75)}`),
     );
 
-    $("#message-edit-send-status-2").set_find_results(
+    $(`#message-edit-send-status-${CSS.escape(2)}`).set_find_results(
         ".send-status-close",
         $(".send-status-close"),
     );
@@ -88,12 +91,15 @@ run_test("get_item", () => {
         $(".send-status-close"),
     );
 
-    $("#message-edit-send-status-22").set_find_results(".error-msg", $(".error-msg"));
+    $(`#message-edit-send-status-${CSS.escape(22)}`).set_find_results(
+        ".error-msg",
+        $(".error-msg"),
+    );
     assert.equal(upload.get_item("send_status_message", {mode: "edit", row: 22}), $(".error-msg"));
 
     assert.equal(
         upload.get_item("file_input_identifier", {mode: "edit", row: 123}),
-        "#message_edit_file_input_123",
+        `#message_edit_file_input_${CSS.escape(123)}`,
     );
     assert.equal(upload.get_item("source", {mode: "edit", row: 123}), "message-edit-file-input");
     assert.equal(
@@ -102,7 +108,7 @@ run_test("get_item", () => {
     );
     assert.equal(
         upload.get_item("markdown_preview_hide_button", {mode: "edit", row: 65}),
-        $("#undo_markdown_preview_65"),
+        $(`#undo_markdown_preview_${CSS.escape(65)}`),
     );
 
     assert.throws(
@@ -352,7 +358,7 @@ run_test("uppy_config", () => {
         };
     }
     uppy_stub.Plugin = plugin_stub;
-    rewiremock.proxy(() => require("../../static/js/upload"), {"@uppy/core": uppy_stub});
+    upload = rewiremock.proxy(() => require("../../static/js/upload"), {"@uppy/core": uppy_stub});
     upload.setup_upload({mode: "compose"});
 
     assert.equal(uppy_stub_called, true);
@@ -496,7 +502,7 @@ run_test("uppy_events", () => {
         };
     }
     uppy_stub.Plugin = plugin_stub;
-    rewiremock.proxy(() => require("../../static/js/upload"), {"@uppy/core": uppy_stub});
+    upload = rewiremock.proxy(() => require("../../static/js/upload"), {"@uppy/core": uppy_stub});
     upload.setup_upload({mode: "compose"});
     assert.equal(Object.keys(callbacks).length, 5);
 
@@ -624,10 +630,10 @@ run_test("uppy_events", () => {
     on_restriction_failed_callback(file, null, null);
     assert(compose_ui_replace_syntax_called);
     compose_ui_replace_syntax_called = false;
-    $("#comepose-textarea").val("user modified text");
+    $("#compose-textarea").val("user modified text");
     on_restriction_failed_callback(file, null, null);
     assert(compose_ui_replace_syntax_called);
-    assert.equal($("#comepose-textarea").val(), "user modified text");
+    assert.equal($("#compose-textarea").val(), "user modified text");
 
     state = {
         type: "error",
@@ -674,11 +680,11 @@ run_test("uppy_events", () => {
     assert(show_error_message_called);
     assert(compose_ui_replace_syntax_called);
     show_error_message_called = false;
-    $("#comepose-textarea").val("user modified text");
+    $("#compose-textarea").val("user modified text");
     uppy_cancel_all_called = false;
     on_upload_error_callback(file, null);
     assert(uppy_cancel_all_called);
     assert(show_error_message_called);
     assert(compose_ui_replace_syntax_called);
-    assert.equal($("#comepose-textarea").val(), "user modified text");
+    assert.equal($("#compose-textarea").val(), "user modified text");
 });

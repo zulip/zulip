@@ -10,14 +10,14 @@ exports.set_narrowed = function (value) {
 class MessageList {
     constructor(opts) {
         if (opts.data) {
-            this.muting_enabled = opts.data.muting_enabled;
+            this.excludes_muted_topics = opts.data.excludes_muted_topics;
             this.data = opts.data;
         } else {
             const filter = opts.filter;
 
-            this.muting_enabled = opts.muting_enabled;
+            this.excludes_muted_topics = opts.excludes_muted_topics;
             this.data = new MessageListData({
-                muting_enabled: this.muting_enabled,
+                excludes_muted_topics: this.excludes_muted_topics,
                 filter,
             });
         }
@@ -375,7 +375,7 @@ class MessageList {
     }
 
     update_muting_and_rerender() {
-        if (!this.muting_enabled) {
+        if (!this.excludes_muted_topics) {
             return;
         }
         this.data.update_items_for_muting();
@@ -412,15 +412,7 @@ class MessageList {
 exports.MessageList = MessageList;
 
 exports.all = new MessageList({
-    muting_enabled: false,
-});
-
-// We stop autoscrolling when the user is clearly in the middle of
-// doing something.  Be careful, though, if you try to capture
-// mousemove, then you will have to contend with the autoscroll
-// itself generating mousemove events.
-$(document).on("message_selected.zulip wheel", () => {
-    message_viewport.stop_auto_scrolling();
+    excludes_muted_topics: false,
 });
 
 window.message_list = exports;

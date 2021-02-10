@@ -1,5 +1,7 @@
 "use strict";
 
+const search_pill = require("./search_pill");
+
 exports.initialize = function () {
     if (!page_params.search_pills_enabled) {
         return;

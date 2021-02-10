@@ -1,16 +1,15 @@
-"use strict";
+import * as people from "./people";
+import * as user_status from "./user_status";
 
-const people = require("./people");
-
-exports.input_field = function () {
+export function input_field() {
     return $(".user_status_overlay input.user_status");
-};
+}
 
-exports.submit_button = function () {
+export function submit_button() {
     return $(".user_status_overlay .set_user_status");
-};
+}
 
-exports.open_overlay = function () {
+export function open_overlay() {
     const overlay = $(".user_status_overlay");
     overlays.open_overlay({
         name: "user_status_overlay",
@@ -20,89 +19,87 @@ exports.open_overlay = function () {
 
     const user_id = people.my_current_user_id();
     const old_status_text = user_status.get_status_text(user_id);
-    const field = exports.input_field();
+    const field = input_field();
     field.val(old_status_text);
     field.trigger("select");
     field.trigger("focus");
-    exports.toggle_clear_message_button();
+    toggle_clear_message_button();
 
-    const button = exports.submit_button();
+    const button = submit_button();
     button.prop("disabled", true);
-};
+}
 
-exports.close_overlay = function () {
+export function close_overlay() {
     overlays.close_overlay("user_status_overlay");
-};
+}
 
-exports.submit_new_status = function () {
+export function submit_new_status() {
     const user_id = people.my_current_user_id();
     let old_status_text = user_status.get_status_text(user_id) || "";
     old_status_text = old_status_text.trim();
-    const new_status_text = exports.input_field().val().trim();
+    const new_status_text = input_field().val().trim();
 
     if (old_status_text === new_status_text) {
-        exports.close_overlay();
+        close_overlay();
         return;
     }
 
     user_status.server_update({
         status_text: new_status_text,
         success() {
-            exports.close_overlay();
+            close_overlay();
         },
     });
-};
+}
 
-exports.update_button = function () {
+export function update_button() {
     const user_id = people.my_current_user_id();
     let old_status_text = user_status.get_status_text(user_id) || "";
     old_status_text = old_status_text.trim();
-    const new_status_text = exports.input_field().val().trim();
-    const button = exports.submit_button();
+    const new_status_text = input_field().val().trim();
+    const button = submit_button();
 
     if (old_status_text === new_status_text) {
         button.prop("disabled", true);
     } else {
         button.prop("disabled", false);
     }
-};
+}
 
-exports.toggle_clear_message_button = function () {
-    if (exports.input_field().val() !== "") {
+export function toggle_clear_message_button() {
+    if (input_field().val() !== "") {
         $("#clear_status_message_button").prop("disabled", false);
     } else {
         $("#clear_status_message_button").prop("disabled", true);
     }
-};
+}
 
-exports.clear_message = function () {
-    const field = exports.input_field();
+export function clear_message() {
+    const field = input_field();
     field.val("");
     $("#clear_status_message_button").prop("disabled", true);
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     $("body").on("click", ".user_status_overlay .set_user_status", () => {
-        exports.submit_new_status();
+        submit_new_status();
     });
 
     $("body").on("keypress", ".user_status_overlay .user_status", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
 
-            exports.submit_new_status();
+            submit_new_status();
         }
     });
 
     $("body").on("keyup", ".user_status_overlay input.user_status", () => {
-        exports.update_button();
-        exports.toggle_clear_message_button();
+        update_button();
+        toggle_clear_message_button();
     });
 
     $("#clear_status_message_button").on("click", () => {
-        exports.clear_message();
-        exports.update_button();
+        clear_message();
+        update_button();
     });
-};
-
-window.user_status_ui = exports;
+}

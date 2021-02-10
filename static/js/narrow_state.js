@@ -326,7 +326,7 @@ exports.narrowed_to_starred = function () {
     return current_filter.has_operand("is", "starred");
 };
 
-exports.muting_enabled = function () {
+exports.excludes_muted_topics = function () {
     return (
         !exports.narrowed_to_topic() &&
         !exports.narrowed_to_search() &&

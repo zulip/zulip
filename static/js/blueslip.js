@@ -142,22 +142,20 @@ function report_error(msg, stack, opts) {
                 // invoked).  In any case, it will pretty clear that
                 // something is wrong with the page and the user will
                 // probably try to reload anyway.
-                ui_report.message(
+                ui_report.client_error(
                     "Oops.  It seems something has gone wrong. " +
                         "The error has been reported to the fine " +
                         "folks at Zulip, but, in the mean time, " +
                         "please try reloading the page.",
                     $("#home-error"),
-                    "alert-error",
                 );
             }
         },
         error() {
             if (opts.show_ui_msg && ui_report !== undefined) {
-                ui_report.message(
+                ui_report.client_error(
                     "Oops.  It seems something has gone wrong. Please try reloading the page.",
                     $("#home-error"),
-                    "alert-error",
                 );
             }
         },
@@ -253,14 +251,13 @@ exports.error = function blueslip_error(msg, more_info, stack) {
 
 exports.timings = new Map();
 
-exports.start_timing = function (label) {
+exports.measure_time = function (label, f) {
     const t1 = performance.now();
-
-    return function () {
-        const t2 = performance.now();
-        const elapsed = t2 - t1;
-        exports.timings.set(label, elapsed);
-    };
+    const ret = f();
+    const t2 = performance.now();
+    const elapsed = t2 - t1;
+    exports.timings.set(label, elapsed);
+    return ret;
 };
 
 // Produces an easy-to-read preview on an HTML element.  Currently

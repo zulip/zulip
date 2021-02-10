@@ -29,7 +29,7 @@ function get_or_set(fieldname, keep_leading_whitespace) {
     // because the DOM element might not exist yet when get_or_set
     // is called.
     return function (newval) {
-        const elem = $("#" + fieldname);
+        const elem = $(`#${CSS.escape(fieldname)}`);
         const oldval = elem.val();
         if (newval !== undefined) {
             elem.val(newval);

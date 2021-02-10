@@ -15,7 +15,7 @@ const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji", "shared/js/emoji");
 
 const people = zrequire("people");
-zrequire("reactions");
+const reactions = zrequire("reactions");
 
 set_global("page_params", {
     user_id: 5,
@@ -47,8 +47,8 @@ const emoji_params = {
 
 emoji.initialize(emoji_params);
 
-set_global("channel", {});
-set_global("emoji_picker", {
+const channel = set_global("channel", {});
+const emoji_picker = set_global("emoji_picker", {
     hide_emoji_popover() {},
 });
 
@@ -108,7 +108,7 @@ const message = {
     ],
 };
 
-set_global("message_store", {
+const message_store = set_global("message_store", {
     get(message_id) {
         assert.equal(message_id, 1001);
         return message;
@@ -349,7 +349,7 @@ run_test("get_reaction_section", () => {
     const message_row = $.create("some-message-row");
     const message_reactions = $.create("our-reactions-section");
 
-    message_table.set_find_results("[zid='555']", message_row);
+    message_table.set_find_results(`[zid='${CSS.escape(555)}']`, message_row);
     message_row.set_find_results(".message_reactions", message_reactions);
 
     const section = reactions.get_reaction_section(555);
@@ -439,7 +439,7 @@ run_test("add_and_remove_reaction", () => {
     reaction_element.set_find_results(".message_reaction_count", count_element);
 
     message_reactions.find = function (selector) {
-        assert.equal(selector, "[data-reaction-id='unicode_emoji,1f3b1']");
+        assert.equal(selector, "[data-reaction-id='unicode_emoji\\,1f3b1']");
         return reaction_element;
     };
 
@@ -506,7 +506,7 @@ run_test("add_and_remove_reaction", () => {
     };
 
     message_reactions.find = function (selector) {
-        assert.equal(selector, "[data-reaction-id='realm_emoji,991']");
+        assert.equal(selector, "[data-reaction-id='realm_emoji\\,991']");
         return reaction_element;
     };
     reaction_element.prop = function () {};

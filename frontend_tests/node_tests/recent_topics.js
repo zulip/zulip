@@ -19,7 +19,7 @@ set_global(
 set_global("hashchange", {
     exit_overlay: noop,
 });
-set_global("overlays", {
+const overlays = set_global("overlays", {
     open_overlay: (opts) => {
         overlays.close_callback = opts.on_close;
     },
@@ -55,17 +55,17 @@ set_global("hash_util", {
 set_global("recent_senders", {
     get_topic_recent_senders: () => [1, 2],
 });
-set_global("list_render", {
+const ListWidget = set_global("ListWidget", {
     modifier: noop,
     create: (container, mapped_topic_values, opts) => {
         const formatted_topics = [];
-        list_render.modifier = opts.modifier;
+        ListWidget.modifier = opts.modifier;
         for (const item of mapped_topic_values) {
             formatted_topics.push(opts.modifier(item));
             opts.filter.predicate(item);
         }
         // Just for coverage, the mechanisms
-        // are tested in list_render
+        // are tested in list_widget.js
         if (mapped_topic_values.length >= 2) {
             opts.sort_fields.stream_sort(mapped_topic_values[0], mapped_topic_values[1]);
             opts.sort_fields.stream_sort(mapped_topic_values[1], mapped_topic_values[0]);
@@ -74,10 +74,10 @@ set_global("list_render", {
             opts.sort_fields.topic_sort(mapped_topic_values[1], mapped_topic_values[0]);
             opts.sort_fields.topic_sort(mapped_topic_values[0], mapped_topic_values[0]);
         }
-        return list_render;
+        return ListWidget;
     },
     hard_redraw: noop,
-    render_item: (item) => list_render.modifier(item),
+    render_item: (item) => ListWidget.modifier(item),
 });
 
 // Custom Data
@@ -257,19 +257,8 @@ function generate_topic_data(topic_info_array) {
     // with non common fields.
     $.clear_all_elements();
     const data = [];
-    const selectors = [];
 
     for (const [stream_id, topic, unread_count, muted, participated] of topic_info_array) {
-        const topic_selector = $.create("#recent_topic:" + get_topic_key(stream_id, topic));
-        topic_selector.data = function () {
-            return {
-                participated,
-                muted,
-                unreadCount: unread_count,
-            };
-        };
-
-        selectors.push(topic_selector);
         data.push({
             other_senders_count: 0,
             invite_only: false,
@@ -371,8 +360,6 @@ run_test("test_filter_all", () => {
     // Test search
     expected.search_val = "topic-1";
     row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
-    const search_element = $.create("#recent_topics_search");
-    search_element.val("topic-3");
     i = row_data.length;
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 });
@@ -714,14 +701,6 @@ run_test("test_topic_edit", () => {
     verify_topic_data(all_topics, stream1, topic6, messages[8].id, true);
     assert.equal(all_topics.get(get_topic_key(stream1, topic8)), undefined);
 
-    let topic_selector = $.create("#recent_topic:" + get_topic_key(stream1, topic8));
-    topic_selector.data = function () {
-        return {
-            participated: true,
-            muted: false,
-            unreadCount: 1,
-        };
-    };
     // change topic of topic6 to topic8
     messages[7].topic = topic8;
     messages[8].topic = topic8;
@@ -735,14 +714,6 @@ run_test("test_topic_edit", () => {
     verify_topic_data(all_topics, stream1, topic1, messages[0].id, true);
     assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
 
-    topic_selector = $.create("#recent_topic:" + get_topic_key(stream2, topic1));
-    topic_selector.data = function () {
-        return {
-            participated: true,
-            muted: false,
-            unreadCount: 0,
-        };
-    };
     messages[0].stream_id = stream2;
     rt.process_topic_edit(stream1, topic1, topic1, stream2);
     all_topics = rt.get();
@@ -754,14 +725,6 @@ run_test("test_topic_edit", () => {
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
     assert.equal(all_topics.get(get_topic_key(stream3, topic9)), undefined);
 
-    topic_selector = $.create("#recent_topic:" + get_topic_key(stream3, topic9));
-    topic_selector.data = function () {
-        return {
-            participated: false,
-            muted: false,
-            unreadCount: 1,
-        };
-    };
     messages[0].stream_id = stream3;
     messages[0].topic = topic9;
     rt.process_topic_edit(stream2, topic1, topic9, stream3);

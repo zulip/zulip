@@ -353,7 +353,7 @@ ul {
     }
 }
 
-@media (max-width: 768px) {
+@media (width < $md_min) {
     .message-info-popover,
     .user-info-popover {
         display: flex !important;
@@ -402,7 +402,7 @@ ul {
             pointer-events: all;
         }
 
-        @media (max-width: 500px) {
+        @media (width < $sm_min) {
             .popover-inner {
                 width: 70%;
             }

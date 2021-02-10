@@ -21,9 +21,9 @@ const huddle_data = zrequire("huddle_data");
 
 zrequire("typeahead_helper");
 zrequire("Filter", "js/filter");
-zrequire("narrow_state");
-zrequire("stream_data");
-zrequire("stream_topic_history");
+const narrow_state = zrequire("narrow_state");
+const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
 zrequire("unread");
 zrequire("common");

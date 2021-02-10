@@ -2,6 +2,8 @@
 
 const render_alert_word_settings_item = require("../templates/settings/alert_word_settings_item.hbs");
 
+const alert_words = require("./alert_words");
+
 exports.render_alert_words_ui = function () {
     const words = alert_words.get_word_list();
     words.sort();

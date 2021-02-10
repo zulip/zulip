@@ -7,10 +7,10 @@ const _ = require("lodash");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("muting");
+const muting = zrequire("muting");
 const people = zrequire("people");
-zrequire("stream_data");
-zrequire("unread");
+const stream_data = zrequire("stream_data");
+const unread = zrequire("unread");
 
 set_global("page_params", {
     realm_push_notifications_enabled: false,
@@ -22,7 +22,7 @@ const {FoldDict} = zrequire("fold_dict");
 set_global("narrow_state", {});
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
-set_global("message_store", {});
+const message_store = set_global("message_store", {});
 
 const me = {
     email: "me@example.com",

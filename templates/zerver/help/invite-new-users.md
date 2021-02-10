@@ -7,7 +7,7 @@ the article below describes each in more detail.
 
 * Allow people to join based on the **domain** of their email address.
 
-* Send **email invitations** to up to 100 addresses at a time.
+* Send **email invitations**.
 
 * Share a **reusable invitation link**.
 
@@ -88,8 +88,11 @@ and reusable invitation links expire 10 days after they are sent.
 1. Click **Invite**.
 
 !!! warn ""
-    You will only see **Invite users** in the gear menu if you have
+    * You will only see **Invite users** in the gear menu if you have
     permission to invite users.
+    * The number of email invites you can send in a day is limited in
+    the free plan. [Contact us](/help/contact-support) if you hit the
+    limit and want to invite more users.
 
 {tab|share-an-invite-link}
 

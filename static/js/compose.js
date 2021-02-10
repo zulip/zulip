@@ -1,6 +1,7 @@
 "use strict";
 
 const Handlebars = require("handlebars/runtime");
+const _ = require("lodash");
 
 const render_compose_all_everyone = require("../templates/compose_all_everyone.hbs");
 const render_compose_announce = require("../templates/compose_announce.hbs");
@@ -8,11 +9,13 @@ const render_compose_invite_users = require("../templates/compose_invite_users.h
 const render_compose_not_subscribed = require("../templates/compose_not_subscribed.hbs");
 const render_compose_private_stream_alert = require("../templates/compose_private_stream_alert.hbs");
 
+const echo = require("./echo");
 const peer_data = require("./peer_data");
 const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");
 const settings_config = require("./settings_config");
 const util = require("./util");
+const zcommand = require("./zcommand");
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
@@ -187,12 +190,11 @@ exports.abort_xhr = function () {
 exports.zoom_token_callbacks = new Map();
 exports.video_call_xhrs = new Map();
 
-exports.abort_video_callbacks = function (edit_message_id) {
-    const key = edit_message_id || "";
-    exports.zoom_token_callbacks.delete(key);
-    if (exports.video_call_xhrs.has(key)) {
-        exports.video_call_xhrs.get(key).abort();
-        exports.video_call_xhrs.delete(key);
+exports.abort_video_callbacks = function (edit_message_id = "") {
+    exports.zoom_token_callbacks.delete(edit_message_id);
+    if (exports.video_call_xhrs.has(edit_message_id)) {
+        exports.video_call_xhrs.get(edit_message_id).abort();
+        exports.video_call_xhrs.delete(edit_message_id);
     }
 };
 
@@ -902,7 +904,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
             // Handle previews of /me messages
             rendered_preview_html =
                 "<p><strong>" +
-                page_params.full_name +
+                _.escape(page_params.full_name) +
                 "</strong>" +
                 rendered_content.slice("<p>/me".length);
         } else {
@@ -981,11 +983,15 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
         return;
     }
 
-    if (peer_data.is_subscriber_subset(compose_stream.stream_id, linked_stream.stream_id)) {
-        // Don't warn if subscribers list of current compose_stream is
-        // a subset of linked_stream's subscribers list, because
-        // everyone will be subscribed to the linked stream and so
-        // knows it exists.
+    // Don't warn if subscribers list of current compose_stream is
+    // a subset of linked_stream's subscribers list, because
+    // everyone will be subscribed to the linked stream and so
+    // knows it exists.  (But always warn Zephyr users, since
+    // we may not know their stream's subscribers.)
+    if (
+        peer_data.is_subscriber_subset(compose_stream.stream_id, linked_stream.stream_id) &&
+        !page_params.realm_is_zephyr_mirror_realm
+    ) {
         return;
     }
 
@@ -1188,7 +1194,7 @@ exports.initialize = function () {
         // compose box.
         const edit_message_id = $(e.target).attr("data-message-id");
         if (edit_message_id !== undefined) {
-            target_textarea = $("#message_edit_content_" + edit_message_id);
+            target_textarea = $(`#message_edit_content_${CSS.escape(edit_message_id)}`);
         }
 
         let video_call_link;

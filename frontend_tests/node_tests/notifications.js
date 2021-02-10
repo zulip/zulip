@@ -32,15 +32,13 @@ const _navigator = {
 };
 set_global("navigator", _navigator);
 
-zrequire("alert_words");
-zrequire("muting");
-zrequire("stream_data");
-zrequire("people");
+const muting = zrequire("muting");
+const stream_data = zrequire("stream_data");
 zrequire("ui");
-zrequire("spoilers");
+const spoilers = zrequire("spoilers");
 spoilers.hide_spoilers_in_notification = () => {};
 
-rewiremock.proxy(() => zrequire("notifications"), {
+const notifications = rewiremock.proxy(() => zrequire("notifications"), {
     "../../static/js/favicon": {},
 });
 

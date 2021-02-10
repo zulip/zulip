@@ -1,6 +1,4 @@
-"use strict";
-
-exports.initialize = function () {
+export function initialize() {
     helpers.set_tab("billing");
 
     const stripe_key = $("#payment-method").data("key");
@@ -33,10 +31,8 @@ exports.initialize = function () {
         ]);
         e.preventDefault();
     });
-};
-
-window.billing = exports;
+}
 
 $(() => {
-    exports.initialize();
+    initialize();
 });

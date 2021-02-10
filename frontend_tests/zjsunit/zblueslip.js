@@ -119,7 +119,7 @@ exports.make_zblueslip = function () {
         return ex.message;
     };
 
-    lib.start_timing = () => () => {};
+    lib.measure_time = (label, f) => f();
 
     lib.preview_node = (node) => "node:" + node;
 

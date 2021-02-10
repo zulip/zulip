@@ -11,11 +11,11 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 set_global("$", make_zjquery());
 set_global("document", "document-stub");
 
-zrequire("Filter", "js/filter");
+const Filter = zrequire("Filter", "js/filter");
 zrequire("FetchStatus", "js/fetch_status");
 zrequire("MessageListData", "js/message_list_data");
-zrequire("MessageListView", "js/message_list_view");
-zrequire("message_list");
+const MessageListView = zrequire("MessageListView", "js/message_list_view");
+const message_list = zrequire("message_list");
 
 const noop = function () {};
 
@@ -23,11 +23,6 @@ set_global("page_params", {
     twenty_four_hour_time: false,
 });
 set_global("home_msg_list", null);
-set_global("people", {
-    small_avatar_url() {
-        return "";
-    },
-});
 set_global("unread", {message_unread() {}});
 // timerender calls setInterval when imported
 set_global("timerender", {
@@ -197,8 +192,8 @@ run_test("merge_message_groups", () => {
     }
 
     function assert_message_groups_list_equal(list1, list2) {
-        const ids1 = list1.map(extract_group);
-        const ids2 = list2.map(extract_group);
+        const ids1 = list1.map((group) => extract_group(group));
+        const ids2 = list2.map((group) => extract_group(group));
         assert(ids1.length);
         assert.deepEqual(ids1, ids2);
     }

@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const XDate = require("xdate");
-
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -11,18 +9,17 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 
 set_global("$", make_zjquery());
 
-zrequire("localstorage");
-zrequire("drafts");
-zrequire("timerender");
+const localstorage = zrequire("localstorage");
+const drafts = zrequire("drafts");
+const timerender = zrequire("timerender");
 zrequire("stream_color");
-zrequire("colorspace");
 
 const ls_container = new Map();
 const noop = function () {
     return;
 };
 
-set_global("localStorage", {
+const localStorage = set_global("localStorage", {
     getItem(key) {
         return ls_container.get(key);
     },
@@ -37,7 +34,7 @@ set_global("localStorage", {
     },
 });
 set_global("compose", {});
-set_global("compose_state", {});
+const compose_state = set_global("compose_state", {});
 set_global("stream_data", {
     get_color() {
         return "#FFFFFF";
@@ -307,7 +304,7 @@ run_test("format_drafts", (override) => {
 
     const stub_render_now = timerender.render_now;
     timerender.render_now = function (time) {
-        return stub_render_now(time, new XDate(1549958107000));
+        return stub_render_now(time, new Date(1549958107000));
     };
 
     stub_templates((template_name, data) => {
@@ -319,7 +316,6 @@ run_test("format_drafts", (override) => {
 
     override("drafts.open_overlay", noop);
     drafts.set_initial_element = noop;
-    $("#drafts_table .draft-row").length = 0;
 
     drafts.launch();
     timerender.render_now = stub_render_now;

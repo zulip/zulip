@@ -2854,7 +2854,7 @@ nav {
 }
 
 /* -- media queries -- */
-@media (max-width: 1426px) {
+@media (width <= 1426px) {
     .portico-landing.hello .integrations .integration-icons .hide-1 {
         display: none;
     }
@@ -2868,7 +2868,7 @@ nav {
     }
 }
 
-@media (max-width: 1390px) {
+@media (width <= 1390px) {
     .portico-landing.plans
         .pricing-container
         .block:not(:first-child)
@@ -2877,7 +2877,7 @@ nav {
     }
 }
 
-@media (max-width: 1376px) {
+@media (width <= 1376px) {
     .portico-landing.plans .price-box {
         margin: 20px;
     }
@@ -2917,14 +2917,14 @@ nav {
     }
 }
 
-@media (min-width: 1296px), (max-width: 985px) and (min-width: 687px) {
+@media (width >= 1296px), (687px <= width <= 985px) {
     /* while there are nine, show only two rows of four. */
     .portico-landing .testimonials .company-box > div:last-of-type {
         display: none;
     }
 }
 
-@media (max-width: 1295px) {
+@media (width <= 1295px) {
     .portico-landing.hello .apps .right-side {
         display: none;
     }
@@ -2952,7 +2952,7 @@ nav {
     }
 }
 
-@media (max-width: 1100px) {
+@media (width <= 1100px) {
     .tour .carousel-inner img {
         &.zulip-topic,
         &.slack-overwhelming,
@@ -2992,7 +2992,7 @@ nav {
     }
 }
 
-@media (max-width: 1024px) {
+@media (width <= 1024px) {
     .portico-landing.hello .gradients .gradient {
         height: 1400px;
     }
@@ -3060,7 +3060,7 @@ nav {
     }
 }
 
-@media (max-width: 985px) {
+@media (width <= 985px) {
     .features .feature-box .text-content {
         width: 100%;
         height: auto;
@@ -3161,7 +3161,7 @@ nav {
     }
 }
 
-@media (max-width: 906px) {
+@media (width <= 906px) {
     .portico-landing.why-page .hero p br {
         display: none;
     }
@@ -3188,7 +3188,7 @@ nav {
     }
 }
 
-@media (max-width: 830px) {
+@media (width <= 830px) {
     .portico-landing.features-app {
         section {
             .headliner {
@@ -3247,7 +3247,7 @@ nav {
     }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
     nav {
         padding-left: 50px;
         padding-right: 50px;
@@ -3362,7 +3362,7 @@ nav {
     }
 }
 
-@media (max-width: 686px) {
+@media (width <= 686px) {
     .portico-landing {
         padding-top: 120px;
     }
@@ -3599,7 +3599,7 @@ nav {
     }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
     .portico-landing.hello .integrations .integration-icons .group {
         margin: 10px 16px 0 16px;
     }
@@ -3617,7 +3617,7 @@ nav {
     }
 }
 
-@media (max-width: 550px) {
+@media (width <= 550px) {
     .portico-landing.features-app {
         section {
             &.hero {
@@ -3694,7 +3694,7 @@ nav {
     }
 }
 
-@media (max-width: 450px) {
+@media (width <= 450px) {
     .portico-landing.plans .price-box {
         display: inline-flex;
         flex-direction: column;
@@ -3790,7 +3790,7 @@ nav {
     }
 }
 
-@media (max-width: 375px) {
+@media (width <= 375px) {
     .portico-landing.hello .integrations .integration-icons .group {
         width: 130px;
         height: 215px;
@@ -3817,7 +3817,7 @@ nav {
     }
 }
 
-@media (max-width: 360px) {
+@media (width <= 360px) {
     .portico-landing.features-app {
         section {
             .keyboard-shortcuts {
@@ -3832,7 +3832,7 @@ nav {
 }
 
 /* For iPhone 5/SE device */
-@media (max-width: 320px) {
+@media (width <= 320px) {
     .portico-landing.features-app {
         section {
             .keyboard-shortcuts {
@@ -3846,7 +3846,7 @@ nav {
     }
 }
 
-@media (max-width: 313px) {
+@media (width <= 313px) {
     .portico-landing .testimonials .quote-container {
         width: 93%;
         padding-left: 7%;

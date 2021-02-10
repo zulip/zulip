@@ -1,31 +1,29 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
-
-const people = require("./people");
+import * as people from "./people";
 
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.
 let my_alert_words = [];
 
-exports.set_words = function (words) {
+export function set_words(words) {
     my_alert_words = words;
-};
+}
 
-exports.get_word_list = function () {
+export function get_word_list() {
     // People usually only have a couple alert
     // words, so it's cheap to be defensive
     // here and give a copy of the list to
     // our caller (in case they want to sort it
     // or something).
     return [...my_alert_words];
-};
+}
 
-exports.has_alert_word = function (word) {
+export function has_alert_word(word) {
     return my_alert_words.includes(word);
-};
+}
 
-exports.process_message = function (message) {
+export function process_message(message) {
     // Parsing for alert words is expensive, so we rely on the host
     // to tell us there any alert words to even look for.
     if (!message.alerted) {
@@ -57,18 +55,16 @@ exports.process_message = function (message) {
             },
         );
     }
-};
+}
 
-exports.notifies = function (message) {
+export function notifies(message) {
     // We exclude ourselves from notifications when we type one of our own
     // alert words into a message, just because that can be annoying for
     // certain types of workflows where everybody on your team, including
     // yourself, sets up an alert word to effectively mention the team.
     return !people.is_current_user(message.sender_email) && message.alerted;
-};
+}
 
-exports.initialize = (params) => {
+export const initialize = (params) => {
     my_alert_words = params.alert_words;
 };
-
-window.alert_words = exports;

@@ -23,8 +23,7 @@ class BuddyListConf {
     get_li_from_key(opts) {
         const user_id = opts.key;
         const container = $(this.container_sel);
-        const sel = this.item_sel + "[data-user-id='" + user_id + "']";
-        return container.find(sel);
+        return container.find(`${this.item_sel}[data-user-id='${CSS.escape(user_id)}']`);
     }
 
     get_key_from_li(opts) {
@@ -97,7 +96,7 @@ class BuddyList extends BuddyListConf {
     }
 
     get_items() {
-        const obj = this.container.find(this.item_sel);
+        const obj = this.container.find(`${this.item_sel}`);
         return obj.map((i, elem) => $(elem));
     }
 

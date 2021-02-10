@@ -5,12 +5,12 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("Filter", "js/filter");
+const Filter = zrequire("Filter", "js/filter");
 const people = zrequire("people");
-zrequire("stream_data");
-zrequire("unread");
+const stream_data = zrequire("stream_data");
+const unread = zrequire("unread");
 
-set_global("message_store", {});
+const message_store = set_global("message_store", {});
 set_global("page_params", {});
 
 set_global("muting", {
@@ -18,7 +18,7 @@ set_global("muting", {
 });
 
 // The main code we are testing lives here.
-zrequire("narrow_state");
+const narrow_state = zrequire("narrow_state");
 
 const alice = {
     email: "alice@example.com",

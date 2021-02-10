@@ -66,11 +66,11 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         assert self.bot_profile is not None
         with patch('zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message',
                    side_effect=EmbeddedBotQuitException("I'm quitting!")):
-            with patch('logging.warning') as mock_logging:
+            with self.assertLogs(level='WARNING') as m:
                 self.send_stream_message(self.user_profile, "Denmark",
                                          content=f"@**{self.bot_profile.full_name}** foo",
                                          topic_name="bar")
-                mock_logging.assert_called_once_with("I'm quitting!")
+                self.assertEqual(m.output, ['WARNING:root:I\'m quitting!'])
 
 class TestEmbeddedBotFailures(ZulipTestCase):
     def test_message_embedded_bot_with_invalid_service(self) -> None:
@@ -83,11 +83,8 @@ class TestEmbeddedBotFailures(ZulipTestCase):
         service_profile = get_service_profile(bot_profile.id, 'helloworld')
         service_profile.name = 'invalid'
         service_profile.save()
-        with patch('logging.error') as logging_error_mock:
+        with self.assertLogs(level='ERROR') as m:
             self.send_stream_message(user_profile, "Denmark",
                                      content=f"@**{bot_profile.full_name}** foo",
                                      topic_name="bar")
-            logging_error_mock.assert_called_once_with(
-                "Error: User %s has bot with invalid embedded bot service %s",
-                bot_profile.id, "invalid",
-            )
+            self.assertRegexpMatches(m.output[0], r'ERROR:root:Error: User [0-9]* has bot with invalid embedded bot service invalid')

@@ -106,10 +106,8 @@ exports._get_convos = function () {
 };
 
 exports._build_private_messages_list = function () {
-    const finish = blueslip.start_timing("render pm list");
     const convos = exports._get_convos();
     const dom_ast = pm_list_dom.pm_ul(convos);
-    finish();
     return dom_ast;
 };
 

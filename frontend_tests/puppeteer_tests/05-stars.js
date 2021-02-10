@@ -12,7 +12,7 @@ async function stars_count(page) {
 
 async function toggle_test_star_message(page) {
     await page.evaluate((message) => {
-        const msg = $(`.message_content:contains(${message}):visible`).last();
+        const msg = $(`.message_content:contains("${CSS.escape(message)}"):visible`).last();
         if (msg.length !== 1) {
             throw new Error("cannot find test star message");
         }

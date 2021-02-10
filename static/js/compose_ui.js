@@ -3,6 +3,7 @@
 const autosize = require("autosize");
 
 const people = require("./people");
+const user_status = require("./user_status");
 
 exports.autosize_textarea = function (textarea) {
     // Since this supports both compose and file upload, one must pass

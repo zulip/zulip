@@ -21,7 +21,7 @@ Zulip:
 1. Sign up for [Transifex](https://www.transifex.com) and ask to join
 the [Zulip project on
 Transifex](https://www.transifex.com/zulip/zulip/), requesting access
-to any languages you'd like to contribute to (or add new ones).
+to any languages that you'd like to contribute to (or add new ones).
 
 1. Join [#translation][translation-stream] in the [Zulip development
 community server](../contributing/chat-zulip-org.md), and say hello.
@@ -135,11 +135,11 @@ translators can understand and preserve those decisions:
 
 Some translated languages don't have these, but we highly encourage
 translators for new languages (or those updating a language) write a
-style guide as they work (see [our docs on this
-documentation](../documentation/overview.md) for how to submit
-your changes), since it's easy to take notes as you translate, and
-doing so greatly increases the ability of future translators to update
-the translations in a consistent way.
+style guide as they work , since it's easy to take notes as you
+translate, and doing so greatly increases the ability of future
+translators to update the translations in a consistent way.  See [our
+docs on this documentation](../documentation/overview.md) for how to
+submit your changes.
 
 ### Capitalization
 

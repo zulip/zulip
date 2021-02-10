@@ -152,6 +152,8 @@ exports.make_new_elem = function (selector, opts) {
     let value;
     let css;
     let shown = false;
+    let height;
+
     const find_results = new Map();
     let my_parent;
     const parents_result = new Map();
@@ -174,6 +176,13 @@ exports.make_new_elem = function (selector, opts) {
                 return attrs.get(name);
             }
             attrs.set(name, val);
+            return self;
+        },
+        css(...args) {
+            if (args.length === 0) {
+                return css || {};
+            }
+            [css] = args;
             return self;
         },
         data(name, val) {
@@ -223,18 +232,18 @@ exports.make_new_elem = function (selector, opts) {
             }
             throw new Error("Cannot find " + child_selector + " in " + selector);
         },
-        get(idx) {
-            // We have some legacy code that does $('foo').get(0).
-            assert.equal(idx, 0);
-            return selector;
-        },
         get_on_handler(name, child_selector) {
             return event_store.get_on_handler(name, child_selector);
         },
         hasClass(class_name) {
             return classes.has(class_name);
         },
-        height: noop,
+        height() {
+            if (height === undefined) {
+                throw new Error(`Please call $("${selector}").set_height`);
+            }
+            return height;
+        },
         hide() {
             shown = false;
             return self;
@@ -263,6 +272,12 @@ exports.make_new_elem = function (selector, opts) {
         off(...args) {
             event_store.off(...args);
             return self;
+        },
+        offset() {
+            return {
+                top: 0,
+                left: 0,
+            };
         },
         on(...args) {
             event_store.on(...args);
@@ -300,9 +315,9 @@ exports.make_new_elem = function (selector, opts) {
         },
         removeClass(class_names) {
             class_names = class_names.split(" ");
-            class_names.forEach((class_name) => {
+            for (const class_name of class_names) {
                 classes.delete(class_name);
-            });
+            }
             return self;
         },
         remove() {
@@ -315,21 +330,27 @@ exports.make_new_elem = function (selector, opts) {
         scrollTop() {
             return self;
         },
+        serializeArray() {
+            return self;
+        },
         set_find_results(find_selector, jquery_object) {
             find_results.set(find_selector, jquery_object);
         },
-        show() {
-            shown = true;
-            return self;
-        },
-        serializeArray() {
-            return self;
+        set_height(fake_height) {
+            height = fake_height;
         },
         set_parent(parent_elem) {
             my_parent = parent_elem;
         },
         set_parents_result(selector, result) {
             parents_result.set(selector, result);
+        },
+        show() {
+            shown = true;
+            return self;
+        },
+        slice() {
+            return self;
         },
         stop() {
             return self;
@@ -343,6 +364,11 @@ exports.make_new_elem = function (selector, opts) {
             }
             return text;
         },
+        toggle(show) {
+            assert([true, false].includes(show));
+            shown = show;
+            return self;
+        },
         trigger(ev) {
             event_store.trigger(self, ev);
             return self;
@@ -354,26 +380,19 @@ exports.make_new_elem = function (selector, opts) {
             [value] = args;
             return self;
         },
-        css(...args) {
-            if (args.length === 0) {
-                return css || {};
-            }
-            [css] = args;
-            return self;
-        },
         visible() {
             return shown;
         },
-        slice() {
-            return self;
-        },
-        offset() {
-            return {
-                top: 0,
-                left: 0,
-            };
-        },
     };
+
+    if (opts.children) {
+        self.map = (f) => opts.children.map((i, elem) => f(elem, i));
+        self.each = (f) => {
+            for (const child of opts.children) {
+                f.call(child);
+            }
+        };
+    }
 
     if (selector[0] === "<") {
         self.html(selector);
@@ -396,9 +415,10 @@ exports.make_zjquery = function (opts) {
     // Our fn structure helps us simulate extending jQuery.
     const fn = {};
 
-    function new_elem(selector) {
+    function new_elem(selector, create_opts) {
         const elem = exports.make_new_elem(selector, {
             silent: opts.silent,
+            ...create_opts,
         });
         Object.assign(elem, fn);
 
@@ -495,10 +515,11 @@ exports.make_zjquery = function (opts) {
         return elems.get(selector);
     };
 
-    zjquery.create = function (name) {
+    zjquery.create = function (name, opts) {
         assert(!elems.has(name), "You already created an object with this name!!");
-        const elem = new_elem(name);
+        const elem = new_elem(name, opts);
         elems.set(name, elem);
+
         return elem;
     };
 
@@ -534,9 +555,6 @@ exports.make_zjquery = function (opts) {
 
     zjquery.clear_all_elements = function () {
         elems.clear();
-    };
-    zjquery.escapeSelector = function (s) {
-        return s;
     };
 
     return zjquery;

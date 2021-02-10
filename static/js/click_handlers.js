@@ -8,7 +8,9 @@ const WinChan = require("winchan");
 const render_buddy_list_tooltip = require("../templates/buddy_list_tooltip.hbs");
 const render_buddy_list_tooltip_content = require("../templates/buddy_list_tooltip_content.hbs");
 
+const message_edit_history = require("./message_edit_history");
 const settings_panel_menu = require("./settings_panel_menu");
+const user_status_ui = require("./user_status_ui");
 const util = require("./util");
 
 function convert_enter_to_click(e) {
@@ -340,14 +342,14 @@ exports.initialize = function () {
     });
     $("#message_edit_form .send-status-close").on("click", function () {
         const row_id = rows.id($(this).closest(".message_row"));
-        const send_status = $("#message-edit-send-status-" + row_id);
+        const send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
         $(send_status).stop(true).fadeOut(200);
     });
     $("body").on("click", "#message_edit_form [id^='attach_files_']", function (e) {
         e.preventDefault();
 
         const row_id = rows.id($(this).closest(".message_row"));
-        $("#message_edit_file_input_" + row_id).trigger("click");
+        $(`#message_edit_file_input_${CSS.escape(row_id)}`).trigger("click");
     });
 
     $("body").on("click", "#message_edit_form [id^='markdown_preview_']", function (e) {
@@ -355,7 +357,7 @@ exports.initialize = function () {
 
         const row_id = rows.id($(this).closest(".message_row"));
         function $_(selector) {
-            return $(selector + "_" + row_id);
+            return $(`${selector}_${CSS.escape(row_id)}`);
         }
 
         const content = $_("#message_edit_content").val();
@@ -376,7 +378,7 @@ exports.initialize = function () {
 
         const row_id = rows.id($(this).closest(".message_row"));
         function $_(selector) {
-            return $(selector + "_" + row_id);
+            return $(`${selector}_${CSS.escape(row_id)}`);
         }
 
         $_("#message_edit_content").show();
@@ -392,7 +394,7 @@ exports.initialize = function () {
         e.stopPropagation();
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.mute(stream_id, topic);
+        muting_ui.mute_topic(stream_id, topic);
     });
 
     $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
@@ -401,7 +403,7 @@ exports.initialize = function () {
         e.stopPropagation();
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.unmute(stream_id, topic);
+        muting_ui.unmute_topic(stream_id, topic);
     });
 
     $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);
@@ -826,15 +828,15 @@ exports.initialize = function () {
 
         $("body").on("click", "[data-make-editable]", function () {
             const selector = $(this).attr("data-make-editable");
-            const edit_area = $(this).parent().find(selector);
+            const edit_area = $(this).parent().find(`${selector}`);
             $(selector).removeClass("stream-name-edit-box");
             if (edit_area.attr("contenteditable") === "true") {
-                $("[data-finish-editing='" + selector + "']").hide();
+                $(`[data-finish-editing='${CSS.escape(selector)}']`).hide();
                 edit_area.attr("contenteditable", false);
                 edit_area.text(edit_area.attr("data-prev-text"));
                 $(this).html("");
             } else {
-                $("[data-finish-editing='" + selector + "']").show();
+                $(`[data-finish-editing='${CSS.escape(selector)}']`).show();
 
                 $(selector).addClass("stream-name-edit-box");
                 edit_area
@@ -857,8 +859,8 @@ exports.initialize = function () {
             if (map[selector].on_save) {
                 map[selector].on_save(e);
                 $(this).hide();
-                $(this).parent().find(selector).attr("contenteditable", false);
-                $("[data-make-editable='" + selector + "']").html("");
+                $(this).parent().find(`${selector}`).attr("contenteditable", false);
+                $(`[data-make-editable='${CSS.escape(selector)}']`).html("");
             }
         });
     })();
@@ -880,7 +882,7 @@ exports.initialize = function () {
 
         overlays.open_overlay({
             name: overlay_name,
-            overlay: $("#" + overlay_name),
+            overlay: $(`#${CSS.escape(overlay_name)}`),
             on_close: function () {
                 // close popover
                 $(this).css({display: "block"});
@@ -910,7 +912,7 @@ exports.initialize = function () {
         hotspots.post_hotspot_as_read(hotspot_name);
 
         overlays.close_overlay(overlay_name);
-        $("#hotspot_" + hotspot_name + "_icon").remove();
+        $(`#hotspot_${CSS.escape(hotspot_name)}_icon`).remove();
     });
 
     $("body").on("click", ".hotspot-button", (e) => {

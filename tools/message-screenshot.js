@@ -1,10 +1,11 @@
 "use strict";
 
-/* global $, navigate */
+/* global $, CSS, navigate */
 
 const path = require("path");
 
 const commander = require("commander");
+require("css.escape");
 const mkdirp = require("mkdirp");
 const puppeteer = require("puppeteer");
 
@@ -54,10 +55,10 @@ async function run() {
 
         // Navigate to message and capture screenshot
         await page.goto(`http://${host}/#narrow/near/${options.messageId}`);
-        const messageSelector = `#zfilt${options.messageId}`;
+        const messageSelector = `#zfilt${CSS.escape(options.messageId)}`;
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message
-        const marker = `#zfilt${options.messageId} .unread_marker`;
+        const marker = `#zfilt${CSS.escape(options.messageId)} .unread_marker`;
         await page.evaluate((sel) => $(sel).remove(), marker);
         await page.evaluate(() => navigate.up());
         const messageBox = await page.$(messageSelector);

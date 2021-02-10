@@ -9,7 +9,7 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 // lives in stream_list.js.
 
 set_global("$", make_zjquery());
-zrequire("stream_list");
+const stream_list = zrequire("stream_list");
 
 const noop = () => {};
 
@@ -18,8 +18,8 @@ set_global("resize", {
     resize_stream_filters_container: noop,
 });
 
-set_global("popovers", {});
-set_global("stream_popover", {});
+const popovers = set_global("popovers", {});
+const stream_popover = set_global("stream_popover", {});
 
 function expand_sidebar() {
     $(".app-main .column-left").addClass("expanded");
@@ -183,6 +183,7 @@ run_test("expanding_sidebar", () => {
     stream_popover.show_streamlist_sidebar = () => {
         events.push("stream_popover.show_streamlist_sidebar");
     };
+    $("#streamlist-toggle").show();
 
     stream_list.initiate_search();
 

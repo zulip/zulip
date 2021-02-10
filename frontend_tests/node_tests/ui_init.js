@@ -38,14 +38,13 @@ set_global("document", {
 set_global("csrf_token", "whatever");
 
 set_global("$", () => {});
-set_global("resize", {});
+const resize = set_global("resize", {});
 set_global("page_params", {});
 
 const ignore_modules = [
     "activity",
     "click_handlers",
     "compose_pm_pill",
-    "copy_and_paste",
     "drafts",
     "emoji_picker",
     "gear_menu",
@@ -69,63 +68,53 @@ const ignore_modules = [
     "unread_ui",
 ];
 
-for (const mod of ignore_modules) {
-    set_global(mod, {
-        initialize: () => {},
-    });
-}
+const {server_events, ui} = Object.fromEntries(
+    ignore_modules.map((mod) => [
+        mod,
+        set_global(mod, {
+            initialize: () => {},
+        }),
+    ]),
+);
 
 util.is_mobile = () => false;
 stub_templates(() => "some-html");
 ui.get_scroll_element = (element) => element;
 
-zrequire("alert_words");
 zrequire("hash_util");
-zrequire("echo");
-zrequire("colorspace");
 zrequire("stream_color");
 zrequire("stream_edit");
 zrequire("color_data");
 zrequire("stream_data");
 zrequire("muting");
 zrequire("condense");
-zrequire("spoilers");
 zrequire("lightbox");
 zrequire("overlays");
-zrequire("invite");
 zrequire("message_view_header");
 zrequire("narrow_state");
-zrequire("people");
 zrequire("presence");
 zrequire("search_pill_widget");
 zrequire("user_groups");
 zrequire("unread");
 zrequire("bot_data");
 zrequire("markdown");
-zrequire("upload");
-zrequire("compose");
+const upload = zrequire("upload");
+const compose = zrequire("compose");
 zrequire("composebox_typeahead");
 zrequire("narrow");
 zrequire("search_suggestion");
 zrequire("search");
-zrequire("tutorial");
 rewiremock.proxy(() => zrequire("notifications"), {
     "../../static/js/favicon": {},
 });
-zrequire("pm_conversations");
 zrequire("pm_list");
 zrequire("list_cursor");
 zrequire("keydown_util");
-zrequire("stream_sort");
 zrequire("stream_list");
 zrequire("topic_list");
-zrequire("topic_zoom");
 zrequire("sent_messages");
-zrequire("typing");
 zrequire("top_left_corner");
 zrequire("starred_messages");
-zrequire("user_status");
-zrequire("user_status_ui");
 
 const ui_init = rewiremock.proxy(() => zrequire("ui_init"), {
     "../../static/js/emojisets": {

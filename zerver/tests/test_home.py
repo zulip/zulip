@@ -455,10 +455,9 @@ class HomeTest(ZulipTestCase):
 
     def test_bad_narrow(self) -> None:
         self.login('hamlet')
-        with patch('logging.warning') as mock:
+        with self.assertLogs(level='WARNING') as m:
             result = self._get_home_page(stream='Invalid Stream')
-        mock.assert_called_once()
-        self.assertEqual(mock.call_args_list[0][0][0], "Invalid narrow requested, ignoring")
+            self.assertEqual(m.output, ['WARNING:root:Invalid narrow requested, ignoring'])
         self._sanity_check(result)
 
     def test_topic_narrow(self) -> None:

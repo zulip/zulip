@@ -1,6 +1,6 @@
 <div id="muted-topic-settings" class="settings-section" data-name="muted-topics">
     <input id="muted_topics_search" class="search" type="text" placeholder="{{t 'Search muted topics...' }}" aria-label="{{t 'Search muted topics...' }}"/>
-    <div class="progressive-table-wrapper" data-simplebar data-list-render="muted-topics-list">
+    <div class="progressive-table-wrapper" data-simplebar data-list-widget="muted-topics-list">
         <table class="table table-condensed table-striped wrapped-table">
             <thead>
                 <th data-sort="alphabetic" data-sort-prop="stream">{{t "Stream" }}</th>
@@ -8,7 +8,7 @@
                 <th data-sort="numeric" data-sort-prop="date_muted">{{t "Date muted" }}</th>
                 <th class="actions">{{t "Actions" }}</th>
             </thead>
-            <tbody id="muted_topics_table" data-empty="{{t 'You have not muted any topics yet.'}}" data-list-render="muted-topics-list"></tbody>
+            <tbody id="muted_topics_table" class="required-text" data-empty="{{t 'You have not muted any topics yet.'}}" data-list-widget="muted-topics-list"></tbody>
         </table>
     </div>
 </div>

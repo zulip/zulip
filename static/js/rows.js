@@ -120,7 +120,7 @@ exports.get_table = function (table_name) {
         return $();
     }
 
-    return $("#" + table_name);
+    return $(`#${CSS.escape(table_name)}`);
 };
 
 exports.get_message_id = function (elem) {

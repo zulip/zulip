@@ -247,7 +247,7 @@ async function select_from_suggestions(page, item) {
     await page.evaluate((item) => {
         const tah = $(".create_default_stream").data().typeahead;
         tah.mouseenter({
-            currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
+            currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
         });
         tah.select();
     }, item);
@@ -278,7 +278,7 @@ async function test_default_streams(page) {
 
     const stream_name = "Scotland";
     const stream_id = await common.get_stream_id(page, stream_name);
-    const row = `.default_stream_row[data-stream-id='${stream_id}']`;
+    const row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id)}']`;
 
     await test_add_default_stream(page, stream_name, row);
     await test_remove_default_stream(page, row);

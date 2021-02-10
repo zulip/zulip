@@ -25,7 +25,7 @@ function apply_color(input_string, changes) {
         ["insert", (string) => "\u001B[32m" + string + "\u001B[0m"],
         ["replace", (string) => "\u001B[33m" + string + "\u001B[0m"],
     ]);
-    changes.forEach((change) => {
+    for (const change of changes) {
         if (formatter.has(change.tag)) {
             processed_string += input_string.slice(previous_index, change.beginning_index);
             processed_string += formatter.get(change.tag)(
@@ -33,7 +33,7 @@ function apply_color(input_string, changes) {
             );
             previous_index = change.ending_index;
         }
-    });
+    }
 
     processed_string += input_string.slice(previous_index);
     return processed_string;
@@ -102,7 +102,7 @@ function diff_strings(string_0, string_1) {
 
     ndiff_output = difflib.ndiff(string_0.split("\n"), string_1.split("\n"));
 
-    ndiff_output.forEach((line) => {
+    for (const line of ndiff_output) {
         if (line.startsWith("+")) {
             output_lines.push(line);
         } else if (line.startsWith("-")) {
@@ -116,11 +116,11 @@ function diff_strings(string_0, string_1) {
         } else {
             output_lines.push(line);
         }
-    });
+    }
 
-    const emphasize_codes = (string) =>
-        "\u001B[34m" + string.slice(0, 1) + "\u001B[0m" + string.slice(1);
-    output_lines = output_lines.map(emphasize_codes);
+    output_lines = output_lines.map(
+        (string) => "\u001B[34m" + string.slice(0, 1) + "\u001B[0m" + string.slice(1),
+    );
 
     return output_lines.join("\n");
 }

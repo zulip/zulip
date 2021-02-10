@@ -5,13 +5,13 @@ const {strict: assert} = require("assert");
 const common = require("../puppeteer_lib/common");
 
 async function wait_for_tab(page, tab) {
-    const tab_slector = `#${tab}.tab-pane.active`;
+    const tab_slector = `#${CSS.escape(tab)}.tab-pane.active`;
     await page.waitForSelector(tab_slector, {visible: true});
 }
 
 async function navigate_to(page, click_target, tab) {
     console.log("Visiting #" + click_target);
-    await page.click(`a[href='#${click_target}']`);
+    await page.click(`a[href='#${CSS.escape(click_target)}']`);
 
     await wait_for_tab(page, tab);
 }
@@ -57,7 +57,10 @@ async function test_reload_hash(page) {
 
     const initial_hash = await page.evaluate(() => window.location.hash);
 
-    await page.evaluate(() => reload.initiate({immediate: true}));
+    await page.evaluate(() => {
+        const reload = window.require("./static/js/reload");
+        reload.initiate({immediate: true});
+    });
     await page.waitForSelector("#zfilt", {visible: true});
 
     const page_load_time = await page.evaluate(() => page_params.page_load_time);
@@ -72,7 +75,10 @@ async function navigation_tests(page) {
 
     await navigate_to_settings(page);
 
-    const verona_id = await page.evaluate(() => stream_data.get_stream_id("Verona"));
+    const verona_id = await page.evaluate(() => {
+        const stream_data = window.require("./static/js/stream_data");
+        return stream_data.get_stream_id("Verona");
+    });
     const verona_narrow = `narrow/stream/${verona_id}-Verona`;
 
     await navigate_to(page, verona_narrow, "message_feed_container");

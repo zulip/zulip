@@ -15,7 +15,7 @@ async function navigate_to_user_list(page) {
 
 async function user_row(page, name) {
     const user_id = await common.get_user_id_from_name(page, name);
-    return `.user_row[data-user-id="${user_id}"]`;
+    return `.user_row[data-user-id="${CSS.escape(user_id)}"]`;
 }
 
 async function test_deactivate_user(page) {

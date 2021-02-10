@@ -17,7 +17,7 @@ Comment:
  information or errors found in these notices.
 
 Files: *
-Copyright: 2011-2015 Dropbox, Inc., 2015-2019 Kandra Labs, Inc., and contributors
+Copyright: 2012–2015 Dropbox, Inc., 2015–2021 Kandra Labs, Inc., and contributors
 License: Apache-2.0
 
 Files: confirmation/*
@@ -133,6 +133,10 @@ License: Expat
 Files: zerver/decorator.py zerver/management/commands/runtornado.py scripts/setup/generate_secrets.py
 Copyright: Django Software Foundation and individual contributors
 License: BSD-3-Clause
+
+Files: static/audio/notification_sounds/*
+Copyright: 2021 Stefan Mertens
+License: CC0-1.0
 
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");

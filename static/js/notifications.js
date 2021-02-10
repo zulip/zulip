@@ -5,9 +5,12 @@ const _ = require("lodash");
 const render_compose_notification = require("../templates/compose_notification.hbs");
 const render_notification = require("../templates/notification.hbs");
 
+const alert_words = require("./alert_words");
 const favicon = require("./favicon");
 const people = require("./people");
 const settings_config = require("./settings_config");
+const spoilers = require("./spoilers");
+const stream_ui_updates = require("./stream_ui_updates");
 
 const notice_memory = new Map();
 
@@ -190,7 +193,7 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
         })
         .show();
 
-    $(".notification[data-message-id='" + message.id + "']")
+    $(`.notification[data-message-id='${CSS.escape(message.id)}']`)
         .expectOne()
         .data("narrow", {
             raw_operators,

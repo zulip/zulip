@@ -9,9 +9,9 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 set_global("page_params", {
     search_pills_enabled: true,
 });
-zrequire("search");
-zrequire("search_pill");
-zrequire("Filter", "js/filter");
+const search = zrequire("search");
+const search_pill = zrequire("search_pill");
+const Filter = zrequire("Filter", "js/filter");
 zrequire("message_view_header");
 
 const noop = () => {};
@@ -19,13 +19,13 @@ const return_true = () => true;
 const return_false = () => false;
 
 set_global("$", make_zjquery());
-set_global("narrow_state", {filter: return_false});
-set_global("search_suggestion", {});
+const narrow_state = set_global("narrow_state", {filter: return_false});
+const search_suggestion = set_global("search_suggestion", {});
 set_global("ui_util", {
     change_tab_to: noop,
     place_caret_at_end: noop,
 });
-set_global("narrow", {});
+const narrow = set_global("narrow", {});
 set_global("search_pill_widget", {
     widget: {
         getByID: return_true,

@@ -1,5 +1,6 @@
 "use strict";
 
+const {media_breakpoints} = require("./css_variables");
 // A few of our width properties in Zulip depend on the width of the
 // browser scrollbar that is generated at the far right side of the
 // page, which unfortunately varies depending on the browser and
@@ -41,10 +42,10 @@ exports.initialize = function () {
     if (sbWidth > 0) {
         $(".header").css("left", "-" + sbWidth + "px");
         $(".header-main").css("left", sbWidth + "px");
-        $(".header-main .column-middle").css("margin-right", 250 + sbWidth + "px");
+        $(".header-main .column-middle").css("margin-right", 7 + sbWidth + "px");
 
         $(".fixed-app").css("left", "-" + sbWidth + "px");
-        $(".fixed-app .column-middle").css("margin-left", 250 + sbWidth + "px");
+        $(".fixed-app .column-middle").css("margin-left", 7 + sbWidth + "px");
 
         $(".column-right").css("right", sbWidth + "px");
         $(".app-main .right-sidebar").css({
@@ -53,15 +54,19 @@ exports.initialize = function () {
         });
 
         $("#compose").css("left", "-" + sbWidth + "px");
-        $(".compose-content").css({left: sbWidth + "px", "margin-right": 250 + sbWidth + "px"});
+        $(".compose-content").css({left: sbWidth + "px", "margin-right": 7 + sbWidth + "px"});
         $("#keyboard-icon").css({right: sbWidth + 35 + "px"});
 
         $("head").append(
-            "<style> @media (max-width: 1165px) { .compose-content, .header-main .column-middle { margin-right: " +
-                (7 + sbWidth) +
+            "<style> @media (min-width: " +
+                media_breakpoints.xl_min +
+                ") { .compose-content, .header-main .column-middle { margin-right: " +
+                (250 + sbWidth) +
                 "px !important; } } " +
-                "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " +
-                (7 + sbWidth) +
+                "@media (min-width: " +
+                media_breakpoints.md_min +
+                ") { .fixed-app .column-middle { margin-left: " +
+                (250 + sbWidth) +
                 "px !important; } } " +
                 "</style>",
         );

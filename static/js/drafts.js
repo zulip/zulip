@@ -1,7 +1,7 @@
 "use strict";
 
+const {subDays} = require("date-fns");
 const Handlebars = require("handlebars/runtime");
-const XDate = require("xdate");
 
 const render_draft_table_body = require("../templates/draft_table_body.hbs");
 
@@ -208,7 +208,7 @@ exports.restore_draft = function (draft_id) {
 const DRAFT_LIFETIME = 30;
 
 exports.remove_old_drafts = function () {
-    const old_date = new Date().setDate(new Date().getDate() - DRAFT_LIFETIME);
+    const old_date = subDays(new Date(), DRAFT_LIFETIME).getTime();
     const drafts = draft_model.get();
     for (const [id, draft] of Object.entries(drafts)) {
         if (draft.updatedAt < old_date) {
@@ -220,7 +220,7 @@ exports.remove_old_drafts = function () {
 exports.format_draft = function (draft) {
     const id = draft.id;
     let formatted;
-    const time = new XDate(draft.updatedAt);
+    const time = new Date(draft.updatedAt);
     let time_stamp = timerender.render_now(time).time_str;
     if (time_stamp === i18n.t("Today")) {
         time_stamp = timerender.stringify_time(time);
@@ -332,7 +332,9 @@ exports.launch = function () {
             (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt,
         );
 
-        const sorted_formatted_drafts = sorted_raw_drafts.map(exports.format_draft).filter(Boolean);
+        const sorted_formatted_drafts = sorted_raw_drafts
+            .map((draft_row) => exports.format_draft(draft_row))
+            .filter(Boolean);
 
         return sorted_formatted_drafts;
     }

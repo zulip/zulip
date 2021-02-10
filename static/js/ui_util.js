@@ -4,7 +4,7 @@
 // dependencies other than jQuery.
 
 exports.change_tab_to = function (tabname) {
-    $('#gear-menu a[href="' + tabname + '"]').tab("show");
+    $(`#gear-menu a[href="${CSS.escape(tabname)}"]`).tab("show");
 };
 
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser

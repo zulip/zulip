@@ -3,6 +3,7 @@
 const render_typing_notifications = require("../templates/typing_notifications.hbs");
 
 const people = require("./people");
+const typing_data = require("./typing_data");
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
@@ -46,7 +47,7 @@ function get_users_typing_for_narrow() {
 
 exports.render_notifications_for_narrow = function () {
     const user_ids = get_users_typing_for_narrow();
-    const users_typing = user_ids.map(people.get_by_user_id);
+    const users_typing = user_ids.map((user_id) => people.get_by_user_id(user_id));
     if (users_typing.length === 0) {
         $("#typing_notifications").hide();
     } else {

@@ -6,9 +6,9 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const people = zrequire("people");
-zrequire("Filter", "js/filter");
-zrequire("stream_data");
-zrequire("narrow_state");
+const Filter = zrequire("Filter", "js/filter");
+const stream_data = zrequire("stream_data");
+const narrow_state = zrequire("narrow_state");
 
 set_global("page_params", {});
 
@@ -140,27 +140,27 @@ run_test("operators", () => {
     assert.equal(result.length, 0);
 });
 
-run_test("muting_enabled", () => {
+run_test("excludes_muted_topics", () => {
     set_filter([["stream", "devel"]]);
-    assert(narrow_state.muting_enabled());
+    assert(narrow_state.excludes_muted_topics());
 
     narrow_state.reset_current_filter(); // not narrowed, basically
-    assert(narrow_state.muting_enabled());
+    assert(narrow_state.excludes_muted_topics());
 
     set_filter([
         ["stream", "devel"],
         ["topic", "mac"],
     ]);
-    assert(!narrow_state.muting_enabled());
+    assert(!narrow_state.excludes_muted_topics());
 
     set_filter([["search", "whatever"]]);
-    assert(!narrow_state.muting_enabled());
+    assert(!narrow_state.excludes_muted_topics());
 
     set_filter([["is", "private"]]);
-    assert(!narrow_state.muting_enabled());
+    assert(!narrow_state.excludes_muted_topics());
 
     set_filter([["is", "starred"]]);
-    assert(!narrow_state.muting_enabled());
+    assert(!narrow_state.excludes_muted_topics());
 });
 
 run_test("set_compose_defaults", () => {
