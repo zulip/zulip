@@ -5,6 +5,7 @@ const render_settings_admin_auth_methods_list = require("../templates/settings/a
 const render_settings_admin_realm_domains_list = require("../templates/settings/admin_realm_domains_list.hbs");
 
 const settings_config = require("./settings_config");
+const settings_ui = require("./settings_ui");
 
 const meta = {
     loaded: false,

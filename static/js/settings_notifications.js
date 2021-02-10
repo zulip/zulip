@@ -3,6 +3,7 @@
 const render_stream_specific_notification_row = require("../templates/settings/stream_specific_notification_row.hbs");
 
 const settings_config = require("./settings_config");
+const settings_ui = require("./settings_ui");
 
 exports.get_notifications_table_row_data = function (notify_settings) {
     return settings_config.general_notifications_table_labels.realm.map((column, index) => {
