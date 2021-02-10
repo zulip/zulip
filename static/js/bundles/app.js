@@ -35,7 +35,6 @@ import "../message_viewport";
 import "../rows";
 import "../user_groups";
 import "../unread";
-import "../topic_list_data";
 import "../topic_list";
 import "../pm_list_dom";
 import "../pm_list";
