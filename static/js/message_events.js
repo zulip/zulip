@@ -1,5 +1,6 @@
 "use strict";
 
+const alert_words = require("./alert_words");
 const huddle_data = require("./huddle_data");
 const message_edit_history = require("./message_edit_history");
 const util = require("./util");

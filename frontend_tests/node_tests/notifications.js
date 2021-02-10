@@ -32,7 +32,6 @@ const _navigator = {
 };
 set_global("navigator", _navigator);
 
-zrequire("alert_words");
 const muting = zrequire("muting");
 const stream_data = zrequire("stream_data");
 zrequire("ui");

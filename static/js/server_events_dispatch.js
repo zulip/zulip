@@ -2,6 +2,7 @@
 
 const emoji = require("../shared/js/emoji");
 
+const alert_words = require("./alert_words");
 const peer_data = require("./peer_data");
 const people = require("./people");
 const settings_config = require("./settings_config");

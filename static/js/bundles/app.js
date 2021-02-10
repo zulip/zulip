@@ -103,7 +103,6 @@ import "../hash_util";
 import "../hashchange";
 import "../message_flags";
 import "../starred_messages";
-import "../alert_words";
 import "../alert_words_ui";
 import "../attachments_ui";
 import "../message_store";
