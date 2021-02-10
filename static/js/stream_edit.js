@@ -10,6 +10,7 @@ const peer_data = require("./peer_data");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
+const stream_pill = require("./stream_pill");
 const util = require("./util");
 
 function setup_subscriptions_stream_hash(sub) {
