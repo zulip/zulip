@@ -1,5 +1,3 @@
-"use strict";
-
 const funcs = {
     setZoom(meta, zoom) {
         // condition to handle zooming event by zoom hotkeys
@@ -206,7 +204,7 @@ const funcs = {
     },
 };
 
-class LightboxCanvas {
+export class LightboxCanvas {
     meta = {
         direction: -1,
         zoom: 1,
@@ -270,6 +268,3 @@ class LightboxCanvas {
         this.meta.resize_handler = callback;
     }
 }
-
-module.exports = LightboxCanvas;
-window.LightboxCanvas = LightboxCanvas;

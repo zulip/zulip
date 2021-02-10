@@ -131,7 +131,6 @@
                 "$": false,
                 "FetchStatus": false,
                 "Filter": false,
-                "LightboxCanvas": false,
                 "ListCursor": false,
                 "MessageListData": false,
                 "MessageListView": false,
