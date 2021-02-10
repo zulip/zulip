@@ -50,9 +50,18 @@
             <div id="navbar-buttons" {%if embedded %} style="visibility: hidden"{% endif %}>
                 <ul class="nav" role="navigation">
                     <li class="dropdown actual-dropdown-menu" id="gear-menu">
-                        <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" title="{{ _('Menu') }} (g)">
-                            <i class="fa fa-cog settings-dropdown-cog" aria-hidden="true"></i>
-                        </a>
+                        <div style="width: 90px;display: flex;flex-direction: row;justify-content: flex-end">
+                            <div class="status-box-div" style="width: 45px;">
+                                <a id="status-box" href="#" role="button" class="dropdown-toggle">
+                                    <i class="fa fa-comments status-box-icon" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                            <div style="width: 45px;">
+                                <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-target="#gear-menu" data-toggle="dropdown" title="{{ _('Menu') }} (g)">
+                                    <img id="gear-menu-avatar" class="settings-dropdown-avatar" style="max-width: 50%;">
+                                </a>
+                            </div>
+                        </div>
                         <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
                             {#
                             It is quite ingrained in our frontend code that your Home

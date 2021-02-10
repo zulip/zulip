@@ -1,5 +1,3 @@
-"use strict";
-
 const away_user_ids = new Set();
 const user_info = new Map();
 
@@ -14,6 +12,7 @@ exports.server_update = function (opts) {
         success() {
             if (opts.success) {
                 opts.success();
+                exports.set_status_box(opts.status_text);
             }
         },
     });
@@ -58,7 +57,21 @@ exports.set_status_text = function (opts) {
     user_info.set(opts.user_id, opts.status_text);
 };
 
-exports.initialize = function (params) {
+export function set_status_box(status) {
+    if (status === "" || status === undefined) {
+        $(".status-box-div").hide();
+        $(".status-box-div").tooltip("destroy");
+    } else {
+        $(".status-box-div").show();
+        $(".status-box-div").tooltip({
+            animation: false,
+            placement: "bottom",
+            title: status,
+        });
+    }
+}
+
+export function initialize(params) {
     for (const [str_user_id, dct] of Object.entries(params.user_status)) {
         // JSON does not allow integer keys, so we
         // convert them here.

@@ -640,7 +640,17 @@ li.actual-dropdown-menu i {
     margin-right: 3px;
 }
 
-.settings-dropdown-cog {
+.status-box-div {
+    display: none;
+}
+
+.settings-dropdown-avatar {
+    margin: 1px 2px 1px;
+    padding: 3px 10px;
+    border-radius: 12px;
+}
+
+.status-box-icon {
     padding: 6px 12px;
 }
 
@@ -1872,9 +1882,13 @@ div.focused_table {
 #navbar-buttons {
     white-space: nowrap;
     margin-left: 15px;
-    margin-top: 7px;
+    margin-top: 4px;
     display: inline-block;
     float: right;
+
+    @media (max-width: 500px) {
+        margin-top: 0;
+    }
 
     ul.nav {
         margin: 0;
@@ -1889,9 +1903,6 @@ div.focused_table {
             background-color: inherit;
             box-shadow: inherit;
             display: block;
-            position: absolute;
-            right: 6px;
-            top: -3px;
         }
 
         .dropdown-toggle,
@@ -2661,7 +2672,7 @@ select.inline_select_topic_edit {
     .top-navbar-container,
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
-        width: calc(100% - 84px);
+        width: calc(100% - 120px);
     }
 
     .search_closed .fa-search {
@@ -2750,14 +2761,14 @@ select.inline_select_topic_edit {
 
     .top-navbar-border {
         margin-left: 40px;
-        width: calc(100% - 108px);
+        width: calc(100% - 150px);
     }
     /* todo: Figure out why this has to be different
        from above at this width and resolve it
        #searchbox_legacy .navbar-search.expanded, */
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
-        width: calc(100% - 123px);
+        width: calc(100% - 153px);
     }
 
     .search_closed .fa-search {

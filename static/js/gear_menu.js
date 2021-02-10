@@ -1,5 +1,4 @@
-"use strict";
-
+import user_status from "./user_status";
 /*
 For various historical reasons there isn't one
 single chunk of code that really makes our gear
@@ -87,6 +86,7 @@ exports.update_org_settings_menu_item = function () {
 
 exports.initialize = function () {
     exports.update_org_settings_menu_item();
+    exports.set_avatar();
 
     $('#gear-menu a[data-toggle="tab"]').on("show", (e) => {
         // Save the position of our old tab away, before we switch
@@ -135,6 +135,15 @@ exports.close = function () {
     if (exports.is_open()) {
         $(".dropdown").removeClass("open");
     }
+};
+
+exports.set_avatar = function () {
+    const avatar_url = page_params.avatar_url;
+    const user_id = page_params.user_id;
+    const status_text = user_status.get_status_text(user_id);
+
+    $("#gear-menu-avatar").attr("src", avatar_url);
+    user_status.set_status_box(status_text);
 };
 
 window.gear_menu = exports;
