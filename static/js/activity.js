@@ -3,6 +3,7 @@
 const _ = require("lodash");
 
 const people = require("./people");
+const {UserSearch} = require("./user_search");
 
 /*
     Helpers for detecting user activity and managing user idle states

@@ -8,7 +8,6 @@ declare let Filter: any;
 declare let ListCursor: any;
 declare let MessageListData: any;
 declare let MessageListView: any;
-declare let UserSearch: any;
 declare let activity: any;
 declare let admin: any;
 declare let alert_words_ui: any;
