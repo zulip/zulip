@@ -3,6 +3,7 @@
 const _ = require("lodash");
 
 const echo = require("./echo");
+const server_events_dispatch = require("./server_events_dispatch");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
 let waiting_on_homeview_load = true;
