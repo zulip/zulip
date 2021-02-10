@@ -267,7 +267,6 @@
                 "submessage": false,
                 "subs": false,
                 "message_view_header": false,
-                "templates": false,
                 "timerender": false,
                 "top_left_corner": false,
                 "topic_list": false,
