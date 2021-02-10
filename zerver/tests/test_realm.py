@@ -444,7 +444,7 @@ class RealmTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(result.json()['user']['email'],
                          f'user{hamlet.id}@zulip.testserver')
-        self.assertEqual(result.json()['user'].get('delivery_email'), None)
+        self.assertEqual(result.json()['user'].get('delivery_email'), hamlet.delivery_email)
 
         # Check administrator gets delivery_email with EMAIL_ADDRESS_VISIBILITY_ADMINS
         result = self.api_get(user_profile, f"/api/v1/users/{hamlet.id}")
@@ -469,7 +469,7 @@ class RealmTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(result.json()['user']['email'],
                          f'user{hamlet.id}@zulip.testserver')
-        self.assertEqual(result.json()['user'].get('delivery_email'), None)
+        self.assertEqual(result.json()['user'].get('delivery_email'), hamlet.delivery_email)
 
     def test_change_stream_creation_policy(self) -> None:
         # We need an admin user.

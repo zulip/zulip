@@ -258,7 +258,7 @@ class PermissionTest(ZulipTestCase):
         hamlet = find_dict(members, 'user_id', user.id)
         self.assertEqual(hamlet['email'], user.email)
         self.assertIsNone(hamlet['avatar_url'])
-        self.assertNotIn('delivery_email', hamlet)
+        self.assertIn('delivery_email', hamlet)
 
         # Also verify the /events code path.  This is a bit hacky, but
         # we need to verify client_gravatar is not being overridden.
@@ -284,7 +284,7 @@ class PermissionTest(ZulipTestCase):
         # `delivery_email`; otherwise, we won't be able to serve the
         # user's Gravatar.
         self.assertEqual(hamlet['avatar_url'], get_gravatar_url(user.delivery_email, 1))
-        self.assertNotIn('delivery_email', hamlet)
+        self.assertIn('delivery_email', hamlet)
 
         # Also verify the /events code path.  This is a bit hacky, but
         # basically we want to verify client_gravatar is being
@@ -1665,7 +1665,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['is_admin'])
         self.assertFalse(result['is_owner'])
         self.assertFalse(result['is_guest'])
-        self.assertFalse('delivery_email' in result)
+        self.assertTrue('delivery_email' in result)
         self.login('iago')
         result = orjson.loads(self.client_get('/json/users/me').content)
         self.assertEqual(result['email'], iago.email)

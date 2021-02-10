@@ -27,34 +27,40 @@ const selma = {
     user_id: 1000,
     full_name: "Human Selma",
     email: "selma@example.com",
+    delivery_email: "selma-delivery@example.com",
 };
 
 const me = {
     user_id: 1001,
     full_name: "Human Myself",
     email: "self@example.com",
+    delivery_email: "self-delivery@example.com",
 };
 
 const alice = {
     email: "alice@zulip.com",
+    delivery_email: "alice-delivery@zulip.com",
     user_id: 1002,
     full_name: "Alice Smith",
 };
 
 const fred = {
     email: "fred@zulip.com",
+    delivery_email: "fred-delivery@zulip.com",
     user_id: 1003,
     full_name: "Fred Flintstone",
 };
 
 const jill = {
     email: "jill@zulip.com",
+    delivery_email: "jill-delivery@zulip.com",
     user_id: 1004,
     full_name: "Jill Hill",
 };
 
 const mark = {
     email: "mark@zulip.com",
+    delivery_email: "mark-delivery@zulip.com",
     user_id: 1005,
     full_name: "Marky Mark",
 };
@@ -63,12 +69,14 @@ const old_user = {
     user_id: 9999,
     full_name: "Old User",
     email: "old_user@example.com",
+    delivery_email: "old_user-delivery@example.com",
 };
 
 const bot = {
     user_id: 55555,
     full_name: "Red Herring Bot",
     email: "bot@example.com",
+    delivery_email: "bot-delivery@example.com",
     is_bot: true,
     bot_owner_id: null,
 };
@@ -77,6 +85,7 @@ const bot_with_owner = {
     user_id: 55556,
     full_name: "Blue Herring Bot",
     email: "bot_with_owner@example.com",
+    delivery_email: "bot_with_owner-delivery@example.com",
     is_bot: true,
     bot_owner_id: 1001,
     bot_owner_full_name: "Human Myself",
@@ -91,6 +100,7 @@ function make_people() {
             user_id: i,
             full_name: `Human ${i}`,
             email: `person${i}@example.com`,
+            delivery_email: `person${i}-delivery@example.com`,
         };
         people.add_active_user(person);
     }

@@ -92,38 +92,45 @@ const activity = zrequire("activity");
 
 const me = {
     email: "me@zulip.com",
+    delivery_email: "me-delivery@zulip.com",
     user_id: 999,
     full_name: "Me Myself",
 };
 
 const alice = {
     email: "alice@zulip.com",
+    delivery_email: "alice-delivery@zulip.com",
     user_id: 1,
     full_name: "Alice Smith",
 };
 const fred = {
     email: "fred@zulip.com",
+    delivery_email: "fred-delivery@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
 };
 const jill = {
     email: "jill@zulip.com",
+    delivery_email: "jill-delivery@zulip.com",
     user_id: 3,
     full_name: "Jill Hill",
 };
 const mark = {
     email: "mark@zulip.com",
+    delivery_email: "mark-delivery@zulip.com",
     user_id: 4,
     full_name: "Marky Mark",
 };
 const norbert = {
     email: "norbert@zulip.com",
+    delivery_email: "nobert-delivery@zulip.com",
     user_id: 5,
     full_name: "Norbert Oswald",
 };
 
 const zoe = {
     email: "zoe@example.com",
+    delivery_email: "zoe-delivery@zulip.com",
     user_id: 6,
     full_name: "Zoe Yang",
 };

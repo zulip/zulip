@@ -10,6 +10,7 @@
 
 const test_user = {
     email: "test@example.com",
+    delivery_email: "test-delivery@examplpe.com",
     user_id: 101,
     full_name: "Test User",
 };

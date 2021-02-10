@@ -923,7 +923,6 @@ def check_realm_update_dict(
 
 # TODO: This type is missing optional fields:
 #
-# * delivery_email
 # * bot-related fields.
 # * Users with custom profile fields, where profile_data will
 #   be nonempty.
@@ -932,6 +931,7 @@ def check_realm_update_dict(
 realm_user_type = DictType(
     required_keys=[
         ("user_id", int),
+        ("delivery_email", str),
         ("email", str),
         ("avatar_url", OptionalType(str)),
         ("avatar_version", int),
