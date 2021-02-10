@@ -22,7 +22,6 @@ const vdom = set_global("vdom", {
 });
 const pm_list_dom = set_global("pm_list_dom", {});
 
-zrequire("user_status");
 zrequire("presence");
 zrequire("buddy_data");
 zrequire("hash_util");

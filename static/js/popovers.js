@@ -21,6 +21,7 @@ const message_edit_history = require("./message_edit_history");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
+const user_status = require("./user_status");
 const util = require("./util");
 
 let current_actions_popover_elem;
