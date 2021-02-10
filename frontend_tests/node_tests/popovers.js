@@ -18,7 +18,6 @@ const people = zrequire("people");
 zrequire("presence");
 zrequire("buddy_data");
 const user_status = zrequire("user_status");
-zrequire("feature_flags");
 const message_edit = zrequire("message_edit");
 
 const noop = function () {};

@@ -44,7 +44,6 @@ declare let echo: any;
 declare let emoji: any;
 declare let emoji_picker: any;
 declare let favicon: any;
-declare let feature_flags: any;
 declare let feedback_widget: any;
 declare let floating_recipient_bar: any;
 declare let gear_menu: any;
