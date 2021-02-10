@@ -1,8 +1,6 @@
-"use strict";
+import Handlebars from "handlebars/runtime";
 
-const Handlebars = require("handlebars/runtime");
-
-const util = require("./util");
+import * as util from "./util";
 
 // Below, we register Zulip-specific extensions to the handlebars API.
 //
@@ -109,5 +107,3 @@ Handlebars.registerHelper(
 );
 
 Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());
-
-window.templates = exports;

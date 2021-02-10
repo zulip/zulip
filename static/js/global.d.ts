@@ -132,7 +132,6 @@ declare let stream_ui_updates: any;
 declare let submessage: any;
 declare let subs: any;
 declare let message_view_header: any;
-declare let templates: any;
 declare let timerender: any;
 declare let stream_topic_history: any;
 declare let topic_list: any;
