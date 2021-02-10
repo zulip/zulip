@@ -10,6 +10,7 @@ const render_subscriptions = require("../templates/subscriptions.hbs");
 const components = require("./components");
 const people = require("./people");
 const search_util = require("./search_util");
+const stream_create = require("./stream_create");
 const util = require("./util");
 
 exports.show_subs_pane = {
