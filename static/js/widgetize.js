@@ -1,6 +1,7 @@
 "use strict";
 
 const todo_widget = require("./todo_widget");
+const zform = require("./zform");
 
 const widgets = new Map([
     ["poll", poll_widget],
