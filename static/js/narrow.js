@@ -1,6 +1,7 @@
 "use strict";
 
 const people = require("./people");
+const topic_generator = require("./topic_generator");
 const util = require("./util");
 
 let unnarrow_times;
