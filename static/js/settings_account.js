@@ -8,6 +8,7 @@ const render_settings_dev_env_email_access = require("../templates/settings/dev_
 
 const people = require("./people");
 const pill_typeahead = require("./pill_typeahead");
+const settings_ui = require("./settings_ui");
 const setup = require("./setup");
 
 exports.update_email = function (new_email) {

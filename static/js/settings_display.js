@@ -2,6 +2,7 @@
 
 const emojisets = require("./emojisets");
 const settings_config = require("./settings_config");
+const settings_ui = require("./settings_ui");
 
 const meta = {
     loaded: false,

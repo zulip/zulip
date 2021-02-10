@@ -90,7 +90,6 @@ const settings_account = rewiremock.proxy(() => zrequire("settings_account"), {
     "../../static/js/setup": {},
 });
 const settings_org = zrequire("settings_org");
-zrequire("settings_ui");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
 run_test("unloaded", () => {

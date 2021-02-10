@@ -7,6 +7,7 @@ const render_admin_user_list = require("../templates/admin_user_list.hbs");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
+const settings_ui = require("./settings_ui");
 
 const section = {
     active: {},

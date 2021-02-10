@@ -153,7 +153,6 @@ import "../emoji_picker";
 import "../compose_ui";
 import "../panels";
 import "../recent_topics";
-import "../settings_ui";
 import "../search_pill";
 import "../search_pill_widget";
 import "../stream_ui_updates";
