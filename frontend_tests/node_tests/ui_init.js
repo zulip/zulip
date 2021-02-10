@@ -119,7 +119,6 @@ zrequire("sent_messages");
 zrequire("typing");
 zrequire("top_left_corner");
 zrequire("starred_messages");
-zrequire("user_status_ui");
 
 const ui_init = rewiremock.proxy(() => zrequire("ui_init"), {
     "../../static/js/emojisets": {

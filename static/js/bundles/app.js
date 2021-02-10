@@ -112,7 +112,6 @@ import "../message_fetch";
 import "../server_events";
 import "../zulip";
 import "../presence";
-import "../user_status_ui";
 import "../buddy_data";
 import "../padded_widget";
 import "../buddy_list";
