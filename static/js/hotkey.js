@@ -3,6 +3,7 @@
 const emoji = require("../shared/js/emoji");
 
 const feedback_widget = require("./feedback_widget");
+const topic_zoom = require("./topic_zoom");
 
 function do_narrow_action(action) {
     action(current_msg_list.selected_id(), {trigger: "hotkey"});

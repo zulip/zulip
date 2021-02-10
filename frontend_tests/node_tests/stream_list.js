@@ -21,7 +21,6 @@ const stream_data = zrequire("stream_data");
 const scroll_util = zrequire("scroll_util");
 zrequire("list_cursor");
 const stream_list = zrequire("stream_list");
-zrequire("topic_zoom");
 zrequire("ui");
 set_global("page_params", {
     is_admin: false,

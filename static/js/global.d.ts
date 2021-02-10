@@ -147,7 +147,6 @@ declare let timerender: any;
 declare let todo_widget: any;
 declare let stream_topic_history: any;
 declare let topic_list: any;
-declare let topic_zoom: any;
 declare let top_left_corner: any;
 declare let transmit: any;
 declare let tutorial: any;

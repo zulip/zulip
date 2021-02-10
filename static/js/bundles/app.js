@@ -41,7 +41,6 @@ import "../pm_list";
 import "../recent_senders";
 import "../top_left_corner";
 import "../stream_list";
-import "../topic_zoom";
 import "../filter";
 import "../poll_widget";
 import "../todo_widget";

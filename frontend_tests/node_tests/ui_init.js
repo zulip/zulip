@@ -119,7 +119,6 @@ zrequire("list_cursor");
 zrequire("keydown_util");
 zrequire("stream_list");
 zrequire("topic_list");
-zrequire("topic_zoom");
 zrequire("sent_messages");
 zrequire("typing");
 zrequire("top_left_corner");
