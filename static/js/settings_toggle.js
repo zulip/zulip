@@ -1,5 +1,7 @@
 "use strict";
 
+const components = require("./components");
+
 let toggler;
 
 exports.highlight_toggle = function (tab_name) {

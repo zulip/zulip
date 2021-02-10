@@ -20,7 +20,6 @@ import "../keydown_util";
 import "../rtl";
 import "../fold_dict";
 import "../scroll_util";
-import "../components";
 import "../feedback_widget";
 import "../localstorage";
 import "../drafts";

@@ -1,5 +1,3 @@
-"use strict";
-
 /* USAGE:
     Toggle x = components.toggle({
         selected: Integer selected_index,
@@ -12,7 +10,7 @@
     }).get();
 */
 
-exports.toggle = function (opts) {
+export function toggle(opts) {
     const component = (function render_component(opts) {
         const _component = $("<div class='tab-switcher'></div>");
         if (opts.html_class) {
@@ -166,6 +164,4 @@ exports.toggle = function (opts) {
     };
 
     return prototype;
-};
-
-window.components = exports;
+}
