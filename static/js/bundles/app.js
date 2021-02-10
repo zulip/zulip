@@ -18,7 +18,6 @@ import "../loading";
 import "../vdom";
 import "../keydown_util";
 import "../rtl";
-import "../rendered_markdown";
 import "../fold_dict";
 import "../scroll_util";
 import "../components";

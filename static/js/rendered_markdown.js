@@ -1,13 +1,12 @@
-"use strict";
+import ClipboardJS from "clipboard";
 
-const ClipboardJS = require("clipboard");
+import copy_code_button from "../templates/copy_code_button.hbs";
+import view_code_in_playground from "../templates/view_code_in_playground.hbs";
+
+import * as people from "./people";
+import * as settings_config from "./settings_config";
+
 const {parseISO, isValid} = require("date-fns");
-
-const copy_code_button = require("../templates/copy_code_button.hbs");
-const view_code_in_playground = require("../templates/view_code_in_playground.hbs");
-
-const people = require("./people");
-const settings_config = require("./settings_config");
 
 /*
     rendered_markdown
@@ -55,15 +54,15 @@ function get_user_group_id_for_mention_button(elem) {
 }
 
 // Helper function to update a mentioned user's name.
-exports.set_name_in_mention_element = function (element, name) {
+export function set_name_in_mention_element(element, name) {
     if ($(element).hasClass("silent")) {
         $(element).text(name);
     } else {
         $(element).text("@" + name);
     }
-};
+}
 
-exports.update_elements = (content) => {
+export const update_elements = (content) => {
     // Set the rtl class if the text has an rtl direction
     if (rtl.get_direction(content.text()) === "rtl") {
         content.addClass("rtl");
@@ -86,7 +85,7 @@ exports.update_elements = (content) => {
             if (person !== undefined) {
                 // Note that person might be undefined in some
                 // unpleasant corner cases involving data import.
-                exports.set_name_in_mention_element(this, person.full_name);
+                set_name_in_mention_element(this, person.full_name);
             }
         }
     });
