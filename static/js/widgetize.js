@@ -1,5 +1,7 @@
 "use strict";
 
+const todo_widget = require("./todo_widget");
+
 const widgets = new Map([
     ["poll", poll_widget],
     ["todo", todo_widget],

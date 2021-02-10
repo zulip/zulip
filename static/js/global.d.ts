@@ -144,7 +144,6 @@ declare let subs: any;
 declare let message_view_header: any;
 declare let templates: any;
 declare let timerender: any;
-declare let todo_widget: any;
 declare let stream_topic_history: any;
 declare let topic_list: any;
 declare let top_left_corner: any;
