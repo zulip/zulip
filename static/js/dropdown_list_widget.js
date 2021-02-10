@@ -142,4 +142,5 @@ const DropdownListWidget = function (opts) {
     };
 };
 
+module.exports = DropdownListWidget;
 window.dropdown_list_widget = DropdownListWidget;
