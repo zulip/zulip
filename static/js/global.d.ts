@@ -130,7 +130,6 @@ declare let settings_user_groups: any;
 declare let settings_users: any;
 declare let starred_messages: any;
 declare let stream_color: any;
-declare let stream_create: any;
 declare let stream_data: any;
 declare let stream_edit: any;
 declare let stream_events: any;
