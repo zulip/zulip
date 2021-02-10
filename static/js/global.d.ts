@@ -167,4 +167,3 @@ declare let user_pill: any;
 declare let user_status: any;
 declare let user_status_ui: any;
 declare let widgetize: any;
-declare let zcommand: any;

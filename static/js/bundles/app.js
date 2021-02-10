@@ -61,7 +61,6 @@ import "../sent_messages";
 import "../compose_state";
 import "../compose_actions";
 import "../transmit";
-import "../zcommand";
 import "../compose";
 import "../upload";
 import "../color_data";
