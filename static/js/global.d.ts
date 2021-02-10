@@ -138,7 +138,6 @@ declare let stream_events: any;
 declare let stream_list: any;
 declare let stream_muting: any;
 declare let stream_popover: any;
-declare let stream_sort: any;
 declare let stream_ui_updates: any;
 declare let submessage: any;
 declare let subs: any;

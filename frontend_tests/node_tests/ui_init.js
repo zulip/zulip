@@ -117,7 +117,6 @@ rewiremock.proxy(() => zrequire("notifications"), {
 zrequire("pm_list");
 zrequire("list_cursor");
 zrequire("keydown_util");
-zrequire("stream_sort");
 zrequire("stream_list");
 zrequire("topic_list");
 zrequire("topic_zoom");

@@ -608,7 +608,6 @@ run_test("unread_ops", () => {
 
 const topic_list = set_global("topic_list", {});
 
-zrequire("stream_sort");
 const stream_list = zrequire("stream_list");
 
 const social_stream = {

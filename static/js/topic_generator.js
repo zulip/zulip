@@ -1,6 +1,7 @@
 "use strict";
 
 const pm_conversations = require("./pm_conversations");
+const stream_sort = require("./stream_sort");
 
 exports.next_topic = function (streams, get_topics, has_unread_messages, curr_stream, curr_topic) {
     const curr_stream_index = streams.indexOf(curr_stream); // -1 if not found
