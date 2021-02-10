@@ -16,6 +16,7 @@ const render_user_info_popover_content = require("../templates/user_info_popover
 const render_user_info_popover_title = require("../templates/user_info_popover_title.hbs");
 const render_user_profile_modal = require("../templates/user_profile_modal.hbs");
 
+const feature_flags = require("./feature_flags");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
