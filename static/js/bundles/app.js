@@ -95,7 +95,6 @@ import "../typeahead_helper";
 import "../search_suggestion";
 import "../search";
 import "../composebox_typeahead";
-import "../pill_typeahead";
 import "../navigate";
 import "../list_util";
 import "../hotkey";

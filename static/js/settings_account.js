@@ -7,6 +7,7 @@ const render_settings_custom_user_profile_field = require("../templates/settings
 const render_settings_dev_env_email_access = require("../templates/settings/dev_env_email_access.hbs");
 
 const people = require("./people");
+const pill_typeahead = require("./pill_typeahead");
 const setup = require("./setup");
 
 exports.update_email = function (new_email) {
