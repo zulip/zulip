@@ -2,6 +2,8 @@
 
 const render_widgets_zform_choices = require("../templates/widgets/zform_choices.hbs");
 
+const schema = require("./schema");
+
 exports.validate_extra_data = function (data) {
     function check(data) {
         function check_choice_data(data) {
