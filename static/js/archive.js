@@ -1,9 +1,8 @@
-"use strict";
+import _ from "lodash";
+
+import render_archive_message_group from "../templates/archive_message_group.hbs";
 
 const {format, isSameDay} = require("date-fns");
-const _ = require("lodash");
-
-const render_archive_message_group = require("../templates/archive_message_group.hbs");
 
 function should_separate_into_groups(current_msg_time, next_msg_time) {
     return isSameDay(current_msg_time * 1000, next_msg_time * 1000);
@@ -15,7 +14,7 @@ function all_message_timestamps_to_human_readable() {
     });
 }
 
-exports.initialize = function () {
+export function initialize() {
     const all_message_groups = [];
     let current_message_group = {};
     const today = new Date();
@@ -102,14 +101,15 @@ exports.initialize = function () {
 
     $(".app").scrollTop($(".app").height());
     all_message_timestamps_to_human_readable();
-};
+}
 
-exports.current_msg_list = {
+export const current_msg_list = {
     selected_row() {
         return $(".message_row").last();
     },
 };
-exports.rows = {
+
+export const rows = {
     get_message_recipient_row(message_row) {
         return $(message_row).parent(".recipient_row");
     },
@@ -140,5 +140,5 @@ $(() => {
             scroll_finish();
         }, 50),
     );
-    exports.initialize();
+    initialize();
 });
