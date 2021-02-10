@@ -105,7 +105,6 @@ zrequire("composebox_typeahead");
 zrequire("narrow");
 zrequire("search_suggestion");
 zrequire("search");
-zrequire("tutorial");
 rewiremock.proxy(() => zrequire("notifications"), {
     "../../static/js/favicon": {},
 });

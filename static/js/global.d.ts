@@ -138,7 +138,6 @@ declare let stream_topic_history: any;
 declare let topic_list: any;
 declare let top_left_corner: any;
 declare let transmit: any;
-declare let tutorial: any;
 declare let typeahead_helper: any;
 declare let typing: any;
 declare let typing_data: any;

@@ -119,7 +119,6 @@ import "../list_cursor";
 import "../activity";
 import "../user_events";
 import "../timerender";
-import "../tutorial";
 import "../hotspots";
 import "../templates";
 import "../upload_widget";
