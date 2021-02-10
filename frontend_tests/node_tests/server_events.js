@@ -12,7 +12,6 @@ set_global("addEventListener", noop);
 stub_out_jquery();
 
 zrequire("message_store");
-zrequire("server_events_dispatch");
 const server_events = zrequire("server_events");
 zrequire("sent_messages");
 

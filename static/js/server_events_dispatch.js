@@ -1,13 +1,11 @@
-"use strict";
+import * as emoji from "../shared/js/emoji";
 
-const emoji = require("../shared/js/emoji");
+import * as alert_words from "./alert_words";
+import * as peer_data from "./peer_data";
+import * as people from "./people";
+import * as settings_config from "./settings_config";
 
-const alert_words = require("./alert_words");
-const peer_data = require("./peer_data");
-const people = require("./people");
-const settings_config = require("./settings_config");
-
-exports.dispatch_normal_event = function dispatch_normal_event(event) {
+export function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {
         case "alert_words":
@@ -546,6 +544,4 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_exports.populate_exports_table(event.exports);
             break;
     }
-};
-
-window.server_events_dispatch = exports;
+}

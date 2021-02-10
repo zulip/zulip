@@ -110,7 +110,6 @@ import "../message_util";
 import "../message_events";
 import "../message_fetch";
 import "../server_events";
-import "../server_events_dispatch";
 import "../zulip";
 import "../presence";
 import "../user_search";

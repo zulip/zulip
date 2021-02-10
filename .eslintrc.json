@@ -235,7 +235,6 @@
                 "search_suggestion": false,
                 "sent_messages": false,
                 "server_events": false,
-                "server_events_dispatch": false,
                 "settings": false,
                 "settings_account": false,
                 "settings_bots": false,
