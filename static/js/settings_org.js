@@ -597,31 +597,11 @@ exports.signup_notifications_stream_widget = null;
 
 exports.init_dropdown_widgets = () => {
     const streams = stream_data.get_streams_for_settings_page();
-    const stream_options = streams.map((x) => ({
-        name: x.name,
-        value: x.stream_id.toString(),
-    }));
-
-    // If a private stream is set as "realm_notifications_stream_id"
-    // or "realm_signup_notifications_stream_id" and the user doesn't
-    // have access to it, add a option for it.
-    const realm_notifications_stream_id = page_params.realm_notifications_stream_id.toString();
-    const realm_signup_notifications_stream_id = page_params.realm_signup_notifications_stream_id.toString();
-    if (!stream_options.some((x) => x.value === realm_notifications_stream_id)) {
-        stream_options.push({
-            name: "Unknown stream",
-            value: realm_notifications_stream_id,
-        });
-    }
-    if (!stream_options.some((x) => x.value === realm_signup_notifications_stream_id)) {
-        stream_options.push({
-            name: "Unknown stream",
-            value: realm_signup_notifications_stream_id,
-        });
-    }
-
     const notification_stream_options = {
-        data: stream_options,
+        data: streams.map((x) => ({
+            name: x.name,
+            value: x.stream_id.toString(),
+        })),
         on_update: () => {
             exports.save_discard_widget_status_handler($("#org-notifications"));
         },
@@ -629,6 +609,40 @@ exports.init_dropdown_widgets = () => {
         render_text: (x) => `#${x}`,
         null_value: -1,
     };
+
+    // If a private stream is set as "realm_notifications_stream_id" or "realm_signup_notifications_stream_id" and the user doesn't
+    // have access to it, add a option for it.
+    if (
+        page_params.realm_notifications_stream_id &&
+        page_params.realm_notifications_stream_id !== notification_stream_options.null_value
+    ) {
+        const realm_notifications_stream_id = page_params.realm_notifications_stream_id.toString();
+        if (
+            !notification_stream_options.data.some((x) => x.value === realm_notifications_stream_id)
+        ) {
+            notification_stream_options.data.push({
+                name: "Unknown stream",
+                value: realm_notifications_stream_id,
+            });
+        }
+    }
+    if (
+        page_params.realm_signup_notifications_stream_id &&
+        page_params.realm_signup_notifications_stream_id !== notification_stream_options.null_value
+    ) {
+        const realm_signup_notifications_stream_id = page_params.realm_signup_notifications_stream_id.toString();
+        if (
+            !notification_stream_options.data.some(
+                (x) => x.value === realm_signup_notifications_stream_id,
+            )
+        ) {
+            notification_stream_options.data.push({
+                name: "Unknown stream",
+                value: realm_signup_notifications_stream_id,
+            });
+        }
+    }
+
     exports.notifications_stream_widget = dropdown_list_widget({
         widget_name: "realm_notifications_stream_id",
         value: page_params.realm_notifications_stream_id,
