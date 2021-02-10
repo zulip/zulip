@@ -1,5 +1,3 @@
-"use strict";
-
 function set_tutorial_status(status, callback) {
     return channel.post({
         url: "/json/users/me/tutorial_status",
@@ -8,11 +6,9 @@ function set_tutorial_status(status, callback) {
     });
 }
 
-exports.initialize = function () {
+export function initialize() {
     if (page_params.needs_tutorial) {
         set_tutorial_status("started");
         narrow.by("is", "private", {trigger: "sidebar"});
     }
-};
-
-window.tutorial = exports;
+}
