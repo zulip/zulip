@@ -1,6 +1,4 @@
-"use strict";
-
-const settings_config = require("./settings_config");
+import * as settings_config from "./settings_config";
 
 /*
     This is a close cousin of settings_config,
@@ -12,7 +10,7 @@ const settings_config = require("./settings_config");
     about page_params and settings_config details.
 */
 
-exports.show_email = function () {
+export function show_email() {
     if (
         page_params.realm_email_address_visibility ===
         settings_config.email_address_visibility_values.everyone.code
@@ -26,10 +24,10 @@ exports.show_email = function () {
         return page_params.is_admin;
     }
     return undefined;
-};
+}
 
-exports.email_for_user_settings = function (person) {
-    if (!exports.show_email()) {
+export function email_for_user_settings(person) {
+    if (!show_email()) {
         return undefined;
     }
 
@@ -43,9 +41,9 @@ exports.email_for_user_settings = function (person) {
     }
 
     return person.email;
-};
+}
 
-exports.get_time_preferences = function (user_timezone) {
+export function get_time_preferences(user_timezone) {
     if (page_params.twenty_four_hour_time) {
         return {
             timezone: user_timezone,
@@ -56,8 +54,8 @@ exports.get_time_preferences = function (user_timezone) {
         timezone: user_timezone,
         format: "h:mm a",
     };
-};
+}
 
-exports.user_can_change_logo = function () {
+export function user_can_change_logo() {
     return page_params.is_admin && page_params.zulip_plan_is_not_limited;
-};
+}
