@@ -11,6 +11,7 @@ const components = require("./components");
 const people = require("./people");
 const search_util = require("./search_util");
 const stream_create = require("./stream_create");
+const stream_ui_updates = require("./stream_ui_updates");
 const util = require("./util");
 
 exports.show_subs_pane = {

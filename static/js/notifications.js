@@ -9,6 +9,7 @@ const alert_words = require("./alert_words");
 const favicon = require("./favicon");
 const people = require("./people");
 const settings_config = require("./settings_config");
+const stream_ui_updates = require("./stream_ui_updates");
 
 const notice_memory = new Map();
 
