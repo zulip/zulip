@@ -1,9 +1,7 @@
-"use strict";
+import * as pm_conversations from "./pm_conversations";
+import * as stream_sort from "./stream_sort";
 
-const pm_conversations = require("./pm_conversations");
-const stream_sort = require("./stream_sort");
-
-exports.next_topic = function (streams, get_topics, has_unread_messages, curr_stream, curr_topic) {
+export function next_topic(streams, get_topics, has_unread_messages, curr_stream, curr_topic) {
     const curr_stream_index = streams.indexOf(curr_stream); // -1 if not found
 
     if (curr_stream_index >= 0) {
@@ -45,9 +43,9 @@ exports.next_topic = function (streams, get_topics, has_unread_messages, curr_st
     }
 
     return undefined;
-};
+}
 
-exports.get_next_topic = function (curr_stream, curr_topic) {
+export function get_next_topic(curr_stream, curr_topic) {
     let my_streams = stream_sort.get_streams();
 
     my_streams = my_streams.filter((stream_name) => {
@@ -74,16 +72,10 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
         return unread.topic_has_any_unread(stream_id, topic);
     }
 
-    return exports.next_topic(
-        my_streams,
-        get_unmuted_topics,
-        has_unread_messages,
-        curr_stream,
-        curr_topic,
-    );
-};
+    return next_topic(my_streams, get_unmuted_topics, has_unread_messages, curr_stream, curr_topic);
+}
 
-exports.get_next_unread_pm_string = function (curr_pm) {
+export function get_next_unread_pm_string(curr_pm) {
     const my_pm_strings = pm_conversations.recent.get_strings();
     const curr_pm_index = my_pm_strings.indexOf(curr_pm); // -1 if not found
 
@@ -100,9 +92,9 @@ exports.get_next_unread_pm_string = function (curr_pm) {
     }
 
     return undefined;
-};
+}
 
-exports.get_next_stream = function (curr_stream) {
+export function get_next_stream(curr_stream) {
     const my_streams = stream_sort.get_streams();
     const curr_stream_index = my_streams.indexOf(curr_stream);
     return my_streams[
@@ -110,12 +102,10 @@ exports.get_next_stream = function (curr_stream) {
             ? 0
             : curr_stream_index + 1
     ];
-};
+}
 
-exports.get_prev_stream = function (curr_stream) {
+export function get_prev_stream(curr_stream) {
     const my_streams = stream_sort.get_streams();
     const curr_stream_index = my_streams.indexOf(curr_stream);
     return my_streams[curr_stream_index <= 0 ? my_streams.length - 1 : curr_stream_index - 1];
-};
-
-window.topic_generator = exports;
+}

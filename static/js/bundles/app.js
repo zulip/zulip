@@ -39,7 +39,6 @@ import "../topic_list";
 import "../pm_list_dom";
 import "../pm_list";
 import "../recent_senders";
-import "../topic_generator";
 import "../top_left_corner";
 import "../stream_list";
 import "../topic_zoom";
