@@ -8,6 +8,7 @@ const WinChan = require("winchan");
 const render_buddy_list_tooltip = require("../templates/buddy_list_tooltip.hbs");
 const render_buddy_list_tooltip_content = require("../templates/buddy_list_tooltip_content.hbs");
 
+const message_edit_history = require("./message_edit_history");
 const settings_panel_menu = require("./settings_panel_menu");
 const util = require("./util");
 

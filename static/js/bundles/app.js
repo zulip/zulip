@@ -72,7 +72,6 @@ import "../stream_events";
 import "../stream_edit";
 import "../subs";
 import "../message_edit";
-import "../message_edit_history";
 import "../condense";
 import "../resize";
 import "../list_widget";
