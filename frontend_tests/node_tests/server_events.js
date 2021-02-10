@@ -33,12 +33,6 @@ set_global("reload_state", {
 // we also directly write to pointer
 set_global("pointer", {});
 
-set_global("echo", {
-    process_from_server(messages) {
-        return messages;
-    },
-    update_realm_filter_rules: noop,
-});
 set_global("ui_report", {
     hide_error() {
         return false;
