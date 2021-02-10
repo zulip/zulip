@@ -1,5 +1,3 @@
-"use strict";
-
 $(() => {
     $(".portico-header li.logout").on("click", () => {
         $("#logout_form").trigger("submit");
@@ -19,3 +17,4 @@ $(() => {
         }
     });
 });
+export {};
