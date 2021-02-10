@@ -118,7 +118,6 @@ import "../buddy_list";
 import "../list_cursor";
 import "../activity";
 import "../user_events";
-import "../colorspace";
 import "../timerender";
 import "../tutorial";
 import "../hotspots";

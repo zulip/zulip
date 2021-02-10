@@ -13,7 +13,6 @@ set_global("$", make_zjquery());
 zrequire("unread_ui");
 const Filter = zrequire("Filter", "js/filter");
 const stream_sort = zrequire("stream_sort");
-zrequire("colorspace");
 const stream_color = zrequire("stream_color");
 zrequire("hash_util");
 const unread = zrequire("unread");

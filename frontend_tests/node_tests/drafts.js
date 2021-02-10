@@ -13,7 +13,6 @@ const localstorage = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const timerender = zrequire("timerender");
 zrequire("stream_color");
-zrequire("colorspace");
 
 const ls_container = new Map();
 const noop = function () {
