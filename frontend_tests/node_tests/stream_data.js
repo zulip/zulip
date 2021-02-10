@@ -116,7 +116,12 @@ run_test("basics", () => {
     assert.equal(stream_data.slug_to_name("2-whatever"), "social");
     assert.equal(stream_data.slug_to_name("2"), "social");
 
+    // legacy
     assert.equal(stream_data.slug_to_name("25-or-6-to-4"), "25-or-6-to-4");
+    assert.equal(stream_data.slug_to_name("2something"), "2something");
+
+    assert.equal(stream_data.slug_to_name("99-whatever"), "99-whatever");
+    assert.equal(stream_data.slug_to_name("99whatever"), "99whatever");
 });
 
 run_test("renames", () => {
