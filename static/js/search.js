@@ -1,5 +1,7 @@
 "use strict";
 
+const search_pill = require("./search_pill");
+
 // Exported for unit testing
 exports.is_using_input_method = false;
 
