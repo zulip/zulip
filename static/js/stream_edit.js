@@ -8,6 +8,7 @@ const render_subscription_stream_privacy_modal = require("../templates/subscript
 
 const peer_data = require("./peer_data");
 const people = require("./people");
+const pill_typeahead = require("./pill_typeahead");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 const stream_pill = require("./stream_pill");

@@ -7,7 +7,6 @@ const {run_test} = require("../zjsunit/test");
 
 const people = zrequire("people");
 const user_pill = zrequire("user_pill");
-zrequire("pill_typeahead");
 
 set_global("page_params", {});
 

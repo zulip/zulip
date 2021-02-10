@@ -10,7 +10,6 @@ const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
 const user_pill = zrequire("user_pill");
-zrequire("pill_typeahead");
 const settings_user_groups = zrequire("settings_user_groups");
 
 set_global("$", make_zjquery());

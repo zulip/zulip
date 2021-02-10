@@ -38,7 +38,6 @@ set_global("$", make_zjquery());
 zrequire("input_pill");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("pill_typeahead");
 zrequire("subs");
 const stream_edit = zrequire("stream_edit");
 const stream_data = zrequire("stream_data");

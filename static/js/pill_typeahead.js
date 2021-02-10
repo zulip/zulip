@@ -1,10 +1,8 @@
-"use strict";
+import * as people from "./people";
+import * as settings_data from "./settings_data";
+import * as stream_pill from "./stream_pill";
 
-const people = require("./people");
-const settings_data = require("./settings_data");
-const stream_pill = require("./stream_pill");
-
-exports.set_up = function (input, pills, opts) {
+export function set_up(input, pills, opts) {
     let source = opts.source;
     if (!opts.source) {
         source = () => user_pill.typeahead_source(pills);
@@ -67,6 +65,4 @@ exports.set_up = function (input, pills, opts) {
         },
         stopAdvance: true,
     });
-};
-
-window.pill_typeahead = exports;
+}
