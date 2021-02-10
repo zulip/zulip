@@ -86,7 +86,6 @@ const presence = zrequire("presence");
 const people = zrequire("people");
 const buddy_data = zrequire("buddy_data");
 const buddy_list = zrequire("buddy_list");
-zrequire("user_search");
 const user_status = zrequire("user_status");
 zrequire("list_cursor");
 const activity = zrequire("activity");

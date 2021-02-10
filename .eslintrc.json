@@ -134,7 +134,6 @@
                 "ListCursor": false,
                 "MessageListData": false,
                 "MessageListView": false,
-                "UserSearch": false,
                 "activity": false,
                 "admin": false,
                 "alert_words_ui": false,
