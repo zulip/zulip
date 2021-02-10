@@ -2,6 +2,7 @@
 
 const emoji = require("../shared/js/emoji");
 
+const copy_and_paste = require("./copy_and_paste");
 const feedback_widget = require("./feedback_widget");
 const topic_zoom = require("./topic_zoom");
 

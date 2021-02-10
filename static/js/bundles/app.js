@@ -88,7 +88,6 @@ import "../settings_panel_menu";
 import "../settings_toggle";
 import "../scroll_bar";
 import "../gear_menu";
-import "../copy_and_paste";
 import "../stream_popover";
 import "../popovers";
 import "../overlays";
