@@ -1,5 +1,6 @@
 "use strict";
 
+const {LightboxCanvas} = require("./lightbox_canvas");
 const people = require("./people");
 
 let is_open = false;

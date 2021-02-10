@@ -5,7 +5,6 @@
 
 declare let FetchStatus: any;
 declare let Filter: any;
-declare let LightboxCanvas: any;
 declare let ListCursor: any;
 declare let MessageListData: any;
 declare let MessageListView: any;

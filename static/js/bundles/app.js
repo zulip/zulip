@@ -17,7 +17,6 @@ import "../i18n";
 import "../loading";
 import "../vdom";
 import "../keydown_util";
-import "../lightbox_canvas";
 import "../rtl";
 import "../rendered_markdown";
 import "../fold_dict";
