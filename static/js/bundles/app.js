@@ -57,7 +57,6 @@ import "../reload";
 import "../compose_fade";
 import "../markdown";
 import "../local_message";
-import "../echo";
 import "../sent_messages";
 import "../compose_state";
 import "../compose_actions";

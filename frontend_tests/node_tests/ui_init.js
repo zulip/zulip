@@ -84,7 +84,6 @@ ui.get_scroll_element = (element) => element;
 
 zrequire("alert_words");
 zrequire("hash_util");
-zrequire("echo");
 zrequire("colorspace");
 zrequire("stream_color");
 zrequire("stream_edit");

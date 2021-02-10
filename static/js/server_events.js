@@ -1,6 +1,8 @@
 "use strict";
 
 const _ = require("lodash");
+
+const echo = require("./echo");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
 let waiting_on_homeview_load = true;

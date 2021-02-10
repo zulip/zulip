@@ -166,7 +166,6 @@
                 "current_msg_list": true,
                 "drafts": false,
                 "dropdown_list_widget": false,
-                "echo": false,
                 "emoji_picker": false,
                 "favicon": false,
                 "flatpickr": false,
