@@ -15,6 +15,7 @@ const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");
 const settings_config = require("./settings_config");
 const util = require("./util");
+const zcommand = require("./zcommand");
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 

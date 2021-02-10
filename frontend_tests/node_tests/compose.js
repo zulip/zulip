@@ -75,7 +75,6 @@ document.location.host = "foo.com";
 const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));
 
-zrequire("zcommand");
 const compose_ui = zrequire("compose_ui");
 const peer_data = zrequire("peer_data");
 const util = zrequire("util");
