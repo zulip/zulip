@@ -241,7 +241,6 @@
                 "settings_exports": false,
                 "settings_linkifiers": false,
                 "settings_invites": false,
-                "settings_muting": false,
                 "settings_notifications": false,
                 "settings_org": false,
                 "settings_panel_menu": false,

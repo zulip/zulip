@@ -109,7 +109,6 @@ declare let settings_emoji: any;
 declare let settings_exports: any;
 declare let settings_invites: any;
 declare let settings_linkifiers: any;
-declare let settings_muting: any;
 declare let settings_notifications: any;
 declare let settings_org: any;
 declare let settings_panel_menu: any;
