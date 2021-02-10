@@ -1,14 +1,12 @@
-"use strict";
-
-exports.get_search_terms = function (input) {
+export function get_search_terms(input) {
     const search_terms = input
         .toLowerCase()
         .split(",")
         .map((s) => s.trim());
     return search_terms;
-};
+}
 
-exports.vanilla_match = function (opts) {
+export function vanilla_match(opts) {
     /*
         This is a pretty vanilla search criteria
         where we see if any of our search terms
@@ -21,6 +19,4 @@ exports.vanilla_match = function (opts) {
     */
     const val = opts.val.toLowerCase();
     return opts.search_terms.some((term) => val.includes(term));
-};
-
-window.search_util = exports;
+}
