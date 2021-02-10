@@ -17,6 +17,7 @@ const markdown_config = require("./markdown_config");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const topic_zoom = require("./topic_zoom");
+const user_status = require("./user_status");
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger

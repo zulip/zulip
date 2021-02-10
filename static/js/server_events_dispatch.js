@@ -4,6 +4,7 @@ import * as alert_words from "./alert_words";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import * as user_status from "./user_status";
 
 export function dispatch_normal_event(event) {
     const noop = function () {};
