@@ -310,8 +310,11 @@ run_test("bookend", (override) => {
 
     override(narrow_state, "stream", () => "IceCream");
 
-    override(stream_data, "is_subscribed", () => true);
-    override(stream_data, "get_sub", () => ({invite_only: false}));
+    let is_subscribed = true;
+    let invite_only = false;
+
+    override(stream_data, "is_subscribed", () => is_subscribed);
+    override(stream_data, "get_sub", () => ({invite_only}));
 
     with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
@@ -324,7 +327,8 @@ run_test("bookend", (override) => {
 
     expected = "translated: You unsubscribed from stream IceCream";
     list.last_message_historical = false;
-    override(stream_data, "is_subscribed", () => false);
+
+    is_subscribed = false;
 
     with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
@@ -337,9 +341,8 @@ run_test("bookend", (override) => {
 
     // Test when the stream is privates (invite only)
     expected = "translated: You unsubscribed from stream IceCream";
-    override(stream_data, "is_subscribed", () => false);
 
-    override(stream_data, "get_sub", () => ({invite_only: true}));
+    invite_only = true;
 
     with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
