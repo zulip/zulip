@@ -1958,7 +1958,7 @@ div.focused_table {
     left: auto;
     right: 0;
     top: 30px;
-    min-width: 180px;
+    min-width: 233px;
     box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
 
     &::after {
