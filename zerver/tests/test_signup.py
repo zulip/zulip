@@ -1772,8 +1772,13 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
         do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
 
+        # Also send an invite from a different realm.
+        lear = get_realm("lear")
+        lear_user = self.lear_user("cordelia")
+        do_invite_users(lear_user, ["foo@zulip.com"], [], False)
+
         invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
-        self.assertEqual(len(invites), 3)
+        self.assertEqual(len(invites), 4)
 
         do_create_user(
             "foo@zulip.com",
@@ -1794,8 +1799,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(len(accepted_invite), 1)
         self.assertEqual(accepted_invite[0].id, prereg_user.id)
 
-        expected_revoked_invites = set(invites.exclude(id=prereg_user.id))
+        expected_revoked_invites = set(invites.exclude(id=prereg_user.id).exclude(realm=lear))
         self.assertEqual(set(revoked_invites), expected_revoked_invites)
+
+        self.assertEqual(
+            PreregistrationUser.objects.get(email__iexact="foo@zulip.com", realm=lear).status, 0
+        )
 
     def test_confirmation_obj_not_exist_error(self) -> None:
         """Since the key is a param input by the user to the registration endpoint,
@@ -2744,6 +2753,83 @@ class RealmCreationTest(ZulipTestCase):
 
         self.assertEqual(realm.name, realm_name)
         self.assertEqual(realm.subdomain, string_id)
+
+    @override_settings(OPEN_REALM_CREATION=True)
+    def test_create_two_realms(self) -> None:
+        """
+        Verify correct behavior and PreregistrationUser handling when using
+        two pre-generated realm creation links to create two different realms.
+        """
+        password = "test"
+        first_string_id = "zuliptest"
+        second_string_id = "zuliptest2"
+        email = "user1@test.com"
+        first_realm_name = "Test"
+        second_realm_name = "Test"
+
+        # Make sure the realms do not exist
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(first_string_id)
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(second_string_id)
+
+        # Now we pre-generate two realm creation links
+        result = self.client_post("/new/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+        first_confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 1)
+
+        # Get a second realm creation link.
+        result = self.client_post("/new/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+        second_confirmation_url = self.get_confirmation_url_from_outbox(email)
+
+        self.assertNotEqual(first_confirmation_url, second_confirmation_url)
+        self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 2)
+
+        # Create and verify the first realm
+        result = self.client_get(first_confirmation_url)
+        self.assertEqual(result.status_code, 200)
+        result = self.submit_reg_form_for_user(
+            email,
+            password,
+            realm_subdomain=first_string_id,
+            realm_name=first_realm_name,
+            key=first_confirmation_url.split("/")[-1],
+        )
+        self.assertEqual(result.status_code, 302)
+        # Make sure the realm is created
+        realm = get_realm(first_string_id)
+        self.assertEqual(realm.string_id, first_string_id)
+        self.assertEqual(realm.name, first_realm_name)
+
+        # One of the PreregistrationUsers should have been used up:
+        self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 1)
+
+        # Create and verify the second realm
+        result = self.client_get(second_confirmation_url)
+        self.assertEqual(result.status_code, 200)
+        result = self.submit_reg_form_for_user(
+            email,
+            password,
+            realm_subdomain=second_string_id,
+            realm_name=second_realm_name,
+            key=second_confirmation_url.split("/")[-1],
+        )
+        self.assertEqual(result.status_code, 302)
+        # Make sure the realm is created
+        realm = get_realm(second_string_id)
+        self.assertEqual(realm.string_id, second_string_id)
+        self.assertEqual(realm.name, second_realm_name)
+
+        # The remaining PreregistrationUser should have been used up:
+        self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 0)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_mailinator_signup(self) -> None:

@@ -501,20 +501,23 @@ def process_new_human_user(
                     user=f"{user_profile.full_name} <`{user_profile.email}`>"
                 ),
             )
-    # Mark any other PreregistrationUsers that are STATUS_ACTIVE as
+    # Mark any other PreregistrationUsers in the realm that are STATUS_ACTIVE as
     # inactive so we can keep track of the PreregistrationUser we
-    # actually used for analytics
-    if prereg_user is not None:
-        PreregistrationUser.objects.filter(email__iexact=user_profile.delivery_email).exclude(
-            id=prereg_user.id
-        ).update(status=confirmation_settings.STATUS_REVOKED)
+    # actually used for analytics.
+    # In the special case of realm creation, there can be no additional PreregistrationUser
+    # for us to want to modify.
+    if prereg_user is not None and not realm_creation:
+        PreregistrationUser.objects.filter(
+            email__iexact=user_profile.delivery_email, realm=user_profile.realm
+        ).exclude(id=prereg_user.id).update(status=confirmation_settings.STATUS_REVOKED)
 
         if prereg_user.referred_by is not None:
             notify_invites_changed(user_profile)
-    else:
-        PreregistrationUser.objects.filter(email__iexact=user_profile.delivery_email).update(
-            status=confirmation_settings.STATUS_REVOKED
-        )
+    elif prereg_user is None:
+        assert not realm_creation
+        PreregistrationUser.objects.filter(
+            email__iexact=user_profile.delivery_email, realm=user_profile.realm
+        ).update(status=confirmation_settings.STATUS_REVOKED)
 
     notify_new_user(user_profile)
     # Clear any scheduled invitation emails to prevent them
