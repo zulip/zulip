@@ -11,9 +11,9 @@ const events = require("./lib/events");
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
-set_global("compose_fade", {});
-set_global("stream_events", {});
-set_global("subs", {});
+const compose_fade = set_global("compose_fade", {});
+const stream_events = set_global("stream_events", {});
+const subs = set_global("subs", {});
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -45,7 +45,7 @@ test("add", (override) => {
     });
 
     with_stub((subscription_stub) => {
-        override("stream_events.mark_subscribed", subscription_stub.f);
+        override(stream_events, "mark_subscribed", subscription_stub.f);
         dispatch(event);
         const args = subscription_stub.get_args("sub", "subscribers");
         assert.deepEqual(args.sub.stream_id, stream_id);
@@ -62,10 +62,10 @@ test("peer add/remove", (override) => {
     });
 
     const subs_stub = make_stub();
-    override("subs.update_subscribers_ui", subs_stub.f);
+    override(subs, "update_subscribers_ui", subs_stub.f);
 
     const compose_fade_stub = make_stub();
-    override("compose_fade.update_faded_users", compose_fade_stub.f);
+    override(compose_fade, "update_faded_users", compose_fade_stub.f);
 
     dispatch(event);
     assert.equal(compose_fade_stub.num_calls, 1);
@@ -94,7 +94,7 @@ test("remove", (override) => {
     stream_data.add_sub(sub);
 
     with_stub((stub) => {
-        override("stream_events.mark_unsubscribed", stub.f);
+        override(stream_events, "mark_unsubscribed", stub.f);
         dispatch(event);
         const args = stub.get_args("sub");
         assert.deepEqual(args.sub, sub);
@@ -104,7 +104,7 @@ test("remove", (override) => {
 test("update", (override) => {
     const event = event_fixtures.subscription__update;
     with_stub((stub) => {
-        override("stream_events.update_property", stub.f);
+        override(stream_events, "update_property", stub.f);
         dispatch(event);
         const args = stub.get_args("stream_id", "property", "value");
         assert.deepEqual(args.stream_id, event.stream_id);
@@ -117,14 +117,14 @@ test("add error handling", (override) => {
     // test blueslip errors/warns
     const event = event_fixtures.subscription__add;
     with_stub((stub) => {
-        override("blueslip.error", stub.f);
+        override(blueslip, "error", stub.f);
         dispatch(event);
         assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 101");
     });
 });
 
 test("peer event error handling (bad stream_ids/user_ids)", (override) => {
-    override("compose_fade.update_faded_users", () => {});
+    override(compose_fade, "update_faded_users", () => {});
 
     const add_event = {
         type: "subscription",

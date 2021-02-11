@@ -795,7 +795,7 @@ run_test("set_up", (override) => {
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
-    override("settings_org.maybe_disable_widgets", noop);
+    override(settings_org, "maybe_disable_widgets", noop);
     settings_org.set_up();
 
     verify_realm_domains();

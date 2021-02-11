@@ -41,25 +41,25 @@ emoji.initialize({
     emoji_codes,
 });
 
-zrequire("activity");
+const activity = zrequire("activity");
 const hotkey = zrequire("hotkey");
 zrequire("common");
 
-set_global("compose_actions", {});
-set_global("condense", {});
-set_global("drafts", {});
-set_global("hashchange", {});
+const compose_actions = set_global("compose_actions", {});
+const condense = set_global("condense", {});
+const drafts = set_global("drafts", {});
+const hashchange = set_global("hashchange", {});
 set_global("info_overlay", {});
-set_global("lightbox", {});
+const lightbox = set_global("lightbox", {});
 const list_util = set_global("list_util", {});
-set_global("message_edit", {});
-set_global("muting_ui", {});
-set_global("narrow", {});
-set_global("navigate", {});
-set_global("reactions", {});
-set_global("search", {});
-set_global("stream_list", {});
-set_global("subs", {});
+const message_edit = set_global("message_edit", {});
+const muting_ui = set_global("muting_ui", {});
+const narrow = set_global("narrow", {});
+const navigate = set_global("navigate", {});
+const reactions = set_global("reactions", {});
+const search = set_global("search", {});
+const stream_list = set_global("stream_list", {});
+const subs = set_global("subs", {});
 
 set_global("current_msg_list", {
     selected_id() {
@@ -84,10 +84,10 @@ function return_false() {
     return false;
 }
 
-function stubbing(func_name_to_stub, test_function) {
+function stubbing(module, func_name_to_stub, test_function) {
     with_overrides((override) => {
         with_stub((stub) => {
-            override(func_name_to_stub, stub.f);
+            override(module, func_name_to_stub, stub.f);
             test_function(stub);
         });
     });
@@ -191,8 +191,8 @@ run_test("basic_chars", () => {
         }
     }
 
-    function assert_mapping(c, func_name, shiftKey) {
-        stubbing(func_name, () => {
+    function assert_mapping(c, module, func_name, shiftKey) {
+        stubbing(module, func_name, () => {
             assert(process(c, shiftKey));
         });
     }
@@ -213,7 +213,7 @@ run_test("basic_chars", () => {
     hotkey.in_content_editable_widget = return_false;
     overlays.settings_open = return_false;
 
-    set_global("popovers", {
+    const popovers = set_global("popovers", {
         actions_popped: return_false,
         message_info_popped: return_false,
         user_sidebar_popped: return_false,
@@ -231,7 +231,7 @@ run_test("basic_chars", () => {
     set_global("hotspots", {
         is_open: return_false,
     });
-    set_global("gear_menu", {
+    const gear_menu = set_global("gear_menu", {
         is_open: return_false,
     });
 
@@ -271,44 +271,44 @@ run_test("basic_chars", () => {
     page_params.can_create_streams = true;
     overlays.streams_open = return_true;
     overlays.is_active = return_true;
-    assert_mapping("S", "subs.keyboard_sub");
-    assert_mapping("V", "subs.view_stream");
-    assert_mapping("n", "subs.open_create_stream");
+    assert_mapping("S", subs, "keyboard_sub");
+    assert_mapping("V", subs, "view_stream");
+    assert_mapping("n", subs, "open_create_stream");
     page_params.can_create_streams = false;
     assert_unmapped("n");
     overlays.streams_open = return_false;
     test_normal_typing();
     overlays.is_active = return_false;
 
-    assert_mapping("?", "hashchange.go_to_location");
-    assert_mapping("/", "search.initiate_search");
-    assert_mapping("w", "activity.initiate_search");
-    assert_mapping("q", "stream_list.initiate_search");
+    assert_mapping("?", hashchange, "go_to_location");
+    assert_mapping("/", search, "initiate_search");
+    assert_mapping("w", activity, "initiate_search");
+    assert_mapping("q", stream_list, "initiate_search");
 
-    assert_mapping("A", "narrow.stream_cycle_backward");
-    assert_mapping("D", "narrow.stream_cycle_forward");
+    assert_mapping("A", narrow, "stream_cycle_backward");
+    assert_mapping("D", narrow, "stream_cycle_forward");
 
-    assert_mapping("c", "compose_actions.start");
-    assert_mapping("x", "compose_actions.start");
-    assert_mapping("P", "narrow.by");
-    assert_mapping("g", "gear_menu.open");
+    assert_mapping("c", compose_actions, "start");
+    assert_mapping("x", compose_actions, "start");
+    assert_mapping("P", narrow, "by");
+    assert_mapping("g", gear_menu, "open");
 
     overlays.is_active = return_true;
     overlays.drafts_open = return_true;
-    assert_mapping("d", "overlays.close_overlay");
+    assert_mapping("d", overlays, "close_overlay");
     overlays.drafts_open = return_false;
     test_normal_typing();
     overlays.is_active = return_false;
-    assert_mapping("d", "drafts.launch");
+    assert_mapping("d", drafts, "launch");
 
     // Test opening and closing of recent topics
     overlays.is_active = return_true;
     overlays.recent_topics_open = return_true;
-    assert_mapping("t", "overlays.close_overlay");
+    assert_mapping("t", overlays, "close_overlay");
     overlays.recent_topics_open = return_false;
     test_normal_typing();
     overlays.is_active = return_false;
-    assert_mapping("t", "hashchange.go_to_location");
+    assert_mapping("t", hashchange, "go_to_location");
 
     // Next, test keys that only work on a selected message.
     const message_view_only_keys = "@+>RjJkKsSuvi:GM";
@@ -326,45 +326,45 @@ run_test("basic_chars", () => {
 
     // TODO: Similar check for being in the subs page
 
-    assert_mapping("@", "compose_actions.reply_with_mention");
-    assert_mapping("+", "reactions.toggle_emoji_reaction");
-    assert_mapping("-", "condense.toggle_collapse");
-    assert_mapping("r", "compose_actions.respond_to_message");
-    assert_mapping("R", "compose_actions.respond_to_message", true);
-    assert_mapping("j", "navigate.down");
-    assert_mapping("J", "navigate.page_down");
-    assert_mapping("k", "navigate.up");
-    assert_mapping("K", "navigate.page_up");
-    assert_mapping("s", "narrow.by_recipient");
-    assert_mapping("S", "narrow.by_topic");
-    assert_mapping("u", "popovers.show_sender_info");
-    assert_mapping("i", "popovers.open_message_menu");
-    assert_mapping(":", "reactions.open_reactions_popover", true);
-    assert_mapping(">", "compose_actions.quote_and_reply");
-    assert_mapping("e", "message_edit.start");
+    assert_mapping("@", compose_actions, "reply_with_mention");
+    assert_mapping("+", reactions, "toggle_emoji_reaction");
+    assert_mapping("-", condense, "toggle_collapse");
+    assert_mapping("r", compose_actions, "respond_to_message");
+    assert_mapping("R", compose_actions, "respond_to_message", true);
+    assert_mapping("j", navigate, "down");
+    assert_mapping("J", navigate, "page_down");
+    assert_mapping("k", navigate, "up");
+    assert_mapping("K", navigate, "page_up");
+    assert_mapping("s", narrow, "by_recipient");
+    assert_mapping("S", narrow, "by_topic");
+    assert_mapping("u", popovers, "show_sender_info");
+    assert_mapping("i", popovers, "open_message_menu");
+    assert_mapping(":", reactions, "open_reactions_popover", true);
+    assert_mapping(">", compose_actions, "quote_and_reply");
+    assert_mapping("e", message_edit, "start");
 
     overlays.is_active = return_true;
     overlays.lightbox_open = return_true;
-    assert_mapping("v", "overlays.close_overlay");
+    assert_mapping("v", overlays, "close_overlay");
     overlays.lightbox_open = return_false;
     test_normal_typing();
     overlays.is_active = return_false;
-    assert_mapping("v", "lightbox.show_from_selected_message");
+    assert_mapping("v", lightbox, "show_from_selected_message");
 
     emoji_picker.reactions_popped = return_true;
-    assert_mapping(":", "emoji_picker.navigate", true);
+    assert_mapping(":", emoji_picker, "navigate", true);
     emoji_picker.reactions_popped = return_false;
 
-    assert_mapping("G", "navigate.to_end");
-    assert_mapping("M", "muting_ui.toggle_topic_mute");
+    assert_mapping("G", navigate, "to_end");
+    assert_mapping("M", muting_ui, "toggle_topic_mute");
 
     // Test keys that work when a message is selected and
     // also when the message list is empty.
-    assert_mapping("n", "narrow.narrow_to_next_topic");
-    assert_mapping("p", "narrow.narrow_to_next_pm_string");
+    assert_mapping("n", narrow, "narrow_to_next_topic");
+    assert_mapping("p", narrow, "narrow_to_next_pm_string");
 
     current_msg_list.empty = return_true;
-    assert_mapping("n", "narrow.narrow_to_next_topic");
+    assert_mapping("n", narrow, "narrow_to_next_topic");
     current_msg_list.empty = return_false;
 });
 
@@ -405,8 +405,8 @@ run_test("motion_keys", () => {
         assert.equal(process(name), false);
     }
 
-    function assert_mapping(key_name, func_name, shiftKey, ctrlKey) {
-        stubbing(func_name, () => {
+    function assert_mapping(key_name, module, func_name, shiftKey, ctrlKey) {
+        stubbing(module, func_name, () => {
             assert(process(key_name, shiftKey, ctrlKey));
         });
     }
@@ -426,19 +426,19 @@ run_test("motion_keys", () => {
     assert_unmapped("up_arrow");
 
     list_util.inside_list = return_true;
-    assert_mapping("up_arrow", "list_util.go_up");
-    assert_mapping("down_arrow", "list_util.go_down");
+    assert_mapping("up_arrow", list_util, "go_up");
+    assert_mapping("down_arrow", list_util, "go_down");
     list_util.inside_list = return_false;
 
     current_msg_list.empty = return_false;
-    assert_mapping("down_arrow", "navigate.down");
-    assert_mapping("end", "navigate.to_end");
-    assert_mapping("home", "navigate.to_home");
-    assert_mapping("left_arrow", "message_edit.edit_last_sent_message");
-    assert_mapping("page_up", "navigate.page_up");
-    assert_mapping("page_down", "navigate.page_down");
-    assert_mapping("spacebar", "navigate.page_down");
-    assert_mapping("up_arrow", "navigate.up");
+    assert_mapping("down_arrow", navigate, "down");
+    assert_mapping("end", navigate, "to_end");
+    assert_mapping("home", navigate, "to_home");
+    assert_mapping("left_arrow", message_edit, "edit_last_sent_message");
+    assert_mapping("page_up", navigate, "page_up");
+    assert_mapping("page_down", navigate, "page_down");
+    assert_mapping("spacebar", navigate, "page_down");
+    assert_mapping("up_arrow", navigate, "up");
 
     overlays.info_overlay_open = return_true;
     assert_unmapped("down_arrow");
@@ -446,13 +446,13 @@ run_test("motion_keys", () => {
     overlays.info_overlay_open = return_false;
 
     overlays.streams_open = return_true;
-    assert_mapping("up_arrow", "subs.switch_rows");
-    assert_mapping("down_arrow", "subs.switch_rows");
+    assert_mapping("up_arrow", subs, "switch_rows");
+    assert_mapping("down_arrow", subs, "switch_rows");
     overlays.streams_open = return_false;
 
     overlays.lightbox_open = return_true;
-    assert_mapping("left_arrow", "lightbox.prev");
-    assert_mapping("right_arrow", "lightbox.next");
+    assert_mapping("left_arrow", lightbox, "prev");
+    assert_mapping("right_arrow", lightbox, "next");
     overlays.lightbox_open = return_false;
 
     hotkey.in_content_editable_widget = return_true;
@@ -471,8 +471,8 @@ run_test("motion_keys", () => {
 
     overlays.is_active = return_true;
     overlays.drafts_open = return_true;
-    assert_mapping("up_arrow", "drafts.drafts_handle_events");
-    assert_mapping("down_arrow", "drafts.drafts_handle_events");
+    assert_mapping("up_arrow", drafts, "drafts_handle_events");
+    assert_mapping("down_arrow", drafts, "drafts_handle_events");
     overlays.is_active = return_false;
     overlays.drafts_open = return_false;
 });

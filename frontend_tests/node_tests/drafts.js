@@ -223,7 +223,7 @@ run_test("remove_old_drafts", () => {
 });
 
 run_test("format_drafts", (override) => {
-    override("drafts.remove_old_drafts", noop);
+    override(drafts, "remove_old_drafts", noop);
 
     draft_1.updatedAt = new Date(1549958107000).getTime(); // 2/12/2019 07:55:07 AM (UTC+0)
     draft_2.updatedAt = new Date(1549958107000).setDate(-1);
@@ -314,7 +314,7 @@ run_test("format_drafts", (override) => {
         return "<draft table stub>";
     });
 
-    override("drafts.open_overlay", noop);
+    override(drafts, "open_overlay", noop);
     drafts.set_initial_element = noop;
 
     drafts.launch();
