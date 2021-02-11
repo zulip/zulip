@@ -26,16 +26,16 @@ set_global("search", {
 set_global("document", "document-stub");
 const history = set_global("history", {});
 
-set_global("admin", {});
-set_global("drafts", {});
+const admin = set_global("admin", {});
+const drafts = set_global("drafts", {});
 set_global("favicon", {});
-set_global("floating_recipient_bar", {});
+const floating_recipient_bar = set_global("floating_recipient_bar", {});
 const info_overlay = set_global("info_overlay", {});
-set_global("message_viewport", {});
+const message_viewport = set_global("message_viewport", {});
 const narrow = set_global("narrow", {});
-set_global("overlays", {});
-set_global("settings", {});
-set_global("subs", {});
+const overlays = set_global("overlays", {});
+const settings = set_global("settings", {});
+const subs = set_global("subs", {});
 const ui_util = set_global("ui_util", {});
 
 run_test("operators_round_trip", () => {
@@ -117,21 +117,21 @@ function test_helper() {
     let events = [];
     let narrow_terms;
 
-    function stub(module_name, func_name) {
-        global[module_name][func_name] = () => {
-            events.push(module_name + "." + func_name);
+    function stub(module, func_name) {
+        module[func_name] = () => {
+            events.push([module, func_name]);
         };
     }
 
-    stub("admin", "launch");
-    stub("drafts", "launch");
-    stub("floating_recipient_bar", "update");
-    stub("message_viewport", "stop_auto_scrolling");
-    stub("narrow", "deactivate");
-    stub("overlays", "close_for_hash_change");
-    stub("settings", "launch");
-    stub("subs", "launch");
-    stub("ui_util", "blur_active_element");
+    stub(admin, "launch");
+    stub(drafts, "launch");
+    stub(floating_recipient_bar, "update");
+    stub(message_viewport, "stop_auto_scrolling");
+    stub(narrow, "deactivate");
+    stub(overlays, "close_for_hash_change");
+    stub(settings, "launch");
+    stub(subs, "launch");
+    stub(ui_util, "blur_active_element");
 
     ui_util.change_tab_to = (hash) => {
         events.push("change_tab_to " + hash);
@@ -165,21 +165,21 @@ run_test("hash_interactions", () => {
     helper.clear_events();
     hashchange.initialize();
     helper.assert_events([
-        "overlays.close_for_hash_change",
-        "message_viewport.stop_auto_scrolling",
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
         "change_tab_to #message_feed_container",
-        "narrow.deactivate",
-        "floating_recipient_bar.update",
+        [narrow, "deactivate"],
+        [floating_recipient_bar, "update"],
     ]);
 
     helper.clear_events();
     $(window).trigger("hashchange");
     helper.assert_events([
-        "overlays.close_for_hash_change",
-        "message_viewport.stop_auto_scrolling",
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
         "change_tab_to #message_feed_container",
-        "narrow.deactivate",
-        "floating_recipient_bar.update",
+        [narrow, "deactivate"],
+        [floating_recipient_bar, "update"],
     ]);
 
     window.location.hash = "#narrow/stream/Denmark";
@@ -187,11 +187,11 @@ run_test("hash_interactions", () => {
     helper.clear_events();
     $(window).trigger("hashchange");
     helper.assert_events([
-        "overlays.close_for_hash_change",
-        "message_viewport.stop_auto_scrolling",
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
         "change_tab_to #message_feed_container",
         "narrow.activate",
-        "floating_recipient_bar.update",
+        [floating_recipient_bar, "update"],
     ]);
     let terms = helper.get_narrow_terms();
     assert.equal(terms[0].operand, "Denmark");
@@ -201,11 +201,11 @@ run_test("hash_interactions", () => {
     helper.clear_events();
     $(window).trigger("hashchange");
     helper.assert_events([
-        "overlays.close_for_hash_change",
-        "message_viewport.stop_auto_scrolling",
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
         "change_tab_to #message_feed_container",
         "narrow.activate",
-        "floating_recipient_bar.update",
+        [floating_recipient_bar, "update"],
     ]);
     terms = helper.get_narrow_terms();
     assert.equal(terms.length, 0);
@@ -214,43 +214,55 @@ run_test("hash_interactions", () => {
 
     helper.clear_events();
     $(window).trigger("hashchange");
-    helper.assert_events(["overlays.close_for_hash_change", "subs.launch"]);
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [subs, "launch"],
+    ]);
 
     window.location.hash = "#keyboard-shortcuts/whatever";
 
     helper.clear_events();
     $(window).trigger("hashchange");
-    helper.assert_events(["overlays.close_for_hash_change", "info: keyboard-shortcuts"]);
+    helper.assert_events([[overlays, "close_for_hash_change"], "info: keyboard-shortcuts"]);
 
     window.location.hash = "#message-formatting/whatever";
 
     helper.clear_events();
     $(window).trigger("hashchange");
-    helper.assert_events(["overlays.close_for_hash_change", "info: message-formatting"]);
+    helper.assert_events([[overlays, "close_for_hash_change"], "info: message-formatting"]);
 
     window.location.hash = "#search-operators/whatever";
 
     helper.clear_events();
     $(window).trigger("hashchange");
-    helper.assert_events(["overlays.close_for_hash_change", "info: search-operators"]);
+    helper.assert_events([[overlays, "close_for_hash_change"], "info: search-operators"]);
 
     window.location.hash = "#drafts";
 
     helper.clear_events();
     $(window).trigger("hashchange");
-    helper.assert_events(["overlays.close_for_hash_change", "drafts.launch"]);
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [drafts, "launch"],
+    ]);
 
     window.location.hash = "#settings/alert-words";
 
     helper.clear_events();
     $(window).trigger("hashchange");
-    helper.assert_events(["overlays.close_for_hash_change", "settings.launch"]);
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [settings, "launch"],
+    ]);
 
     window.location.hash = "#organization/user-list-admin";
 
     helper.clear_events();
     $(window).trigger("hashchange");
-    helper.assert_events(["overlays.close_for_hash_change", "admin.launch"]);
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [admin, "launch"],
+    ]);
 
     let called_back;
 
@@ -259,7 +271,7 @@ run_test("hash_interactions", () => {
         called_back = true;
     });
 
-    helper.assert_events(["ui_util.blur_active_element"]);
+    helper.assert_events([[ui_util, "blur_active_element"]]);
     assert(called_back);
 });
 
@@ -271,7 +283,7 @@ run_test("save_narrow", () => {
     blueslip.expect("warn", "browser does not support pushState");
     hashchange.save_narrow(operators);
 
-    helper.assert_events(["message_viewport.stop_auto_scrolling"]);
+    helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(window.location.hash, "#narrow/is/private");
 
     let url_pushed;
@@ -283,6 +295,6 @@ run_test("save_narrow", () => {
 
     helper.clear_events();
     hashchange.save_narrow(operators);
-    helper.assert_events(["message_viewport.stop_auto_scrolling"]);
+    helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://example.com/#narrow/is/starred");
 });
