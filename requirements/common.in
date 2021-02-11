@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django==2.2.*
+Django[argon2]==2.2.*
 
 # needed for Literal, TypedDict
 typing-extensions
@@ -30,9 +30,6 @@ Pillow
 # Needed for building complex DB queries
 SQLAlchemy
 
-# Needed for password hashing
-argon2-cffi
-
 # Needed for S3 file uploads
 boto3
 
@@ -56,7 +53,6 @@ python-gcm
 
 # Needed for the email mirror
 html2text
-httplib2
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/issues/130
 https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.zip#egg=talon==1.2.10.zulip1
 
@@ -150,9 +146,7 @@ cryptography
 lxml
 
 # Needed for 2-factor authentication
-django-two-factor-auth[phonenumberslite]
-
-twilio
+django-two-factor-auth[call,phonenumberslite,sms]
 
 # Needed for processing payments (in corporate)
 stripe
