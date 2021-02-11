@@ -399,10 +399,9 @@ function test_helper() {
     const events = [];
 
     return {
-        redirect: (module_name, func_name) => {
-            const full_name = module_name + "." + func_name;
-            global[module_name][func_name] = () => {
-                events.push(full_name);
+        redirect: (module, func_name) => {
+            module[func_name] = () => {
+                events.push([module, func_name]);
             };
         },
         events,
@@ -427,13 +426,14 @@ function test_helper() {
 
 const home_msg_list = set_global("home_msg_list", {});
 const message_list = set_global("message_list", {});
-set_global("message_util", {});
+const message_util = set_global("message_util", {});
 const notifications = set_global("notifications", {});
-set_global("resize", {});
-set_global("stream_list", {});
-set_global("unread_ops", {});
-set_global("unread_ui", {});
+const resize = set_global("resize", {});
+let stream_list = set_global("stream_list", {});
+let unread_ops = set_global("unread_ops", {});
+const unread_ui = set_global("unread_ui", {});
 
+const huddle_data = zrequire("huddle_data");
 const message_events = zrequire("message_events");
 
 run_test("insert_message", (override) => {
@@ -449,13 +449,13 @@ run_test("insert_message", (override) => {
 
     assert.equal(message_store.get(new_message.id), undefined);
 
-    helper.redirect("huddle_data", "process_loaded_messages");
-    helper.redirect("message_util", "add_new_messages");
-    helper.redirect("notifications", "received_messages");
-    helper.redirect("resize", "resize_page_components");
-    helper.redirect("stream_list", "update_streams_sidebar");
-    helper.redirect("unread_ops", "process_visible");
-    helper.redirect("unread_ui", "update_unread_counts");
+    helper.redirect(huddle_data, "process_loaded_messages");
+    helper.redirect(message_util, "add_new_messages");
+    helper.redirect(notifications, "received_messages");
+    helper.redirect(resize, "resize_page_components");
+    helper.redirect(stream_list, "update_streams_sidebar");
+    helper.redirect(unread_ops, "process_visible");
+    helper.redirect(unread_ui, "update_unread_counts");
 
     narrow_state.reset_current_filter();
 
@@ -466,14 +466,14 @@ run_test("insert_message", (override) => {
     // the code invokes various objects when a new message
     // comes in:
     assert.deepEqual(helper.events, [
-        "huddle_data.process_loaded_messages",
-        "message_util.add_new_messages",
-        "message_util.add_new_messages",
-        "unread_ui.update_unread_counts",
-        "resize.resize_page_components",
-        "unread_ops.process_visible",
-        "notifications.received_messages",
-        "stream_list.update_streams_sidebar",
+        [huddle_data, "process_loaded_messages"],
+        [message_util, "add_new_messages"],
+        [message_util, "add_new_messages"],
+        [unread_ui, "update_unread_counts"],
+        [resize, "resize_page_components"],
+        [unread_ops, "process_visible"],
+        [notifications, "received_messages"],
+        [stream_list, "update_streams_sidebar"],
     ]);
 
     // Despite all of our stubbing/mocking, the call to
@@ -522,7 +522,7 @@ const channel = set_global("channel", {});
 const message_viewport = set_global("message_viewport", {});
 zrequire("message_flags");
 
-const unread_ops = zrequire("unread_ops");
+unread_ops = zrequire("unread_ops");
 
 run_test("unread_ops", () => {
     (function set_up() {
@@ -604,7 +604,7 @@ run_test("unread_ops", () => {
 
 const topic_list = set_global("topic_list", {});
 
-const stream_list = zrequire("stream_list");
+stream_list = zrequire("stream_list");
 
 const social_stream = {
     color: "red",

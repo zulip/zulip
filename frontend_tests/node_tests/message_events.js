@@ -16,15 +16,15 @@ const stream_topic_history = zrequire("stream_topic_history");
 const unread = zrequire("unread");
 
 set_global("$", make_zjquery());
-set_global("condense", {});
+const condense = set_global("condense", {});
 set_global("current_msg_list", {});
-set_global("message_edit", {});
+const message_edit = set_global("message_edit", {});
 const message_list = set_global("message_list", {});
-set_global("notifications", {});
+const notifications = set_global("notifications", {});
 set_global("page_params", {});
-set_global("pm_list", {});
-set_global("stream_list", {});
-set_global("unread_ui", {});
+const pm_list = set_global("pm_list", {});
+const stream_list = set_global("stream_list", {});
+const unread_ui = set_global("unread_ui", {});
 
 const alice = {
     email: "alice@example.com",
@@ -44,13 +44,9 @@ stream_data.add_sub(denmark);
 function test_helper(side_effects) {
     const events = [];
 
-    for (const side_effect of side_effects) {
-        const parts = side_effect.split(".");
-        const module = parts[0];
-        const field = parts[1];
-
-        global[module][field] = () => {
-            events.push(side_effect);
+    for (const [module, field] of side_effects) {
+        module[field] = () => {
+            events.push([module, field]);
         };
     }
 
@@ -109,12 +105,12 @@ run_test("update_messages", () => {
     };
 
     const side_effects = [
-        "condense.un_cache_message_content_height",
-        "message_edit.end_message_row_edit",
-        "notifications.received_messages",
-        "unread_ui.update_unread_counts",
-        "stream_list.update_streams_sidebar",
-        "pm_list.update_private_messages",
+        [condense, "un_cache_message_content_height"],
+        [message_edit, "end_message_row_edit"],
+        [notifications, "received_messages"],
+        [unread_ui, "update_unread_counts"],
+        [stream_list, "update_streams_sidebar"],
+        [pm_list, "update_private_messages"],
     ];
 
     const helper = test_helper(side_effects);

@@ -21,10 +21,10 @@ zrequire("unread");
 const narrow = zrequire("narrow");
 
 const channel = set_global("channel", {});
-set_global("compose", {});
-set_global("compose_actions", {});
+const compose = set_global("compose", {});
+const compose_actions = set_global("compose_actions", {});
 set_global("current_msg_list", {});
-set_global("hashchange", {});
+const hashchange = set_global("hashchange", {});
 set_global("home_msg_list", {});
 const message_fetch = set_global("message_fetch", {});
 const message_list = set_global("message_list", {
@@ -32,17 +32,17 @@ const message_list = set_global("message_list", {
         this.narrowed = value;
     },
 });
-set_global("message_scroll", {});
+const message_scroll = set_global("message_scroll", {});
 set_global("message_util", {});
-set_global("notifications", {});
+const notifications = set_global("notifications", {});
 set_global("page_params", {});
-set_global("search", {});
-set_global("stream_list", {});
-set_global("message_view_header", {});
-set_global("top_left_corner", {});
-set_global("typing_events", {});
-set_global("ui_util", {});
-set_global("unread_ops", {});
+const search = set_global("search", {});
+const stream_list = set_global("stream_list", {});
+const message_view_header = set_global("message_view_header", {});
+const top_left_corner = set_global("top_left_corner", {});
+const typing_events = set_global("typing_events", {});
+const ui_util = set_global("ui_util", {});
+const unread_ops = set_global("unread_ops", {});
 set_global("search_pill_widget", {
     widget: {
         clear() {
@@ -78,28 +78,28 @@ stream_data.add_sub(denmark);
 function test_helper() {
     let events = [];
 
-    function stub(module_name, func_name) {
-        global[module_name][func_name] = () => {
-            events.push(module_name + "." + func_name);
+    function stub(module, func_name) {
+        module[func_name] = () => {
+            events.push([module, func_name]);
         };
     }
 
-    stub("compose_actions", "on_narrow");
-    stub("hashchange", "save_narrow");
-    stub("message_scroll", "hide_indicators");
-    stub("message_scroll", "show_loading_older");
-    stub("message_scroll", "hide_top_of_narrow_notices");
-    stub("notifications", "clear_compose_notifications");
-    stub("notifications", "redraw_title");
-    stub("search", "update_button_visibility");
-    stub("stream_list", "handle_narrow_activated");
-    stub("message_view_header", "initialize");
-    stub("top_left_corner", "handle_narrow_activated");
-    stub("typing_events", "render_notifications_for_narrow");
-    stub("ui_util", "change_tab_to");
-    stub("unread_ops", "process_visible");
-    stub("compose", "update_closed_compose_buttons_for_stream");
-    stub("compose", "update_closed_compose_buttons_for_private");
+    stub(compose_actions, "on_narrow");
+    stub(hashchange, "save_narrow");
+    stub(message_scroll, "hide_indicators");
+    stub(message_scroll, "show_loading_older");
+    stub(message_scroll, "hide_top_of_narrow_notices");
+    stub(notifications, "clear_compose_notifications");
+    stub(notifications, "redraw_title");
+    stub(search, "update_button_visibility");
+    stub(stream_list, "handle_narrow_activated");
+    stub(message_view_header, "initialize");
+    stub(top_left_corner, "handle_narrow_activated");
+    stub(typing_events, "render_notifications_for_narrow");
+    stub(ui_util, "change_tab_to");
+    stub(unread_ops, "process_visible");
+    stub(compose, "update_closed_compose_buttons_for_stream");
+    stub(compose, "update_closed_compose_buttons_for_private");
 
     return {
         clear: () => {
@@ -202,20 +202,20 @@ run_test("basics", () => {
     assert.equal(narrow_state.narrowed_to_pms(), false);
 
     helper.assert_events([
-        "notifications.clear_compose_notifications",
-        "notifications.redraw_title",
-        "message_scroll.hide_top_of_narrow_notices",
-        "message_scroll.hide_indicators",
-        "ui_util.change_tab_to",
-        "unread_ops.process_visible",
-        "hashchange.save_narrow",
-        "compose.update_closed_compose_buttons_for_stream",
-        "search.update_button_visibility",
-        "compose_actions.on_narrow",
-        "top_left_corner.handle_narrow_activated",
-        "stream_list.handle_narrow_activated",
-        "typing_events.render_notifications_for_narrow",
-        "message_view_header.initialize",
+        [notifications, "clear_compose_notifications"],
+        [notifications, "redraw_title"],
+        [message_scroll, "hide_top_of_narrow_notices"],
+        [message_scroll, "hide_indicators"],
+        [ui_util, "change_tab_to"],
+        [unread_ops, "process_visible"],
+        [hashchange, "save_narrow"],
+        [compose, "update_closed_compose_buttons_for_stream"],
+        [search, "update_button_visibility"],
+        [compose_actions, "on_narrow"],
+        [top_left_corner, "handle_narrow_activated"],
+        [stream_list, "handle_narrow_activated"],
+        [typing_events, "render_notifications_for_narrow"],
+        [message_view_header, "initialize"],
     ]);
 
     current_msg_list.selected_id = () => -1;
