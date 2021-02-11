@@ -261,8 +261,8 @@ run_test("sending", (override) => {
     const message_id = 1001; // see above for setup
     let emoji_name = "smile"; // should be a current reaction
 
-    override("reactions.add_reaction", () => {});
-    override("reactions.remove_reaction", () => {});
+    override(reactions, "add_reaction", () => {});
+    override(reactions, "remove_reaction", () => {});
 
     with_stub((stub) => {
         channel.del = stub.f;

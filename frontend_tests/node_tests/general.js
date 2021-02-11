@@ -344,10 +344,10 @@ run_test("add_user_event", () => {
 
 */
 
-set_global("activity", {});
-set_global("message_live_update", {});
-set_global("pm_list", {});
-set_global("settings_users", {});
+const activity = set_global("activity", {});
+const message_live_update = set_global("message_live_update", {});
+const pm_list = set_global("pm_list", {});
+const settings_users = set_global("settings_users", {});
 
 zrequire("user_events");
 
@@ -365,10 +365,10 @@ run_test("update_user_event", (override) => {
     };
 
     // We have to stub a few things:
-    override("activity.redraw", noop);
-    override("message_live_update.update_user_full_name", noop);
-    override("pm_list.update_private_messages", noop);
-    override("settings_users.update_user_data", noop);
+    override(activity, "redraw", noop);
+    override(message_live_update, "update_user_full_name", noop);
+    override(pm_list, "update_private_messages", noop);
+    override(settings_users, "update_user_data", noop);
 
     // Dispatch the realm_user/update event, which will update
     // data structures and have other side effects that are
@@ -437,7 +437,7 @@ set_global("unread_ui", {});
 const message_events = zrequire("message_events");
 
 run_test("insert_message", (override) => {
-    override("pm_list.update_private_messages", noop);
+    override(pm_list, "update_private_messages", noop);
 
     const helper = test_helper();
 

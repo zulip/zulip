@@ -97,29 +97,24 @@ exports.with_overrides = function (test_function) {
     const restore_callbacks = [];
     const unused_funcs = new Map();
 
-    const override = function (name, f) {
+    const override = function (module, func_name, f) {
         if (typeof f !== "function") {
             throw new TypeError("You can only override with a function.");
         }
 
-        unused_funcs.set(name, true);
-
-        const parts = name.split(".");
-        const module = parts[0];
-        const func_name = parts[1];
-
-        if (!Object.prototype.hasOwnProperty.call(global, module)) {
-            throw new Error("you must first use set_global/zrequire for " + module);
+        if (!unused_funcs.has(module)) {
+            unused_funcs.set(module, new Map());
         }
+        unused_funcs.get(module).set(func_name, true);
 
-        const old_f = global[module][func_name];
-        global[module][func_name] = function (...args) {
-            unused_funcs.delete(name);
+        const old_f = module[func_name];
+        module[func_name] = function (...args) {
+            unused_funcs.get(module).delete(func_name);
             return f.apply(this, args);
         };
 
         restore_callbacks.push(() => {
-            global[module][func_name] = old_f;
+            module[func_name] = old_f;
         });
     };
 
@@ -130,7 +125,9 @@ exports.with_overrides = function (test_function) {
         restore_callback();
     }
 
-    for (const unused_name of unused_funcs.keys()) {
-        throw new Error(unused_name + " never got invoked!");
+    for (const module_unused_funcs of unused_funcs.values()) {
+        for (const unused_name of module_unused_funcs.keys()) {
+            throw new Error(unused_name + " never got invoked!");
+        }
     }
 };

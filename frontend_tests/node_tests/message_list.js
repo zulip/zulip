@@ -14,8 +14,8 @@ const noop = function () {};
 set_global("Filter", noop);
 stub_out_jquery();
 set_global("document", null);
-set_global("narrow_state", {});
-set_global("stream_data", {});
+const narrow_state = set_global("narrow_state", {});
+const stream_data = set_global("stream_data", {});
 
 zrequire("FetchStatus", "js/fetch_status");
 const muting = zrequire("muting");
@@ -308,10 +308,10 @@ run_test("bookend", (override) => {
     list.view.clear_trailing_bookend = noop;
     list.narrowed = true;
 
-    override("narrow_state.stream", () => "IceCream");
+    override(narrow_state, "stream", () => "IceCream");
 
-    override("stream_data.is_subscribed", () => true);
-    override("stream_data.get_sub", () => ({invite_only: false}));
+    override(stream_data, "is_subscribed", () => true);
+    override(stream_data, "get_sub", () => ({invite_only: false}));
 
     with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
@@ -324,7 +324,7 @@ run_test("bookend", (override) => {
 
     expected = "translated: You unsubscribed from stream IceCream";
     list.last_message_historical = false;
-    override("stream_data.is_subscribed", () => false);
+    override(stream_data, "is_subscribed", () => false);
 
     with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;
@@ -337,9 +337,9 @@ run_test("bookend", (override) => {
 
     // Test when the stream is privates (invite only)
     expected = "translated: You unsubscribed from stream IceCream";
-    override("stream_data.is_subscribed", () => false);
+    override(stream_data, "is_subscribed", () => false);
 
-    override("stream_data.get_sub", () => ({invite_only: true}));
+    override(stream_data, "get_sub", () => ({invite_only: true}));
 
     with_stub((stub) => {
         list.view.render_trailing_bookend = stub.f;

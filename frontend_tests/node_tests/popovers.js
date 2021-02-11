@@ -114,7 +114,7 @@ function make_image_stubber() {
 popovers.register_click_handlers();
 
 run_test("sender_hover", (override) => {
-    override("popovers.hide_user_profile", noop);
+    override(popovers, "hide_user_profile", noop);
 
     const selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
     const handler = $("#main_div").get_on_handler("click", selection);
@@ -207,7 +207,7 @@ run_test("sender_hover", (override) => {
 });
 
 run_test("actions_popover", (override) => {
-    override("popovers.hide_user_profile", noop);
+    override(popovers, "hide_user_profile", noop);
 
     const handler = $("#main_div").get_on_handler("click", ".actions_hover");
 
