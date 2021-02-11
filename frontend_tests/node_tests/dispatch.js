@@ -14,7 +14,6 @@ const events = require("./lib/events");
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;
 const test_user = events.test_user;
-const test_streams = events.test_streams;
 const typing_person1 = events.typing_person1;
 
 set_global("$", make_zjquery());
@@ -36,10 +35,8 @@ const message_edit = set_global("message_edit", {});
 const message_events = set_global("message_events", {});
 const message_list = set_global("message_list", {});
 const muting_ui = set_global("muting_ui", {});
-const narrow_state = set_global("narrow_state", {});
 const night_mode = set_global("night_mode", {});
 const notifications = set_global("notifications", {});
-const overlays = set_global("overlays", {});
 const reactions = set_global("reactions", {});
 const realm_icon = set_global("realm_icon", {});
 const realm_logo = set_global("realm_logo", {});
@@ -84,7 +81,6 @@ const message_store = zrequire("message_store");
 const people = zrequire("people");
 const starred_messages = zrequire("starred_messages");
 const user_status = zrequire("user_status");
-const subs = zrequire("subs");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 
@@ -541,74 +537,6 @@ run_test("restart", (override) => {
         const args = stub.get_args("options");
         assert.equal(args.options.save_pointer, true);
         assert.equal(args.options.immediate, true);
-    });
-});
-
-run_test("stream", (override) => {
-    let event = event_fixtures.stream__update;
-
-    with_stub((stub) => {
-        override(stream_events, "update_property", stub.f);
-        override(settings_streams, "update_default_streams_table", noop);
-        dispatch(event);
-        const args = stub.get_args("stream_id", "property", "value");
-        assert_same(args.stream_id, event.stream_id);
-        assert_same(args.property, event.property);
-        assert_same(args.value, event.value);
-    });
-
-    // stream create
-    event = event_fixtures.stream__create;
-    with_stub((stub) => {
-        override(stream_data, "create_streams", stub.f);
-        override(stream_data, "get_sub_by_id", noop);
-        override(stream_data, "update_calculated_fields", noop);
-        override(subs, "add_sub_to_table", noop);
-        override(overlays, "streams_open", () => true);
-        dispatch(event);
-        const args = stub.get_args("streams");
-        assert_same(
-            args.streams.map((stream) => stream.stream_id),
-            [101, 102],
-        );
-    });
-
-    // stream delete
-    event = event_fixtures.stream__delete;
-    with_stub((stub) => {
-        override(subs, "remove_stream", noop);
-        override(stream_data, "delete_sub", noop);
-        override(settings_streams, "update_default_streams_table", noop);
-        override(stream_data, "remove_default_stream", noop);
-
-        const devel_id = test_streams.devel.stream_id;
-
-        override(stream_data, "get_sub_by_id", (id) =>
-            id === devel_id ? {subscribed: true} : {subscribed: false},
-        );
-
-        narrow_state.is_for_stream_id = () => true;
-
-        let updated = false;
-        override(current_msg_list, "update_trailing_bookend", () => {
-            updated = true;
-        });
-
-        override(stream_list, "remove_sidebar_row", stub.f);
-        dispatch(event);
-        const args = stub.get_args("stream_id");
-        assert_same(args.stream_id, devel_id);
-        assert_same(updated, true);
-
-        override(settings_org, "sync_realm_settings", noop);
-        override(stream_list, "remove_sidebar_row", noop);
-        page_params.realm_notifications_stream_id = devel_id;
-        dispatch(event);
-        assert_same(page_params.realm_notifications_stream_id, -1);
-
-        page_params.realm_signup_notifications_stream_id = devel_id;
-        dispatch(event);
-        assert_same(page_params.realm_signup_notifications_stream_id, -1);
     });
 });
 
