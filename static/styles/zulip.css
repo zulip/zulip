@@ -678,8 +678,11 @@ li.actual-dropdown-menu i {
     margin-right: 3px;
 }
 
-.settings-dropdown-cog {
-    padding: 6px 12px;
+.settings-dropdown-avatar {
+    margin-top: -6px;
+    padding: 10px;
+    border-radius: 12px;
+    width: 25px;
 }
 
 .message_area_padder {
@@ -1929,7 +1932,7 @@ div.focused_table {
             box-shadow: inherit;
             display: block;
             position: absolute;
-            right: 6px;
+            right: 4px;
             top: -3px;
         }
 

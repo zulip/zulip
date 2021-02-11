@@ -93,13 +93,14 @@ export function update_org_settings_menu_item() {
 
 export function initialize() {
     update_org_settings_menu_item();
+    set_avatar();
 
-    $('#gear-menu a[data-toggle="tab"]').on("show", (e) => {
+    $('#avatar-menu a[data-toggle="tab"]').on("show", (e) => {
         // Save the position of our old tab away, before we switch
         const old_tab = $(e.relatedTarget).attr("href");
         scroll_positions.set(old_tab, message_viewport.scrollTop());
     });
-    $('#gear-menu a[data-toggle="tab"]').on("shown", (e) => {
+    $('#avatar-menu a[data-toggle="tab"]').on("shown", (e) => {
         const target_tab = $(e.target).attr("href");
         // Hide all our error messages when switching tabs
         $(".alert").removeClass("show");
@@ -130,7 +131,7 @@ export function initialize() {
 export function open() {
     $("#settings-dropdown").trigger("click");
     // there are invisible li tabs, which should not be clicked.
-    $("#gear-menu").find("li:not(.invisible) a").eq(0).trigger("focus");
+    $("#avatar-menu").find("li:not(.invisible) a").eq(0).trigger("focus");
 }
 
 export function is_open() {
@@ -141,4 +142,10 @@ export function close() {
     if (is_open()) {
         $(".dropdown").removeClass("open");
     }
+}
+
+export function set_avatar() {
+    const avatar_url = page_params.avatar_url;
+
+    $(".settings-dropdown-avatar").attr("src", avatar_url);
 }
