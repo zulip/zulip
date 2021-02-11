@@ -96,15 +96,31 @@ exports.with_overrides = function (test_function) {
 
     const restore_callbacks = [];
     const unused_funcs = new Map();
+    const funcs = new Map();
 
     const override = function (module, func_name, f) {
         if (typeof f !== "function") {
             throw new TypeError("You can only override with a function.");
         }
 
+        if (!funcs.has(module)) {
+            funcs.set(module, new Map());
+        }
+
+        if (funcs.get(module).has(func_name)) {
+            // Prevent overriding the same function twice, so that
+            // it's super easy to reason about our logic to restore
+            // the original function.  Usually if somebody sees this
+            // error, it's a symptom of not breaking up tests enough.
+            throw new Error("You can only override a function one time.");
+        }
+
+        funcs.get(module).set(func_name, true);
+
         if (!unused_funcs.has(module)) {
             unused_funcs.set(module, new Map());
         }
+
         unused_funcs.get(module).set(func_name, true);
 
         const old_f = module[func_name];
