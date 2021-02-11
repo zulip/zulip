@@ -410,19 +410,12 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
 @assign_queue("invites")
 class ConfirmationEmailWorker(QueueProcessingWorker):
     def consume(self, data: Mapping[str, Any]) -> None:
-        if "email" in data:
-            # When upgrading from a version up through 1.7.1, there may be
-            # existing items in the queue with `email` instead of `prereg_id`.
-            invitee = filter_to_valid_prereg_users(
-                PreregistrationUser.objects.filter(email__iexact=data["email"].strip())
-            ).latest("invited_at")
-        else:
-            invitee = filter_to_valid_prereg_users(
-                PreregistrationUser.objects.filter(id=data["prereg_id"])
-            ).first()
-            if invitee is None:
-                # The invitation could have been revoked
-                return
+        invitee = filter_to_valid_prereg_users(
+            PreregistrationUser.objects.filter(id=data["prereg_id"])
+        ).first()
+        if invitee is None:
+            # The invitation could have been revoked
+            return
 
         referrer = get_user_profile_by_id(data["referrer_id"])
         logger.info(
