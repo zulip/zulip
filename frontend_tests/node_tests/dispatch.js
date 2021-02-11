@@ -371,14 +371,14 @@ run_test("realm settings", (override) => {
     assert_same(page_params.realm_icon_url, "icon.png");
     assert_same(page_params.realm_icon_source, "U");
 
-    event = event_fixtures.realm__update_dict__logo;
     override(realm_logo, "rerender", noop);
+
+    event = event_fixtures.realm__update_dict__logo;
     dispatch(event);
     assert_same(page_params.realm_logo_url, "logo.png");
     assert_same(page_params.realm_logo_source, "U");
 
     event = event_fixtures.realm__update_dict__night_logo;
-    override(realm_logo, "rerender", noop);
     dispatch(event);
     assert_same(page_params.realm_night_logo_url, "night_logo.png");
     assert_same(page_params.realm_night_logo_source, "U");
@@ -389,8 +389,8 @@ run_test("realm settings", (override) => {
     assert_same(window.location.href, "/accounts/deactivated/");
 });
 
-run_test("realm_bot", (override) => {
-    let event = event_fixtures.realm_bot__add;
+run_test("realm_bot add", (override) => {
+    const event = event_fixtures.realm_bot__add;
     with_stub((bot_stub) => {
         with_stub((admin_stub) => {
             override(bot_data, "add", bot_stub.f);
@@ -402,8 +402,10 @@ run_test("realm_bot", (override) => {
             admin_stub.get_args("update_user_id", "update_bot_data");
         });
     });
+});
 
-    event = event_fixtures.realm_bot__remove;
+run_test("realm_bot remove", (override) => {
+    const event = event_fixtures.realm_bot__remove;
     with_stub((bot_stub) => {
         with_stub((admin_stub) => {
             override(bot_data, "deactivate", bot_stub.f);
@@ -415,12 +417,16 @@ run_test("realm_bot", (override) => {
             admin_stub.get_args("update_user_id", "update_bot_data");
         });
     });
+});
 
-    event = event_fixtures.realm_bot__delete;
+run_test("realm_bot delete", () => {
+    const event = event_fixtures.realm_bot__delete;
     // We don't handle live updates for delete events, this is a noop.
     dispatch(event);
+});
 
-    event = event_fixtures.realm_bot__update;
+run_test("realm_bot update", (override) => {
+    const event = event_fixtures.realm_bot__update;
     with_stub((bot_stub) => {
         with_stub((admin_stub) => {
             override(bot_data, "update", bot_stub.f);
@@ -707,11 +713,12 @@ run_test("update_display_settings", (override) => {
         assert_same(secs, 300);
     };
 
+    override(realm_logo, "rerender", noop);
+
     with_stub((stub) => {
         event = event_fixtures.update_display_settings__color_scheme_dark;
         page_params.color_scheme = 1;
         override(night_mode, "enable", stub.f); // automatically checks if called
-        override(realm_logo, "rerender", noop);
         dispatch(event);
         assert(page_params.color_scheme, 2);
     });
@@ -720,7 +727,6 @@ run_test("update_display_settings", (override) => {
         event = event_fixtures.update_display_settings__color_scheme_light;
         page_params.color_scheme = 1;
         override(night_mode, "disable", stub.f); // automatically checks if called
-        override(realm_logo, "rerender", noop);
         dispatch(event);
         assert(page_params.color_scheme, 3);
     });
@@ -729,7 +735,6 @@ run_test("update_display_settings", (override) => {
         event = event_fixtures.update_display_settings__color_scheme_automatic;
         page_params.color_scheme = 2;
         override(night_mode, "default_preference_checker", stub.f); // automatically checks if called
-        override(realm_logo, "rerender", noop);
         dispatch(event);
         assert(page_params.color_scheme, 1);
     });
@@ -789,10 +794,10 @@ run_test("update_message (read)", (override) => {
     });
 });
 
-run_test("update_message (stars)", (override) => {
+run_test("update_message (add star)", (override) => {
     override(starred_messages, "rerender_ui", noop);
 
-    let event = event_fixtures.update_message_flags__starred_add;
+    const event = event_fixtures.update_message_flags__starred_add;
     with_stub((stub) => {
         override(ui, "update_starred_view", stub.f);
         dispatch(event);
@@ -802,8 +807,11 @@ run_test("update_message (stars)", (override) => {
         const msg = message_store.get(test_message.id);
         assert.equal(msg.starred, true);
     });
+});
 
-    event = event_fixtures.update_message_flags__starred_remove;
+run_test("update_message (remove star)", (override) => {
+    override(starred_messages, "rerender_ui", noop);
+    const event = event_fixtures.update_message_flags__starred_remove;
     with_stub((stub) => {
         override(ui, "update_starred_view", stub.f);
         dispatch(event);
@@ -819,28 +827,31 @@ run_test("delete_message", (override) => {
     const event = event_fixtures.delete_message;
 
     override(stream_list, "update_streams_sidebar", noop);
-    with_stub((stub) => {
-        override(unread_ops, "process_read_messages_event", noop);
-        override(message_events, "remove_messages", stub.f);
-        dispatch(event);
-        const args = stub.get_args("message_ids");
-        assert_same(args.message_ids, [1337]);
-    });
-    with_stub((stub) => {
-        override(unread_ops, "process_read_messages_event", stub.f);
-        dispatch(event);
-        const args = stub.get_args("message_ids");
-        assert_same(args.message_ids, [1337]);
-    });
-    with_stub((stub) => {
-        override(stream_topic_history, "remove_messages", stub.f);
-        dispatch(event);
-        const args = stub.get_args("opts");
-        assert_same(args.opts.stream_id, 99);
-        assert_same(args.opts.topic_name, "topic1");
-        assert_same(args.opts.num_messages, 1);
-        assert_same(args.opts.max_removed_msg_id, 1337);
-    });
+
+    const message_events_stub = make_stub();
+    override(message_events, "remove_messages", message_events_stub.f);
+
+    const unread_ops_stub = make_stub();
+    override(unread_ops, "process_read_messages_event", unread_ops_stub.f);
+
+    const stream_topic_history_stub = make_stub();
+    override(stream_topic_history, "remove_messages", stream_topic_history_stub.f);
+
+    dispatch(event);
+
+    let args;
+
+    args = message_events_stub.get_args("message_ids");
+    assert_same(args.message_ids, [1337]);
+
+    args = unread_ops_stub.get_args("message_ids");
+    assert_same(args.message_ids, [1337]);
+
+    args = stream_topic_history_stub.get_args("opts");
+    assert_same(args.opts.stream_id, 99);
+    assert_same(args.opts.topic_name, "topic1");
+    assert_same(args.opts.num_messages, 1);
+    assert_same(args.opts.max_removed_msg_id, 1337);
 });
 
 run_test("user_status", (override) => {
@@ -873,8 +884,6 @@ run_test("user_status", (override) => {
 
 run_test("realm_export", (override) => {
     const event = event_fixtures.realm_export;
-    override(settings_exports, "populate_exports_table", noop);
-    dispatch(event);
     with_stub((stub) => {
         override(settings_exports, "populate_exports_table", stub.f);
         dispatch(event);
