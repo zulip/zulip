@@ -113,8 +113,30 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     message, ignored_user_message = access_message(user_profile, message_id)
     is_no_topic_msg = (message.topic_name() == "(no topic)")
 
+    # Normalize topic and content.
+    if topic_name is not None:
+        topic_name = topic_name.strip()
+    if content is not None:
+        if content.rstrip() == "":
+            content = "(deleted)"
+        content = normalize_body(content)
+
+    # Check for no-op changes; if we find any, ignore them and set a flag.
+    # The purpose of the flag is to allow us to return json_success() in the
+    # case that changes were provided but no changes ended up being made, due
+    # to all of them being no-op changes.
+    noop_changes = False
+    if stream_id == message.recipient.type_id:
+        stream_id = None
+        noop_changes = True
+    if content == message.content:
+        content = None
+        noop_changes = True
+    if topic_name == message.topic_name():
+        topic_name = None
+        noop_changes = True
+
     # You only have permission to edit a message if:
-    # you change this value also change those two parameters in message_edit.js.
     # 1. You sent it, OR:
     # 2. This is a topic-only edit for a (no topic) message, OR:
     # 3. This is a topic-only edit and you are an admin, OR:
@@ -150,21 +172,19 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
             raise JsonableError(_("The time limit for editing this message has passed"))
 
     if topic_name is None and content is None and stream_id is None:
-        return json_error(_("Nothing to change"))
-    if topic_name is not None:
-        topic_name = topic_name.strip()
-        if topic_name == "":
-            raise JsonableError(_("Topic can't be empty"))
+        if noop_changes:
+            return json_success()
+        else:
+            return json_error(_("Nothing to change"))
+    if topic_name is not None and topic_name == "":
+        raise JsonableError(_("Topic can't be empty"))
+
     rendered_content = None
     links_for_embed: Set[str] = set()
     prior_mention_user_ids: Set[int] = set()
     mention_user_ids: Set[int] = set()
     mention_data: Optional[MentionData] = None
     if content is not None:
-        if content.rstrip() == "":
-            content = "(deleted)"
-        content = normalize_body(content)
-
         mention_data = MentionData(
             realm_id=user_profile.realm.id,
             content=content,

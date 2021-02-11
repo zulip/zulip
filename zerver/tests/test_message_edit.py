@@ -6,6 +6,7 @@ from unittest import mock
 import orjson
 from django.db import IntegrityError
 from django.http import HttpResponse
+from typing_extensions import Literal, TypedDict
 
 from zerver.lib.actions import (
     do_set_realm_property,
@@ -17,7 +18,7 @@ from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import LEGACY_PREV_TOPIC, TOPIC_NAME
-from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models import Message, Stream, UserMessage, UserProfile, get_realm, get_stream
 
 
 class EditMessageTest(ZulipTestCase):
@@ -118,14 +119,14 @@ class EditMessageTest(ZulipTestCase):
         self.login('hamlet')
         msg_id = self.send_stream_message(self.example_user("hamlet"), "Scotland",
                                           topic_name="editing", content="before edit")
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'content': 'after edit',
         })
         self.assert_json_success(result)
         self.check_message(msg_id, topic_name="editing", content="after edit")
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'topic': 'edited',
         })
@@ -139,7 +140,7 @@ class EditMessageTest(ZulipTestCase):
             to_user=self.example_user("cordelia"),
             content="**before** edit",
         )
-        result = self.client_get('/json/messages/' + str(msg_id))
+        result = self.client_get(f'/json/messages/{msg_id}')
         self.assert_json_success(result)
         self.assertEqual(result.json()['raw_content'], '**before** edit')
 
@@ -148,11 +149,11 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_error(result, 'Invalid message(s)')
 
         self.login('cordelia')
-        result = self.client_get('/json/messages/' + str(msg_id))
+        result = self.client_get(f'/json/messages/{msg_id}')
         self.assert_json_success(result)
 
         self.login('othello')
-        result = self.client_get('/json/messages/' + str(msg_id))
+        result = self.client_get(f'/json/messages/{msg_id}')
         self.assert_json_error(result, 'Invalid message(s)')
 
     def test_fetch_raw_message_stream_wrong_realm(self) -> None:
@@ -162,12 +163,12 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(user_profile, stream.name)
         msg_id = self.send_stream_message(user_profile, stream.name,
                                           topic_name="test", content="test")
-        result = self.client_get('/json/messages/' + str(msg_id))
+        result = self.client_get(f'/json/messages/{msg_id}')
         self.assert_json_success(result)
 
         mit_user = self.mit_user('sipbtest')
         self.login_user(mit_user)
-        result = self.client_get('/json/messages/' + str(msg_id), subdomain="zephyr")
+        result = self.client_get(f'/json/messages/{msg_id}', subdomain="zephyr")
         self.assert_json_error(result, 'Invalid message(s)')
 
     def test_fetch_raw_message_private_stream(self) -> None:
@@ -177,17 +178,17 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(user_profile, stream.name)
         msg_id = self.send_stream_message(user_profile, stream.name,
                                           topic_name="test", content="test")
-        result = self.client_get('/json/messages/' + str(msg_id))
+        result = self.client_get(f'/json/messages/{msg_id}')
         self.assert_json_success(result)
         self.login('othello')
-        result = self.client_get('/json/messages/' + str(msg_id))
+        result = self.client_get(f'/json/messages/{msg_id}')
         self.assert_json_error(result, 'Invalid message(s)')
 
     def test_edit_message_no_permission(self) -> None:
         self.login('hamlet')
         msg_id = self.send_stream_message(self.example_user("iago"), "Scotland",
                                           topic_name="editing", content="before edit")
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'content': 'content after edit',
         })
@@ -197,16 +198,138 @@ class EditMessageTest(ZulipTestCase):
         self.login('hamlet')
         msg_id = self.send_stream_message(self.example_user("hamlet"), "Scotland",
                                           topic_name="editing", content="before edit")
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
         })
         self.assert_json_error(result, "Nothing to change")
+
+    def test_edit_message_noop_changes(self) -> None:
+        class MsgDict(TypedDict, total=False):
+            stream_id: int
+            topic: str
+            content: str
+
+        msg_dict_attr_type = Literal['stream_id', 'topic', 'content']
+        msg_dict_attrs: List[msg_dict_attr_type] = ['stream_id', 'topic', 'content']
+
+        HISTORY_KEY_TO_ATTR_NAME = {
+            'prev_stream': 'stream_id',
+            LEGACY_PREV_TOPIC: 'topic',
+            'prev_content': 'content'
+        }
+
+        realm = get_realm('zulip')
+        old_stream = get_stream('Scotland', realm)
+        new_stream = get_stream('Verona', realm)
+
+        original_msg_dict: MsgDict = {
+            'stream_id': old_stream.id,
+            'topic': 'old topic',
+            'content': 'old content',
+        }
+
+        # These subtests do not include edits where all the changes
+        # are actual changes; those edits are commented out. It does
+        # include edits that are currently disallowed – those that edit
+        # the stream and content at the same time – but marks them as
+        # expected to fail. When they become allowed in the future,
+        # those subtests will fail, which will alert whoever is making
+        # the changes to update this test to start really testing those
+        # edits.
+        subtests: List[Tuple[MsgDict, bool]] = [
+            # (edit_dict, should_succeed)
+
+            ({'stream_id': old_stream.id}, True),
+            # ({'stream_id': new_stream.id}, True),
+
+            ({'topic': 'old topic'}, True),
+            # ({'topic': 'new topic'}, True),
+
+            ({'content': 'old content'}, True),
+            # ({'content': 'new content'}, True),
+
+            ({'stream_id': old_stream.id, 'topic': 'old topic'}, True),
+            ({'stream_id': old_stream.id, 'topic': 'new topic'}, True),
+            ({'stream_id': new_stream.id, 'topic': 'old topic'}, True),
+            # ({'stream_id': new_stream.id, 'topic': 'new topic'}, True),
+
+            ({'stream_id': old_stream.id, 'content': 'old content'}, True),
+            ({'stream_id': old_stream.id, 'content': 'new content'}, True),
+            ({'stream_id': new_stream.id, 'content': 'old content'}, True),
+            # ({'stream_id': new_stream.id, 'content': 'new content'}, False),
+
+            ({'topic': 'old topic', 'content': 'old content'}, True),
+            ({'topic': 'old topic', 'content': 'new content'}, True),
+            ({'topic': 'new topic', 'content': 'old content'}, True),
+            # ({'topic': 'new topic', 'content': 'new content'}, True),
+
+            ({'stream_id': old_stream.id, 'topic': 'old topic', 'content': 'old content'}, True),
+            ({'stream_id': old_stream.id, 'topic': 'old topic', 'content': 'new content'}, True),
+            ({'stream_id': old_stream.id, 'topic': 'new topic', 'content': 'old content'}, True),
+            ({'stream_id': old_stream.id, 'topic': 'new topic', 'content': 'new content'}, True),
+            ({'stream_id': new_stream.id, 'topic': 'old topic', 'content': 'old content'}, True),
+            ({'stream_id': new_stream.id, 'topic': 'old topic', 'content': 'new content'}, False),
+            ({'stream_id': new_stream.id, 'topic': 'new topic', 'content': 'old content'}, True),
+            # ({'stream_id': new_stream.id, 'topic': 'new topic', 'content': 'new content'}, False),
+        ]
+
+        # Must be an admin in order to edit the stream of a message
+        self.login('iago')
+
+        for (edit_dict, should_succeed) in subtests:
+            with self.subTest(edit_dict=edit_dict):
+                msg_id = self.send_stream_message(self.example_user("iago"), old_stream.name,
+                                                  topic_name=original_msg_dict['topic'],
+                                                  content=original_msg_dict['content'])
+                result = self.client_patch(f"/json/messages/{msg_id}", {
+                    'message_id': msg_id,
+                    **edit_dict,
+                })
+
+                if not should_succeed:
+                    self.assert_json_error(result, "Cannot change message content while changing stream")
+                    continue
+
+                self.assert_json_success(result)
+
+                msg = Message.objects.get(id=msg_id)
+
+                new_msg_dict: MsgDict = {
+                    'stream_id': msg.recipient.type_id,
+                    'topic': msg.topic_name(),
+                    'content': msg.content
+                }
+
+                # Build the set of attributes that were saved in the latest edit.
+                latest_edit = set()
+                if msg.edit_history:
+                    history = orjson.loads(msg.edit_history)
+                    latest_edit = {
+                        HISTORY_KEY_TO_ATTR_NAME[key]
+                        for key in history[0].keys() if key in HISTORY_KEY_TO_ATTR_NAME
+                    }
+
+                # Build the set of attributes that were really changed, as
+                # opposed to being no-op edits.
+                real_changes = set()
+                for attr in msg_dict_attrs:
+                    if attr in edit_dict:
+                        # No matter what, these should be equal at this point.
+                        # It was either a no-op change, meaning they were already
+                        # the same, or it was a real change, and they should now
+                        # be the same.
+                        self.assertEqual(new_msg_dict[attr], edit_dict[attr])
+
+                        if new_msg_dict[attr] != original_msg_dict[attr]:
+                            real_changes.add(attr)
+
+                self.assertEqual(latest_edit, real_changes)
 
     def test_edit_message_no_topic(self) -> None:
         self.login('hamlet')
         msg_id = self.send_stream_message(self.example_user("hamlet"), "Scotland",
                                           topic_name="editing", content="before edit")
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'topic': ' ',
         })
@@ -216,7 +339,7 @@ class EditMessageTest(ZulipTestCase):
         self.login('hamlet')
         msg_id = self.send_stream_message(self.example_user("hamlet"), "Scotland",
                                           topic_name="editing", content="before edit")
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'content': ' ',
         })
@@ -236,13 +359,12 @@ class EditMessageTest(ZulipTestCase):
                                             content="content before edit")
 
         new_content_1 = 'content after edit'
-        result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
+        result_1 = self.client_patch(f"/json/messages/{msg_id_1}", {
             'message_id': msg_id_1, 'content': new_content_1,
         })
         self.assert_json_success(result_1)
 
-        result = self.client_get(
-            "/json/messages/" + str(msg_id_1) + "/history")
+        result = self.client_get(f"/json/messages/{msg_id_1}/history")
         self.assert_json_error(result, "Message edit history is disabled in this organization")
 
         # Now verify that if we fetch the message directly, there's no
@@ -264,13 +386,12 @@ class EditMessageTest(ZulipTestCase):
             topic_name="editing",
             content="content before edit")
         new_content_1 = 'content after edit'
-        result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
+        result_1 = self.client_patch(f"/json/messages/{msg_id_1}", {
             'message_id': msg_id_1, 'content': new_content_1,
         })
         self.assert_json_success(result_1)
 
-        message_edit_history_1 = self.client_get(
-            "/json/messages/" + str(msg_id_1) + "/history")
+        message_edit_history_1 = self.client_get(f"/json/messages/{msg_id_1}/history")
         json_response_1 = orjson.loads(message_edit_history_1.content)
         message_history_1 = json_response_1['message_history']
 
@@ -299,13 +420,12 @@ class EditMessageTest(ZulipTestCase):
         new_content_2 = ('content before edit, line 1\n'
                          'content after edit, line 2\n'
                          'content before edit, line 3')
-        result_2 = self.client_patch("/json/messages/" + str(msg_id_2), {
+        result_2 = self.client_patch(f"/json/messages/{msg_id_2}", {
             'message_id': msg_id_2, 'content': new_content_2,
         })
         self.assert_json_success(result_2)
 
-        message_edit_history_2 = self.client_get(
-            "/json/messages/" + str(msg_id_2) + "/history")
+        message_edit_history_2 = self.client_get(f"/json/messages/{msg_id_2}/history")
         json_response_2 = orjson.loads(message_edit_history_2.content)
         message_history_2 = json_response_2['message_history']
 
@@ -333,13 +453,12 @@ class EditMessageTest(ZulipTestCase):
             topic_name="editing",
             content="Here is a link to [zulip](www.zulip.org).")
         new_content_1 = 'Here is a link to [zulip](www.zulipchat.com).'
-        result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
+        result_1 = self.client_patch(f"/json/messages/{msg_id_1}", {
             'message_id': msg_id_1, 'content': new_content_1,
         })
         self.assert_json_success(result_1)
 
-        message_edit_history_1 = self.client_get(
-            "/json/messages/" + str(msg_id_1) + "/history")
+        message_edit_history_1 = self.client_get(f"/json/messages/{msg_id_1}/history")
         json_response_1 = orjson.loads(message_edit_history_1.content)
         message_history_1 = json_response_1['message_history']
 
@@ -399,7 +518,7 @@ class EditMessageTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         msg_id = self.send_stream_message(self.example_user("hamlet"), "Scotland",
                                           topic_name="topic 1", content="content 1")
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'content': 'content 2',
         })
@@ -411,7 +530,7 @@ class EditMessageTest(ZulipTestCase):
                          {'timestamp', 'prev_content', 'user_id',
                           'prev_rendered_content', 'prev_rendered_content_version'})
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'topic': 'topic 2',
         })
@@ -421,7 +540,7 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(history[0]['user_id'], hamlet.id)
         self.assertEqual(set(history[0].keys()), {'timestamp', LEGACY_PREV_TOPIC, 'user_id'})
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'content': 'content 3',
             'topic': 'topic 3',
@@ -435,7 +554,7 @@ class EditMessageTest(ZulipTestCase):
                          {'timestamp', LEGACY_PREV_TOPIC, 'prev_content', 'user_id',
                           'prev_rendered_content', 'prev_rendered_content_version'})
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'content': 'content 4',
         })
@@ -445,7 +564,7 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(history[0]['user_id'], hamlet.id)
 
         self.login('iago')
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'topic': 'topic 4',
         })
@@ -464,7 +583,7 @@ class EditMessageTest(ZulipTestCase):
 
         # Now, we verify that the edit history data sent back has the
         # correct filled-out fields
-        message_edit_history = self.client_get("/json/messages/" + str(msg_id) + "/history")
+        message_edit_history = self.client_get(f"/json/messages/{msg_id}/history")
 
         json_response = orjson.loads(message_edit_history.content)
 
@@ -520,7 +639,7 @@ class EditMessageTest(ZulipTestCase):
             params_dict = {'message_id': id_, 'topic': new_topic}
             if not topic_only:
                 params_dict['content'] = new_content
-            result = self.client_patch("/json/messages/" + str(id_), params_dict)
+            result = self.client_patch(f"/json/messages/{id_}", params_dict)
             self.assert_json_success(result)
             if topic_only:
                 self.check_topic(id_, topic_name=new_topic)
@@ -537,7 +656,7 @@ class EditMessageTest(ZulipTestCase):
             params_dict = {'message_id': id_, 'topic': new_topic}
             if not topic_only:
                 params_dict['content'] = new_content
-            result = self.client_patch("/json/messages/" + str(id_), params_dict)
+            result = self.client_patch(f"/json/messages/{id_}", params_dict)
             message = Message.objects.get(id=id_)
             self.assert_json_error(result, error)
 
@@ -589,7 +708,7 @@ class EditMessageTest(ZulipTestCase):
         def do_edit_message_assert_success(id_: int, unique_str: str) -> None:
             new_topic = 'topic' + unique_str
             params_dict = {'message_id': id_, 'topic': new_topic}
-            result = self.client_patch("/json/messages/" + str(id_), params_dict)
+            result = self.client_patch(f"/json/messages/{id_}", params_dict)
             self.assert_json_success(result)
             self.check_topic(id_, topic_name=new_topic)
 
@@ -599,7 +718,7 @@ class EditMessageTest(ZulipTestCase):
             old_content = message.content
             new_topic = 'topic' + unique_str
             params_dict = {'message_id': id_, 'topic': new_topic}
-            result = self.client_patch("/json/messages/" + str(id_), params_dict)
+            result = self.client_patch(f"/json/messages/{id_}", params_dict)
             message = Message.objects.get(id=id_)
             self.assert_json_error(result, error)
             msg = Message.objects.get(id=id_)
@@ -741,7 +860,7 @@ class EditMessageTest(ZulipTestCase):
             }
 
         users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
-        result = self.client_patch("/json/messages/" + str(message_id), {
+        result = self.client_patch(f"/json/messages/{message_id}", {
             'message_id': message_id,
             'content': 'Hello @**everyone**',
         })
@@ -796,7 +915,7 @@ class EditMessageTest(ZulipTestCase):
                 )
 
         new_topic = 'edited'
-        result = self.client_patch("/json/messages/" + str(id1), {
+        result = self.client_patch(f"/json/messages/{id1}", {
             'message_id': id1,
             'topic': new_topic,
             'propagate_mode': 'change_later',
@@ -806,7 +925,7 @@ class EditMessageTest(ZulipTestCase):
         verify_edit_history(new_topic, 1)
 
         new_topic = 'edited2'
-        result = self.client_patch("/json/messages/" + str(id1), {
+        result = self.client_patch(f"/json/messages/{id1}", {
             'message_id': id1,
             'topic': new_topic,
             'propagate_mode': 'change_later',
@@ -828,7 +947,7 @@ class EditMessageTest(ZulipTestCase):
         id5 = self.send_stream_message(self.example_user("iago"), "Scotland",
                                        topic_name="topic1")
 
-        result = self.client_patch("/json/messages/" + str(id1), {
+        result = self.client_patch(f"/json/messages/{id1}", {
             'message_id': id1,
             'topic': 'edited',
             'propagate_mode': 'change_later',
@@ -856,7 +975,7 @@ class EditMessageTest(ZulipTestCase):
         id6 = self.send_stream_message(self.example_user("iago"), "Scotland",
                                        topic_name="topic3")
 
-        result = self.client_patch("/json/messages/" + str(id2), {
+        result = self.client_patch(f"/json/messages/{id2}", {
             'message_id': id2,
             'topic': 'edited',
             'propagate_mode': 'change_all',
@@ -881,7 +1000,7 @@ class EditMessageTest(ZulipTestCase):
         id4 = self.send_stream_message(self.example_user("iago"), "Scotland",
                                        topic_name="toPic1")
 
-        result = self.client_patch("/json/messages/" + str(id2), {
+        result = self.client_patch(f"/json/messages/{id2}", {
             'message_id': id2,
             'topic': 'edited',
             'propagate_mode': 'change_all',
@@ -898,14 +1017,14 @@ class EditMessageTest(ZulipTestCase):
         id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland",
                                        topic_name="topic1")
 
-        result = self.client_patch("/json/messages/" + str(id1), {
+        result = self.client_patch(f"/json/messages/{id1}", {
             'topic': 'edited',
             'propagate_mode': 'invalid',
         })
         self.assert_json_error(result, 'Invalid propagate_mode')
         self.check_topic(id1, topic_name="topic1")
 
-        result = self.client_patch("/json/messages/" + str(id1), {
+        result = self.client_patch(f"/json/messages/{id1}", {
             'content': 'edited',
             'propagate_mode': 'change_all',
         })
@@ -933,7 +1052,7 @@ class EditMessageTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test")
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
@@ -953,7 +1072,7 @@ class EditMessageTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test")
 
-        result = self.client_patch("/json/messages/" + str(msg_id_later), {
+        result = self.client_patch(f"/json/messages/{msg_id_later}", {
             'message_id': msg_id_later,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_later',
@@ -974,7 +1093,7 @@ class EditMessageTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "aaron", "test move stream", "new stream", "test")
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
@@ -991,7 +1110,7 @@ class EditMessageTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test")
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
@@ -1010,7 +1129,7 @@ class EditMessageTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test")
 
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
-            result = self.client_patch("/json/messages/" + str(msg_id), {
+            result = self.client_patch(f"/json/messages/{msg_id}", {
                 'message_id': msg_id,
                 'stream_id': new_stream.id,
                 'propagate_mode': 'change_all',
@@ -1044,7 +1163,7 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(has_message_access(guest_user, Message.objects.get(id=msg_id_to_test_acesss), None), True)
         self.assertEqual(has_message_access(non_guest_user, Message.objects.get(id=msg_id_to_test_acesss), None), True)
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
@@ -1064,7 +1183,7 @@ class EditMessageTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test")
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
@@ -1084,7 +1203,7 @@ class EditMessageTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test")
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
@@ -1105,7 +1224,7 @@ class EditMessageTest(ZulipTestCase):
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test")
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
@@ -1157,7 +1276,7 @@ class EditMessageTest(ZulipTestCase):
             message_id=msg_id,
         ).count(), 0)
 
-        result = self.client_patch("/json/messages/" + str(msg_id), {
+        result = self.client_patch(f"/json/messages/{msg_id}", {
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
