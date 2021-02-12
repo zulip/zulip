@@ -72,7 +72,7 @@ LINK_TYPE_HANDLERS = {
 
 class RelativeLinksHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
-        """ Add RelativeLinksHelpExtension to the Markdown instance. """
+        """Add RelativeLinksHelpExtension to the Markdown instance."""
         md.registerExtension(self)
         md.preprocessors.register(RelativeLinks(), "help_relative_links", 520)
 

@@ -92,7 +92,7 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
 
 
 def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
-    """ Handle either an exception type event or a message type event payload."""
+    """Handle either an exception type event or a message type event payload."""
     # We shouldn't support the officially deprecated Raven series of SDKs.
     if int(event["version"]) < 7:
         raise UnsupportedWebhookEventType("Raven SDK")
@@ -167,7 +167,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
 def handle_issue_payload(
     action: str, issue: Dict[str, Any], actor: Dict[str, Any]
 ) -> Tuple[str, str]:
-    """ Handle either an issue type event. """
+    """Handle either an issue type event."""
     subject = issue["title"]
     datetime = issue["lastSeen"].split(".")[0].replace("T", " ")
 

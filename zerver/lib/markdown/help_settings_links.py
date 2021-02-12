@@ -88,7 +88,7 @@ settings_markdown = """
 
 class SettingHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
-        """ Add SettingHelpExtension to the Markdown instance. """
+        """Add SettingHelpExtension to the Markdown instance."""
         md.registerExtension(self)
         md.preprocessors.register(Setting(), "setting", 515)
 

@@ -181,7 +181,7 @@ def destroy_test_databases(worker_id: Optional[int] = None) -> None:
             # delete that database, we need to not pass a number
             # argument to destroy_test_db.
             if worker_id is not None:
-                """Modified from the Django original to """
+                """Modified from the Django original to"""
                 database_id = get_database_id(worker_id)
                 connection.creation.destroy_test_db(suffix=database_id)
             else:

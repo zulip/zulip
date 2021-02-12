@@ -334,7 +334,7 @@ def render_curl_example(
     exclude: Optional[List[str]] = None,
     include: Optional[List[str]] = None,
 ) -> List[str]:
-    """ A simple wrapper around generate_curl_example. """
+    """A simple wrapper around generate_curl_example."""
     parts = function.split(":")
     endpoint = parts[0]
     method = parts[1]

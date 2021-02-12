@@ -295,7 +295,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         self._verify_archive_data([msg_id], usermsg_ids)
 
     def test_cross_realm_personal_message_archiving(self) -> None:
-        """Check that cross-realm personal messages get correctly archived. """
+        """Check that cross-realm personal messages get correctly archived."""
         msg_ids = [self._send_cross_realm_personal_message() for i in range(1, 7)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
         # Make the message expired on the recipient's realm:

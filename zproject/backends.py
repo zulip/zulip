@@ -385,7 +385,7 @@ class EmailAuthBackend(ZulipAuthMixin):
         realm: Realm,
         return_data: Optional[Dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
-        """ Authenticate a user based on email address as the user name. """
+        """Authenticate a user based on email address as the user name."""
         if not password_auth_enabled(realm):
             if return_data is not None:
                 return_data["password_auth_disabled"] = True

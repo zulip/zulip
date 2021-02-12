@@ -560,7 +560,7 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
 
 
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
-    """ Return a `<code>` element containing the matching text. """
+    """Return a `<code>` element containing the matching text."""
 
     def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[None, Element], int, int]:
         # Let upstream's implementation do its job as it is, we'll
@@ -1438,7 +1438,7 @@ def unicode_emoji_to_codepoint(unicode_emoji: str) -> str:
 
 
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):
-    """ Translates emoticons like `:)` into emoji like `:smile:`. """
+    """Translates emoticons like `:)` into emoji like `:smile:`."""
 
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         db_data = self.md.zulip_db_data
@@ -1609,7 +1609,7 @@ class OListProcessor(sane_lists.SaneOListProcessor):
 
 
 class UListProcessor(sane_lists.SaneUListProcessor):
-    """ Unordered lists, but with 2-space indent """
+    """Unordered lists, but with 2-space indent"""
 
     def __init__(self, parser: Any) -> None:
         parser.md.tab_length = 2
@@ -1705,7 +1705,7 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
 
     def run(self, lines: List[str]) -> List[str]:
-        """ Insert a newline between a paragraph and ulist if missing """
+        """Insert a newline between a paragraph and ulist if missing"""
         inserts = 0
         in_code_fence: bool = False
         open_fences: List[Fence] = []
@@ -1761,7 +1761,7 @@ def prepare_realm_pattern(source: str) -> str:
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
 class RealmFilterPattern(markdown.inlinepatterns.Pattern):
-    """ Applied a given realm filter to the input """
+    """Applied a given realm filter to the input"""
 
     def __init__(
         self,
