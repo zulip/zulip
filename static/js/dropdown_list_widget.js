@@ -20,20 +20,30 @@ const DropdownListWidget = function (opts) {
     };
     init();
 
+    const render_default_text = (elem) => {
+        elem.text(opts.default_text);
+        elem.addClass("text-warning");
+        elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").hide();
+    };
+
     const render = (value) => {
         $(`#${CSS.escape(opts.container_id)} #${CSS.escape(opts.value_id)}`).data("value", value);
 
         const elem = $(`#${CSS.escape(opts.container_id)} #${CSS.escape(opts.widget_name)}_name`);
 
         if (!value || value === opts.null_value) {
-            elem.text(opts.default_text);
-            elem.addClass("text-warning");
-            elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").hide();
+            render_default_text(elem);
             return;
         }
 
         // Happy path
         const item = opts.data.find((x) => x.value === value.toString());
+
+        if (item === undefined) {
+            render_default_text(elem);
+            return;
+        }
+
         const text = opts.render_text(item.name);
         elem.text(text);
         elem.removeClass("text-warning");

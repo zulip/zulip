@@ -58,6 +58,12 @@ run_test("basic_functions", () => {
     assert.equal(widget.value(), "");
     assert.equal(updated_value, null);
     assert(!reset_button.visible());
+
+    widget.update("four");
+    assert.equal($widget.text(), "translated: not set");
+    assert.equal(widget.value(), "four");
+    assert.equal(updated_value, "four");
+    assert(!reset_button.visible());
 });
 
 run_test("no_default_value", () => {
