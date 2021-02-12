@@ -108,13 +108,9 @@ const messages = {
     },
 };
 
-// We are going to test a core module called messages_store.js.  It
-// depends on some code that we aren't really interested in testing,
-// so let's create some stub functions that do nothing.
-
-const noop = () => undefined;
-
-// We can also bring in real code:
+// We are going to test a core module called messages_store.js next.
+// This is an example of a deep unit test, where our dependencies
+// are easy to test.  Start by requiring the dependencies:
 zrequire("recent_senders");
 const unread = zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -343,6 +339,8 @@ run_test("add_user_event", () => {
    scope of the function.
 
 */
+
+const noop = () => {};
 
 const activity = set_global("activity", {});
 const message_live_update = set_global("message_live_update", {});
