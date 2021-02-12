@@ -540,10 +540,10 @@ run_test("unread_ops", (override) => {
         unread.process_loaded_messages(test_messages);
 
         // Make our window appear visible.
-        notifications.is_window_focused = () => true;
+        override(notifications, "is_window_focused", () => true);
 
         // Make our "test" message appear visible.
-        message_viewport.bottom_message_visible = () => true;
+        override(message_viewport, "bottom_message_visible", () => true);
 
         // Make us not be in a narrow (somewhat hackily).
         message_list.narrowed = undefined;
@@ -556,17 +556,17 @@ run_test("unread_ops", (override) => {
         });
 
         // Ignore these interactions for now:
-        home_msg_list.show_message_as_read = noop;
         message_list.all = {};
-        message_list.all.show_message_as_read = noop;
-        notifications.close_notification = noop;
+        override(message_list.all, "show_message_as_read", noop);
+        override(home_msg_list, "show_message_as_read", noop);
+        override(notifications, "close_notification", noop);
     })();
 
     // Set up a way to capture the options passed in to channel.post.
     let channel_post_opts;
-    channel.post = (opts) => {
+    override(channel, "post", (opts) => {
         channel_post_opts = opts;
-    };
+    });
 
     // Let the real code skip over details related to active overlays.
     override(overlays, "is_active", () => false);
