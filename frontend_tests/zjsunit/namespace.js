@@ -112,7 +112,9 @@ exports.with_overrides = function (test_function) {
             // it's super easy to reason about our logic to restore
             // the original function.  Usually if somebody sees this
             // error, it's a symptom of not breaking up tests enough.
-            throw new Error("You can only override a function one time.");
+            throw new Error(
+                "You can only override a function one time. Use with_field for more granular control.",
+            );
         }
 
         funcs.get(module).set(func_name, true);
