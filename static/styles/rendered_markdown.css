@@ -37,7 +37,7 @@
     /* Reduce top-margin when a paragraph is followed by an ordered or bulleted list */
     p + ul,
     p + ol {
-        margin-top: -3px;
+        margin-top: 0;
     }
 
     /* Headings: We need to make sure our headings are less prominent than our sender names styling. */
