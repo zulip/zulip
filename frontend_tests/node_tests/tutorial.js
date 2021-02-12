@@ -678,28 +678,28 @@ function make_jquery_helper() {
     };
 }
 
-function make_topic_list_helper() {
+function make_topic_list_helper(override) {
     // We want to make sure that updating a stream_list
     // closes the topic list and then rebuilds it.  We don't
     // care about the implementation details of topic_list for
     // now, just that it is invoked properly.
-    topic_list.active_stream_id = () => undefined;
-    topic_list.get_stream_li = () => undefined;
+    override(topic_list, "active_stream_id", () => undefined);
+    override(topic_list, "get_stream_li", () => undefined);
 
     let topic_list_cleared;
-    topic_list.clear = () => {
+    override(topic_list, "clear", () => {
         topic_list_cleared = true;
-    };
+    });
 
     let topic_list_closed;
-    topic_list.close = () => {
+    override(topic_list, "close", () => {
         topic_list_closed = true;
-    };
+    });
 
     let topic_list_rebuilt;
-    topic_list.rebuild = () => {
+    override(topic_list, "rebuild", () => {
         topic_list_rebuilt = true;
-    };
+    });
 
     return {
         verify_actions: () => {
@@ -723,9 +723,6 @@ function make_sidebar_helper() {
     }
 
     stream_list.stream_sidebar.set_row(social_stream.stream_id, row_widget());
-    stream_list.stream_cursor = {
-        redraw: noop,
-    };
 
     return {
         verify_actions: () => {
@@ -745,14 +742,16 @@ run_test("stream_list", (override) => {
     const filter = new Filter(filter_terms);
 
     override(narrow_state, "filter", () => filter);
-    override(narrow_state, "active",  () => true);
+    override(narrow_state, "active", () => true);
 
     const jquery_helper = make_jquery_helper();
     const sidebar_helper = make_sidebar_helper();
-    const topic_list_helper = make_topic_list_helper();
+    const topic_list_helper = make_topic_list_helper(override);
 
     // This is what we are testing!
-    stream_list.update_streams_sidebar();
+    with_field(stream_list, "stream_cursor", {redraw: noop}, () => {
+        stream_list.update_streams_sidebar();
+    });
 
     jquery_helper.verify_actions();
     sidebar_helper.verify_actions();
