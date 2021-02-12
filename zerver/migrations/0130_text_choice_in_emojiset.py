@@ -25,28 +25,28 @@ def reverse_change_emojiset(apps: StateApps, schema_editor: DatabaseSchemaEditor
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0129_remove_userprofile_autoscroll_forever'),
+        ("zerver", "0129_remove_userprofile_autoscroll_forever"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='emojiset',
+            model_name="userprofile",
+            name="emojiset",
             field=models.CharField(
                 choices=[
-                    ('google', 'Google'),
-                    ('apple', 'Apple'),
-                    ('twitter', 'Twitter'),
-                    ('emojione', 'EmojiOne'),
-                    ('text', 'Plain text'),
+                    ("google", "Google"),
+                    ("apple", "Apple"),
+                    ("twitter", "Twitter"),
+                    ("emojione", "EmojiOne"),
+                    ("text", "Plain text"),
                 ],
-                default='google',
+                default="google",
                 max_length=20,
             ),
         ),
         migrations.RunPython(change_emojiset, reverse_change_emojiset, elidable=True),
         migrations.RemoveField(
-            model_name='userprofile',
-            name='emoji_alt_code',
+            model_name="userprofile",
+            name="emoji_alt_code",
         ),
     ]

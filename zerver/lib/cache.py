@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 MEMCACHED_MAX_KEY_LENGTH = 250
 
-FuncT = TypeVar('FuncT', bound=Callable[..., object])
+FuncT = TypeVar("FuncT", bound=Callable[..., object])
 
 logger = logging.getLogger()
 
@@ -79,20 +79,20 @@ def get_or_create_key_prefix() -> str:
         #
         # Having a fixed key is OK since we don't support running
         # multiple copies of the Puppeteer tests at the same time anyway.
-        return 'puppeteer_tests:'
+        return "puppeteer_tests:"
     elif settings.TEST_SUITE:
         # The Python tests overwrite KEY_PREFIX on each test, but use
         # this codepath as well, just to save running the more complex
         # code below for reading the normal key prefix.
-        return 'django_tests_unused:'
+        return "django_tests_unused:"
 
     # directory `var` should exist in production
     os.makedirs(os.path.join(settings.DEPLOY_ROOT, "var"), exist_ok=True)
 
     filename = os.path.join(settings.DEPLOY_ROOT, "var", "remote_cache_prefix")
     try:
-        with open(filename, 'x') as f:
-            prefix = secrets.token_hex(16) + ':'
+        with open(filename, "x") as f:
+            prefix = secrets.token_hex(16) + ":"
             f.write(prefix + "\n")
     except FileExistsError:
         tries = 1
@@ -102,7 +102,7 @@ def get_or_create_key_prefix() -> str:
             if len(prefix) == 33:
                 break
             tries += 1
-            prefix = ''
+            prefix = ""
             time.sleep(0.5)
 
     if not prefix:
@@ -117,10 +117,10 @@ KEY_PREFIX: str = get_or_create_key_prefix()
 
 def bounce_key_prefix_for_testing(test_name: str) -> None:
     global KEY_PREFIX
-    KEY_PREFIX = test_name + ':' + str(os.getpid()) + ':'
+    KEY_PREFIX = test_name + ":" + str(os.getpid()) + ":"
     # We are taking the hash of the KEY_PREFIX to decrease the size of the key.
     # Memcached keys should have a length of less than 250.
-    KEY_PREFIX = hashlib.sha1(KEY_PREFIX.encode('utf-8')).hexdigest() + ":"
+    KEY_PREFIX = hashlib.sha1(KEY_PREFIX.encode("utf-8")).hexdigest() + ":"
 
 
 def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
@@ -185,7 +185,7 @@ def cache_with_key(
                 return func(*args, **kwargs)
 
             extra = ""
-            if cache_name == 'database':
+            if cache_name == "database":
                 extra = ".dbcache"
 
             if with_statsd_key is not None:
@@ -362,18 +362,18 @@ def filter_good_and_bad_keys(keys: List[str]) -> Tuple[List[str], List[str]]:
 # a few type variables that help define its interface.
 
 # Type for the cache's keys; will typically be int or str.
-ObjKT = TypeVar('ObjKT')
+ObjKT = TypeVar("ObjKT")
 
 # Type for items to be fetched from the database (e.g. a Django model object)
-ItemT = TypeVar('ItemT')
+ItemT = TypeVar("ItemT")
 
 # Type for items to be stored in the cache (e.g. a dictionary serialization).
 # Will equal ItemT unless a cache_transformer is specified.
-CacheItemT = TypeVar('CacheItemT')
+CacheItemT = TypeVar("CacheItemT")
 
 # Type for compressed items for storage in the cache.  For
 # serializable objects, will be the object; if encoded, bytes.
-CompressedItemT = TypeVar('CompressedItemT')
+CompressedItemT = TypeVar("CompressedItemT")
 
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
@@ -484,21 +484,21 @@ def display_recipient_cache_key(recipient_id: int) -> str:
 def display_recipient_bulk_get_users_by_id_cache_key(user_id: int) -> str:
     # Cache key function for a function for bulk fetching users, used internally
     # by display_recipient code.
-    return 'bulk_fetch_display_recipients:' + user_profile_by_id_cache_key(user_id)
+    return "bulk_fetch_display_recipients:" + user_profile_by_id_cache_key(user_id)
 
 
 def user_profile_by_email_cache_key(email: str) -> str:
     # See the comment in zerver/lib/avatar_hash.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
     # with high likelihood be ASCII-only for the foreseeable future.
-    return f'user_profile_by_email:{make_safe_digest(email.strip())}'
+    return f"user_profile_by_email:{make_safe_digest(email.strip())}"
 
 
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
     return f"user_profile:{make_safe_digest(email.strip())}:{realm_id}"
 
 
-def user_profile_cache_key(email: str, realm: 'Realm') -> str:
+def user_profile_cache_key(email: str, realm: "Realm") -> str:
     return user_profile_cache_key_id(email, realm.id)
 
 
@@ -515,21 +515,21 @@ def user_profile_by_api_key_cache_key(api_key: str) -> str:
 
 
 realm_user_dict_fields: List[str] = [
-    'id',
-    'full_name',
-    'email',
-    'avatar_source',
-    'avatar_version',
-    'is_active',
-    'role',
-    'is_bot',
-    'realm_id',
-    'timezone',
-    'date_joined',
-    'bot_owner_id',
-    'delivery_email',
-    'bot_type',
-    'long_term_idle',
+    "id",
+    "full_name",
+    "email",
+    "avatar_source",
+    "avatar_version",
+    "is_active",
+    "role",
+    "is_bot",
+    "realm_id",
+    "timezone",
+    "date_joined",
+    "bot_owner_id",
+    "delivery_email",
+    "bot_type",
+    "long_term_idle",
 ]
 
 
@@ -537,8 +537,8 @@ def realm_user_dicts_cache_key(realm_id: int) -> str:
     return f"realm_user_dicts:{realm_id}"
 
 
-def get_realm_used_upload_space_cache_key(realm: 'Realm') -> str:
-    return f'realm_used_upload_space:{realm.id}'
+def get_realm_used_upload_space_cache_key(realm: "Realm") -> str:
+    return f"realm_used_upload_space:{realm.id}"
 
 
 def active_user_ids_cache_key(realm_id: int) -> str:
@@ -550,23 +550,23 @@ def active_non_guest_user_ids_cache_key(realm_id: int) -> str:
 
 
 bot_dict_fields: List[str] = [
-    'api_key',
-    'avatar_source',
-    'avatar_version',
-    'bot_owner__id',
-    'bot_type',
-    'default_all_public_streams',
-    'default_events_register_stream__name',
-    'default_sending_stream__name',
-    'email',
-    'full_name',
-    'id',
-    'is_active',
-    'realm_id',
+    "api_key",
+    "avatar_source",
+    "avatar_version",
+    "bot_owner__id",
+    "bot_type",
+    "default_all_public_streams",
+    "default_events_register_stream__name",
+    "default_sending_stream__name",
+    "email",
+    "full_name",
+    "id",
+    "is_active",
+    "realm_id",
 ]
 
 
-def bot_dicts_in_realm_cache_key(realm: 'Realm') -> str:
+def bot_dicts_in_realm_cache_key(realm: "Realm") -> str:
     return f"bot_dicts_in_realm:{realm.id}"
 
 
@@ -574,7 +574,7 @@ def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
     return f"stream_by_realm_and_name:{realm_id}:{make_safe_digest(stream_name.strip().lower())}"
 
 
-def delete_user_profile_caches(user_profiles: Iterable['UserProfile']) -> None:
+def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
     # Imported here to avoid cyclic dependency.
     from zerver.lib.users import get_all_api_keys
     from zerver.models import is_cross_realm_bot_email
@@ -593,22 +593,22 @@ def delete_user_profile_caches(user_profiles: Iterable['UserProfile']) -> None:
     cache_delete_many(keys)
 
 
-def delete_display_recipient_cache(user_profile: 'UserProfile') -> None:
+def delete_display_recipient_cache(user_profile: "UserProfile") -> None:
     from zerver.models import Subscription  # We need to import here to avoid cyclic dependency.
 
     recipient_ids = Subscription.objects.filter(user_profile=user_profile)
-    recipient_ids = recipient_ids.values_list('recipient_id', flat=True)
+    recipient_ids = recipient_ids.values_list("recipient_id", flat=True)
     keys = [display_recipient_cache_key(rid) for rid in recipient_ids]
     keys.append(display_recipient_bulk_get_users_by_id_cache_key(user_profile.id))
     cache_delete_many(keys)
 
 
 def changed(kwargs: Any, fields: List[str]) -> bool:
-    if kwargs.get('update_fields') is None:
+    if kwargs.get("update_fields") is None:
         # adds/deletes should invalidate the cache
         return True
 
-    update_fields = set(kwargs['update_fields'])
+    update_fields = set(kwargs["update_fields"])
     for f in fields:
         if f in update_fields:
             return True
@@ -619,7 +619,7 @@ def changed(kwargs: Any, fields: List[str]) -> bool:
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
 def flush_user_profile(sender: Any, **kwargs: Any) -> None:
-    user_profile = kwargs['instance']
+    user_profile = kwargs["instance"]
     delete_user_profile_caches([user_profile])
 
     # Invalidate our active_users_in_realm info dict if any user has changed
@@ -627,14 +627,14 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
     if changed(kwargs, realm_user_dict_fields):
         cache_delete(realm_user_dicts_cache_key(user_profile.realm_id))
 
-    if changed(kwargs, ['is_active']):
+    if changed(kwargs, ["is_active"]):
         cache_delete(active_user_ids_cache_key(user_profile.realm_id))
         cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
 
-    if changed(kwargs, ['role']):
+    if changed(kwargs, ["role"]):
         cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
 
-    if changed(kwargs, ['email', 'full_name', 'id', 'is_mirror_dummy']):
+    if changed(kwargs, ["email", "full_name", "id", "is_mirror_dummy"]):
         delete_display_recipient_cache(user_profile)
 
     # Invalidate our bots_in_realm info dict if any bot has
@@ -647,14 +647,14 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
 # a Realm object.  The main tricky thing here is that Realm info is
 # generally cached indirectly through user_profile objects.
 def flush_realm(sender: Any, from_deletion: bool = False, **kwargs: Any) -> None:
-    realm = kwargs['instance']
+    realm = kwargs["instance"]
     users = realm.get_active_users()
     delete_user_profile_caches(users)
 
     if (
         from_deletion
         or realm.deactivated
-        or (kwargs["update_fields"] is not None and "string_id" in kwargs['update_fields'])
+        or (kwargs["update_fields"] is not None and "string_id" in kwargs["update_fields"])
     ):
         cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
@@ -664,24 +664,24 @@ def flush_realm(sender: Any, from_deletion: bool = False, **kwargs: Any) -> None
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
-    elif changed(kwargs, ['description']):
+    elif changed(kwargs, ["description"]):
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
 
 
-def realm_alert_words_cache_key(realm: 'Realm') -> str:
+def realm_alert_words_cache_key(realm: "Realm") -> str:
     return f"realm_alert_words:{realm.string_id}"
 
 
-def realm_alert_words_automaton_cache_key(realm: 'Realm') -> str:
+def realm_alert_words_automaton_cache_key(realm: "Realm") -> str:
     return f"realm_alert_words_automaton:{realm.string_id}"
 
 
-def realm_rendered_description_cache_key(realm: 'Realm') -> str:
+def realm_rendered_description_cache_key(realm: "Realm") -> str:
     return f"realm_rendered_description:{realm.string_id}"
 
 
-def realm_text_description_cache_key(realm: 'Realm') -> str:
+def realm_text_description_cache_key(realm: "Realm") -> str:
     return f"realm_text_description:{realm.string_id}"
 
 
@@ -690,14 +690,14 @@ def realm_text_description_cache_key(realm: 'Realm') -> str:
 def flush_stream(sender: Any, **kwargs: Any) -> None:
     from zerver.models import UserProfile
 
-    stream = kwargs['instance']
+    stream = kwargs["instance"]
     items_for_remote_cache = {}
     items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
     cache_set_many(items_for_remote_cache)
 
     if (
-        kwargs.get('update_fields') is None
-        or 'name' in kwargs['update_fields']
+        kwargs.get("update_fields") is None
+        or "name" in kwargs["update_fields"]
         and UserProfile.objects.filter(
             Q(default_sending_stream=stream) | Q(default_events_register_stream=stream)
         ).exists()
@@ -706,31 +706,31 @@ def flush_stream(sender: Any, **kwargs: Any) -> None:
 
 
 def flush_used_upload_space_cache(sender: Any, **kwargs: Any) -> None:
-    attachment = kwargs['instance']
+    attachment = kwargs["instance"]
 
     if kwargs.get("created") is None or kwargs.get("created") is True:
         cache_delete(get_realm_used_upload_space_cache_key(attachment.owner.realm))
 
 
 def to_dict_cache_key_id(message_id: int) -> str:
-    return f'message_dict:{message_id}'
+    return f"message_dict:{message_id}"
 
 
-def to_dict_cache_key(message: 'Message', realm_id: Optional[int] = None) -> str:
+def to_dict_cache_key(message: "Message", realm_id: Optional[int] = None) -> str:
     return to_dict_cache_key_id(message.id)
 
 
 def open_graph_description_cache_key(content: bytes, request: HttpRequest) -> str:
-    return 'open_graph_description_path:{}'.format(make_safe_digest(request.META['PATH_INFO']))
+    return "open_graph_description_path:{}".format(make_safe_digest(request.META["PATH_INFO"]))
 
 
 def flush_message(sender: Any, **kwargs: Any) -> None:
-    message = kwargs['instance']
+    message = kwargs["instance"]
     cache_delete(to_dict_cache_key_id(message.id))
 
 
 def flush_submessage(sender: Any, **kwargs: Any) -> None:
-    submessage = kwargs['instance']
+    submessage = kwargs["instance"]
     # submessages are not cached directly, they are part of their
     # parent messages
     message_id = submessage.message_id
@@ -760,7 +760,7 @@ def ignore_unhashable_lru_cache(maxsize: int = 128, typed: bool = False) -> DECO
         cache_enabled_user_function = cast(Any, internal_decorator(user_function))
 
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            if not hasattr(cache_enabled_user_function, 'key_prefix'):
+            if not hasattr(cache_enabled_user_function, "key_prefix"):
                 cache_enabled_user_function.key_prefix = KEY_PREFIX
 
             if cache_enabled_user_function.key_prefix != KEY_PREFIX:
@@ -782,8 +782,8 @@ def ignore_unhashable_lru_cache(maxsize: int = 128, typed: bool = False) -> DECO
             # well.
             return user_function(*args, **kwargs)
 
-        setattr(wrapper, 'cache_info', cache_enabled_user_function.cache_info)
-        setattr(wrapper, 'cache_clear', cache_enabled_user_function.cache_clear)
+        setattr(wrapper, "cache_info", cache_enabled_user_function.cache_info)
+        setattr(wrapper, "cache_clear", cache_enabled_user_function.cache_clear)
         return wrapper
 
     return decorator

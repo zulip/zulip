@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0232_make_archive_transaction_field_not_nullable'),
+        ("zerver", "0232_make_archive_transaction_field_not_nullable"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='avatar_hash',
+            model_name="userprofile",
+            name="avatar_hash",
             field=models.CharField(max_length=64, null=True),
         ),
     ]

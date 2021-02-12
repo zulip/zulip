@@ -15,13 +15,13 @@ from emoji_setup_utils import EMOJISETS, emoji_is_universal, get_emoji_code
 
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR)
-EMOJI_MAP_FILE = os.path.join(TOOLS_DIR, 'setup', 'emoji', 'emoji_map.json')
+EMOJI_MAP_FILE = os.path.join(TOOLS_DIR, "setup", "emoji", "emoji_map.json")
 UNIFIED_REACTIONS_FILE = os.path.join(
-    ZULIP_PATH, 'zerver', 'management', 'data', 'unified_reactions.json'
+    ZULIP_PATH, "zerver", "management", "data", "unified_reactions.json"
 )
-EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, 'node_modules', 'emoji-datasource-google', 'emoji.json')
-EMOJI_CACHE = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
-OUTPUT_FILE = os.path.join(EMOJI_CACHE, 'emoji_names_table.html')
+EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, "node_modules", "emoji-datasource-google", "emoji.json")
+EMOJI_CACHE = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
+OUTPUT_FILE = os.path.join(EMOJI_CACHE, "emoji_names_table.html")
 
 with open(EMOJI_DATA_FILE, "rb") as fp:
     EMOJI_DATA = orjson.loads(fp.read())
@@ -109,16 +109,16 @@ TABLE_CSS = """
 """
 
 SORTED_CATEGORIES = [
-    'Smileys & Emotion',
-    'People & Body',
-    'Animals & Nature',
-    'Food & Drink',
-    'Activities',
-    'Travel & Places',
-    'Objects',
-    'Symbols',
-    'Flags',
-    'Skin Tones',
+    "Smileys & Emotion",
+    "People & Body",
+    "Animals & Nature",
+    "Food & Drink",
+    "Activities",
+    "Travel & Places",
+    "Objects",
+    "Symbols",
+    "Flags",
+    "Skin Tones",
 ]
 
 emoji_code_to_zulip_names: Dict[str, str] = {}
@@ -161,7 +161,7 @@ def get_sorting_info(category: str, sort_order: int) -> str:
 
 
 def get_images_html(emoji_code: str) -> str:
-    images_html = ''
+    images_html = ""
     for emojiset in EMOJISETS:
         images_html += EMOJI_IMAGE_TEMPLATE.format(
             emoji_code=emoji_code,
@@ -196,7 +196,7 @@ def generate_emoji_collection() -> None:
 
     # Sort `emoji_collection`.
     for category in SORTED_CATEGORIES:
-        emoji_collection[category].sort(key=lambda x: x['sort_order'])
+        emoji_collection[category].sort(key=lambda x: x["sort_order"])
 
 
 def main() -> None:
@@ -207,7 +207,7 @@ def main() -> None:
         for emoji_entry in emoji_collection[category]:
             tbody += TABLE_ROW_TEMPLATE.format(**emoji_entry)
 
-    with open(OUTPUT_FILE, 'w') as fp:
+    with open(OUTPUT_FILE, "w") as fp:
         fp.write(
             EMOJI_LISTING_TEMPLATE.format(
                 tbody=tbody,

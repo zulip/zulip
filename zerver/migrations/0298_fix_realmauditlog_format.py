@@ -30,7 +30,7 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
           "property": property,
       }
     """
-    RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
+    RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
     # Constants from models.py
     USER_DEFAULT_SENDING_STREAM_CHANGED = 129
     USER_DEFAULT_REGISTER_STREAM_CHANGED = 130
@@ -38,8 +38,8 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
     USER_NOTIFICATION_SETTINGS_CHANGED = 132
     REALM_PROPERTY_CHANGED = 207
     SUBSCRIPTION_PROPERTY_CHANGED = 304
-    OLD_VALUE = '1'
-    NEW_VALUE = '2'
+    OLD_VALUE = "1"
+    NEW_VALUE = "2"
 
     unlikely_event_types = [
         USER_DEFAULT_SENDING_STREAM_CHANGED,
@@ -54,8 +54,8 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
         SUBSCRIPTION_PROPERTY_CHANGED,
     ]
     improperly_marshalled_properties = [
-        'notifications_stream',
-        'signup_notifications_stream',
+        "notifications_stream",
+        "signup_notifications_stream",
     ]
 
     # These are also corrupted but are part of a feature nobody uses,
@@ -71,7 +71,7 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
         # migration a second time.
         if not isinstance(old_key, dict) and not isinstance(new_key, dict):
             continue
-        if 'value' not in old_key or 'value' not in new_key:
+        if "value" not in old_key or "value" not in new_key:
             continue
 
         old_value = old_key["value"]
@@ -82,16 +82,16 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
         # action value type is expected to be a dictionary.  That
         # property is marshalled properly but still wants the second
         # migration below.
-        if prop != 'authentication_methods':
+        if prop != "authentication_methods":
             # For the other properties, we have `stream` rather than `stream['id']`
             # in the original extra_data object; the fix is simply to extract
             # the intended ID field via `value = value['id']`.
             if isinstance(old_value, dict):
                 assert prop in improperly_marshalled_properties
-                old_value = old_value['id']
+                old_value = old_value["id"]
             if isinstance(new_value, dict):
                 assert prop in improperly_marshalled_properties
-                new_value = new_value['id']
+                new_value = new_value["id"]
 
         # Sanity check that the original event has exactly the keys we expect.
         assert set(extra_data.keys()) <= {OLD_VALUE, NEW_VALUE}
@@ -109,7 +109,7 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0297_draft'),
+        ("zerver", "0297_draft"),
     ]
 
     operations = [

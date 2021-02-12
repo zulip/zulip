@@ -14,13 +14,13 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@webhook_view('SlackIncoming')
+@webhook_view("SlackIncoming")
 @has_request_variables
 def api_slack_incoming_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     user_specified_topic: Optional[str] = REQ("topic", default=None),
-    payload: Optional[Dict[str, Any]] = REQ('payload', converter=orjson.loads, default=None),
+    payload: Optional[Dict[str, Any]] = REQ("payload", converter=orjson.loads, default=None),
 ) -> HttpResponse:
 
     # Slack accepts webhook payloads as payload="encoded json" as
@@ -96,7 +96,7 @@ def replace_links(text: str) -> str:
 
 def replace_formatting(text: str) -> str:
     # Slack uses *text* for bold, whereas Zulip interprets that as italics
-    text = re.sub(r'([^\w])\*(?!\s+)([^\*^\n]+)(?<!\s)\*([^\w])', r"\1**\2**\3", text)
+    text = re.sub(r"([^\w])\*(?!\s+)([^\*^\n]+)(?<!\s)\*([^\w])", r"\1**\2**\3", text)
 
     # Slack uses _text_ for emphasis, whereas Zulip interprets that as nothing
     text = re.sub(r"([^\w])[_](?!\s+)([^\_\^\n]+)(?<!\s)[_]([^\w])", r"\1**\2**\3", text)

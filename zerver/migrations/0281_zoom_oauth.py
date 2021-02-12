@@ -7,13 +7,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0280_userprofile_presence_enabled'),
+        ("zerver", "0280_userprofile_presence_enabled"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='zoom_token',
+            model_name="userprofile",
+            name="zoom_token",
             field=django.contrib.postgres.fields.jsonb.JSONField(default=None, null=True),
         ),
     ]

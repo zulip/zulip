@@ -23,7 +23,7 @@ from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfi
 
 def check_if_owner_required(invited_as: int, user_profile: UserProfile) -> None:
     if (
-        invited_as == PreregistrationUser.INVITE_AS['REALM_OWNER']
+        invited_as == PreregistrationUser.INVITE_AS["REALM_OWNER"]
         and not user_profile.is_realm_owner
     ):
         raise OrganizationOwnerRequired()
@@ -35,7 +35,7 @@ def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     invitee_emails_raw: str = REQ("invitee_emails"),
-    invite_as: int = REQ(validator=check_int, default=PreregistrationUser.INVITE_AS['MEMBER']),
+    invite_as: int = REQ(validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
     stream_ids: List[int] = REQ(validator=check_list(check_int)),
 ) -> HttpResponse:
 
@@ -45,7 +45,7 @@ def invite_users_backend(
         return json_error(_("Must be invited as an valid type of user"))
     check_if_owner_required(invite_as, user_profile)
     if (
-        invite_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']
+        invite_as == PreregistrationUser.INVITE_AS["REALM_ADMIN"]
         and not user_profile.is_realm_admin
     ):
         return json_error(_("Must be an organization administrator"))
@@ -71,12 +71,12 @@ def invite_users_backend(
 
 
 def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
-    invitee_emails_list = set(re.split(r'[,\n]', invitee_emails_raw))
+    invitee_emails_list = set(re.split(r"[,\n]", invitee_emails_raw))
     invitee_emails = set()
     for email in invitee_emails_list:
-        is_email_with_name = re.search(r'<(?P<email>.*)>', email)
+        is_email_with_name = re.search(r"<(?P<email>.*)>", email)
         if is_email_with_name:
-            email = is_email_with_name.group('email')
+            email = is_email_with_name.group("email")
         invitee_emails.add(email.strip())
     return invitee_emails
 
@@ -84,7 +84,7 @@ def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
 @require_member_or_admin
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     all_users = do_get_user_invites(user_profile)
-    return json_success({'invites': all_users})
+    return json_success({"invites": all_users})
 
 
 @require_member_or_admin
@@ -150,7 +150,7 @@ def resend_user_invite_email(
             raise JsonableError(_("Must be an organization administrator"))
 
     timestamp = do_resend_user_invite_email(prereg_user)
-    return json_success({'timestamp': timestamp})
+    return json_success({"timestamp": timestamp})
 
 
 @require_realm_admin
@@ -158,7 +158,7 @@ def resend_user_invite_email(
 def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    invite_as: int = REQ(validator=check_int, default=PreregistrationUser.INVITE_AS['MEMBER']),
+    invite_as: int = REQ(validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
     stream_ids: Sequence[int] = REQ(validator=check_list(check_int), default=[]),
 ) -> HttpResponse:
     check_if_owner_required(invite_as, user_profile)
@@ -172,4 +172,4 @@ def generate_multiuse_invite_backend(
         streams.append(stream)
 
     invite_link = do_create_multiuse_invite_link(user_profile, invite_as, streams)
-    return json_success({'invite_link': invite_link})
+    return json_success({"invite_link": invite_link})

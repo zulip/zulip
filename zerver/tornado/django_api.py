@@ -19,7 +19,7 @@ class TornadoAdapter(HTTPAdapter):
     def __init__(self) -> None:
         # All of the POST requests we make to Tornado are safe to
         # retry; allow retries of them, which is not the default.
-        retry_methods = Retry.DEFAULT_METHOD_WHITELIST | set(['POST'])
+        retry_methods = Retry.DEFAULT_METHOD_WHITELIST | set(["POST"])
         retry = Retry(total=3, backoff_factor=1, method_whitelist=retry_methods)
         super().__init__(max_retries=retry)
 
@@ -81,25 +81,25 @@ def request_event_queue(
 
     tornado_uri = get_tornado_uri(user_profile.realm)
     req = {
-        'dont_block': 'true',
-        'apply_markdown': orjson.dumps(apply_markdown),
-        'client_gravatar': orjson.dumps(client_gravatar),
-        'slim_presence': orjson.dumps(slim_presence),
-        'all_public_streams': orjson.dumps(all_public_streams),
-        'client': 'internal',
-        'user_profile_id': user_profile.id,
-        'user_client': user_client.name,
-        'narrow': orjson.dumps(narrow),
-        'secret': settings.SHARED_SECRET,
-        'lifespan_secs': queue_lifespan_secs,
-        'bulk_message_deletion': orjson.dumps(bulk_message_deletion),
+        "dont_block": "true",
+        "apply_markdown": orjson.dumps(apply_markdown),
+        "client_gravatar": orjson.dumps(client_gravatar),
+        "slim_presence": orjson.dumps(slim_presence),
+        "all_public_streams": orjson.dumps(all_public_streams),
+        "client": "internal",
+        "user_profile_id": user_profile.id,
+        "user_client": user_client.name,
+        "narrow": orjson.dumps(narrow),
+        "secret": settings.SHARED_SECRET,
+        "lifespan_secs": queue_lifespan_secs,
+        "bulk_message_deletion": orjson.dumps(bulk_message_deletion),
     }
 
     if event_types is not None:
-        req['event_types'] = orjson.dumps(event_types)
+        req["event_types"] = orjson.dumps(event_types)
 
-    resp = requests_client().post(tornado_uri + '/api/v1/events/internal', data=req)
-    return resp.json()['queue_id']
+    resp = requests_client().post(tornado_uri + "/api/v1/events/internal", data=req)
+    return resp.json()["queue_id"]
 
 
 def get_user_events(
@@ -110,15 +110,15 @@ def get_user_events(
 
     tornado_uri = get_tornado_uri(user_profile.realm)
     post_data: Dict[str, Any] = {
-        'queue_id': queue_id,
-        'last_event_id': last_event_id,
-        'dont_block': 'true',
-        'user_profile_id': user_profile.id,
-        'secret': settings.SHARED_SECRET,
-        'client': 'internal',
+        "queue_id": queue_id,
+        "last_event_id": last_event_id,
+        "dont_block": "true",
+        "user_profile_id": user_profile.id,
+        "secret": settings.SHARED_SECRET,
+        "client": "internal",
     }
-    resp = requests_client().post(tornado_uri + '/api/v1/events/internal', data=post_data)
-    return resp.json()['events']
+    resp = requests_client().post(tornado_uri + "/api/v1/events/internal", data=post_data)
+    return resp.json()["events"]
 
 
 def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:

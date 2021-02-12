@@ -2,9 +2,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ZapierHookTests(WebhookTestCase):
-    STREAM_NAME = 'zapier'
+    STREAM_NAME = "zapier"
     URL_TEMPLATE = "/api/v1/external/zapier?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'zapier'
+    FIXTURE_DIR_NAME = "zapier"
 
     def test_zapier_when_subject_and_body_are_correct(self) -> None:
         expected_topic = "New email from zulip@zulip.com"
@@ -25,14 +25,14 @@ class ZapierHookTests(WebhookTestCase):
 
 
 class ZapierZulipAppTests(WebhookTestCase):
-    STREAM_NAME = 'zapier'
+    STREAM_NAME = "zapier"
     URL_TEMPLATE = "/api/v1/external/zapier?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'zapier'
+    FIXTURE_DIR_NAME = "zapier"
 
     def test_auth(self) -> None:
-        payload = self.get_body('zapier_zulip_app_auth')
-        result = self.client_post(self.url, payload, content_type='application/json')
+        payload = self.get_body("zapier_zulip_app_auth")
+        result = self.client_post(self.url, payload, content_type="application/json")
         json_result = self.assert_json_success(result)
-        self.assertEqual(json_result['full_name'], 'Zulip Webhook Bot')
-        self.assertEqual(json_result['email'], 'webhook-bot@zulip.com')
-        self.assertIn('id', json_result)
+        self.assertEqual(json_result["full_name"], "Zulip Webhook Bot")
+        self.assertEqual(json_result["email"], "webhook-bot@zulip.com")
+        self.assertIn("id", json_result)

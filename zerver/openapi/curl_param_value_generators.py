@@ -67,8 +67,8 @@ def patch_openapi_example_values(
     for param in params:
         param_name = param["name"]
         if param_name in realm_example_values:
-            if 'content' in param:
-                param['content']['application/json']['example'] = realm_example_values[param_name]
+            if "content" in param:
+                param["content"]["application/json"]["example"] = realm_example_values[param_name]
             else:
                 param["example"] = realm_example_values[param_name]
 
@@ -107,13 +107,13 @@ def iago_message_id() -> Dict[str, object]:
 
 @openapi_param_value_generator(["/messages/{message_id}/reactions:delete"])
 def add_emoji_to_message() -> Dict[str, object]:
-    user_profile = helpers.example_user('iago')
+    user_profile = helpers.example_user("iago")
 
     # from OpenAPI format data in zulip.yaml
     message_id = 41
-    emoji_name = 'octopus'
-    emoji_code = '1f419'
-    reaction_type = 'unicode_emoji'
+    emoji_name = "octopus"
+    emoji_code = "1f419"
+    reaction_type = "unicode_emoji"
 
     message = Message.objects.select_related().get(id=message_id)
     do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
@@ -200,7 +200,7 @@ def get_events() -> Dict[str, object]:
     profile = helpers.example_user("iago")
     helpers.subscribe(profile, "Verona")
     client = Client.objects.create(name="curl-test-client-1")
-    response = do_events_register(profile, client, event_types=['message', 'realm_emoji'])
+    response = do_events_register(profile, client, event_types=["message", "realm_emoji"])
     helpers.send_stream_message(helpers.example_user("hamlet"), "Verona")
     return {
         "queue_id": response["queue_id"],
@@ -212,7 +212,7 @@ def get_events() -> Dict[str, object]:
 def delete_event_queue() -> Dict[str, object]:
     profile = helpers.example_user("iago")
     client = Client.objects.create(name="curl-test-client-2")
-    response = do_events_register(profile, client, event_types=['message'])
+    response = do_events_register(profile, client, event_types=["message"])
     return {
         "queue_id": response["queue_id"],
         "last_event_id": response["last_event_id"],
@@ -271,6 +271,6 @@ def upload_custom_emoji() -> Dict[str, object]:
 @openapi_param_value_generator(["/users/{user_id}:delete"])
 def deactivate_user() -> Dict[str, object]:
     user_profile = do_create_user(
-        email='testuser@zulip.com', password=None, full_name='test_user', realm=get_realm('zulip')
+        email="testuser@zulip.com", password=None, full_name="test_user", realm=get_realm("zulip")
     )
     return {"user_id": user_profile.id}

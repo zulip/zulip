@@ -33,20 +33,20 @@ class EmailLogBackEnd(EmailBackend):
     @staticmethod
     def log_email(email: EmailMultiAlternatives) -> None:
         """Used in development to record sent emails in a nice HTML log"""
-        html_message = 'Missing HTML message'
+        html_message = "Missing HTML message"
         if len(email.alternatives) > 0:
             html_message = email.alternatives[0][0]
 
         context = {
-            'subject': email.subject,
-            'from_email': email.from_email,
-            'reply_to': email.reply_to,
-            'recipients': email.to,
-            'body': email.body,
-            'html_message': html_message,
+            "subject": email.subject,
+            "from_email": email.from_email,
+            "reply_to": email.reply_to,
+            "recipients": email.to,
+            "body": email.body,
+            "html_message": html_message,
         }
 
-        new_email = loader.render_to_string('zerver/email.html', context)
+        new_email = loader.render_to_string("zerver/email.html", context)
 
         # Read in the pre-existing log, so that we can add the new entry
         # at the top.
@@ -61,8 +61,8 @@ class EmailLogBackEnd(EmailBackend):
 
     @staticmethod
     def prepare_email_messages_for_forwarding(email_messages: List[EmailMultiAlternatives]) -> None:
-        localhost_email_images_base_uri = settings.ROOT_DOMAIN_URI + '/static/images/emails'
-        czo_email_images_base_uri = 'https://chat.zulip.org/static/images/emails'
+        localhost_email_images_base_uri = settings.ROOT_DOMAIN_URI + "/static/images/emails"
+        czo_email_images_base_uri = "https://chat.zulip.org/static/images/emails"
 
         for email_message in email_messages:
             html_alternative = list(email_message.alternatives[0])

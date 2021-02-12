@@ -9,33 +9,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0258_enable_online_push_notifications_default'),
+        ("zerver", "0258_enable_online_push_notifications_default"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='MissedMessageEmailAddress',
+            name="MissedMessageEmailAddress",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ('email_token', models.CharField(db_index=True, max_length=34, unique=True)),
+                ("email_token", models.CharField(db_index=True, max_length=34, unique=True)),
                 (
-                    'timestamp',
+                    "timestamp",
                     models.DateTimeField(db_index=True, default=django.utils.timezone.now),
                 ),
-                ('times_used', models.PositiveIntegerField(db_index=True, default=0)),
+                ("times_used", models.PositiveIntegerField(db_index=True, default=0)),
                 (
-                    'message',
+                    "message",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Message'
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Message"
                     ),
                 ),
                 (
-                    'user_profile',
+                    "user_profile",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
                     ),

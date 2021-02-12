@@ -11,11 +11,11 @@ class Command(ZulipBaseCommand):
     help = """Remove some or all users in a realm from a stream."""
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('-s', '--stream', required=True, help='A stream name.')
+        parser.add_argument("-s", "--stream", required=True, help="A stream name.")
 
         self.add_realm_args(parser, True)
         self.add_user_list_args(
-            parser, all_users_help='Remove all users in realm from this stream.'
+            parser, all_users_help="Remove all users in realm from this stream."
         )
 
     def handle(self, **options: Any) -> None:

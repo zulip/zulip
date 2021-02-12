@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0123_userprofile_make_realm_email_pair_unique'),
+        ("zerver", "0123_userprofile_make_realm_email_pair_unique"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subscription',
-            name='email_notifications',
+            model_name="subscription",
+            name="email_notifications",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='enable_stream_email_notifications',
+            model_name="userprofile",
+            name="enable_stream_email_notifications",
             field=models.BooleanField(default=False),
         ),
     ]

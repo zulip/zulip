@@ -54,8 +54,8 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
     if the server doesn't have EmailAuthBackend configured.
     """
 
-    UserProfile = apps.get_model('zerver', 'UserProfile')
-    RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
+    UserProfile = apps.get_model("zerver", "UserProfile")
+    RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
 
     # Because we're backporting this migration to the Zulip 2.0.x
     # series, we've given it migration number 0209, which is a
@@ -64,10 +64,10 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
     # changes the format of RealmAuditLog.event_type, so we need the
     # following conditional block to determine what values to use when
     # searching for the relevant events in that log.
-    event_type_class = RealmAuditLog._meta.get_field('event_type').get_internal_type()
-    if event_type_class == 'CharField':
-        USER_PASSWORD_CHANGED: Union[int, str] = 'user_password_changed'
-        USER_API_KEY_CHANGED: Union[int, str] = 'user_api_key_changed'
+    event_type_class = RealmAuditLog._meta.get_field("event_type").get_internal_type()
+    if event_type_class == "CharField":
+        USER_PASSWORD_CHANGED: Union[int, str] = "user_password_changed"
+        USER_API_KEY_CHANGED: Union[int, str] = "user_api_key_changed"
     else:
         USER_PASSWORD_CHANGED = 122
         USER_API_KEY_CHANGED = 127
@@ -137,9 +137,9 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
             line = "No reset needed, but changed password: {}\n"
             log_file.write(line.format(password_change_user_ids_no_reset_needed))
 
-    AFFECTED_USER_TYPE_EMPTY_PASSWORD = 'empty_password'
-    AFFECTED_USER_TYPE_CHANGED_PASSWORD = 'changed_password'
-    MIGRATION_ID = '0209_user_profile_no_empty_password'
+    AFFECTED_USER_TYPE_EMPTY_PASSWORD = "empty_password"
+    AFFECTED_USER_TYPE_CHANGED_PASSWORD = "changed_password"
+    MIGRATION_ID = "0209_user_profile_no_empty_password"
 
     def write_realm_audit_log_entry(
         user_profile: Any, event_time: Any, event_type: Any, affected_user_type: str
@@ -151,8 +151,8 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
             event_time=event_time,
             extra_data=orjson.dumps(
                 {
-                    'migration_id': MIGRATION_ID,
-                    'affected_user_type': affected_user_type,
+                    "migration_id": MIGRATION_ID,
+                    "affected_user_type": affected_user_type,
                 }
             ).decode(),
         )
@@ -160,7 +160,7 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
     # If Zulip's built-in password authentication is not enabled on
     # the server level, then we plan to skip resetting any users' API
     # keys, since the bug requires EmailAuthBackend.
-    email_auth_enabled = 'zproject.backends.EmailAuthBackend' in settings.AUTHENTICATION_BACKENDS
+    email_auth_enabled = "zproject.backends.EmailAuthBackend" in settings.AUTHENTICATION_BACKENDS
 
     # A quick note: This query could in theory exclude users with
     # is_active=False, is_bot=True, or realm__deactivated=True here to
@@ -172,7 +172,7 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
     # account.
     for user_profile in UserProfile.objects.all():
         event_time = timezone_now()
-        if check_password('', user_profile.password):
+        if check_password("", user_profile.password):
             # This user currently has the empty string as their password.
 
             # Change their password and record that we did so.
@@ -222,7 +222,7 @@ def reset_user_api_key(user_profile: Any) -> None:
     # could have been registered with the old API key.  Fortunately,
     # we can just write to the queue processor that handles sending
     # those notices to the push notifications bouncer service.
-    event = {'type': 'clear_push_device_tokens', 'user_profile_id': user_profile.id}
+    event = {"type": "clear_push_device_tokens", "user_profile_id": user_profile.id}
     queue_json_publish("deferred_work", event)
 
 
@@ -230,7 +230,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0208_add_realm_night_logo_fields'),
+        ("zerver", "0208_add_realm_night_logo_fields"),
     ]
 
     operations = [

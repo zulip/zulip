@@ -19,7 +19,7 @@ def set_realm_for_existing_scheduledemails(
                 scheduledemail.realm = prereg.realm
         else:
             scheduledemail.realm = scheduledemail.user.realm
-        scheduledemail.save(update_fields=['realm'])
+        scheduledemail.save(update_fields=["realm"])
 
     # Shouldn't be needed, but just in case
     scheduledemail_model.objects.filter(realm=None).delete()
@@ -28,16 +28,16 @@ def set_realm_for_existing_scheduledemails(
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0127_disallow_chars_in_stream_and_user_name'),
+        ("zerver", "0127_disallow_chars_in_stream_and_user_name"),
     ]
 
     operations = [
         # Start with ScheduledEmail.realm being non-null
         migrations.AddField(
-            model_name='scheduledemail',
-            name='realm',
+            model_name="scheduledemail",
+            name="realm",
             field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
             ),
         ),
         # Sets realm for existing ScheduledEmails
@@ -48,8 +48,8 @@ class Migration(migrations.Migration):
         ),
         # Require ScheduledEmail.realm to be non-null
         migrations.AlterField(
-            model_name='scheduledemail',
-            name='realm',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'),
+            model_name="scheduledemail",
+            name="realm",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"),
         ),
     ]

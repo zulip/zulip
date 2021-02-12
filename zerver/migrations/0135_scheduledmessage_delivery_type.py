@@ -6,15 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0134_scheduledmessage'),
+        ("zerver", "0134_scheduledmessage"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='scheduledmessage',
-            name='delivery_type',
+            model_name="scheduledmessage",
+            name="delivery_type",
             field=models.PositiveSmallIntegerField(
-                choices=[(1, 'send_later'), (2, 'remind')], default=1
+                choices=[(1, "send_later"), (2, "remind")], default=1
             ),
         ),
     ]

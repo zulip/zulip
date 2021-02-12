@@ -43,19 +43,19 @@ def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Opti
 
 def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) -> Optional[str]:
     for property in property_list:
-        if property['name'] == name:
-            return property['value']
+        if property["name"] == name:
+            return property["value"]
     return None
 
 
-@webhook_view('Teamcity')
+@webhook_view("Teamcity")
 @has_request_variables
 def api_teamcity_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
-    message = payload.get('build')
+    message = payload.get("build")
     if message is None:
         # Ignore third-party specific (e.g. Slack) payload formats
         # and notify the bot owner
@@ -67,26 +67,26 @@ def api_teamcity_webhook(
 
         return json_success()
 
-    build_name = message['buildFullName']
-    build_url = message['buildStatusUrl']
-    changes_url = build_url + '&tab=buildChangesDiv'
-    build_number = message['buildNumber']
-    build_result = message['buildResult']
-    build_result_delta = message['buildResultDelta']
-    build_status = message['buildStatus']
+    build_name = message["buildFullName"]
+    build_url = message["buildStatusUrl"]
+    changes_url = build_url + "&tab=buildChangesDiv"
+    build_number = message["buildNumber"]
+    build_result = message["buildResult"]
+    build_result_delta = message["buildResultDelta"]
+    build_status = message["buildStatus"]
 
-    if build_result == 'success':
-        if build_result_delta == 'fixed':
-            status = 'has been fixed! :thumbs_up:'
+    if build_result == "success":
+        if build_result_delta == "fixed":
+            status = "has been fixed! :thumbs_up:"
         else:
-            status = 'was successful! :thumbs_up:'
-    elif build_result == 'failure':
-        if build_result_delta == 'broken':
-            status = f'is broken with status {build_status}! :thumbs_down:'
+            status = "was successful! :thumbs_up:"
+    elif build_result == "failure":
+        if build_result_delta == "broken":
+            status = f"is broken with status {build_status}! :thumbs_down:"
         else:
-            status = f'is still broken with status {build_status}! :thumbs_down:'
-    elif build_result == 'running':
-        status = 'has started.'
+            status = f"is still broken with status {build_status}! :thumbs_down:"
+    elif build_result == "running":
+        status = "has started."
 
     template = """
 {build_name} build {build_id} {status} See [changes]\
@@ -101,25 +101,25 @@ def api_teamcity_webhook(
         log_url=build_url,
     )
 
-    if 'branchDisplayName' in message:
-        topic = '{} ({})'.format(build_name, message['branchDisplayName'])
+    if "branchDisplayName" in message:
+        topic = "{} ({})".format(build_name, message["branchDisplayName"])
     else:
         topic = build_name
 
     # Check if this is a personal build, and if so try to private message the user who triggered it.
     if (
-        get_teamcity_property_value(message['teamcityProperties'], 'env.BUILD_IS_PERSONAL')
-        == 'true'
+        get_teamcity_property_value(message["teamcityProperties"], "env.BUILD_IS_PERSONAL")
+        == "true"
     ):
         # The triggeredBy field gives us the teamcity user full name, and the
         # "teamcity.build.triggeredBy.username" property gives us the teamcity username.
         # Let's try finding the user email from both.
-        teamcity_fullname = message['triggeredBy'].split(';')[0]
+        teamcity_fullname = message["triggeredBy"].split(";")[0]
         teamcity_user = guess_zulip_user_from_teamcity(teamcity_fullname, user_profile.realm)
 
         if teamcity_user is None:
             teamcity_shortname = get_teamcity_property_value(
-                message['teamcityProperties'], 'teamcity.build.triggeredBy.username'
+                message["teamcityProperties"], "teamcity.build.triggeredBy.username"
             )
             if teamcity_shortname is not None:
                 teamcity_user = guess_zulip_user_from_teamcity(

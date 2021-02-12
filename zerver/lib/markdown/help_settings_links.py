@@ -10,69 +10,69 @@ from markdown.preprocessors import Preprocessor
 # help_relative_links.py. So if you're making a change here consider making
 # it there as well.
 
-REGEXP = re.compile(r'\{settings_tab\|(?P<setting_identifier>.*?)\}')
+REGEXP = re.compile(r"\{settings_tab\|(?P<setting_identifier>.*?)\}")
 
 link_mapping = {
     # a mapping from the setting identifier that is the same as the final URL
     # breadcrumb to that setting to the name of its setting type, the setting
     # name as it appears in the user interface, and a relative link that can
     # be used to get to that setting
-    'your-account': ['Settings', 'Your account', '/#settings/your-account'],
-    'display-settings': ['Settings', 'Display settings', '/#settings/display-settings'],
-    'notifications': ['Settings', 'Notifications', '/#settings/notifications'],
-    'your-bots': ['Settings', 'Your bots', '/#settings/your-bots'],
-    'alert-words': ['Settings', 'Alert words', '/#settings/alert-words'],
-    'uploaded-files': ['Settings', 'Uploaded files', '/#settings/uploaded-files'],
-    'muted-topics': ['Settings', 'Muted topics', '/#settings/muted-topics'],
-    'organization-profile': [
-        'Manage organization',
-        'Organization profile',
-        '/#organization/organization-profile',
+    "your-account": ["Settings", "Your account", "/#settings/your-account"],
+    "display-settings": ["Settings", "Display settings", "/#settings/display-settings"],
+    "notifications": ["Settings", "Notifications", "/#settings/notifications"],
+    "your-bots": ["Settings", "Your bots", "/#settings/your-bots"],
+    "alert-words": ["Settings", "Alert words", "/#settings/alert-words"],
+    "uploaded-files": ["Settings", "Uploaded files", "/#settings/uploaded-files"],
+    "muted-topics": ["Settings", "Muted topics", "/#settings/muted-topics"],
+    "organization-profile": [
+        "Manage organization",
+        "Organization profile",
+        "/#organization/organization-profile",
     ],
-    'organization-settings': [
-        'Manage organization',
-        'Organization settings',
-        '/#organization/organization-settings',
+    "organization-settings": [
+        "Manage organization",
+        "Organization settings",
+        "/#organization/organization-settings",
     ],
-    'organization-permissions': [
-        'Manage organization',
-        'Organization permissions',
-        '/#organization/organization-permissions',
+    "organization-permissions": [
+        "Manage organization",
+        "Organization permissions",
+        "/#organization/organization-permissions",
     ],
-    'emoji-settings': ['Manage organization', 'Custom emoji', '/#organization/emoji-settings'],
-    'auth-methods': [
-        'Manage organization',
-        'Authentication methods',
-        '/#organization/auth-methods',
+    "emoji-settings": ["Manage organization", "Custom emoji", "/#organization/emoji-settings"],
+    "auth-methods": [
+        "Manage organization",
+        "Authentication methods",
+        "/#organization/auth-methods",
     ],
-    'user-groups-admin': ['Manage organization', 'User groups', '/#organization/user-groups-admin'],
-    'user-list-admin': ['Manage organization', 'Users', '/#organization/user-list-admin'],
-    'deactivated-users-admin': [
-        'Manage organization',
-        'Deactivated users',
-        '/#organization/deactivated-users-admin',
+    "user-groups-admin": ["Manage organization", "User groups", "/#organization/user-groups-admin"],
+    "user-list-admin": ["Manage organization", "Users", "/#organization/user-list-admin"],
+    "deactivated-users-admin": [
+        "Manage organization",
+        "Deactivated users",
+        "/#organization/deactivated-users-admin",
     ],
-    'bot-list-admin': ['Manage organization', 'Bots', '/#organization/bot-list-admin'],
-    'default-streams-list': [
-        'Manage organization',
-        'Default streams',
-        '/#organization/default-streams-list',
+    "bot-list-admin": ["Manage organization", "Bots", "/#organization/bot-list-admin"],
+    "default-streams-list": [
+        "Manage organization",
+        "Default streams",
+        "/#organization/default-streams-list",
     ],
-    'filter-settings': ['Manage organization', 'Linkifiers', '/#organization/filter-settings'],
-    'profile-field-settings': [
-        'Manage organization',
-        'Custom profile fields',
-        '/#organization/profile-field-settings',
+    "filter-settings": ["Manage organization", "Linkifiers", "/#organization/filter-settings"],
+    "profile-field-settings": [
+        "Manage organization",
+        "Custom profile fields",
+        "/#organization/profile-field-settings",
     ],
-    'invites-list-admin': [
-        'Manage organization',
-        'Invitations',
-        '/#organization/invites-list-admin',
+    "invites-list-admin": [
+        "Manage organization",
+        "Invitations",
+        "/#organization/invites-list-admin",
     ],
-    'data-exports-admin': [
-        'Manage organization',
-        'Data exports',
-        '/#organization/data-exports-admin',
+    "data-exports-admin": [
+        "Manage organization",
+        "Data exports",
+        "/#organization/data-exports-admin",
     ],
 }
 
@@ -90,7 +90,7 @@ class SettingHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
         """ Add SettingHelpExtension to the Markdown instance. """
         md.registerExtension(self)
-        md.preprocessors.register(Setting(), 'setting', 515)
+        md.preprocessors.register(Setting(), "setting", 515)
 
 
 relative_settings_links: Optional[bool] = None
@@ -126,7 +126,7 @@ class Setting(Preprocessor):
         return lines
 
     def handleMatch(self, match: Match[str]) -> str:
-        setting_identifier = match.group('setting_identifier')
+        setting_identifier = match.group("setting_identifier")
         setting_type_name = link_mapping[setting_identifier][0]
         setting_name = link_mapping[setting_identifier][1]
         setting_link = link_mapping[setting_identifier][2]

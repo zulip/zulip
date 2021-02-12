@@ -26,7 +26,7 @@ def get_subdomain(request: HttpRequest) -> str:
 
 
 def get_subdomain_from_hostname(host: str) -> str:
-    m = re.search(fr'\.{settings.EXTERNAL_HOST}(:\d+)?$', host)
+    m = re.search(fr"\.{settings.EXTERNAL_HOST}(:\d+)?$", host)
     if m:
         subdomain = host[: m.start()]
         if subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
@@ -34,7 +34,7 @@ def get_subdomain_from_hostname(host: str) -> str:
         return subdomain
 
     for subdomain, realm_host in settings.REALM_HOSTS.items():
-        if re.search(fr'^{realm_host}(:\d+)?$', host):
+        if re.search(fr"^{realm_host}(:\d+)?$", host):
             return subdomain
 
     return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN

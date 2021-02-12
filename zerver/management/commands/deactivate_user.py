@@ -12,17 +12,17 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            '-f',
-            '--for-real',
-            action='store_true',
+            "-f",
+            "--for-real",
+            action="store_true",
             help="Actually deactivate the user. Default is a dry run.",
         )
-        parser.add_argument('email', metavar='<email>', help='email of user to deactivate')
+        parser.add_argument("email", metavar="<email>", help="email of user to deactivate")
         self.add_realm_args(parser)
 
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
-        user_profile = self.get_user(options['email'], realm)
+        user_profile = self.get_user(options["email"], realm)
 
         print(
             f"Deactivating {user_profile.full_name} ({user_profile.delivery_email}) - {user_profile.realm.string_id}"

@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('pgroonga', '0001_enable'),
+        ("pgroonga", "0001_enable"),
     ]
 
     operations = [

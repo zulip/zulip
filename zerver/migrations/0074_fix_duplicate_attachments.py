@@ -16,18 +16,18 @@ def fix_duplicate_attachments(apps: StateApps, schema_editor: DatabaseSchemaEdit
     This migration fixes this by removing the duplicates, moving their
     messages onto a single canonical Attachment object (per path_id).
     """
-    Attachment = apps.get_model('zerver', 'Attachment')
+    Attachment = apps.get_model("zerver", "Attachment")
     # Loop through all groups of Attachment objects with the same `path_id`
     for group in (
-        Attachment.objects.values('path_id')
-        .annotate(Count('id'))
+        Attachment.objects.values("path_id")
+        .annotate(Count("id"))
         .order_by()
         .filter(id__count__gt=1)
     ):
         # Sort by the minimum message ID, to find the first attachment
         attachments = sorted(
-            Attachment.objects.filter(path_id=group['path_id']).order_by("id"),
-            key=lambda x: min(x.messages.all().values_list('id')[0]),
+            Attachment.objects.filter(path_id=group["path_id"]).order_by("id"),
+            key=lambda x: min(x.messages.all().values_list("id")[0]),
         )
         surviving = attachments[0]
         to_cleanup = attachments[1:]
@@ -45,7 +45,7 @@ def fix_duplicate_attachments(apps: StateApps, schema_editor: DatabaseSchemaEdit
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0073_custom_profile_fields'),
+        ("zerver", "0073_custom_profile_fields"),
     ]
 
     operations = [

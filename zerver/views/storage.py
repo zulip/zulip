@@ -39,7 +39,7 @@ def get_storage(
         storage = {key: get_bot_storage(user_profile, key) for key in keys}
     except StateError as e:
         return json_error(str(e))
-    return json_success({'storage': storage})
+    return json_success({"storage": storage})
 
 
 @has_request_variables

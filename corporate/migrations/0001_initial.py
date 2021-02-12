@@ -9,78 +9,78 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('zerver', '0189_userprofile_add_some_emojisets'),
+        ("zerver", "0189_userprofile_add_some_emojisets"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='BillingProcessor',
+            name="BillingProcessor",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ('state', models.CharField(max_length=20)),
-                ('last_modified', models.DateTimeField(auto_now=True)),
+                ("state", models.CharField(max_length=20)),
+                ("last_modified", models.DateTimeField(auto_now=True)),
                 (
-                    'log_row',
+                    "log_row",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to='zerver.RealmAuditLog'
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.RealmAuditLog"
                     ),
                 ),
                 (
-                    'realm',
+                    "realm",
                     models.OneToOneField(
-                        null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'
+                        null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
                     ),
                 ),
             ],
         ),
         migrations.CreateModel(
-            name='Coupon',
+            name="Coupon",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ('percent_off', models.SmallIntegerField(unique=True)),
-                ('stripe_coupon_id', models.CharField(max_length=255, unique=True)),
+                ("percent_off", models.SmallIntegerField(unique=True)),
+                ("stripe_coupon_id", models.CharField(max_length=255, unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Customer',
+            name="Customer",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ('stripe_customer_id', models.CharField(max_length=255, unique=True)),
-                ('has_billing_relationship', models.BooleanField(default=False)),
+                ("stripe_customer_id", models.CharField(max_length=255, unique=True)),
+                ("has_billing_relationship", models.BooleanField(default=False)),
                 (
-                    'realm',
+                    "realm",
                     models.OneToOneField(
-                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
                     ),
                 ),
             ],
         ),
         migrations.CreateModel(
-            name='Plan',
+            name="Plan",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ('nickname', models.CharField(max_length=40, unique=True)),
-                ('stripe_plan_id', models.CharField(max_length=255, unique=True)),
+                ("nickname", models.CharField(max_length=40, unique=True)),
+                ("stripe_plan_id", models.CharField(max_length=255, unique=True)),
             ],
         ),
     ]

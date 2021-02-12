@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0290_remove_night_mode_add_color_scheme'),
+        ("zerver", "0290_remove_night_mode_add_color_scheme"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realm',
-            name='message_retention_days',
+            model_name="realm",
+            name="message_retention_days",
             field=models.IntegerField(default=-1),
         ),
     ]

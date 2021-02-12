@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0212_make_stream_email_token_unique'),
+        ("zerver", "0212_make_stream_email_token_unique"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='digest_weekday',
+            model_name="realm",
+            name="digest_weekday",
             field=models.SmallIntegerField(default=1),
         ),
     ]

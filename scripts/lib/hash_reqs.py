@@ -12,7 +12,7 @@ def expand_reqs_helper(fpath: str) -> List[str]:
 
     with open(fpath) as f:
         for line in f:
-            if line.strip().startswith(('#', '--hash')):
+            if line.strip().startswith(("#", "--hash")):
                 continue
             dep = line.split(" \\", 1)[0].strip()
             if dep:
@@ -40,7 +40,7 @@ def python_version() -> str:
 
 def hash_deps(deps: Iterable[str]) -> str:
     deps_str = "\n".join(deps) + "\n" + python_version()
-    return hashlib.sha1(deps_str.encode('utf-8')).hexdigest()
+    return hashlib.sha1(deps_str.encode("utf-8")).hexdigest()
 
 
 def main() -> int:
@@ -51,7 +51,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("fpath", metavar="FILE", help="Path to requirements file")
     parser.add_argument(
-        "--print", dest="print_reqs", action='store_true', help="Print all dependencies"
+        "--print", dest="print_reqs", action="store_true", help="Print all dependencies"
     )
     args = parser.parse_args()
 

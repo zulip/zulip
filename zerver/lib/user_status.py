@@ -13,26 +13,26 @@ def get_user_info_dict(realm_id: int) -> Dict[str, Dict[str, Any]]:
             user_profile__is_active=True,
         )
         .exclude(
-            Q(status=UserStatus.NORMAL) & Q(status_text=''),
+            Q(status=UserStatus.NORMAL) & Q(status_text=""),
         )
         .values(
-            'user_profile_id',
-            'status',
-            'status_text',
+            "user_profile_id",
+            "status",
+            "status_text",
         )
     )
 
     user_dict: Dict[str, Dict[str, Any]] = {}
     for row in rows:
-        away = row['status'] == UserStatus.AWAY
-        status_text = row['status_text']
-        user_id = row['user_profile_id']
+        away = row["status"] == UserStatus.AWAY
+        status_text = row["status_text"]
+        user_id = row["user_profile_id"]
 
         dct = {}
         if away:
-            dct['away'] = away
+            dct["away"] = away
         if status_text:
-            dct['status_text'] = status_text
+            dct["status_text"] = status_text
 
         user_dict[str(user_id)] = dct
 
@@ -51,10 +51,10 @@ def update_user_status(
     )
 
     if status is not None:
-        defaults['status'] = status
+        defaults["status"] = status
 
     if status_text is not None:
-        defaults['status_text'] = status_text
+        defaults["status_text"] = status_text
 
     UserStatus.objects.update_or_create(
         user_profile_id=user_profile_id,

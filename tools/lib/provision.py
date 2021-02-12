@@ -35,9 +35,9 @@ from tools.setup import setup_venvs
 if TYPE_CHECKING:
     from typing import NoReturn
 
-VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
+VAR_DIR_PATH = os.path.join(ZULIP_PATH, "var")
 
-CONTINUOUS_INTEGRATION = 'GITHUB_ACTIONS' in os.environ or 'CIRCLECI' in os.environ
+CONTINUOUS_INTEGRATION = "GITHUB_ACTIONS" in os.environ or "CIRCLECI" in os.environ
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print(FAIL + "Error: No Zulip Git repository present!" + ENDC)
@@ -63,13 +63,13 @@ if ram_gb < 1.5:
 try:
     UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
     os.makedirs(UUID_VAR_PATH, exist_ok=True)
-    if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
-        os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
+    if os.path.exists(os.path.join(VAR_DIR_PATH, "zulip-test-symlink")):
+        os.remove(os.path.join(VAR_DIR_PATH, "zulip-test-symlink"))
     os.symlink(
-        os.path.join(ZULIP_PATH, 'README.md'),
-        os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'),
+        os.path.join(ZULIP_PATH, "README.md"),
+        os.path.join(VAR_DIR_PATH, "zulip-test-symlink"),
     )
-    os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
+    os.remove(os.path.join(VAR_DIR_PATH, "zulip-test-symlink"))
 except OSError:
     print(
         FAIL + "Error: Unable to create symlinks."
@@ -81,9 +81,9 @@ except OSError:
     )
     sys.exit(1)
 
-if platform.architecture()[0] == '64bit':
-    arch = 'amd64'
-elif platform.architecture()[0] == '32bit':
+if platform.architecture()[0] == "64bit":
+    arch = "amd64"
+elif platform.architecture()[0] == "32bit":
     arch = "i386"
 else:
     logging.critical(
@@ -94,8 +94,8 @@ else:
     sys.exit(1)
 
 distro_info = parse_os_release()
-vendor = distro_info['ID']
-os_version = distro_info['VERSION_ID']
+vendor = distro_info["ID"]
+os_version = distro_info["VERSION_ID"]
 if vendor == "debian" and os_version == "10":  # buster
     POSTGRESQL_VERSION = "11"
 elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
@@ -169,7 +169,7 @@ COMMON_YUM_DEPENDENCIES = [
 ]
 
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in []:
+if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version in []:
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
@@ -283,7 +283,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         if exitcode == 1:
             # TODO this might overkill since `subscription-manager` is already
             # called in setup-yum-repo
-            if 'Status' in subs_status:
+            if "Status" in subs_status:
                 # The output is well-formed
                 yum_extra_flags = ["--skip-broken"]
             else:
@@ -296,8 +296,8 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         run_as_root(["python36", "-m", "ensurepip"])
         # `python36` is not aliased to `python3` by default
         run_as_root(["ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
-    postgresql_dir = f'pgsql-{POSTGRESQL_VERSION}'
-    for cmd in ['pg_config', 'pg_isready', 'psql']:
+    postgresql_dir = f"pgsql-{POSTGRESQL_VERSION}"
+    for cmd in ["pg_config", "pg_isready", "psql"]:
         # Our tooling expects these PostgreSQL scripts to be at
         # well-known paths.  There's an argument for eventually
         # making our tooling auto-detect, but this is simpler.
@@ -316,7 +316,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
 
     run_as_root(
         [f"/usr/{postgresql_dir}/bin/postgresql-{POSTGRESQL_VERSION}-setup", "initdb"],
-        sudo_args=['-H'],
+        sudo_args=["-H"],
     )
     # Use vendored pg_hba.conf, which enables password authentication.
     run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
@@ -343,24 +343,24 @@ def main(options: argparse.Namespace) -> "NoReturn":
     sha_sum = hashlib.sha1()
 
     for apt_depedency in SYSTEM_DEPENDENCIES:
-        sha_sum.update(apt_depedency.encode('utf8'))
+        sha_sum.update(apt_depedency.encode("utf8"))
     if "debian" in os_families():
-        with open('scripts/lib/setup-apt-repo', 'rb') as fb:
+        with open("scripts/lib/setup-apt-repo", "rb") as fb:
             sha_sum.update(fb.read())
     else:
         # hash the content of setup-yum-repo*
-        with open('scripts/lib/setup-yum-repo', 'rb') as fb:
+        with open("scripts/lib/setup-yum-repo", "rb") as fb:
             sha_sum.update(fb.read())
 
     # hash the content of build-pgroonga if PGroonga is built from source
     if BUILD_PGROONGA_FROM_SOURCE:
-        with open('scripts/lib/build-pgroonga', 'rb') as fb:
+        with open("scripts/lib/build-pgroonga", "rb") as fb:
             sha_sum.update(fb.read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
     apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
-    with open(apt_hash_file_path, 'a+') as hash_file:
+    with open(apt_hash_file_path, "a+") as hash_file:
         hash_file.seek(0)
         last_apt_dependencies_hash = hash_file.read()
 
@@ -371,7 +371,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
             # Might be a failure due to network connection issues. Retrying...
             print(WARNING + "Installing system dependencies failed; retrying..." + ENDC)
             install_system_deps()
-        with open(apt_hash_file_path, 'w') as hash_file:
+        with open(apt_hash_file_path, "w") as hash_file:
             hash_file.write(new_apt_dependencies_hash)
     else:
         print("No changes to apt dependencies, so skipping apt operations.")
@@ -383,7 +383,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
         "https_proxy=" + os.environ.get("https_proxy", ""),
         "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
-    run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=['-H'])
+    run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=["-H"])
 
     if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
         run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
@@ -428,8 +428,8 @@ def main(options: argparse.Namespace) -> "NoReturn":
             "memcached",
             "redis",
         ]:
-            run_as_root(["systemctl", "enable", service], sudo_args=['-H'])
-            run_as_root(["systemctl", "start", service], sudo_args=['-H'])
+            run_as_root(["systemctl", "enable", service], sudo_args=["-H"])
+            run_as_root(["systemctl", "start", service], sudo_args=["-H"])
 
     # If we imported modules after activating the virtualenv in this
     # Python process, they could end up mismatching with modules we’ve
@@ -456,21 +456,21 @@ if __name__ == "__main__":
     description = "Provision script to install Zulip"
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        '--force',
-        action='store_true',
-        dest='is_force',
+        "--force",
+        action="store_true",
+        dest="is_force",
         help="Ignore all provisioning optimizations.",
     )
 
     parser.add_argument(
-        '--build-release-tarball-only',
-        action='store_true',
-        dest='is_build_release_tarball_only',
+        "--build-release-tarball-only",
+        action="store_true",
+        dest="is_build_release_tarball_only",
         help="Provision needed to build release tarball.",
     )
 
     parser.add_argument(
-        '--skip-dev-db-build', action='store_true', help="Don't run migrations on dev database."
+        "--skip-dev-db-build", action="store_true", help="Don't run migrations on dev database."
     )
 
     options = parser.parse_args()

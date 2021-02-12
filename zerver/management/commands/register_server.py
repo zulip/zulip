@@ -20,13 +20,13 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            '--agree_to_terms_of_service',
-            action='store_true',
+            "--agree_to_terms_of_service",
+            action="store_true",
             help="Agree to the Zulipchat Terms of Service: https://zulip.com/terms/.",
         )
         parser.add_argument(
-            '--rotate-key',
-            action='store_true',
+            "--rotate-key",
+            action="store_true",
             help="Automatically rotate your server's zulip_org_key",
         )
 
@@ -67,7 +67,7 @@ class Command(ZulipBaseCommand):
             print(f"  {key}: {request[key]}")
         print("")
 
-        if not options['agree_to_terms_of_service'] and not options["rotate_key"]:
+        if not options["agree_to_terms_of_service"] and not options["rotate_key"]:
             print(
                 "To register, you must agree to the Zulipchat Terms of Service: "
                 "https://zulip.com/terms/"
@@ -75,7 +75,7 @@ class Command(ZulipBaseCommand):
             tos_prompt = input("Do you agree to the Terms of Service? [Y/n] ")
             print("")
             if not (
-                tos_prompt.lower() == 'y' or tos_prompt.lower() == '' or tos_prompt.lower() == 'yes'
+                tos_prompt.lower() == "y" or tos_prompt.lower() == "" or tos_prompt.lower() == "yes"
             ):
                 raise CommandError("Aborting, since Terms of Service have not been accepted.")
 
@@ -93,9 +93,9 @@ class Command(ZulipBaseCommand):
             response.raise_for_status()
         except requests.HTTPError:
             content_dict = response.json()
-            raise CommandError("Error: " + content_dict['msg'])
+            raise CommandError("Error: " + content_dict["msg"])
 
-        if response.json()['created']:
+        if response.json()["created"]:
             print(
                 "You've successfully registered for the Mobile Push Notification Service!\n"
                 "To finish setup for sending push notifications:"
@@ -110,7 +110,7 @@ class Command(ZulipBaseCommand):
                 subprocess.check_call(
                     [
                         "crudini",
-                        '--set',
+                        "--set",
                         SECRETS_FILENAME,
                         "secrets",
                         "zulip_org_key",

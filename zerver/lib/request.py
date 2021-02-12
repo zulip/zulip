@@ -28,7 +28,7 @@ from zerver.lib.types import Validator, ViewFuncT
 
 class RequestConfusingParmsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR
-    data_fields = ['var_name1', 'var_name2']
+    data_fields = ["var_name1", "var_name2"]
 
     def __init__(self, var_name1: str, var_name2: str) -> None:
         self.var_name1: str = var_name1
@@ -41,7 +41,7 @@ class RequestConfusingParmsError(JsonableError):
 
 class RequestVariableMissingError(JsonableError):
     code = ErrorCode.REQUEST_VARIABLE_MISSING
-    data_fields = ['var_name']
+    data_fields = ["var_name"]
 
     def __init__(self, var_name: str) -> None:
         self.var_name: str = var_name
@@ -53,7 +53,7 @@ class RequestVariableMissingError(JsonableError):
 
 class RequestVariableConversionError(JsonableError):
     code = ErrorCode.REQUEST_VARIABLE_INVALID
-    data_fields = ['var_name', 'bad_value']
+    data_fields = ["var_name", "bad_value"]
 
     def __init__(self, var_name: str, bad_value: Any) -> None:
         self.var_name: str = var_name
@@ -65,7 +65,7 @@ class RequestVariableConversionError(JsonableError):
 
 
 # Used in conjunction with @has_request_variables, below
-ResultT = TypeVar('ResultT')
+ResultT = TypeVar("ResultT")
 
 
 class _REQ(Generic[ResultT]):
@@ -131,10 +131,10 @@ class _REQ(Generic[ResultT]):
 
         assert converter is None or (
             validator is None and str_validator is None
-        ), 'converter and validator are mutually exclusive'
+        ), "converter and validator are mutually exclusive"
         assert (
             validator is None or str_validator is None
-        ), 'validator and str_validator are mutually exclusive'
+        ), "validator and str_validator are mutually exclusive"
 
 
 # This factory function ensures that mypy can correctly analyze REQ.
@@ -282,7 +282,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
     post_params = []
 
-    view_func_full_name = '.'.join([view_func.__module__, view_func.__name__])
+    view_func_full_name = ".".join([view_func.__module__, view_func.__name__])
 
     for (name, value) in zip(default_param_names, default_param_values):
         if isinstance(value, _REQ):
@@ -316,7 +316,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 continue
             assert func_var_name is not None
 
-            if param.argument_type == 'body':
+            if param.argument_type == "body":
                 try:
                     val = orjson.loads(request.body)
                 except orjson.JSONDecodeError:
@@ -400,13 +400,13 @@ def get_current_request() -> Optional[HttpRequest]:
     request object, rather than rely on this thread-local global.
 
     """
-    return getattr(local, 'request', None)
+    return getattr(local, "request", None)
 
 
 def set_request(req: HttpRequest) -> None:
-    setattr(local, 'request', req)
+    setattr(local, "request", req)
 
 
 def unset_request() -> None:
-    if hasattr(local, 'request'):
-        delattr(local, 'request')
+    if hasattr(local, "request"):
+        delattr(local, "request")

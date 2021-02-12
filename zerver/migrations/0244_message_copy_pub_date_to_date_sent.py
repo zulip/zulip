@@ -28,13 +28,13 @@ def sql_copy_pub_date_to_date_sent(id_range_lower_bound: int, id_range_upper_bou
 
 
 def copy_pub_date_to_date_sent(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    Message = apps.get_model('zerver', 'Message')
+    Message = apps.get_model("zerver", "Message")
     if not Message.objects.exists():
         # Nothing to do
         return
 
-    first_uncopied_id = Message.objects.filter(date_sent__isnull=True).aggregate(Min('id'))[
-        'id__min'
+    first_uncopied_id = Message.objects.filter(date_sent__isnull=True).aggregate(Min("id"))[
+        "id__min"
     ]
     # Note: the below id can fall in a segment
     # where date_sent = pub_date already, but it's not a big problem
@@ -57,7 +57,7 @@ def copy_pub_date_to_date_sent(apps: StateApps, schema_editor: DatabaseSchemaEdi
 class Migration(migrations.Migration):
     atomic = False
     dependencies = [
-        ('zerver', '0243_message_add_date_sent_column'),
+        ("zerver", "0243_message_add_date_sent_column"),
     ]
 
     operations = [

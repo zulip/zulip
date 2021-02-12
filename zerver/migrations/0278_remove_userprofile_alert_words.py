@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0277_migrate_alert_word'),
+        ("zerver", "0277_migrate_alert_word"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='userprofile',
-            name='alert_words',
+            model_name="userprofile",
+            name="alert_words",
         ),
     ]

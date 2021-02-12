@@ -29,7 +29,7 @@ def build_message_from_gitlog(
     created: Optional[str] = None,
     deleted: bool = False,
 ) -> Tuple[str, str]:
-    short_ref = re.sub(r'^refs/heads/', '', ref)
+    short_ref = re.sub(r"^refs/heads/", "", ref)
     subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 
     commits = _transform_commits_list_to_common_format(commits)
@@ -43,10 +43,10 @@ def _transform_commits_list_to_common_format(commits: List[Dict[str, Any]]) -> L
     for commit in commits:
         new_commits_list.append(
             {
-                'name': commit['author'].get('username'),
-                'sha': commit.get('id'),
-                'url': commit.get('url'),
-                'message': commit.get('message'),
+                "name": commit["author"].get("username"),
+                "sha": commit.get("id"),
+                "url": commit.get("url"),
+                "message": commit.get("message"),
             }
         )
     return new_commits_list
@@ -60,13 +60,13 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
         auth_type: str
         encoded_value: str
-        auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
+        auth_type, encoded_value = request.META["HTTP_AUTHORIZATION"].split()
         if auth_type.lower() == "basic":
-            email, api_key = base64.b64decode(encoded_value).decode('utf-8').split(":")
-            email = email.replace('%40', '@')
+            email, api_key = base64.b64decode(encoded_value).decode("utf-8").split(":")
+            email = email.replace("%40", "@")
             credentials = f"{email}:{api_key}"
-            encoded_credentials: str = base64.b64encode(credentials.encode('utf-8')).decode('utf8')
-            request.META['HTTP_AUTHORIZATION'] = "Basic " + encoded_credentials
+            encoded_credentials: str = base64.b64encode(credentials.encode("utf-8")).decode("utf8")
+            request.META["HTTP_AUTHORIZATION"] = "Basic " + encoded_credentials
 
         return view_func(request, *args, **kwargs)
 
@@ -85,29 +85,29 @@ def api_beanstalk_webhook(
     # Beanstalk supports both SVN and Git repositories
     # We distinguish between the two by checking for a
     # 'uri' key that is only present for Git repos
-    git_repo = 'uri' in payload
+    git_repo = "uri" in payload
     if git_repo:
-        if branches is not None and branches.find(payload['branch']) == -1:
+        if branches is not None and branches.find(payload["branch"]) == -1:
             return json_success()
         # To get a linkable url,
-        for commit in payload['commits']:
-            commit['author'] = {'username': commit['author']['name']}
+        for commit in payload["commits"]:
+            commit["author"] = {"username": commit["author"]["name"]}
 
         subject, content = build_message_from_gitlog(
             user_profile,
-            payload['repository']['name'],
-            payload['ref'],
-            payload['commits'],
-            payload['before'],
-            payload['after'],
-            payload['repository']['url'],
-            payload['pusher_name'],
+            payload["repository"]["name"],
+            payload["ref"],
+            payload["commits"],
+            payload["before"],
+            payload["after"],
+            payload["repository"]["url"],
+            payload["pusher_name"],
         )
     else:
-        author = payload.get('author_full_name')
-        url = payload.get('changeset_url')
-        revision = payload.get('revision')
-        (short_commit_msg, _, _) = payload['message'].partition("\n")
+        author = payload.get("author_full_name")
+        url = payload.get("changeset_url")
+        revision = payload.get("revision")
+        (short_commit_msg, _, _) = payload["message"].partition("\n")
 
         subject = f"svn r{revision}"
         content = f"{author} pushed [revision {revision}]({url}):\n\n> {short_commit_msg}"

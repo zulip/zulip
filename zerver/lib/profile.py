@@ -2,7 +2,7 @@ import cProfile
 from functools import wraps
 from typing import Callable, TypeVar, cast
 
-FuncT = TypeVar('FuncT', bound=Callable[..., object])
+FuncT = TypeVar("FuncT", bound=Callable[..., object])
 
 
 def profiled(func: FuncT) -> FuncT:

@@ -24,7 +24,7 @@ def create_internal_realm() -> None:
     get_client("ZulipElectron")
 
     internal_bots = [
-        (bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
+        (bot["name"], bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,))
         for bot in settings.INTERNAL_BOTS
     ]
     create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)

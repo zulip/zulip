@@ -16,15 +16,15 @@ from zerver.worker.queue_processors import get_active_worker_queues, get_worker
 
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--queue_name', metavar='<queue name>', help="queue to process")
+        parser.add_argument("--queue_name", metavar="<queue name>", help="queue to process")
         parser.add_argument(
-            '--worker_num', metavar='<worker number>', type=int, default=0, help="worker label"
+            "--worker_num", metavar="<worker number>", type=int, default=0, help="worker label"
         )
-        parser.add_argument('--all', action="store_true", help="run all queues")
+        parser.add_argument("--all", action="store_true", help="run all queues")
         parser.add_argument(
-            '--multi_threaded',
-            nargs='+',
-            metavar='<list of queue name>',
+            "--multi_threaded",
+            nargs="+",
+            metavar="<list of queue name>",
             required=False,
             help="list of queue to process",
         )
@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         logging.basicConfig()
-        logger = logging.getLogger('process_queue')
+        logger = logging.getLogger("process_queue")
 
         def exit_with_three(signal: int, frame: FrameType) -> None:
             """
@@ -55,23 +55,23 @@ class Command(BaseCommand):
             cnt = 0
             for queue_name in queues:
                 if not settings.DEVELOPMENT:
-                    logger.info('launching queue worker thread ' + queue_name)
+                    logger.info("launching queue worker thread " + queue_name)
                 cnt += 1
                 td = Threaded_worker(queue_name)
                 td.start()
             assert len(queues) == cnt
-            logger.info('%d queue worker threads were launched', cnt)
+            logger.info("%d queue worker threads were launched", cnt)
 
-        if options['all']:
+        if options["all"]:
             signal.signal(signal.SIGUSR1, exit_with_three)
             autoreload.run_with_reloader(run_threaded_workers, get_active_worker_queues(), logger)
-        elif options['multi_threaded']:
+        elif options["multi_threaded"]:
             signal.signal(signal.SIGUSR1, exit_with_three)
-            queues = options['multi_threaded']
+            queues = options["multi_threaded"]
             autoreload.run_with_reloader(run_threaded_workers, queues, logger)
         else:
-            queue_name = options['queue_name']
-            worker_num = options['worker_num']
+            queue_name = options["queue_name"]
+            worker_num = options["worker_num"]
 
             def signal_handler(signal: int, frame: FrameType) -> None:
                 logger.info("Worker %d disconnecting from queue %s", worker_num, queue_name)
@@ -101,5 +101,5 @@ class Threaded_worker(threading.Thread):
         with configure_scope() as scope:
             scope.set_tag("queue_worker", self.worker.queue_name)
             self.worker.setup()
-            logging.debug('starting consuming ' + self.worker.queue_name)
+            logging.debug("starting consuming " + self.worker.queue_name)
             self.worker.start()

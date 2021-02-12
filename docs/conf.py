@@ -33,18 +33,18 @@ from version import ZULIP_VERSION
 extensions: List[str] = []
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'Zulip'
-copyright = '2012–2015 Dropbox, Inc., 2015–2021 Kandra Labs, Inc., and contributors'
-author = 'The Zulip Team'
+project = "Zulip"
+copyright = "2012–2015 Dropbox, Inc., 2015–2021 Kandra Labs, Inc., and contributors"
+author = "The Zulip Team"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -70,7 +70,7 @@ language: Optional[str] = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', 'README.md']
+exclude_patterns = ["_build", "README.md"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -88,7 +88,7 @@ exclude_patterns = ['_build', 'README.md']
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -106,23 +106,23 @@ todo_include_todos = False
 # a list of builtin themes.
 
 # Read The Docs can't import sphinx_rtd_theme, so don't import it there.
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+on_rtd = os.environ.get("READTHEDOCS", None) == "True"
 
 if not on_rtd:
     import sphinx_rtd_theme
 
-    html_theme = 'sphinx_rtd_theme'
+    html_theme = "sphinx_rtd_theme"
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 else:
-    html_theme = 'sphinx_rtd_theme'
+    html_theme = "sphinx_rtd_theme"
     html_style = None
-    html_theme_options = {'collapse_navigation': False}
+    html_theme_options = {"collapse_navigation": False}
     using_rtd_theme = True
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {'collapse_navigation': False, 'logo_only': True}
+html_theme_options = {"collapse_navigation": False, "logo_only": True}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
@@ -136,7 +136,7 @@ html_theme_options = {'collapse_navigation': False, 'logo_only': True}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'images/zulip-logo.svg'
+html_logo = "images/zulip-logo.svg"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -146,7 +146,7 @@ html_logo = 'images/zulip-logo.svg'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -209,7 +209,7 @@ html_static_path = ['_static']
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'zulip-contributor-docsdoc'
+htmlhelp_basename = "zulip-contributor-docsdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -228,7 +228,7 @@ latex_elements: Dict[str, str] = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'zulip-contributor-docs.tex', 'Zulip Documentation', 'The Zulip Team', 'manual'),
+    (master_doc, "zulip-contributor-docs.tex", "Zulip Documentation", "The Zulip Team", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -257,7 +257,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'zulip-contributor-docs', 'Zulip Documentation', [author], 1),
+    (master_doc, "zulip-contributor-docs", "Zulip Documentation", [author], 1),
 ]
 
 # If true, show URL addresses after external links.
@@ -272,12 +272,12 @@ man_pages = [
 texinfo_documents = [
     (
         master_doc,
-        'zulip-contributor-docs',
-        'Zulip Documentation',
+        "zulip-contributor-docs",
+        "Zulip Documentation",
         author,
-        'zulip-contributor-docs',
-        'Documentation for contributing to Zulip.',
-        'Miscellaneous',
+        "zulip-contributor-docs",
+        "Documentation for contributing to Zulip.",
+        "Miscellaneous",
     ),
 ]
 
@@ -299,8 +299,8 @@ from recommonmark.transform import AutoStructify
 # as a dictionary mapping file extensions to file types
 # https://www.sphinx-doc.org/en/master/usage/markdown.html
 source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
+    ".rst": "restructuredtext",
+    ".md": "markdown",
 }
 
 # Temporary workaround to remove multiple build warnings caused by upstream bug.
@@ -318,16 +318,16 @@ def setup(app: Any) -> None:
 
     app.add_source_parser(CustomCommonMarkParser)
     app.add_config_value(
-        'recommonmark_config',
+        "recommonmark_config",
         {
-            'enable_eval_rst': True,
+            "enable_eval_rst": True,
             # Turn off recommonmark features we aren't using.
-            'enable_auto_doc_ref': False,
-            'auto_toc_tree_section': None,
-            'enable_auto_toc_tree': False,
-            'enable_math': False,
-            'enable_inline_math': False,
-            'url_resolver': lambda x: x,
+            "enable_auto_doc_ref": False,
+            "auto_toc_tree_section": None,
+            "enable_auto_toc_tree": False,
+            "enable_math": False,
+            "enable_inline_math": False,
+            "url_resolver": lambda x: x,
         },
         True,
     )
@@ -338,4 +338,4 @@ def setup(app: Any) -> None:
     app.add_transform(AutoStructify)
 
     # overrides for wide tables in RTD theme
-    app.add_css_file('theme_overrides.css')  # path relative to _static
+    app.add_css_file("theme_overrides.css")  # path relative to _static

@@ -8,7 +8,7 @@ from scripts.lib.setup_path import setup_path
 
 setup_path()
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 
 import django
 

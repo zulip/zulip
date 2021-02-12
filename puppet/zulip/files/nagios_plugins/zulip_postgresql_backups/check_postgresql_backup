@@ -20,19 +20,19 @@ def report(state: str, msg: str) -> None:
 
 if (
     subprocess.check_output(
-        ['psql', '-v', 'ON_ERROR_STOP=1', 'postgres', '-t', '-c', 'SELECT pg_is_in_recovery()']
+        ["psql", "-v", "ON_ERROR_STOP=1", "postgres", "-t", "-c", "SELECT pg_is_in_recovery()"]
     ).strip()
-    != b'f'
+    != b"f"
 ):
-    report('OK', 'this is not the primary')
+    report("OK", "this is not the primary")
 
 try:
-    with open('/var/lib/nagios_state/last_postgresql_backup') as f:
+    with open("/var/lib/nagios_state/last_postgresql_backup") as f:
         last_backup = dateutil.parser.parse(f.read())
 except OSError:
-    report('UNKNOWN', 'could not determine completion time of last PostgreSQL backup')
+    report("UNKNOWN", "could not determine completion time of last PostgreSQL backup")
 
 if datetime.now(tz=timezone.utc) - last_backup > timedelta(hours=25):
-    report('CRITICAL', f'last PostgreSQL backup completed more than 25 hours ago: {last_backup}')
+    report("CRITICAL", f"last PostgreSQL backup completed more than 25 hours ago: {last_backup}")
 
-report('OK', f'last PostgreSQL backup completed less than 25 hours ago: {last_backup}')
+report("OK", f"last PostgreSQL backup completed less than 25 hours ago: {last_backup}")

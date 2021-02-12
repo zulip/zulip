@@ -45,7 +45,7 @@ def get_subscribed_stream_ids_for_user(user_profile: UserProfile) -> QuerySet:
         user_profile_id=user_profile,
         recipient__type=Recipient.STREAM,
         active=True,
-    ).values_list('recipient__type_id', flat=True)
+    ).values_list("recipient__type_id", flat=True)
 
 
 def get_stream_subscriptions_for_user(user_profile: UserProfile) -> QuerySet:
@@ -76,7 +76,7 @@ def get_bulk_stream_subscriber_info(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
         active=True,
-    ).only('user_profile_id', 'recipient_id')
+    ).only("user_profile_id", "recipient_id")
 
     stream_map = {stream.recipient_id: stream for stream in streams}
     user_map = {user.id: user for user in users}
@@ -116,19 +116,19 @@ def get_user_ids_for_streams(stream_ids: Set[int]) -> Dict[int, Set[int]]:
             user_profile__is_active=True,
         )
         .values(
-            'recipient__type_id',
-            'user_profile_id',
+            "recipient__type_id",
+            "user_profile_id",
         )
         .order_by(
-            'recipient__type_id',
+            "recipient__type_id",
         )
     )
 
-    get_stream_id = itemgetter('recipient__type_id')
+    get_stream_id = itemgetter("recipient__type_id")
 
     result: Dict[int, Set[int]] = defaultdict(set)
     for stream_id, rows in itertools.groupby(all_subs, get_stream_id):
-        user_ids = {row['user_profile_id'] for row in rows}
+        user_ids = {row["user_profile_id"] for row in rows}
         result[stream_id] = user_ids
 
     return result

@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0274_nullbooleanfield_to_booleanfield'),
+        ("zerver", "0274_nullbooleanfield_to_booleanfield"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='userprofile',
-            name='last_pointer_updater',
+            model_name="userprofile",
+            name="last_pointer_updater",
         ),
     ]

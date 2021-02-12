@@ -13,8 +13,8 @@ from zerver.models import UserProfile
 def send_notification_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    operator: str = REQ('op'),
-    notification_to: List[int] = REQ('to', validator=check_list(check_int)),
+    operator: str = REQ("op"),
+    notification_to: List[int] = REQ("to", validator=check_list(check_int)),
 ) -> HttpResponse:
     check_send_typing_notification(user_profile, notification_to, operator)
     return json_success()

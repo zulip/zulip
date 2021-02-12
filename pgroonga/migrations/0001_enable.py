@@ -5,7 +5,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0001_initial'),
+        ("zerver", "0001_initial"),
     ]
 
     database_setting = settings.DATABASES["default"]

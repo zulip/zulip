@@ -8,7 +8,7 @@ from markdown.preprocessors import Preprocessor
 
 from zerver.lib.emoji import EMOTICON_CONVERSIONS, name_to_codepoint
 
-REGEXP = re.compile(r'\{emoticon_translations\}')
+REGEXP = re.compile(r"\{emoticon_translations\}")
 
 TABLE_HTML = """\
 <table>
@@ -41,7 +41,7 @@ class EmoticonTranslationsHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
         """ Add SettingHelpExtension to the Markdown instance. """
         md.registerExtension(self)
-        md.preprocessors.register(EmoticonTranslation(), 'emoticon_translations', -505)
+        md.preprocessors.register(EmoticonTranslation(), "emoticon_translations", -505)
 
 
 class EmoticonTranslation(Preprocessor):
@@ -58,12 +58,12 @@ class EmoticonTranslation(Preprocessor):
         rows = [
             ROW_HTML.format(
                 emoticon=emoticon,
-                name=name.strip(':'),
-                codepoint=name_to_codepoint[name.strip(':')],
+                name=name.strip(":"),
+                codepoint=name_to_codepoint[name.strip(":")],
             )
             for emoticon, name in EMOTICON_CONVERSIONS.items()
         ]
-        body = ''.join(rows).strip()
+        body = "".join(rows).strip()
         return TABLE_HTML.format(body=body).strip().splitlines()
 
 

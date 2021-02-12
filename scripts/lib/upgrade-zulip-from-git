@@ -6,10 +6,10 @@ import subprocess
 import sys
 import time
 
-LOCAL_GIT_CACHE_DIR = '/srv/zulip.git'
+LOCAL_GIT_CACHE_DIR = "/srv/zulip.git"
 os.environ["PYTHONUNBUFFERED"] = "y"
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     assert_running_as_root,
@@ -26,7 +26,7 @@ from scripts.lib.zulip_tools import (
 config_file = get_config_file()
 deploy_options = get_deploy_options(config_file)
 remote_url = get_config(
-    config_file, 'deployment', 'git_repo_url', "https://github.com/zulip/zulip.git"
+    config_file, "deployment", "git_repo_url", "https://github.com/zulip/zulip.git"
 )
 
 assert_running_as_root(strip_lib_from_paths=True)
@@ -51,7 +51,7 @@ if args.remote_url:
     remote_url = args.remote_url
 
 os.makedirs(DEPLOYMENTS_DIR, exist_ok=True)
-os.makedirs('/home/zulip/logs', exist_ok=True)
+os.makedirs("/home/zulip/logs", exist_ok=True)
 
 error_rerun_script = f"{DEPLOYMENTS_DIR}/current/scripts/upgrade-zulip-from-git {refname}"
 get_deployment_lock(error_rerun_script)
@@ -62,7 +62,7 @@ try:
         logging.info("Cloning the repository")
         subprocess.check_call(
             ["git", "clone", "-q", remote_url, "--mirror", LOCAL_GIT_CACHE_DIR],
-            stdout=open('/dev/null', 'w'),
+            stdout=open("/dev/null", "w"),
         )
     if os.stat(LOCAL_GIT_CACHE_DIR).st_uid == 0:
         subprocess.check_call(["chown", "-R", "zulip:zulip", LOCAL_GIT_CACHE_DIR])
@@ -76,7 +76,7 @@ try:
 
     subprocess.check_call(
         ["git", "clone", "-q", "-b", refname, LOCAL_GIT_CACHE_DIR, deploy_path],
-        stdout=open('/dev/null', 'w'),
+        stdout=open("/dev/null", "w"),
         preexec_fn=su_to_zulip,
     )
     os.chdir(deploy_path)

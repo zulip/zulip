@@ -61,5 +61,5 @@ def get_logo_backend(
     # our templates depend on being able to use the ampersand to
     # add query parameters to our url, get_logo_url does '?version=version_number'
     # hacks to prevent us from having to jump through decode/encode hoops.
-    url = add_query_arg_to_redirect_url(url, request.META['QUERY_STRING'])
+    url = add_query_arg_to_redirect_url(url, request.META["QUERY_STRING"])
     return redirect(url)

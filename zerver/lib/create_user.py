@@ -58,11 +58,11 @@ def get_display_email_address(user_profile: UserProfile) -> str:
 
 
 def get_role_for_new_user(invited_as: int, realm_creation: bool = False) -> int:
-    if realm_creation or invited_as == PreregistrationUser.INVITE_AS['REALM_OWNER']:
+    if realm_creation or invited_as == PreregistrationUser.INVITE_AS["REALM_OWNER"]:
         return UserProfile.ROLE_REALM_OWNER
-    elif invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']:
+    elif invited_as == PreregistrationUser.INVITE_AS["REALM_ADMIN"]:
         return UserProfile.ROLE_REALM_ADMINISTRATOR
-    elif invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']:
+    elif invited_as == PreregistrationUser.INVITE_AS["GUEST_USER"]:
         return UserProfile.ROLE_GUEST
     return UserProfile.ROLE_MEMBER
 
@@ -94,7 +94,7 @@ def create_user_profile(
 
     extra_kwargs = {}
     if force_id is not None:
-        extra_kwargs['id'] = force_id
+        extra_kwargs["id"] = force_id
 
     user_profile = UserProfile(
         is_staff=False,
@@ -186,7 +186,7 @@ def create_user(
         # the fake email addresses we use for display purposes without
         # a User ID, which isn't generated until the .save() above.
         user_profile.email = get_display_email_address(user_profile)
-        user_profile.save(update_fields=['email'])
+        user_profile.save(update_fields=["email"])
 
     recipient = Recipient.objects.create(type_id=user_profile.id, type=Recipient.PERSONAL)
     user_profile.recipient = recipient

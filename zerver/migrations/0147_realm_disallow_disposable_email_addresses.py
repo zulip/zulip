@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0146_userprofile_message_content_in_email_notifications'),
+        ("zerver", "0146_userprofile_message_content_in_email_notifications"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='disallow_disposable_email_addresses',
+            model_name="realm",
+            name="disallow_disposable_email_addresses",
             field=models.BooleanField(default=True),
         ),
     ]

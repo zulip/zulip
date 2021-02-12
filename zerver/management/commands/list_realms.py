@@ -31,7 +31,7 @@ Usage examples:
             print(outer_format.format("--", "---------", "----", "------"))
 
             for realm in realms:
-                display_string_id = realm.string_id if realm.string_id != '' else "''"
+                display_string_id = realm.string_id if realm.string_id != "" else "''"
                 if realm.deactivated:
                     print(
                         self.style.ERROR(
@@ -52,9 +52,9 @@ Usage examples:
             # hacky but doesn't require any work to maintain.
             realm_dict = realm.__dict__
             # Remove a field that is confusingly useless
-            del realm_dict['_state']
+            del realm_dict["_state"]
             # Fix the one bitfield to display useful data
-            realm_dict['authentication_methods'] = str(realm.authentication_methods_dict())
+            realm_dict["authentication_methods"] = str(realm.authentication_methods_dict())
 
             for key in identifier_attributes:
                 if realm.deactivated:

@@ -21,7 +21,7 @@ from zerver.models import UserProfile
 # Hack for mit.edu users whose Kerberos usernames don't match what they zephyr
 # as.  The key is for Kerberos and the value is for zephyr.
 kerberos_alter_egos = {
-    'golem': 'ctl',
+    "golem": "ctl",
 }
 
 
@@ -44,7 +44,7 @@ def webathena_kerberos_login(
         assert user == user_profile.email.split("@")[0]
         # Limit characters in usernames to valid MIT usernames
         # This is important for security since DNS is not secure.
-        assert re.match(r'^[a-z0-9_.-]+$', user) is not None
+        assert re.match(r"^[a-z0-9_.-]+$", user) is not None
         ccache = make_ccache(parsed_cred)
 
         # 'user' has been verified to contain only benign characters that won't

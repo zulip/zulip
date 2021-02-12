@@ -35,7 +35,7 @@ def get_bot_handler(service_name: str) -> Any:
             configured_service = embedded_bot_service.name
     if not configured_service:
         return None
-    bot_module_name = f'zulip_bots.bots.{configured_service}.{configured_service}'
+    bot_module_name = f"zulip_bots.bots.{configured_service}.{configured_service}"
     bot_module: Any = importlib.import_module(bot_module_name)
     return bot_module.handler_class()
 
@@ -83,51 +83,51 @@ class EmbeddedBotHandler:
         if not self._rate_limit.is_legal():
             self._rate_limit.show_error_and_exit()
 
-        if message['type'] == 'stream':
+        if message["type"] == "stream":
             internal_send_stream_message_by_name(
                 self.user_profile.realm,
                 self.user_profile,
-                message['to'],
-                message['topic'],
-                message['content'],
+                message["to"],
+                message["topic"],
+                message["content"],
             )
             return
 
-        assert message['type'] == 'private'
+        assert message["type"] == "private"
         # Ensure that it's a comma-separated list, even though the
         # usual 'to' field could be either a List[str] or a str.
-        recipients = ','.join(message['to']).split(',')
+        recipients = ",".join(message["to"]).split(",")
 
-        if len(message['to']) == 0:
-            raise EmbeddedBotEmptyRecipientsList(_('Message must have recipients!'))
-        elif len(message['to']) == 1:
+        if len(message["to"]) == 0:
+            raise EmbeddedBotEmptyRecipientsList(_("Message must have recipients!"))
+        elif len(message["to"]) == 1:
             recipient_user = get_active_user(recipients[0], self.user_profile.realm)
             internal_send_private_message(
-                self.user_profile.realm, self.user_profile, recipient_user, message['content']
+                self.user_profile.realm, self.user_profile, recipient_user, message["content"]
             )
         else:
             internal_send_huddle_message(
-                self.user_profile.realm, self.user_profile, recipients, message['content']
+                self.user_profile.realm, self.user_profile, recipients, message["content"]
             )
 
     def send_reply(self, message: Dict[str, Any], response: str) -> None:
-        if message['type'] == 'private':
+        if message["type"] == "private":
             self.send_message(
                 dict(
-                    type='private',
-                    to=[x['email'] for x in message['display_recipient']],
+                    type="private",
+                    to=[x["email"] for x in message["display_recipient"]],
                     content=response,
-                    sender_email=message['sender_email'],
+                    sender_email=message["sender_email"],
                 )
             )
         else:
             self.send_message(
                 dict(
-                    type='stream',
-                    to=message['display_recipient'],
+                    type="stream",
+                    to=message["display_recipient"],
                     topic=get_topic_from_message_info(message),
                     content=response,
-                    sender_email=message['sender_email'],
+                    sender_email=message["sender_email"],
                 )
             )
 

@@ -40,7 +40,7 @@ def get_database_id(worker_id: Optional[int] = None) -> str:
 
 # The root directory for this run of the test suite.
 TEST_RUN_DIR = get_or_create_dev_uuid_var_path(
-    os.path.join('test-backend', f'run_{get_database_id()}')
+    os.path.join("test-backend", f"run_{get_database_id()}")
 )
 
 _worker_id = 0  # Used to identify the worker process.
@@ -96,14 +96,14 @@ class RemoteTestResult(django_runner.RemoteTestResult):
     """
 
     def addInfo(self, test: TestCase, msg: str) -> None:
-        self.events.append(('addInfo', self.test_index, msg))
+        self.events.append(("addInfo", self.test_index, msg))
 
     def addInstrumentation(self, test: TestCase, data: Dict[str, Any]) -> None:
         # Some elements of data['info'] cannot be serialized.
-        if 'info' in data:
-            del data['info']
+        if "info" in data:
+            del data["info"]
 
-        self.events.append(('addInstrumentation', self.test_index, data))
+        self.events.append(("addInstrumentation", self.test_index, data))
 
 
 def process_instrumented_calls(func: Callable[[Dict[str, Any]], None]) -> None:
@@ -112,7 +112,7 @@ def process_instrumented_calls(func: Callable[[Dict[str, Any]], None]) -> None:
 
 
 SerializedSubsuite = Tuple[Type[TestSuite], List[str]]
-SubsuiteArgs = Tuple[Type['RemoteTestRunner'], int, SerializedSubsuite, bool]
+SubsuiteArgs = Tuple[Type["RemoteTestRunner"], int, SerializedSubsuite, bool]
 
 
 def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
@@ -163,7 +163,7 @@ def destroy_test_databases(worker_id: Optional[int] = None) -> None:
                 cursor.execute(query)
 
         with mock.patch.object(
-            connection.creation, '_destroy_test_db', monkey_patched_destroy_test_db
+            connection.creation, "_destroy_test_db", monkey_patched_destroy_test_db
         ):
             # In the parallel mode, the test databases are created
             # through the N=self.parallel child processes, and in the
@@ -238,7 +238,7 @@ def init_worker(counter: "multiprocessing.sharedctypes._Value") -> None:
     from zproject.dev_urls import avatars_url
 
     new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
-    avatars_url.default_args['document_root'] = new_root
+    avatars_url.default_args["document_root"] = new_root
 
 
 class ParallelTestSuite(django_runner.ParallelTestSuite):
@@ -267,7 +267,7 @@ def check_import_error(test_name: str) -> None:
 def initialize_worker_path(worker_id: int) -> None:
     # Allow each test worker process to write to a unique directory
     # within `TEST_RUN_DIR`.
-    worker_path = os.path.join(TEST_RUN_DIR, f'worker_{_worker_id}')
+    worker_path = os.path.join(TEST_RUN_DIR, f"worker_{_worker_id}")
     os.makedirs(worker_path, exist_ok=True)
     settings.TEST_WORKER_DIR = worker_path
 
@@ -302,10 +302,10 @@ class Runner(DiscoverRunner):
         return TextTestResult
 
     def on_template_rendered(self, sender: Any, context: Dict[str, Any], **kwargs: Any) -> None:
-        if hasattr(sender, 'template'):
+        if hasattr(sender, "template"):
             template_name = sender.template.name
             if template_name not in self.templates_rendered:
-                if context.get('shallow_tested') and template_name not in self.templates_rendered:
+                if context.get("shallow_tested") and template_name not in self.templates_rendered:
                     self.shallow_tested_templates.add(template_name)
                 else:
                     self.templates_rendered.add(template_name)
@@ -315,7 +315,7 @@ class Runner(DiscoverRunner):
         return self.shallow_tested_templates
 
     def setup_test_environment(self, *args: Any, **kwargs: Any) -> Any:
-        settings.DATABASES['default']['NAME'] = settings.BACKEND_DATABASE_TEMPLATE
+        settings.DATABASES["default"]["NAME"] = settings.BACKEND_DATABASE_TEMPLATE
         # We create/destroy the test databases in run_tests to avoid
         # duplicate work when running in parallel mode.
 
@@ -366,8 +366,8 @@ class Runner(DiscoverRunner):
     def test_imports(
         self, test_labels: List[str], suite: Union[TestSuite, ParallelTestSuite]
     ) -> None:
-        prefix_old = 'unittest.loader.ModuleImportFailure.'  # Python <= 3.4
-        prefix_new = 'unittest.loader._FailedTest.'  # Python > 3.4
+        prefix_old = "unittest.loader.ModuleImportFailure."  # Python <= 3.4
+        prefix_new = "unittest.loader._FailedTest."  # Python > 3.4
         error_prefixes = [prefix_old, prefix_new]
         for test_name in get_test_names(suite):
             for prefix in error_prefixes:

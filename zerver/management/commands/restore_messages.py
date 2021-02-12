@@ -29,26 +29,26 @@ To restore a specific ArchiveTransaction:
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            '-d',
-            '--restore-deleted',
-            action='store_true',
-            help='Restore manually deleted messages.',
+            "-d",
+            "--restore-deleted",
+            action="store_true",
+            help="Restore manually deleted messages.",
         )
         parser.add_argument(
-            '-t', '--transaction-id', type=int, help='Restore a specific ArchiveTransaction.'
+            "-t", "--transaction-id", type=int, help="Restore a specific ArchiveTransaction."
         )
 
         self.add_realm_args(
             parser,
-            help='Restore archived messages from the specified realm. '
-            '(Does not restore manually deleted messages.)',
+            help="Restore archived messages from the specified realm. "
+            "(Does not restore manually deleted messages.)",
         )
 
     def handle(self, **options: Any) -> None:
         realm = self.get_realm(options)
         if realm:
             restore_data_from_archive_by_realm(realm)
-        elif options['transaction_id']:
-            restore_data_from_archive(ArchiveTransaction.objects.get(id=options['transaction_id']))
+        elif options["transaction_id"]:
+            restore_data_from_archive(ArchiveTransaction.objects.get(id=options["transaction_id"]))
         else:
-            restore_all_data_from_archive(restore_manual_transactions=options['restore_deleted'])
+            restore_all_data_from_archive(restore_manual_transactions=options["restore_deleted"])

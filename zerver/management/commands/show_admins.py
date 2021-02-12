@@ -20,14 +20,14 @@ class Command(ZulipBaseCommand):
         owner_user_ids = set(realm.get_human_owner_users().values_list("id", flat=True))
 
         if admin_users:
-            print('Administrators:\n')
+            print("Administrators:\n")
             for user in admin_users:
                 owner_detail = ""
                 if user.id in owner_user_ids:
                     owner_detail = " [owner]"
-                print(f'  {user.delivery_email} ({user.full_name}){owner_detail}')
+                print(f"  {user.delivery_email} ({user.full_name}){owner_detail}")
 
         else:
-            raise CommandError('There are no admins for this realm!')
+            raise CommandError("There are no admins for this realm!")
 
         print('\nYou can use the "change_user_role" management command to adjust roles.')

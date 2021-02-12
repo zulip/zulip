@@ -93,7 +93,7 @@ def should_process_digest(realm_str: str) -> bool:
 # zerver/worker/queue_processors.py:DigestWorker.consume()
 def queue_digest_user_ids(user_ids: List[int], cutoff: datetime.datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
-    event = {"user_ids": user_ids, "cutoff": cutoff.strftime('%s')}
+    event = {"user_ids": user_ids, "cutoff": cutoff.strftime("%s")}
     queue_json_publish("digest_emails", event)
 
 
@@ -118,7 +118,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
             is_active=True,
             is_bot=False,
             enable_digest_emails=True,
-        ).values_list('id', flat=True)
+        ).values_list("id", flat=True)
     )
 
     twelve_hours_ago = timezone_now() - datetime.timedelta(hours=12)
@@ -129,7 +129,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
             event_type=RealmAuditLog.USER_DIGEST_EMAIL_CREATED,
             event_time__gt=twelve_hours_ago,
         )
-        .values_list('modified_user_id', flat=True)
+        .values_list("modified_user_id", flat=True)
         .distinct()
     )
 
@@ -140,7 +140,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
             user_profile_id__in=realm_user_ids,
             end__gt=cutoff,
         )
-        .values_list('user_profile_id', flat=True)
+        .values_list("user_profile_id", flat=True)
         .distinct()
     )
 
@@ -176,12 +176,12 @@ def get_recent_topics(
             date_sent__gt=cutoff_date,
         )
         .order_by(
-            'id',  # we will sample the first few messages
+            "id",  # we will sample the first few messages
         )
         .select_related(
-            'recipient',  # we need stream_id
-            'sender',  # we need the sender's full name
-            'sending_client',  # for Message.sent_by_human
+            "recipient",  # we need stream_id
+            "sender",  # we need the sender's full name
+            "sending_client",  # for Message.sent_by_human
         )
     )
 
@@ -257,12 +257,12 @@ def get_user_stream_map(user_ids: List[int]) -> Dict[int, Set[int]]:
         recipient__type=Recipient.STREAM,
         active=True,
         is_muted=False,
-    ).values('user_profile_id', 'recipient__type_id')
+    ).values("user_profile_id", "recipient__type_id")
 
     # maps user_id -> {stream_id, stream_id, ...}
     dct: Dict[int, Set[int]] = defaultdict(set)
     for row in rows:
-        dct[row['user_profile_id']].add(row['recipient__type_id'])
+        dct[row["user_profile_id"]].add(row["recipient__type_id"])
 
     return dct
 
@@ -271,7 +271,7 @@ def get_slim_stream_map(stream_ids: Set[int]) -> Dict[int, Stream]:
     # This can be passed to build_message_list.
     streams = Stream.objects.filter(
         id__in=stream_ids,
-    ).only('id', 'name')
+    ).only("id", "name")
 
     return {stream.id: stream for stream in streams}
 
@@ -362,7 +362,7 @@ def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
             logger.info("Sending digest email for user %s", user.id)
             # Send now, as a ScheduledEmail
             send_future_email(
-                'zerver/emails/digest',
+                "zerver/emails/digest",
                 user.realm,
                 to_user_ids=[user.id],
                 from_name="Zulip Digest",

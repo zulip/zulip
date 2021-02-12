@@ -6,8 +6,8 @@ from django.db.migrations.state import StateApps
 
 
 def update_invite_as_dict_values(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    PreregistrationUser = apps.get_model('zerver', 'PreregistrationUser')
-    MultiuseInvite = apps.get_model('zerver', 'MultiuseInvite')
+    PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
+    MultiuseInvite = apps.get_model("zerver", "MultiuseInvite")
 
     OLD_INVITE_AS_DICT = dict(
         MEMBER=1,
@@ -22,37 +22,37 @@ def update_invite_as_dict_values(apps: StateApps, schema_editor: DatabaseSchemaE
         GUEST_USER=600,
     )
 
-    PreregistrationUser.objects.filter(invited_as=OLD_INVITE_AS_DICT['REALM_OWNER']).update(
-        invited_as=NEW_INVITE_AS_DICT['REALM_OWNER']
+    PreregistrationUser.objects.filter(invited_as=OLD_INVITE_AS_DICT["REALM_OWNER"]).update(
+        invited_as=NEW_INVITE_AS_DICT["REALM_OWNER"]
     )
-    PreregistrationUser.objects.filter(invited_as=OLD_INVITE_AS_DICT['REALM_ADMIN']).update(
-        invited_as=NEW_INVITE_AS_DICT['REALM_ADMIN']
+    PreregistrationUser.objects.filter(invited_as=OLD_INVITE_AS_DICT["REALM_ADMIN"]).update(
+        invited_as=NEW_INVITE_AS_DICT["REALM_ADMIN"]
     )
-    PreregistrationUser.objects.filter(invited_as=OLD_INVITE_AS_DICT['MEMBER']).update(
-        invited_as=NEW_INVITE_AS_DICT['MEMBER']
+    PreregistrationUser.objects.filter(invited_as=OLD_INVITE_AS_DICT["MEMBER"]).update(
+        invited_as=NEW_INVITE_AS_DICT["MEMBER"]
     )
-    PreregistrationUser.objects.filter(invited_as=OLD_INVITE_AS_DICT['GUEST_USER']).update(
-        invited_as=NEW_INVITE_AS_DICT['GUEST_USER']
+    PreregistrationUser.objects.filter(invited_as=OLD_INVITE_AS_DICT["GUEST_USER"]).update(
+        invited_as=NEW_INVITE_AS_DICT["GUEST_USER"]
     )
 
-    MultiuseInvite.objects.filter(invited_as=OLD_INVITE_AS_DICT['REALM_OWNER']).update(
-        invited_as=NEW_INVITE_AS_DICT['REALM_OWNER']
+    MultiuseInvite.objects.filter(invited_as=OLD_INVITE_AS_DICT["REALM_OWNER"]).update(
+        invited_as=NEW_INVITE_AS_DICT["REALM_OWNER"]
     )
-    MultiuseInvite.objects.filter(invited_as=OLD_INVITE_AS_DICT['REALM_ADMIN']).update(
-        invited_as=NEW_INVITE_AS_DICT['REALM_ADMIN']
+    MultiuseInvite.objects.filter(invited_as=OLD_INVITE_AS_DICT["REALM_ADMIN"]).update(
+        invited_as=NEW_INVITE_AS_DICT["REALM_ADMIN"]
     )
-    MultiuseInvite.objects.filter(invited_as=OLD_INVITE_AS_DICT['MEMBER']).update(
-        invited_as=NEW_INVITE_AS_DICT['MEMBER']
+    MultiuseInvite.objects.filter(invited_as=OLD_INVITE_AS_DICT["MEMBER"]).update(
+        invited_as=NEW_INVITE_AS_DICT["MEMBER"]
     )
-    MultiuseInvite.objects.filter(invited_as=OLD_INVITE_AS_DICT['GUEST_USER']).update(
-        invited_as=NEW_INVITE_AS_DICT['GUEST_USER']
+    MultiuseInvite.objects.filter(invited_as=OLD_INVITE_AS_DICT["GUEST_USER"]).update(
+        invited_as=NEW_INVITE_AS_DICT["GUEST_USER"]
     )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0292_update_default_value_of_invited_as'),
+        ("zerver", "0292_update_default_value_of_invited_as"),
     ]
 
     operations = [

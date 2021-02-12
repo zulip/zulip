@@ -78,37 +78,37 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            '--output', dest='output_dir', help='Directory to write exported data to.'
+            "--output", dest="output_dir", help="Directory to write exported data to."
         )
         parser.add_argument(
-            '--threads',
+            "--threads",
             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-            help='Threads to use in exporting UserMessage objects in parallel',
+            help="Threads to use in exporting UserMessage objects in parallel",
         )
         parser.add_argument(
-            '--public-only',
+            "--public-only",
             action="store_true",
-            help='Export only public stream messages and associated attachments',
+            help="Export only public stream messages and associated attachments",
         )
         parser.add_argument(
-            '--deactivate-realm',
+            "--deactivate-realm",
             action="store_true",
-            help='Deactivate the realm immediately before exporting',
+            help="Deactivate the realm immediately before exporting",
         )
         parser.add_argument(
-            '--consent-message-id',
+            "--consent-message-id",
             type=int,
-            help='ID of the message advertising users to react with thumbs up',
+            help="ID of the message advertising users to react with thumbs up",
         )
         parser.add_argument(
-            '--upload',
+            "--upload",
             action="store_true",
             help="Whether to upload resulting tarball to s3 or LOCAL_UPLOADS_DIR",
         )
         parser.add_argument(
-            '--delete-after-upload',
+            "--delete-after-upload",
             action="store_true",
-            help='Automatically delete the local tarball after a successful export',
+            help="Automatically delete the local tarball after a successful export",
         )
         self.add_realm_args(parser, True)
 
@@ -122,12 +122,12 @@ class Command(ZulipBaseCommand):
 
         print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
-        num_threads = int(options['threads'])
+        num_threads = int(options["threads"])
         if num_threads < 1:
-            raise CommandError('You must have at least one thread.')
+            raise CommandError("You must have at least one thread.")
 
         if public_only and consent_message_id is not None:
-            raise CommandError('Please pass either --public-only or --consent-message-id')
+            raise CommandError("Please pass either --public-only or --consent-message-id")
 
         if options["deactivate_realm"] and realm.deactivated:
             raise CommandError(f"The realm {realm.string_id} is already deactivated.  Aborting...")
@@ -178,7 +178,7 @@ class Command(ZulipBaseCommand):
             )
 
             proceed = input("Continue? [y/N] ")
-            if proceed.lower() not in ('y', 'yes'):
+            if proceed.lower() not in ("y", "yes"):
                 raise CommandError("Aborting!")
 
         if output_dir is None:
@@ -207,7 +207,7 @@ class Command(ZulipBaseCommand):
             do_deactivate_realm(realm)
 
         def percent_callback(bytes_transferred: Any) -> None:
-            sys.stdout.write('.')
+            sys.stdout.write(".")
             sys.stdout.flush()
 
         # Allows us to trigger exports separately from command line argument parsing
@@ -215,7 +215,7 @@ class Command(ZulipBaseCommand):
             realm=realm,
             output_dir=output_dir,
             threads=num_threads,
-            upload=options['upload'],
+            upload=options["upload"],
             public_only=public_only,
             delete_after_upload=options["delete_after_upload"],
             percent_callback=percent_callback,

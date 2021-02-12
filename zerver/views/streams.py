@@ -105,7 +105,7 @@ from zerver.models import (
 
 class PrincipalError(JsonableError):
     code = ErrorCode.UNAUTHORIZED_PRINCIPAL
-    data_fields = ['principal']
+    data_fields = ["principal"]
     http_status_code = 403
 
     def __init__(self, principal: Union[int, str]) -> None:
@@ -217,9 +217,9 @@ def update_default_stream_group_streams(
         (stream, sub) = access_stream_by_name(user_profile, stream_name)
         streams.append(stream)
 
-    if op == 'add':
+    if op == "add":
         do_add_streams_to_default_stream_group(user_profile.realm, group, streams)
-    elif op == 'remove':
+    elif op == "remove":
         do_remove_streams_from_default_stream_group(user_profile.realm, group, streams)
     else:
         return json_error(_('Invalid value for "op". Specify one of "add" or "remove".'))
@@ -283,7 +283,7 @@ def update_stream_backend(
         do_change_stream_message_retention_days(stream, message_retention_days_value)
 
     if description is not None:
-        if '\n' in description:
+        if "\n" in description:
             # We don't allow newline characters in stream descriptions.
             description = description.replace("\n", " ")
         do_change_stream_description(stream, description)
@@ -335,10 +335,10 @@ FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Union[int, Iterable
 
 add_subscriptions_schema = check_list(
     check_dict_only(
-        required_keys=[('name', check_string)],
+        required_keys=[("name", check_string)],
         optional_keys=[
-            ('color', check_color),
-            ('description', check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
+            ("color", check_color),
+            ("description", check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
         ],
     ),
 )
@@ -488,8 +488,8 @@ def add_subscriptions_backend(
     for stream_dict in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
-        if 'color' in stream_dict:
-            color_map[stream_dict['name']] = stream_dict['color']
+        if "color" in stream_dict:
+            color_map[stream_dict["name"]] = stream_dict["color"]
 
         stream_dict_copy: StreamDict = {}
         stream_dict_copy["name"] = stream_dict["name"].strip()
@@ -646,11 +646,11 @@ def send_messages_for_new_subscribers(
                     content = _("{user_name} created the following streams: {stream_str}.")
                 else:
                     content = _("{user_name} created a new stream {stream_str}.")
-                topic = _('new streams')
+                topic = _("new streams")
 
             content = content.format(
                 user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
-                stream_str=", ".join(f'#**{s.name}**' for s in created_streams),
+                stream_str=", ".join(f"#**{s.name}**" for s in created_streams),
             )
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
@@ -675,7 +675,7 @@ def send_messages_for_new_subscribers(
                         sender=sender,
                         stream=stream,
                         topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
-                        content=_('Stream created by {user_name}.').format(
+                        content=_("Stream created by {user_name}.").format(
                             user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
                         ),
                     ),
@@ -689,7 +689,7 @@ def send_messages_for_new_subscribers(
 def get_subscribers_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int = REQ('stream', converter=to_non_negative_int),
+    stream_id: int = REQ("stream", converter=to_non_negative_int),
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(
         user_profile,
@@ -698,7 +698,7 @@ def get_subscribers_backend(
     )
     subscribers = get_subscriber_emails(stream, user_profile)
 
-    return json_success({'subscribers': subscribers})
+    return json_success({"subscribers": subscribers})
 
 
 # By default, lists all streams that the user has access to --
@@ -819,10 +819,10 @@ def json_stream_exists(
 
 @has_request_variables
 def json_get_stream_id(
-    request: HttpRequest, user_profile: UserProfile, stream_name: str = REQ('stream')
+    request: HttpRequest, user_profile: UserProfile, stream_name: str = REQ("stream")
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_name(user_profile, stream_name)
-    return json_success({'stream_id': stream.id})
+    return json_success({"stream_id": stream.id})
 
 
 @has_request_variables
@@ -899,6 +899,6 @@ def update_subscription_properties_backend(
             user_profile, sub, stream, property, value, acting_user=user_profile
         )
 
-        response_data.append({'stream_id': stream_id, 'property': property, 'value': value})
+        response_data.append({"stream_id": stream_id, "property": property, "value": value})
 
     return json_success({"subscription_data": response_data})

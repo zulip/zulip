@@ -36,8 +36,8 @@ def get_display_recipient_remote_cache(
     """
     if recipient_type == Recipient.STREAM:
         assert recipient_type_id is not None
-        stream = Stream.objects.values('name').get(id=recipient_type_id)
-        return stream['name']
+        stream = Stream.objects.values("name").get(id=recipient_type_id)
+        return stream["name"]
 
     # The main priority for ordering here is being deterministic.
     # Right now, we order by ID, which matches the ordering of user
@@ -46,14 +46,14 @@ def get_display_recipient_remote_cache(
         UserProfile.objects.filter(
             subscription__recipient_id=recipient_id,
         )
-        .order_by('id')
+        .order_by("id")
         .values(*display_recipient_fields)
     )
     return list(user_profile_list)
 
 
 def user_dict_id_fetcher(user_dict: UserDisplayRecipient) -> int:
-    return user_dict['id']
+    return user_dict["id"]
 
 
 def bulk_get_user_profile_by_id(uids: List[int]) -> Dict[int, UserDisplayRecipient]:
@@ -96,13 +96,13 @@ def bulk_fetch_display_recipients(
         stream_ids = [
             recipient_id_to_type_pair_dict[recipient_id][1] for recipient_id in recipient_ids
         ]
-        return Stream.objects.filter(id__in=stream_ids).values('name', 'id')
+        return Stream.objects.filter(id__in=stream_ids).values("name", "id")
 
     def stream_id_fetcher(stream: TinyStreamResult) -> int:
-        return type_pair_to_recipient_id_dict[(Recipient.STREAM, stream['id'])]
+        return type_pair_to_recipient_id_dict[(Recipient.STREAM, stream["id"])]
 
     def stream_cache_transformer(stream: TinyStreamResult) -> str:
-        return stream['name']
+        return stream["name"]
 
     # ItemT = Stream, CacheItemT = str (name), ObjKT = int (recipient_id)
     stream_display_recipients: Dict[int, str] = transformed_bulk_cached_fetch(

@@ -5,5 +5,5 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0063_realm_description'),
+        ("zerver", "0063_realm_description"),
     ]

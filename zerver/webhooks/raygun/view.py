@@ -11,32 +11,32 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@webhook_view('Raygun')
+@webhook_view("Raygun")
 @has_request_variables
 def api_raygun_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
     # The payload contains 'event' key. This 'event' key has a value of either
     # 'error_notification' or 'error_activity'. 'error_notification' happens
     # when an error is caught in an application, where as 'error_activity'
     # happens when an action is being taken for the error itself
     # (ignored/resolved/assigned/etc.).
-    event = payload['event']
+    event = payload["event"]
 
     # Because we wanted to create a message for all of the payloads, it is best
     # to handle them separately. This is because some payload keys don't exist
     # in the other event.
 
-    if event == 'error_notification':
+    if event == "error_notification":
         message = compose_notification_message(payload)
-    elif event == 'error_activity':
+    elif event == "error_activity":
         message = compose_activity_message(payload)
     else:
         raise UnsupportedWebhookEventType(event)
 
-    topic = 'test'
+    topic = "test"
 
     check_send_webhook_message(request, user_profile, topic, message)
 
@@ -54,8 +54,8 @@ def make_user_stats_chunk(error_dict: Dict[str, Any]) -> str:
     values
     :returns: A message chunk that will be added to the main message
     """
-    users_affected = error_dict['usersAffected']
-    total_occurrences = error_dict['totalOccurrences']
+    users_affected = error_dict["usersAffected"]
+    total_occurrences = error_dict["totalOccurrences"]
 
     # One line is subjectively better than two lines for this.
     return f"* {users_affected} users affected with {total_occurrences} total occurrences\n"
@@ -74,8 +74,8 @@ def make_time_chunk(error_dict: Dict[str, Any]) -> str:
     :returns: A message chunk that will be added to the main message
     """
     # Make the timestamp more readable to a human.
-    time_first = parse_time(error_dict['firstOccurredOn'])
-    time_last = parse_time(error_dict['lastOccurredOn'])
+    time_first = parse_time(error_dict["firstOccurredOn"])
+    time_last = parse_time(error_dict["lastOccurredOn"])
 
     # Provide time information about this error,
     return f"* **First occurred**: {time_first}\n* **Last occurred**: {time_last}\n"
@@ -102,8 +102,8 @@ def make_app_info_chunk(app_dict: Dict[str, str]) -> str:
     :param app_dict: The application dictionary obtained from the payload
     :returns: A message chunk that will be added to the main message
     """
-    app_name = app_dict['name']
-    app_url = app_dict['url']
+    app_name = app_dict["name"]
+    app_url = app_dict["url"]
     return f"* **Application details**: [{app_name}]({app_url})\n"
 
 
@@ -116,9 +116,9 @@ def notification_message_follow_up(payload: Dict[str, Any]) -> str:
     message = ""
 
     # Link to Raygun about the follow up
-    followup_link_md = "[follow-up error]({})".format(payload['error']['url'])
+    followup_link_md = "[follow-up error]({})".format(payload["error"]["url"])
 
-    followup_type = payload['eventType']
+    followup_type = payload["eventType"]
 
     if followup_type == "HourlyFollowUp":
         prefix = "Hourly"
@@ -131,12 +131,12 @@ def notification_message_follow_up(payload: Dict[str, Any]) -> str:
     message += f"{prefix} {followup_link_md}:\n"
 
     # Get the message of the error.
-    payload_msg = payload['error']['message']
+    payload_msg = payload["error"]["message"]
 
     message += make_message_chunk(payload_msg)
-    message += make_time_chunk(payload['error'])
-    message += make_user_stats_chunk(payload['error'])
-    message += make_app_info_chunk(payload['application'])
+    message += make_time_chunk(payload["error"])
+    message += make_user_stats_chunk(payload["error"])
+    message += make_app_info_chunk(payload["application"])
 
     return message
 
@@ -150,42 +150,42 @@ def notification_message_error_occurred(payload: Dict[str, Any]) -> str:
     message = ""
 
     # Provide a clickable link that goes to Raygun about this error.
-    error_link_md = "[Error]({})".format(payload['error']['url'])
+    error_link_md = "[Error]({})".format(payload["error"]["url"])
 
     # Stylize the message based on the event type of the error.
-    if payload['eventType'] == "NewErrorOccurred":
+    if payload["eventType"] == "NewErrorOccurred":
         message += "{}:\n".format(f"New {error_link_md} occurred")
-    elif payload['eventType'] == "ErrorReoccurred":
+    elif payload["eventType"] == "ErrorReoccurred":
         message += "{}:\n".format(f"{error_link_md} reoccurred")
 
     # Get the message of the error. This value can be empty (as in "").
-    payload_msg = payload['error']['message']
+    payload_msg = payload["error"]["message"]
 
     message += make_message_chunk(payload_msg)
-    message += make_time_chunk(payload['error'])
-    message += make_user_stats_chunk(payload['error'])
+    message += make_time_chunk(payload["error"])
+    message += make_user_stats_chunk(payload["error"])
 
     # Only NewErrorOccurred and ErrorReoccurred contain an error instance.
-    error_instance = payload['error']['instance']
+    error_instance = payload["error"]["instance"]
 
     # Extract each of the keys and values in error_instance for easier handle
 
     # Contains list of tags for the error. Can be empty (null)
-    tags = error_instance['tags']
+    tags = error_instance["tags"]
 
     # Contains the identity of affected user at the moment this error
     # happened. This surprisingly can be null. Somehow.
-    affected_user = error_instance['affectedUser']
+    affected_user = error_instance["affectedUser"]
 
     # Contains custom data for this particular error (if supplied). Can be
     # null.
-    custom_data = error_instance['customData']
+    custom_data = error_instance["customData"]
 
     if tags is not None:
         message += "* **Tags**: {}\n".format(", ".join(tags))
 
     if affected_user is not None:
-        user_uuid = affected_user['UUID']
+        user_uuid = affected_user["UUID"]
         message += f"* **Affected user**: {user_uuid[:6]}...{user_uuid[-5:]}\n"
 
     if custom_data is not None:
@@ -194,7 +194,7 @@ def notification_message_error_occurred(payload: Dict[str, Any]) -> str:
         for key in sorted(custom_data.keys()):
             message += f"* **{key}**: {custom_data[key]}\n"
 
-    message += make_app_info_chunk(payload['application'])
+    message += make_app_info_chunk(payload["application"])
 
     return message
 
@@ -209,7 +209,7 @@ def compose_notification_message(payload: Dict[str, Any]) -> str:
     # Get the event type of the error. This can be "NewErrorOccurred",
     # "ErrorReoccurred", "OneMinuteFollowUp", "FiveMinuteFollowUp", ...,
     # "HourlyFollowUp" for notification error.
-    event_type = payload['eventType']
+    event_type = payload["eventType"]
 
     # "NewErrorOccurred" and "ErrorReoccurred" contain error instance
     # information, meaning that it has payload['error']['instance']. The other
@@ -234,24 +234,24 @@ def activity_message(payload: Dict[str, Any]) -> str:
     """
     message = ""
 
-    error_link_md = "[Error]({})".format(payload['error']['url'])
+    error_link_md = "[Error]({})".format(payload["error"]["url"])
 
-    event_type = payload['eventType']
+    event_type = payload["eventType"]
 
-    user = payload['error']['user']
+    user = payload["error"]["user"]
     if event_type == "StatusChanged":
-        error_status = payload['error']['status']
+        error_status = payload["error"]["status"]
         message += f"{error_link_md} status changed to **{error_status}** by {user}:\n"
     elif event_type == "CommentAdded":
-        comment = payload['error']['comment']
+        comment = payload["error"]["comment"]
         message += f"{user} commented on {error_link_md}:\n\n``` quote\n{comment}\n```\n"
     elif event_type == "AssignedToUser":
-        assigned_to = payload['error']['assignedTo']
+        assigned_to = payload["error"]["assignedTo"]
         message += f"{user} assigned {error_link_md} to {assigned_to}:\n"
 
-    message += "* **Timestamp**: {}\n".format(parse_time(payload['error']['activityDate']))
+    message += "* **Timestamp**: {}\n".format(parse_time(payload["error"]["activityDate"]))
 
-    message += make_app_info_chunk(payload['application'])
+    message += make_app_info_chunk(payload["application"])
 
     return message
 
@@ -265,7 +265,7 @@ def compose_activity_message(payload: Dict[str, Any]) -> str:
     :return: Returns a response message
     """
 
-    event_type = payload['eventType']
+    event_type = payload["eventType"]
 
     # Activity is separated into three main categories: status changes (
     # ignores, resolved), error is assigned to user, and comment added to

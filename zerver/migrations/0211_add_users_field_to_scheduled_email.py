@@ -19,13 +19,13 @@ def set_users_for_existing_scheduledemails(
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0210_stream_first_message_id'),
+        ("zerver", "0210_stream_first_message_id"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='scheduledemail',
-            name='users',
+            model_name="scheduledemail",
+            name="users",
             field=models.ManyToManyField(to=settings.AUTH_USER_MODEL),
         ),
         migrations.RunPython(
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
             elidable=True,
         ),
         migrations.RemoveField(
-            model_name='scheduledemail',
-            name='user',
+            model_name="scheduledemail",
+            name="user",
         ),
     ]

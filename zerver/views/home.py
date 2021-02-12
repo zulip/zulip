@@ -37,7 +37,7 @@ def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
     if settings.TOS_VERSION is None:
         return False
 
-    return int(settings.TOS_VERSION.split('.')[0]) > user_profile.major_tos_version()
+    return int(settings.TOS_VERSION.split(".")[0]) > user_profile.major_tos_version()
 
 
 @zulip_login_required
@@ -53,14 +53,14 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     email = request.user.delivery_email
     special_message_template = None
     if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
-        special_message_template = 'zerver/' + settings.FIRST_TIME_TOS_TEMPLATE
+        special_message_template = "zerver/" + settings.FIRST_TIME_TOS_TEMPLATE
     return render(
         request,
-        'zerver/accounts_accept_terms.html',
+        "zerver/accounts_accept_terms.html",
         context={
-            'form': form,
-            'email': email,
-            'special_message_template': special_message_template,
+            "form": form,
+            "email": email,
+            "special_message_template": special_message_template,
         },
     )
 
@@ -139,7 +139,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if banned_desktop_app:
         return render(
             request,
-            'zerver/insecure_desktop_app.html',
+            "zerver/insecure_desktop_app.html",
             context={
                 "auto_update_broken": auto_update_broken,
             },
@@ -148,7 +148,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if unsupported_browser:
         return render(
             request,
-            'zerver/unsupported_browser.html',
+            "zerver/unsupported_browser.html",
             context={
                 "browser_name": browser_name,
             },
@@ -169,7 +169,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     update_last_reminder(user_profile)
 
-    statsd.incr('views.home')
+    statsd.incr("views.home")
 
     # If a user hasn't signed the current Terms of Service, send them there
     if need_accept_tos(user_profile):
@@ -213,7 +213,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     billing_info = get_billing_info(user_profile)
 
-    request._log_data['extra'] = "[{}]".format(queue_id)
+    request._log_data["extra"] = "[{}]".format(queue_id)
 
     csp_nonce = secrets.token_hex(24)
 
@@ -223,26 +223,26 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     response = render(
         request,
-        'zerver/app/index.html',
+        "zerver/app/index.html",
         context={
-            'user_profile': user_profile,
-            'page_params': page_params,
-            'csp_nonce': csp_nonce,
-            'search_pills_enabled': settings.SEARCH_PILLS_ENABLED,
-            'show_invites': show_invites,
-            'show_add_streams': show_add_streams,
-            'show_billing': billing_info.show_billing,
-            'corporate_enabled': settings.CORPORATE_ENABLED,
-            'show_plans': billing_info.show_plans,
-            'is_owner': user_permission_info.is_realm_owner,
-            'is_admin': user_permission_info.is_realm_admin,
-            'is_guest': user_permission_info.is_guest,
-            'color_scheme': user_permission_info.color_scheme,
-            'navbar_logo_url': navbar_logo_url,
-            'show_webathena': user_permission_info.show_webathena,
-            'embedded': narrow_stream is not None,
-            'invite_as': PreregistrationUser.INVITE_AS,
-            'max_file_upload_size_mib': settings.MAX_FILE_UPLOAD_SIZE,
+            "user_profile": user_profile,
+            "page_params": page_params,
+            "csp_nonce": csp_nonce,
+            "search_pills_enabled": settings.SEARCH_PILLS_ENABLED,
+            "show_invites": show_invites,
+            "show_add_streams": show_add_streams,
+            "show_billing": billing_info.show_billing,
+            "corporate_enabled": settings.CORPORATE_ENABLED,
+            "show_plans": billing_info.show_plans,
+            "is_owner": user_permission_info.is_realm_owner,
+            "is_admin": user_permission_info.is_realm_admin,
+            "is_guest": user_permission_info.is_guest,
+            "color_scheme": user_permission_info.color_scheme,
+            "navbar_logo_url": navbar_logo_url,
+            "show_webathena": user_permission_info.show_webathena,
+            "embedded": narrow_stream is not None,
+            "invite_as": PreregistrationUser.INVITE_AS,
+            "max_file_upload_size_mib": settings.MAX_FILE_UPLOAD_SIZE,
         },
     )
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)

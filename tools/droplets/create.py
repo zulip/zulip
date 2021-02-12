@@ -27,17 +27,17 @@ from typing import Any, Dict, List
 import digitalocean
 
 # initiation argument parser
-parser = argparse.ArgumentParser(description='Create a Zulip devopment VM DigitalOcean droplet.')
+parser = argparse.ArgumentParser(description="Create a Zulip devopment VM DigitalOcean droplet.")
 parser.add_argument(
     "username", help="GitHub username for whom you want to create a Zulip dev droplet"
 )
-parser.add_argument('--tags', nargs='+', default=[])
-parser.add_argument('-f', '--recreate', action="store_true")
+parser.add_argument("--tags", nargs="+", default=[])
+parser.add_argument("-f", "--recreate", action="store_true")
 
 
 def get_config() -> configparser.ConfigParser:
     config = configparser.ConfigParser()
-    config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini'))
+    config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), "conf.ini"))
     return config
 
 
@@ -150,10 +150,10 @@ def create_droplet(
 ) -> str:
     droplet = digitalocean.Droplet(
         token=my_token,
-        name=f'{username}.zulipdev.org',
-        region='nyc3',
+        name=f"{username}.zulipdev.org",
+        region="nyc3",
         image=template_id,
-        size_slug='s-1vcpu-2gb',
+        size_slug="s-1vcpu-2gb",
         user_data=user_data,
         tags=tags,
         backups=False,
@@ -168,7 +168,7 @@ def create_droplet(
         for action in actions:
             action.load()
             print(f"...[{action.type}]: {action.status}")
-            if action.type == 'create' and action.status == 'completed':
+            if action.type == "create" and action.status == "completed":
                 incomplete = False
                 break
         if incomplete:
@@ -182,7 +182,7 @@ def create_droplet(
 def delete_existing_records(records: List[digitalocean.Record], record_name: str) -> None:
     count = 0
     for record in records:
-        if record.name == record_name and record.domain == 'zulipdev.org' and record.type == 'A':
+        if record.name == record_name and record.domain == "zulipdev.org" and record.type == "A":
             record.destroy()
             count = count + 1
     if count:
@@ -190,7 +190,7 @@ def delete_existing_records(records: List[digitalocean.Record], record_name: str
 
 
 def create_dns_record(my_token: str, username: str, ip_address: str) -> None:
-    domain = digitalocean.Domain(token=my_token, name='zulipdev.org')
+    domain = digitalocean.Domain(token=my_token, name="zulipdev.org")
     domain.load()
     records = domain.get_records()
 
@@ -199,9 +199,9 @@ def create_dns_record(my_token: str, username: str, ip_address: str) -> None:
     delete_existing_records(records, wildcard_name)
 
     print(f"Creating new A record for {username}.zulipdev.org that points to {ip_address}.")
-    domain.create_new_domain_record(type='A', name=username, data=ip_address)
+    domain.create_new_domain_record(type="A", name=username, data=ip_address)
     print(f"Creating new A record for *.{username}.zulipdev.org that points to {ip_address}.")
-    domain.create_new_domain_record(type='A', name=wildcard_name, data=ip_address)
+    domain.create_new_domain_record(type="A", name=wildcard_name, data=ip_address)
 
 
 def print_completion(username: str) -> None:
@@ -241,7 +241,7 @@ Your remote Zulip dev server has been created!
     print("------")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # define id of image to create new droplets from
     # You can get this with something like the following. You may need to try other pages.
     # Broken in two to satisfy linter (line too long)
@@ -266,7 +266,7 @@ if __name__ == '__main__':
     # now make sure the user has forked zulip/zulip
     fork_exists(username=username)
 
-    api_token = config['digitalocean']['api_token']
+    api_token = config["digitalocean"]["api_token"]
     # does the droplet already exist?
     exit_if_droplet_exists(my_token=api_token, username=username, recreate=args.recreate)
 

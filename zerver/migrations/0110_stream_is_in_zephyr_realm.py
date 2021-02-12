@@ -9,7 +9,7 @@ def populate_is_zephyr(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> 
     Stream = apps.get_model("zerver", "Stream")
 
     realms = Realm.objects.filter(
-        string_id='zephyr',
+        string_id="zephyr",
     )
 
     for realm in realms:
@@ -21,13 +21,13 @@ def populate_is_zephyr(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0109_mark_tutorial_status_finished'),
+        ("zerver", "0109_mark_tutorial_status_finished"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='stream',
-            name='is_in_zephyr_realm',
+            model_name="stream",
+            name="is_in_zephyr_realm",
             field=models.BooleanField(default=False),
         ),
         migrations.RunPython(

@@ -13,5 +13,5 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         assert settings.DEVELOPMENT
-        UserMessage.objects.all().update(flags=F('flags').bitand(~UserMessage.flags.read))
+        UserMessage.objects.all().update(flags=F("flags").bitand(~UserMessage.flags.read))
         cache._cache.flush_all()

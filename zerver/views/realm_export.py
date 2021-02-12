@@ -36,12 +36,12 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
         realm=realm, event_type=event_type, event_time__gte=event_time_delta
     )
     if len(limit_check) >= EXPORT_LIMIT:
-        return json_error(_('Exceeded rate limit.'))
+        return json_error(_("Exceeded rate limit."))
 
     total_messages = sum(
         realm_count.value
         for realm_count in RealmCount.objects.filter(
-            realm=user.realm, property='messages_sent:client:day'
+            realm=user.realm, property="messages_sent:client:day"
         )
     )
     if (
@@ -49,7 +49,7 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
         or user.realm.currently_used_upload_space_bytes() > MAX_UPLOAD_QUOTA
     ):
         return json_error(
-            _('Please request a manual export from {email}.').format(
+            _("Please request a manual export from {email}.").format(
                 email=settings.ZULIP_ADMINISTRATOR,
             )
         )
@@ -64,13 +64,13 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     # Using the deferred_work queue processor to avoid
     # killing the process after 60s
     event = {
-        'type': "realm_export",
-        'time': event_time,
-        'realm_id': realm.id,
-        'user_profile_id': user.id,
-        'id': row.id,
+        "type": "realm_export",
+        "time": event_time,
+        "realm_id": realm.id,
+        "user_profile_id": user.id,
+        "id": row.id,
     }
-    queue_json_publish('deferred_work', event)
+    queue_json_publish("deferred_work", event)
     return json_success()
 
 
@@ -90,7 +90,7 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
         return json_error(_("Invalid data export ID"))
 
     export_data = orjson.loads(audit_log_entry.extra_data)
-    if 'deleted_timestamp' in export_data:
+    if "deleted_timestamp" in export_data:
         return json_error(_("Export already deleted"))
     do_delete_realm_export(user, audit_log_entry)
     return json_success()

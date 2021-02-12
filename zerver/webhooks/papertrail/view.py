@@ -18,7 +18,7 @@ SEARCH_TEMPLATE = """
 """.strip()
 
 
-@webhook_view('Papertrail')
+@webhook_view("Papertrail")
 @has_request_variables
 def api_papertrail_webhook(
     request: HttpRequest,
@@ -59,11 +59,11 @@ def api_papertrail_webhook(
         message.append(event_text)
 
         if i >= 3:
-            message.append('[See more]({})'.format(payload["saved_search"]["html_search_url"]))
+            message.append("[See more]({})".format(payload["saved_search"]["html_search_url"]))
             break
 
-    post = '\n'.join(message)
-    topic = 'logs'
+    post = "\n".join(message)
+    topic = "logs"
 
     check_send_webhook_message(request, user_profile, topic, post)
     return json_success()

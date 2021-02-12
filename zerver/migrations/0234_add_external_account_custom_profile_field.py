@@ -6,22 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0233_userprofile_avatar_hash'),
+        ("zerver", "0233_userprofile_avatar_hash"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='customprofilefield',
-            name='field_type',
+            model_name="customprofilefield",
+            name="field_type",
             field=models.PositiveSmallIntegerField(
                 choices=[
-                    (1, 'Short text'),
-                    (2, 'Long text'),
-                    (4, 'Date picker'),
-                    (5, 'Link'),
-                    (7, 'External account'),
-                    (3, 'List of options'),
-                    (6, 'Person picker'),
+                    (1, "Short text"),
+                    (2, "Long text"),
+                    (4, "Date picker"),
+                    (5, "Link"),
+                    (7, "External account"),
+                    (3, "List of options"),
+                    (6, "Person picker"),
                 ],
                 default=1,
             ),

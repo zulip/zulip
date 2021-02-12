@@ -19,7 +19,7 @@ def api_appfollow_webhook(
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
     message = payload["text"]
-    app_name_search = re.search(r'\A(.+)', message)
+    app_name_search = re.search(r"\A(.+)", message)
     assert app_name_search is not None
     app_name = app_name_search.group(0)
     topic = app_name
@@ -33,10 +33,10 @@ def convert_markdown(text: str) -> str:
     # Implemented mainly for AppFollow messages
     # Not ready for general use as some edge-cases not handled
     # Convert Bold
-    text = re.sub(r'(?:(?<=\s)|(?<=^))\*(.+?\S)\*(?=\s|$)', r'**\1**', text)
+    text = re.sub(r"(?:(?<=\s)|(?<=^))\*(.+?\S)\*(?=\s|$)", r"**\1**", text)
     # Convert Italics
-    text = re.sub(r'\b_(\s*)(.+?)(\s*)_\b', r'\1*\2*\3', text)
+    text = re.sub(r"\b_(\s*)(.+?)(\s*)_\b", r"\1*\2*\3", text)
     # Convert Strikethrough
-    text = re.sub(r'(?:(?<=\s)|(?<=^))~(.+?\S)~(?=\s|$)', r'~~\1~~', text)
+    text = re.sub(r"(?:(?<=\s)|(?<=^))~(.+?\S)~(?=\s|$)", r"~~\1~~", text)
 
     return text

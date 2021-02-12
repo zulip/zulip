@@ -9,15 +9,15 @@ from typing import Any, Callable, Iterator, List, Optional, Sequence, Set, Tuple
 
 from django.conf import settings
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def statsd_key(val: str, clean_periods: bool = False) -> str:
-    if ':' in val:
-        val = val.split(':')[0]
-    val = val.replace('-', "_")
+    if ":" in val:
+        val = val.split(":")[0]
+    val = val.replace("-", "_")
     if clean_periods:
-        val = val.replace('.', '_')
+        val = val.replace(".", "_")
 
     return val
 
@@ -34,19 +34,19 @@ class StatsDWrapper:
         from django_statsd.clients import statsd
 
         if delta:
-            value_str = f'{value:+g}|g'
+            value_str = f"{value:+g}|g"
         else:
-            value_str = f'{value:g}|g'
+            value_str = f"{value:g}|g"
         statsd._send(stat, value_str, rate)
 
     def __getattr__(self, name: str) -> Any:
         # Hand off to statsd if we have it enabled
         # otherwise do nothing
-        if name in ['timer', 'timing', 'incr', 'decr', 'gauge']:
-            if settings.STATSD_HOST != '':
+        if name in ["timer", "timing", "incr", "decr", "gauge"]:
+            if settings.STATSD_HOST != "":
                 from django_statsd.clients import statsd
 
-                if name == 'gauge':
+                if name == "gauge":
                     return self._our_gauge
                 else:
                     return getattr(statsd, name)
@@ -92,7 +92,7 @@ def make_safe_digest(string: str, hash_func: Callable[[bytes], Any] = hashlib.sh
     """
     # hashlib.sha1, md5, etc. expect bytes, so non-ASCII strings must
     # be encoded.
-    return hash_func(string.encode('utf-8')).hexdigest()
+    return hash_func(string.encode("utf-8")).hexdigest()
 
 
 def log_statsd_event(name: str) -> None:
@@ -155,7 +155,7 @@ def query_chunker(
         id_collector = set()
 
     def chunkify(q: Any, i: int) -> Iterator[Tuple[int, int, Any]]:
-        q = q.order_by('id')
+        q = q.order_by("id")
         min_id = -1
         while True:
             rows = list(q.filter(id__gt=min_id)[0:db_chunk_size])

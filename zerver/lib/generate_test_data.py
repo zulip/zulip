@@ -211,7 +211,7 @@ def create_test_data() -> None:
 
     write_file(
         paragraphs,
-        os.path.join(get_or_create_dev_uuid_var_path('test-backend'), "test_messages.json"),
+        os.path.join(get_or_create_dev_uuid_var_path("test-backend"), "test_messages.json"),
     )
 
 

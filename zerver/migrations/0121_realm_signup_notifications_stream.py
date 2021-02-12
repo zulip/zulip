@@ -19,19 +19,19 @@ def set_initial_value_for_signup_notifications_stream(
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0120_botuserconfigdata'),
+        ("zerver", "0120_botuserconfigdata"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='signup_notifications_stream',
+            model_name="realm",
+            name="signup_notifications_stream",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='+',
-                to='zerver.Stream',
+                related_name="+",
+                to="zerver.Stream",
             ),
         ),
         migrations.RunPython(

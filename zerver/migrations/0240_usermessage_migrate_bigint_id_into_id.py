@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0239_usermessage_copy_id_to_bigint_id'),
+        ("zerver", "0239_usermessage_copy_id_to_bigint_id"),
     ]
 
     operations = [
@@ -31,12 +31,12 @@ class Migration(migrations.Migration):
                 # so that it knows these model changes are handled and doesn't to generate them on its own
                 # in the future makemigration calls.
                 migrations.RemoveField(
-                    model_name='usermessage',
-                    name='bigint_id',
+                    model_name="usermessage",
+                    name="bigint_id",
                 ),
                 migrations.AlterField(
-                    model_name='usermessage',
-                    name='id',
+                    model_name="usermessage",
+                    name="id",
                     field=models.BigAutoField(primary_key=True, serialize=False),
                 ),
             ],

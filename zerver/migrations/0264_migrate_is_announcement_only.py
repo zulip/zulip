@@ -6,7 +6,7 @@ from django.db.migrations.state import StateApps
 
 
 def upgrade_stream_post_policy(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    Stream = apps.get_model('zerver', 'Stream')
+    Stream = apps.get_model("zerver", "Stream")
     Stream.STREAM_POST_POLICY_EVERYONE = 1
     Stream.STREAM_POST_POLICY_ADMINS = 2
     Stream.objects.filter(is_announcement_only=False).update(
@@ -20,7 +20,7 @@ def upgrade_stream_post_policy(apps: StateApps, schema_editor: DatabaseSchemaEdi
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0263_stream_stream_post_policy'),
+        ("zerver", "0263_stream_stream_post_policy"),
     ]
 
     operations = [

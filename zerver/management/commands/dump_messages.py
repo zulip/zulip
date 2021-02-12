@@ -15,10 +15,10 @@ class Command(ZulipBaseCommand):
         default_cutoff = time.time() - 60 * 60 * 24 * 30  # 30 days.
         self.add_realm_args(parser, True)
         parser.add_argument(
-            '--since',
+            "--since",
             type=int,
             default=default_cutoff,
-            help='The time in epoch since from which to start the dump.',
+            help="The time in epoch since from which to start the dump.",
         )
 
     def handle(self, *args: Any, **options: Any) -> None:

@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0306_custom_profile_field_date_format'),
+        ("zerver", "0306_custom_profile_field_date_format"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='userprofile',
-            old_name='is_api_super_user',
-            new_name='can_forge_sender',
+            model_name="userprofile",
+            old_name="is_api_super_user",
+            new_name="can_forge_sender",
         ),
     ]

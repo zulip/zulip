@@ -8,7 +8,7 @@ from zerver.lib.fix_unreads import fix
 from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.models import Realm, UserProfile
 
-logging.getLogger('zulip.fix_unreads').setLevel(logging.INFO)
+logging.getLogger("zulip.fix_unreads").setLevel(logging.INFO)
 
 
 class Command(ZulipBaseCommand):
@@ -16,9 +16,9 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            'emails', metavar='<emails>', nargs='*', help='email address to spelunk'
+            "emails", metavar="<emails>", nargs="*", help="email address to spelunk"
         )
-        parser.add_argument('--all', action='store_true', help='fix all users in specified realm')
+        parser.add_argument("--all", action="store_true", help="fix all users in specified realm")
         self.add_realm_args(parser)
 
     def fix_all_users(self, realm: Realm) -> None:
@@ -47,11 +47,11 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
 
-        if options['all']:
+        if options["all"]:
             if realm is None:
-                raise CommandError('You must specify a realm if you choose the --all option.')
+                raise CommandError("You must specify a realm if you choose the --all option.")
 
             self.fix_all_users(realm)
             return
 
-        self.fix_emails(realm, options['emails'])
+        self.fix_emails(realm, options["emails"])

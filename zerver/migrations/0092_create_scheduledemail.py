@@ -7,25 +7,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0091_realm_allow_edit_history'),
+        ("zerver", "0091_realm_allow_edit_history"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ScheduledEmail',
+            name="ScheduledEmail",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ('scheduled_timestamp', models.DateTimeField(db_index=True)),
-                ('data', models.TextField()),
-                ('address', models.EmailField(db_index=True, max_length=254, null=True)),
-                ('type', models.PositiveSmallIntegerField()),
+                ("scheduled_timestamp", models.DateTimeField(db_index=True)),
+                ("data", models.TextField()),
+                ("address", models.EmailField(db_index=True, max_length=254, null=True)),
+                ("type", models.PositiveSmallIntegerField()),
                 (
-                    'user',
+                    "user",
                     models.ForeignKey(
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
@@ -34,10 +34,10 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.DeleteModel(
-            name='ScheduledJob',
+            name="ScheduledJob",
         ),
     ]

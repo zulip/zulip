@@ -11,22 +11,22 @@ from zerver.models import UserProfile
 
 
 def get_message_data(payload: Dict[str, Any]) -> Tuple[str, str, str, str]:
-    link = "https://app.frontapp.com/open/" + payload['target']['data']['id']
-    outbox = payload['conversation']['recipient']['handle']
-    inbox = payload['source']['data'][0]['address']
-    subject = payload['conversation']['subject']
+    link = "https://app.frontapp.com/open/" + payload["target"]["data"]["id"]
+    outbox = payload["conversation"]["recipient"]["handle"]
+    inbox = payload["source"]["data"][0]["address"]
+    subject = payload["conversation"]["subject"]
     return link, outbox, inbox, subject
 
 
 def get_source_name(payload: Dict[str, Any]) -> str:
-    first_name = payload['source']['data']['first_name']
-    last_name = payload['source']['data']['last_name']
+    first_name = payload["source"]["data"]["first_name"]
+    last_name = payload["source"]["data"]["last_name"]
     return f"{first_name} {last_name}"
 
 
 def get_target_name(payload: Dict[str, Any]) -> str:
-    first_name = payload['target']['data']['first_name']
-    last_name = payload['target']['data']['last_name']
+    first_name = payload["target"]["data"]["first_name"]
+    last_name = payload["target"]["data"]["last_name"]
     return f"{first_name} {last_name}"
 
 
@@ -59,7 +59,7 @@ def get_outbound_reply_body(payload: Dict[str, Any]) -> str:
 
 def get_comment_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
-    comment = payload['target']['data']['body']
+    comment = payload["target"]["data"]["body"]
     return "**{name}** left a comment:\n```quote\n{comment}\n```".format(name=name, comment=comment)
 
 
@@ -102,30 +102,30 @@ def get_conversation_restored_body(payload: Dict[str, Any]) -> str:
 
 def get_conversation_tagged_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
-    tag = payload['target']['data']['name']
+    tag = payload["target"]["data"]["name"]
     return f"**{name}** added tag **{tag}**."
 
 
 def get_conversation_untagged_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
-    tag = payload['target']['data']['name']
+    tag = payload["target"]["data"]["name"]
     return f"**{name}** removed tag **{tag}**."
 
 
 EVENT_FUNCTION_MAPPER = {
-    'inbound': get_inbound_message_body,
-    'outbound': get_outbound_message_body,
-    'out_reply': get_outbound_reply_body,
-    'comment': get_comment_body,
-    'mention': get_comment_body,
-    'assign': get_conversation_assigned_body,
-    'unassign': get_conversation_unassigned_body,
-    'archive': get_conversation_archived_body,
-    'reopen': get_conversation_reopened_body,
-    'trash': get_conversation_deleted_body,
-    'restore': get_conversation_restored_body,
-    'tag': get_conversation_tagged_body,
-    'untag': get_conversation_untagged_body,
+    "inbound": get_inbound_message_body,
+    "outbound": get_outbound_message_body,
+    "out_reply": get_outbound_reply_body,
+    "comment": get_comment_body,
+    "mention": get_comment_body,
+    "assign": get_conversation_assigned_body,
+    "unassign": get_conversation_unassigned_body,
+    "archive": get_conversation_archived_body,
+    "reopen": get_conversation_reopened_body,
+    "trash": get_conversation_deleted_body,
+    "restore": get_conversation_restored_body,
+    "tag": get_conversation_tagged_body,
+    "untag": get_conversation_untagged_body,
 }
 
 
@@ -133,19 +133,19 @@ def get_body_based_on_event(event: str) -> Any:
     return EVENT_FUNCTION_MAPPER[event]
 
 
-@webhook_view('Front')
+@webhook_view("Front")
 @has_request_variables
 def api_front_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
-    event = payload['type']
+    event = payload["type"]
     if event not in EVENT_FUNCTION_MAPPER:
         return json_error(_("Unknown webhook request"))
 
-    topic = payload['conversation']['id']
+    topic = payload["conversation"]["id"]
     body = get_body_based_on_event(event)(payload)
     check_send_webhook_message(request, user_profile, topic, body)
 

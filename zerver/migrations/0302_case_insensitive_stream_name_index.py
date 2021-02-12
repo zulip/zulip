@@ -3,7 +3,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('zerver', '0301_fix_unread_messages_in_deactivated_streams'),
+        ("zerver", "0301_fix_unread_messages_in_deactivated_streams"),
     ]
 
     operations = [
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         """
         ),
         migrations.AlterUniqueTogether(
-            name='stream',
+            name="stream",
             unique_together=set(),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0202_add_user_status_info'),
+        ("zerver", "0202_add_user_status_info"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='message_content_allowed_in_email_notifications',
+            model_name="realm",
+            name="message_content_allowed_in_email_notifications",
             field=models.BooleanField(default=True),
         ),
     ]

@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0189_userprofile_add_some_emojisets'),
+        ("zerver", "0189_userprofile_add_some_emojisets"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='pushdevicetoken',
-            name='token',
+            model_name="pushdevicetoken",
+            name="token",
             field=models.CharField(db_index=True, max_length=4096),
         ),
         migrations.AlterUniqueTogether(
-            name='pushdevicetoken',
-            unique_together={('user', 'kind', 'token')},
+            name="pushdevicetoken",
+            unique_together={("user", "kind", "token")},
         ),
     ]

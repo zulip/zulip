@@ -64,10 +64,10 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
     do_change_user_delivery_email(user_profile, new_email)
 
-    context = {'realm_name': user_profile.realm.name, 'new_email': new_email}
+    context = {"realm_name": user_profile.realm.name, "new_email": new_email}
     language = user_profile.default_language
     send_email(
-        'zerver/emails/notify_change_in_email',
+        "zerver/emails/notify_change_in_email",
         to_emails=[old_email],
         from_name=FromAddress.security_email_from_name(user_profile=user_profile),
         from_address=FromAddress.SUPPORT,
@@ -77,14 +77,14 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     )
 
     ctx = {
-        'new_email_html_tag': SafeString(
+        "new_email_html_tag": SafeString(
             f'<a href="mailto:{escape(new_email)}">{escape(new_email)}</a>'
         ),
-        'old_email_html_tag': SafeString(
+        "old_email_html_tag": SafeString(
             f'<a href="mailto:{escape(old_email)}">{escape(old_email)}</a>'
         ),
     }
-    return render(request, 'confirmation/confirm_email_change.html', context=ctx)
+    return render(request, "confirmation/confirm_email_change.html", context=ctx)
 
 
 @human_users_only
@@ -144,7 +144,7 @@ def json_change_settings(
 
     result: Dict[str, Any] = {}
     new_email = email.strip()
-    if user_profile.delivery_email != new_email and new_email != '':
+    if user_profile.delivery_email != new_email and new_email != "":
         if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
             return json_error(_("Email address changes are disabled in this organization."))
 
@@ -165,7 +165,7 @@ def json_change_settings(
             return json_error(e.message)
 
         do_start_email_change_process(user_profile, new_email)
-        result['account_email'] = _("Check your email for a confirmation link. ")
+        result["account_email"] = _("Check your email for a confirmation link. ")
 
     if user_profile.full_name != full_name and full_name.strip() != "":
         if name_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
@@ -174,12 +174,12 @@ def json_change_settings(
             pass
         else:
             # Note that check_change_full_name strips the passed name automatically
-            result['full_name'] = check_change_full_name(user_profile, full_name, user_profile)
+            result["full_name"] = check_change_full_name(user_profile, full_name, user_profile)
 
     return json_success(result)
 
 
-emojiset_choices = {emojiset['key'] for emojiset in UserProfile.emojiset_choices()}
+emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
 
 
 @human_users_only

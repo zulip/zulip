@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0095_index_unread_user_messages'),
+        ("zerver", "0095_index_unread_user_messages"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='preregistrationuser',
-            name='password_required',
+            model_name="preregistrationuser",
+            name="password_required",
             field=models.BooleanField(default=True),
         ),
     ]

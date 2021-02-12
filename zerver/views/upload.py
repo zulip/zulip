@@ -31,7 +31,7 @@ def serve_s3(request: HttpRequest, url_path: str, url_only: bool) -> HttpRespons
 def serve_local(request: HttpRequest, path_id: str, url_only: bool) -> HttpResponse:
     local_path = get_local_file_path(path_id)
     if local_path is None:
-        return HttpResponseNotFound('<p>File not found</p>')
+        return HttpResponseNotFound("<p>File not found</p>")
 
     if url_only:
         url = generate_unauthed_file_access_url(path_id)
@@ -105,7 +105,7 @@ def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -
     path_id = get_local_file_path_id_from_token(token)
     if path_id is None:
         return json_error(_("Invalid token"))
-    if path_id.split('/')[-1] != filename:
+    if path_id.split("/")[-1] != filename:
         return json_error(_("Invalid filename"))
 
     return serve_local(request, path_id, url_only=False)
@@ -128,4 +128,4 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     check_upload_within_quota(user_profile.realm, file_size)
 
     uri = upload_message_image_from_request(request, user_file, user_profile)
-    return json_success({'uri': uri})
+    return json_success({"uri": uri})

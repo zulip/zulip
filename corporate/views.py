@@ -49,14 +49,14 @@ from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.validator import check_int, check_string
 from zerver.models import UserProfile, get_realm
 
-billing_logger = logging.getLogger('corporate.stripe')
+billing_logger = logging.getLogger("corporate.stripe")
 
 
 def unsign_seat_count(signed_seat_count: str, salt: str) -> int:
     try:
         return int(unsign_string(signed_seat_count, salt))
     except signing.BadSignature:
-        raise BillingError('tampered seat count')
+        raise BillingError("tampered seat count")
 
 
 def check_upgrade_parameters(
@@ -67,26 +67,26 @@ def check_upgrade_parameters(
     has_stripe_token: bool,
     seat_count: int,
 ) -> None:
-    if billing_modality not in ['send_invoice', 'charge_automatically']:
-        raise BillingError('unknown billing_modality')
-    if schedule not in ['annual', 'monthly']:
-        raise BillingError('unknown schedule')
-    if license_management not in ['automatic', 'manual']:
-        raise BillingError('unknown license_management')
+    if billing_modality not in ["send_invoice", "charge_automatically"]:
+        raise BillingError("unknown billing_modality")
+    if schedule not in ["annual", "monthly"]:
+        raise BillingError("unknown schedule")
+    if license_management not in ["automatic", "manual"]:
+        raise BillingError("unknown license_management")
 
-    if billing_modality == 'charge_automatically':
+    if billing_modality == "charge_automatically":
         if not has_stripe_token:
-            raise BillingError('autopay with no card')
+            raise BillingError("autopay with no card")
 
     min_licenses = seat_count
     max_licenses = None
-    if billing_modality == 'send_invoice':
+    if billing_modality == "send_invoice":
         min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
         max_licenses = MAX_INVOICED_LICENSES
 
     if licenses is None or licenses < min_licenses:
         raise BillingError(
-            'not enough licenses', _("You must invoice for at least {} users.").format(min_licenses)
+            "not enough licenses", _("You must invoice for at least {} users.").format(min_licenses)
         )
 
     if max_licenses is not None and licenses > max_licenses:
@@ -94,7 +94,7 @@ def check_upgrade_parameters(
             "Invoices with more than {} licenses can't be processed from this page. To complete "
             "the upgrade, please contact {}."
         ).format(max_licenses, settings.ZULIP_ADMINISTRATOR)
-        raise BillingError('too many licenses', message)
+        raise BillingError("too many licenses", message)
 
 
 # Should only be called if the customer is being charged automatically
@@ -133,11 +133,11 @@ def upgrade(
 ) -> HttpResponse:
     try:
         seat_count = unsign_seat_count(signed_seat_count, salt)
-        if billing_modality == 'charge_automatically' and license_management == 'automatic':
+        if billing_modality == "charge_automatically" and license_management == "automatic":
             licenses = seat_count
-        if billing_modality == 'send_invoice':
-            schedule = 'annual'
-            license_management = 'manual'
+        if billing_modality == "send_invoice":
+            schedule = "annual"
+            license_management = "manual"
         check_upgrade_parameters(
             billing_modality,
             schedule,
@@ -147,9 +147,9 @@ def upgrade(
             seat_count,
         )
         assert licenses is not None
-        automanage_licenses = license_management == 'automatic'
+        automanage_licenses = license_management == "automatic"
 
-        billing_schedule = {'annual': CustomerPlan.ANNUAL, 'monthly': CustomerPlan.MONTHLY}[
+        billing_schedule = {"annual": CustomerPlan.ANNUAL, "monthly": CustomerPlan.MONTHLY}[
             schedule
         ]
         process_initial_upgrade(user, licenses, automanage_licenses, billing_schedule, stripe_token)
@@ -168,12 +168,12 @@ def upgrade(
                 licenses,
                 stripe_token is not None,
             )
-        return json_error(e.message, data={'error_description': e.description})
+        return json_error(e.message, data={"error_description": e.description})
     except Exception:
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
         error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
         error_description = "uncaught exception during upgrade"
-        return json_error(error_message, data={'error_description': error_description})
+        return json_error(error_message, data={"error_description": error_description})
     else:
         return json_success()
 
@@ -205,25 +205,25 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     seat_count = get_latest_seat_count(user.realm)
     signed_seat_count, salt = sign_string(str(seat_count))
     context: Dict[str, Any] = {
-        'realm': user.realm,
-        'publishable_key': STRIPE_PUBLISHABLE_KEY,
-        'email': user.delivery_email,
-        'seat_count': seat_count,
-        'signed_seat_count': signed_seat_count,
-        'salt': salt,
-        'min_invoiced_licenses': max(seat_count, MIN_INVOICED_LICENSES),
-        'default_invoice_days_until_due': DEFAULT_INVOICE_DAYS_UNTIL_DUE,
-        'plan': "Zulip Standard",
+        "realm": user.realm,
+        "publishable_key": STRIPE_PUBLISHABLE_KEY,
+        "email": user.delivery_email,
+        "seat_count": seat_count,
+        "signed_seat_count": signed_seat_count,
+        "salt": salt,
+        "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
+        "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
+        "plan": "Zulip Standard",
         "free_trial_days": settings.FREE_TRIAL_DAYS,
         "onboarding": request.GET.get("onboarding") is not None,
-        'page_params': {
-            'seat_count': seat_count,
-            'annual_price': 8000,
-            'monthly_price': 800,
-            'percent_off': float(percent_off),
+        "page_params": {
+            "seat_count": seat_count,
+            "annual_price": 8000,
+            "monthly_price": 800,
+            "percent_off": float(percent_off),
         },
     }
-    response = render(request, 'corporate/upgrade.html', context=context)
+    response = render(request, "corporate/upgrade.html", context=context)
     return response
 
 
@@ -278,25 +278,25 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     customer = get_customer_by_realm(user.realm)
     context: Dict[str, Any] = {
         "admin_access": user.has_billing_access,
-        'has_active_plan': False,
+        "has_active_plan": False,
     }
 
     if user.realm.plan_type == user.realm.STANDARD_FREE:
         context["is_sponsored"] = True
-        return render(request, 'corporate/billing.html', context=context)
+        return render(request, "corporate/billing.html", context=context)
 
     if customer is None:
         return HttpResponseRedirect(reverse(initial_upgrade))
 
     if customer.sponsorship_pending:
         context["sponsorship_pending"] = True
-        return render(request, 'corporate/billing.html', context=context)
+        return render(request, "corporate/billing.html", context=context)
 
     if not CustomerPlan.objects.filter(customer=customer).exists():
         return HttpResponseRedirect(reverse(initial_upgrade))
 
     if not user.has_billing_access:
-        return render(request, 'corporate/billing.html', context=context)
+        return render(request, "corporate/billing.html", context=context)
 
     plan = get_current_plan_by_customer(customer)
     if plan is not None:
@@ -314,7 +314,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             licenses = last_ledger_entry.licenses
             licenses_used = get_latest_seat_count(user.realm)
             # Should do this in javascript, using the user's timezone
-            renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
+            renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
                 dt=start_of_next_billing_cycle(plan, now)
             )
             renewal_cents = renewal_amount(plan, now)
@@ -323,7 +323,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             if charge_automatically:
                 payment_method = payment_method_string(stripe_customer)
             else:
-                payment_method = 'Billed by invoice'
+                payment_method = "Billed by invoice"
 
             context.update(
                 plan_name=plan.name,
@@ -335,7 +335,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 licenses=licenses,
                 licenses_used=licenses_used,
                 renewal_date=renewal_date,
-                renewal_amount=f'{renewal_cents / 100.:,.2f}',
+                renewal_amount=f"{renewal_cents / 100.:,.2f}",
                 payment_method=payment_method,
                 charge_automatically=charge_automatically,
                 publishable_key=STRIPE_PUBLISHABLE_KEY,
@@ -344,7 +344,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 onboarding=request.GET.get("onboarding") is not None,
             )
 
-    return render(request, 'corporate/billing.html', context=context)
+    return render(request, "corporate/billing.html", context=context)
 
 
 @require_billing_access
@@ -389,5 +389,5 @@ def replace_payment_source(
     try:
         do_replace_payment_source(user, stripe_token, pay_invoices=True)
     except BillingError as e:
-        return json_error(e.message, data={'error_description': e.description})
+        return json_error(e.message, data={"error_description": e.description})
     return json_success()

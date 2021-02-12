@@ -12,13 +12,13 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            'realms', metavar='<realm>', nargs='*', help="realm to generate statistics for"
+            "realms", metavar="<realm>", nargs="*", help="realm to generate statistics for"
         )
 
     def handle(self, *args: Any, **options: str) -> None:
-        if options['realms']:
+        if options["realms"]:
             try:
-                realms = [get_realm(string_id) for string_id in options['realms']]
+                realms = [get_realm(string_id) for string_id in options["realms"]]
             except Realm.DoesNotExist as e:
                 raise CommandError(e)
         else:
@@ -36,26 +36,26 @@ class Command(BaseCommand):
                 else:
                     public_count += 1
             print("------------")
-            print(realm.string_id, end=' ')
-            print("{:>10} {} public streams and".format("(", public_count), end=' ')
+            print(realm.string_id, end=" ")
+            print("{:>10} {} public streams and".format("(", public_count), end=" ")
             print(f"{private_count} private streams )")
             print("------------")
             print("{:>25} {:>15} {:>10} {:>12}".format("stream", "subscribers", "messages", "type"))
 
             for stream in streams:
                 if stream.invite_only:
-                    stream_type = 'private'
+                    stream_type = "private"
                 else:
-                    stream_type = 'public'
-                print(f"{stream.name:>25}", end=' ')
+                    stream_type = "public"
+                print(f"{stream.name:>25}", end=" ")
                 recipient = Recipient.objects.filter(type=Recipient.STREAM, type_id=stream.id)
                 print(
                     "{:10}".format(
                         len(Subscription.objects.filter(recipient=recipient, active=True))
                     ),
-                    end=' ',
+                    end=" ",
                 )
                 num_messages = len(Message.objects.filter(recipient=recipient))
-                print(f"{num_messages:12}", end=' ')
+                print(f"{num_messages:12}", end=" ")
                 print(f"{stream_type:>15}")
             print("")

@@ -16,5 +16,5 @@ def setup_path() -> None:
         # Check that the python version running this function
         # is same as python version that created the virtualenv.
         python_version = "python{}.{}".format(*sys.version_info[:2])
-        if not os.path.exists(os.path.join(venv, 'lib', python_version)):
+        if not os.path.exists(os.path.join(venv, "lib", python_version)):
             raise RuntimeError(venv + " was not set up for this Python version")

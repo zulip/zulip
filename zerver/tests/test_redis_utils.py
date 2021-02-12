@@ -37,7 +37,7 @@ class RedisUtilsTest(ZulipTestCase):
             "b": "some value",
         }
 
-        max_valid_token_length = MAX_KEY_LENGTH - (len(self.key_format) - len('{token}'))
+        max_valid_token_length = MAX_KEY_LENGTH - (len(self.key_format) - len("{token}"))
         key = put_dict_in_redis(
             self.redis_client,
             self.key_format,
@@ -64,9 +64,9 @@ class RedisUtilsTest(ZulipTestCase):
     def test_get_data_key_length_check(self) -> None:
         with self.assertRaises(ZulipRedisKeyTooLongError):
             get_dict_from_redis(
-                self.redis_client, key_format='{token}', key='A' * (MAX_KEY_LENGTH + 1)
+                self.redis_client, key_format="{token}", key="A" * (MAX_KEY_LENGTH + 1)
             )
 
     def test_get_data_key_format_validation(self) -> None:
         with self.assertRaises(ZulipRedisKeyOfWrongFormatError):
-            get_dict_from_redis(self.redis_client, self.key_format, 'nonmatching_format_1111')
+            get_dict_from_redis(self.redis_client, self.key_format, "nonmatching_format_1111")

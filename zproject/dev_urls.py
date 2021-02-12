@@ -30,55 +30,55 @@ use_prod_static = not settings.DEBUG
 urls = [
     # Serve useful development environment resources (docs, coverage reports, etc.)
     path(
-        'coverage/<path:path>',
+        "coverage/<path:path>",
         serve,
-        {'document_root': os.path.join(settings.DEPLOY_ROOT, 'var/coverage'), 'show_indexes': True},
+        {"document_root": os.path.join(settings.DEPLOY_ROOT, "var/coverage"), "show_indexes": True},
     ),
     path(
-        'node-coverage/<path:path>',
+        "node-coverage/<path:path>",
         serve,
         {
-            'document_root': os.path.join(settings.DEPLOY_ROOT, 'var/node-coverage/lcov-report'),
-            'show_indexes': True,
+            "document_root": os.path.join(settings.DEPLOY_ROOT, "var/node-coverage/lcov-report"),
+            "show_indexes": True,
         },
     ),
     path(
-        'docs/<path:path>',
+        "docs/<path:path>",
         serve,
-        {'document_root': os.path.join(settings.DEPLOY_ROOT, 'docs/_build/html')},
+        {"document_root": os.path.join(settings.DEPLOY_ROOT, "docs/_build/html")},
     ),
     # The special no-password login endpoint for development
-    path('devlogin/', login_page, {'template_name': 'zerver/dev_login.html'}, name='login_page'),
+    path("devlogin/", login_page, {"template_name": "zerver/dev_login.html"}, name="login_page"),
     # Page for testing email templates
-    path('emails/', email_page),
-    path('emails/generate/', generate_all_emails),
-    path('emails/clear/', clear_emails),
+    path("emails/", email_page),
+    path("emails/generate/", generate_all_emails),
+    path("emails/clear/", clear_emails),
     # Listing of useful URLs and various tools for development
-    path('devtools/', TemplateView.as_view(template_name='zerver/dev_tools.html')),
+    path("devtools/", TemplateView.as_view(template_name="zerver/dev_tools.html")),
     # Register New User and Realm
-    path('devtools/register_user/', register_development_user, name='register_dev_user'),
-    path('devtools/register_realm/', register_development_realm, name='register_dev_realm'),
+    path("devtools/register_user/", register_development_user, name="register_dev_user"),
+    path("devtools/register_realm/", register_development_realm, name="register_dev_realm"),
     # Have easy access for error pages
-    path('errors/404/', TemplateView.as_view(template_name='404.html')),
-    path('errors/5xx/', TemplateView.as_view(template_name='500.html')),
+    path("errors/404/", TemplateView.as_view(template_name="404.html")),
+    path("errors/5xx/", TemplateView.as_view(template_name="500.html")),
     # Add a convenient way to generate webhook messages from fixtures.
-    path('devtools/integrations/', dev_panel),
+    path("devtools/integrations/", dev_panel),
     path(
-        'devtools/integrations/check_send_webhook_fixture_message',
+        "devtools/integrations/check_send_webhook_fixture_message",
         check_send_webhook_fixture_message,
     ),
     path(
-        'devtools/integrations/send_all_webhook_fixture_messages', send_all_webhook_fixture_messages
+        "devtools/integrations/send_all_webhook_fixture_messages", send_all_webhook_fixture_messages
     ),
-    path('devtools/integrations/<integration_name>/fixtures', get_fixtures),
-    path('config-error/<error_category_name>', config_error, name='config_error'),
-    path('config-error/remoteuser/<error_category_name>', config_error),
+    path("devtools/integrations/<integration_name>/fixtures", get_fixtures),
+    path("config-error/<error_category_name>", config_error, name="config_error"),
+    path("config-error/remoteuser/<error_category_name>", config_error),
 ]
 
 # Serve static assets via the Django server
 if use_prod_static:
     urls += [
-        path('static/<path:path>', serve, {'document_root': settings.STATIC_ROOT}),
+        path("static/<path:path>", serve, {"document_root": settings.STATIC_ROOT}),
     ]
 else:
 
@@ -90,15 +90,15 @@ else:
     urls += static(urlsplit(settings.STATIC_URL).path, view=serve_static)
 
 i18n_urls = [
-    path('confirmation_key/', confirmation_key),
+    path("confirmation_key/", confirmation_key),
 ]
 urls += i18n_urls
 
 # On a production instance, these files would be served by nginx.
 if settings.LOCAL_UPLOADS_DIR is not None:
     avatars_url = path(
-        'user_avatars/<path:path>',
+        "user_avatars/<path:path>",
         serve,
-        {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")},
+        {"document_root": os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")},
     )
     urls += [avatars_url]

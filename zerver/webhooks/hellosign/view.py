@@ -15,23 +15,23 @@ BODY = "The `{contract_title}` document {actions}."
 
 
 def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
-    contract_title = payload['signature_request']['title']
+    contract_title = payload["signature_request"]["title"]
     recipients: Dict[str, List[str]] = {}
-    signatures = payload['signature_request']['signatures']
+    signatures = payload["signature_request"]["signatures"]
 
     for signature in signatures:
-        recipients.setdefault(signature['status_code'], [])
-        recipients[signature['status_code']].append(signature['signer_name'])
+        recipients.setdefault(signature["status_code"], [])
+        recipients[signature["status_code"]].append(signature["signer_name"])
 
     recipients_text = ""
-    if recipients.get('awaiting_signature'):
+    if recipients.get("awaiting_signature"):
         recipients_text += IS_AWAITING_SIGNATURE.format(
-            awaiting_recipients=get_recipients_text(recipients['awaiting_signature']),
+            awaiting_recipients=get_recipients_text(recipients["awaiting_signature"]),
         )
 
-    if recipients.get('signed'):
+    if recipients.get("signed"):
         text = WAS_JUST_SIGNED_BY.format(
-            signed_recipients=get_recipients_text(recipients['signed']),
+            signed_recipients=get_recipients_text(recipients["signed"]),
         )
 
         if recipients_text:
@@ -54,16 +54,16 @@ def get_recipients_text(recipients: List[str]) -> str:
     return recipients_text
 
 
-@webhook_view('HelloSign')
+@webhook_view("HelloSign")
 @has_request_variables
 def api_hellosign_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Dict[str, Any]] = REQ(whence='json', converter=orjson.loads),
+    payload: Dict[str, Dict[str, Any]] = REQ(whence="json", converter=orjson.loads),
 ) -> HttpResponse:
     if "signature_request" in payload:
         body = get_message_body(payload)
-        topic = payload['signature_request']['title']
+        topic = payload["signature_request"]["title"]
         check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success({"msg": "Hello API Event Received"})

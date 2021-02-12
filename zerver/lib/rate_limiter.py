@@ -19,7 +19,7 @@ from zerver.models import UserProfile
 client = get_redis_client()
 rules: Dict[str, List[Tuple[int, int]]] = settings.RATE_LIMITING_RULES
 
-KEY_PREFIX = ''
+KEY_PREFIX = ""
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class RateLimiterLockingException(Exception):
 
 
 class RateLimitedObject(ABC):
-    def __init__(self, backend: Optional['Type[RateLimiterBackend]'] = None) -> None:
+    def __init__(self, backend: Optional["Type[RateLimiterBackend]"] = None) -> None:
         if backend is not None:
             self.backend: Type[RateLimiterBackend] = backend
         else:
@@ -44,7 +44,7 @@ class RateLimitedObject(ABC):
     def rate_limit_request(self, request: HttpRequest) -> None:
         ratelimited, time = self.rate_limit()
 
-        if not hasattr(request, '_ratelimits_applied'):
+        if not hasattr(request, "_ratelimits_applied"):
             request._ratelimits_applied = []
         request._ratelimits_applied.append(
             RateLimitResult(
@@ -109,7 +109,7 @@ class RateLimitedObject(ABC):
 
 
 class RateLimitedUser(RateLimitedObject):
-    def __init__(self, user: UserProfile, domain: str = 'api_by_user') -> None:
+    def __init__(self, user: UserProfile, domain: str = "api_by_user") -> None:
         self.user = user
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
@@ -123,10 +123,10 @@ class RateLimitedUser(RateLimitedObject):
 
     def rules(self) -> List[Tuple[int, int]]:
         # user.rate_limits are general limits, applicable to the domain 'api_by_user'
-        if self.user.rate_limits != "" and self.domain == 'api_by_user':
+        if self.user.rate_limits != "" and self.domain == "api_by_user":
             result: List[Tuple[int, int]] = []
-            for limit in self.user.rate_limits.split(','):
-                (seconds, requests) = limit.split(':', 2)
+            for limit in self.user.rate_limits.split(","):
+                (seconds, requests) = limit.split(":", 2)
                 result.append((int(seconds), int(requests)))
             return result
         return rules[self.domain]
@@ -134,10 +134,10 @@ class RateLimitedUser(RateLimitedObject):
 
 def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
     global KEY_PREFIX
-    KEY_PREFIX = test_name + ':' + str(os.getpid()) + ':'
+    KEY_PREFIX = test_name + ":" + str(os.getpid()) + ":"
 
 
-def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str = 'api_by_user') -> None:
+def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str = "api_by_user") -> None:
     "Add a rate-limiting rule to the ratelimiter"
     global rules
 
@@ -151,7 +151,7 @@ def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str = 'api
 
 
 def remove_ratelimit_rule(
-    range_seconds: int, num_requests: int, domain: str = 'api_by_user'
+    range_seconds: int, num_requests: int, domain: str = "api_by_user"
 ) -> None:
     global rules
     rules[domain] = [x for x in rules[domain] if x[0] != range_seconds and x[1] != num_requests]
@@ -312,7 +312,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     @classmethod
     def get_keys(cls, entity_key: str) -> List[str]:
         return [
-            f"{KEY_PREFIX}ratelimit:{entity_key}:{keytype}" for keytype in ['list', 'zset', 'block']
+            f"{KEY_PREFIX}ratelimit:{entity_key}:{keytype}" for keytype in ["list", "zset", "block"]
         ]
 
     @classmethod

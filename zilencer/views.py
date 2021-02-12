@@ -78,9 +78,9 @@ def register_remote_server(
     try:
         # TODO: Ideally we'd not abuse the URL validator this way
         url_validator = URLValidator()
-        url_validator('http://' + hostname)
+        url_validator("http://" + hostname)
     except ValidationError:
-        raise JsonableError(_('{} is not a valid hostname').format(hostname))
+        raise JsonableError(_("{} is not a valid hostname").format(hostname))
 
     try:
         validate_email(contact_email)
@@ -89,7 +89,7 @@ def register_remote_server(
 
     remote_server, created = RemoteZulipServer.objects.get_or_create(
         uuid=zulip_org_id,
-        defaults={'hostname': hostname, 'contact_email': contact_email, 'api_key': zulip_org_key},
+        defaults={"hostname": hostname, "contact_email": contact_email, "api_key": zulip_org_key},
     )
 
     if not created:
@@ -102,7 +102,7 @@ def register_remote_server(
                 remote_server.api_key = new_org_key
             remote_server.save()
 
-    return json_success({'created': created})
+    return json_success({"created": created})
 
 
 @has_request_variables
@@ -167,14 +167,14 @@ def unregister_all_remote_push_devices(
 def remote_server_notify_push(
     request: HttpRequest,
     entity: Union[UserProfile, RemoteZulipServer],
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
     server = validate_entity(entity)
 
-    user_id = payload['user_id']
-    gcm_payload = payload['gcm_payload']
-    apns_payload = payload['apns_payload']
-    gcm_options = payload.get('gcm_options', {})
+    user_id = payload["user_id"]
+    gcm_payload = payload["gcm_payload"]
+    apns_payload = payload["apns_payload"]
+    gcm_options = payload.get("gcm_options", {})
 
     android_devices = list(
         RemotePushDeviceToken.objects.filter(
@@ -204,11 +204,11 @@ def validate_incoming_table_data(
 ) -> None:
     last_id = get_last_id_from_server(server, model)
     for row in rows:
-        if is_count_stat and row['property'] not in COUNT_STATS:
-            raise JsonableError(_("Invalid property {}").format(row['property']))
-        if row['id'] <= last_id:
+        if is_count_stat and row["property"] not in COUNT_STATS:
+            raise JsonableError(_("Invalid property {}").format(row["property"]))
+        if row["id"] <= last_id:
             raise JsonableError(_("Data is out of order."))
-        last_id = row['id']
+        last_id = row["id"]
 
 
 def batch_create_table_data(
@@ -239,12 +239,12 @@ def remote_server_post_analytics(
         validator=check_list(
             check_dict_only(
                 [
-                    ('property', check_string),
-                    ('realm', check_int),
-                    ('id', check_int),
-                    ('end_time', check_float),
-                    ('subgroup', check_none_or(check_string)),
-                    ('value', check_int),
+                    ("property", check_string),
+                    ("realm", check_int),
+                    ("id", check_int),
+                    ("end_time", check_float),
+                    ("subgroup", check_none_or(check_string)),
+                    ("value", check_int),
                 ]
             )
         )
@@ -253,11 +253,11 @@ def remote_server_post_analytics(
         validator=check_list(
             check_dict_only(
                 [
-                    ('property', check_string),
-                    ('id', check_int),
-                    ('end_time', check_float),
-                    ('subgroup', check_none_or(check_string)),
-                    ('value', check_int),
+                    ("property", check_string),
+                    ("id", check_int),
+                    ("end_time", check_float),
+                    ("subgroup", check_none_or(check_string)),
+                    ("value", check_int),
                 ]
             )
         )
@@ -266,12 +266,12 @@ def remote_server_post_analytics(
         validator=check_list(
             check_dict_only(
                 [
-                    ('id', check_int),
-                    ('realm', check_int),
-                    ('event_time', check_float),
-                    ('backfilled', check_bool),
-                    ('extra_data', check_none_or(check_string)),
-                    ('event_type', check_int),
+                    ("id", check_int),
+                    ("realm", check_int),
+                    ("event_time", check_float),
+                    ("backfilled", check_bool),
+                    ("extra_data", check_none_or(check_string)),
+                    ("event_type", check_int),
                 ]
             )
         ),
@@ -287,13 +287,13 @@ def remote_server_post_analytics(
 
     row_objects = [
         RemoteRealmCount(
-            property=row['property'],
-            realm_id=row['realm'],
-            remote_id=row['id'],
+            property=row["property"],
+            realm_id=row["realm"],
+            remote_id=row["id"],
             server=server,
-            end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=datetime.timezone.utc),
-            subgroup=row['subgroup'],
-            value=row['value'],
+            end_time=datetime.datetime.fromtimestamp(row["end_time"], tz=datetime.timezone.utc),
+            subgroup=row["subgroup"],
+            value=row["value"],
         )
         for row in realm_counts
     ]
@@ -301,12 +301,12 @@ def remote_server_post_analytics(
 
     row_objects = [
         RemoteInstallationCount(
-            property=row['property'],
-            remote_id=row['id'],
+            property=row["property"],
+            remote_id=row["id"],
             server=server,
-            end_time=datetime.datetime.fromtimestamp(row['end_time'], tz=datetime.timezone.utc),
-            subgroup=row['subgroup'],
-            value=row['value'],
+            end_time=datetime.datetime.fromtimestamp(row["end_time"], tz=datetime.timezone.utc),
+            subgroup=row["subgroup"],
+            value=row["value"],
         )
         for row in installation_counts
     ]
@@ -315,15 +315,15 @@ def remote_server_post_analytics(
     if realmauditlog_rows is not None:
         row_objects = [
             RemoteRealmAuditLog(
-                realm_id=row['realm'],
-                remote_id=row['id'],
+                realm_id=row["realm"],
+                remote_id=row["id"],
                 server=server,
                 event_time=datetime.datetime.fromtimestamp(
-                    row['event_time'], tz=datetime.timezone.utc
+                    row["event_time"], tz=datetime.timezone.utc
                 ),
-                backfilled=row['backfilled'],
-                extra_data=row['extra_data'],
-                event_type=row['event_type'],
+                backfilled=row["backfilled"],
+                extra_data=row["extra_data"],
+                event_type=row["event_type"],
             )
             for row in realmauditlog_rows
         ]
@@ -346,8 +346,8 @@ def remote_server_check_analytics(
     server = validate_entity(entity)
 
     result = {
-        'last_realm_count_id': get_last_id_from_server(server, RemoteRealmCount),
-        'last_installation_count_id': get_last_id_from_server(server, RemoteInstallationCount),
-        'last_realmauditlog_id': get_last_id_from_server(server, RemoteRealmAuditLog),
+        "last_realm_count_id": get_last_id_from_server(server, RemoteRealmCount),
+        "last_installation_count_id": get_last_id_from_server(server, RemoteInstallationCount),
+        "last_realmauditlog_id": get_last_id_from_server(server, RemoteRealmAuditLog),
     }
     return json_success(result)

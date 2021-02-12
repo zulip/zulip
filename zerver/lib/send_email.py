@@ -26,7 +26,7 @@ from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_u
 
 ## Logging setup ##
 
-logger = logging.getLogger('zulip.send_email')
+logger = logging.getLogger("zulip.send_email")
 log_to_file(logger, settings.EMAIL_LOG_PATH)
 
 
@@ -35,8 +35,8 @@ class FromAddress:
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
 
     support_placeholder = "SUPPORT"
-    no_reply_placeholder = 'NO_REPLY'
-    tokenized_no_reply_placeholder = 'TOKENIZED_NO_REPLY'
+    no_reply_placeholder = "NO_REPLY"
+    tokenized_no_reply_placeholder = "TOKENIZED_NO_REPLY"
 
     # Generates an unpredictable noreply address.
     @staticmethod
@@ -87,34 +87,34 @@ def build_email(
         # formaddr is meant for formatting (display_name, email_address) pair for headers like "To",
         # but we can use its utility for formatting the List-Id header, as it follows the same format,
         # except having just a domain instead of an email address.
-        extra_headers['List-Id'] = formataddr((realm.name, realm.host))
+        extra_headers["List-Id"] = formataddr((realm.name, realm.host))
 
     context = {
         **context,
-        'support_email': FromAddress.SUPPORT,
-        'email_images_base_uri': settings.ROOT_DOMAIN_URI + '/static/images/emails',
-        'physical_address': settings.PHYSICAL_ADDRESS,
+        "support_email": FromAddress.SUPPORT,
+        "email_images_base_uri": settings.ROOT_DOMAIN_URI + "/static/images/emails",
+        "physical_address": settings.PHYSICAL_ADDRESS,
     }
 
     def render_templates() -> Tuple[str, str, str]:
         email_subject = (
             loader.render_to_string(
-                template_prefix + '.subject.txt', context=context, using='Jinja2_plaintext'
+                template_prefix + ".subject.txt", context=context, using="Jinja2_plaintext"
             )
             .strip()
-            .replace('\n', '')
+            .replace("\n", "")
         )
         message = loader.render_to_string(
-            template_prefix + '.txt', context=context, using='Jinja2_plaintext'
+            template_prefix + ".txt", context=context, using="Jinja2_plaintext"
         )
 
         try:
-            html_message = loader.render_to_string(template_prefix + '.html', context)
+            html_message = loader.render_to_string(template_prefix + ".html", context)
         except TemplateDoesNotExist:
             emails_dir = os.path.dirname(template_prefix)
             template = os.path.basename(template_prefix)
             compiled_template_prefix = os.path.join(emails_dir, "compiled", template)
-            html_message = loader.render_to_string(compiled_template_prefix + '.html', context)
+            html_message = loader.render_to_string(compiled_template_prefix + ".html", context)
         return (html_message, message, email_subject)
 
     # The i18n story for emails is a bit complicated.  For emails
@@ -162,7 +162,7 @@ def build_email(
         email_subject, message, from_email, to_emails, reply_to=reply_to, headers=extra_headers
     )
     if html_message is not None:
-        mail.attach_alternative(html_message, 'text/html')
+        mail.attach_alternative(html_message, "text/html")
     return mail
 
 
@@ -231,13 +231,13 @@ def send_future_email(
     context: Dict[str, Any] = {},
     delay: datetime.timedelta = datetime.timedelta(0),
 ) -> None:
-    template_name = template_prefix.split('/')[-1]
+    template_name = template_prefix.split("/")[-1]
     email_fields = {
-        'template_prefix': template_prefix,
-        'from_name': from_name,
-        'from_address': from_address,
-        'language': language,
-        'context': context,
+        "template_prefix": template_prefix,
+        "from_name": from_name,
+        "from_address": from_address,
+        "language": language,
+        "context": context,
     }
 
     if settings.DEVELOPMENT_LOG_EMAILS:
@@ -333,19 +333,19 @@ def clear_scheduled_emails(user_ids: List[int], email_type: Optional[int] = None
 def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
     # Reformat any jobs that used the old to_email
     # and to_user_ids argument formats.
-    if 'to_email' in job:
-        if job['to_email'] is not None:
-            job['to_emails'] = [job['to_email']]
-        del job['to_email']
-    if 'to_user_id' in job:
-        if job['to_user_id'] is not None:
-            job['to_user_ids'] = [job['to_user_id']]
-        del job['to_user_id']
+    if "to_email" in job:
+        if job["to_email"] is not None:
+            job["to_emails"] = [job["to_email"]]
+        del job["to_email"]
+    if "to_user_id" in job:
+        if job["to_user_id"] is not None:
+            job["to_user_ids"] = [job["to_user_id"]]
+        del job["to_user_id"]
 
 
 def deliver_email(email: ScheduledEmail) -> None:
     data = orjson.loads(email.data)
-    user_ids = list(email.users.values_list('id', flat=True))
+    user_ids = list(email.users.values_list("id", flat=True))
     if not user_ids and not email.address:
         # This state doesn't make sense, so something must be mutating,
         # or in the process of deleting, the object. We assume it will bring
@@ -354,9 +354,9 @@ def deliver_email(email: ScheduledEmail) -> None:
         return
 
     if user_ids:
-        data['to_user_ids'] = user_ids
+        data["to_user_ids"] = user_ids
     if email.address is not None:
-        data['to_emails'] = [email.address]
+        data["to_emails"] = [email.address]
     handle_send_email_format_changes(data)
     send_email(**data)
     email.delete()
@@ -383,7 +383,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     with open(options["markdown_template_path"]) as f:
         text = f.read()
         parsed_email_template = Parser(policy=default).parsestr(text)
-        email_template_hash = hashlib.sha256(text.encode('utf-8')).hexdigest()[0:32]
+        email_template_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()[0:32]
 
     email_filename = f"custom/custom_email_{email_template_hash}.source.html"
     email_id = f"zerver/emails/custom/custom_email_{email_template_hash}"
@@ -408,7 +408,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
             # Note that we're doing a hacky non-Jinja2 substitution here;
             # we do this because the normal render_markdown_path ordering
             # doesn't commute properly with inline_email_css.
-            f.write(base_template.read().replace('{{ rendered_input }}', rendered_input))
+            f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
 
     with open(subject_path, "w") as f:
         f.write(get_header(options.get("subject"), parsed_email_template.get("subject"), "subject"))
@@ -417,11 +417,11 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
 
     # Finally, we send the actual emails.
     for user_profile in users:
-        if options.get('admins_only') and not user_profile.is_realm_admin:
+        if options.get("admins_only") and not user_profile.is_realm_admin:
             continue
         context = {
-            'realm_uri': user_profile.realm.uri,
-            'realm_name': user_profile.realm.name,
+            "realm_uri": user_profile.realm.uri,
+            "realm_name": user_profile.realm.name,
         }
         send_email(
             email_id,

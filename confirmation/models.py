@@ -1,6 +1,6 @@
 # Copyright: (c) 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 
-__revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
+__revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import datetime
 import secrets
 from base64 import b32encode
@@ -34,10 +34,10 @@ def render_confirmation_key_error(
     request: HttpRequest, exception: ConfirmationKeyException
 ) -> HttpResponse:
     if exception.error_type == ConfirmationKeyException.WRONG_LENGTH:
-        return render(request, 'confirmation/link_malformed.html')
+        return render(request, "confirmation/link_malformed.html")
     if exception.error_type == ConfirmationKeyException.EXPIRED:
-        return render(request, 'confirmation/link_expired.html')
-    return render(request, 'confirmation/link_does_not_exist.html')
+        return render(request, "confirmation/link_expired.html")
+    return render(request, "confirmation/link_does_not_exist.html")
 
 
 def generate_key() -> str:
@@ -67,8 +67,8 @@ def get_object_from_key(
 
     obj = confirmation.content_object
     if activate_object and hasattr(obj, "status"):
-        obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
-        obj.save(update_fields=['status'])
+        obj.status = getattr(settings, "STATUS_ACTIVE", 1)
+        obj.save(update_fields=["status"])
     return obj
 
 
@@ -77,7 +77,7 @@ def create_confirmation_link(
 ) -> str:
     key = generate_key()
     realm = None
-    if hasattr(obj, 'realm'):
+    if hasattr(obj, "realm"):
         realm = obj.realm
     elif isinstance(obj, Realm):
         realm = obj
@@ -99,7 +99,7 @@ def confirmation_url(
     url_args: Mapping[str, str] = {},
 ) -> str:
     url_args = dict(url_args)
-    url_args['confirmation_key'] = confirmation_key
+    url_args["confirmation_key"] = confirmation_key
     return urljoin(
         settings.ROOT_DOMAIN_URI if realm is None else realm.uri,
         reverse(_properties[confirmation_type].url_name, kwargs=url_args),
@@ -109,7 +109,7 @@ def confirmation_url(
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=CASCADE)
     object_id: int = models.PositiveIntegerField(db_index=True)
-    content_object = GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey("content_type", "object_id")
     date_sent: datetime.datetime = models.DateTimeField(db_index=True)
     confirmation_key: str = models.CharField(max_length=40, db_index=True)
     realm: Optional[Realm] = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
@@ -126,7 +126,7 @@ class Confirmation(models.Model):
     type: int = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
-        return f'<Confirmation: {self.content_object}>'
+        return f"<Confirmation: {self.content_object}>"
 
     class Meta:
         unique_together = ("type", "confirmation_key")
@@ -143,20 +143,20 @@ class ConfirmationType:
 
 
 _properties = {
-    Confirmation.USER_REGISTRATION: ConfirmationType('check_prereg_key_and_redirect'),
+    Confirmation.USER_REGISTRATION: ConfirmationType("check_prereg_key_and_redirect"),
     Confirmation.INVITATION: ConfirmationType(
-        'check_prereg_key_and_redirect', validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
+        "check_prereg_key_and_redirect", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
-    Confirmation.EMAIL_CHANGE: ConfirmationType('confirm_email_change'),
+    Confirmation.EMAIL_CHANGE: ConfirmationType("confirm_email_change"),
     Confirmation.UNSUBSCRIBE: ConfirmationType(
-        'unsubscribe',
+        "unsubscribe",
         validity_in_days=1000000,  # should never expire
     ),
     Confirmation.MULTIUSE_INVITE: ConfirmationType(
-        'join', validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
+        "join", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
-    Confirmation.REALM_CREATION: ConfirmationType('check_prereg_key_and_redirect'),
-    Confirmation.REALM_REACTIVATION: ConfirmationType('realm_reactivation'),
+    Confirmation.REALM_CREATION: ConfirmationType("check_prereg_key_and_redirect"),
+    Confirmation.REALM_REACTIVATION: ConfirmationType("realm_reactivation"),
 }
 
 
@@ -166,7 +166,7 @@ def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> st
     Zulip e-mails without having to first log in.
     """
     return create_confirmation_link(
-        user_profile, Confirmation.UNSUBSCRIBE, url_args={'email_type': email_type}
+        user_profile, Confirmation.UNSUBSCRIBE, url_args={"email_type": email_type}
     )
 
 
@@ -179,7 +179,7 @@ def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> st
 # add another Confirmation.type for this; it's this way for historical reasons.
 
 
-def validate_key(creation_key: Optional[str]) -> Optional['RealmCreationKey']:
+def validate_key(creation_key: Optional[str]) -> Optional["RealmCreationKey"]:
     """Get the record for this key, raising InvalidCreationKey if non-None but invalid."""
     if creation_key is None:
         return None
@@ -200,13 +200,13 @@ def generate_realm_creation_url(by_admin: bool = False) -> str:
     )
     return urljoin(
         settings.ROOT_DOMAIN_URI,
-        reverse('create_realm', kwargs={'creation_key': key}),
+        reverse("create_realm", kwargs={"creation_key": key}),
     )
 
 
 class RealmCreationKey(models.Model):
-    creation_key = models.CharField('activation key', db_index=True, max_length=40)
-    date_created = models.DateTimeField('created', default=timezone_now)
+    creation_key = models.CharField("activation key", db_index=True, max_length=40)
+    date_created = models.DateTimeField("created", default=timezone_now)
 
     # True just if we should presume the email address the user enters
     # is theirs, and skip sending mail to it to confirm that.

@@ -6,19 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0288_reaction_unique_on_emoji_code'),
+        ("zerver", "0288_reaction_unique_on_emoji_code"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='archivedattachment',
-            name='size',
+            model_name="archivedattachment",
+            name="size",
             field=models.IntegerField(default=0),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='attachment',
-            name='size',
+            model_name="attachment",
+            name="size",
             field=models.IntegerField(default=0),
             preserve_default=False,
         ),

@@ -13,7 +13,7 @@ from zerver.models import RealmDomain, UserProfile, get_realm_domains
 
 def list_realm_domains(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     domains = get_realm_domains(user_profile.realm)
-    return json_success({'domains': domains})
+    return json_success({"domains": domains})
 
 
 @require_realm_admin
@@ -28,13 +28,13 @@ def create_realm_domain(
     try:
         validate_domain(domain)
     except ValidationError as e:
-        return json_error(_('Invalid domain: {}').format(e.messages[0]))
+        return json_error(_("Invalid domain: {}").format(e.messages[0]))
     if RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists():
         return json_error(
             _("The domain {domain} is already a part of your organization.").format(domain=domain)
         )
     realm_domain = do_add_realm_domain(user_profile.realm, domain, allow_subdomains)
-    return json_success({'new_domain': [realm_domain.id, realm_domain.domain]})
+    return json_success({"new_domain": [realm_domain.id, realm_domain.domain]})
 
 
 @require_realm_admin
@@ -49,7 +49,7 @@ def patch_realm_domain(
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_change_realm_domain(realm_domain, allow_subdomains)
     except RealmDomain.DoesNotExist:
-        return json_error(_('No entry found for domain {domain}.').format(domain=domain))
+        return json_error(_("No entry found for domain {domain}.").format(domain=domain))
     return json_success()
 
 
@@ -62,5 +62,5 @@ def delete_realm_domain(
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_remove_realm_domain(realm_domain, acting_user=user_profile)
     except RealmDomain.DoesNotExist:
-        return json_error(_('No entry found for domain {domain}.').format(domain=domain))
+        return json_error(_("No entry found for domain {domain}.").format(domain=domain))
     return json_success()

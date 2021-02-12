@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0046_realmemoji_author'),
+        ("zerver", "0046_realmemoji_author"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='add_emoji_by_admins_only',
+            model_name="realm",
+            name="add_emoji_by_admins_only",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -58,12 +58,12 @@ SLACK_BOLD_REGEX = r"""
 
 
 def get_user_full_name(user: ZerverFieldsT) -> str:
-    if "deleted" in user and user['deleted'] is False:
-        return user['real_name'] or user['name']
+    if "deleted" in user and user["deleted"] is False:
+        return user["real_name"] or user["name"]
     elif user["is_mirror_dummy"]:
         return user["profile"].get("real_name", user["name"])
     else:
-        return user['name']
+        return user["name"]
 
 
 # Markdown mapping
@@ -82,16 +82,16 @@ def convert_to_zulip_markdown(
     # Map Slack's mention all: '<!channel>' to '@**all** '
     # Map Slack's mention all: '<!here>' to '@**all** '
     # No regex for this as it can be present anywhere in the sentence
-    text = text.replace('<!everyone>', '@**all**')
-    text = text.replace('<!channel>', '@**all**')
-    text = text.replace('<!here>', '@**all**')
+    text = text.replace("<!everyone>", "@**all**")
+    text = text.replace("<!channel>", "@**all**")
+    text = text.replace("<!here>", "@**all**")
 
     # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
     for cname, ids in added_channels.items():
         cid = ids[0]
-        text = text.replace(f'<#{cid}|{cname}>', '#**' + cname + '**')
+        text = text.replace(f"<#{cid}|{cname}>", "#**" + cname + "**")
 
-    tokens = text.split(' ')
+    tokens = text.split(" ")
     for iterator in range(len(tokens)):
 
         # Check user mentions and change mention format from
@@ -103,7 +103,7 @@ def convert_to_zulip_markdown(
             if user_id is not None:
                 mentioned_users_id.append(user_id)
 
-    text = ' '.join(tokens)
+    text = " ".join(tokens)
 
     # Check and convert link format
     text, has_link = convert_link_format(text)
@@ -126,8 +126,8 @@ def get_user_mentions(
     short_name = slack_usermention_match.group(4)
     slack_id = slack_usermention_match.group(2)
     for user in users:
-        if (user['id'] == slack_id and user['name'] == short_name and short_name) or (
-            user['id'] == slack_id and short_name is None
+        if (user["id"] == slack_id and user["name"] == short_name and short_name) or (
+            user["id"] == slack_id and short_name is None
         ):
             full_name = get_user_full_name(user)
             user_id = slack_user_id_to_zulip_user_id[slack_id]
@@ -165,7 +165,7 @@ def convert_link_format(text: str) -> Tuple[str, bool]:
     """
     has_link = False
     for match in re.finditer(LINK_REGEX, text, re.VERBOSE):
-        converted_text = match.group(0).replace('>', '').replace('<', '')
+        converted_text = match.group(0).replace(">", "").replace("<", "")
         has_link = True
         text = text.replace(match.group(0), converted_text)
     return text, has_link

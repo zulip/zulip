@@ -7,27 +7,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corporate', '0003_customerplan'),
+        ("corporate", "0003_customerplan"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='LicenseLedger',
+            name="LicenseLedger",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ('is_renewal', models.BooleanField(default=False)),
-                ('event_time', models.DateTimeField()),
-                ('licenses', models.IntegerField()),
-                ('licenses_at_next_renewal', models.IntegerField(null=True)),
+                ("is_renewal", models.BooleanField(default=False)),
+                ("event_time", models.DateTimeField()),
+                ("licenses", models.IntegerField()),
+                ("licenses_at_next_renewal", models.IntegerField(null=True)),
                 (
-                    'plan',
+                    "plan",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to='corporate.CustomerPlan'
+                        on_delete=django.db.models.deletion.CASCADE, to="corporate.CustomerPlan"
                     ),
                 ),
             ],

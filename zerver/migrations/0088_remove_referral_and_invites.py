@@ -5,23 +5,23 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0087_remove_old_scheduled_jobs'),
+        ("zerver", "0087_remove_old_scheduled_jobs"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='referral',
-            name='user_profile',
+            model_name="referral",
+            name="user_profile",
         ),
         migrations.RemoveField(
-            model_name='userprofile',
-            name='invites_granted',
+            model_name="userprofile",
+            name="invites_granted",
         ),
         migrations.RemoveField(
-            model_name='userprofile',
-            name='invites_used',
+            model_name="userprofile",
+            name="invites_used",
         ),
         migrations.DeleteModel(
-            name='Referral',
+            name="Referral",
         ),
     ]

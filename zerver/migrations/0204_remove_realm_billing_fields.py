@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0203_realm_message_content_allowed_in_email_notifications'),
+        ("zerver", "0203_realm_message_content_allowed_in_email_notifications"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='realm',
-            name='has_seat_based_plan',
+            model_name="realm",
+            name="has_seat_based_plan",
         ),
         migrations.RemoveField(
-            model_name='realm',
-            name='seat_limit',
+            model_name="realm",
+            name="seat_limit",
         ),
     ]

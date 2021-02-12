@@ -19,38 +19,38 @@ def api_bitbucket_webhook(
     payload: Mapping[str, Any] = REQ(validator=check_dict([])),
     branches: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
-    repository = payload['repository']
+    repository = payload["repository"]
 
     commits = [
         {
-            'name': commit.get('author') or payload.get('user'),
-            'sha': commit.get('raw_node'),
-            'message': commit.get('message'),
-            'url': '{}{}commits/{}'.format(
-                payload.get('canon_url'), repository.get('absolute_url'), commit.get('raw_node')
+            "name": commit.get("author") or payload.get("user"),
+            "sha": commit.get("raw_node"),
+            "message": commit.get("message"),
+            "url": "{}{}commits/{}".format(
+                payload.get("canon_url"), repository.get("absolute_url"), commit.get("raw_node")
             ),
         }
-        for commit in payload['commits']
+        for commit in payload["commits"]
     ]
 
     if len(commits) == 0:
         # Bitbucket doesn't give us enough information to really give
         # a useful message :/
-        subject = repository['name']
+        subject = repository["name"]
         content = "{} [force pushed]({}).".format(
-            payload.get('user', 'Someone'),
-            payload['canon_url'] + repository['absolute_url'],
+            payload.get("user", "Someone"),
+            payload["canon_url"] + repository["absolute_url"],
         )
     else:
-        branch = payload['commits'][-1]['branch']
+        branch = payload["commits"][-1]["branch"]
         if branches is not None and branches.find(branch) == -1:
             return json_success()
 
-        committer = payload.get('user')
+        committer = payload.get("user")
         content = get_push_commits_event_message(
-            committer if committer is not None else 'Someone', None, branch, commits
+            committer if committer is not None else "Someone", None, branch, commits
         )
-        subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=repository['name'], branch=branch)
+        subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=repository["name"], branch=branch)
 
     check_send_webhook_message(request, user_profile, subject, content, unquote_url_parameters=True)
     return json_success()

@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Iterable, List, Tuple, TypeVar
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.type_debug import print_types
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def add(x: Any = 0, y: Any = 0) -> Any:
@@ -55,30 +55,30 @@ class TypesPrintTest(ZulipTestCase):
         self.check_signature("add() -> int", 0, add)
 
     def test_list(self) -> None:
-        self.check_signature("add([], [str]) -> [str]", ['two'], add, [], ['two'])
-        self.check_signature("add([int], [str]) -> [int, ...]", [2, 'two'], add, [2], ['two'])
+        self.check_signature("add([], [str]) -> [str]", ["two"], add, [], ["two"])
+        self.check_signature("add([int], [str]) -> [int, ...]", [2, "two"], add, [2], ["two"])
         self.check_signature(
-            "add([int, ...], y=[]) -> [int, ...]", [2, 'two'], add, [2, 'two'], y=[]
+            "add([int, ...], y=[]) -> [int, ...]", [2, "two"], add, [2, "two"], y=[]
         )
 
     def test_dict(self) -> None:
         self.check_signature("to_dict() -> {}", {}, to_dict)
         self.check_signature(
-            "to_dict([(int, str)]) -> {int: str}", {2: 'two'}, to_dict, [(2, 'two')]
+            "to_dict([(int, str)]) -> {int: str}", {2: "two"}, to_dict, [(2, "two")]
         )
         self.check_signature(
-            "to_dict(((int, str),)) -> {int: str}", {2: 'two'}, to_dict, ((2, 'two'),)
+            "to_dict(((int, str),)) -> {int: str}", {2: "two"}, to_dict, ((2, "two"),)
         )
         self.check_signature(
             "to_dict([(int, str), ...]) -> {int: str, ...}",
-            {1: 'one', 2: 'two'},
+            {1: "one", 2: "two"},
             to_dict,
-            [(1, 'one'), (2, 'two')],
+            [(1, "one"), (2, "two")],
         )
 
     def test_tuple(self) -> None:
         self.check_signature("add((), ()) -> ()", (), add, (), ())
-        self.check_signature("add((int,), (str,)) -> (int, str)", (1, 'one'), add, (1,), ('one',))
+        self.check_signature("add((int,), (str,)) -> (int, str)", (1, "one"), add, (1,), ("one",))
         self.check_signature("add(((),), ((),)) -> ((), ())", ((), ()), add, ((),), ((),))
 
     def test_class(self) -> None:
@@ -88,7 +88,7 @@ class TypesPrintTest(ZulipTestCase):
         class B(str):
             pass
 
-        self.check_signature("<lambda>(A) -> str", 'A', (lambda x: x.__class__.__name__), A())
+        self.check_signature("<lambda>(A) -> str", "A", (lambda x: x.__class__.__name__), A())
         self.check_signature("<lambda>(B) -> int", 5, (lambda x: len(x)), B("hello"))
 
     def test_sequence(self) -> None:
@@ -98,12 +98,12 @@ class TypesPrintTest(ZulipTestCase):
         class B(List[Any]):
             pass
 
-        self.check_signature("add(A([]), B([str])) -> [str]", ['two'], add, A([]), B(['two']))
+        self.check_signature("add(A([]), B([str])) -> [str]", ["two"], add, A([]), B(["two"]))
         self.check_signature(
-            "add(A([int]), B([str])) -> [int, ...]", [2, 'two'], add, A([2]), B(['two'])
+            "add(A([int]), B([str])) -> [int, ...]", [2, "two"], add, A([2]), B(["two"])
         )
         self.check_signature(
-            "add(A([int, ...]), y=B([])) -> [int, ...]", [2, 'two'], add, A([2, 'two']), y=B([])
+            "add(A([int, ...]), y=B([])) -> [int, ...]", [2, "two"], add, A([2, "two"]), y=B([])
         )
 
     def test_mapping(self) -> None:
@@ -115,17 +115,17 @@ class TypesPrintTest(ZulipTestCase):
 
         self.check_signature("to_A() -> A([])", A(()), to_A)
         self.check_signature(
-            "to_A([(int, str)]) -> A([(int, str)])", {2: 'two'}, to_A, [(2, 'two')]
+            "to_A([(int, str)]) -> A([(int, str)])", {2: "two"}, to_A, [(2, "two")]
         )
         self.check_signature(
             "to_A([(int, str), ...]) -> A([(int, str), ...])",
-            {1: 'one', 2: 'two'},
+            {1: "one", 2: "two"},
             to_A,
-            [(1, 'one'), (2, 'two')],
+            [(1, "one"), (2, "two")],
         )
         self.check_signature(
             "to_A(((int, str), (int, str))) -> A([(int, str), ...])",
-            {1: 'one', 2: 'two'},
+            {1: "one", 2: "two"},
             to_A,
-            ((1, 'one'), (2, 'two')),
+            ((1, "one"), (2, "two")),
         )

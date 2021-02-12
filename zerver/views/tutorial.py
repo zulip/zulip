@@ -12,9 +12,9 @@ from zerver.models import UserProfile
 def set_tutorial_status(
     request: HttpRequest, user_profile: UserProfile, status: str = REQ(validator=check_string)
 ) -> HttpResponse:
-    if status == 'started':
+    if status == "started":
         user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED
-    elif status == 'finished':
+    elif status == "finished":
         user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
     user_profile.save(update_fields=["tutorial_status"])
 

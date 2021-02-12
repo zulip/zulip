@@ -12,7 +12,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@webhook_view('Transifex', notify_bot_owner_on_invalid_json=False)
+@webhook_view("Transifex", notify_bot_owner_on_invalid_json=False)
 @has_request_variables
 def api_transifex_webhook(
     request: HttpRequest,
@@ -29,6 +29,6 @@ def api_transifex_webhook(
     elif reviewed:
         body = f"Resource {resource} fully reviewed."
     else:
-        raise UnsupportedWebhookEventType('Unknown Event Type')
+        raise UnsupportedWebhookEventType("Unknown Event Type")
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()

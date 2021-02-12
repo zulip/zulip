@@ -25,23 +25,23 @@ def get_presence_backend(
     try:
         target = get_active_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
+        return json_error(_("No such user"))
     if target.is_bot:
-        return json_error(_('Presence is not supported for bot users.'))
+        return json_error(_("Presence is not supported for bot users."))
 
     presence_dict = get_presence_for_user(target.id)
     if len(presence_dict) == 0:
-        return json_error(_('No presence data for {email}').format(email=email))
+        return json_error(_("No presence data for {email}").format(email=email))
 
     # For initial version, we just include the status and timestamp keys
     result = dict(presence=presence_dict[target.email])
-    aggregated_info = result['presence']['aggregated']
-    aggr_status_duration = datetime_to_timestamp(timezone_now()) - aggregated_info['timestamp']
+    aggregated_info = result["presence"]["aggregated"]
+    aggr_status_duration = datetime_to_timestamp(timezone_now()) - aggregated_info["timestamp"]
     if aggr_status_duration > settings.OFFLINE_THRESHOLD_SECS:
-        aggregated_info['status'] = 'offline'
-    for val in result['presence'].values():
-        val.pop('client', None)
-        val.pop('pushable', None)
+        aggregated_info["status"] = "offline"
+    for val in result["presence"].values():
+        val.pop("client", None)
+        val.pop("pushable", None)
     return json_success(result)
 
 
@@ -58,7 +58,7 @@ def update_user_status_backend(
         status_text = status_text.strip()
 
     if (away is None) and (status_text is None):
-        return json_error(_('Client did not pass any new values.'))
+        return json_error(_("Client did not pass any new values."))
 
     do_update_user_status(
         user_profile=user_profile,
@@ -102,11 +102,11 @@ def update_active_status_backend(
                 user_profile=user_profile, query="get_events", client__name="zephyr_mirror"
             )
 
-            ret['zephyr_mirror_active'] = activity.last_visit > timezone_now() - datetime.timedelta(
+            ret["zephyr_mirror_active"] = activity.last_visit > timezone_now() - datetime.timedelta(
                 minutes=5
             )
         except UserActivity.DoesNotExist:
-            ret['zephyr_mirror_active'] = False
+            ret["zephyr_mirror_active"] = False
 
     return json_success(ret)
 

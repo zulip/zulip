@@ -74,7 +74,7 @@ def set_expirable_session_var(
     session: Session, var_name: str, var_value: Any, expiry_seconds: int
 ) -> None:
     expire_at = datetime_to_timestamp(timezone_now() + timedelta(seconds=expiry_seconds))
-    session[var_name] = {'value': var_value, 'expire_at': expire_at}
+    session[var_name] = {"value": var_value, "expire_at": expire_at}
 
 
 def get_expirable_session_var(
@@ -84,7 +84,7 @@ def get_expirable_session_var(
         return default_value
 
     try:
-        value, expire_at = (session[var_name]['value'], session[var_name]['expire_at'])
+        value, expire_at = (session[var_name]["value"], session[var_name]["expire_at"])
     except (KeyError, TypeError):
         logging.warning("get_expirable_session_var: error getting %s", var_name, exc_info=True)
         return default_value

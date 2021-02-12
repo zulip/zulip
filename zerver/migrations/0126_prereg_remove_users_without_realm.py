@@ -13,7 +13,7 @@ def remove_prereg_users_without_realm(apps: StateApps, schema_editor: DatabaseSc
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0125_realm_max_invites'),
+        ("zerver", "0125_realm_max_invites"),
     ]
 
     operations = [

@@ -43,23 +43,23 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            'addrport',
+            "addrport",
             nargs="?",
-            help='[optional port number or ipaddr:port]\n '
-            '(use multiple ports to start multiple servers)',
+            help="[optional port number or ipaddr:port]\n "
+            "(use multiple ports to start multiple servers)",
         )
 
         parser.add_argument(
-            '--nokeepalive',
-            action='store_true',
-            dest='no_keep_alive',
+            "--nokeepalive",
+            action="store_true",
+            dest="no_keep_alive",
             help="Tells Tornado to NOT keep alive http connections.",
         )
 
         parser.add_argument(
-            '--noxheaders',
-            action='store_false',
-            dest='xheaders',
+            "--noxheaders",
+            action="store_false",
+            dest="xheaders",
             help="Tells Tornado to NOT override remote IP with X-Real-IP.",
         )
 
@@ -78,14 +78,14 @@ class Command(BaseCommand):
             addr, port = r.hostname or "", r.port
 
         if not addr:
-            addr = '127.0.0.1'
+            addr = "127.0.0.1"
 
-        xheaders = options.get('xheaders', True)
-        no_keep_alive = options.get('no_keep_alive', False)
+        xheaders = options.get("xheaders", True)
+        no_keep_alive = options.get("no_keep_alive", False)
 
         if settings.DEBUG:
             logging.basicConfig(
-                level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s'
+                level=logging.INFO, format="%(asctime)s %(levelname)-8s %(message)s"
             )
 
         def inner_run() -> None:
@@ -122,7 +122,7 @@ class Command(BaseCommand):
 
                 from zerver.tornado.ioloop_logging import logging_data
 
-                logging_data['port'] = str(port)
+                logging_data["port"] = str(port)
                 setup_event_queue(port)
                 add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()

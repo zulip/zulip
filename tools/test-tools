@@ -9,17 +9,17 @@ from lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--coverage', action="store_true", help='compute test coverage')
+    parser.add_argument("--coverage", action="store_true", help="compute test coverage")
     args = parser.parse_args()
 
     def dir_join(dir1: str, dir2: str) -> str:
         return os.path.abspath(os.path.join(dir1, dir2))
 
     tools_dir = os.path.dirname(os.path.abspath(__file__))
-    root_dir = dir_join(tools_dir, '..')
-    tools_test_dir = dir_join(tools_dir, 'tests')
+    root_dir = dir_join(tools_dir, "..")
+    tools_test_dir = dir_join(tools_dir, "tests")
 
     sys.path.insert(0, root_dir)
 
@@ -37,12 +37,12 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     if result.errors or result.failures:
-        raise Exception('Test failed!')
+        raise Exception("Test failed!")
 
     if args.coverage:
         cov.stop()
         cov.save()
-        cov.html_report(directory='var/tools_coverage')
+        cov.html_report(directory="var/tools_coverage")
         print("HTML report saved to var/tools_coverage")
 
-    print('SUCCESS')
+    print("SUCCESS")

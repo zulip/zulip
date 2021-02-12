@@ -14,7 +14,7 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
     # We don't call check_emoji_admin here because the list of realm
     # emoji is public.
-    return json_success({'emoji': user_profile.realm.get_emoji()})
+    return json_success({"emoji": user_profile.realm.get_emoji()})
 
 
 @require_member_or_admin
@@ -22,7 +22,7 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 def upload_emoji(
     request: HttpRequest, user_profile: UserProfile, emoji_name: str = REQ(path_only=True)
 ) -> HttpResponse:
-    emoji_name = emoji_name.strip().replace(' ', '_')
+    emoji_name = emoji_name.strip().replace(" ", "_")
     check_valid_emoji_name(emoji_name)
     check_emoji_admin(user_profile)
     if RealmEmoji.objects.filter(

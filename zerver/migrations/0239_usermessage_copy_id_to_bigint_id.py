@@ -30,14 +30,14 @@ def sql_copy_id_to_bigint_id(id_range_lower_bound: int, id_range_upper_bound: in
 
 
 def copy_id_to_bigid(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    UserMessage = apps.get_model('zerver', 'UserMessage')
+    UserMessage = apps.get_model("zerver", "UserMessage")
     if not UserMessage.objects.exists():
         # Nothing to do
         return
 
     #  TODO: is  the below lookup fast enough, considering there's no index on bigint_id?
-    first_uncopied_id = UserMessage.objects.filter(bigint_id__isnull=True).aggregate(Min('id'))[
-        'id__min'
+    first_uncopied_id = UserMessage.objects.filter(bigint_id__isnull=True).aggregate(Min("id"))[
+        "id__min"
     ]
     # Note: the below id can fall in a segment
     # where bigint_id = id already, but it's not a big problem
@@ -60,7 +60,7 @@ def copy_id_to_bigid(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> No
 class Migration(migrations.Migration):
     atomic = False
     dependencies = [
-        ('zerver', '0238_usermessage_bigint_id'),
+        ("zerver", "0238_usermessage_bigint_id"),
     ]
 
     operations = [

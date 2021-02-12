@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0118_defaultstreamgroup_description'),
+        ("zerver", "0118_defaultstreamgroup_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='night_mode',
+            model_name="userprofile",
+            name="night_mode",
             field=models.BooleanField(default=False),
         ),
     ]

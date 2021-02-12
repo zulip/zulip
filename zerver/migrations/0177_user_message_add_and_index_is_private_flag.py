@@ -37,7 +37,7 @@ def reset_is_private_flag(apps: StateApps, schema_editor: DatabaseSchemaEditor) 
             )
             user_message_ids = flag_set_objects.values_list("id", flat=True)
             count = UserMessage.objects.filter(id__in=user_message_ids).update(
-                flags=F('flags').bitand(~UserMessage.flags.is_private)
+                flags=F("flags").bitand(~UserMessage.flags.is_private)
             )
             if count < 1000:
                 break
@@ -53,59 +53,59 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0176_remove_subscription_notifications'),
+        ("zerver", "0176_remove_subscription_notifications"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='archivedusermessage',
-            name='flags',
+            model_name="archivedusermessage",
+            name="flags",
             field=bitfield.models.BitField(
                 [
-                    'read',
-                    'starred',
-                    'collapsed',
-                    'mentioned',
-                    'wildcard_mentioned',
-                    'summarize_in_home',
-                    'summarize_in_stream',
-                    'force_expand',
-                    'force_collapse',
-                    'has_alert_word',
-                    'historical',
-                    'is_private',
+                    "read",
+                    "starred",
+                    "collapsed",
+                    "mentioned",
+                    "wildcard_mentioned",
+                    "summarize_in_home",
+                    "summarize_in_stream",
+                    "force_expand",
+                    "force_collapse",
+                    "has_alert_word",
+                    "historical",
+                    "is_private",
                 ],
                 default=0,
             ),
         ),
         migrations.AlterField(
-            model_name='usermessage',
-            name='flags',
+            model_name="usermessage",
+            name="flags",
             field=bitfield.models.BitField(
                 [
-                    'read',
-                    'starred',
-                    'collapsed',
-                    'mentioned',
-                    'wildcard_mentioned',
-                    'summarize_in_home',
-                    'summarize_in_stream',
-                    'force_expand',
-                    'force_collapse',
-                    'has_alert_word',
-                    'historical',
-                    'is_private',
+                    "read",
+                    "starred",
+                    "collapsed",
+                    "mentioned",
+                    "wildcard_mentioned",
+                    "summarize_in_home",
+                    "summarize_in_stream",
+                    "force_expand",
+                    "force_collapse",
+                    "has_alert_word",
+                    "historical",
+                    "is_private",
                 ],
                 default=0,
             ),
         ),
         migrations.RunSQL(
-            '''
+            """
             CREATE INDEX IF NOT EXISTS zerver_usermessage_is_private_message_id
                 ON zerver_usermessage (user_profile_id, message_id)
                 WHERE (flags & 2048) != 0;
-            ''',
-            reverse_sql='DROP INDEX zerver_usermessage_is_private_message_id;',
+            """,
+            reverse_sql="DROP INDEX zerver_usermessage_is_private_message_id;",
         ),
         migrations.RunPython(
             reset_is_private_flag, reverse_code=migrations.RunPython.noop, elidable=True

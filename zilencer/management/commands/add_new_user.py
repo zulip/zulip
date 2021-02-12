@@ -19,18 +19,18 @@ and will otherwise fall back to the zulip realm."""
         realm = self.get_realm(options)
         if realm is None:
             realm = (
-                Realm.objects.filter(string_id__startswith='realm').order_by('-string_id').first()
+                Realm.objects.filter(string_id__startswith="realm").order_by("-string_id").first()
             )
         if realm is None:
             print(
-                'Warning: Using default zulip realm, which has an unusual configuration.\n'
-                'Try running `manage.py add_new_realm`, and then running this again.'
+                "Warning: Using default zulip realm, which has an unusual configuration.\n"
+                "Try running `manage.py add_new_realm`, and then running this again."
             )
-            valid_realm = Realm.objects.get(string_id='zulip')
-            domain = 'zulip.com'
+            valid_realm = Realm.objects.get(string_id="zulip")
+            domain = "zulip.com"
         else:
             valid_realm = realm
-            domain = realm.string_id + '.zulip.com'
+            domain = realm.string_id + ".zulip.com"
 
-        name = '{:02}-user'.format(UserProfile.objects.filter(email__contains='user@').count())
-        do_create_user(f'{name}@{domain}', 'password', valid_realm, name, acting_user=None)
+        name = "{:02}-user".format(UserProfile.objects.filter(email__contains="user@").count())
+        do_create_user(f"{name}@{domain}", "password", valid_realm, name, acting_user=None)

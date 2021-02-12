@@ -38,7 +38,7 @@ def check_full_name(full_name_raw: str) -> str:
     if len(full_name) < UserProfile.MIN_NAME_LENGTH:
         raise JsonableError(_("Name too short!"))
     for character in full_name:
-        if unicodedata.category(character)[0] == 'C' or character in UserProfile.NAME_INVALID_CHARS:
+        if unicodedata.category(character)[0] == "C" or character in UserProfile.NAME_INVALID_CHARS:
             raise JsonableError(_("Invalid characters in name!"))
     # Names ending with e.g. `|15` could be ambiguous for
     # sloppily-written parsers of our Markdown syntax for mentioning
@@ -103,7 +103,7 @@ def check_valid_bot_config(bot_type: int, service_name: str, config_data: Dict[s
             from zerver.lib.bot_lib import get_bot_handler
 
             bot_handler = get_bot_handler(service_name)
-            if hasattr(bot_handler, 'validate_config'):
+            if hasattr(bot_handler, "validate_config"):
                 bot_handler.validate_config(config_data)
         except ConfigValidationError:
             # The exception provides a specific error message, but that
@@ -145,12 +145,12 @@ def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
 
 def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
     if bot_type not in user_profile.allowed_bot_types:
-        raise JsonableError(_('Invalid bot type'))
+        raise JsonableError(_("Invalid bot type"))
 
 
 def check_valid_interface_type(interface_type: Optional[int]) -> None:
     if interface_type not in Service.ALLOWED_INTERFACE_TYPES:
-        raise JsonableError(_('Invalid interface type'))
+        raise JsonableError(_("Invalid interface type"))
 
 
 def is_administrator_role(role: int) -> bool:
@@ -158,7 +158,7 @@ def is_administrator_role(role: int) -> bool:
 
 
 def bulk_get_users(
-    emails: List[str], realm: Optional[Realm], base_query: 'QuerySet[UserProfile]' = None
+    emails: List[str], realm: Optional[Realm], base_query: "QuerySet[UserProfile]" = None
 ) -> Dict[str, UserProfile]:
     if base_query is None:
         assert realm is not None
@@ -191,7 +191,7 @@ def bulk_get_users(
     return bulk_cached_fetch(
         # Use a separate cache key to protect us from conflicts with
         # the get_user cache.
-        lambda email: 'bulk_get_users:' + user_profile_cache_key_id(email, realm_id),
+        lambda email: "bulk_get_users:" + user_profile_cache_key_id(email, realm_id),
         fetch_users_by_email,
         [email.lower() for email in emails],
         id_fetcher=user_to_email,
@@ -271,14 +271,14 @@ def access_user_by_id(
 
 def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
     profiles = (
-        UserProfile.objects.select_related('realm')
+        UserProfile.objects.select_related("realm")
         .filter(
             delivery_email__iexact=email.strip(),
             is_active=True,
             realm__deactivated=False,
             is_bot=False,
         )
-        .order_by('date_joined')
+        .order_by("date_joined")
     )
     return [
         {
@@ -305,7 +305,7 @@ def validate_user_custom_profile_field(
 ) -> Union[int, str, List[int]]:
     validators = CustomProfileField.FIELD_VALIDATORS
     field_type = field.field_type
-    var_name = f'{field.name}'
+    var_name = f"{field.name}"
     if field_type in validators:
         validator = validators[field_type]
         return validator(var_name, value)
@@ -327,14 +327,14 @@ def validate_user_custom_profile_data(
 ) -> None:
     # This function validate all custom field values according to their field type.
     for item in profile_data:
-        field_id = item['id']
+        field_id = item["id"]
         try:
             field = CustomProfileField.objects.get(id=field_id)
         except CustomProfileField.DoesNotExist:
-            raise JsonableError(_('Field id {id} not found.').format(id=field_id))
+            raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
         try:
-            validate_user_custom_profile_field(realm_id, field, item['value'])
+            validate_user_custom_profile_field(realm_id, field, item["value"])
         except ValidationError as error:
             raise JsonableError(error.message)
 
@@ -369,22 +369,22 @@ def format_user_row(
     argument is used for permissions checks.
     """
 
-    is_admin = is_administrator_role(row['role'])
-    is_owner = row['role'] == UserProfile.ROLE_REALM_OWNER
-    is_guest = row['role'] == UserProfile.ROLE_GUEST
-    is_bot = row['is_bot']
+    is_admin = is_administrator_role(row["role"])
+    is_owner = row["role"] == UserProfile.ROLE_REALM_OWNER
+    is_guest = row["role"] == UserProfile.ROLE_GUEST
+    is_bot = row["is_bot"]
     result = dict(
-        email=row['email'],
-        user_id=row['id'],
-        avatar_version=row['avatar_version'],
+        email=row["email"],
+        user_id=row["id"],
+        avatar_version=row["avatar_version"],
         is_admin=is_admin,
         is_owner=is_owner,
         is_guest=is_guest,
         is_bot=is_bot,
-        full_name=row['full_name'],
-        timezone=canonicalize_timezone(row['timezone']),
-        is_active=row['is_active'],
-        date_joined=row['date_joined'].isoformat(),
+        full_name=row["full_name"],
+        timezone=canonicalize_timezone(row["timezone"]),
+        is_active=row["is_active"],
+        date_joined=row["date_joined"].isoformat(),
     )
 
     # Zulip clients that support using `GET /avatar/{user_id}` as a
@@ -405,14 +405,14 @@ def format_user_row(
     # bandwidth).  At present, the server looks at `long_term_idle` to
     # decide which users to include avatars for, piggy-backing on a
     # different optimization for organizations with 10,000s of users.
-    include_avatar_url = not user_avatar_url_field_optional or not row['long_term_idle']
+    include_avatar_url = not user_avatar_url_field_optional or not row["long_term_idle"]
     if include_avatar_url:
-        result['avatar_url'] = get_avatar_field(
-            user_id=row['id'],
+        result["avatar_url"] = get_avatar_field(
+            user_id=row["id"],
             realm_id=realm.id,
-            email=row['delivery_email'],
-            avatar_source=row['avatar_source'],
-            avatar_version=row['avatar_version'],
+            email=row["delivery_email"],
+            avatar_source=row["avatar_source"],
+            avatar_version=row["avatar_version"],
             medium=False,
             client_gravatar=client_gravatar,
         )
@@ -421,17 +421,17 @@ def format_user_row(
         realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
         and acting_user.is_realm_admin
     ):
-        result['delivery_email'] = row['delivery_email']
+        result["delivery_email"] = row["delivery_email"]
 
     if is_bot:
         result["bot_type"] = row["bot_type"]
-        if row['email'] in settings.CROSS_REALM_BOT_EMAILS:
-            result['is_cross_realm_bot'] = True
+        if row["email"] in settings.CROSS_REALM_BOT_EMAILS:
+            result["is_cross_realm_bot"] = True
 
         # Note that bot_owner_id can be None with legacy data.
-        result['bot_owner_id'] = row['bot_owner_id']
+        result["bot_owner_id"] = row["bot_owner_id"]
     elif custom_profile_field_data is not None:
-        result['profile_data'] = custom_profile_field_data
+        result["profile_data"] = custom_profile_field_data
     return result
 
 
@@ -451,9 +451,9 @@ def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
     # This could be potentially simplified in the future by
     # changing realm_user_dict_fields to name the bot owner with
     # the less readable `bot_owner` (instead of `bot_owner_id`).
-    user_row = model_to_dict(user_profile, fields=[*realm_user_dict_fields, 'bot_owner'])
-    user_row['bot_owner_id'] = user_row['bot_owner']
-    del user_row['bot_owner']
+    user_row = model_to_dict(user_profile, fields=[*realm_user_dict_fields, "bot_owner"])
+    user_row["bot_owner_id"] = user_row["bot_owner"]
+    del user_row["bot_owner"]
     return user_row
 
 
@@ -474,7 +474,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
         # Because we want to avoid clients becing exposed to the
         # implementation detail that these bots are self-owned, we
         # just set bot_owner_id=None.
-        user_row['bot_owner_id'] = None
+        user_row["bot_owner_id"] = None
 
         result.append(
             format_user_row(
@@ -542,9 +542,9 @@ def get_raw_user_data(
     result = {}
     for row in user_dicts:
         if profiles_by_user_id is not None:
-            custom_profile_field_data = profiles_by_user_id.get(row['id'], {})
+            custom_profile_field_data = profiles_by_user_id.get(row["id"], {})
 
-        result[row['id']] = format_user_row(
+        result[row["id"]] = format_user_row(
             realm,
             acting_user=acting_user,
             row=row,

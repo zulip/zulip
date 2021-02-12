@@ -23,8 +23,8 @@ def get_bot_storage_size(bot_profile: UserProfile, key: Optional[str] = None) ->
     if key is None:
         return (
             BotStorageData.objects.filter(bot_profile=bot_profile)
-            .annotate(key_size=Length('key'), value_size=Length('value'))
-            .aggregate(sum=Sum(F('key_size') + F('value_size')))['sum']
+            .annotate(key_size=Length("key"), value_size=Length("value"))
+            .aggregate(sum=Sum(F("key_size") + F("value_size")))["sum"]
             or 0
         )
     else:
@@ -53,7 +53,7 @@ def set_bot_storage(bot_profile: UserProfile, entries: List[Tuple[str, str]]) ->
     else:
         for key, value in entries:
             BotStorageData.objects.update_or_create(
-                bot_profile=bot_profile, key=key, defaults={'value': value}
+                bot_profile=bot_profile, key=key, defaults={"value": value}
             )
 
 
@@ -70,5 +70,5 @@ def is_key_in_bot_storage(bot_profile: UserProfile, key: str) -> bool:
 
 def get_keys_in_bot_storage(bot_profile: UserProfile) -> List[str]:
     return list(
-        BotStorageData.objects.filter(bot_profile=bot_profile).values_list('key', flat=True)
+        BotStorageData.objects.filter(bot_profile=bot_profile).values_list("key", flat=True)
     )

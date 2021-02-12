@@ -6,13 +6,13 @@ from django.db.migrations.state import StateApps
 def clear_message_sent_by_message_type_values(
     apps: StateApps, schema_editor: DatabaseSchemaEditor
 ) -> None:
-    UserCount = apps.get_model('analytics', 'UserCount')
-    StreamCount = apps.get_model('analytics', 'StreamCount')
-    RealmCount = apps.get_model('analytics', 'RealmCount')
-    InstallationCount = apps.get_model('analytics', 'InstallationCount')
-    FillState = apps.get_model('analytics', 'FillState')
+    UserCount = apps.get_model("analytics", "UserCount")
+    StreamCount = apps.get_model("analytics", "StreamCount")
+    RealmCount = apps.get_model("analytics", "RealmCount")
+    InstallationCount = apps.get_model("analytics", "InstallationCount")
+    FillState = apps.get_model("analytics", "FillState")
 
-    property = 'messages_sent:message_type:day'
+    property = "messages_sent:message_type:day"
     UserCount.objects.filter(property=property).delete()
     StreamCount.objects.filter(property=property).delete()
     RealmCount.objects.filter(property=property).delete()
@@ -22,7 +22,7 @@ def clear_message_sent_by_message_type_values(
 
 class Migration(migrations.Migration):
 
-    dependencies = [('analytics', '0009_remove_messages_to_stream_stat')]
+    dependencies = [("analytics", "0009_remove_messages_to_stream_stat")]
 
     operations = [
         migrations.RunPython(clear_message_sent_by_message_type_values),

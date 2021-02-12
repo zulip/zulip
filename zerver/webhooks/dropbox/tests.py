@@ -3,9 +3,9 @@ from zerver.lib.users import get_api_key
 
 
 class DropboxHookTests(WebhookTestCase):
-    STREAM_NAME = 'test'
+    STREAM_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/dropbox?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'dropbox'
+    FIXTURE_DIR_NAME = "dropbox"
 
     def test_file_updated(self) -> None:
         expected_topic = "Dropbox"
@@ -20,13 +20,13 @@ class DropboxHookTests(WebhookTestCase):
 
     def test_verification_request(self) -> None:
         self.subscribe(self.test_user, self.STREAM_NAME)
-        get_params = {'stream_name': self.STREAM_NAME, 'api_key': get_api_key(self.test_user)}
+        get_params = {"stream_name": self.STREAM_NAME, "api_key": get_api_key(self.test_user)}
         result = self.client_get(self.url, get_params)
         self.assert_json_error(result, "Missing 'challenge' argument", 400)
 
-        get_params['challenge'] = '9B2SVL4orbt5DxLMqJHI6pOTipTqingt2YFMIO0g06E'
+        get_params["challenge"] = "9B2SVL4orbt5DxLMqJHI6pOTipTqingt2YFMIO0g06E"
         result = self.client_get(self.url, get_params)
 
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result["Content-Type"], "text/plain; charset=UTF-8")
-        self.assert_in_response('9B2SVL4orbt5DxLMqJHI6pOTipTqingt2YFMIO0g06E', result)
+        self.assert_in_response("9B2SVL4orbt5DxLMqJHI6pOTipTqingt2YFMIO0g06E", result)

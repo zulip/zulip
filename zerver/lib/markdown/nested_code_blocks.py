@@ -11,7 +11,7 @@ class NestedCodeBlocksRenderer(Extension):
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.treeprocessors.register(
             NestedCodeBlocksRendererTreeProcessor(md, self.getConfigs()),
-            'nested_code_blocks',
+            "nested_code_blocks",
             -500,
         )
 

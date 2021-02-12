@@ -11,7 +11,7 @@ It is run by cron; the crontab is in puppet/zulip/files/cron.d/rabbitmq-monitori
 """
 import sys
 
-sys.path.append('/home/zulip/deployments/current/scripts/nagios')
+sys.path.append("/home/zulip/deployments/current/scripts/nagios")
 from cron_file_helper import nagios_from_file
 
 RESULTS_FILE = "/var/lib/nagios_state/check-rabbitmq-results"

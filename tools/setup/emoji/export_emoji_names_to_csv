@@ -19,26 +19,26 @@ from emoji_setup_utils import get_emoji_code
 TOOLS_DIR_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR_PATH)
 # `emoji.json` file is same in all four emoji-datasource packages.
-EMOJI_DATA_PATH = os.path.join(ZULIP_PATH, 'node_modules', 'emoji-datasource-google', 'emoji.json')
+EMOJI_DATA_PATH = os.path.join(ZULIP_PATH, "node_modules", "emoji-datasource-google", "emoji.json")
 
 sorting_info: Dict[str, Any] = {}
 column_names = [
-    'Codepoint',
-    'New sorting info',
-    'zulip (main)',
-    'zulip (alternates)',
-    'explanation',
+    "Codepoint",
+    "New sorting info",
+    "zulip (main)",
+    "zulip (alternates)",
+    "explanation",
 ]
 category_index = {
-    'Smileys & People': '1',
-    'Animals & Nature': '2',
-    'Food & Drink': '3',
-    'Activities': '4',
-    'Travel & Places': '5',
-    'Objects': '6',
-    'Symbols': '7',
-    'Flags': '8',
-    'Skin Tones': '9',
+    "Smileys & People": "1",
+    "Animals & Nature": "2",
+    "Food & Drink": "3",
+    "Activities": "4",
+    "Travel & Places": "5",
+    "Objects": "6",
+    "Symbols": "7",
+    "Flags": "8",
+    "Skin Tones": "9",
 }
 
 name_entry_regex = re.compile(
@@ -56,29 +56,29 @@ def prepare_sorting_info() -> None:
 
     for emoji_dict in emoji_data:
         emoji_code = get_emoji_code(emoji_dict)
-        sort_order = str(emoji_dict['sort_order']).strip()
+        sort_order = str(emoji_dict["sort_order"]).strip()
         sorting_info[emoji_code] = {
-            'category': emoji_dict['category'],
-            'sort_order': sort_order.rjust(3, '0'),
+            "category": emoji_dict["category"],
+            "sort_order": sort_order.rjust(3, "0"),
         }
 
 
 def get_sorting_info(emoji_code: str) -> str:
-    category = sorting_info[emoji_code]['category']
-    category = category_index[category] + '-' + category
-    sort_order = sorting_info[emoji_code]['sort_order']
-    return ' '.join([category, sort_order])
+    category = sorting_info[emoji_code]["category"]
+    category = category_index[category] + "-" + category
+    sort_order = sorting_info[emoji_code]["sort_order"]
+    return " ".join([category, sort_order])
 
 
 def prepare_explanation(explanation_lines: List[str]) -> str:
-    return ' '.join(explanation_lines)
+    return " ".join(explanation_lines)
 
 
 def prepare_aliases(captured_aliases: str) -> str:
     aliases = []
-    for alias in captured_aliases.split(', '):
+    for alias in captured_aliases.split(", "):
         aliases.append(alias.strip("'"))
-    return ', '.join(aliases)
+    return ", ".join(aliases)
 
 
 def main() -> None:
@@ -110,10 +110,10 @@ def main() -> None:
         for line in fp.readlines():
             match = name_entry_regex.search(line)
             if match is not None:
-                emoji_code = match.group('emoji_code')
+                emoji_code = match.group("emoji_code")
                 sort_info = get_sorting_info(emoji_code)
-                canonical_name = match.group('canonical_name')
-                aliases = prepare_aliases(match.group('aliases'))
+                canonical_name = match.group("canonical_name")
+                aliases = prepare_aliases(match.group("aliases"))
                 explanation = prepare_explanation(explanation_lines)
                 output_data.append(
                     [
@@ -129,11 +129,11 @@ def main() -> None:
 
             match = explanation_regex.search(line)
             if match is not None:
-                explanation_line = match.group('explanation_line').strip()
+                explanation_line = match.group("explanation_line").strip()
                 explanation_lines.append(explanation_line)
 
-    with open(args.output_file_path, 'w') as f:
-        writer = csv.writer(f, dialect='excel')
+    with open(args.output_file_path, "w") as f:
+        writer = csv.writer(f, dialect="excel")
     writer.writerows(output_data)
     # The CSV file exported by Google Sheets doesn't have a newline
     # character in the end. So we also strip the last newline character

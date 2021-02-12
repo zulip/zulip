@@ -8,60 +8,60 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0230_rename_to_enable_stream_audible_notifications'),
+        ("zerver", "0230_rename_to_enable_stream_audible_notifications"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ArchiveTransaction',
+            name="ArchiveTransaction",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
                 (
-                    'timestamp',
+                    "timestamp",
                     models.DateTimeField(db_index=True, default=django.utils.timezone.now),
                 ),
-                ('restored', models.BooleanField(db_index=True, default=False)),
-                ('type', models.PositiveSmallIntegerField(db_index=True)),
+                ("restored", models.BooleanField(db_index=True, default=False)),
+                ("type", models.PositiveSmallIntegerField(db_index=True)),
                 (
-                    'realm',
+                    "realm",
                     models.ForeignKey(
-                        null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'
+                        null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
                     ),
                 ),
             ],
         ),
         migrations.RemoveField(
-            model_name='archivedattachment',
-            name='archive_timestamp',
+            model_name="archivedattachment",
+            name="archive_timestamp",
         ),
         migrations.RemoveField(
-            model_name='archivedmessage',
-            name='archive_timestamp',
+            model_name="archivedmessage",
+            name="archive_timestamp",
         ),
         migrations.RemoveField(
-            model_name='archivedreaction',
-            name='archive_timestamp',
+            model_name="archivedreaction",
+            name="archive_timestamp",
         ),
         migrations.RemoveField(
-            model_name='archivedsubmessage',
-            name='archive_timestamp',
+            model_name="archivedsubmessage",
+            name="archive_timestamp",
         ),
         migrations.RemoveField(
-            model_name='archivedusermessage',
-            name='archive_timestamp',
+            model_name="archivedusermessage",
+            name="archive_timestamp",
         ),
         migrations.AddField(
-            model_name='archivedmessage',
-            name='archive_transaction',
+            model_name="archivedmessage",
+            name="archive_transaction",
             field=models.ForeignKey(
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                to='zerver.ArchiveTransaction',
+                to="zerver.ArchiveTransaction",
             ),
         ),
     ]

@@ -15,19 +15,19 @@ def hash_util_encode(string: str) -> str:
 
 def encode_stream(stream_id: int, stream_name: str) -> str:
     # We encode streams for urls as something like 99-Verona.
-    stream_name = stream_name.replace(' ', '-')
-    return str(stream_id) + '-' + hash_util_encode(stream_name)
+    stream_name = stream_name.replace(" ", "-")
+    return str(stream_id) + "-" + hash_util_encode(stream_name)
 
 
 def personal_narrow_url(realm: Realm, sender: UserProfile) -> str:
     base_url = f"{realm.uri}/#narrow/pm-with/"
-    email_user = sender.email.split('@')[0].lower()
-    pm_slug = str(sender.id) + '-' + hash_util_encode(email_user)
+    email_user = sender.email.split("@")[0].lower()
+    pm_slug = str(sender.id) + "-" + hash_util_encode(email_user)
     return base_url + pm_slug
 
 
 def huddle_narrow_url(realm: Realm, other_user_ids: List[int]) -> str:
-    pm_slug = ','.join(str(user_id) for user_id in sorted(other_user_ids)) + '-group'
+    pm_slug = ",".join(str(user_id) for user_id in sorted(other_user_ids)) + "-group"
     base_url = f"{realm.uri}/#narrow/pm-with/"
     return base_url + pm_slug
 
@@ -44,7 +44,7 @@ def topic_narrow_url(realm: Realm, stream: Stream, topic: str) -> str:
 
 def near_message_url(realm: Realm, message: Dict[str, Any]) -> str:
 
-    if message['type'] == 'stream':
+    if message["type"] == "stream":
         url = near_stream_message_url(
             realm=realm,
             message=message,
@@ -59,44 +59,44 @@ def near_message_url(realm: Realm, message: Dict[str, Any]) -> str:
 
 
 def near_stream_message_url(realm: Realm, message: Dict[str, Any]) -> str:
-    message_id = str(message['id'])
-    stream_id = message['stream_id']
-    stream_name = message['display_recipient']
+    message_id = str(message["id"])
+    stream_id = message["stream_id"]
+    stream_name = message["display_recipient"]
     topic_name = get_topic_from_message_info(message)
     encoded_topic = hash_util_encode(topic_name)
     encoded_stream = encode_stream(stream_id=stream_id, stream_name=stream_name)
 
     parts = [
         realm.uri,
-        '#narrow',
-        'stream',
+        "#narrow",
+        "stream",
         encoded_stream,
-        'topic',
+        "topic",
         encoded_topic,
-        'near',
+        "near",
         message_id,
     ]
-    full_url = '/'.join(parts)
+    full_url = "/".join(parts)
     return full_url
 
 
 def near_pm_message_url(realm: Realm, message: Dict[str, Any]) -> str:
-    message_id = str(message['id'])
-    str_user_ids = [str(recipient['id']) for recipient in message['display_recipient']]
+    message_id = str(message["id"])
+    str_user_ids = [str(recipient["id"]) for recipient in message["display_recipient"]]
 
     # Use the "perma-link" format here that includes the sender's
     # user_id, so they're easier to share between people.
-    pm_str = ','.join(str_user_ids) + '-pm'
+    pm_str = ",".join(str_user_ids) + "-pm"
 
     parts = [
         realm.uri,
-        '#narrow',
-        'pm-with',
+        "#narrow",
+        "pm-with",
         pm_str,
-        'near',
+        "near",
         message_id,
     ]
-    full_url = '/'.join(parts)
+    full_url = "/".join(parts)
     return full_url
 
 
@@ -107,7 +107,7 @@ def add_query_to_redirect_url(original_url: str, query: str) -> str:
 
 
 def add_query_arg_to_redirect_url(original_url: str, query_arg: str) -> str:
-    assert '?' in original_url
+    assert "?" in original_url
     # Using 'mark_sanitized' because user-controlled data after the '?' is
     # not relevant for open redirects
     return original_url + "&" + mark_sanitized(query_arg)

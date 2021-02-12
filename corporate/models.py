@@ -46,7 +46,7 @@ class CustomerPlan(models.Model):
 
     next_invoice_date: Optional[datetime.datetime] = models.DateTimeField(db_index=True, null=True)
     invoiced_through: Optional["LicenseLedger"] = models.ForeignKey(
-        'LicenseLedger', null=True, on_delete=CASCADE, related_name='+'
+        "LicenseLedger", null=True, on_delete=CASCADE, related_name="+"
     )
     DONE = 1
     STARTED = 2
@@ -74,9 +74,9 @@ class CustomerPlan(models.Model):
     @property
     def name(self) -> str:
         return {
-            CustomerPlan.STANDARD: 'Zulip Standard',
-            CustomerPlan.PLUS: 'Zulip Plus',
-            CustomerPlan.ENTERPRISE: 'Zulip Enterprise',
+            CustomerPlan.STANDARD: "Zulip Standard",
+            CustomerPlan.PLUS: "Zulip Plus",
+            CustomerPlan.ENTERPRISE: "Zulip Enterprise",
         }[self.tier]
 
     def get_plan_status_as_text(self) -> str:

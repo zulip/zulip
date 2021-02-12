@@ -24,8 +24,8 @@ class FillState(models.Model):
 # The earliest/starting end_time in FillState
 # We assume there is at least one realm
 def installation_epoch() -> datetime.datetime:
-    earliest_realm_creation = Realm.objects.aggregate(models.Min('date_created'))[
-        'date_created__min'
+    earliest_realm_creation = Realm.objects.aggregate(models.Min("date_created"))[
+        "date_created__min"
     ]
     return floor_to_day(earliest_realm_creation)
 
@@ -50,12 +50,12 @@ class InstallationCount(BaseCount):
             UniqueConstraint(
                 fields=["property", "subgroup", "end_time"],
                 condition=Q(subgroup__isnull=False),
-                name='unique_installation_count',
+                name="unique_installation_count",
             ),
             UniqueConstraint(
                 fields=["property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_installation_count_null_subgroup',
+                name="unique_installation_count_null_subgroup",
             ),
         ]
 
@@ -72,12 +72,12 @@ class RealmCount(BaseCount):
             UniqueConstraint(
                 fields=["realm", "property", "subgroup", "end_time"],
                 condition=Q(subgroup__isnull=False),
-                name='unique_realm_count',
+                name="unique_realm_count",
             ),
             UniqueConstraint(
                 fields=["realm", "property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_realm_count_null_subgroup',
+                name="unique_realm_count_null_subgroup",
             ),
         ]
         index_together = ["property", "end_time"]
@@ -96,12 +96,12 @@ class UserCount(BaseCount):
             UniqueConstraint(
                 fields=["user", "property", "subgroup", "end_time"],
                 condition=Q(subgroup__isnull=False),
-                name='unique_user_count',
+                name="unique_user_count",
             ),
             UniqueConstraint(
                 fields=["user", "property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_user_count_null_subgroup',
+                name="unique_user_count_null_subgroup",
             ),
         ]
         # This index dramatically improves the performance of
@@ -122,12 +122,12 @@ class StreamCount(BaseCount):
             UniqueConstraint(
                 fields=["stream", "property", "subgroup", "end_time"],
                 condition=Q(subgroup__isnull=False),
-                name='unique_stream_count',
+                name="unique_stream_count",
             ),
             UniqueConstraint(
                 fields=["stream", "property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_stream_count_null_subgroup',
+                name="unique_stream_count_null_subgroup",
             ),
         ]
         # This index dramatically improves the performance of

@@ -10,7 +10,7 @@ It is run by cron and can be found at puppet/zulip/files/cron.d/rabbitmq-monitor
 """
 import sys
 
-sys.path.append('/home/zulip/deployments/current/scripts/nagios')
+sys.path.append("/home/zulip/deployments/current/scripts/nagios")
 from cron_file_helper import nagios_from_file
 
 if len(sys.argv) < 2:

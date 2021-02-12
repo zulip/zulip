@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0240_usermessage_migrate_bigint_id_into_id'),
+        ("zerver", "0240_usermessage_migrate_bigint_id_into_id"),
     ]
 
     operations = [
         migrations.RunSQL("ALTER TABLE zerver_usermessage DROP COLUMN id_old;"),
         migrations.RemoveField(
-            model_name='archivedusermessage',
-            name='bigint_id',
+            model_name="archivedusermessage",
+            name="bigint_id",
         ),
         migrations.AlterField(
-            model_name='archivedusermessage',
-            name='id',
+            model_name="archivedusermessage",
+            name="id",
             field=models.BigAutoField(primary_key=True, serialize=False),
         ),
     ]

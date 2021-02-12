@@ -9,70 +9,70 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@webhook_view('OpsGenie')
+@webhook_view("OpsGenie")
 @has_request_variables
 def api_opsgenie_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     # construct the body of the message
     info = {
-        "additional_info": '',
-        "alert_type": payload['action'],
-        "alert_id": payload['alert']['alertId'],
-        "integration_name": payload['integrationName'],
-        "tags": ', '.join('`' + tag + '`' for tag in payload['alert'].get('tags', [])),
+        "additional_info": "",
+        "alert_type": payload["action"],
+        "alert_id": payload["alert"]["alertId"],
+        "integration_name": payload["integrationName"],
+        "tags": ", ".join("`" + tag + "`" for tag in payload["alert"].get("tags", [])),
     }
 
-    topic = info['integration_name']
+    topic = info["integration_name"]
     bullet_template = "* **{key}**: {value}\n"
 
-    if 'note' in payload['alert']:
-        info['additional_info'] += bullet_template.format(
-            key='Note',
-            value=payload['alert']['note'],
+    if "note" in payload["alert"]:
+        info["additional_info"] += bullet_template.format(
+            key="Note",
+            value=payload["alert"]["note"],
         )
-    if 'recipient' in payload['alert']:
-        info['additional_info'] += bullet_template.format(
-            key='Recipient',
-            value=payload['alert']['recipient'],
+    if "recipient" in payload["alert"]:
+        info["additional_info"] += bullet_template.format(
+            key="Recipient",
+            value=payload["alert"]["recipient"],
         )
-    if 'addedTags' in payload['alert']:
-        info['additional_info'] += bullet_template.format(
-            key='Tags added',
-            value=payload['alert']['addedTags'],
+    if "addedTags" in payload["alert"]:
+        info["additional_info"] += bullet_template.format(
+            key="Tags added",
+            value=payload["alert"]["addedTags"],
         )
-    if 'team' in payload['alert']:
-        info['additional_info'] += bullet_template.format(
-            key='Team added',
-            value=payload['alert']['team'],
+    if "team" in payload["alert"]:
+        info["additional_info"] += bullet_template.format(
+            key="Team added",
+            value=payload["alert"]["team"],
         )
-    if 'owner' in payload['alert']:
-        info['additional_info'] += bullet_template.format(
-            key='Assigned owner',
-            value=payload['alert']['owner'],
+    if "owner" in payload["alert"]:
+        info["additional_info"] += bullet_template.format(
+            key="Assigned owner",
+            value=payload["alert"]["owner"],
         )
-    if 'escalationName' in payload:
-        info['additional_info'] += bullet_template.format(
-            key='Escalation',
-            value=payload['escalationName'],
+    if "escalationName" in payload:
+        info["additional_info"] += bullet_template.format(
+            key="Escalation",
+            value=payload["escalationName"],
         )
-    if 'removedTags' in payload['alert']:
-        info['additional_info'] += bullet_template.format(
-            key='Tags removed',
-            value=payload['alert']['removedTags'],
+    if "removedTags" in payload["alert"]:
+        info["additional_info"] += bullet_template.format(
+            key="Tags removed",
+            value=payload["alert"]["removedTags"],
         )
-    if 'message' in payload['alert']:
-        info['additional_info'] += bullet_template.format(
-            key='Message',
-            value=payload['alert']['message'],
+    if "message" in payload["alert"]:
+        info["additional_info"] += bullet_template.format(
+            key="Message",
+            value=payload["alert"]["message"],
         )
-    if info['tags']:
-        info['additional_info'] += bullet_template.format(
-            key='Tags',
-            value=info['tags'],
+    if info["tags"]:
+        info["additional_info"] += bullet_template.format(
+            key="Tags",
+            value=info["tags"],
         )
 
     body_template = """

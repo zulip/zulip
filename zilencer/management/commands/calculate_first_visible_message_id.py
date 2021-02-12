@@ -13,7 +13,7 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         self.add_realm_args(parser)
         parser.add_argument(
-            '--lookback-hours',
+            "--lookback-hours",
             type=int,
             help="Period a bit larger than that of the cron job that runs "
             "this command so that the lookback periods are sure to overlap.",
@@ -29,4 +29,4 @@ class Command(ZulipBaseCommand):
             realms = [target_realm]
 
         for realm in realms:
-            maybe_update_first_visible_message_id(realm, options['lookback_hours'])
+            maybe_update_first_visible_message_id(realm, options["lookback_hours"])

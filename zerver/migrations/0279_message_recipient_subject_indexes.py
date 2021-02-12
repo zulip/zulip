@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0278_remove_userprofile_alert_words'),
+        ("zerver", "0278_remove_userprofile_alert_words"),
     ]
 
     operations = [

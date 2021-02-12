@@ -23,9 +23,9 @@ class StreamTopicTarget:
             stream_id=self.stream_id,
             topic_name__iexact=self.topic_name,
         ).values(
-            'user_profile_id',
+            "user_profile_id",
         )
-        return {row['user_profile_id'] for row in query}
+        return {row["user_profile_id"] for row in query}
 
     def get_active_subscriptions(self) -> QuerySet:
         return get_active_subscriptions_for_stream_id(self.stream_id)

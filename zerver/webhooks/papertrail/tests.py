@@ -4,9 +4,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class PapertrailHookTests(WebhookTestCase):
-    STREAM_NAME = 'papertrail'
+    STREAM_NAME = "papertrail"
     URL_TEMPLATE = "/api/v1/external/papertrail?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'papertrail'
+    FIXTURE_DIR_NAME = "papertrail"
 
     def test_short_message(self) -> None:
         expected_topic = "logs"
@@ -74,4 +74,4 @@ message body 4
         # containing the JSON body. Documented here:
         # https://help.papertrailapp.com/kb/how-it-works/web-hooks#encoding
         body = self.webhook_fixture_data("papertrail", fixture_name, file_type="json")
-        return urlencode({'payload': body})
+        return urlencode({"payload": body})

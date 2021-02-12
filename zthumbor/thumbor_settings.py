@@ -7,14 +7,14 @@ sys.path.append(ZULIP_PATH)
 
 from zproject.config import get_secret
 
-os.environ['AWS_ACCESS_KEY_ID'] = get_secret('s3_key', '')
-os.environ['AWS_SECRET_ACCESS_KEY'] = get_secret('s3_secret_key', '')
+os.environ["AWS_ACCESS_KEY_ID"] = get_secret("s3_key", "")
+os.environ["AWS_SECRET_ACCESS_KEY"] = get_secret("s3_secret_key", "")
 
 config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether this instance of Zulip is running in a production environment.
-PRODUCTION = config_file.has_option('machine', 'deploy_type')
+PRODUCTION = config_file.has_option("machine", "deploy_type")
 if PRODUCTION:
     try:
         from zproject.prod_settings import LOCAL_UPLOADS_DIR
@@ -184,23 +184,23 @@ USE_GIFSICLE_ENGINE = True
 ## The loader thumbor should use to load the original image. This must be the
 ## full name of a python module (python must be able to import it)
 ## Defaults to: 'thumbor.loaders.http_loader'
-LOADER = 'zthumbor.loaders.zloader'
+LOADER = "zthumbor.loaders.zloader"
 
 ## The file storage thumbor should use to store original images. This must be the
 ## full name of a python module (python must be able to import it)
 ## Defaults to: 'thumbor.storages.file_storage'
 if IS_LOCAL_STORAGE:
-    STORAGE = 'thumbor.storages.file_storage'
+    STORAGE = "thumbor.storages.file_storage"
 else:
-    STORAGE = 'tc_aws.storages.s3_storage'
+    STORAGE = "tc_aws.storages.s3_storage"
 
 ## The result storage thumbor should use to store generated images. This must be
 ## the full name of a python module (python must be able to import it)
 ## Defaults to: None
 if IS_LOCAL_STORAGE:
-    RESULT_STORAGE = 'thumbor.result_storages.file_storage'
+    RESULT_STORAGE = "thumbor.result_storages.file_storage"
 else:
-    RESULT_STORAGE = 'tc_aws.result_storages.s3_storage'
+    RESULT_STORAGE = "tc_aws.result_storages.s3_storage"
 
 ## The imaging engine thumbor should use to perform image operations. This must
 ## be the full name of a python module (python must be able to import it)
@@ -224,7 +224,7 @@ else:
 
 ## The security key thumbor uses to sign image URLs
 ## Defaults to: 'MY_SECURE_KEY'
-SECURITY_KEY = get_secret('thumbor_key')
+SECURITY_KEY = get_secret("thumbor_key")
 
 ## Indicates if the /unsafe URL should be available
 ## Defaults to: True
@@ -562,7 +562,7 @@ if config_file.has_option("http_proxy", "host") and config_file.has_option("http
 ## Path where the Result storage will store generated images
 ## Defaults to: '/tmp/thumbor/result_storage'
 if IS_LOCAL_STORAGE:
-    RESULT_STORAGE_FILE_STORAGE_ROOT_PATH = os.path.join(FILE_LOADER_ROOT_PATH, 'thumbnails')
+    RESULT_STORAGE_FILE_STORAGE_ROOT_PATH = os.path.join(FILE_LOADER_ROOT_PATH, "thumbnails")
 
 ## Indicates whether unsafe requests should also be stored in the Result Storage
 ## Defaults to: False
@@ -661,13 +661,13 @@ if not IS_LOCAL_STORAGE:
     TC_AWS_ENDPOINT = S3_ENDPOINT_URL
 
     TC_AWS_STORAGE_BUCKET = S3_AUTH_UPLOADS_BUCKET  # S3 bucket for Storage
-    TC_AWS_STORAGE_ROOT_PATH = 'thumbnails'  # S3 path prefix for Storage bucket
+    TC_AWS_STORAGE_ROOT_PATH = "thumbnails"  # S3 path prefix for Storage bucket
 
     TC_AWS_LOADER_BUCKET = S3_AUTH_UPLOADS_BUCKET  # S3 bucket for loader
-    TC_AWS_LOADER_ROOT_PATH = ''  # S3 path prefix for Loader bucket
+    TC_AWS_LOADER_ROOT_PATH = ""  # S3 path prefix for Loader bucket
 
     TC_AWS_RESULT_STORAGE_BUCKET = S3_AUTH_UPLOADS_BUCKET  # S3 bucket for result Storage
-    TC_AWS_RESULT_STORAGE_ROOT_PATH = 'thumbnails'  # S3 path prefix for Result storage bucket
+    TC_AWS_RESULT_STORAGE_ROOT_PATH = "thumbnails"  # S3 path prefix for Result storage bucket
 
 TC_AWS_MAX_RETRY = 0  # Max retries for get image from S3 Bucket. Default is 0
 

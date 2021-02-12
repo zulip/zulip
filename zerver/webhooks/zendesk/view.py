@@ -10,7 +10,7 @@ from zerver.models import UserProfile
 
 def truncate(string: str, length: int) -> str:
     if len(string) > length:
-        string = string[: length - 3] + '...'
+        string = string[: length - 3] + "..."
     return string
 
 
@@ -28,6 +28,6 @@ def api_zendesk_webhook(
     ticket_id and ticket_title to create a subject. And passes with zendesk
     user's configured message to zulip.
     """
-    subject = truncate(f'#{ticket_id}: {ticket_title}', 60)
+    subject = truncate(f"#{ticket_id}: {ticket_title}", 60)
     check_send_webhook_message(request, user_profile, subject, message)
     return json_success()

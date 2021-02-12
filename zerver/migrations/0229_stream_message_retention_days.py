@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0228_userprofile_demote_inactive_streams'),
+        ("zerver", "0228_userprofile_demote_inactive_streams"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='stream',
-            name='message_retention_days',
+            model_name="stream",
+            name="message_retention_days",
             field=models.IntegerField(default=None, null=True),
         ),
     ]

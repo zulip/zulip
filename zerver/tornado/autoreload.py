@@ -72,7 +72,7 @@ except ImportError:
 # os.execv is broken on Windows and can't properly parse command line
 # arguments and executable name if they contain whitespaces. subprocess
 # fixes that behavior.
-_has_execv = sys.platform != 'win32'
+_has_execv = sys.platform != "win32"
 
 _watched_files = set()
 _reload_hooks = []
@@ -212,8 +212,8 @@ def _reload():
     # string, we were (probably) invoked with -m and the effective path
     # is about to change on re-exec.  Add the current directory to $PYTHONPATH
     # to ensure that the new process sees the same path we did.
-    path_prefix = '.' + os.pathsep
-    if sys.path[0] == '' and not os.environ.get("PYTHONPATH", "").startswith(path_prefix):
+    path_prefix = "." + os.pathsep
+    if sys.path[0] == "" and not os.environ.get("PYTHONPATH", "").startswith(path_prefix):
         os.environ["PYTHONPATH"] = path_prefix + os.environ.get("PYTHONPATH", "")
     if not _has_execv:
         subprocess.Popen([sys.executable] + sys.argv)

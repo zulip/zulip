@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zilencer', '0006_customer'),
+        ("zilencer", "0006_customer"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='remotezulipserver',
-            name='hostname',
+            model_name="remotezulipserver",
+            name="hostname",
             field=models.CharField(max_length=128),
         ),
     ]

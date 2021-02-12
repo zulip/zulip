@@ -17,7 +17,7 @@ class HtmlTreeBranch:
     conceptually be something like "p div(#yo) span(.bar)".
     """
 
-    def __init__(self, tags: List['TagInfo'], fn: Optional[str]) -> None:
+    def __init__(self, tags: List["TagInfo"], fn: Optional[str]) -> None:
         self.tags = tags
         self.fn = fn
         self.line = tags[-1].token.line
@@ -36,11 +36,11 @@ class HtmlTreeBranch:
                     p#intro
 
         """
-        res = '\n'
-        indent = ' ' * 4
+        res = "\n"
+        indent = " " * 4
         for t in self.tags:
-            res += indent + t.text() + '\n'
-            indent += ' ' * 4
+            res += indent + t.text() + "\n"
+            indent += " " * 4
         return res
 
     def text(self) -> str:
@@ -49,7 +49,7 @@ class HtmlTreeBranch:
 
         html body.main-section p#intro
         """
-        return ' '.join(t.text() for t in self.tags)
+        return " ".join(t.text() for t in self.tags)
 
 
 class Node:
@@ -68,16 +68,16 @@ class TagInfo:
         self.token = token
         self.words = [
             self.tag,
-            *('.' + s for s in classes),
-            *('#' + s for s in ids),
+            *("." + s for s in classes),
+            *("#" + s for s in ids),
         ]
 
     def text(self) -> str:
         s = self.tag
         if self.classes:
-            s += '.' + '.'.join(self.classes)
+            s += "." + ".".join(self.classes)
         if self.ids:
-            s += '#' + '#'.join(self.ids)
+            s += "#" + "#".join(self.ids)
         return s
 
 
@@ -110,20 +110,20 @@ def split_for_id_and_class(element: str) -> List[str]:
     # is split as ['red', 'black', '{{ a|b|c }}']
     outside_braces: bool = True
     lst = []
-    s = ''
+    s = ""
 
     for ch in element:
-        if ch == '{':
+        if ch == "{":
             outside_braces = False
-        if ch == '}':
+        if ch == "}":
             outside_braces = True
-        if ch == ' ' and outside_braces:
-            if not s == '':
+        if ch == " " and outside_braces:
+            if not s == "":
                 lst.append(s)
-            s = ''
+            s = ""
         else:
             s += ch
-    if not s == '':
+    if not s == "":
         lst.append(s)
 
     return lst
@@ -158,16 +158,16 @@ def html_tag_tree(text: str, fn: Optional[str] = None) -> Node:
 
     for token in tokens:
         # Add tokens to the Node tree first (conditionally).
-        if token.kind in ('html_start', 'html_singleton'):
+        if token.kind in ("html_start", "html_singleton"):
             parent = stack[-1]
             node = Node(token=token, parent=parent)
             parent.children.append(node)
 
         # Then update the stack to have the next node that
         # we will be appending to at the top.
-        if token.kind == 'html_start':
+        if token.kind == "html_start":
             stack.append(node)
-        elif token.kind == 'html_end':
+        elif token.kind == "html_end":
             stack.pop()
 
     return top_level
@@ -184,9 +184,9 @@ def build_id_dict(templates: List[str]) -> (Dict[str, List[str]]):
             list_tags = tokenize(text)
         except FormattedException as e:
             raise Exception(
-                f'''
+                f"""
                 fn: {fn}
-                {e}'''
+                {e}"""
             )
 
         for tag in list_tags:

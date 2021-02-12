@@ -22,7 +22,7 @@ class MockSession:
 class MockRequest(HttpRequest):
     def __init__(self, user: UserProfile) -> None:
         self.user = user
-        self.path = '/'
+        self.path = "/"
         self.method = "POST"
         self.META = {"REMOTE_ADDR": "127.0.0.1"}
         anchor = (
@@ -46,7 +46,7 @@ def profile_request(request: HttpRequest) -> HttpResponse:
     prof.enable()
     ret = get_messages_backend(request, request.user, apply_markdown=True)
     prof.disable()
-    with tempfile.NamedTemporaryFile(prefix='profile.data.', delete=False) as stats_file:
+    with tempfile.NamedTemporaryFile(prefix="profile.data.", delete=False) as stats_file:
         prof.dump_stats(stats_file.name)
         request_logger.process_response(request, ret)
         logging.info("Profiling data written to %s", stats_file.name)

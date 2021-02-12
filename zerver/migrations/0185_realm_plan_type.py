@@ -7,13 +7,13 @@ SELF_HOSTED = 1
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0184_rename_custom_field_types'),
+        ("zerver", "0184_rename_custom_field_types"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='plan_type',
+            model_name="realm",
+            name="plan_type",
             # Realm.SELF_HOSTED
             field=models.PositiveSmallIntegerField(default=SELF_HOSTED),
         ),

@@ -21,7 +21,7 @@ def bulk_create_users(
     Has some code based off of UserManage.create_user, but doesn't .save()
     """
     existing_users = frozenset(
-        UserProfile.objects.filter(realm=realm).values_list('email', flat=True)
+        UserProfile.objects.filter(realm=realm).values_list("email", flat=True)
     )
     users = sorted(user_raw for user_raw in users_raw if user_raw[0] not in existing_users)
 
@@ -54,7 +54,7 @@ def bulk_create_users(
 
         for user_profile in profiles_to_create:
             user_profile.email = get_display_email_address(user_profile)
-        UserProfile.objects.bulk_update(profiles_to_create, ['email'])
+        UserProfile.objects.bulk_update(profiles_to_create, ["email"])
 
     user_ids = {user.id for user in profiles_to_create}
 
@@ -119,18 +119,18 @@ def bulk_set_users_or_streams_recipient_fields(
         if result is not None:
             result.recipient = recipient
             objects_to_update.add(result)
-    model.objects.bulk_update(objects_to_update, ['recipient'])
+    model.objects.bulk_update(objects_to_update, ["recipient"])
 
 
 # This is only sed in populate_db, so doesn't really need tests
 def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:  # nocoverage
     existing_streams = {
-        name.lower() for name in Stream.objects.filter(realm=realm).values_list('name', flat=True)
+        name.lower() for name in Stream.objects.filter(realm=realm).values_list("name", flat=True)
     }
     streams_to_create: List[Stream] = []
     for name, options in stream_dict.items():
-        if 'history_public_to_subscribers' not in options:
-            options['history_public_to_subscribers'] = (
+        if "history_public_to_subscribers" not in options:
+            options["history_public_to_subscribers"] = (
                 not options.get("invite_only", False) and not realm.is_zephyr_mirror_realm
             )
         if name.lower() not in existing_streams:
@@ -161,9 +161,9 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
     Stream.objects.bulk_create(streams_to_create)
 
     recipients_to_create: List[Recipient] = []
-    for stream in Stream.objects.filter(realm=realm).values('id', 'name'):
-        if stream['name'].lower() not in existing_streams:
-            recipients_to_create.append(Recipient(type_id=stream['id'], type=Recipient.STREAM))
+    for stream in Stream.objects.filter(realm=realm).values("id", "name"):
+        if stream["name"].lower() not in existing_streams:
+            recipients_to_create.append(Recipient(type_id=stream["id"], type=Recipient.STREAM))
     Recipient.objects.bulk_create(recipients_to_create)
 
     bulk_set_users_or_streams_recipient_fields(Stream, streams_to_create, recipients_to_create)

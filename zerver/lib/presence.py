@@ -21,16 +21,16 @@ def get_status_dicts_for_rows(
     # here prevents us from having to assume the caller is playing nice.
     all_rows = sorted(
         all_rows,
-        key=lambda row: (row['user_profile__id'], row['timestamp']),
+        key=lambda row: (row["user_profile__id"], row["timestamp"]),
     )
 
     if slim_presence:
         # Stringify user_id here, since it's gonna be turned
         # into a string anyway by JSON, and it keeps mypy happy.
-        get_user_key = lambda row: str(row['user_profile__id'])
+        get_user_key = lambda row: str(row["user_profile__id"])
         get_user_info = get_modern_user_info
     else:
-        get_user_key = lambda row: row['user_profile__email']
+        get_user_key = lambda row: row["user_profile__email"]
         get_user_info = get_legacy_user_info
 
     user_statuses: Dict[str, Dict[str, Any]] = {}
@@ -51,14 +51,14 @@ def get_modern_user_info(
 
     active_timestamp = None
     for row in reversed(presence_rows):
-        if row['status'] == UserPresence.ACTIVE:
-            active_timestamp = datetime_to_timestamp(row['timestamp'])
+        if row["status"] == UserPresence.ACTIVE:
+            active_timestamp = datetime_to_timestamp(row["timestamp"])
             break
 
     idle_timestamp = None
     for row in reversed(presence_rows):
-        if row['status'] == UserPresence.IDLE:
-            idle_timestamp = datetime_to_timestamp(row['timestamp'])
+        if row["status"] == UserPresence.IDLE:
+            idle_timestamp = datetime_to_timestamp(row["timestamp"])
             break
 
     # Be stingy about bandwidth, and don't even include
@@ -67,10 +67,10 @@ def get_modern_user_info(
     result = {}
 
     if active_timestamp is not None:
-        result['active_timestamp'] = active_timestamp
+        result["active_timestamp"] = active_timestamp
 
     if idle_timestamp is not None:
-        result['idle_timestamp'] = idle_timestamp
+        result["idle_timestamp"] = idle_timestamp
 
     return result
 
@@ -83,12 +83,12 @@ def get_legacy_user_info(
     # including old versions of the mobile app.
     info_rows = []
     for row in presence_rows:
-        client_name = row['client__name']
-        status = UserPresence.status_to_string(row['status'])
-        dt = row['timestamp']
+        client_name = row["client__name"]
+        status = UserPresence.status_to_string(row["status"])
+        dt = row["timestamp"]
         timestamp = datetime_to_timestamp(dt)
-        push_enabled = row['user_profile__enable_offline_push_notifications']
-        has_push_devices = row['user_profile__id'] in mobile_user_ids
+        push_enabled = row["user_profile__enable_offline_push_notifications"]
+        has_push_devices = row["user_profile__id"] in mobile_user_ids
         pushable = push_enabled and has_push_devices
 
         info = dict(
@@ -106,17 +106,17 @@ def get_legacy_user_info(
 
     # The word "aggegrated" here is possibly misleading.
     # It's really just the most recent client's info.
-    result['aggregated'] = dict(
-        client=most_recent_info['client'],
-        status=most_recent_info['status'],
-        timestamp=most_recent_info['timestamp'],
+    result["aggregated"] = dict(
+        client=most_recent_info["client"],
+        status=most_recent_info["status"],
+        timestamp=most_recent_info["timestamp"],
     )
 
     # Build a dictionary of client -> info.  There should
     # only be one row per client, but to be on the safe side,
     # we always overwrite with rows that are later in our list.
     for info in info_rows:
-        result[info['client']] = info
+        result[info["client"]] = info
 
     return result
 
@@ -125,12 +125,12 @@ def get_presence_for_user(
     user_profile_id: int, slim_presence: bool = False
 ) -> Dict[str, Dict[str, Any]]:
     query = UserPresence.objects.filter(user_profile_id=user_profile_id).values(
-        'client__name',
-        'status',
-        'timestamp',
-        'user_profile__email',
-        'user_profile__id',
-        'user_profile__enable_offline_push_notifications',
+        "client__name",
+        "status",
+        "timestamp",
+        "user_profile__email",
+        "user_profile__id",
+        "user_profile__enable_offline_push_notifications",
     )
     presence_rows = list(query)
 
@@ -152,22 +152,22 @@ def get_status_dict_by_realm(
         user_profile__is_active=True,
         user_profile__is_bot=False,
     ).values(
-        'client__name',
-        'status',
-        'timestamp',
-        'user_profile__email',
-        'user_profile__id',
-        'user_profile__enable_offline_push_notifications',
+        "client__name",
+        "status",
+        "timestamp",
+        "user_profile__email",
+        "user_profile__id",
+        "user_profile__enable_offline_push_notifications",
     )
 
     presence_rows = list(query)
 
-    mobile_query = PushDeviceToken.objects.distinct('user_id').values_list(
-        'user_id',
+    mobile_query = PushDeviceToken.objects.distinct("user_id").values_list(
+        "user_id",
         flat=True,
     )
 
-    user_profile_ids = [presence_row['user_profile__id'] for presence_row in presence_rows]
+    user_profile_ids = [presence_row["user_profile__id"] for presence_row in presence_rows]
     if len(user_profile_ids) == 0:
         # This conditional is necessary because query_for_ids
         # throws an exception if passed an empty list.
@@ -180,7 +180,7 @@ def get_status_dict_by_realm(
     mobile_query = query_for_ids(
         query=mobile_query,
         user_ids=user_profile_ids,
-        field='user_id',
+        field="user_id",
     )
     mobile_user_ids = set(mobile_query)
 

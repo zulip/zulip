@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0199_userstatus'),
+        ("zerver", "0199_userstatus"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='preregistrationuser',
-            name='invited_as_admin',
+            model_name="preregistrationuser",
+            name="invited_as_admin",
         ),
     ]

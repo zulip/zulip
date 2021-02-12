@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0068_remove_realm_domain'),
+        ("zerver", "0068_remove_realm_domain"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realmauditlog',
-            name='extra_data',
+            model_name="realmauditlog",
+            name="extra_data",
             field=models.TextField(null=True),
         ),
     ]

@@ -148,7 +148,7 @@ def build_page_params_for_home_page_load(
             event_types=None,
             queue_id=None,
             client_gravatar=False,
-            user_avatar_url_field_optional=client_capabilities['user_avatar_url_field_optional'],
+            user_avatar_url_field_optional=client_capabilities["user_avatar_url_field_optional"],
             slim_presence=False,
             include_subscribers=False,
             include_streams=False,
@@ -160,7 +160,7 @@ def build_page_params_for_home_page_load(
 
     request_language = get_and_set_request_language(
         request,
-        register_ret['default_language'],
+        register_ret["default_language"],
         translation.get_language_from_path(request.path_info),
     )
 

@@ -51,7 +51,7 @@ strip_whitespace_left = re.compile(
 )
 
 regexes = [
-    r'{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
+    r"{{#tr .*?}}([\s\S]*?){{/tr}}",  # '.' doesn't match '\n' by default
     r'{{\s*t "(.*?)"\W*}}',
     r"{{\s*t '(.*?)'\W*}}",
     r'\(t "(.*?)"\)',
@@ -63,7 +63,7 @@ regexes = [
     r'i18n\.t\("(.*?)",\s*.*?[^,]\)',
 ]
 tags = [
-    ('err_', "error"),
+    ("err_", "error"),
 ]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
@@ -72,8 +72,8 @@ singleline_js_comment = re.compile("//.*?\n")
 
 
 def strip_whitespaces(src: str) -> str:
-    src = strip_whitespace_left.sub('\\1', src)
-    src = strip_whitespace_right.sub('\\1', src)
+    src = strip_whitespace_left.sub("\\1", src)
+    src = strip_whitespace_right.sub("\\1", src)
     return src
 
 
@@ -86,19 +86,19 @@ class Command(makemessages.Command):
     def add_arguments(self, parser: ArgumentParser) -> None:
         super().add_arguments(parser)
         parser.add_argument(
-            '--frontend-source',
-            default='static/templates',
-            help='Name of the Handlebars template directory',
+            "--frontend-source",
+            default="static/templates",
+            help="Name of the Handlebars template directory",
         )
         parser.add_argument(
-            '--frontend-output',
-            default='locale',
-            help='Name of the frontend messages output directory',
+            "--frontend-output",
+            default="locale",
+            help="Name of the frontend messages output directory",
         )
         parser.add_argument(
-            '--frontend-namespace',
-            default='translations.json',
-            help='Namespace of the frontend locale file',
+            "--frontend-namespace",
+            default="translations.json",
+            help="Namespace of the frontend locale file",
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -135,13 +135,13 @@ class Command(makemessages.Command):
         # Extend the regular expressions that are used to detect
         # translation blocks with an "OR jinja-syntax" clause.
         template.endblock_re = re.compile(
-            template.endblock_re.pattern + '|' + r"""^-?\s*endtrans\s*-?$"""
+            template.endblock_re.pattern + "|" + r"""^-?\s*endtrans\s*-?$"""
         )
         template.block_re = re.compile(
-            template.block_re.pattern + '|' + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)"""
+            template.block_re.pattern + "|" + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)"""
         )
         template.plural_re = re.compile(
-            template.plural_re.pattern + '|' + r"""^-?\s*pluralize(?:\s+.+|-?$)"""
+            template.plural_re.pattern + "|" + r"""^-?\s*pluralize(?:\s+.+|-?$)"""
         )
         template.constant_re = re.compile(r"""_\(((?:".*?")|(?:'.*?')).*\)""")
 
@@ -152,10 +152,10 @@ class Command(makemessages.Command):
         template.templatize = my_templatize
 
         try:
-            ignore_patterns = options.get('ignore_patterns', [])
-            ignore_patterns.append('docs/*')
-            ignore_patterns.append('var/*')
-            options['ignore_patterns'] = ignore_patterns
+            ignore_patterns = options.get("ignore_patterns", [])
+            ignore_patterns.append("docs/*")
+            ignore_patterns.append("var/*")
+            options["ignore_patterns"] = ignore_patterns
             super().handle(*args, **options)
         finally:
             template.endblock_re = old_endblock_re
@@ -168,17 +168,17 @@ class Command(makemessages.Command):
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
                 match = match.strip()
-                match = ' '.join(line.strip() for line in match.splitlines())
-                match = match.replace('\n', '\\n')
+                match = " ".join(line.strip() for line in match.splitlines())
+                match = match.replace("\n", "\\n")
                 translation_strings.append(match)
 
         return translation_strings
 
     def ignore_javascript_comments(self, data: str) -> str:
         # Removes multi line comments.
-        data = multiline_js_comment.sub('', data)
+        data = multiline_js_comment.sub("", data)
         # Removes single line (//) comments.
-        data = singleline_js_comment.sub('', data)
+        data = singleline_js_comment.sub("", data)
         return data
 
     def get_translation_strings(self) -> List[str]:
@@ -187,7 +187,7 @@ class Command(makemessages.Command):
 
         for dirpath, dirnames, filenames in os.walk(dirname):
             for filename in [f for f in filenames if f.endswith(".hbs")]:
-                if filename.startswith('.'):
+                if filename.startswith("."):
                     continue
                 with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
@@ -196,7 +196,7 @@ class Command(makemessages.Command):
             os.walk("static/js"), os.walk("static/shared/js")
         ):
             for filename in [f for f in filenames if f.endswith(".js") or f.endswith(".ts")]:
-                if filename.startswith('.'):
+                if filename.startswith("."):
                     continue
                 with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
@@ -216,7 +216,7 @@ class Command(makemessages.Command):
         exclude = self.frontend_exclude
         process_all = self.frontend_all
 
-        paths = glob.glob(f'{self.default_locale_path}/*')
+        paths = glob.glob(f"{self.default_locale_path}/*")
         all_locales = [os.path.basename(path) for path in paths if os.path.isdir(path)]
 
         # Account for excluded locales
@@ -247,17 +247,17 @@ class Command(makemessages.Command):
         """
         new_strings = {}  # Dict[str, str]
         for k in translation_strings:
-            k = k.replace('\\n', '\n')
-            if locale == 'en':
+            k = k.replace("\\n", "\n")
+            if locale == "en":
                 # For English language, translation is equal to the key.
                 new_strings[k] = old_strings.get(k, k)
             else:
                 new_strings[k] = old_strings.get(k, "")
 
-        plurals = {k: v for k, v in old_strings.items() if k.endswith('_plural')}
+        plurals = {k: v for k, v in old_strings.items() if k.endswith("_plural")}
         for plural_key, value in plurals.items():
-            components = plural_key.split('_')
-            singular_key = '_'.join(components[:-1])
+            components = plural_key.split("_")
+            singular_key = "_".join(components[:-1])
             if singular_key in new_strings:
                 new_strings[plural_key] = value
 
@@ -276,5 +276,5 @@ class Command(makemessages.Command):
                 k: v
                 for k, v in self.get_new_strings(old_strings, translation_strings, locale).items()
             }
-            with open(output_path, 'w') as writer:
+            with open(output_path, "w") as writer:
                 json.dump(new_strings, writer, indent=2, sort_keys=True)

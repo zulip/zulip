@@ -39,7 +39,7 @@ emoji_names: Set[str] = set()
 
 def load_data(data_file: str) -> List[List[str]]:
     emoji_name_data: List[List[str]] = []
-    with open(data_file, newline='') as fp:
+    with open(data_file, newline="") as fp:
         data = csv.reader(fp)
         for row in data:
             emoji_name_data.append(row)
@@ -58,7 +58,7 @@ def check_valid_emoji_name(emoji_name: str) -> None:
 
 
 def check_emoji_names(canonical_name: str, aliases: List[str]) -> None:
-    if canonical_name == 'X':
+    if canonical_name == "X":
         return
     names_to_check = [canonical_name, *aliases]
     for name in names_to_check:
@@ -67,24 +67,24 @@ def check_emoji_names(canonical_name: str, aliases: List[str]) -> None:
 
 
 def prepare_explanation(explanation: str) -> str:
-    if explanation == '':
-        return ''
+    if explanation == "":
+        return ""
 
     wrapper_config: Dict[str, Any] = {
-        'width': 80,
-        'break_long_words': False,
-        'break_on_hyphens': False,
-        'initial_indent': '\n    # ',
-        'subsequent_indent': '\n    # ',
+        "width": 80,
+        "break_long_words": False,
+        "break_on_hyphens": False,
+        "initial_indent": "\n    # ",
+        "subsequent_indent": "\n    # ",
     }
     wrapped_lines = textwrap.wrap(explanation.strip(), **wrapper_config)
-    return ''.join(wrapped_lines)
+    return "".join(wrapped_lines)
 
 
 def prepare_aliases(aliases: str) -> List[str]:
-    if aliases == '':
+    if aliases == "":
         return []
-    return [alias.strip() for alias in aliases.split(',')]
+    return [alias.strip() for alias in aliases.split(",")]
 
 
 def main() -> None:
@@ -125,21 +125,21 @@ def main() -> None:
         check_emoji_names(canonical_name, extracted_aliases)
 
         context = {
-            'emoji_code': emoji_code,
-            'canonical_name': canonical_name,
-            'aliases': extracted_aliases,
-            'explanation': formatted_explanation,
+            "emoji_code": emoji_code,
+            "canonical_name": canonical_name,
+            "aliases": extracted_aliases,
+            "explanation": formatted_explanation,
         }
-        if canonical_name == 'X':
+        if canonical_name == "X":
             emoji_entry = INACTIVE_ENTRY % dict(**context)
         else:
             emoji_entry = ACTIVE_ENTRY % dict(**context)
 
         emoji_entries += emoji_entry
 
-    with open(args.output_file_path, 'w') as fp:
-        fp.write(FILE_TEMPLATE % {'emoji_entries': emoji_entries})
+    with open(args.output_file_path, "w") as fp:
+        fp.write(FILE_TEMPLATE % {"emoji_entries": emoji_entries})
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

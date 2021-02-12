@@ -30,37 +30,37 @@ from zerver.models import UserProfile, get_system_bot, get_user_profile_by_email
 class AppsTest(ZulipTestCase):
     def test_cache_gets_flushed(self) -> None:
         with self.assertLogs(level="INFO") as m:
-            with patch('zerver.apps.cache.clear') as mock:
+            with patch("zerver.apps.cache.clear") as mock:
                 # The argument to flush_cache doesn't matter
                 flush_cache(Mock())
                 mock.assert_called_once()
-            self.assertEqual(m.output, ['INFO:root:Clearing memcached cache after migrations'])
+            self.assertEqual(m.output, ["INFO:root:Clearing memcached cache after migrations"])
             self.assertEqual(len(m.output), 1)
 
 
 class CacheKeyValidationTest(ZulipTestCase):
     def test_validate_cache_key(self) -> None:
-        validate_cache_key('nice_Ascii:string!~')
+        validate_cache_key("nice_Ascii:string!~")
         with self.assertRaises(InvalidCacheKeyException):
-            validate_cache_key('utf8_character:ą')
+            validate_cache_key("utf8_character:ą")
         with self.assertRaises(InvalidCacheKeyException):
-            validate_cache_key('new_line_character:\n')
+            validate_cache_key("new_line_character:\n")
         with self.assertRaises(InvalidCacheKeyException):
-            validate_cache_key('control_character:\r')
+            validate_cache_key("control_character:\r")
         with self.assertRaises(InvalidCacheKeyException):
-            validate_cache_key('whitespace_character: ')
+            validate_cache_key("whitespace_character: ")
         with self.assertRaises(InvalidCacheKeyException):
-            validate_cache_key('too_long:' + 'X' * MEMCACHED_MAX_KEY_LENGTH)
+            validate_cache_key("too_long:" + "X" * MEMCACHED_MAX_KEY_LENGTH)
 
         with self.assertRaises(InvalidCacheKeyException):
             # validate_cache_key does validation on a key with the
             # KEY_PREFIX appended to the start, so even though we're
             # passing something "short enough" here, it becomes too
             # long after appending KEY_PREFIX.
-            validate_cache_key('X' * (MEMCACHED_MAX_KEY_LENGTH - 2))
+            validate_cache_key("X" * (MEMCACHED_MAX_KEY_LENGTH - 2))
 
     def test_cache_functions_raise_exception(self) -> None:
-        invalid_key = 'invalid_character:\n'
+        invalid_key = "invalid_character:\n"
         good_key = "good_key"
         with self.assertRaises(InvalidCacheKeyException):
             cache_get(invalid_key)
@@ -80,14 +80,14 @@ class CacheKeyValidationTest(ZulipTestCase):
 class CacheWithKeyDecoratorTest(ZulipTestCase):
     def test_cache_with_key_invalid_character(self) -> None:
         def invalid_characters_cache_key_function(user_id: int) -> str:
-            return f'CacheWithKeyDecoratorTest:invalid_character:ą:{user_id}'
+            return f"CacheWithKeyDecoratorTest:invalid_character:ą:{user_id}"
 
         @cache_with_key(invalid_characters_cache_key_function, timeout=1000)
         def get_user_function_with_bad_cache_keys(user_id: int) -> UserProfile:
             return UserProfile.objects.get(id=user_id)
 
-        hamlet = self.example_user('hamlet')
-        with patch('zerver.lib.cache.cache_set') as mock_set, self.assertLogs(level="WARNING") as m:
+        hamlet = self.example_user("hamlet")
+        with patch("zerver.lib.cache.cache_set") as mock_set, self.assertLogs(level="WARNING") as m:
             with queries_captured() as queries:
                 result = get_user_function_with_bad_cache_keys(hamlet.id)
 
@@ -98,15 +98,15 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
     def test_cache_with_key_key_too_long(self) -> None:
         def too_long_cache_key_function(user_id: int) -> str:
-            return 'CacheWithKeyDecoratorTest:very_long_key:{}:{}'.format('a' * 250, user_id)
+            return "CacheWithKeyDecoratorTest:very_long_key:{}:{}".format("a" * 250, user_id)
 
         @cache_with_key(too_long_cache_key_function, timeout=1000)
         def get_user_function_with_bad_cache_keys(user_id: int) -> UserProfile:
             return UserProfile.objects.get(id=user_id)
 
-        hamlet = self.example_user('hamlet')
+        hamlet = self.example_user("hamlet")
 
-        with patch('zerver.lib.cache.cache_set') as mock_set, self.assertLogs(level="WARNING") as m:
+        with patch("zerver.lib.cache.cache_set") as mock_set, self.assertLogs(level="WARNING") as m:
             with queries_captured() as queries:
                 result = get_user_function_with_bad_cache_keys(hamlet.id)
 
@@ -117,13 +117,13 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
     def test_cache_with_key_good_key(self) -> None:
         def good_cache_key_function(user_id: int) -> str:
-            return f'CacheWithKeyDecoratorTest:good_cache_key:{user_id}'
+            return f"CacheWithKeyDecoratorTest:good_cache_key:{user_id}"
 
         @cache_with_key(good_cache_key_function, timeout=1000)
         def get_user_function_with_good_cache_keys(user_id: int) -> UserProfile:
             return UserProfile.objects.get(id=user_id)
 
-        hamlet = self.example_user('hamlet')
+        hamlet = self.example_user("hamlet")
 
         with queries_captured() as queries:
             result = get_user_function_with_good_cache_keys(hamlet.id)
@@ -141,7 +141,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
     def test_cache_with_key_none_values(self) -> None:
         def cache_key_function(user_id: int) -> str:
-            return f'CacheWithKeyDecoratorTest:test_cache_with_key_none_values:{user_id}'
+            return f"CacheWithKeyDecoratorTest:test_cache_with_key_none_values:{user_id}"
 
         @cache_with_key(cache_key_function, timeout=1000)
         def get_user_function_can_return_none(user_id: int) -> Optional[UserProfile]:
@@ -172,13 +172,13 @@ class GetCacheWithKeyDecoratorTest(ZulipTestCase):
         # we got the result from calling the function (None)
 
         def good_cache_key_function(user_id: int) -> str:
-            return f'CacheWithKeyDecoratorTest:good_cache_key:{user_id}'
+            return f"CacheWithKeyDecoratorTest:good_cache_key:{user_id}"
 
         @get_cache_with_key(good_cache_key_function)
         def get_user_function_with_good_cache_keys(user_id: int) -> Any:  # nocoverage
             return
 
-        hamlet = self.example_user('hamlet')
+        hamlet = self.example_user("hamlet")
         with self.assertRaises(NotFoundInCache):
             get_user_function_with_good_cache_keys(hamlet.id)
 
@@ -188,14 +188,14 @@ class GetCacheWithKeyDecoratorTest(ZulipTestCase):
 
     def test_get_cache_with_bad_key(self) -> None:
         def bad_cache_key_function(user_id: int) -> str:
-            return f'CacheWithKeyDecoratorTest:invalid_character:ą:{user_id}'
+            return f"CacheWithKeyDecoratorTest:invalid_character:ą:{user_id}"
 
         @get_cache_with_key(bad_cache_key_function)
         def get_user_function_with_bad_cache_keys(user_id: int) -> Any:  # nocoverage
             return
 
-        hamlet = self.example_user('hamlet')
-        with self.assertLogs(level='WARNING') as m:
+        hamlet = self.example_user("hamlet")
+        with self.assertLogs(level="WARNING") as m:
             with self.assertRaises(NotFoundInCache):
                 get_user_function_with_bad_cache_keys(hamlet.id)
             self.assertEqual(len(m.output), 1)
@@ -219,7 +219,7 @@ class SafeCacheFunctionsTest(ZulipTestCase):
         with self.assertLogs(level="WARNING") as m:
             safe_cache_set_many(items)
             self.assertIn(
-                'WARNING:root:Invalid cache key used: [\'SafeFunctionsTest:\\nbadkey1\', \'SafeFunctionsTest:\\nbadkey2\']',
+                "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
                 m.output[0],
             )
             self.assertEqual(len(m.output), 1)
@@ -228,7 +228,7 @@ class SafeCacheFunctionsTest(ZulipTestCase):
             result = safe_cache_get_many(list(items.keys()))
             self.assertEqual(result, {})
             self.assertIn(
-                'WARNING:root:Invalid cache key used: [\'SafeFunctionsTest:\\nbadkey1\', \'SafeFunctionsTest:\\nbadkey2\']',
+                "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
                 m.output[0],
             )
             self.assertEqual(len(m.output), 1)
@@ -241,7 +241,7 @@ class SafeCacheFunctionsTest(ZulipTestCase):
         with self.assertLogs(level="WARNING") as m:
             safe_cache_set_many(items)
             self.assertIn(
-                'WARNING:root:Invalid cache key used: [\'SafeFunctionsTest:\\nbadkey1\', \'SafeFunctionsTest:\\nbadkey2\']',
+                "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
                 m.output[0],
             )
             self.assertEqual(len(m.output), 1)
@@ -250,7 +250,7 @@ class SafeCacheFunctionsTest(ZulipTestCase):
             result = safe_cache_get_many(list(items.keys()))
             self.assertEqual(result, good_items)
             self.assertIn(
-                'WARNING:root:Invalid cache key used: [\'SafeFunctionsTest:\\nbadkey1\', \'SafeFunctionsTest:\\nbadkey2\']',
+                "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
                 m.output[0],
             )
             self.assertEqual(len(m.output), 1)
@@ -301,9 +301,9 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             id_fetcher=get_user_email,
         )
         self.assertEqual(result, {hamlet.delivery_email: hamlet})
-        with self.assertLogs(level='INFO') as info_log:
+        with self.assertLogs(level="INFO") as info_log:
             flush_cache(Mock())
-        self.assertEqual(info_log.output, ['INFO:root:Clearing memcached cache after migrations'])
+        self.assertEqual(info_log.output, ["INFO:root:Clearing memcached cache after migrations"])
 
         # With the cache flushed, the query_function should get called:
         with self.assertRaises(CustomException):

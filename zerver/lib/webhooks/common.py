@@ -48,7 +48,7 @@ def notify_bot_owner_about_invalid_json(
 
 class MissingHTTPEventHeader(JsonableError):
     code = ErrorCode.MISSING_HTTP_EVENT_HEADER
-    data_fields = ['header']
+    data_fields = ["header"]
 
     def __init__(self, header: str) -> None:
         self.header = header
@@ -163,7 +163,7 @@ def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict
     method in the headers.py file for the integration."""
 
     def fixture_to_headers(filename: str) -> Dict[str, str]:
-        if '__' in filename:
+        if "__" in filename:
             event_type = filename.split("__")[0]
         else:
             event_type = filename

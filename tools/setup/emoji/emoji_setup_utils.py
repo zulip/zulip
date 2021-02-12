@@ -4,7 +4,7 @@ from collections import defaultdict
 from typing import Any, Dict, List
 
 # Emojisets that we currently support.
-EMOJISETS = ['google', 'twitter']
+EMOJISETS = ["google", "twitter"]
 
 # Some image files in the old emoji farm had a different name than in the new emoji
 # farm. `remapped_emojis` is a map that contains a mapping of their name in the old
@@ -36,18 +36,18 @@ REMAPPED_EMOJIS = {
 # Emoticons and which emoji they should become. Duplicate emoji are allowed.
 # Changes here should be mimicked in `templates/zerver/help/enable-emoticon-translations.md`.
 EMOTICON_CONVERSIONS = {
-    ':)': ':smile:',
-    '(:': ':smile:',
-    ':(': ':frown:',
-    '<3': ':heart:',
-    ':|': ':neutral:',
-    ':/': ':confused:',
-    ';)': ':wink:',
-    ':D': ':grinning:',
-    ':o': ':open_mouth:',
-    ':O': ':open_mouth:',
-    ':p': ':stuck_out_tongue:',
-    ':P': ':stuck_out_tongue:',
+    ":)": ":smile:",
+    "(:": ":smile:",
+    ":(": ":frown:",
+    "<3": ":heart:",
+    ":|": ":neutral:",
+    ":/": ":confused:",
+    ";)": ":wink:",
+    ":D": ":grinning:",
+    ":o": ":open_mouth:",
+    ":O": ":open_mouth:",
+    ":p": ":stuck_out_tongue:",
+    ":P": ":stuck_out_tongue:",
 }
 
 
@@ -104,7 +104,7 @@ def generate_emoji_catalog(
 # the emoji sets so that we can switch emoji sets seamlessly.
 def emoji_is_universal(emoji_dict: Dict[str, Any]) -> bool:
     for emoji_set in EMOJISETS:
-        if not emoji_dict['has_img_' + emoji_set]:
+        if not emoji_dict["has_img_" + emoji_set]:
             return False
     return True
 

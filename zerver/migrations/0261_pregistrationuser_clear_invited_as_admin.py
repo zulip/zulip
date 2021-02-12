@@ -34,7 +34,7 @@ def clear_preregistrationuser_invited_as_admin(
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0260_missed_message_addresses_from_redis_to_db'),
+        ("zerver", "0260_missed_message_addresses_from_redis_to_db"),
     ]
 
     operations = [

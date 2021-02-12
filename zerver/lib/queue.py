@@ -28,7 +28,7 @@ class SimpleQueueClient:
         # Disable RabbitMQ heartbeats by default because BlockingConnection can't process them
         rabbitmq_heartbeat: Optional[int] = 0,
     ) -> None:
-        self.log = logging.getLogger('zulip.queue')
+        self.log = logging.getLogger("zulip.queue")
         self.queues: Set[str] = set()
         self.channel: Optional[BlockingChannel] = None
         self.consumers: Dict[str, Set[Consumer]] = defaultdict(set)
@@ -40,7 +40,7 @@ class SimpleQueueClient:
         start = time.time()
         self.connection = pika.BlockingConnection(self._get_parameters())
         self.channel = self.connection.channel()
-        self.log.info(f'SimpleQueueClient connected (connecting took {time.time() - start:.3f}s)')
+        self.log.info(f"SimpleQueueClient connected (connecting took {time.time() - start:.3f}s)")
 
     def _reconnect(self) -> None:
         self.connection = None
@@ -119,7 +119,7 @@ class SimpleQueueClient:
     def publish(self, queue_name: str, body: bytes) -> None:
         def do_publish(channel: BlockingChannel) -> None:
             channel.basic_publish(
-                exchange='',
+                exchange="",
                 routing_key=queue_name,
                 properties=pika.BasicProperties(delivery_mode=2),
                 body=body,
@@ -292,7 +292,7 @@ class TornadoQueueClient(SimpleQueueClient):
         for callback in self._on_open_cbs:
             callback(channel)
         self._reconnect_consumer_callbacks()
-        self.log.info('TornadoQueueClient connected')
+        self.log.info("TornadoQueueClient connected")
 
     def ensure_queue(self, queue_name: str, callback: Callable[[BlockingChannel], None]) -> None:
         def finish(frame: Any) -> None:
@@ -390,10 +390,10 @@ def queue_json_publish(
 def retry_event(
     queue_name: str, event: Dict[str, Any], failure_processor: Callable[[Dict[str, Any]], None]
 ) -> None:
-    if 'failed_tries' not in event:
-        event['failed_tries'] = 0
-    event['failed_tries'] += 1
-    if event['failed_tries'] > MAX_REQUEST_RETRIES:
+    if "failed_tries" not in event:
+        event["failed_tries"] = 0
+    event["failed_tries"] += 1
+    if event["failed_tries"] > MAX_REQUEST_RETRIES:
         failure_processor(event)
     else:
         queue_json_publish(queue_name, event, lambda x: None)

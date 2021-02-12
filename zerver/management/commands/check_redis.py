@@ -16,7 +16,7 @@ class Command(BaseCommand):
     Usage: ./manage.py [--trim] check_redis"""
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('-t', '--trim', action='store_true', help="Actually trim excess")
+        parser.add_argument("-t", "--trim", action="store_true", help="Actually trim excess")
 
     def _check_within_range(
         self,
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         count_func: Callable[[], int],
         trim_func: Optional[Callable[[str, int], object]] = None,
     ) -> None:
-        user_id = int(key.split(':')[1])
+        user_id = int(key.split(":")[1])
         user = get_user_profile_by_id(user_id)
         entity = RateLimitedUser(user)
         max_calls = entity.max_api_calls()
@@ -56,7 +56,7 @@ than max_api_calls! (trying to trim) %s %s",
         trim_func: Optional[Callable[[str, int], object]] = lambda key, max_calls: client.ltrim(
             key, 0, max_calls - 1
         )
-        if not options['trim']:
+        if not options["trim"]:
             trim_func = None
 
         lists = client.keys(wildcard_list)

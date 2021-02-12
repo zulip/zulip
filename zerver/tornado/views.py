@@ -22,7 +22,7 @@ from zerver.tornado.handlers import AsyncDjangoHandler
 
 @internal_notify_view(True)
 def notify(request: HttpRequest) -> HttpResponse:
-    process_notification(orjson.loads(request.POST['data']))
+    process_notification(orjson.loads(request.POST["data"]))
     return json_success()
 
 
@@ -35,7 +35,7 @@ def cleanup_event_queue(
         raise BadEventQueueIdError(queue_id)
     if user_profile.id != client.user_profile_id:
         return json_error(_("You are not authorized to access this queue"))
-    request._log_data['extra'] = f"[{queue_id}]"
+    request._log_data["extra"] = f"[{queue_id}]"
     client.cleanup()
     return json_success()
 
@@ -116,7 +116,7 @@ def get_events_backend(
     )
 
     if queue_id is None:
-        events_query['new_queue_data'] = dict(
+        events_query["new_queue_data"] = dict(
             user_profile_id=user_profile.id,
             realm_id=user_profile.realm_id,
             event_types=event_types,
@@ -133,7 +133,7 @@ def get_events_backend(
 
     result = fetch_events(events_query)
     if "extra_log_data" in result:
-        request._log_data['extra'] = result["extra_log_data"]
+        request._log_data["extra"] = result["extra_log_data"]
 
     if result["type"] == "async":
         # Mark this response with .asynchronous; this will result in

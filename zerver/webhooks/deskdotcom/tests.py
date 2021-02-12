@@ -12,9 +12,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class DeskDotComHookTests(WebhookTestCase):
-    STREAM_NAME = 'deskdotcom'
+    STREAM_NAME = "deskdotcom"
     URL_TEMPLATE = "/api/v1/external/deskdotcom?stream={stream}"
-    FIXTURE_DIR_NAME = 'deskdotcom'
+    FIXTURE_DIR_NAME = "deskdotcom"
 
     def test_static_text_message(self) -> None:
 
@@ -23,7 +23,7 @@ class DeskDotComHookTests(WebhookTestCase):
 
         self.api_stream_message(
             self.test_user,
-            'static_text',
+            "static_text",
             expected_topic,
             expected_message,
             content_type="application/x-www-form-urlencoded",
@@ -39,7 +39,7 @@ class DeskDotComHookTests(WebhookTestCase):
 
         self.api_stream_message(
             self.test_user,
-            'case_updated',
+            "case_updated",
             expected_topic,
             expected_message,
             content_type="application/x-www-form-urlencoded",
@@ -56,7 +56,7 @@ class DeskDotComHookTests(WebhookTestCase):
 
         self.api_stream_message(
             self.test_user,
-            'unicode_text_italian',
+            "unicode_text_italian",
             expected_topic,
             expected_message,
             content_type="application/x-www-form-urlencoded",
@@ -73,7 +73,7 @@ class DeskDotComHookTests(WebhookTestCase):
 
         self.api_stream_message(
             self.test_user,
-            'unicode_text_japanese',
+            "unicode_text_japanese",
             expected_topic,
             expected_message,
             content_type="application/x-www-form-urlencoded",

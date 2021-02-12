@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0124_stream_enable_notifications'),
+        ("zerver", "0124_stream_enable_notifications"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='max_invites',
+            model_name="realm",
+            name="max_invites",
             field=models.IntegerField(default=100),
         ),
     ]

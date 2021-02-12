@@ -28,7 +28,7 @@ def get_time(payload: Dict[str, Any]) -> Any:
 def api_beeminder_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     goal_name = payload["goal"]["slug"]
@@ -37,11 +37,11 @@ def api_beeminder_webhook(
     time_remain = get_time(payload)  # time in hours
     # To show user's probable reaction by looking at pledge amount
     if pledge > 0:
-        expression = ':worried:'
+        expression = ":worried:"
     else:
-        expression = ':relieved:'
+        expression = ":relieved:"
 
-    topic = 'beekeeper'
+    topic = "beekeeper"
     body = MESSAGE_TEMPLATE.format(
         goal_name=goal_name,
         time=time_remain,

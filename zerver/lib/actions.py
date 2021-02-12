@@ -286,7 +286,7 @@ STREAM_ASSIGNMENT_COLORS = [
 
 
 def subscriber_info(user_id: int) -> Dict[str, Any]:
-    return {'id': user_id, 'flags': ['read']}
+    return {"id": user_id, "flags": ["read"]}
 
 
 def can_access_stream_user_ids(stream: Stream) -> Set[int]:
@@ -306,7 +306,7 @@ def can_access_stream_user_ids(stream: Stream) -> Set[int]:
 def private_stream_user_ids(stream_id: int) -> Set[int]:
     # TODO: Find similar queries elsewhere and de-duplicate this code.
     subscriptions = get_active_subscriptions_for_stream_id(stream_id)
-    return {sub['user_profile_id'] for sub in subscriptions.values('user_profile_id')}
+    return {sub["user_profile_id"] for sub in subscriptions.values("user_profile_id")}
 
 
 def public_stream_user_ids(stream: Stream) -> Set[int]:
@@ -314,7 +314,7 @@ def public_stream_user_ids(stream: Stream) -> Set[int]:
         user_profile__role=UserProfile.ROLE_GUEST
     )
     guest_subscriptions = {
-        sub['user_profile_id'] for sub in guest_subscriptions.values('user_profile_id')
+        sub["user_profile_id"] for sub in guest_subscriptions.values("user_profile_id")
     }
     return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions
 
@@ -347,10 +347,10 @@ def realm_user_count_by_role(realm: Realm) -> Dict[str, Any]:
     }
     for value_dict in list(
         UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True)
-        .values('role')
-        .annotate(Count('role'))
+        .values("role")
+        .annotate(Count("role"))
     ):
-        human_counts[str(value_dict['role'])] = value_dict['role__count']
+        human_counts[str(value_dict["role"])] = value_dict["role__count"]
     bot_count = UserProfile.objects.filter(realm=realm, is_bot=True, is_active=True).count()
     return {
         RealmAuditLog.ROLE_COUNT_HUMANS: human_counts,
@@ -419,7 +419,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
         recipient_id__in=recipient_ids, date_sent__gt=one_week_ago
     ).order_by("-id")
     message_ids_to_use = list(
-        reversed(recent_messages.values_list('id', flat=True)[0:ONBOARDING_TOTAL_MESSAGES])
+        reversed(recent_messages.values_list("id", flat=True)[0:ONBOARDING_TOTAL_MESSAGES])
     )
     if len(message_ids_to_use) == 0:
         return
@@ -465,7 +465,7 @@ def process_new_human_user(
     mit_beta_user = realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         prereg_user.status = confirmation_settings.STATUS_ACTIVE
-        prereg_user.save(update_fields=['status'])
+        prereg_user.save(update_fields=["status"])
         streams = prereg_user.streams.all()
         acting_user: Optional[UserProfile] = prereg_user.referred_by
     else:
@@ -579,7 +579,7 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
     # The default bots don't have an owner. So don't
     # set the owner key while reactivating them.
     if user_profile.bot_owner is not None:
-        bot['owner_id'] = user_profile.bot_owner.id
+        bot["owner_id"] = user_profile.bot_owner.id
 
     return dict(type="realm_bot", op="add", bot=bot)
 
@@ -653,7 +653,7 @@ def do_create_user(
     )
     do_increment_logging_stat(
         user_profile.realm,
-        COUNT_STATS['active_users_log:is_bot:day'],
+        COUNT_STATS["active_users_log:is_bot:day"],
         user_profile.is_bot,
         event_time,
     )
@@ -698,7 +698,7 @@ def do_activate_user(user_profile: UserProfile, acting_user: Optional[UserProfil
     )
     do_increment_logging_stat(
         user_profile.realm,
-        COUNT_STATS['active_users_log:is_bot:day'],
+        COUNT_STATS["active_users_log:is_bot:day"],
         user_profile.is_bot,
         event_time,
     )
@@ -731,7 +731,7 @@ def do_reactivate_user(
     )
     do_increment_logging_stat(
         user_profile.realm,
-        COUNT_STATS['active_users_log:is_bot:day'],
+        COUNT_STATS["active_users_log:is_bot:day"],
         user_profile.is_bot,
         event_time,
     )
@@ -757,15 +757,15 @@ def do_set_realm_property(
     property_type = Realm.property_types[name]
     assert isinstance(
         value, property_type
-    ), f'Cannot update {name}: {value} is not an instance of {property_type}'
+    ), f"Cannot update {name}: {value} is not an instance of {property_type}"
 
     old_value = getattr(realm, name)
     setattr(realm, name, value)
     realm.save(update_fields=[name])
 
     event = dict(
-        type='realm',
-        op='update',
+        type="realm",
+        op="update",
         property=name,
         value=value,
     )
@@ -781,7 +781,7 @@ def do_set_realm_property(
             {
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: value,
-                'property': name,
+                "property": name,
             }
         ).decode(),
     )
@@ -799,7 +799,7 @@ def do_set_realm_property(
             user_profile.email = get_display_email_address(user_profile)
             # TODO: Design a bulk event for this or force-reload all clients
             send_user_email_update_event(user_profile)
-        UserProfile.objects.bulk_update(user_profiles, ['email'])
+        UserProfile.objects.bulk_update(user_profiles, ["email"])
 
         for user_profile in user_profiles:
             flush_user_profile(sender=UserProfile, instance=user_profile)
@@ -812,7 +812,7 @@ def do_set_realm_authentication_methods(
     for key, value in list(authentication_methods.items()):
         index = getattr(realm.authentication_methods, key).number
         realm.authentication_methods.set_bit(index, int(value))
-    realm.save(update_fields=['authentication_methods'])
+    realm.save(update_fields=["authentication_methods"])
     updated_value = realm.authentication_methods_dict()
     RealmAuditLog.objects.create(
         realm=realm,
@@ -823,14 +823,14 @@ def do_set_realm_authentication_methods(
             {
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: updated_value,
-                'property': 'authentication_methods',
+                "property": "authentication_methods",
             }
         ).decode(),
     )
     event = dict(
         type="realm",
         op="update_dict",
-        property='default',
+        property="default",
         data=dict(authentication_methods=updated_value),
     )
     send_event(realm, event, active_user_ids(realm.id))
@@ -872,7 +872,7 @@ def do_set_realm_message_editing(
                 {
                     RealmAuditLog.OLD_VALUE: old_values[updated_property],
                     RealmAuditLog.NEW_VALUE: updated_value,
-                    'property': updated_property,
+                    "property": updated_property,
                 }
             ).decode(),
         )
@@ -895,7 +895,7 @@ def do_set_realm_notifications_stream(
 ) -> None:
     old_value = realm.notifications_stream_id
     realm.notifications_stream = stream
-    realm.save(update_fields=['notifications_stream'])
+    realm.save(update_fields=["notifications_stream"])
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -907,7 +907,7 @@ def do_set_realm_notifications_stream(
             {
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: stream_id,
-                'property': 'notifications_stream',
+                "property": "notifications_stream",
             }
         ).decode(),
     )
@@ -929,7 +929,7 @@ def do_set_realm_signup_notifications_stream(
 ) -> None:
     old_value = realm.signup_notifications_stream_id
     realm.signup_notifications_stream = stream
-    realm.save(update_fields=['signup_notifications_stream'])
+    realm.save(update_fields=["signup_notifications_stream"])
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -941,7 +941,7 @@ def do_set_realm_signup_notifications_stream(
             {
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: stream_id,
-                'property': 'signup_notifications_stream',
+                "property": "signup_notifications_stream",
             }
         ).decode(),
     )
@@ -1071,7 +1071,7 @@ def do_delete_user(user_profile: UserProfile) -> None:
     subscribed_huddle_recipient_ids = set(
         Subscription.objects.filter(
             user_profile=user_profile, recipient__type=Recipient.HUDDLE
-        ).values_list('recipient_id', flat=True)
+        ).values_list("recipient_id", flat=True)
     )
     user_id = user_profile.id
     realm = user_profile.realm
@@ -1132,7 +1132,7 @@ def do_deactivate_user(
     )
     do_increment_logging_stat(
         user_profile.realm,
-        COUNT_STATS['active_users_log:is_bot:day'],
+        COUNT_STATS["active_users_log:is_bot:day"],
         user_profile.is_bot,
         event_time,
         increment=-1,
@@ -1202,7 +1202,7 @@ def do_deactivate_stream(
     # code path.
 
     stream.name = new_name[: Stream.MAX_NAME_LENGTH]
-    stream.save(update_fields=['name', 'deactivated', 'invite_only'])
+    stream.save(update_fields=["name", "deactivated", "invite_only"])
 
     # If this is a default stream, remove it, properly sending a
     # notification to browser clients.
@@ -1236,7 +1236,7 @@ def send_user_email_update_event(user_profile: UserProfile) -> None:
     payload = dict(user_id=user_profile.id, new_email=user_profile.email)
     send_event(
         user_profile.realm,
-        dict(type='realm_user', op='update', person=payload),
+        dict(type="realm_user", op="update", person=payload),
         active_user_ids(user_profile.realm_id),
     )
 
@@ -1255,7 +1255,7 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     # when email_address_visibility=EMAIL_ADDRESS_VISIBILITY_ADMINS)
     # about their new delivery email, since that field is private.
     payload = dict(user_id=user_profile.id, delivery_email=new_email)
-    event = dict(type='realm_user', op='update', person=payload)
+    event = dict(type="realm_user", op="update", person=payload)
     send_event(user_profile.realm, event, [user_profile.id])
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
@@ -1299,7 +1299,7 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
     )
     language = user_profile.default_language
     send_email(
-        'zerver/emails/confirm_new_email',
+        "zerver/emails/confirm_new_email",
         to_emails=[new_email],
         from_name=FromAddress.security_email_from_name(language=language),
         from_address=FromAddress.tokenized_no_reply_address(),
@@ -1359,7 +1359,7 @@ def render_incoming_message(
             email_gateway=email_gateway,
         )
     except MarkdownRenderingException:
-        raise JsonableError(_('Unable to render message'))
+        raise JsonableError(_("Unable to render message"))
     return rendered_content
 
 
@@ -1403,50 +1403,50 @@ def get_recipient_info(
             stream_topic.get_active_subscriptions()
             .annotate(
                 user_profile_email_notifications=F(
-                    'user_profile__enable_stream_email_notifications'
+                    "user_profile__enable_stream_email_notifications"
                 ),
-                user_profile_push_notifications=F('user_profile__enable_stream_push_notifications'),
-                user_profile_wildcard_mentions_notify=F('user_profile__wildcard_mentions_notify'),
+                user_profile_push_notifications=F("user_profile__enable_stream_push_notifications"),
+                user_profile_wildcard_mentions_notify=F("user_profile__wildcard_mentions_notify"),
             )
             .values(
-                'user_profile_id',
-                'push_notifications',
-                'email_notifications',
-                'wildcard_mentions_notify',
-                'user_profile_email_notifications',
-                'user_profile_push_notifications',
-                'user_profile_wildcard_mentions_notify',
-                'is_muted',
+                "user_profile_id",
+                "push_notifications",
+                "email_notifications",
+                "wildcard_mentions_notify",
+                "user_profile_email_notifications",
+                "user_profile_push_notifications",
+                "user_profile_wildcard_mentions_notify",
+                "is_muted",
             )
-            .order_by('user_profile_id')
+            .order_by("user_profile_id")
         )
 
-        message_to_user_ids = [row['user_profile_id'] for row in subscription_rows]
+        message_to_user_ids = [row["user_profile_id"] for row in subscription_rows]
 
         def should_send(setting: str, row: Dict[str, Any]) -> bool:
             # This implements the structure that the UserProfile stream notification settings
             # are defaults, which can be overridden by the stream-level settings (if those
             # values are not null).
-            if row['is_muted']:
+            if row["is_muted"]:
                 return False
-            if row['user_profile_id'] in user_ids_muting_topic:
+            if row["user_profile_id"] in user_ids_muting_topic:
                 return False
             if row[setting] is not None:
                 return row[setting]
-            return row['user_profile_' + setting]
+            return row["user_profile_" + setting]
 
         stream_push_user_ids = {
-            row['user_profile_id']
+            row["user_profile_id"]
             for row in subscription_rows
             # Note: muting a stream overrides stream_push_notify
-            if should_send('push_notifications', row)
+            if should_send("push_notifications", row)
         }
 
         stream_email_user_ids = {
-            row['user_profile_id']
+            row["user_profile_id"]
             for row in subscription_rows
             # Note: muting a stream overrides stream_email_notify
-            if should_send('email_notifications', row)
+            if should_send("email_notifications", row)
         }
 
         if possible_wildcard_mention:
@@ -1461,7 +1461,7 @@ def get_recipient_info(
             # treated as a mention (and follow the user's mention
             # notification preferences) or a normal message.
             wildcard_mention_user_ids = {
-                row['user_profile_id']
+                row["user_profile_id"]
                 for row in subscription_rows
                 if should_send("wildcard_mentions_notify", row)
             }
@@ -1470,7 +1470,7 @@ def get_recipient_info(
         message_to_user_ids = get_huddle_user_ids(recipient)
 
     else:
-        raise ValueError('Bad recipient type')
+        raise ValueError("Bad recipient type")
 
     message_to_user_id_set = set(message_to_user_ids)
 
@@ -1485,11 +1485,11 @@ def get_recipient_info(
 
     if user_ids:
         query = UserProfile.objects.filter(is_active=True).values(
-            'id',
-            'enable_online_push_notifications',
-            'is_bot',
-            'bot_type',
-            'long_term_idle',
+            "id",
+            "enable_online_push_notifications",
+            "is_bot",
+            "bot_type",
+            "long_term_idle",
         )
 
         # query_for_ids is fast highly optimized for large queries, and we
@@ -1497,7 +1497,7 @@ def get_recipient_info(
         query = query_for_ids(
             query=query,
             user_ids=sorted(user_ids),
-            field='id',
+            field="id",
         )
         rows = list(query)
     else:
@@ -1519,14 +1519,14 @@ def get_recipient_info(
 
     def get_ids_for(f: Callable[[Dict[str, Any]], bool]) -> Set[int]:
         """Only includes users on the explicit message to line"""
-        return {row['id'] for row in rows if f(row)} & message_to_user_id_set
+        return {row["id"] for row in rows if f(row)} & message_to_user_id_set
 
     def is_service_bot(row: Dict[str, Any]) -> bool:
-        return row['is_bot'] and (row['bot_type'] in UserProfile.SERVICE_BOT_TYPES)
+        return row["is_bot"] and (row["bot_type"] in UserProfile.SERVICE_BOT_TYPES)
 
     active_user_ids = get_ids_for(lambda r: True)
     push_notify_user_ids = get_ids_for(
-        lambda r: r['enable_online_push_notifications'],
+        lambda r: r["enable_online_push_notifications"],
     )
 
     # Service bots don't get UserMessage rows.
@@ -1535,7 +1535,7 @@ def get_recipient_info(
     )
 
     long_term_idle_user_ids = get_ids_for(
-        lambda r: r['long_term_idle'],
+        lambda r: r["long_term_idle"],
     )
 
     # These two bot data structures need to filter from the full set
@@ -1549,10 +1549,10 @@ def get_recipient_info(
     # sure we have the data we need for that without extra database
     # queries.
     default_bot_user_ids = {
-        row['id'] for row in rows if row['is_bot'] and row['bot_type'] == UserProfile.DEFAULT_BOT
+        row["id"] for row in rows if row["is_bot"] and row["bot_type"] == UserProfile.DEFAULT_BOT
     }
 
-    service_bot_tuples = [(row['id'], row['bot_type']) for row in rows if is_service_bot(row)]
+    service_bot_tuples = [(row["id"], row["bot_type"]) for row in rows if is_service_bot(row)]
 
     info: RecipientInfoResult = dict(
         active_user_ids=active_user_ids,
@@ -1585,12 +1585,12 @@ def get_service_bot_events(
 
     def maybe_add_event(user_profile_id: int, bot_type: int) -> None:
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
-            queue_name = 'outgoing_webhooks'
+            queue_name = "outgoing_webhooks"
         elif bot_type == UserProfile.EMBEDDED_BOT:
-            queue_name = 'embedded_bots'
+            queue_name = "embedded_bots"
         else:
             logging.error(
-                'Unexpected bot_type for Service bot id=%s: %s',
+                "Unexpected bot_type for Service bot id=%s: %s",
                 user_profile_id,
                 bot_type,
             )
@@ -1613,17 +1613,17 @@ def get_service_bot_events(
 
         # Mention triggers, for stream messages
         if is_stream and user_profile_id in mentioned_user_ids:
-            trigger = 'mention'
+            trigger = "mention"
         # PM triggers for personal and huddle messages
         elif (not is_stream) and (user_profile_id in active_user_ids):
-            trigger = 'private_message'
+            trigger = "private_message"
         else:
             return
 
         event_dict[queue_name].append(
             {
-                'trigger': trigger,
-                'user_profile_id': user_profile_id,
+                "trigger": trigger,
+                "user_profile_id": user_profile_id,
             }
         )
 
@@ -1651,9 +1651,9 @@ def do_schedule_messages(send_message_requests: Sequence[SendMessageRequest]) ->
         scheduled_message.realm = send_request.realm
         assert send_request.deliver_at is not None
         scheduled_message.scheduled_timestamp = send_request.deliver_at
-        if send_request.delivery_type == 'send_later':
+        if send_request.delivery_type == "send_later":
             scheduled_message.delivery_type = ScheduledMessage.SEND_LATER
-        elif send_request.delivery_type == 'remind':
+        elif send_request.delivery_type == "remind":
             scheduled_message.delivery_type = ScheduledMessage.REMIND
 
         scheduled_messages.append(scheduled_message)
@@ -1669,88 +1669,88 @@ def build_message_send_dict(
     production, this is always called by check_message, but some
     testing code paths call it directly.
     """
-    realm = message_dict.get('realm', message_dict['message'].sender.realm)
+    realm = message_dict.get("realm", message_dict["message"].sender.realm)
 
     mention_data = MentionData(
         realm_id=realm.id,
-        content=message_dict['message'].content,
+        content=message_dict["message"].content,
     )
 
-    if message_dict['message'].is_stream_message():
-        stream_id = message_dict['message'].recipient.type_id
+    if message_dict["message"].is_stream_message():
+        stream_id = message_dict["message"].recipient.type_id
         stream_topic: Optional[StreamTopicTarget] = StreamTopicTarget(
             stream_id=stream_id,
-            topic_name=message_dict['message'].topic_name(),
+            topic_name=message_dict["message"].topic_name(),
         )
     else:
         stream_topic = None
 
     info = get_recipient_info(
-        recipient=message_dict['message'].recipient,
-        sender_id=message_dict['message'].sender_id,
+        recipient=message_dict["message"].recipient,
+        sender_id=message_dict["message"].sender_id,
         stream_topic=stream_topic,
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
         possible_wildcard_mention=mention_data.message_has_wildcards(),
     )
 
     # Render our message_dicts.
-    assert message_dict['message'].rendered_content is None
+    assert message_dict["message"].rendered_content is None
 
     rendered_content = render_incoming_message(
-        message_dict['message'],
-        message_dict['message'].content,
-        info['active_user_ids'],
+        message_dict["message"],
+        message_dict["message"].content,
+        info["active_user_ids"],
         realm,
         mention_data=mention_data,
         email_gateway=email_gateway,
     )
-    message_dict['message'].rendered_content = rendered_content
-    message_dict['message'].rendered_content_version = markdown_version
-    links_for_embed = message_dict['message'].links_for_preview
+    message_dict["message"].rendered_content = rendered_content
+    message_dict["message"].rendered_content_version = markdown_version
+    links_for_embed = message_dict["message"].links_for_preview
 
     # Add members of the mentioned user groups into `mentions_user_ids`.
-    for group_id in message_dict['message'].mentions_user_group_ids:
+    for group_id in message_dict["message"].mentions_user_group_ids:
         members = mention_data.get_group_members(group_id)
-        message_dict['message'].mentions_user_ids.update(members)
+        message_dict["message"].mentions_user_ids.update(members)
 
     # Only send data to Tornado about wildcard mentions if message
     # rendering determined the message had an actual wildcard
     # mention in it (and not e.g. wildcard mention syntax inside a
     # code block).
-    if message_dict['message'].mentions_wildcard:
-        wildcard_mention_user_ids = info['wildcard_mention_user_ids']
+    if message_dict["message"].mentions_wildcard:
+        wildcard_mention_user_ids = info["wildcard_mention_user_ids"]
     else:
         wildcard_mention_user_ids = set()
 
-    '''
+    """
     Once we have the actual list of mentioned ids from message
     rendering, we can patch in "default bots" (aka normal bots)
     who were directly mentioned in this message as eligible to
     get UserMessage rows.
-    '''
-    mentioned_user_ids = message_dict['message'].mentions_user_ids
-    default_bot_user_ids = info['default_bot_user_ids']
+    """
+    mentioned_user_ids = message_dict["message"].mentions_user_ids
+    default_bot_user_ids = info["default_bot_user_ids"]
     mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
-    info['um_eligible_user_ids'] |= mentioned_bot_user_ids
+    info["um_eligible_user_ids"] |= mentioned_bot_user_ids
 
     message_send_dict = SendMessageRequest(
-        stream=message_dict.get('stream', None),
-        local_id=message_dict.get('local_id', None),
-        sender_queue_id=message_dict.get('sender_queue_id', None),
+        stream=message_dict.get("stream", None),
+        local_id=message_dict.get("local_id", None),
+        sender_queue_id=message_dict.get("sender_queue_id", None),
         realm=realm,
         mention_data=mention_data,
-        message=message_dict['message'],
-        active_user_ids=info['active_user_ids'],
-        push_notify_user_ids=info['push_notify_user_ids'],
-        stream_push_user_ids=info['stream_push_user_ids'],
-        stream_email_user_ids=info['stream_email_user_ids'],
-        um_eligible_user_ids=info['um_eligible_user_ids'],
-        long_term_idle_user_ids=info['long_term_idle_user_ids'],
-        default_bot_user_ids=info['default_bot_user_ids'],
-        service_bot_tuples=info['service_bot_tuples'],
+        message=message_dict["message"],
+        active_user_ids=info["active_user_ids"],
+        push_notify_user_ids=info["push_notify_user_ids"],
+        stream_push_user_ids=info["stream_push_user_ids"],
+        stream_email_user_ids=info["stream_email_user_ids"],
+        um_eligible_user_ids=info["um_eligible_user_ids"],
+        long_term_idle_user_ids=info["long_term_idle_user_ids"],
+        default_bot_user_ids=info["default_bot_user_ids"],
+        service_bot_tuples=info["service_bot_tuples"],
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         links_for_embed=links_for_embed,
-        widget_content=message_dict.get('widget_content', None),
+        widget_content=message_dict.get("widget_content", None),
     )
 
     return message_send_dict
@@ -1784,7 +1784,7 @@ def do_send_messages(
                 send_request.message, send_request.message.potential_attachment_path_ids
             ):
                 send_request.message.has_attachment = True
-                send_request.message.save(update_fields=['has_attachment'])
+                send_request.message.save(update_fields=["has_attachment"])
 
         ums: List[UserMessageLite] = []
         for send_request in send_message_requests:
@@ -1842,7 +1842,7 @@ def do_send_messages(
 
         user_flags = user_message_flags.get(send_request.message.id, {})
         sender = send_request.message.sender
-        message_type = wide_message_dict['type']
+        message_type = wide_message_dict["type"]
 
         presence_idle_user_ids = get_active_presence_idle_user_ids(
             realm=sender.realm,
@@ -1853,13 +1853,13 @@ def do_send_messages(
         )
 
         event = dict(
-            type='message',
+            type="message",
             message=send_request.message.id,
             message_dict=wide_message_dict,
             presence_idle_user_ids=presence_idle_user_ids,
         )
 
-        '''
+        """
         TODO:  We may want to limit user_ids to only those users who have
                UserMessage rows, if only for minor performance reasons.
 
@@ -1870,7 +1870,7 @@ def do_send_messages(
                Our automated tests have gotten better on this codepath,
                but we may have coverage gaps, so we should be careful
                about changing the next line.
-        '''
+        """
         user_ids = send_request.active_user_ids | set(user_flags.keys())
 
         users = [
@@ -1895,27 +1895,27 @@ def do_send_messages(
             # assert needed because stubs for django are missing
             assert send_request.stream is not None
             if send_request.stream.is_public():
-                event['realm_id'] = send_request.stream.realm_id
-                event['stream_name'] = send_request.stream.name
+                event["realm_id"] = send_request.stream.realm_id
+                event["stream_name"] = send_request.stream.name
             if send_request.stream.invite_only:
-                event['invite_only'] = True
+                event["invite_only"] = True
             if send_request.stream.first_message_id is None:
                 send_request.stream.first_message_id = send_request.message.id
                 send_request.stream.save(update_fields=["first_message_id"])
         if send_request.local_id is not None:
-            event['local_id'] = send_request.local_id
+            event["local_id"] = send_request.local_id
         if send_request.sender_queue_id is not None:
-            event['sender_queue_id'] = send_request.sender_queue_id
+            event["sender_queue_id"] = send_request.sender_queue_id
         send_event(send_request.realm, event, users)
 
         if send_request.links_for_embed:
             event_data = {
-                'message_id': send_request.message.id,
-                'message_content': send_request.message.content,
-                'message_realm_id': send_request.realm.id,
-                'urls': list(send_request.links_for_embed),
+                "message_id": send_request.message.id,
+                "message_content": send_request.message.content,
+                "message_realm_id": send_request.realm.id,
+                "urls": list(send_request.links_for_embed),
             }
-            queue_json_publish('embed_links', event_data)
+            queue_json_publish("embed_links", event_data)
 
         if send_request.message.recipient.type == Recipient.PERSONAL:
             welcome_bot_id = get_system_bot(settings.WELCOME_BOT).id
@@ -1933,7 +1933,7 @@ def do_send_messages(
                     queue_name,
                     {
                         "message": wide_message_dict,
-                        "trigger": event['trigger'],
+                        "trigger": event["trigger"],
                         "user_profile_id": event["user_profile_id"],
                     },
                 )
@@ -2040,11 +2040,11 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
 
     vals = [(um.user_profile_id, um.message_id, um.flags) for um in ums]
     query = SQL(
-        '''
+        """
         INSERT into
             zerver_usermessage (user_profile_id, message_id, flags)
         VALUES %s
-    '''
+    """
     )
 
     with connection.cursor() as cursor:
@@ -2084,23 +2084,23 @@ def notify_reaction_update(
     user_profile: UserProfile, message: Message, reaction: Reaction, op: str
 ) -> None:
     user_dict = {
-        'user_id': user_profile.id,
-        'email': user_profile.email,
-        'full_name': user_profile.full_name,
+        "user_id": user_profile.id,
+        "email": user_profile.email,
+        "full_name": user_profile.full_name,
     }
 
     event: Dict[str, Any] = {
-        'type': 'reaction',
-        'op': op,
-        'user_id': user_profile.id,
+        "type": "reaction",
+        "op": op,
+        "user_id": user_profile.id,
         # TODO: We plan to remove this redundant user_dict object once
         # clients are updated to support accessing use user_id.  See
         # https://github.com/zulip/zulip/pull/14711 for details.
-        'user': user_dict,
-        'message_id': message.id,
-        'emoji_name': reaction.emoji_name,
-        'emoji_code': reaction.emoji_code,
-        'reaction_type': reaction.reaction_type,
+        "user": user_dict,
+        "message_id": message.id,
+        "emoji_name": reaction.emoji_name,
+        "emoji_code": reaction.emoji_code,
+        "reaction_type": reaction.reaction_type,
     }
 
     # Update the cached message since new reaction is added.
@@ -2163,14 +2163,14 @@ def do_send_typing_notification(
     realm: Realm, sender: UserProfile, recipient_user_profiles: List[UserProfile], operator: str
 ) -> None:
 
-    sender_dict = {'user_id': sender.id, 'email': sender.email}
+    sender_dict = {"user_id": sender.id, "email": sender.email}
 
     # Include a list of recipients in the event body to help identify where the typing is happening
     recipient_dicts = [
-        {'user_id': profile.id, 'email': profile.email} for profile in recipient_user_profiles
+        {"user_id": profile.id, "email": profile.email} for profile in recipient_user_profiles
     ]
     event = dict(
-        type='typing',
+        type="typing",
         op=operator,
         sender=sender_dict,
         recipients=recipient_dicts,
@@ -2188,17 +2188,17 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
 
     realm = sender.realm
     if len(user_ids) == 0:
-        raise JsonableError(_('Missing parameter: \'to\' (recipient)'))
-    elif operator not in ('start', 'stop'):
-        raise JsonableError(_('Invalid \'op\' value (should be start or stop)'))
+        raise JsonableError(_("Missing parameter: 'to' (recipient)"))
+    elif operator not in ("start", "stop"):
+        raise JsonableError(_("Invalid 'op' value (should be start or stop)"))
 
-    ''' The next chunk of code will go away when we upgrade old mobile
+    """ The next chunk of code will go away when we upgrade old mobile
     users away from versions of mobile that send emails.  For the
     small number of very outdated mobile clients, we do double work
     here in terms of fetching users, but this structure reduces lots
     of other unnecessary duplicated code and will make it convenient
     to mostly delete code when we desupport old versions of the
-    app.'''
+    app."""
 
     if sender.id not in user_ids:
         user_ids.append(sender.id)
@@ -2398,7 +2398,7 @@ def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
         data = s
 
     if isinstance(data, str):
-        data = data.split(',')
+        data = data.split(",")
 
     if not isinstance(data, list):
         raise JsonableError(_("Invalid data type for recipients"))
@@ -2519,7 +2519,7 @@ def check_schedule_message(
     send_request.delivery_type = delivery_type
 
     recipient = send_request.message.recipient
-    if delivery_type == 'remind' and (
+    if delivery_type == "remind" and (
         recipient.type != Recipient.STREAM and recipient.type_id != sender.id
     ):
         raise JsonableError(_("Reminders can only be set for streams."))
@@ -2578,7 +2578,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
     )
 
     sender.last_reminder = timezone_now()
-    sender.save(update_fields=['last_reminder'])
+    sender.save(update_fields=["last_reminder"])
 
 
 def send_pm_if_empty_stream(
@@ -2783,24 +2783,24 @@ def check_message(
         try:
             widget_content = orjson.loads(widget_content)
         except orjson.JSONDecodeError:
-            raise JsonableError(_('Widgets: API programmer sent invalid JSON content'))
+            raise JsonableError(_("Widgets: API programmer sent invalid JSON content"))
 
         try:
             check_widget_content(widget_content)
         except ValidationError as error:
             raise JsonableError(
-                _('Widgets: {error_msg}').format(
+                _("Widgets: {error_msg}").format(
                     error_msg=error.message,
                 )
             )
 
     message_dict = {
-        'message': message,
-        'stream': stream,
-        'local_id': local_id,
-        'sender_queue_id': sender_queue_id,
-        'realm': realm,
-        'widget_content': widget_content,
+        "message": message,
+        "stream": stream,
+        "local_id": local_id,
+        "sender_queue_id": sender_queue_id,
+        "realm": realm,
+        "widget_content": widget_content,
     }
     message_send_dict = build_message_send_dict(message_dict, email_gateway)
 
@@ -3098,15 +3098,15 @@ def bulk_get_subscriber_user_ids(
     if not recipient_ids:
         return result
 
-    '''
+    """
     The raw SQL below leads to more than a 2x speedup when tested with
     20k+ total subscribers.  (For large realms with lots of default
     streams, this function deals with LOTS of data, so it is important
     to optimize.)
-    '''
+    """
 
     query = SQL(
-        '''
+        """
         SELECT
             zerver_subscription.recipient_id,
             zerver_subscription.user_profile_id
@@ -3121,7 +3121,7 @@ def bulk_get_subscriber_user_ids(
         ORDER BY
             zerver_subscription.recipient_id,
             zerver_subscription.user_profile_id
-        '''
+        """
     )
 
     cursor = connection.cursor()
@@ -3129,10 +3129,10 @@ def bulk_get_subscriber_user_ids(
     rows = cursor.fetchall()
     cursor.close()
 
-    '''
+    """
     Using groupby/itemgetter here is important for performance, at scale.
     It makes it so that all interpreter overhead is just O(N) in nature.
-    '''
+    """
     for recip_id, recip_rows in itertools.groupby(rows, itemgetter(0)):
         user_profile_ids = [r[1] for r in recip_rows]
         stream_id = recip_to_stream_id[recip_id]
@@ -3165,8 +3165,8 @@ def get_subscriber_emails(
     stream: Stream, requesting_user: Optional[UserProfile] = None
 ) -> List[str]:
     subscriptions_query = get_subscribers_query(stream, requesting_user)
-    subscriptions = subscriptions_query.values('user_profile__email')
-    return [subscription['user_profile__email'] for subscription in subscriptions]
+    subscriptions = subscriptions_query.values("user_profile__email")
+    return [subscription["user_profile__email"] for subscription in subscriptions]
 
 
 def send_subscription_add_events(
@@ -3190,15 +3190,15 @@ def send_subscription_add_events(
             for field_name in Subscription.API_FIELDS:
                 sub_dict[field_name] = getattr(subscription, field_name)
 
-            sub_dict['in_home_view'] = not subscription.is_muted
-            sub_dict['email_address'] = encode_email_address(stream, show_sender=True)
-            sub_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
+            sub_dict["in_home_view"] = not subscription.is_muted
+            sub_dict["email_address"] = encode_email_address(stream, show_sender=True)
+            sub_dict["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
                 stream.id, stream.date_created, recent_traffic
             )
             if stream.is_in_zephyr_realm and not stream.invite_only:
-                sub_dict['subscribers'] = []
+                sub_dict["subscribers"] = []
             else:
-                sub_dict['subscribers'] = list(subscriber_dict[stream.id])
+                sub_dict["subscribers"] = list(subscriber_dict[stream.id])
             sub_dicts.append(sub_dict)
 
         # Send a notification to the user who subscribed.
@@ -3494,16 +3494,16 @@ def send_peer_remove_events(
 
 
 def get_available_notification_sounds() -> List[str]:
-    notification_sounds_path = static_path('audio/notification_sounds')
+    notification_sounds_path = static_path("audio/notification_sounds")
     available_notification_sounds = []
 
     for file_name in os.listdir(notification_sounds_path):
         root, ext = os.path.splitext(file_name)
-        if '.' in root:  # nocoverage
+        if "." in root:  # nocoverage
             # Exclude e.g. zulip.abcd1234.ogg (generated by production hash-naming)
             # to avoid spurious duplicates.
             continue
-        if ext == '.ogg':
+        if ext == ".ogg":
             available_notification_sounds.append(root)
 
     return sorted(available_notification_sounds)
@@ -3605,9 +3605,9 @@ def bulk_remove_subscriptions(
         notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
 
         event = {
-            'type': 'mark_stream_messages_as_read',
-            'user_profile_id': user_profile.id,
-            'stream_recipient_ids': [stream.recipient_id for stream in streams],
+            "type": "mark_stream_messages_as_read",
+            "user_profile_id": user_profile.id,
+            "stream_recipient_ids": [stream.recipient_id for stream in streams],
         }
         queue_json_publish("deferred_work", event)
 
@@ -3669,7 +3669,7 @@ def do_change_subscription_property(
             {
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: database_value,
-                'property': database_property_name,
+                "property": database_property_name,
             }
         ).decode(),
     )
@@ -3718,13 +3718,13 @@ def do_change_full_name(
     payload = dict(user_id=user_profile.id, full_name=user_profile.full_name)
     send_event(
         user_profile.realm,
-        dict(type='realm_user', op='update', person=payload),
+        dict(type="realm_user", op="update", person=payload),
         active_user_ids(user_profile.realm_id),
     )
     if user_profile.is_bot:
         send_event(
             user_profile.realm,
-            dict(type='realm_bot', op='update', bot=payload),
+            dict(type="realm_bot", op="update", bot=payload),
             bot_owner_user_ids(user_profile),
         )
 
@@ -3785,7 +3785,7 @@ def do_change_bot_owner(
         send_event(
             user_profile.realm,
             dict(
-                type='realm_bot',
+                type="realm_bot",
                 op="delete",
                 bot=dict(
                     user_id=user_profile.id,
@@ -3806,8 +3806,8 @@ def do_change_bot_owner(
     send_event(
         user_profile.realm,
         dict(
-            type='realm_bot',
-            op='update',
+            type="realm_bot",
+            op="update",
             bot=dict(
                 user_id=user_profile.id,
                 owner_id=user_profile.bot_owner.id,
@@ -3866,8 +3866,8 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
         send_event(
             user_profile.realm,
             dict(
-                type='realm_bot',
-                op='update',
+                type="realm_bot",
+                op="update",
                 bot=dict(
                     user_id=user_profile.id,
                     api_key=new_api_key,
@@ -3876,7 +3876,7 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
             bot_owner_user_ids(user_profile),
         )
 
-    event = {'type': 'clear_push_device_tokens', 'user_profile_id': user_profile.id}
+    event = {"type": "clear_push_device_tokens", "user_profile_id": user_profile.id}
     queue_json_publish("deferred_work", event)
 
     return new_api_key
@@ -3887,8 +3887,8 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
         send_event(
             user_profile.realm,
             dict(
-                type='realm_bot',
-                op='update',
+                type="realm_bot",
+                op="update",
                 bot=dict(
                     user_id=user_profile.id,
                     avatar_url=avatar_url(user_profile),
@@ -3909,7 +3909,7 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
 
     send_event(
         user_profile.realm,
-        dict(type='realm_user', op='update', person=payload),
+        dict(type="realm_user", op="update", person=payload),
         active_user_ids(user_profile.realm_id),
     )
 
@@ -3928,7 +3928,7 @@ def do_change_avatar_fields(
         realm=user_profile.realm,
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
-        extra_data={'avatar_source': avatar_source},
+        extra_data={"avatar_source": avatar_source},
         event_time=event_time,
         acting_user=acting_user,
     )
@@ -3953,7 +3953,7 @@ def do_change_icon_source(
     RealmAuditLog.objects.create(
         realm=realm,
         event_type=RealmAuditLog.REALM_ICON_SOURCE_CHANGED,
-        extra_data={'icon_source': icon_source, 'icon_version': realm.icon_version},
+        extra_data={"icon_source": icon_source, "icon_version": realm.icon_version},
         event_time=event_time,
         acting_user=acting_user,
     )
@@ -3961,8 +3961,8 @@ def do_change_icon_source(
     send_event(
         realm,
         dict(
-            type='realm',
-            op='update_dict',
+            type="realm",
+            op="update_dict",
             property="icon",
             data=dict(icon_source=realm.icon_source, icon_url=realm_icon_url(realm)),
         ),
@@ -3991,8 +3991,8 @@ def do_change_logo_source(
     )
 
     event = dict(
-        type='realm',
-        op='update_dict',
+        type="realm",
+        op="update_dict",
         property="night_logo" if night else "logo",
         data=get_realm_logo_data(realm, night),
     )
@@ -4002,12 +4002,12 @@ def do_change_logo_source(
 def do_change_plan_type(realm: Realm, plan_type: int) -> None:
     old_value = realm.plan_type
     realm.plan_type = plan_type
-    realm.save(update_fields=['plan_type'])
+    realm.save(update_fields=["plan_type"])
     RealmAuditLog.objects.create(
         event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
         realm=realm,
         event_time=timezone_now(),
-        extra_data={'old_value': old_value, 'new_value': plan_type},
+        extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
     if plan_type == Realm.STANDARD:
@@ -4031,14 +4031,14 @@ def do_change_plan_type(realm: Realm, plan_type: int) -> None:
 
     update_first_visible_message_id(realm)
 
-    realm.save(update_fields=['_max_invites', 'message_visibility_limit', 'upload_quota_gb'])
+    realm.save(update_fields=["_max_invites", "message_visibility_limit", "upload_quota_gb"])
 
     event = {
-        'type': 'realm',
-        'op': 'update',
-        'property': 'plan_type',
-        'value': plan_type,
-        'extra_data': {'upload_quota': realm.upload_quota_bytes()},
+        "type": "realm",
+        "op": "update",
+        "property": "plan_type",
+        "value": plan_type,
+        "extra_data": {"upload_quota": realm.upload_quota_bytes()},
     }
     send_event(realm, event, active_user_ids(realm.id))
 
@@ -4048,7 +4048,7 @@ def do_change_default_sending_stream(
 ) -> None:
     old_value = user_profile.default_sending_stream_id
     user_profile.default_sending_stream = stream
-    user_profile.save(update_fields=['default_sending_stream'])
+    user_profile.save(update_fields=["default_sending_stream"])
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -4073,8 +4073,8 @@ def do_change_default_sending_stream(
         send_event(
             user_profile.realm,
             dict(
-                type='realm_bot',
-                op='update',
+                type="realm_bot",
+                op="update",
                 bot=dict(
                     user_id=user_profile.id,
                     default_sending_stream=stream_name,
@@ -4089,7 +4089,7 @@ def do_change_default_events_register_stream(
 ) -> None:
     old_value = user_profile.default_events_register_stream_id
     user_profile.default_events_register_stream = stream
-    user_profile.save(update_fields=['default_events_register_stream'])
+    user_profile.save(update_fields=["default_events_register_stream"])
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -4114,8 +4114,8 @@ def do_change_default_events_register_stream(
         send_event(
             user_profile.realm,
             dict(
-                type='realm_bot',
-                op='update',
+                type="realm_bot",
+                op="update",
                 bot=dict(
                     user_id=user_profile.id,
                     default_events_register_stream=stream_name,
@@ -4130,7 +4130,7 @@ def do_change_default_all_public_streams(
 ) -> None:
     old_value = user_profile.default_all_public_streams
     user_profile.default_all_public_streams = value
-    user_profile.save(update_fields=['default_all_public_streams'])
+    user_profile.save(update_fields=["default_all_public_streams"])
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -4151,8 +4151,8 @@ def do_change_default_all_public_streams(
         send_event(
             user_profile.realm,
             dict(
-                type='realm_bot',
-                op='update',
+                type="realm_bot",
+                op="update",
                 bot=dict(
                     user_id=user_profile.id,
                     default_all_public_streams=user_profile.default_all_public_streams,
@@ -4208,7 +4208,7 @@ def do_change_stream_invite_only(
     )
     stream.invite_only = invite_only
     stream.history_public_to_subscribers = history_public_to_subscribers
-    stream.save(update_fields=['invite_only', 'history_public_to_subscribers'])
+    stream.save(update_fields=["invite_only", "history_public_to_subscribers"])
     event = dict(
         op="update",
         type="stream",
@@ -4223,12 +4223,12 @@ def do_change_stream_invite_only(
 
 def do_change_stream_web_public(stream: Stream, is_web_public: bool) -> None:
     stream.is_web_public = is_web_public
-    stream.save(update_fields=['is_web_public'])
+    stream.save(update_fields=["is_web_public"])
 
 
 def do_change_stream_post_policy(stream: Stream, stream_post_policy: int) -> None:
     stream.stream_post_policy = stream_post_policy
-    stream.save(update_fields=['stream_post_policy'])
+    stream.save(update_fields=["stream_post_policy"])
     event = dict(
         op="update",
         type="stream",
@@ -4300,8 +4300,8 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
     # More importantly, we want to key these updates by id, not name,
     # since id is the immutable primary key, and obviously name is not.
     data_updates = [
-        ['email_address', new_email],
-        ['name', new_name],
+        ["email_address", new_email],
+        ["name", new_name],
     ]
     for property, value in data_updates:
         event = dict(
@@ -4320,7 +4320,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
             sender,
             stream,
             Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
-            _('{user_name} renamed stream {old_stream_name} to {new_stream_name}.').format(
+            _("{user_name} renamed stream {old_stream_name} to {new_stream_name}.").format(
                 user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
                 old_stream_name=f"**{old_name}**",
                 new_stream_name=f"**{new_name}**",
@@ -4334,12 +4334,12 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
 def do_change_stream_description(stream: Stream, new_description: str) -> None:
     stream.description = new_description
     stream.rendered_description = render_stream_description(new_description)
-    stream.save(update_fields=['description', 'rendered_description'])
+    stream.save(update_fields=["description", "rendered_description"])
 
     event = dict(
-        type='stream',
-        op='update',
-        property='description',
+        type="stream",
+        op="update",
+        property="description",
         name=stream.name,
         stream_id=stream.id,
         value=new_description,
@@ -4352,7 +4352,7 @@ def do_change_stream_message_retention_days(
     stream: Stream, message_retention_days: Optional[int] = None
 ) -> None:
     stream.message_retention_days = message_retention_days
-    stream.save(update_fields=['message_retention_days'])
+    stream.save(update_fields=["message_retention_days"])
 
     event = dict(
         op="update",
@@ -4376,7 +4376,7 @@ def do_create_realm(
 
     kwargs: Dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
-        kwargs['emails_restricted_to_domains'] = emails_restricted_to_domains
+        kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 
@@ -4402,7 +4402,7 @@ def do_create_realm(
     )
     realm.signup_notifications_stream = signup_notifications_stream
 
-    realm.save(update_fields=['notifications_stream', 'signup_notifications_stream'])
+    realm.save(update_fields=["notifications_stream", "signup_notifications_stream"])
 
     if settings.BILLING_ENABLED:
         do_change_plan_type(realm, Realm.LIMITED)
@@ -4445,20 +4445,20 @@ def do_change_notification_settings(
     notification_setting_type = UserProfile.notification_setting_types[name]
     assert isinstance(
         value, notification_setting_type
-    ), f'Cannot update {name}: {value} is not an instance of {notification_setting_type}'
+    ), f"Cannot update {name}: {value} is not an instance of {notification_setting_type}"
 
     setattr(user_profile, name, value)
 
     # Disabling digest emails should clear a user's email queue
-    if name == 'enable_digest_emails' and not value:
+    if name == "enable_digest_emails" and not value:
         clear_scheduled_emails([user_profile.id], ScheduledEmail.DIGEST)
 
     user_profile.save(update_fields=[name])
     event = {
-        'type': 'update_global_notifications',
-        'user': user_profile.email,
-        'notification_name': name,
-        'setting': value,
+        "type": "update_global_notifications",
+        "user": user_profile.email,
+        "notification_name": name,
+        "setting": value,
     }
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -4471,7 +4471,7 @@ def do_change_notification_settings(
             {
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: value,
-                'property': name,
+                "property": name,
             }
         ).decode(),
     )
@@ -4492,14 +4492,14 @@ def do_set_user_display_setting(
     setattr(user_profile, setting_name, setting_value)
     user_profile.save(update_fields=[setting_name])
     event = {
-        'type': 'update_display_settings',
-        'user': user_profile.email,
-        'setting_name': setting_name,
-        'setting': setting_value,
+        "type": "update_display_settings",
+        "user": user_profile.email,
+        "setting_name": setting_name,
+        "setting": setting_value,
     }
     if setting_name == "default_language":
         assert isinstance(setting_value, str)
-        event['language_name'] = get_language_name(setting_value)
+        event["language_name"] = get_language_name(setting_value)
 
     send_event(user_profile.realm, event, [user_profile.id])
 
@@ -4512,7 +4512,7 @@ def do_set_user_display_setting(
         )
         send_event(
             user_profile.realm,
-            dict(type='realm_user', op='update', person=payload),
+            dict(type="realm_user", op="update", person=payload),
             active_user_ids(user_profile.realm_id),
         )
 
@@ -4525,7 +4525,7 @@ def lookup_default_stream_groups(
         try:
             default_stream_group = DefaultStreamGroup.objects.get(name=group_name, realm=realm)
         except DefaultStreamGroup.DoesNotExist:
-            raise JsonableError(_('Invalid default stream group {}').format(group_name))
+            raise JsonableError(_("Invalid default stream group {}").format(group_name))
         default_stream_groups.append(default_stream_group)
     return default_stream_groups
 
@@ -4709,7 +4709,7 @@ def do_update_user_activity_interval(
     )
 
 
-@statsd_increment('user_activity')
+@statsd_increment("user_activity")
 def do_update_user_activity(
     user_profile_id: int, client_id: int, query: str, count: int, log_time: datetime.datetime
 ) -> None:
@@ -4717,7 +4717,7 @@ def do_update_user_activity(
         user_profile_id=user_profile_id,
         client_id=client_id,
         query=query,
-        defaults={'last_visit': log_time, 'count': count},
+        defaults={"last_visit": log_time, "count": count},
     )
 
     if not created:
@@ -4733,7 +4733,7 @@ def send_presence_changed(user_profile: UserProfile, presence: UserPresence) -> 
         email=user_profile.email,
         user_id=user_profile.id,
         server_timestamp=time.time(),
-        presence={presence_dict['client']: presence_dict},
+        presence={presence_dict["client"]: presence_dict},
     )
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
@@ -4745,13 +4745,13 @@ def consolidate_client(client: Client) -> Client:
     # to count as web users
 
     # Alias ZulipDesktop to website
-    if client.name in ['ZulipDesktop']:
-        return get_client('website')
+    if client.name in ["ZulipDesktop"]:
+        return get_client("website")
     else:
         return client
 
 
-@statsd_increment('user_presence')
+@statsd_increment("user_presence")
 def do_update_user_presence(
     user_profile: UserProfile, client: Client, log_time: datetime.datetime, status: int
 ) -> None:
@@ -4807,7 +4807,7 @@ def do_update_user_presence(
 
 
 def update_user_activity_interval(user_profile: UserProfile, log_time: datetime.datetime) -> None:
-    event = {'user_profile_id': user_profile.id, 'time': datetime_to_timestamp(log_time)}
+    event = {"user_profile_id": user_profile.id, "time": datetime_to_timestamp(log_time)}
     queue_json_publish("user_activity_interval", event)
 
 
@@ -4819,10 +4819,10 @@ def update_user_presence(
     new_user_input: bool,
 ) -> None:
     event = {
-        'user_profile_id': user_profile.id,
-        'status': status,
-        'time': datetime_to_timestamp(log_time),
-        'client': client.name,
+        "user_profile_id": user_profile.id,
+        "status": status,
+        "time": datetime_to_timestamp(log_time),
+        "client": client.name,
     }
 
     queue_json_publish("user_presence", event)
@@ -4851,21 +4851,21 @@ def do_update_user_status(
     )
 
     event = dict(
-        type='user_status',
+        type="user_status",
         user_id=user_profile.id,
     )
 
     if away is not None:
-        event['away'] = away
+        event["away"] = away
 
     if status_text is not None:
-        event['status_text'] = status_text
+        event["status_text"] = status_text
 
     send_event(realm, event, active_user_ids(realm.id))
 
 
 def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
-    log_statsd_event('bankruptcy')
+    log_statsd_event("bankruptcy")
 
     # First, we clear mobile push notifications.  This is safer in the
     # event that the below logic times out and we're killed.
@@ -4885,14 +4885,14 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     )
 
     count = msgs.update(
-        flags=F('flags').bitor(UserMessage.flags.read),
+        flags=F("flags").bitor(UserMessage.flags.read),
     )
 
     event = dict(
-        type='update_message_flags',
-        op='add',
-        operation='add',
-        flag='read',
+        type="update_message_flags",
+        op="add",
+        operation="add",
+        flag="read",
         messages=[],  # we don't send messages, since the client reloads anyway
         all=True,
     )
@@ -4901,11 +4901,11 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     send_event(user_profile.realm, event, [user_profile.id])
 
     do_increment_logging_stat(
-        user_profile, COUNT_STATS['messages_read::hour'], None, event_time, increment=count
+        user_profile, COUNT_STATS["messages_read::hour"], None, event_time, increment=count
     )
     do_increment_logging_stat(
         user_profile,
-        COUNT_STATS['messages_read_interactions::hour'],
+        COUNT_STATS["messages_read_interactions::hour"],
         None,
         event_time,
         increment=min(1, count),
@@ -4917,7 +4917,7 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
 def do_mark_stream_messages_as_read(
     user_profile: UserProfile, stream_recipient_id: int, topic_name: Optional[str] = None
 ) -> int:
-    log_statsd_event('mark_stream_as_read')
+    log_statsd_event("mark_stream_as_read")
 
     msgs = UserMessage.objects.filter(
         user_profile=user_profile,
@@ -4935,17 +4935,17 @@ def do_mark_stream_messages_as_read(
         where=[UserMessage.where_unread()],
     )
 
-    message_ids = list(msgs.values_list('message__id', flat=True))
+    message_ids = list(msgs.values_list("message__id", flat=True))
 
     count = msgs.update(
-        flags=F('flags').bitor(UserMessage.flags.read),
+        flags=F("flags").bitor(UserMessage.flags.read),
     )
 
     event = dict(
-        type='update_message_flags',
-        op='add',
-        operation='add',
-        flag='read',
+        type="update_message_flags",
+        op="add",
+        operation="add",
+        flag="read",
         messages=message_ids,
         all=False,
     )
@@ -4955,11 +4955,11 @@ def do_mark_stream_messages_as_read(
     do_clear_mobile_push_notifications_for_ids([user_profile.id], message_ids)
 
     do_increment_logging_stat(
-        user_profile, COUNT_STATS['messages_read::hour'], None, event_time, increment=count
+        user_profile, COUNT_STATS["messages_read::hour"], None, event_time, increment=count
     )
     do_increment_logging_stat(
         user_profile,
-        COUNT_STATS['messages_read_interactions::hour'],
+        COUNT_STATS["messages_read_interactions::hour"],
         None,
         event_time,
         increment=min(1, count),
@@ -5004,7 +5004,7 @@ def do_clear_mobile_push_notifications_for_ids(
         .extra(
             where=[UserMessage.where_active_push_notification()],
         )
-        .values_list('user_profile_id', 'message_id')
+        .values_list("user_profile_id", "message_id")
     )
 
     for (user_id, message_id) in notifications_to_update:
@@ -5029,7 +5029,7 @@ def do_update_message_flags(
         raise JsonableError(_("Invalid flag: '{}'").format(flag))
     if flag in UserMessage.NON_EDITABLE_FLAGS:
         raise JsonableError(_("Flag not editable: '{}'").format(flag))
-    if operation not in ('add', 'remove'):
+    if operation not in ("add", "remove"):
         raise JsonableError(_("Invalid message flag operation: '{}'").format(operation))
     flagattr = getattr(UserMessage.flags, flag)
 
@@ -5060,18 +5060,18 @@ def do_update_message_flags(
             flags=UserMessage.flags.historical | UserMessage.flags.read,
         )
 
-    if operation == 'add':
-        count = msgs.update(flags=F('flags').bitor(flagattr))
-    elif operation == 'remove':
-        count = msgs.update(flags=F('flags').bitand(~flagattr))
+    if operation == "add":
+        count = msgs.update(flags=F("flags").bitor(flagattr))
+    elif operation == "remove":
+        count = msgs.update(flags=F("flags").bitand(~flagattr))
 
     event = {
-        'type': 'update_message_flags',
-        'op': operation,
-        'operation': operation,
-        'flag': flag,
-        'messages': messages,
-        'all': False,
+        "type": "update_message_flags",
+        "op": operation,
+        "operation": operation,
+        "flag": flag,
+        "messages": messages,
+        "all": False,
     }
     send_event(user_profile.realm, event, [user_profile.id])
 
@@ -5080,11 +5080,11 @@ def do_update_message_flags(
         do_clear_mobile_push_notifications_for_ids([user_profile.id], messages)
 
         do_increment_logging_stat(
-            user_profile, COUNT_STATS['messages_read::hour'], None, event_time, increment=count
+            user_profile, COUNT_STATS["messages_read::hour"], None, event_time, increment=count
         )
         do_increment_logging_stat(
             user_profile,
-            COUNT_STATS['messages_read_interactions::hour'],
+            COUNT_STATS["messages_read_interactions::hour"],
             None,
             event_time,
             increment=min(1, count),
@@ -5155,14 +5155,14 @@ def get_user_info_for_message_updates(message_id: int) -> MessageUpdateUserInfoR
     query = UserMessage.objects.filter(
         message=message_id,
         flags=~UserMessage.flags.historical,
-    ).values('user_profile_id', 'flags')
+    ).values("user_profile_id", "flags")
     rows = list(query)
 
-    message_user_ids = {row['user_profile_id'] for row in rows}
+    message_user_ids = {row["user_profile_id"] for row in rows}
 
     mask = UserMessage.flags.mentioned | UserMessage.flags.wildcard_mentioned
 
-    mention_user_ids = {row['user_profile_id'] for row in rows if int(row['flags']) & mask}
+    mention_user_ids = {row["user_profile_id"] for row in rows if int(row["flags"]) & mask}
 
     return dict(
         message_user_ids=message_user_ids,
@@ -5196,7 +5196,7 @@ def update_user_message_flags(message: Message, ums: Iterable[UserMessage]) -> N
         update_flag(um, wildcard, UserMessage.flags.wildcard_mentioned)
 
     for um in changed_ums:
-        um.save(update_fields=['flags'])
+        um.save(update_fields=["flags"])
 
 
 def update_to_dict_cache(
@@ -5224,7 +5224,7 @@ def do_update_embedded_data(
     content: Optional[str],
     rendered_content: Optional[str],
 ) -> None:
-    event: Dict[str, Any] = {'type': 'update_message', 'message_id': message.id}
+    event: Dict[str, Any] = {"type": "update_message", "message_id": message.id}
     changed_messages = [message]
 
     ums = UserMessage.objects.filter(message=message.id)
@@ -5239,12 +5239,12 @@ def do_update_embedded_data(
 
     message.save(update_fields=["content", "rendered_content"])
 
-    event['message_ids'] = update_to_dict_cache(changed_messages)
+    event["message_ids"] = update_to_dict_cache(changed_messages)
 
     def user_info(um: UserMessage) -> Dict[str, Any]:
         return {
-            'id': um.user_profile_id,
-            'flags': um.flags_list(),
+            "id": um.user_profile_id,
+            "flags": um.flags_list(),
         }
 
     send_event(user_profile.realm, event, list(map(user_info, ums)))
@@ -5291,15 +5291,15 @@ def do_update_message(
     message.last_edit_time = timestamp
 
     event: Dict[str, Any] = {
-        'type': 'update_message',
-        'user_id': user_profile.id,
-        'edit_timestamp': datetime_to_timestamp(timestamp),
-        'message_id': message.id,
+        "type": "update_message",
+        "user_id": user_profile.id,
+        "edit_timestamp": datetime_to_timestamp(timestamp),
+        "message_id": message.id,
     }
 
     edit_history_event: Dict[str, Any] = {
-        'user_id': user_profile.id,
-        'timestamp': event['edit_timestamp'],
+        "user_id": user_profile.id,
+        "timestamp": event["edit_timestamp"],
     }
 
     changed_messages = [message]
@@ -5308,7 +5308,7 @@ def do_update_message(
     if message.is_stream_message():
         stream_id = message.recipient.type_id
         stream_being_edited = get_stream_by_id_in_realm(stream_id, user_profile.realm)
-        event['stream_name'] = stream_being_edited.name
+        event["stream_name"] = stream_being_edited.name
 
     ums = UserMessage.objects.filter(message=message.id)
 
@@ -5333,8 +5333,8 @@ def do_update_message(
         # setting must be enforced on the client side, and making a
         # change here simply complicates the logic for clients parsing
         # edit history events.
-        event['orig_content'] = message.content
-        event['orig_rendered_content'] = message.rendered_content
+        event["orig_content"] = message.content
+        event["orig_rendered_content"] = message.rendered_content
         edit_history_event["prev_content"] = message.content
         edit_history_event["prev_rendered_content"] = message.rendered_content
         edit_history_event["prev_rendered_content_version"] = message.rendered_content_version
@@ -5343,8 +5343,8 @@ def do_update_message(
         message.rendered_content_version = markdown_version
         event["content"] = content
         event["rendered_content"] = rendered_content
-        event['prev_rendered_content_version'] = message.rendered_content_version
-        event['is_me_message'] = Message.is_status_message(content, rendered_content)
+        event["prev_rendered_content_version"] = message.rendered_content_version
+        event["is_me_message"] = Message.is_status_message(content, rendered_content)
 
         # message.has_image and message.has_link will have been
         # already updated by Markdown rendering in the caller.
@@ -5370,19 +5370,19 @@ def do_update_message(
             possible_wildcard_mention=mention_data.message_has_wildcards(),
         )
 
-        event['push_notify_user_ids'] = list(info['push_notify_user_ids'])
-        event['stream_push_user_ids'] = list(info['stream_push_user_ids'])
-        event['stream_email_user_ids'] = list(info['stream_email_user_ids'])
-        event['prior_mention_user_ids'] = list(prior_mention_user_ids)
-        event['mention_user_ids'] = list(mention_user_ids)
-        event['presence_idle_user_ids'] = filter_presence_idle_user_ids(info['active_user_ids'])
+        event["push_notify_user_ids"] = list(info["push_notify_user_ids"])
+        event["stream_push_user_ids"] = list(info["stream_push_user_ids"])
+        event["stream_email_user_ids"] = list(info["stream_email_user_ids"])
+        event["prior_mention_user_ids"] = list(prior_mention_user_ids)
+        event["mention_user_ids"] = list(mention_user_ids)
+        event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info["active_user_ids"])
         if message.mentions_wildcard:
-            event['wildcard_mention_user_ids'] = list(info['wildcard_mention_user_ids'])
+            event["wildcard_mention_user_ids"] = list(info["wildcard_mention_user_ids"])
         else:
-            event['wildcard_mention_user_ids'] = []
+            event["wildcard_mention_user_ids"] = []
 
         do_update_mobile_push_notification(
-            message, prior_mention_user_ids, info['stream_push_user_ids']
+            message, prior_mention_user_ids, info["stream_push_user_ids"]
         )
 
     if topic_name is not None or new_stream is not None:
@@ -5396,7 +5396,7 @@ def do_update_message(
         assert message.is_stream_message()
         assert stream_being_edited is not None
 
-        edit_history_event['prev_stream'] = stream_being_edited.id
+        edit_history_event["prev_stream"] = stream_being_edited.id
         event[ORIG_TOPIC] = orig_topic_name
         old_recipient_id = message.recipient_id
         message.recipient_id = new_stream.recipient_id
@@ -5503,11 +5503,11 @@ def do_update_message(
             ).delete()
 
             delete_event: DeleteMessagesEvent = {
-                'type': 'delete_message',
-                'message_ids': message_ids,
-                'message_type': 'stream',
-                'stream_id': stream_being_edited.id,
-                'topic': orig_topic_name,
+                "type": "delete_message",
+                "message_ids": message_ids,
+                "message_type": "stream",
+                "stream_id": stream_being_edited.id,
+                "topic": orig_topic_name,
             }
             delete_event_notify_user_ids = [sub.user_profile_id for sub in subs_losing_access]
             send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
@@ -5526,12 +5526,12 @@ def do_update_message(
     if stream_being_edited is not None:
         realm_id = stream_being_edited.realm_id
 
-    event['message_ids'] = update_to_dict_cache(changed_messages, realm_id)
+    event["message_ids"] = update_to_dict_cache(changed_messages, realm_id)
 
     def user_info(um: UserMessage) -> Dict[str, Any]:
         return {
-            'id': um.user_profile_id,
-            'flags': um.flags_list(),
+            "id": um.user_profile_id,
+            "flags": um.flags_list(),
         }
 
     # The following blocks arranges that users who are subscribed to a
@@ -5621,8 +5621,8 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         return
 
     event: DeleteMessagesEvent = {
-        'type': 'delete_message',
-        'message_ids': message_ids,
+        "type": "delete_message",
+        "message_ids": message_ids,
     }
 
     sample_message = messages[0]
@@ -5634,14 +5634,14 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         ums = UserMessage.objects.filter(message_id__in=message_ids)
         users_to_notify = [um.user_profile_id for um in ums]
         # TODO: We should plan to remove `sender_id` here.
-        event['recipient_id'] = sample_message.recipient_id
-        event['sender_id'] = sample_message.sender_id
+        event["recipient_id"] = sample_message.recipient_id
+        event["sender_id"] = sample_message.sender_id
         archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
 
     if message_type == "stream":
         stream_id = sample_message.recipient.type_id
-        event['stream_id'] = stream_id
-        event['topic'] = sample_message.topic_name()
+        event["stream_id"] = stream_id
+        event["topic"] = sample_message.topic_name()
         subscribers = get_active_subscriptions_for_stream_id(stream_id)
         # We exclude long-term idle users, since they by definition have no active clients.
         subscribers = subscribers.exclude(user_profile__long_term_idle=True)
@@ -5651,26 +5651,26 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
 
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
 
-    event['message_type'] = message_type
+    event["message_type"] = message_type
     send_event(realm, event, users_to_notify)
 
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
     message_ids = list(
-        Message.objects.filter(sender=user).values_list('id', flat=True).order_by('id')
+        Message.objects.filter(sender=user).values_list("id", flat=True).order_by("id")
     )
     if message_ids:
         move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
 
 
 def get_streams_traffic(stream_ids: Set[int]) -> Dict[int, int]:
-    stat = COUNT_STATS['messages_in_stream:is_bot:day']
+    stat = COUNT_STATS["messages_in_stream:is_bot:day"]
     traffic_from = timezone_now() - datetime.timedelta(days=28)
 
     query = StreamCount.objects.filter(property=stat.property, end_time__gt=traffic_from)
     query = query.filter(stream_id__in=stream_ids)
 
-    traffic_list = query.values('stream_id').annotate(value=Sum('value'))
+    traffic_list = query.values("stream_id").annotate(value=Sum("value"))
     traffic_dict = {}
     for traffic in traffic_list:
         traffic_dict[traffic["stream_id"]] = traffic["value"]
@@ -5723,18 +5723,18 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
 
         # Add versions of the Subscription fields based on a simulated
         # new user subscription set.
-        stream_dict['is_muted'] = False
-        stream_dict['color'] = get_next_color()
-        stream_dict['desktop_notifications'] = True
-        stream_dict['audible_notifications'] = True
-        stream_dict['push_notifications'] = True
-        stream_dict['email_notifications'] = True
-        stream_dict['pin_to_top'] = False
+        stream_dict["is_muted"] = False
+        stream_dict["color"] = get_next_color()
+        stream_dict["desktop_notifications"] = True
+        stream_dict["audible_notifications"] = True
+        stream_dict["push_notifications"] = True
+        stream_dict["email_notifications"] = True
+        stream_dict["pin_to_top"] = False
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             stream.id, stream.date_created, {}
         )
-        stream_dict['stream_weekly_traffic'] = stream_weekly_traffic
-        stream_dict['email_address'] = ''
+        stream_dict["stream_weekly_traffic"] = stream_weekly_traffic
+        stream_dict["email_address"] = ""
         subscribed.append(stream_dict)
 
     return SubscriptionInfo(
@@ -5886,7 +5886,7 @@ def gather_subscriptions_helper(
     if user_profile.can_access_public_streams():
         never_subscribed_stream_ids = set(all_streams_map) - sub_unsub_stream_ids
     else:
-        web_public_stream_ids = {stream['id'] for stream in all_streams if stream['is_web_public']}
+        web_public_stream_ids = {stream["id"] for stream in all_streams if stream["is_web_public"]}
         never_subscribed_stream_ids = web_public_stream_ids - sub_unsub_stream_ids
 
     never_subscribed_streams = [
@@ -5894,7 +5894,7 @@ def gather_subscriptions_helper(
     ]
 
     for stream in never_subscribed_streams:
-        is_public = not stream['invite_only']
+        is_public = not stream["invite_only"]
         if is_public or user_profile.is_realm_admin:
             stream_dict = build_stream_dict_for_never_sub(
                 stream=stream, recent_traffic=recent_traffic
@@ -5919,9 +5919,9 @@ def gather_subscriptions_helper(
                 sub["subscribers"] = subscriber_map[sub["stream_id"]]
 
     return SubscriptionInfo(
-        subscriptions=sorted(subscribed, key=lambda x: x['name']),
-        unsubscribed=sorted(unsubscribed, key=lambda x: x['name']),
-        never_subscribed=sorted(never_subscribed, key=lambda x: x['name']),
+        subscriptions=sorted(subscribed, key=lambda x: x["name"]),
+        unsubscribed=sorted(unsubscribed, key=lambda x: x["name"]),
+        never_subscribed=sorted(never_subscribed, key=lambda x: x["name"]),
     )
 
 
@@ -5941,16 +5941,16 @@ def gather_subscriptions(
         user_ids = set()
         for subs in [subscribed, unsubscribed]:
             for sub in subs:
-                if 'subscribers' in sub:
-                    for subscriber in sub['subscribers']:
+                if "subscribers" in sub:
+                    for subscriber in sub["subscribers"]:
                         user_ids.add(subscriber)
         email_dict = get_emails_from_user_ids(list(user_ids))
 
         for subs in [subscribed, unsubscribed]:
             for sub in subs:
-                if 'subscribers' in sub:
-                    sub['subscribers'] = sorted(
-                        email_dict[user_id] for user_id in sub['subscribers']
+                if "subscribers" in sub:
+                    sub["subscribers"] = sorted(
+                        email_dict[user_id] for user_id in sub["subscribers"]
                     )
 
     return (subscribed, unsubscribed)
@@ -5976,14 +5976,14 @@ def get_active_presence_idle_user_ids(
     if realm.presence_disabled:
         return []
 
-    is_pm = message_type == 'private'
+    is_pm = message_type == "private"
 
     user_ids = set()
     for user_id in active_user_ids:
         flags: Iterable[str] = user_flags.get(user_id, [])
-        mentioned = 'mentioned' in flags or 'wildcard_mentioned' in flags
+        mentioned = "mentioned" in flags or "wildcard_mentioned" in flags
         private_message = is_pm and user_id != sender_id
-        alerted = 'has_alert_word' in flags
+        alerted = "has_alert_word" in flags
         if mentioned or private_message or alerted:
             user_ids.add(user_id)
 
@@ -6017,10 +6017,10 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
             timestamp__gte=recent,
         )
         .exclude(client__name="ZulipMobile")
-        .distinct('user_profile_id')
-        .values('user_profile_id')
+        .distinct("user_profile_id")
+        .values("user_profile_id")
     )
-    active_user_ids = {row['user_profile_id'] for row in rows}
+    active_user_ids = {row["user_profile_id"] for row in rows}
     idle_user_ids = user_ids - active_user_ids
     return sorted(idle_user_ids)
 
@@ -6031,14 +6031,14 @@ def do_send_confirmation_email(invitee: PreregistrationUser, referrer: UserProfi
     """
     activation_url = create_confirmation_link(invitee, Confirmation.INVITATION)
     context = {
-        'referrer_full_name': referrer.full_name,
-        'referrer_email': referrer.delivery_email,
-        'activate_url': activation_url,
-        'referrer_realm_name': referrer.realm.name,
+        "referrer_full_name": referrer.full_name,
+        "referrer_email": referrer.delivery_email,
+        "activate_url": activation_url,
+        "referrer_realm_name": referrer.realm.name,
     }
     from_name = f"{referrer.full_name} (via Zulip)"
     send_email(
-        'zerver/emails/invitation',
+        "zerver/emails/invitation",
         to_emails=[invitee.email],
         from_name=from_name,
         from_address=FromAddress.tokenized_no_reply_address(),
@@ -6062,7 +6062,7 @@ def email_not_system_bot(email: str) -> None:
 
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
-    data_fields = ['errors', 'sent_invitations']
+    data_fields = ["errors", "sent_invitations"]
 
     def __init__(
         self, msg: str, errors: List[Tuple[str, str, bool]], sent_invitations: bool
@@ -6073,19 +6073,19 @@ class InvitationError(JsonableError):
 
 
 def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
-    '''An upper bound on the number of invites sent in the last `days` days'''
+    """An upper bound on the number of invites sent in the last `days` days"""
     recent_invites = RealmCount.objects.filter(
         realm__in=realms,
-        property='invites_sent::day',
+        property="invites_sent::day",
         end_time__gte=timezone_now() - datetime.timedelta(days=days),
-    ).aggregate(Sum('value'))['value__sum']
+    ).aggregate(Sum("value"))["value__sum"]
     if recent_invites is None:
         return 0
     return recent_invites
 
 
 def check_invite_limit(realm: Realm, num_invitees: int) -> None:
-    '''Discourage using invitation emails as a vector for carrying spam.'''
+    """Discourage using invitation emails as a vector for carrying spam."""
     msg = _(
         "You do not have enough remaining invites for today. "
         "Please contact {email} to have your limit raised. "
@@ -6126,7 +6126,7 @@ def do_invite_users(
     user_profile: UserProfile,
     invitee_emails: SizedTextIterable,
     streams: Iterable[Stream],
-    invite_as: int = PreregistrationUser.INVITE_AS['MEMBER'],
+    invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
 ) -> None:
 
     check_invite_limit(user_profile.realm, len(invitee_emails))
@@ -6149,7 +6149,7 @@ def do_invite_users(
     errors: List[Tuple[str, str, bool]] = []
     validate_email_allowed_in_realm = get_realm_email_validator(user_profile.realm)
     for email in invitee_emails:
-        if email == '':
+        if email == "":
             continue
         email_error = validate_email_is_valid(
             email,
@@ -6161,11 +6161,11 @@ def do_invite_users(
         else:
             good_emails.add(email)
 
-    '''
+    """
     good_emails are emails that look ok so far,
     but we still need to make sure they're not
     gonna conflict with existing users
-    '''
+    """
     error_dict = get_existing_user_errors(user_profile.realm, good_emails)
 
     skipped: List[Tuple[str, str, bool]] = []
@@ -6194,7 +6194,7 @@ def do_invite_users(
     # when exactly invitations were sent
     do_increment_logging_stat(
         user_profile.realm,
-        COUNT_STATS['invites_sent::day'],
+        COUNT_STATS["invites_sent::day"],
         None,
         timezone_now(),
         increment=len(validated_emails),
@@ -6325,7 +6325,7 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
     prereg_user.save()
 
     do_increment_logging_stat(
-        prereg_user.realm, COUNT_STATS['invites_sent::day'], None, prereg_user.invited_at
+        prereg_user.realm, COUNT_STATS["invites_sent::day"], None, prereg_user.invited_at
     )
 
     clear_scheduled_invitation_emails(prereg_user.email)
@@ -6368,7 +6368,7 @@ def check_add_realm_emoji(
             return None
         else:
             realm_emoji.file_name = emoji_file_name
-            realm_emoji.save(update_fields=['file_name'])
+            realm_emoji.save(update_fields=["file_name"])
             notify_realm_emoji(realm_emoji.realm)
     return realm_emoji
 
@@ -6376,7 +6376,7 @@ def check_add_realm_emoji(
 def do_remove_realm_emoji(realm: Realm, name: str) -> None:
     emoji = RealmEmoji.objects.get(realm=realm, name=name, deactivated=False)
     emoji.deactivated = True
-    emoji.save(update_fields=['deactivated'])
+    emoji.save(update_fields=["deactivated"])
     notify_realm_emoji(realm)
 
 
@@ -6473,7 +6473,7 @@ def do_add_realm_domain(realm: Realm, domain: str, allow_subdomains: bool) -> (R
 
 def do_change_realm_domain(realm_domain: RealmDomain, allow_subdomains: bool) -> None:
     realm_domain.allow_subdomains = allow_subdomains
-    realm_domain.save(update_fields=['allow_subdomains'])
+    realm_domain.save(update_fields=["allow_subdomains"])
     event = dict(
         type="realm_domains",
         op="change",
@@ -6495,7 +6495,7 @@ def do_remove_realm_domain(
         # longer restricted to domain, because the feature doesn't do
         # anything if there are no domains, and this is probably less
         # confusing than the alternative.
-        do_set_realm_property(realm, 'emails_restricted_to_domains', False, acting_user=acting_user)
+        do_set_realm_property(realm, "emails_restricted_to_domains", False, acting_user=acting_user)
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(realm, event, active_user_ids(realm.id))
 
@@ -6508,7 +6508,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet:
             active=True,
             user_profile__is_active=True,
             user_profile__realm=realm,
-            recipient_id=OuterRef('recipient_id'),
+            recipient_id=OuterRef("recipient_id"),
         ),
     )
     occupied_streams = (
@@ -6590,7 +6590,7 @@ def do_get_streams(
         for default_stream in default_streams:
             is_default[default_stream.id] = True
         for stream in streams:
-            stream['is_default'] = is_default.get(stream["stream_id"], False)
+            stream["is_default"] = is_default.get(stream["stream_id"], False)
 
     return streams
 
@@ -6599,9 +6599,9 @@ def notify_attachment_update(
     user_profile: UserProfile, op: str, attachment_dict: Dict[str, Any]
 ) -> None:
     event = {
-        'type': 'attachment',
-        'op': op,
-        'attachment': attachment_dict,
+        "type": "attachment",
+        "op": op,
+        "attachment": attachment_dict,
         "upload_space_used": user_profile.realm.currently_used_upload_space_bytes(),
     }
     send_event(user_profile.realm, event, [user_profile.id])
@@ -6686,15 +6686,15 @@ def try_add_realm_default_custom_profile_field(
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
     field = CustomProfileField(
         realm=realm,
-        name=field_data['name'],
+        name=field_data["name"],
         field_type=CustomProfileField.EXTERNAL_ACCOUNT,
-        hint=field_data['hint'],
+        hint=field_data["hint"],
         field_data=orjson.dumps(dict(subtype=field_subtype)).decode(),
     )
     field.save()
     field.order = field.id
-    field.save(update_fields=['order'])
-    notify_realm_custom_profile_fields(realm, 'add')
+    field.save(update_fields=["order"])
+    notify_realm_custom_profile_fields(realm, "add")
     return field
 
 
@@ -6702,7 +6702,7 @@ def try_add_realm_custom_profile_field(
     realm: Realm,
     name: str,
     field_type: int,
-    hint: str = '',
+    hint: str = "",
     field_data: Optional[ProfileFieldData] = None,
 ) -> CustomProfileField:
     field = CustomProfileField(realm=realm, name=name, field_type=field_type)
@@ -6715,8 +6715,8 @@ def try_add_realm_custom_profile_field(
 
     field.save()
     field.order = field.id
-    field.save(update_fields=['order'])
-    notify_realm_custom_profile_fields(realm, 'add')
+    field.save(update_fields=["order"])
+    notify_realm_custom_profile_fields(realm, "add")
     return field
 
 
@@ -6726,7 +6726,7 @@ def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField
     associated with it in CustomProfileFieldValue model.
     """
     field.delete()
-    notify_realm_custom_profile_fields(realm, 'delete')
+    notify_realm_custom_profile_fields(realm, "delete")
 
 
 def do_remove_realm_custom_profile_fields(realm: Realm) -> None:
@@ -6737,7 +6737,7 @@ def try_update_realm_custom_profile_field(
     realm: Realm,
     field: CustomProfileField,
     name: str,
-    hint: str = '',
+    hint: str = "",
     field_data: Optional[ProfileFieldData] = None,
 ) -> None:
     field.name = name
@@ -6748,7 +6748,7 @@ def try_update_realm_custom_profile_field(
     ):
         field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
-    notify_realm_custom_profile_fields(realm, 'update')
+    notify_realm_custom_profile_fields(realm, "update")
 
 
 def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> None:
@@ -6759,20 +6759,20 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> N
             raise JsonableError(_("Invalid order mapping."))
     for field in fields:
         field.order = order_mapping[field.id]
-        field.save(update_fields=['order'])
-    notify_realm_custom_profile_fields(realm, 'update')
+        field.save(update_fields=["order"])
+    notify_realm_custom_profile_fields(realm, "update")
 
 
 def notify_user_update_custom_profile_data(
     user_profile: UserProfile, field: Dict[str, Union[int, str, List[int], None]]
 ) -> None:
-    data = dict(id=field['id'])
-    if field['type'] == CustomProfileField.USER:
-        data["value"] = orjson.dumps(field['value']).decode()
+    data = dict(id=field["id"])
+    if field["type"] == CustomProfileField.USER:
+        data["value"] = orjson.dumps(field["value"]).decode()
     else:
-        data['value'] = field['value']
-    if field['rendered_value']:
-        data['rendered_value'] = field['rendered_value']
+        data["value"] = field["value"]
+    if field["rendered_value"]:
+        data["rendered_value"] = field["rendered_value"]
     payload = dict(user_id=user_profile.id, custom_profile_field=data)
     event = dict(type="realm_user", op="update", person=payload)
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm.id))
@@ -6785,22 +6785,22 @@ def do_update_user_custom_profile_data_if_changed(
     with transaction.atomic():
         for field in data:
             field_value, created = CustomProfileFieldValue.objects.get_or_create(
-                user_profile=user_profile, field_id=field['id']
+                user_profile=user_profile, field_id=field["id"]
             )
 
-            if not created and field_value.value == str(field['value']):
+            if not created and field_value.value == str(field["value"]):
                 # If the field value isn't actually being changed to a different one,
                 # and always_notify is disabled, we have nothing to do here for this field.
                 # Note: field_value.value is a TextField() so we need to cast field['value']
                 # to a string for the comparison in this if.
                 continue
 
-            field_value.value = field['value']
+            field_value.value = field["value"]
             if field_value.field.is_renderable():
-                field_value.rendered_value = render_stream_description(str(field['value']))
-                field_value.save(update_fields=['value', 'rendered_value'])
+                field_value.rendered_value = render_stream_description(str(field["value"]))
+                field_value.save(update_fields=["value", "rendered_value"])
             else:
-                field_value.save(update_fields=['value'])
+                field_value.save(update_fields=["value"])
             notify_user_update_custom_profile_data(
                 user_profile,
                 {
@@ -6819,10 +6819,10 @@ def check_remove_custom_profile_field_value(user_profile: UserProfile, field_id:
         field_value.delete()
         notify_user_update_custom_profile_data(
             user_profile,
-            {'id': field_id, 'value': None, 'rendered_value': None, 'type': field.field_type},
+            {"id": field_id, "value": None, "rendered_value": None, "type": field.field_type},
         )
     except CustomProfileField.DoesNotExist:
-        raise JsonableError(_('Field id {id} not found.').format(id=field_id))
+        raise JsonableError(_("Field id {id} not found.").format(id=field_id))
     except CustomProfileFieldValue.DoesNotExist:
         pass
 
@@ -6852,14 +6852,14 @@ def check_add_user_group(
 
 
 def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, str]) -> None:
-    event = dict(type="user_group", op='update', group_id=user_group.id, data=data)
+    event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
 def do_update_user_group_name(user_group: UserGroup, name: str) -> None:
     try:
         user_group.name = name
-        user_group.save(update_fields=['name'])
+        user_group.save(update_fields=["name"])
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{}' already exists.").format(name))
     do_send_user_group_update_event(user_group, dict(name=name))
@@ -6867,7 +6867,7 @@ def do_update_user_group_name(user_group: UserGroup, name: str) -> None:
 
 def do_update_user_group_description(user_group: UserGroup, description: str) -> None:
     user_group.description = description
-    user_group.save(update_fields=['description'])
+    user_group.save(update_fields=["description"])
     do_send_user_group_update_event(user_group, dict(description=description))
 
 
@@ -6883,8 +6883,8 @@ def do_update_outgoing_webhook_service(
     send_event(
         bot_profile.realm,
         dict(
-            type='realm_bot',
-            op='update',
+            type="realm_bot",
+            op="update",
             bot=dict(
                 user_id=bot_profile.id,
                 services=[
@@ -6905,8 +6905,8 @@ def do_update_bot_config_data(bot_profile: UserProfile, config_data: Dict[str, s
     send_event(
         bot_profile.realm,
         dict(
-            type='realm_bot',
-            op='update',
+            type="realm_bot",
+            op="update",
             bot=dict(
                 user_id=bot_profile.id,
                 services=[dict(config_data=updated_config_data)],
@@ -6923,9 +6923,9 @@ def get_service_dicts_for_bot(user_profile_id: int) -> List[Dict[str, Any]]:
     if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
         service_dicts = [
             {
-                'base_url': service.base_url,
-                'interface': service.interface,
-                'token': service.token,
+                "base_url": service.base_url,
+                "interface": service.interface,
+                "token": service.token,
             }
             for service in services
         ]
@@ -6933,8 +6933,8 @@ def get_service_dicts_for_bot(user_profile_id: int) -> List[Dict[str, Any]]:
         try:
             service_dicts = [
                 {
-                    'config_data': get_bot_config(user_profile),
-                    'service_name': services[0].name,
+                    "config_data": get_bot_config(user_profile),
+                    "service_name": services[0].name,
                 }
             ]
         # A ConfigError just means that there are no config entries for user_profile.
@@ -6946,13 +6946,13 @@ def get_service_dicts_for_bot(user_profile_id: int) -> List[Dict[str, Any]]:
 def get_service_dicts_for_bots(
     bot_dicts: List[Dict[str, Any]], realm: Realm
 ) -> Dict[int, List[Dict[str, Any]]]:
-    bot_profile_ids = [bot_dict['id'] for bot_dict in bot_dicts]
+    bot_profile_ids = [bot_dict["id"] for bot_dict in bot_dicts]
     bot_services_by_uid: Dict[int, List[Service]] = defaultdict(list)
     for service in Service.objects.filter(user_profile_id__in=bot_profile_ids):
         bot_services_by_uid[service.user_profile_id].append(service)
 
     embedded_bot_ids = [
-        bot_dict['id'] for bot_dict in bot_dicts if bot_dict['bot_type'] == UserProfile.EMBEDDED_BOT
+        bot_dict["id"] for bot_dict in bot_dicts if bot_dict["bot_type"] == UserProfile.EMBEDDED_BOT
     ]
     embedded_bot_configs = get_bot_configs(embedded_bot_ids)
 
@@ -6965,9 +6965,9 @@ def get_service_dicts_for_bots(
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
             service_dicts = [
                 {
-                    'base_url': service.base_url,
-                    'interface': service.interface,
-                    'token': service.token,
+                    "base_url": service.base_url,
+                    "interface": service.interface,
+                    "token": service.token,
                 }
                 for service in services
             ]
@@ -6976,8 +6976,8 @@ def get_service_dicts_for_bots(
                 bot_config = embedded_bot_configs[bot_profile_id]
                 service_dicts = [
                     {
-                        'config_data': bot_config,
-                        'service_name': services[0].name,
+                        "config_data": bot_config,
+                        "service_name": services[0].name,
                     }
                 ]
         service_dicts_by_uid[bot_profile_id] = service_dicts
@@ -6996,18 +6996,18 @@ def get_owned_bot_dicts(
     services_by_ids = get_service_dicts_for_bots(result, user_profile.realm)
     return [
         {
-            'email': botdict['email'],
-            'user_id': botdict['id'],
-            'full_name': botdict['full_name'],
-            'bot_type': botdict['bot_type'],
-            'is_active': botdict['is_active'],
-            'api_key': botdict['api_key'],
-            'default_sending_stream': botdict['default_sending_stream__name'],
-            'default_events_register_stream': botdict['default_events_register_stream__name'],
-            'default_all_public_streams': botdict['default_all_public_streams'],
-            'owner_id': botdict['bot_owner__id'],
-            'avatar_url': avatar_url_from_dict(botdict),
-            'services': services_by_ids[botdict['id']],
+            "email": botdict["email"],
+            "user_id": botdict["id"],
+            "full_name": botdict["full_name"],
+            "bot_type": botdict["bot_type"],
+            "is_active": botdict["is_active"],
+            "api_key": botdict["api_key"],
+            "default_sending_stream": botdict["default_sending_stream__name"],
+            "default_events_register_stream": botdict["default_events_register_stream__name"],
+            "default_all_public_streams": botdict["default_all_public_streams"],
+            "owner_id": botdict["bot_owner__id"],
+            "avatar_url": avatar_url_from_dict(botdict),
+            "services": services_by_ids[botdict["id"]],
         }
         for botdict in result
     ]
@@ -7028,7 +7028,7 @@ def bulk_add_members_to_user_group(user_group: UserGroup, user_profiles: List[Us
     UserGroupMembership.objects.bulk_create(memberships)
 
     user_ids = [up.id for up in user_profiles]
-    do_send_user_group_members_update_event('add_members', user_group, user_ids)
+    do_send_user_group_members_update_event("add_members", user_group, user_ids)
 
 
 def remove_members_from_user_group(user_group: UserGroup, user_profiles: List[UserProfile]) -> None:
@@ -7037,7 +7037,7 @@ def remove_members_from_user_group(user_group: UserGroup, user_profiles: List[Us
     ).delete()
 
     user_ids = [up.id for up in user_profiles]
-    do_send_user_group_members_update_event('remove_members', user_group, user_ids)
+    do_send_user_group_members_update_event("remove_members", user_group, user_ids)
 
 
 def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: int) -> None:
@@ -7053,10 +7053,10 @@ def check_delete_user_group(user_group_id: int, user_profile: UserProfile) -> No
 
 def do_send_realm_reactivation_email(realm: Realm) -> None:
     url = create_confirmation_link(realm, Confirmation.REALM_REACTIVATION)
-    context = {'confirmation_url': url, 'realm_uri': realm.uri, 'realm_name': realm.name}
+    context = {"confirmation_url": url, "realm_uri": realm.uri, "realm_name": realm.name}
     language = realm.default_language
     send_email_to_admins(
-        'zerver/emails/realm_reactivation',
+        "zerver/emails/realm_reactivation",
         realm,
         from_address=FromAddress.tokenized_no_reply_address(),
         from_name=FromAddress.security_email_from_name(language=language),
@@ -7077,7 +7077,7 @@ def do_set_zoom_token(user: UserProfile, token: Optional[Dict[str, object]]) -> 
 
 def notify_realm_export(user_profile: UserProfile) -> None:
     # In the future, we may want to send this event to all realm admins.
-    event = dict(type='realm_export', exports=get_realm_exports_serialized(user_profile))
+    event = dict(type="realm_export", exports=get_realm_exports_serialized(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 
 
@@ -7087,7 +7087,7 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
     export_extra_data = export.extra_data
     assert export_extra_data is not None
     export_data = orjson.loads(export_extra_data)
-    export_path = export_data.get('export_path')
+    export_path = export_data.get("export_path")
 
     if export_path:
         # Allow removal even if the export failed.
@@ -7095,7 +7095,7 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
 
     export_data.update(deleted_timestamp=timezone_now().timestamp())
     export.extra_data = orjson.dumps(export_data).decode()
-    export.save(update_fields=['extra_data'])
+    export.save(update_fields=["extra_data"])
     notify_realm_export(user_profile)
 
 

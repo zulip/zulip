@@ -30,7 +30,7 @@ def set_initial_value_of_is_private_flag(
             .order_by("id")
         )
         count = UserMessage.objects.filter(message_id__in=message_ids).update(
-            flags=F('flags').bitor(UserMessage.flags.is_private)
+            flags=F("flags").bitor(UserMessage.flags.is_private)
         )
         if count == 0 and range_end >= Message.objects.last().id:
             break
@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0181_userprofile_change_emojiset'),
+        ("zerver", "0181_userprofile_change_emojiset"),
     ]
 
     operations = [

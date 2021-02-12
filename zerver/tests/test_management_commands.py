@@ -31,7 +31,7 @@ from zerver.models import (
 class TestCheckConfig(ZulipTestCase):
     def test_check_config(self) -> None:
         check_config()
-        with self.settings(REQUIRED_SETTINGS=[('asdf', 'not asdf')]):
+        with self.settings(REQUIRED_SETTINGS=[("asdf", "not asdf")]):
             with self.assertRaisesRegex(
                 CommandError, "Error: You must set asdf in /etc/zulip/settings.py."
             ):
@@ -40,7 +40,7 @@ class TestCheckConfig(ZulipTestCase):
     @override_settings(WARN_NO_EMAIL=True)
     def test_check_send_email(self) -> None:
         with self.assertRaisesRegex(CommandError, "Outgoing email not yet configured, see"):
-            call_command("send_test_email", 'test@example.com')
+            call_command("send_test_email", "test@example.com")
 
 
 class TestZulipBaseCommand(ZulipTestCase):
@@ -53,15 +53,15 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(self.command.get_client().name, "ZulipServer")
 
     def test_get_realm(self) -> None:
-        self.assertEqual(self.command.get_realm(dict(realm_id='zulip')), self.zulip_realm)
+        self.assertEqual(self.command.get_realm(dict(realm_id="zulip")), self.zulip_realm)
         self.assertEqual(self.command.get_realm(dict(realm_id=None)), None)
         self.assertEqual(
             self.command.get_realm(dict(realm_id=str(self.zulip_realm.id))), self.zulip_realm
         )
         with self.assertRaisesRegex(CommandError, "There is no realm with id"):
-            self.command.get_realm(dict(realm_id='17'))
+            self.command.get_realm(dict(realm_id="17"))
         with self.assertRaisesRegex(CommandError, "There is no realm with id"):
-            self.command.get_realm(dict(realm_id='mit'))
+            self.command.get_realm(dict(realm_id="mit"))
 
     def test_get_user(self) -> None:
         mit_realm = get_realm("zephyr")
@@ -76,9 +76,9 @@ class TestZulipBaseCommand(ZulipTestCase):
             self.command.get_user(email, mit_realm)
 
         with self.assertRaisesRegex(CommandError, "server does not contain a user with email"):
-            self.command.get_user('invalid_email@example.com', None)
+            self.command.get_user("invalid_email@example.com", None)
 
-        do_create_user(email, 'password', mit_realm, 'full_name')
+        do_create_user(email, "password", mit_realm, "full_name")
 
         with self.assertRaisesRegex(CommandError, "server contains multiple users with that email"):
             self.command.get_user(email, None)
@@ -101,12 +101,12 @@ class TestZulipBaseCommand(ZulipTestCase):
     def test_get_users(self) -> None:
         expected_user_profiles = self.sorted_users(
             [
-                self.example_user('hamlet'),
-                self.example_user('iago'),
+                self.example_user("hamlet"),
+                self.example_user("iago"),
             ]
         )
 
-        user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
+        user_emails = ",".join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), self.zulip_realm)
         self.assertEqual(user_profiles, expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
@@ -114,11 +114,11 @@ class TestZulipBaseCommand(ZulipTestCase):
 
         expected_user_profiles = self.sorted_users(
             [
-                self.mit_user('sipbtest'),
-                self.example_user('iago'),
+                self.mit_user("sipbtest"),
+                self.example_user("iago"),
             ]
         )
-        user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
+        user_emails = ",".join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
         self.assertEqual(user_profiles, expected_user_profiles)
         error_message = f"The realm '{self.zulip_realm}' does not contain a user with email"
@@ -135,11 +135,11 @@ class TestZulipBaseCommand(ZulipTestCase):
     def test_get_users_with_all_users_argument_enabled(self) -> None:
         expected_user_profiles = self.sorted_users(
             [
-                self.example_user('hamlet'),
-                self.example_user('iago'),
+                self.example_user("hamlet"),
+                self.example_user("iago"),
             ]
         )
-        user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
+        user_emails = ",".join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(
             dict(users=user_emails, all_users=False), self.zulip_realm
         )
@@ -212,39 +212,39 @@ class TestCommandsCanStart(ZulipTestCase):
             for command in self.commands:
                 with self.subTest(management_command=command):
                     with self.assertRaises(SystemExit):
-                        call_command(command, '--help')
+                        call_command(command, "--help")
         # zerver/management/commands/runtornado.py sets this to True;
         # we need to reset it here.  See #3685 for details.
         settings.RUNNING_INSIDE_TORNADO = False
 
 
 class TestSendWebhookFixtureMessage(ZulipTestCase):
-    COMMAND_NAME = 'send_webhook_fixture_message'
+    COMMAND_NAME = "send_webhook_fixture_message"
 
     def setUp(self) -> None:
         super().setUp()
-        self.fixture_path = os.path.join('some', 'fake', 'path.json')
-        self.url = '/some/url/with/hook'
+        self.fixture_path = os.path.join("some", "fake", "path.json")
+        self.url = "/some/url/with/hook"
 
-    @patch('zerver.management.commands.send_webhook_fixture_message.Command.print_help')
+    @patch("zerver.management.commands.send_webhook_fixture_message.Command.print_help")
     def test_check_if_command_exits_when_fixture_param_is_empty(
         self, print_help_mock: MagicMock
     ) -> None:
         with self.assertRaises(CommandError):
             call_command(self.COMMAND_NAME, url=self.url)
 
-        print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
+        print_help_mock.assert_any_call("./manage.py", self.COMMAND_NAME)
 
-    @patch('zerver.management.commands.send_webhook_fixture_message.Command.print_help')
+    @patch("zerver.management.commands.send_webhook_fixture_message.Command.print_help")
     def test_check_if_command_exits_when_url_param_is_empty(
         self, print_help_mock: MagicMock
     ) -> None:
         with self.assertRaises(CommandError):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path)
 
-        print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
+        print_help_mock.assert_any_call("./manage.py", self.COMMAND_NAME)
 
-    @patch('zerver.management.commands.send_webhook_fixture_message.os.path.exists')
+    @patch("zerver.management.commands.send_webhook_fixture_message.os.path.exists")
     def test_check_if_command_exits_when_fixture_path_does_not_exist(
         self, os_path_exists_mock: MagicMock
     ) -> None:
@@ -255,9 +255,9 @@ class TestSendWebhookFixtureMessage(ZulipTestCase):
 
         os_path_exists_mock.assert_any_call(os.path.join(settings.DEPLOY_ROOT, self.fixture_path))
 
-    @patch('zerver.management.commands.send_webhook_fixture_message.os.path.exists')
-    @patch('zerver.management.commands.send_webhook_fixture_message.Client')
-    @patch('zerver.management.commands.send_webhook_fixture_message.orjson')
+    @patch("zerver.management.commands.send_webhook_fixture_message.os.path.exists")
+    @patch("zerver.management.commands.send_webhook_fixture_message.Client")
+    @patch("zerver.management.commands.send_webhook_fixture_message.orjson")
     @patch("zerver.management.commands.send_webhook_fixture_message.open", create=True)
     def test_check_if_command_post_request_to_url_with_fixture(
         self,
@@ -296,10 +296,10 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
         # Enter email
         with self.assertRaises(Realm.DoesNotExist):
-            get_realm('test')
-        result = self.client_post(generated_link, {'email': email})
+            get_realm("test")
+        result = self.client_post(generated_link, {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(re.search(r'/accounts/do_confirm/\w+$', result["Location"]))
+        self.assertTrue(re.search(r"/accounts/do_confirm/\w+$", result["Location"]))
 
         # Bypass sending mail for confirmation, go straight to creation form
         result = self.client_get(result["Location"])
@@ -316,9 +316,9 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         email = "user1@test.com"
         generated_link = generate_realm_creation_url(by_admin=False)
 
-        result = self.client_post(generated_link, {'email': email})
+        result = self.client_post(generated_link, {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(re.search(f'/accounts/new/send_confirm/{email}$', result["Location"]))
+        self.assertTrue(re.search(f"/accounts/new/send_confirm/{email}$", result["Location"]))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started", result)
 
@@ -356,7 +356,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
 @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class TestCalculateFirstVisibleMessageID(ZulipTestCase):
-    COMMAND_NAME = 'calculate_first_visible_message_id'
+    COMMAND_NAME = "calculate_first_visible_message_id"
 
     def test_check_if_command_calls_maybe_update_first_visible_message_id(self) -> None:
         func_name = "zilencer.management.commands.calculate_first_visible_message_id.maybe_update_first_visible_message_id"
@@ -388,7 +388,7 @@ class TestRealmReactivationEmail(ZulipTestCase):
     COMMAND_NAME = "send_realm_reactivation_email"
 
     def test_if_realm_not_deactivated(self) -> None:
-        realm = get_realm('zulip')
+        realm = get_realm("zulip")
         with self.assertRaisesRegex(CommandError, f"The realm {realm.name} is already active."):
             call_command(self.COMMAND_NAME, "--realm=zulip")
 
@@ -398,15 +398,15 @@ class TestSendToEmailMirror(ZulipTestCase):
 
     def test_sending_a_fixture(self) -> None:
         fixture_path = "zerver/tests/fixtures/email/1.txt"
-        user_profile = self.example_user('hamlet')
+        user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
-        with self.assertLogs('zerver.lib.email_mirror', level='INFO') as info_log:
+        with self.assertLogs("zerver.lib.email_mirror", level="INFO") as info_log:
             call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
         self.assertEqual(
             info_log.output,
-            ['INFO:zerver.lib.email_mirror:Successfully processed email to Denmark (zulip)'],
+            ["INFO:zerver.lib.email_mirror:Successfully processed email to Denmark (zulip)"],
         )
         message = most_recent_message(user_profile)
 
@@ -415,15 +415,15 @@ class TestSendToEmailMirror(ZulipTestCase):
 
     def test_sending_a_json_fixture(self) -> None:
         fixture_path = "zerver/tests/fixtures/email/1.json"
-        user_profile = self.example_user('hamlet')
+        user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
-        with self.assertLogs('zerver.lib.email_mirror', level='INFO') as info_log:
+        with self.assertLogs("zerver.lib.email_mirror", level="INFO") as info_log:
             call_command(self.COMMAND_NAME, f"--fixture={fixture_path}")
         self.assertEqual(
             info_log.output,
-            ['INFO:zerver.lib.email_mirror:Successfully processed email to Denmark (zulip)'],
+            ["INFO:zerver.lib.email_mirror:Successfully processed email to Denmark (zulip)"],
         )
         message = most_recent_message(user_profile)
 
@@ -432,15 +432,15 @@ class TestSendToEmailMirror(ZulipTestCase):
 
     def test_stream_option(self) -> None:
         fixture_path = "zerver/tests/fixtures/email/1.txt"
-        user_profile = self.example_user('hamlet')
+        user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark2")
 
-        with self.assertLogs('zerver.lib.email_mirror', level='INFO') as info_log:
+        with self.assertLogs("zerver.lib.email_mirror", level="INFO") as info_log:
             call_command(self.COMMAND_NAME, f"--fixture={fixture_path}", "--stream=Denmark2")
         self.assertEqual(
             info_log.output,
-            ['INFO:zerver.lib.email_mirror:Successfully processed email to Denmark2 (zulip)'],
+            ["INFO:zerver.lib.email_mirror:Successfully processed email to Denmark2 (zulip)"],
         )
         message = most_recent_message(user_profile)
 
@@ -453,12 +453,12 @@ class TestSendToEmailMirror(ZulipTestCase):
 
 
 class TestConvertMattermostData(ZulipTestCase):
-    COMMAND_NAME = 'convert_mattermost_data'
+    COMMAND_NAME = "convert_mattermost_data"
 
     def test_if_command_calls_do_convert_data(self) -> None:
         with patch(
-            'zerver.management.commands.convert_mattermost_data.do_convert_data'
-        ) as m, patch('builtins.print') as mock_print:
+            "zerver.management.commands.convert_mattermost_data.do_convert_data"
+        ) as m, patch("builtins.print") as mock_print:
             mm_fixtures = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
             call_command(self.COMMAND_NAME, mm_fixtures, f"--output={output_dir}")
@@ -468,22 +468,22 @@ class TestConvertMattermostData(ZulipTestCase):
             mattermost_data_dir=os.path.realpath(mm_fixtures),
             output_dir=os.path.realpath(output_dir),
         )
-        self.assertEqual(mock_print.mock_calls, [call('Converting data ...')])
+        self.assertEqual(mock_print.mock_calls, [call("Converting data ...")])
 
 
 @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class TestInvoicePlans(ZulipTestCase):
-    COMMAND_NAME = 'invoice_plans'
+    COMMAND_NAME = "invoice_plans"
 
     def test_if_command_calls_invoice_plans_as_needed(self) -> None:
-        with patch('zilencer.management.commands.invoice_plans.invoice_plans_as_needed') as m:
+        with patch("zilencer.management.commands.invoice_plans.invoice_plans_as_needed") as m:
             call_command(self.COMMAND_NAME)
 
         m.assert_called_once()
 
 
 class TestExport(ZulipTestCase):
-    COMMAND_NAME = 'export'
+    COMMAND_NAME = "export"
 
     def test_command_with_consented_message_id(self) -> None:
         realm = get_realm("zulip")
@@ -502,8 +502,8 @@ class TestExport(ZulipTestCase):
         )
 
         with patch("zerver.management.commands.export.export_realm_wrapper") as m, patch(
-            'builtins.print'
-        ) as mock_print, patch('builtins.input', return_value='y') as mock_input:
+            "builtins.print"
+        ) as mock_print, patch("builtins.input", return_value="y") as mock_input:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
             m.assert_called_once_with(
                 realm=realm,
@@ -515,40 +515,40 @@ class TestExport(ZulipTestCase):
                 percent_callback=mock.ANY,
                 upload=False,
             )
-            mock_input.assert_called_once_with('Continue? [y/N] ')
+            mock_input.assert_called_once_with("Continue? [y/N] ")
 
         self.assertEqual(
             mock_print.mock_calls,
             [
-                call('\033[94mExporting realm\033[0m: zulip'),
-                call('\n\033[94mMessage content:\033[0m\nOutbox emoji for export\n'),
+                call("\033[94mExporting realm\033[0m: zulip"),
+                call("\n\033[94mMessage content:\033[0m\nOutbox emoji for export\n"),
                 call(
-                    '\033[94mNumber of users that reacted outbox:\033[0m 2 / 8 total non-guest users\n'
+                    "\033[94mNumber of users that reacted outbox:\033[0m 2 / 8 total non-guest users\n"
                 ),
             ],
         )
 
         with self.assertRaisesRegex(CommandError, "Message with given ID does not"), patch(
-            'builtins.print'
+            "builtins.print"
         ) as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id=123456")
         self.assertEqual(
             mock_print.mock_calls,
             [
-                call('\033[94mExporting realm\033[0m: zulip'),
+                call("\033[94mExporting realm\033[0m: zulip"),
             ],
         )
 
         message.last_edit_time = timezone_now()
         message.save()
         with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."), patch(
-            'builtins.print'
+            "builtins.print"
         ) as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
         self.assertEqual(
             mock_print.mock_calls,
             [
-                call('\033[94mExporting realm\033[0m: zulip'),
+                call("\033[94mExporting realm\033[0m: zulip"),
             ],
         )
 
@@ -559,12 +559,12 @@ class TestExport(ZulipTestCase):
         )
         with self.assertRaisesRegex(
             CommandError, "Users from a different realm reacted to message. Aborting..."
-        ), patch('builtins.print') as mock_print:
+        ), patch("builtins.print") as mock_print:
             call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
 
         self.assertEqual(
             mock_print.mock_calls,
             [
-                call('\033[94mExporting realm\033[0m: zulip'),
+                call("\033[94mExporting realm\033[0m: zulip"),
             ],
         )

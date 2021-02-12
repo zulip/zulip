@@ -19,7 +19,7 @@ from zerver.models import UserActivity, UserProfile
 
 def get_latest_update_message_flag_activity(user_profile: UserProfile) -> Optional[UserActivity]:
     return (
-        UserActivity.objects.filter(user_profile=user_profile, query='update_message_flags')
+        UserActivity.objects.filter(user_profile=user_profile, query="update_message_flags")
         .order_by("last_visit")
         .last()
     )
@@ -32,7 +32,7 @@ def update_message_flags(
     request: HttpRequest,
     user_profile: UserProfile,
     messages: List[int] = REQ(validator=check_list(check_int)),
-    operation: str = REQ('op'),
+    operation: str = REQ("op"),
     flag: str = REQ(),
 ) -> HttpResponse:
 
@@ -42,7 +42,7 @@ def update_message_flags(
     log_data_str = f"[{operation} {flag}/{target_count_str}] actually {count}"
     request._log_data["extra"] = log_data_str
 
-    return json_success({'result': 'success', 'messages': messages, 'msg': ''})
+    return json_success({"result": "success", "messages": messages, "msg": ""})
 
 
 @has_request_variables
@@ -52,7 +52,7 @@ def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     log_data_str = f"[{count} updated]"
     request._log_data["extra"] = log_data_str
 
-    return json_success({'result': 'success', 'msg': ''})
+    return json_success({"result": "success", "msg": ""})
 
 
 @has_request_variables
@@ -65,7 +65,7 @@ def mark_stream_as_read(
     log_data_str = f"[{count} updated]"
     request._log_data["extra"] = log_data_str
 
-    return json_success({'result': 'success', 'msg': ''})
+    return json_success({"result": "success", "msg": ""})
 
 
 @has_request_variables
@@ -85,11 +85,11 @@ def mark_topic_as_read(
         )
 
         if not topic_exists:
-            raise JsonableError(_('No such topic \'{}\'').format(topic_name))
+            raise JsonableError(_("No such topic '{}'").format(topic_name))
 
     count = do_mark_stream_messages_as_read(user_profile, stream.recipient_id, topic_name)
 
     log_data_str = f"[{count} updated]"
     request._log_data["extra"] = log_data_str
 
-    return json_success({'result': 'success', 'msg': ''})
+    return json_success({"result": "success", "msg": ""})

@@ -38,7 +38,7 @@ class ExtraConsoleOutputFinder:
         self.full_extra_output = ""
 
     def find_extra_output(self, data: str) -> None:
-        lines = data.split('\n')
+        lines = data.split("\n")
         for line in lines:
             if not line:
                 continue
@@ -48,7 +48,7 @@ class ExtraConsoleOutputFinder:
                     found_extra_output = False
                     break
             if found_extra_output:
-                self.full_extra_output += f'{line}\n'
+                self.full_extra_output += f"{line}\n"
 
 
 class TeeStderrAndFindExtraConsoleOutput:
@@ -57,7 +57,7 @@ class TeeStderrAndFindExtraConsoleOutput:
 
         # get shared console handler instance from any logger that have it
         self.console_log_handler = cast(
-            logging.StreamHandler, logging.getLogger('django.server').handlers[0]
+            logging.StreamHandler, logging.getLogger("django.server").handlers[0]
         )
 
         assert isinstance(self.console_log_handler, logging.StreamHandler)

@@ -14,9 +14,9 @@ import orjson
 
 TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR)
-REQS_DIR = os.path.join(ZULIP_PATH, 'requirements')
-CACHE_DIR = os.path.join(ZULIP_PATH, 'var', 'tmp')
-CACHE_FILE = os.path.join(CACHE_DIR, 'requirements_hashes')
+REQS_DIR = os.path.join(ZULIP_PATH, "requirements")
+CACHE_DIR = os.path.join(ZULIP_PATH, "var", "tmp")
+CACHE_FILE = os.path.join(CACHE_DIR, "requirements_hashes")
 
 
 def print_diff(path_file1: str, path_file2: str) -> None:
@@ -42,7 +42,7 @@ def test_locked_requirements(tmp_dir: str) -> bool:
         test_locked_file = os.path.join(tmp_dir, fn)
         shutil.copyfile(locked_file, test_locked_file)
     subprocess.check_call(
-        [os.path.join(TOOLS_DIR, 'update-locked-requirements'), '--output-dir', tmp_dir]
+        [os.path.join(TOOLS_DIR, "update-locked-requirements"), "--output-dir", tmp_dir]
     )
 
     same = True
@@ -62,7 +62,7 @@ def get_requirements_hash(tmp_dir: str, use_test_lock_files: bool = False) -> st
         lock_files_path = tmp_dir
     reqs_files.extend(sorted(glob.glob(os.path.join(lock_files_path, "*.txt"))))
     for file_path in reqs_files:
-        with open(file_path, 'rb') as fp:
+        with open(file_path, "rb") as fp:
             sha1.update(fp.read())
     return sha1.hexdigest()
 
@@ -70,7 +70,7 @@ def get_requirements_hash(tmp_dir: str, use_test_lock_files: bool = False) -> st
 def may_be_setup_cache() -> None:
     os.makedirs(CACHE_DIR, exist_ok=True)
     if not os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, 'wb') as fp:
+        with open(CACHE_FILE, "wb") as fp:
             fp.write(orjson.dumps([]))
 
 
@@ -85,7 +85,7 @@ def update_cache(hash_list: List[str]) -> None:
     # not a problem as it is cheap to do.
     if len(hash_list) > 100:
         hash_list = hash_list[-100:]
-    with open(CACHE_FILE, 'wb') as fp:
+    with open(CACHE_FILE, "wb") as fp:
         fp.write(orjson.dumps(hash_list))
 
 
@@ -122,5 +122,5 @@ def main() -> None:
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

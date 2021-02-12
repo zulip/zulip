@@ -2,10 +2,10 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class CodeshipHookTests(WebhookTestCase):
-    STREAM_NAME = 'codeship'
+    STREAM_NAME = "codeship"
     URL_TEMPLATE = "/api/v1/external/codeship?stream={stream}&api_key={api_key}"
     TOPIC = "codeship/docs"
-    FIXTURE_DIR_NAME = 'codeship'
+    FIXTURE_DIR_NAME = "codeship"
 
     def test_codeship_build_in_testing_status_message(self) -> None:
         """

@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     """
 
     dependencies = [
-        ('zerver', '0300_add_attachment_is_web_public'),
+        ("zerver", "0300_add_attachment_is_web_public"),
     ]
 
     operations = [

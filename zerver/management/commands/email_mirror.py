@@ -47,16 +47,16 @@ def get_imap_messages() -> Generator[EmailMessage, None, None]:
     try:
         mbox.select(settings.EMAIL_GATEWAY_IMAP_FOLDER)
         try:
-            status, num_ids_data = mbox.search(None, 'ALL')
+            status, num_ids_data = mbox.search(None, "ALL")
             for message_id in num_ids_data[0].split():
-                status, msg_data = mbox.fetch(message_id, '(RFC822)')
+                status, msg_data = mbox.fetch(message_id, "(RFC822)")
                 assert isinstance(msg_data[0], tuple)
                 msg_as_bytes = msg_data[0][1]
                 message = email.message_from_bytes(msg_as_bytes, policy=email.policy.default)
                 # https://github.com/python/typeshed/issues/2417
                 assert isinstance(message, EmailMessage)
                 yield message
-                mbox.store(message_id, '+FLAGS', '\\Deleted')
+                mbox.store(message_id, "+FLAGS", "\\Deleted")
             mbox.expunge()
         finally:
             mbox.close()

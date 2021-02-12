@@ -13,34 +13,34 @@ from zerver.tornado.event_queue import maybe_enqueue_notifications
 
 class EditMessageSideEffectsTest(ZulipTestCase):
     def _assert_update_does_not_notify_anybody(self, message_id: int, content: str) -> None:
-        url = '/json/messages/' + str(message_id)
+        url = "/json/messages/" + str(message_id)
 
         request = dict(
             message_id=message_id,
             content=content,
         )
 
-        with mock.patch('zerver.tornado.event_queue.maybe_enqueue_notifications') as m:
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
             result = self.client_patch(url, request)
 
         self.assert_json_success(result)
         self.assertFalse(m.called)
 
     def test_updates_with_pm_mention(self) -> None:
-        hamlet = self.example_user('hamlet')
-        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
 
         self.login_user(hamlet)
 
         message_id = self.send_personal_message(
             hamlet,
             cordelia,
-            content='no mention',
+            content="no mention",
         )
 
         self._assert_update_does_not_notify_anybody(
             message_id=message_id,
-            content='now we mention @**Cordelia Lear**',
+            content="now we mention @**Cordelia Lear**",
         )
 
     def _login_and_send_original_stream_message(
@@ -53,19 +53,19 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             Cordelia is the receiver we care about.
             Scotland is the stream we send messages to.
         """
-        hamlet = self.example_user('hamlet')
-        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
 
         cordelia.enable_online_push_notifications = enable_online_push_notifications
         cordelia.save()
 
         self.login_user(hamlet)
-        self.subscribe(hamlet, 'Scotland')
-        self.subscribe(cordelia, 'Scotland')
+        self.subscribe(hamlet, "Scotland")
+        self.subscribe(cordelia, "Scotland")
 
         message_id = self.send_stream_message(
             hamlet,
-            'Scotland',
+            "Scotland",
             content=content,
         )
 
@@ -91,21 +91,21 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         pretty deep into the missed-messages codepath, without actually
         queuing the final messages.
         """
-        url = '/json/messages/' + str(message_id)
+        url = "/json/messages/" + str(message_id)
 
         request = dict(
             message_id=message_id,
             content=content,
         )
 
-        with mock.patch('zerver.tornado.event_queue.maybe_enqueue_notifications') as m:
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
             result = self.client_patch(url, request)
 
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
         cordelia_calls = [
             call_args
             for call_args in m.call_args_list
-            if call_args[1]['user_profile_id'] == cordelia.id
+            if call_args[1]["user_profile_id"] == cordelia.id
         ]
 
         if expect_short_circuit:
@@ -128,7 +128,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             )
 
         with mock_queue_publish(
-            'zerver.tornado.event_queue.queue_json_publish', side_effect=fake_publish
+            "zerver.tornado.event_queue.queue_json_publish", side_effect=fake_publish
         ) as m:
             maybe_enqueue_notifications(**enqueue_kwargs)
 
@@ -176,14 +176,14 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         )
 
     def test_updates_with_stream_mention(self) -> None:
-        original_content = 'no mention'
-        updated_content = 'now we mention @**Cordelia Lear**'
+        original_content = "no mention"
+        updated_content = "now we mention @**Cordelia Lear**"
         notification_message_data = self._send_and_update_message(original_content, updated_content)
 
-        message_id = notification_message_data['message_id']
-        info = notification_message_data['info']
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
 
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
             message_id=message_id,
@@ -192,33 +192,33 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             wildcard_mention_notify=False,
             stream_push_notify=False,
             stream_email_notify=False,
-            stream_name='Scotland',
+            stream_name="Scotland",
             always_push_notify=False,
             idle=True,
             already_notified={},
         )
 
-        self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
 
-        queue_messages = info['queue_messages']
+        queue_messages = info["queue_messages"]
 
         self.assertEqual(len(queue_messages), 2)
 
-        self.assertEqual(queue_messages[0]['queue_name'], 'missedmessage_mobile_notifications')
-        mobile_event = queue_messages[0]['event']
+        self.assertEqual(queue_messages[0]["queue_name"], "missedmessage_mobile_notifications")
+        mobile_event = queue_messages[0]["event"]
 
-        self.assertEqual(mobile_event['user_profile_id'], cordelia.id)
-        self.assertEqual(mobile_event['trigger'], 'mentioned')
+        self.assertEqual(mobile_event["user_profile_id"], cordelia.id)
+        self.assertEqual(mobile_event["trigger"], "mentioned")
 
-        self.assertEqual(queue_messages[1]['queue_name'], 'missedmessage_emails')
-        email_event = queue_messages[1]['event']
+        self.assertEqual(queue_messages[1]["queue_name"], "missedmessage_emails")
+        email_event = queue_messages[1]["event"]
 
-        self.assertEqual(email_event['user_profile_id'], cordelia.id)
-        self.assertEqual(email_event['trigger'], 'mentioned')
+        self.assertEqual(email_event["user_profile_id"], cordelia.id)
+        self.assertEqual(email_event["trigger"], "mentioned")
 
     def test_second_mention_is_ignored(self) -> None:
-        original_content = 'hello @**Cordelia Lear**'
-        updated_content = 're-mention @**Cordelia Lear**'
+        original_content = "hello @**Cordelia Lear**"
+        updated_content = "re-mention @**Cordelia Lear**"
         self._send_and_update_message(original_content, updated_content, expect_short_circuit=True)
 
     def _turn_on_stream_push_for_cordelia(self) -> None:
@@ -227,8 +227,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             Cordelia is the message receiver we care about.
             Scotland is our stream.
         """
-        cordelia = self.example_user('cordelia')
-        stream = self.subscribe(cordelia, 'Scotland')
+        cordelia = self.example_user("cordelia")
+        stream = self.subscribe(cordelia, "Scotland")
         recipient = stream.recipient
         cordelia_subscription = Subscription.objects.get(
             user_profile_id=cordelia.id,
@@ -243,8 +243,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # Even though Cordelia configured this stream for pushes,
         # we short-ciruit the logic, assuming the original message
         # also did a push.
-        original_content = 'no mention'
-        updated_content = 'nothing special about updated message'
+        original_content = "no mention"
+        updated_content = "nothing special about updated message"
         self._send_and_update_message(original_content, updated_content, expect_short_circuit=True)
 
     def _cordelia_connected_to_zulip(self) -> Any:
@@ -256,7 +256,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         but we only really look at Cordelia's data, anyway.
         """
         return mock.patch(
-            'zerver.tornado.event_queue.receiver_is_off_zulip',
+            "zerver.tornado.event_queue.receiver_is_off_zulip",
             return_value=False,
         )
 
@@ -268,19 +268,19 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         #
         # Despite Cordelia being offline, we still short circuit
         # offline notifications due to the her stream push setting.
-        original_content = 'no mention'
-        updated_content = 'nothing special about updated message'
+        original_content = "no mention"
+        updated_content = "nothing special about updated message"
         self._send_and_update_message(
             original_content, updated_content, expect_short_circuit=True, connected_to_zulip=True
         )
 
     def _make_cordelia_present_on_web(self) -> None:
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
         UserPresence.objects.create(
             user_profile_id=cordelia.id,
             realm_id=cordelia.realm_id,
             status=UserPresence.ACTIVE,
-            client=get_client('web'),
+            client=get_client("web"),
             timestamp=timezone_now(),
         )
 
@@ -289,8 +289,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
-        original_content = 'no mention'
-        updated_content = 'nothing special about updated message'
+        original_content = "no mention"
+        updated_content = "nothing special about updated message"
         self._send_and_update_message(
             original_content,
             updated_content,
@@ -300,12 +300,12 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         )
 
     def test_always_push_notify_for_fully_present_mentioned_user(self) -> None:
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
 
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
-        original_content = 'no mention'
-        updated_content = 'newly mention @**Cordelia Lear**'
+        original_content = "no mention"
+        updated_content = "newly mention @**Cordelia Lear**"
         notification_message_data = self._send_and_update_message(
             original_content,
             updated_content,
@@ -314,8 +314,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             present_on_web=True,
         )
 
-        message_id = notification_message_data['message_id']
-        info = notification_message_data['info']
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
 
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
@@ -325,25 +325,25 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             wildcard_mention_notify=False,
             stream_push_notify=False,
             stream_email_notify=False,
-            stream_name='Scotland',
+            stream_name="Scotland",
             always_push_notify=True,
             idle=False,
             already_notified={},
         )
 
-        self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
 
-        queue_messages = info['queue_messages']
+        queue_messages = info["queue_messages"]
 
         self.assertEqual(len(queue_messages), 1)
 
     def test_always_push_notify_for_fully_present_boring_user(self) -> None:
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
 
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
-        original_content = 'no mention'
-        updated_content = 'nothing special about updated message'
+        original_content = "no mention"
+        updated_content = "nothing special about updated message"
         notification_message_data = self._send_and_update_message(
             original_content,
             updated_content,
@@ -352,8 +352,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             present_on_web=True,
         )
 
-        message_id = notification_message_data['message_id']
-        info = notification_message_data['info']
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
 
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
@@ -363,15 +363,15 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             wildcard_mention_notify=False,
             stream_push_notify=False,
             stream_email_notify=False,
-            stream_name='Scotland',
+            stream_name="Scotland",
             always_push_notify=True,
             idle=False,
             already_notified={},
         )
 
-        self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
 
-        queue_messages = info['queue_messages']
+        queue_messages = info["queue_messages"]
 
         # Even though Cordelia has enable_online_push_notifications set
         # to True, we don't send her any offline notifications, since she
@@ -379,21 +379,21 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(len(queue_messages), 0)
 
     def test_updates_with_stream_mention_of_sorta_present_user(self) -> None:
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
 
         # We will simulate that the user still has a an active client,
         # but they don't have UserPresence rows, so we will still
         # send offline notifications.
-        original_content = 'no mention'
-        updated_content = 'now we mention @**Cordelia Lear**'
+        original_content = "no mention"
+        updated_content = "now we mention @**Cordelia Lear**"
         notification_message_data = self._send_and_update_message(
             original_content,
             updated_content,
             connected_to_zulip=True,
         )
 
-        message_id = notification_message_data['message_id']
-        info = notification_message_data['info']
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
 
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
@@ -403,33 +403,33 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             wildcard_mention_notify=False,
             stream_push_notify=False,
             stream_email_notify=False,
-            stream_name='Scotland',
+            stream_name="Scotland",
             always_push_notify=False,
             idle=True,
             already_notified={},
         )
-        self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
 
         # She will get messages enqueued.  (Other tests drill down on the
         # actual content of these messages.)
-        self.assertEqual(len(info['queue_messages']), 2)
+        self.assertEqual(len(info["queue_messages"]), 2)
 
     def test_updates_with_wildcard_mention(self) -> None:
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
 
         # We will simulate that the user still has a an active client,
         # but they don't have UserPresence rows, so we will still
         # send offline notifications.
-        original_content = 'no mention'
-        updated_content = 'now we mention @**all**'
+        original_content = "no mention"
+        updated_content = "now we mention @**all**"
         notification_message_data = self._send_and_update_message(
             original_content,
             updated_content,
             connected_to_zulip=True,
         )
 
-        message_id = notification_message_data['message_id']
-        info = notification_message_data['info']
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
 
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
@@ -439,21 +439,21 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             wildcard_mention_notify=True,
             stream_push_notify=False,
             stream_email_notify=False,
-            stream_name='Scotland',
+            stream_name="Scotland",
             always_push_notify=False,
             idle=True,
             already_notified={},
         )
-        self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
 
         # She will get messages enqueued.
-        self.assertEqual(len(info['queue_messages']), 2)
+        self.assertEqual(len(info["queue_messages"]), 2)
 
     def test_updates_with_upgrade_wildcard_mention(self) -> None:
         # If there was a previous wildcard mention delivered to the
         # user (because wildcard_mention_notify=True), we don't notify
-        original_content = 'Mention @**all**'
-        updated_content = 'now we mention @**Cordelia Lear**'
+        original_content = "Mention @**all**"
+        updated_content = "now we mention @**Cordelia Lear**"
         self._send_and_update_message(
             original_content, updated_content, expect_short_circuit=True, connected_to_zulip=True
         )
@@ -465,23 +465,23 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # contain a wildcard mention.
         #
         # This is a bug that we're not equipped to fix right now.
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
         cordelia.wildcard_mentions_notify = False
         cordelia.save()
 
-        original_content = 'Mention @**all**'
-        updated_content = 'now we mention @**Cordelia Lear**'
+        original_content = "Mention @**all**"
+        updated_content = "now we mention @**Cordelia Lear**"
         self._send_and_update_message(
             original_content, updated_content, expect_short_circuit=True, connected_to_zulip=True
         )
 
     def test_updates_with_stream_mention_of_fully_present_user(self) -> None:
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
 
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
-        original_content = 'no mention'
-        updated_content = 'now we mention @**Cordelia Lear**'
+        original_content = "no mention"
+        updated_content = "now we mention @**Cordelia Lear**"
         notification_message_data = self._send_and_update_message(
             original_content,
             updated_content,
@@ -489,8 +489,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             present_on_web=True,
         )
 
-        message_id = notification_message_data['message_id']
-        info = notification_message_data['info']
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
 
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
@@ -500,24 +500,24 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             wildcard_mention_notify=False,
             stream_push_notify=False,
             stream_email_notify=False,
-            stream_name='Scotland',
+            stream_name="Scotland",
             always_push_notify=False,
             idle=False,
             already_notified={},
         )
-        self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
 
         # Because Cordelia is FULLY present, we don't need to send any offline
         # push notifications or missed message emails.
-        self.assertEqual(len(info['queue_messages']), 0)
+        self.assertEqual(len(info["queue_messages"]), 0)
 
     def test_clear_notification_when_mention_removed(self) -> None:
-        mentioned_user = self.example_user('iago')
+        mentioned_user = self.example_user("iago")
         self.assertEqual(get_apns_badge_count(mentioned_user), 0)
         self.assertEqual(get_apns_badge_count_future(mentioned_user), 0)
 
         with mock.patch(
-            'zerver.lib.push_notifications.push_notifications_enabled', return_value=True
+            "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
         ):
             message_id = self._login_and_send_original_stream_message(
                 content="@**Iago**",
@@ -532,12 +532,12 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(get_apns_badge_count_future(mentioned_user), 0)
 
     def test_clear_notification_when_group_mention_removed(self) -> None:
-        group_mentioned_user = self.example_user('cordelia')
+        group_mentioned_user = self.example_user("cordelia")
         self.assertEqual(get_apns_badge_count(group_mentioned_user), 0)
         self.assertEqual(get_apns_badge_count_future(group_mentioned_user), 0)
 
         with mock.patch(
-            'zerver.lib.push_notifications.push_notifications_enabled', return_value=True
+            "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
         ):
             message_id = self._login_and_send_original_stream_message(
                 content="Hello @*hamletcharacters*",
@@ -556,7 +556,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(get_apns_badge_count_future(group_mentioned_user), 0)
 
     def test_not_clear_notification_when_mention_removed_but_stream_notified(self) -> None:
-        mentioned_user = self.example_user('iago')
+        mentioned_user = self.example_user("iago")
         mentioned_user.enable_stream_push_notifications = True
         mentioned_user.save()
 
@@ -564,7 +564,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(get_apns_badge_count_future(mentioned_user), 0)
 
         with mock.patch(
-            'zerver.lib.push_notifications.push_notifications_enabled', return_value=True
+            "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
         ):
             message_id = self._login_and_send_original_stream_message(
                 content="@**Iago**",

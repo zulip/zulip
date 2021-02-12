@@ -22,13 +22,13 @@ from tools.lib.test_server import test_server_running
 usage = """test-api [options]"""
 parser = argparse.ArgumentParser(usage)
 parser.add_argument(
-    '--force', action="store_true", help='Run tests despite possible provisioning problems.'
+    "--force", action="store_true", help="Run tests despite possible provisioning problems."
 )
 options = parser.parse_args()
 
 assert_provisioning_status_ok(options.force)
 
-with test_server_running(force=options.force, external_host='zulipdev.com:9981'):
+with test_server_running(force=options.force, external_host="zulipdev.com:9981"):
     # Zerver imports should happen after `django.setup()` is run
     # by the test_server_running decorator.
     from zerver.lib.actions import do_create_user
@@ -44,15 +44,15 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     reset_emails_in_zulip_realm()
 
     # Prepare the admin client
-    email = 'iago@zulip.com'  # Iago is an admin
-    realm = get_realm('zulip')
+    email = "iago@zulip.com"  # Iago is an admin
+    realm = get_realm("zulip")
     user = get_user(email, realm)
     # Required to test can_create_users endpoints.
     user.can_create_users = True
     user.save(update_fields=["can_create_users"])
 
     api_key = get_api_key(user)
-    site = 'http://zulip.zulipdev.com:9981'
+    site = "http://zulip.zulipdev.com:9981"
     client = Client(
         email=email,
         api_key=api_key,
@@ -60,7 +60,7 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     )
 
     # Prepare a generic bot client for curl testing
-    email = 'default-bot@zulip.com'
+    email = "default-bot@zulip.com"
     realm = get_realm("zulip")
     bot_user = get_user(email, realm)
     api_key = get_api_key(bot_user)
@@ -71,12 +71,12 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     )
 
     # Prepare the non-admin client
-    email = 'guest@zulip.com'  # guest is not an admin
+    email = "guest@zulip.com"  # guest is not an admin
     guest_user = do_create_user(
-        'guest@zulip.com',
-        'secret',
-        get_realm('zulip'),
-        'Mr. Guest',
+        "guest@zulip.com",
+        "secret",
+        get_realm("zulip"),
+        "Mr. Guest",
     )
     api_key = get_api_key(guest_user)
     nonadmin_client = Client(
@@ -92,7 +92,7 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     # Test error payloads
     client = Client(
         email=email,
-        api_key='X' * 32,
+        api_key="X" * 32,
         site=site,
     )
     test_invalid_api_key(client)

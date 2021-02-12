@@ -82,14 +82,14 @@ class MockLDAP(fakeldap.MockLDAP):
 def stub_event_queue_user_events(
     event_queue_return: Any, user_events_return: Any
 ) -> Iterator[None]:
-    with mock.patch('zerver.lib.events.request_event_queue', return_value=event_queue_return):
-        with mock.patch('zerver.lib.events.get_user_events', return_value=user_events_return):
+    with mock.patch("zerver.lib.events.request_event_queue", return_value=event_queue_return):
+        with mock.patch("zerver.lib.events.get_user_events", return_value=user_events_return):
             yield
 
 
 @contextmanager
 def simulated_queue_client(client: Callable[..., Any]) -> Iterator[None]:
-    with mock.patch.object(queue_processors, 'SimpleQueueClient', client):
+    with mock.patch.object(queue_processors, "SimpleQueueClient", client):
         yield
 
 
@@ -118,14 +118,14 @@ class EventInfo:
 def capture_event(event_info: EventInfo) -> Iterator[None]:
     # Use this for simple endpoints that throw a single event
     # in zerver.lib.actions.
-    with mock.patch('zerver.lib.actions.send_event') as m:
+    with mock.patch("zerver.lib.actions.send_event") as m:
         yield
 
     if len(m.call_args_list) == 0:
-        raise AssertionError('No event was sent inside actions.py')
+        raise AssertionError("No event was sent inside actions.py")
 
     if len(m.call_args_list) > 1:
-        raise AssertionError('Too many events sent by action')
+        raise AssertionError("Too many events sent by action")
 
     event_info.populate(m.call_args_list)
 
@@ -138,13 +138,13 @@ def cache_tries_captured() -> Iterator[List[Tuple[str, Union[str, List[str]], Op
     orig_get_many = cache.cache_get_many
 
     def my_cache_get(key: str, cache_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
-        cache_queries.append(('get', key, cache_name))
+        cache_queries.append(("get", key, cache_name))
         return orig_get(key, cache_name)
 
     def my_cache_get_many(
         keys: List[str], cache_name: Optional[str] = None
     ) -> Dict[str, Any]:  # nocoverage -- simulated code doesn't use this
-        cache_queries.append(('getmany', keys, cache_name))
+        cache_queries.append(("getmany", keys, cache_name))
         return orig_get_many(keys, cache_name)
 
     with mock.patch.multiple(cache, cache_get=my_cache_get, cache_get_many=my_cache_get_many):
@@ -156,13 +156,13 @@ def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], O
     cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
 
     def my_cache_get(key: str, cache_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
-        cache_queries.append(('get', key, cache_name))
+        cache_queries.append(("get", key, cache_name))
         return None
 
     def my_cache_get_many(
         keys: List[str], cache_name: Optional[str] = None
     ) -> Dict[str, Any]:  # nocoverage -- simulated code doesn't use this
-        cache_queries.append(('getmany', keys, cache_name))
+        cache_queries.append(("getmany", keys, cache_name))
         return {}
 
     with mock.patch.multiple(cache, cache_get=my_cache_get, cache_get_many=my_cache_get_many):
@@ -192,11 +192,11 @@ def queries_captured(
         finally:
             stop = time.time()
             duration = stop - start
-            if include_savepoints or not isinstance(sql, str) or 'SAVEPOINT' not in sql:
+            if include_savepoints or not isinstance(sql, str) or "SAVEPOINT" not in sql:
                 queries.append(
                     {
-                        'sql': self.mogrify(sql, params).decode('utf-8'),
-                        'time': f"{duration:.3f}",
+                        "sql": self.mogrify(sql, params).decode("utf-8"),
+                        "time": f"{duration:.3f}",
                     }
                 )
 
@@ -223,22 +223,22 @@ def queries_captured(
 def stdout_suppressed() -> Iterator[IO[str]]:
     """Redirect stdout to /dev/null."""
 
-    with open(os.devnull, 'a') as devnull:
+    with open(os.devnull, "a") as devnull:
         stdout, sys.stdout = sys.stdout, devnull
         yield stdout
         sys.stdout = stdout
 
 
 def reset_emails_in_zulip_realm() -> None:
-    realm = get_realm('zulip')
+    realm = get_realm("zulip")
     do_set_realm_property(
-        realm, 'email_address_visibility', Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
     )
 
 
 def get_test_image_file(filename: str) -> IO[Any]:
-    test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))
-    return open(os.path.join(test_avatar_dir, filename), 'rb')
+    test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../tests/images"))
+    return open(os.path.join(test_avatar_dir, filename), "rb")
 
 
 def avatar_disk_path(
@@ -283,7 +283,7 @@ def most_recent_usermessage(user_profile: UserProfile) -> UserMessage:
     query = (
         UserMessage.objects.select_related("message")
         .filter(user_profile=user_profile)
-        .order_by('-message')
+        .order_by("-message")
     )
     return query[0]  # Django does LIMIT here
 
@@ -305,7 +305,7 @@ def get_user_messages(user_profile: UserProfile) -> List[Message]:
     query = (
         UserMessage.objects.select_related("message")
         .filter(user_profile=user_profile)
-        .order_by('message')
+        .order_by("message")
     )
     return [um.message for um in query]
 
@@ -332,8 +332,8 @@ class POSTRequestMock:
         self.user = user_profile
         self._tornado_handler = DummyHandler()
         self._log_data: Dict[str, Any] = {}
-        self.META = {'PATH_INFO': 'test'}
-        self.path = ''
+        self.META = {"PATH_INFO": "test"}
+        self.path = ""
 
 
 class HostRequestMock:
@@ -346,12 +346,12 @@ class HostRequestMock:
         self.host = host
         self.GET: Dict[str, Any] = {}
         self.POST: Dict[str, Any] = {}
-        self.META = {'PATH_INFO': 'test'}
-        self.path = ''
+        self.META = {"PATH_INFO": "test"}
+        self.path = ""
         self.user = user_profile
-        self.method = ''
-        self.body = ''
-        self.content_type = ''
+        self.method = ""
+        self.body = ""
+        self.content_type = ""
 
     def get_host(self) -> str:
         return self.host
@@ -365,7 +365,7 @@ class MockPythonResponse:
         self.text = text
         self.status_code = status_code
         if headers is None:
-            headers = {'content-type': 'text/html'}
+            headers = {"content-type": "text/html"}
         self.headers = headers
 
     @property
@@ -376,7 +376,7 @@ class MockPythonResponse:
         yield self.text[:n]
 
 
-INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
+INSTRUMENTING = os.environ.get("TEST_INSTRUMENT_URL_COVERAGE", "") == "TRUE"
 INSTRUMENTED_CALLS: List[Dict[str, Any]] = []
 
 UrlFuncT = TypeVar("UrlFuncT", bound=Callable[..., HttpResponse])  # TODO: make more specific
@@ -392,16 +392,16 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     else:
 
         def wrapper(
-            self: 'ZulipTestCase', url: str, info: object = {}, **kwargs: Any
+            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: Any
         ) -> HttpResponse:
             start = time.time()
             result = f(self, url, info, **kwargs)
             delay = time.time() - start
             test_name = self.id()
-            if '?' in url:
-                url, extra_info = url.split('?', 1)
+            if "?" in url:
+                url, extra_info = url.split("?", 1)
             else:
-                extra_info = ''
+                extra_info = ""
 
             if isinstance(info, POSTRequestMock):
                 info = "<POSTRequestMock>"
@@ -440,21 +440,21 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         pattern_cnt: Dict[str, int] = collections.defaultdict(int)
 
         def re_strip(r: Any) -> str:
-            return str(r).lstrip('^').rstrip('$')
+            return str(r).lstrip("^").rstrip("$")
 
         def find_patterns(patterns: List[Any], prefixes: List[str]) -> None:
             for pattern in patterns:
                 find_pattern(pattern, prefixes)
 
         def cleanup_url(url: str) -> str:
-            if url.startswith('/'):
+            if url.startswith("/"):
                 url = url[1:]
-            if url.startswith('http://testserver/'):
-                url = url[len('http://testserver/') :]
-            if url.startswith('http://zulip.testserver/'):
-                url = url[len('http://zulip.testserver/') :]
-            if url.startswith('http://testserver:9080/'):
-                url = url[len('http://testserver:9080/') :]
+            if url.startswith("http://testserver/"):
+                url = url[len("http://testserver/") :]
+            if url.startswith("http://zulip.testserver/"):
+                url = url[len("http://zulip.testserver/") :]
+            if url.startswith("http://testserver:9080/"):
+                url = url[len("http://testserver:9080/") :]
             return url
 
         def find_pattern(pattern: Any, prefixes: List[str]) -> None:
@@ -462,60 +462,60 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             if isinstance(pattern, type(URLResolver)):
                 return  # nocoverage -- shouldn't actually happen
 
-            if hasattr(pattern, 'url_patterns'):
+            if hasattr(pattern, "url_patterns"):
                 return
 
             canon_pattern = prefixes[0] + re_strip(pattern.pattern.regex.pattern)
             cnt = 0
             for call in calls:
-                if 'pattern' in call:
+                if "pattern" in call:
                     continue
 
-                url = cleanup_url(call['url'])
+                url = cleanup_url(call["url"])
 
                 for prefix in prefixes:
                     if url.startswith(prefix):
                         match_url = url[len(prefix) :]
                         if pattern.resolve(match_url):
-                            if call['status_code'] in [200, 204, 301, 302]:
+                            if call["status_code"] in [200, 204, 301, 302]:
                                 cnt += 1
-                            call['pattern'] = canon_pattern
+                            call["pattern"] = canon_pattern
             pattern_cnt[canon_pattern] += cnt
 
-        find_patterns(urlpatterns, ['', 'en/', 'de/'])
-        find_patterns(v1_api_and_json_patterns, ['api/v1/', 'json/'])
+        find_patterns(urlpatterns, ["", "en/", "de/"])
+        find_patterns(v1_api_and_json_patterns, ["api/v1/", "json/"])
 
         assert len(pattern_cnt) > 100
         untested_patterns = {p.replace("\\", "") for p in pattern_cnt if pattern_cnt[p] == 0}
 
         exempt_patterns = {
             # We exempt some patterns that are called via Tornado.
-            'api/v1/events',
-            'api/v1/events/internal',
-            'api/v1/register',
+            "api/v1/events",
+            "api/v1/events/internal",
+            "api/v1/register",
             # We also exempt some development environment debugging
             # static content URLs, since the content they point to may
             # or may not exist.
-            'coverage/(?P<path>.+)',
-            'confirmation_key/',
-            'node-coverage/(?P<path>.+)',
-            'docs/(?P<path>.+)',
-            'casper/(?P<path>.+)',
-            'static/(?P<path>.+)',
+            "coverage/(?P<path>.+)",
+            "confirmation_key/",
+            "node-coverage/(?P<path>.+)",
+            "docs/(?P<path>.+)",
+            "casper/(?P<path>.+)",
+            "static/(?P<path>.+)",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
         untested_patterns -= exempt_patterns
 
-        var_dir = 'var'  # TODO make sure path is robust here
-        fn = os.path.join(var_dir, 'url_coverage.txt')
-        with open(fn, 'wb') as f:
+        var_dir = "var"  # TODO make sure path is robust here
+        fn = os.path.join(var_dir, "url_coverage.txt")
+        with open(fn, "wb") as f:
             for call in calls:
                 f.write(orjson.dumps(call, option=orjson.OPT_APPEND_NEWLINE))
 
         if full_suite:
-            print(f'INFO: URL coverage report is in {fn}')
-            print('INFO: Try running: ./tools/create-test-api-docs')
+            print(f"INFO: URL coverage report is in {fn}")
+            print("INFO: Try running: ./tools/create-test-api-docs")
 
         if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
@@ -526,13 +526,13 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
 def load_subdomain_token(response: HttpResponse) -> ExternalAuthDataDict:
     assert isinstance(response, HttpResponseRedirect)
-    token = response.url.rsplit('/', 1)[1]
+    token = response.url.rsplit("/", 1)[1]
     data = ExternalAuthResult(login_token=token, delete_stored_data=False).data_dict
     assert data is not None
     return data
 
 
-FuncT = TypeVar('FuncT', bound=Callable[..., None])
+FuncT = TypeVar("FuncT", bound=Callable[..., None])
 
 
 def use_s3_backend(method: FuncT) -> FuncT:
@@ -550,57 +550,57 @@ def use_s3_backend(method: FuncT) -> FuncT:
 
 def create_s3_buckets(*bucket_names: str) -> List[ServiceResource]:
     session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-    s3 = session.resource('s3')
+    s3 = session.resource("s3")
     buckets = [s3.create_bucket(Bucket=name) for name in bucket_names]
     return buckets
 
 
 def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocoverage
-    def method_patched_with_mock(self: 'MigrationsTestCase', apps: StateApps) -> None:
-        ArchivedAttachment = apps.get_model('zerver', 'ArchivedAttachment')
-        ArchivedMessage = apps.get_model('zerver', 'ArchivedMessage')
-        ArchivedUserMessage = apps.get_model('zerver', 'ArchivedUserMessage')
-        Attachment = apps.get_model('zerver', 'Attachment')
-        BotConfigData = apps.get_model('zerver', 'BotConfigData')
-        BotStorageData = apps.get_model('zerver', 'BotStorageData')
-        Client = apps.get_model('zerver', 'Client')
-        CustomProfileField = apps.get_model('zerver', 'CustomProfileField')
-        CustomProfileFieldValue = apps.get_model('zerver', 'CustomProfileFieldValue')
-        DefaultStream = apps.get_model('zerver', 'DefaultStream')
-        DefaultStreamGroup = apps.get_model('zerver', 'DefaultStreamGroup')
-        EmailChangeStatus = apps.get_model('zerver', 'EmailChangeStatus')
-        Huddle = apps.get_model('zerver', 'Huddle')
-        Message = apps.get_model('zerver', 'Message')
-        MultiuseInvite = apps.get_model('zerver', 'MultiuseInvite')
-        MutedTopic = apps.get_model('zerver', 'MutedTopic')
-        PreregistrationUser = apps.get_model('zerver', 'PreregistrationUser')
-        PushDeviceToken = apps.get_model('zerver', 'PushDeviceToken')
-        Reaction = apps.get_model('zerver', 'Reaction')
-        Realm = apps.get_model('zerver', 'Realm')
-        RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
-        RealmDomain = apps.get_model('zerver', 'RealmDomain')
-        RealmEmoji = apps.get_model('zerver', 'RealmEmoji')
-        RealmFilter = apps.get_model('zerver', 'RealmFilter')
-        Recipient = apps.get_model('zerver', 'Recipient')
+    def method_patched_with_mock(self: "MigrationsTestCase", apps: StateApps) -> None:
+        ArchivedAttachment = apps.get_model("zerver", "ArchivedAttachment")
+        ArchivedMessage = apps.get_model("zerver", "ArchivedMessage")
+        ArchivedUserMessage = apps.get_model("zerver", "ArchivedUserMessage")
+        Attachment = apps.get_model("zerver", "Attachment")
+        BotConfigData = apps.get_model("zerver", "BotConfigData")
+        BotStorageData = apps.get_model("zerver", "BotStorageData")
+        Client = apps.get_model("zerver", "Client")
+        CustomProfileField = apps.get_model("zerver", "CustomProfileField")
+        CustomProfileFieldValue = apps.get_model("zerver", "CustomProfileFieldValue")
+        DefaultStream = apps.get_model("zerver", "DefaultStream")
+        DefaultStreamGroup = apps.get_model("zerver", "DefaultStreamGroup")
+        EmailChangeStatus = apps.get_model("zerver", "EmailChangeStatus")
+        Huddle = apps.get_model("zerver", "Huddle")
+        Message = apps.get_model("zerver", "Message")
+        MultiuseInvite = apps.get_model("zerver", "MultiuseInvite")
+        MutedTopic = apps.get_model("zerver", "MutedTopic")
+        PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
+        PushDeviceToken = apps.get_model("zerver", "PushDeviceToken")
+        Reaction = apps.get_model("zerver", "Reaction")
+        Realm = apps.get_model("zerver", "Realm")
+        RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
+        RealmDomain = apps.get_model("zerver", "RealmDomain")
+        RealmEmoji = apps.get_model("zerver", "RealmEmoji")
+        RealmFilter = apps.get_model("zerver", "RealmFilter")
+        Recipient = apps.get_model("zerver", "Recipient")
         Recipient.PERSONAL = 1
         Recipient.STREAM = 2
         Recipient.HUDDLE = 3
-        ScheduledEmail = apps.get_model('zerver', 'ScheduledEmail')
-        ScheduledMessage = apps.get_model('zerver', 'ScheduledMessage')
-        Service = apps.get_model('zerver', 'Service')
-        Stream = apps.get_model('zerver', 'Stream')
-        Subscription = apps.get_model('zerver', 'Subscription')
-        UserActivity = apps.get_model('zerver', 'UserActivity')
-        UserActivityInterval = apps.get_model('zerver', 'UserActivityInterval')
-        UserGroup = apps.get_model('zerver', 'UserGroup')
-        UserGroupMembership = apps.get_model('zerver', 'UserGroupMembership')
-        UserHotspot = apps.get_model('zerver', 'UserHotspot')
-        UserMessage = apps.get_model('zerver', 'UserMessage')
-        UserPresence = apps.get_model('zerver', 'UserPresence')
-        UserProfile = apps.get_model('zerver', 'UserProfile')
+        ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
+        ScheduledMessage = apps.get_model("zerver", "ScheduledMessage")
+        Service = apps.get_model("zerver", "Service")
+        Stream = apps.get_model("zerver", "Stream")
+        Subscription = apps.get_model("zerver", "Subscription")
+        UserActivity = apps.get_model("zerver", "UserActivity")
+        UserActivityInterval = apps.get_model("zerver", "UserActivityInterval")
+        UserGroup = apps.get_model("zerver", "UserGroup")
+        UserGroupMembership = apps.get_model("zerver", "UserGroupMembership")
+        UserHotspot = apps.get_model("zerver", "UserHotspot")
+        UserMessage = apps.get_model("zerver", "UserMessage")
+        UserPresence = apps.get_model("zerver", "UserPresence")
+        UserProfile = apps.get_model("zerver", "UserProfile")
 
         zerver_models_patch = mock.patch.multiple(
-            'zerver.models',
+            "zerver.models",
             ArchivedAttachment=ArchivedAttachment,
             ArchivedMessage=ArchivedMessage,
             ArchivedUserMessage=ArchivedUserMessage,
@@ -641,7 +641,7 @@ def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocove
             UserProfile=UserProfile,
         )
         zerver_test_helpers_patch = mock.patch.multiple(
-            'zerver.lib.test_helpers',
+            "zerver.lib.test_helpers",
             Client=Client,
             Message=Message,
             Subscription=Subscription,
@@ -650,7 +650,7 @@ def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocove
         )
 
         zerver_test_classes_patch = mock.patch.multiple(
-            'zerver.lib.test_classes',
+            "zerver.lib.test_classes",
             Client=Client,
             Message=Message,
             Realm=Realm,
@@ -668,16 +668,16 @@ def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocove
 
 def create_dummy_file(filename: str) -> str:
     filepath = os.path.join(settings.TEST_WORKER_DIR, filename)
-    with open(filepath, 'w') as f:
-        f.write('zulip!')
+    with open(filepath, "w") as f:
+        f.write("zulip!")
     return filepath
 
 
 def zulip_reaction_info() -> Dict[str, str]:
     return dict(
-        emoji_name='zulip',
-        emoji_code='zulip',
-        reaction_type='zulip_extra_emoji',
+        emoji_name="zulip",
+        emoji_code="zulip",
+        reaction_type="zulip_extra_emoji",
     )
 
 

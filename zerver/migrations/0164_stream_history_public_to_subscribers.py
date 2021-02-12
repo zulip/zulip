@@ -15,7 +15,7 @@ def set_initial_value_for_history_public_to_subscribers(
     for stream in streams:
         if stream.invite_only:
             stream.history_public_to_subscribers = getattr(
-                settings, 'PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS', False
+                settings, "PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS", False
             )
         else:
             stream.history_public_to_subscribers = True
@@ -29,13 +29,13 @@ def set_initial_value_for_history_public_to_subscribers(
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0163_remove_userprofile_default_desktop_notifications'),
+        ("zerver", "0163_remove_userprofile_default_desktop_notifications"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='stream',
-            name='history_public_to_subscribers',
+            model_name="stream",
+            name="history_public_to_subscribers",
             field=models.BooleanField(default=False),
         ),
         migrations.RunPython(

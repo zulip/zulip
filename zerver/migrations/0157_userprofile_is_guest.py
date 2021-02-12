@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0156_add_hint_to_profile_field'),
+        ("zerver", "0156_add_hint_to_profile_field"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='is_guest',
+            model_name="userprofile",
+            name="is_guest",
             field=models.BooleanField(db_index=True, default=False),
         ),
     ]

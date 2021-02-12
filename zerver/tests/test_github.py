@@ -51,7 +51,7 @@ class GitHubTestCase(ZulipTestCase):
         api_url = "https://api.github.com/repos/zulip/zulip-desktop/releases/latest"
         responses.replace(responses.GET, api_url, body=requests.RequestException())
         cache_delete("download_link:windows")
-        with self.assertLogs(logger_string, level='ERROR') as error_log:
+        with self.assertLogs(logger_string, level="ERROR") as error_log:
             self.assertEqual(
                 get_latest_github_release_download_link_for_platform("windows"),
                 "https://github.com/zulip/zulip-desktop/releases/latest",
@@ -59,7 +59,7 @@ class GitHubTestCase(ZulipTestCase):
             self.assertEqual(
                 error_log.output,
                 [
-                    f'ERROR:{logger_string}:Unable to fetch the latest release version from GitHub {api_url}'
+                    f"ERROR:{logger_string}:Unable to fetch the latest release version from GitHub {api_url}"
                 ],
             )
 
@@ -72,7 +72,7 @@ class GitHubTestCase(ZulipTestCase):
         download_link = "https://github.com/zulip/zulip-desktop/releases/download/v5.4.4/Zulip-5.4.4-x86_64.AppImage"
         responses.add(responses.HEAD, download_link, status=404)
         cache_delete("download_link:linux")
-        with self.assertLogs(logger_string, level='ERROR') as error_log:
+        with self.assertLogs(logger_string, level="ERROR") as error_log:
             self.assertEqual(
                 get_latest_github_release_download_link_for_platform("linux"),
                 "https://github.com/zulip/zulip-desktop/releases/latest",
@@ -80,7 +80,7 @@ class GitHubTestCase(ZulipTestCase):
 
             self.assertEqual(
                 error_log.output,
-                [f'ERROR:{logger_string}:App download link is broken {download_link}'],
+                [f"ERROR:{logger_string}:App download link is broken {download_link}"],
             )
 
         with self.assertRaises(InvalidPlatform):

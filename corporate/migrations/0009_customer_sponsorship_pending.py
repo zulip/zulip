@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corporate', '0008_nullable_next_invoice_date'),
+        ("corporate", "0008_nullable_next_invoice_date"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customer',
-            name='sponsorship_pending',
+            model_name="customer",
+            name="sponsorship_pending",
             field=models.BooleanField(default=False),
         ),
     ]

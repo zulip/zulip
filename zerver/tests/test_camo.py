@@ -9,7 +9,7 @@ class CamoURLTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302, result)
         self.assertIn(
-            '/filters:no_upscale():quality(100)/aHR0cDovL3d3dy5yYW5kb20uc2l0ZS9pbWFnZXMvZm9vYmFyLmpwZWc=/source_type/external',
+            "/filters:no_upscale():quality(100)/aHR0cDovL3d3dy5yYW5kb20uc2l0ZS9pbWFnZXMvZm9vYmFyLmpwZWc=/source_type/external",
             result.url,
         )
 

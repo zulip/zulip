@@ -48,7 +48,7 @@ def create_mirrored_message_users(
 
     sender_email = request.POST["sender"].strip().lower()
     referenced_users = {sender_email}
-    if request.POST['type'] == 'private':
+    if request.POST["type"] == "private":
         for email in recipients:
             referenced_users.add(email.lower())
 
@@ -144,7 +144,7 @@ def handle_deferred_message(
     realm: Optional[Realm],
 ) -> HttpResponse:
     deliver_at = None
-    local_tz = 'UTC'
+    local_tz = "UTC"
     if tz_guess:
         local_tz = tz_guess
     elif sender.timezone:
@@ -182,18 +182,18 @@ def handle_deferred_message(
 def send_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_type_name: str = REQ('type'),
-    req_to: Optional[str] = REQ('to', default=None),
+    message_type_name: str = REQ("type"),
+    req_to: Optional[str] = REQ("to", default=None),
     forged_str: Optional[str] = REQ("forged", default=None, documentation_pending=True),
     topic_name: Optional[str] = REQ_topic(),
-    message_content: str = REQ('content'),
+    message_content: str = REQ("content"),
     widget_content: Optional[str] = REQ(default=None, documentation_pending=True),
-    realm_str: Optional[str] = REQ('realm_str', default=None, documentation_pending=True),
+    realm_str: Optional[str] = REQ("realm_str", default=None, documentation_pending=True),
     local_id: Optional[str] = REQ(default=None),
     queue_id: Optional[str] = REQ(default=None),
-    delivery_type: str = REQ('delivery_type', default='send_now', documentation_pending=True),
-    defer_until: Optional[str] = REQ('deliver_at', default=None, documentation_pending=True),
-    tz_guess: Optional[str] = REQ('tz_guess', default=None, documentation_pending=True),
+    delivery_type: str = REQ("delivery_type", default="send_now", documentation_pending=True),
+    defer_until: Optional[str] = REQ("deliver_at", default=None, documentation_pending=True),
+    tz_guess: Optional[str] = REQ("tz_guess", default=None, documentation_pending=True),
 ) -> HttpResponse:
 
     # If req_to is None, then we default to an
@@ -201,7 +201,7 @@ def send_message_backend(
     message_to: Union[Sequence[int], Sequence[str]] = []
 
     if req_to is not None:
-        if message_type_name == 'stream':
+        if message_type_name == "stream":
             stream_indicator = extract_stream_indicator(req_to)
 
             # For legacy reasons check_send_message expects
@@ -279,10 +279,10 @@ def send_message_backend(
             return json_error(_("Invalid mirrored message"))
         sender = user_profile
 
-    if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is None:
+    if (delivery_type == "send_later" or delivery_type == "remind") and defer_until is None:
         return json_error(_("Missing deliver_at in a request for delayed message delivery"))
 
-    if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is not None:
+    if (delivery_type == "send_later" or delivery_type == "remind") and defer_until is not None:
         return handle_deferred_message(
             sender,
             client,
@@ -305,7 +305,7 @@ def send_message_backend(
         topic_name,
         message_content,
         forged=forged,
-        forged_timestamp=request.POST.get('time'),
+        forged_timestamp=request.POST.get("time"),
         forwarder_user_profile=user_profile,
         realm=realm,
         local_id=local_id,
@@ -317,7 +317,7 @@ def send_message_backend(
 
 @has_request_variables
 def zcommand_backend(
-    request: HttpRequest, user_profile: UserProfile, command: str = REQ('command')
+    request: HttpRequest, user_profile: UserProfile, command: str = REQ("command")
 ) -> HttpResponse:
     return json_success(process_zcommands(command, user_profile))
 

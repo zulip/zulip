@@ -16,7 +16,7 @@ INCIDENT_TEMPLATE = """
 
 COMPONENT_TEMPLATE = "**{name}** has changed status from **{old_status}** to **{new_status}**."
 
-TOPIC_TEMPLATE = '{name}: {description}'
+TOPIC_TEMPLATE = "{name}: {description}"
 
 
 def get_incident_events_body(payload: Dict[str, Any]) -> str:
@@ -49,12 +49,12 @@ def get_component_topic(payload: Dict[str, Any]) -> str:
     )
 
 
-@webhook_view('Statuspage')
+@webhook_view("Statuspage")
 @has_request_variables
 def api_statuspage_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     status = payload["page"]["status_indicator"]

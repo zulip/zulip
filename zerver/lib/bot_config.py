@@ -37,8 +37,8 @@ def get_bot_config_size(bot_profile: UserProfile, key: Optional[str] = None) -> 
     if key is None:
         return (
             BotConfigData.objects.filter(bot_profile=bot_profile)
-            .annotate(key_size=Length('key'), value_size=Length('value'))
-            .aggregate(sum=Sum(F('key_size') + F('value_size')))['sum']
+            .annotate(key_size=Length("key"), value_size=Length("value"))
+            .aggregate(sum=Sum(F("key_size") + F("value_size")))["sum"]
             or 0
         )
     else:
@@ -62,7 +62,7 @@ def set_bot_config(bot_profile: UserProfile, key: str, value: str) -> None:
             )
         )
     obj, created = BotConfigData.objects.get_or_create(
-        bot_profile=bot_profile, key=key, defaults={'value': value}
+        bot_profile=bot_profile, key=key, defaults={"value": value}
     )
     if not created:
         obj.value = value
@@ -70,10 +70,10 @@ def set_bot_config(bot_profile: UserProfile, key: str, value: str) -> None:
 
 
 def load_bot_config_template(bot: str) -> Dict[str, str]:
-    bot_module_name = f'zulip_bots.bots.{bot}'
+    bot_module_name = f"zulip_bots.bots.{bot}"
     bot_module = importlib.import_module(bot_module_name)
     bot_module_path = os.path.dirname(bot_module.__file__)
-    config_path = os.path.join(bot_module_path, f'{bot}.conf')
+    config_path = os.path.join(bot_module_path, f"{bot}.conf")
     if os.path.isfile(config_path):
         config = configparser.ConfigParser()
         with open(config_path) as conf:

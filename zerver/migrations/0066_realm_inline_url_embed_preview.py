@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0065_realm_inline_image_preview'),
+        ("zerver", "0065_realm_inline_image_preview"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='inline_url_embed_preview',
+            model_name="realm",
+            name="inline_url_embed_preview",
             field=models.BooleanField(default=True),
         ),
     ]

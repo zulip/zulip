@@ -25,7 +25,7 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
     avatar_path = user_avatar_path(user)
     file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path) + ".original"
     try:
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             s3backend.upload_avatar_image(f, user, user)
             logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
     except FileNotFoundError:
@@ -48,7 +48,7 @@ def transfer_avatars_to_s3(processes: int) -> None:
 def _transfer_message_files_to_s3(attachment: Attachment) -> None:
     file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", attachment.path_id)
     try:
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             guessed_type = guess_type(attachment.file_name)[0]
             upload_image_to_s3(
                 s3backend.uploads_bucket,
@@ -84,7 +84,7 @@ def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
     )
     emoji_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path) + ".original"
     try:
-        with open(emoji_path, 'rb') as f:
+        with open(emoji_path, "rb") as f:
             s3backend.upload_emoji_image(f, realm_emoji.file_name, realm_emoji.author)
             logging.info("Uploaded emoji file in path %s", emoji_path)
     except FileNotFoundError:  # nocoverage

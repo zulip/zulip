@@ -36,13 +36,13 @@ def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool = False) -> str:
                 on the client side.
     """
     url = _get_unversioned_avatar_url(
-        userdict['id'],
-        userdict['avatar_source'],
-        userdict['realm_id'],
-        email=userdict['email'],
+        userdict["id"],
+        userdict["avatar_source"],
+        userdict["realm_id"],
+        email=userdict["email"],
         medium=medium,
     )
-    url += '&version={:d}'.format(userdict['avatar_version'])
+    url += "&version={:d}".format(userdict["avatar_version"])
     return url
 
 
@@ -82,11 +82,11 @@ def get_avatar_field(
             if avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
                 return None
 
-    '''
+    """
     If we get this far, we'll compute an avatar URL that may be
     either user-uploaded or a gravatar, and then we'll add version
     info to try to avoid stale caches.
-    '''
+    """
     url = _get_unversioned_avatar_url(
         user_profile_id=user_id,
         avatar_source=avatar_source,
@@ -94,13 +94,13 @@ def get_avatar_field(
         email=email,
         medium=medium,
     )
-    url += f'&version={avatar_version:d}'
+    url += f"&version={avatar_version:d}"
     return url
 
 
 def get_gravatar_url(email: str, avatar_version: int, medium: bool = False) -> str:
     url = _get_unversioned_gravatar_url(email, medium)
-    url += f'&version={avatar_version:d}'
+    url += f"&version={avatar_version:d}"
     return url
 
 
@@ -109,7 +109,7 @@ def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:
         gravitar_query_suffix = f"&s={MEDIUM_AVATAR_SIZE}" if medium else ""
         hash_key = gravatar_hash(email)
         return f"https://secure.gravatar.com/avatar/{hash_key}?d=identicon{gravitar_query_suffix}"
-    return settings.DEFAULT_AVATAR_URI + '?x=x'
+    return settings.DEFAULT_AVATAR_URI + "?x=x"
 
 
 def _get_unversioned_avatar_url(
@@ -119,7 +119,7 @@ def _get_unversioned_avatar_url(
     email: Optional[str] = None,
     medium: bool = False,
 ) -> str:
-    if avatar_source == 'U':
+    if avatar_source == "U":
         hash_key = user_avatar_path_from_ids(user_profile_id, realm_id)
         return upload_backend.get_avatar_url(hash_key, medium=medium)
     assert email is not None

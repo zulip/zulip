@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0122_rename_botuserstatedata_botstoragedata'),
+        ("zerver", "0122_rename_botuserstatedata_botstoragedata"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='email',
+            model_name="userprofile",
+            name="email",
             field=models.EmailField(db_index=True, max_length=254),
         ),
         migrations.AlterUniqueTogether(
-            name='userprofile',
-            unique_together={('realm', 'email')},
+            name="userprofile",
+            unique_together={("realm", "email")},
         ),
     ]

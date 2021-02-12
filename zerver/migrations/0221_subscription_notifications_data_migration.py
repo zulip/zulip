@@ -6,16 +6,16 @@ from django.db.migrations.state import StateApps
 
 RECIPIENT_STREAM = 2
 SETTINGS_MAP = {
-    'desktop_notifications': 'enable_stream_desktop_notifications',
-    'audible_notifications': 'enable_stream_sounds',
-    'push_notifications': 'enable_stream_push_notifications',
-    'email_notifications': 'enable_stream_email_notifications',
+    "desktop_notifications": "enable_stream_desktop_notifications",
+    "audible_notifications": "enable_stream_sounds",
+    "push_notifications": "enable_stream_push_notifications",
+    "email_notifications": "enable_stream_email_notifications",
 }
 
 
 def update_notification_settings(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    Subscription = apps.get_model('zerver', 'Subscription')
-    UserProfile = apps.get_model('zerver', 'UserProfile')
+    Subscription = apps.get_model("zerver", "Subscription")
+    UserProfile = apps.get_model("zerver", "UserProfile")
 
     for setting_value in [True, False]:
         for sub_setting_name, user_setting_name in SETTINGS_MAP.items():
@@ -30,8 +30,8 @@ def update_notification_settings(apps: StateApps, schema_editor: DatabaseSchemaE
 
 
 def reverse_notification_settings(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    Subscription = apps.get_model('zerver', 'Subscription')
-    UserProfile = apps.get_model('zerver', 'UserProfile')
+    Subscription = apps.get_model("zerver", "Subscription")
+    UserProfile = apps.get_model("zerver", "UserProfile")
 
     for setting_value in [True, False]:
         for sub_setting_name, user_setting_name in SETTINGS_MAP.items():
@@ -55,7 +55,7 @@ def reverse_notification_settings(apps: StateApps, schema_editor: DatabaseSchema
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0220_subscription_notification_settings'),
+        ("zerver", "0220_subscription_notification_settings"),
     ]
 
     operations = [

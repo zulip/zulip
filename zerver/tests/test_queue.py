@@ -10,16 +10,16 @@ from zerver.lib.test_classes import ZulipTestCase
 
 
 class TestTornadoQueueClient(ZulipTestCase):
-    @mock.patch('zerver.lib.queue.ExceptionFreeTornadoConnection', autospec=True)
+    @mock.patch("zerver.lib.queue.ExceptionFreeTornadoConnection", autospec=True)
     def test_on_open_closed(self, mock_cxn: mock.MagicMock) -> None:
-        with self.assertLogs('zulip.queue', 'WARNING') as m:
+        with self.assertLogs("zulip.queue", "WARNING") as m:
             connection = TornadoQueueClient()
-            connection.connection.channel.side_effect = ConnectionClosed('500', 'test')
+            connection.connection.channel.side_effect = ConnectionClosed("500", "test")
             connection._on_open(mock.MagicMock())
             self.assertEqual(
                 m.output,
                 [
-                    'WARNING:zulip.queue:TornadoQueueClient couldn\'t open channel: connection already closed'
+                    "WARNING:zulip.queue:TornadoQueueClient couldn't open channel: connection already closed"
                 ],
             )
 
@@ -41,7 +41,7 @@ class TestQueueImplementation(ZulipTestCase):
         queue_client.start_json_consumer("test_suite", collect)
 
         self.assertEqual(len(output), 1)
-        self.assertEqual(output[0]['event'], 'my_event')
+        self.assertEqual(output[0]["event"], "my_event")
 
     @override_settings(USING_RABBITMQ=True)
     def test_register_consumer_nack(self) -> None:
@@ -69,7 +69,7 @@ class TestQueueImplementation(ZulipTestCase):
         # Confirm that we processed the event fully once
         self.assertEqual(count, 2)
         self.assertEqual(len(output), 1)
-        self.assertEqual(output[0]['event'], 'my_event')
+        self.assertEqual(output[0]["event"], "my_event")
 
     @override_settings(USING_RABBITMQ=True)
     def test_queue_error_json(self) -> None:
@@ -86,18 +86,18 @@ class TestQueueImplementation(ZulipTestCase):
 
         with mock.patch(
             "zerver.lib.queue.SimpleQueueClient.publish", throw_connection_error_once
-        ), self.assertLogs('zulip.queue', level='WARN') as warn_logs:
+        ), self.assertLogs("zulip.queue", level="WARN") as warn_logs:
             queue_json_publish("test_suite", {"event": "my_event"})
         self.assertEqual(
             warn_logs.output,
-            ['WARNING:zulip.queue:Failed to send to rabbitmq, trying to reconnect and send again'],
+            ["WARNING:zulip.queue:Failed to send to rabbitmq, trying to reconnect and send again"],
         )
 
         assert queue_client.channel
         (_, _, message) = queue_client.channel.basic_get("test_suite")
         assert message
         result = orjson.loads(message)
-        self.assertEqual(result['event'], 'my_event')
+        self.assertEqual(result["event"], "my_event")
 
         (_, _, message) = queue_client.channel.basic_get("test_suite")
         assert not message

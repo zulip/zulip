@@ -66,7 +66,7 @@ class RateLimiterBackendBase(ZulipTestCase):
 
     def verify_api_calls_left(self, obj: RateLimitedTestObject) -> None:
         now = time.time()
-        with mock.patch('time.time', return_value=now):
+        with mock.patch("time.time", return_value=now):
             calls_remaining, time_till_reset = obj.api_calls_left()
 
         expected_calls_remaining, expected_time_till_reset = self.expected_api_calls_left(obj, now)
@@ -92,60 +92,60 @@ class RateLimiterBackendBase(ZulipTestCase):
         raise NotImplementedError()
 
     def test_hit_ratelimits(self) -> None:
-        obj = self.create_object('test', [(2, 3)])
+        obj = self.create_object("test", [(2, 3)])
 
         start_time = time.time()
         for i in range(3):
-            with mock.patch('time.time', return_value=(start_time + i * 0.1)):
+            with mock.patch("time.time", return_value=(start_time + i * 0.1)):
                 self.make_request(obj, expect_ratelimited=False)
 
-        with mock.patch('time.time', return_value=(start_time + 0.4)):
+        with mock.patch("time.time", return_value=(start_time + 0.4)):
             self.make_request(obj, expect_ratelimited=True)
 
-        with mock.patch('time.time', return_value=(start_time + 2.01)):
+        with mock.patch("time.time", return_value=(start_time + 2.01)):
             self.make_request(obj, expect_ratelimited=False)
 
     def test_clear_history(self) -> None:
-        obj = self.create_object('test', [(2, 3)])
+        obj = self.create_object("test", [(2, 3)])
         start_time = time.time()
         for i in range(3):
-            with mock.patch('time.time', return_value=(start_time + i * 0.1)):
+            with mock.patch("time.time", return_value=(start_time + i * 0.1)):
                 self.make_request(obj, expect_ratelimited=False)
-        with mock.patch('time.time', return_value=(start_time + 0.4)):
+        with mock.patch("time.time", return_value=(start_time + 0.4)):
             self.make_request(obj, expect_ratelimited=True)
 
         obj.clear_history()
         self.requests_record[obj.key()] = []
         for i in range(3):
-            with mock.patch('time.time', return_value=(start_time + i * 0.1)):
+            with mock.patch("time.time", return_value=(start_time + i * 0.1)):
                 self.make_request(obj, expect_ratelimited=False)
 
     def test_block_unblock_access(self) -> None:
-        obj = self.create_object('test', [(2, 5)])
+        obj = self.create_object("test", [(2, 5)])
         start_time = time.time()
 
         obj.block_access(1)
-        with mock.patch('time.time', return_value=(start_time)):
+        with mock.patch("time.time", return_value=(start_time)):
             self.make_request(obj, expect_ratelimited=True, verify_api_calls_left=False)
 
         obj.unblock_access()
-        with mock.patch('time.time', return_value=(start_time)):
+        with mock.patch("time.time", return_value=(start_time)):
             self.make_request(obj, expect_ratelimited=False, verify_api_calls_left=False)
 
     def test_api_calls_left(self) -> None:
-        obj = self.create_object('test', [(2, 5), (3, 6)])
+        obj = self.create_object("test", [(2, 5), (3, 6)])
         start_time = time.time()
 
         # Check the edge case when no requests have been made yet.
-        with mock.patch('time.time', return_value=(start_time)):
+        with mock.patch("time.time", return_value=(start_time)):
             self.verify_api_calls_left(obj)
 
-        with mock.patch('time.time', return_value=(start_time)):
+        with mock.patch("time.time", return_value=(start_time)):
             self.make_request(obj)
 
         # Check the correct default values again, after the reset has happened on the first rule,
         # but not the other.
-        with mock.patch('time.time', return_value=(start_time + 2.1)):
+        with mock.patch("time.time", return_value=(start_time + 2.1)):
             self.make_request(obj)
 
 
@@ -169,7 +169,7 @@ class RedisRateLimiterBackendTest(RateLimiterBackendBase):
         inside Redis, so we're not able to mock the timer. Making the test
         sleep for 1s is also too costly to be worth it.
         """
-        obj = self.create_object('test', [(2, 5)])
+        obj = self.create_object("test", [(2, 5)])
 
         obj.block_access(1)
         self.make_request(obj, expect_ratelimited=True, verify_api_calls_left=False)
@@ -194,22 +194,22 @@ class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
     def test_used_in_tornado(self) -> None:
         user_profile = self.example_user("hamlet")
         with self.settings(RUNNING_INSIDE_TORNADO=True):
-            obj = RateLimitedUser(user_profile, domain='api_by_user')
+            obj = RateLimitedUser(user_profile, domain="api_by_user")
         self.assertEqual(obj.backend, TornadoInMemoryRateLimiterBackend)
 
         with self.settings(RUNNING_INSIDE_TORNADO=True):
-            obj = RateLimitedUser(user_profile, domain='some_domain')
+            obj = RateLimitedUser(user_profile, domain="some_domain")
         self.assertEqual(obj.backend, RedisRateLimiterBackend)
 
     def test_block_access(self) -> None:
-        obj = self.create_object('test', [(2, 5)])
+        obj = self.create_object("test", [(2, 5)])
         start_time = time.time()
 
         obj.block_access(1)
-        with mock.patch('time.time', return_value=(start_time)):
+        with mock.patch("time.time", return_value=(start_time)):
             self.make_request(obj, expect_ratelimited=True, verify_api_calls_left=False)
 
-        with mock.patch('time.time', return_value=(start_time + 1.01)):
+        with mock.patch("time.time", return_value=(start_time + 1.01)):
             self.make_request(obj, expect_ratelimited=False, verify_api_calls_left=False)
 
 
@@ -224,15 +224,15 @@ class RateLimitedObjectsTest(ZulipTestCase):
     def test_add_remove_rule(self) -> None:
         user_profile = self.example_user("hamlet")
         add_ratelimit_rule(1, 2)
-        add_ratelimit_rule(4, 5, domain='some_new_domain')
-        add_ratelimit_rule(10, 100, domain='some_new_domain')
+        add_ratelimit_rule(4, 5, domain="some_new_domain")
+        add_ratelimit_rule(10, 100, domain="some_new_domain")
         obj = RateLimitedUser(user_profile)
 
         self.assertEqual(obj.get_rules(), [(1, 2)])
-        obj.domain = 'some_new_domain'
+        obj.domain = "some_new_domain"
         self.assertEqual(obj.get_rules(), [(4, 5), (10, 100)])
 
-        remove_ratelimit_rule(10, 100, domain='some_new_domain')
+        remove_ratelimit_rule(10, 100, domain="some_new_domain")
         self.assertEqual(obj.get_rules(), [(4, 5)])
 
     def test_empty_rules_edge_case(self) -> None:

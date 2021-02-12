@@ -10,18 +10,18 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@webhook_view('IFTTT')
+@webhook_view("IFTTT")
 @has_request_variables
 def api_iftt_app_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
-    topic = payload.get('topic')
-    content = payload.get('content')
+    topic = payload.get("topic")
+    content = payload.get("content")
 
     if topic is None:
-        topic = payload.get('subject')  # Backwards-compatibility
+        topic = payload.get("subject")  # Backwards-compatibility
         if topic is None:
             return json_error(_("Topic can't be empty"))
 

@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0062_default_timezone'),
+        ("zerver", "0062_default_timezone"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='description',
+            model_name="realm",
+            name="description",
             field=models.TextField(max_length=100, null=True),
         ),
     ]

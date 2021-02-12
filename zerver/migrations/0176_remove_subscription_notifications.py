@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0175_change_realm_audit_log_event_type_tense'),
+        ("zerver", "0175_change_realm_audit_log_event_type_tense"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='subscription',
-            name='notifications',
+            model_name="subscription",
+            name="notifications",
         ),
     ]

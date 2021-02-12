@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0057_realmauditlog'),
+        ("zerver", "0057_realmauditlog"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='email_changes_disabled',
+            model_name="realm",
+            name="email_changes_disabled",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0206_stream_rendered_description'),
+        ("zerver", "0206_stream_rendered_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='multiuseinvite',
-            name='invited_as',
+            model_name="multiuseinvite",
+            name="invited_as",
             field=models.PositiveSmallIntegerField(default=1),
         ),
     ]

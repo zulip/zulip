@@ -15,8 +15,8 @@ import sys
 import time
 import traceback
 
-sys.path.append('.')
-sys.path.append('/home/zulip/deployments/current')
+sys.path.append(".")
+sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path
 
 setup_path()
@@ -32,24 +32,24 @@ usage = """Usage: send-receive.py [options] [config]
         Otherwise, returns the output data."""
 
 parser = argparse.ArgumentParser(usage=usage)
-parser.add_argument('--site', default="https://api.zulip.com")
+parser.add_argument("--site", default="https://api.zulip.com")
 
-parser.add_argument('--nagios', action='store_true')
+parser.add_argument("--nagios", action="store_true")
 
-parser.add_argument('--insecure', action='store_true')
+parser.add_argument("--insecure", action="store_true")
 
-parser.add_argument('--munin', action='store_true')
+parser.add_argument("--munin", action="store_true")
 
-parser.add_argument('config', nargs='?')
+parser.add_argument("config", nargs="?")
 
 options = parser.parse_args()
 
 if not options.nagios and not options.munin:
-    print('No output options specified! Please provide --munin or --nagios')
+    print("No output options specified! Please provide --munin or --nagios")
     sys.exit(0)
 
 if options.munin:
-    if options.config == 'config':
+    if options.config == "config":
         print(
             """graph_title Send-Receive times
 graph_info The number of seconds it takes to send and receive a message from the server
@@ -61,8 +61,8 @@ sendreceive.critical 5"""
         )
         sys.exit(0)
 
-sys.path.append('/home/zulip/deployments/current')
-os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
+sys.path.append("/home/zulip/deployments/current")
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 
 django.setup()
 
@@ -83,7 +83,7 @@ def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> None
     if msg is None:
         msg = f"send time was {timestamp}"
     state_file_path = "/var/lib/nagios_state/check_send_receive_state"
-    with open(state_file_path + ".tmp", 'w') as f:
+    with open(state_file_path + ".tmp", "w") as f:
         f.write(f"{now}|{states[state]}|{state}|{msg}\n")
     os.rename(state_file_path + ".tmp", state_file_path)
     print(f"{state}: {msg}")
@@ -99,15 +99,15 @@ def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
 def get_zulips() -> List[Dict[str, Any]]:
     global queue_id, last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
-    if 'error' in res.get('result', {}):
+    if "error" in res.get("result", {}):
         report("CRITICAL", msg="Error receiving Zulips, error was: {}".format(res["msg"]))
-    for event in res['events']:
-        last_event_id = max(last_event_id, int(event['id']))
+    for event in res["events"]:
+        last_event_id = max(last_event_id, int(event["id"]))
     # If we get a heartbeat event, that means we've been hanging for
     # 40s, and we should bail.
-    if 'heartbeat' in (event['type'] for event in res['events']):
+    if "heartbeat" in (event["type"] for event in res["events"]):
         report("CRITICAL", msg="Got heartbeat waiting for Zulip, which means get_events is hanging")
-    return [event['message'] for event in res['events']]
+    return [event["message"] for event in res["events"]]
 
 
 if (
@@ -141,9 +141,9 @@ zulip_recipient = zulip.Client(
 
 try:
     res = zulip_recipient.register(event_types=["message"])
-    if 'error' in res.get('result', {}):
-        report("CRITICAL", msg="Error subscribing to Zulips: {}".format(res['msg']))
-    queue_id, last_event_id = (res['queue_id'], res['last_event_id'])
+    if "error" in res.get("result", {}):
+        report("CRITICAL", msg="Error subscribing to Zulips: {}".format(res["msg"]))
+    queue_id, last_event_id = (res["queue_id"], res["last_event_id"])
 except Exception:
     report("CRITICAL", msg=f"Error subscribing to Zulips:\n{traceback.format_exc()}")
 msg_to_send = str(random.getrandbits(64))
@@ -152,7 +152,7 @@ time_start = time.time()
 send_zulip(
     zulip_sender,
     {
-        "type": 'private',
+        "type": "private",
         "content": msg_to_send,
         "subject": "time to send",
         "to": recipient.email,
@@ -165,17 +165,17 @@ while msg_to_send not in msg_content:
     messages = get_zulips()
     seconds_diff = time.time() - time_start
 
-    msg_content = [m['content'] for m in messages]
+    msg_content = [m["content"] for m in messages]
 
 zulip_recipient.deregister(queue_id)
 
 if options.nagios:
     if seconds_diff > 12:
-        report('CRITICAL', timestamp=seconds_diff)
+        report("CRITICAL", timestamp=seconds_diff)
     if seconds_diff > 3:
-        report('WARNING', timestamp=seconds_diff)
+        report("WARNING", timestamp=seconds_diff)
 
 if options.munin:
     print(f"sendreceive.value {seconds_diff}")
 elif options.nagios:
-    report('OK', timestamp=seconds_diff)
+    report("OK", timestamp=seconds_diff)

@@ -2,9 +2,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class NewRelicHookTests(WebhookTestCase):
-    STREAM_NAME = 'newrelic'
+    STREAM_NAME = "newrelic"
     URL_TEMPLATE = "/api/v1/external/newrelic?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'newrelic'
+    FIXTURE_DIR_NAME = "newrelic"
 
     def test_open(self) -> None:
         expected_topic = "Test policy name (1234)"

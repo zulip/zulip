@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0214_realm_invite_to_stream_policy'),
+        ("zerver", "0214_realm_invite_to_stream_policy"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='avatar_changes_disabled',
+            model_name="realm",
+            name="avatar_changes_disabled",
             field=models.BooleanField(default=False),
         ),
     ]

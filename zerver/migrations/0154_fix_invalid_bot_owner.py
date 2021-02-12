@@ -9,14 +9,14 @@ def migrate_fix_invalid_bot_owner_values(
     apps: StateApps, schema_editor: DatabaseSchemaEditor
 ) -> None:
     """Fixes UserProfile objects that incorrectly had a bot_owner set"""
-    UserProfile = apps.get_model('zerver', 'UserProfile')
+    UserProfile = apps.get_model("zerver", "UserProfile")
     UserProfile.objects.filter(is_bot=False).exclude(bot_owner=None).update(bot_owner=None)
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0153_remove_int_float_custom_fields'),
+        ("zerver", "0153_remove_int_float_custom_fields"),
     ]
 
     operations = [

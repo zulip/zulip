@@ -6,22 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zilencer', '0004_remove_deployment_model'),
+        ("zilencer", "0004_remove_deployment_model"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='remotepushdevicetoken',
-            name='token',
+            model_name="remotepushdevicetoken",
+            name="token",
             field=models.CharField(db_index=True, max_length=4096),
         ),
         migrations.AlterField(
-            model_name='remotepushdevicetoken',
-            name='user_id',
+            model_name="remotepushdevicetoken",
+            name="user_id",
             field=models.BigIntegerField(db_index=True),
         ),
         migrations.AlterUniqueTogether(
-            name='remotepushdevicetoken',
-            unique_together={('server', 'token')},
+            name="remotepushdevicetoken",
+            unique_together={("server", "token")},
         ),
     ]

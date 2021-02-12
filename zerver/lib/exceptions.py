@@ -7,7 +7,7 @@ T = TypeVar("T", bound="AbstractEnum")
 
 
 class AbstractEnum(Enum):
-    '''An enumeration whose members are used strictly for their names.'''
+    """An enumeration whose members are used strictly for their names."""
 
     def __new__(cls: Type[T]) -> T:
         obj = object.__new__(cls)
@@ -113,7 +113,7 @@ class JsonableError(Exception):
         # That's for the sake of the `JsonableError` base logic itself, for
         # the simplest form of use where we just get a plain message string
         # at construction time.
-        return '{_msg}'
+        return "{_msg}"
 
     @property
     def extra_headers(self) -> Dict[str, Any]:
@@ -126,7 +126,7 @@ class JsonableError(Exception):
     @property
     def msg(self) -> str:
         format_data = dict(
-            ((f, getattr(self, f)) for f in self.data_fields), _msg=getattr(self, '_msg', None)
+            ((f, getattr(self, f)) for f in self.data_fields), _msg=getattr(self, "_msg", None)
         )
         return self.msg_format().format(**format_data)
 
@@ -135,7 +135,7 @@ class JsonableError(Exception):
         return dict(((f, getattr(self, f)) for f in self.data_fields), code=self.code.name)
 
     def to_json(self) -> Dict[str, Any]:
-        d = {'result': 'error', 'msg': self.msg}
+        d = {"result": "error", "msg": self.msg}
         d.update(self.data)
         return d
 
@@ -145,7 +145,7 @@ class JsonableError(Exception):
 
 class StreamDoesNotExistError(JsonableError):
     code = ErrorCode.STREAM_DOES_NOT_EXIST
-    data_fields = ['stream']
+    data_fields = ["stream"]
 
     def __init__(self, stream: str) -> None:
         self.stream = stream
@@ -157,7 +157,7 @@ class StreamDoesNotExistError(JsonableError):
 
 class StreamWithIDDoesNotExistError(JsonableError):
     code = ErrorCode.STREAM_DOES_NOT_EXIST
-    data_fields = ['stream_id']
+    data_fields = ["stream_id"]
 
     def __init__(self, stream_id: int) -> None:
         self.stream_id = stream_id
@@ -169,7 +169,7 @@ class StreamWithIDDoesNotExistError(JsonableError):
 
 class CannotDeactivateLastUserError(JsonableError):
     code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
-    data_fields = ['is_last_owner', 'entity']
+    data_fields = ["is_last_owner", "entity"]
 
     def __init__(self, is_last_owner: bool) -> None:
         self.is_last_owner = is_last_owner
@@ -182,7 +182,7 @@ class CannotDeactivateLastUserError(JsonableError):
 
 class InvalidMarkdownIncludeStatement(JsonableError):
     code = ErrorCode.INVALID_MARKDOWN_INCLUDE_STATEMENT
-    data_fields = ['include_statement']
+    data_fields = ["include_statement"]
 
     def __init__(self, include_statement: str) -> None:
         self.include_statement = include_statement
@@ -214,7 +214,7 @@ class RateLimited(JsonableError):
     @property
     def data(self) -> Dict[str, Any]:
         data_dict = super().data
-        data_dict['retry-after'] = self.secs_to_freedom
+        data_dict["retry-after"] = self.secs_to_freedom
 
         return data_dict
 
@@ -295,7 +295,7 @@ class InvalidAPIKeyFormatError(InvalidAPIKeyError):
 
 class UnsupportedWebhookEventType(JsonableError):
     code = ErrorCode.UNSUPPORTED_WEBHOOK_EVENT_TYPE
-    data_fields = ['webhook_name', 'event_type']
+    data_fields = ["webhook_name", "event_type"]
 
     def __init__(self, event_type: Optional[str]) -> None:
         self.webhook_name = "(unknown)"

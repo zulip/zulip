@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from sentry_sdk._types import Event, Hint
 
 
-def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
+def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
     if "exc_info" in hint:
         _, exc_value, _ = hint["exc_info"]
         # Ignore GeneratorExit, KeyboardInterrupt, and SystemExit exceptions
@@ -36,7 +36,7 @@ def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
         user_info = event.get("user", {})
         if user_info.get("id"):
             user_profile = get_user_profile_by_id(user_info["id"])
-            event["tags"]["realm"] = user_info["realm"] = user_profile.realm.string_id or 'root'
+            event["tags"]["realm"] = user_info["realm"] = user_profile.realm.string_id or "root"
             with override_language(settings.LANGUAGE_CODE):
                 # str() to force the lazy-translation to apply now,
                 # since it won't serialize into json for Sentry otherwise
@@ -50,10 +50,10 @@ def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
 
         request = get_current_request()
         if request:
-            if hasattr(request, 'client'):
-                event['tags']['client'] = request.client.name
-            if hasattr(request, 'realm'):
-                event['tags'].setdefault('realm', request.realm.string_id)
+            if hasattr(request, "client"):
+                event["tags"]["client"] = request.client.name
+            if hasattr(request, "realm"):
+                event["tags"].setdefault("realm", request.realm.string_id)
     return event
 
 

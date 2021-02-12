@@ -3,7 +3,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('zerver', '0294_remove_userprofile_pointer'),
+        ("zerver", "0294_remove_userprofile_pointer"),
     ]
 
     operations = [
@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
         """
         ),
         migrations.AlterUniqueTogether(
-            name='userprofile',
+            name="userprofile",
             unique_together=set(),
         ),
     ]

@@ -7,31 +7,31 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0112_index_muted_topics'),
+        ("zerver", "0112_index_muted_topics"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DefaultStreamGroup',
+            name="DefaultStreamGroup",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ('name', models.CharField(db_index=True, max_length=60)),
+                ("name", models.CharField(db_index=True, max_length=60)),
                 (
-                    'realm',
+                    "realm",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
                     ),
                 ),
-                ('streams', models.ManyToManyField(to='zerver.Stream')),
+                ("streams", models.ManyToManyField(to="zerver.Stream")),
             ],
         ),
         migrations.AlterUniqueTogether(
-            name='defaultstreamgroup',
-            unique_together={('realm', 'name')},
+            name="defaultstreamgroup",
+            unique_together={("realm", "name")},
         ),
     ]
