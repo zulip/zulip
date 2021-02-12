@@ -27,18 +27,18 @@ def guess_zulip_user_from_harbor(harbor_username: str, realm: Realm) -> Optional
         # We search a user's full name, short name,
         # and beginning of email address
         user = UserProfile.objects.filter(
-            Q(full_name__iexact=harbor_username) |
-            Q(email__istartswith=harbor_username),
+            Q(full_name__iexact=harbor_username) | Q(email__istartswith=harbor_username),
             is_active=True,
-            realm=realm).order_by("id")[0]
+            realm=realm,
+        ).order_by("id")[0]
         return user  # nocoverage
     except IndexError:
         return None
 
 
-def handle_push_image_event(payload: Dict[str, Any],
-                            user_profile: UserProfile,
-                            operator_username: str) -> str:
+def handle_push_image_event(
+    payload: Dict[str, Any], user_profile: UserProfile, operator_username: str
+) -> str:
     image_name = payload["event_data"]["repository"]["repo_full_name"]
     image_tag = payload["event_data"]["resources"][0]["tag"]
 
@@ -60,16 +60,16 @@ Image scan completed for `{image_name}:{image_tag}`. Vulnerabilities by severity
 """.strip()
 
 
-def handle_scanning_completed_event(payload: Dict[str, Any],
-                                    user_profile: UserProfile,
-                                    operator_username: str) -> str:
+def handle_scanning_completed_event(
+    payload: Dict[str, Any], user_profile: UserProfile, operator_username: str
+) -> str:
     scan_results = ""
     scan_summaries = payload["event_data"]["resources"][0]["scan_overview"]["components"]["summary"]
-    summaries_sorted = sorted(
-        scan_summaries, key=lambda x: x["severity"], reverse=True)
+    summaries_sorted = sorted(scan_summaries, key=lambda x: x["severity"], reverse=True)
     for scan_summary in summaries_sorted:
         scan_results += "* {}: **{}**\n".format(
-            VULNERABILITY_SEVERITY_NAME_MAP[scan_summary["severity"]], scan_summary["count"])
+            VULNERABILITY_SEVERITY_NAME_MAP[scan_summary["severity"]], scan_summary["count"]
+        )
 
     return SCANNING_COMPLETED_TEMPLATE.format(
         image_name=payload["event_data"]["repository"]["repo_full_name"],
@@ -86,14 +86,16 @@ EVENT_FUNCTION_MAPPER = {
 
 @webhook_view("Harbor")
 @has_request_variables
-def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any] = REQ(argument_type='body')) -> HttpResponse:
+def api_harbor_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
 
     operator_username = "**{}**".format(payload["operator"])
 
     if operator_username != "auto":
-        operator_profile = guess_zulip_user_from_harbor(
-            operator_username, user_profile.realm)
+        operator_profile = guess_zulip_user_from_harbor(operator_username, user_profile.realm)
 
     if operator_profile:
         operator_username = f"@**{operator_profile.full_name}**"  # nocoverage
@@ -111,7 +113,5 @@ def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
 
     content: str = content_func(payload, user_profile, operator_username)
 
-    check_send_webhook_message(request, user_profile,
-                               topic, content,
-                               unquote_url_parameters=True)
+    check_send_webhook_message(request, user_profile, topic, content, unquote_url_parameters=True)
     return json_success()

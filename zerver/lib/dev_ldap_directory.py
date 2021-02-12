@@ -12,10 +12,11 @@ from zerver.lib.storage import static_path
 LDAP_USER_ACCOUNT_CONTROL_NORMAL = '512'
 LDAP_USER_ACCOUNT_CONTROL_DISABLED = '514'
 
-def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, Any]]:
+
+def generate_dev_ldap_dir(mode: str, num_users: int = 8) -> Dict[str, Dict[str, Any]]:
     mode = mode.lower()
     ldap_data = []
-    for i in range(1, num_users+1):
+    for i in range(1, num_users + 1):
         name = f'LDAP User {i}'
         email = f'ldapuser{i}@zulip.com'
         phone_number = f'999999999{i}'
@@ -41,21 +42,25 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
                 uid=[email],
                 thumbnailPhoto=[profile_images[i % len(profile_images)]],
                 userAccountControl=[LDAP_USER_ACCOUNT_CONTROL_NORMAL],
-                **common_data)
+                **common_data,
+            )
         elif mode == 'b':
             ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = dict(
                 uid=[email_username],
                 jpegPhoto=[profile_images[i % len(profile_images)]],
-                **common_data)
+                **common_data,
+            )
         elif mode == 'c':
             ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = dict(
-                uid=[email_username],
-                email=[email],
-                **common_data)
+                uid=[email_username], email=[email], **common_data
+            )
 
     return ldap_dir
 
-def init_fakeldap(directory: Optional[Dict[str, Dict[str, List[str]]]]=None) -> None:  # nocoverage
+
+def init_fakeldap(
+    directory: Optional[Dict[str, Dict[str, List[str]]]] = None
+) -> None:  # nocoverage
     # We only use this in development.  Importing mock inside
     # this function is an import time optimization, which
     # avoids the expensive import of the mock module (slow
@@ -78,5 +83,6 @@ def init_fakeldap(directory: Optional[Dict[str, Dict[str, List[str]]]]=None) -> 
     mock_ldap = MockLDAP()
     mock_initialize.return_value = mock_ldap
 
-    mock_ldap.directory = directory or generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
-                                                             settings.FAKE_LDAP_NUM_USERS)
+    mock_ldap.directory = directory or generate_dev_ldap_dir(
+        settings.FAKE_LDAP_MODE, settings.FAKE_LDAP_NUM_USERS
+    )

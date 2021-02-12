@@ -16,6 +16,7 @@ def get_forward_address() -> str:
     except (configparser.NoSectionError, configparser.NoOptionError):
         return ""
 
+
 def set_forward_address(forward_address: str) -> None:
     config = configparser.ConfigParser()
     config.read(settings.FORWARD_ADDRESS_CONFIG_FILE)
@@ -26,6 +27,7 @@ def set_forward_address(forward_address: str) -> None:
 
     with open(settings.FORWARD_ADDRESS_CONFIG_FILE, "w") as cfgfile:
         config.write(cfgfile)
+
 
 class EmailLogBackEnd(EmailBackend):
     @staticmethod
@@ -67,7 +69,9 @@ class EmailLogBackEnd(EmailBackend):
             # Here, we replace the email addresses used in development
             # with chat.zulip.org, so that web email providers like Gmail
             # will be able to fetch the illustrations used in the emails.
-            html_alternative[0] = html_alternative[0].replace(localhost_email_images_base_uri, czo_email_images_base_uri)
+            html_alternative[0] = html_alternative[0].replace(
+                localhost_email_images_base_uri, czo_email_images_base_uri
+            )
             email_message.alternatives[0] = tuple(html_alternative)
 
             email_message.to = [get_forward_address()]

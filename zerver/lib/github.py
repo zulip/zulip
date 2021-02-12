@@ -7,6 +7,7 @@ from zerver.lib.cache import cache_with_key
 
 logger = logging.getLogger(__name__)
 
+
 def get_latest_github_release_version_for_repo(repo: str) -> str:
     api_url = f"https://api.github.com/repos/zulip/{repo}/releases/latest"
     try:
@@ -14,6 +15,7 @@ def get_latest_github_release_version_for_repo(repo: str) -> str:
     except (requests.RequestException, json.JSONDecodeError, KeyError):
         logger.error("Unable to fetch the latest release version from GitHub %s", api_url)
         return ""
+
 
 def verify_release_download_link(link: str) -> bool:
     try:
@@ -23,16 +25,19 @@ def verify_release_download_link(link: str) -> bool:
         logger.error("App download link is broken %s", link)
         return False
 
+
 PLATFORM_TO_SETUP_FILE = {
     "linux": "Zulip-{version}-x86_64.AppImage",
     "mac": "Zulip-{version}.dmg",
     "windows": "Zulip-Web-Setup-{version}.exe",
 }
 
+
 class InvalidPlatform(Exception):
     pass
 
-@cache_with_key(lambda platform: f"download_link:{platform}", timeout=60*30)
+
+@cache_with_key(lambda platform: f"download_link:{platform}", timeout=60 * 30)
 def get_latest_github_release_download_link_for_platform(platform: str) -> str:
     if platform not in PLATFORM_TO_SETUP_FILE:
         raise InvalidPlatform()

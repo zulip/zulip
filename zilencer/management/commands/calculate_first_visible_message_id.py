@@ -16,7 +16,7 @@ class Command(ZulipBaseCommand):
             '--lookback-hours',
             type=int,
             help="Period a bit larger than that of the cron job that runs "
-                 "this command so that the lookback periods are sure to overlap.",
+            "this command so that the lookback periods are sure to overlap.",
             required=True,
         )
 

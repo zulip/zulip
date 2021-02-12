@@ -20,8 +20,9 @@ sys.path.insert(0, ZULIP_PATH)
 from scripts.lib.zulip_tools import is_vagrant_env_host
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('path', metavar='FILE', nargs='+',
-                    help='config file of dummy users in development server')
+parser.add_argument(
+    'path', metavar='FILE', nargs='+', help='config file of dummy users in development server'
+)
 args = parser.parse_args()
 
 zuliprc_paths_list = args.path
@@ -50,14 +51,20 @@ for zuliprc_path in zuliprc_paths_list:
         os.chdir(ZULIP_PATH)
 
         if is_vagrant_env_host(ZULIP_PATH):
-            arguments = ['vagrant', 'ssh', '--command',
-                         './manage.py print_initial_password ' + shlex.quote(email)]
+            arguments = [
+                'vagrant',
+                'ssh',
+                '--command',
+                './manage.py print_initial_password ' + shlex.quote(email),
+            ]
         else:
             # Support users who don't have vagrant based setup
             arguments = ['./manage.py', 'print_initial_password', email]
         # We redirect 'stderr' to 'stdout' to avoid 'Connection to 127.0.0.1 closed'
         # appearing after this script finishes.
-        output = subprocess.check_output(arguments, stderr=subprocess.STDOUT, universal_newlines=True)
+        output = subprocess.check_output(
+            arguments, stderr=subprocess.STDOUT, universal_newlines=True
+        )
         new_key = output.split()[6]
 
         if new_key != key:

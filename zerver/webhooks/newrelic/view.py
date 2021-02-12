@@ -17,23 +17,28 @@ OPEN_TEMPLATE = """
 ```
 """.strip()
 
-DEFAULT_TEMPLATE = """[Incident]({incident_url}) **{status}** {owner}for condition: **{condition_name}**""".strip()
+DEFAULT_TEMPLATE = (
+    """[Incident]({incident_url}) **{status}** {owner}for condition: **{condition_name}**""".strip()
+)
 
 TOPIC_TEMPLATE = """{policy_name} ({incident_id})""".strip()
+
 
 @webhook_view("NewRelic")
 @has_request_variables
 def api_newrelic_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any]=REQ(argument_type='body')
+    payload: Dict[str, Any] = REQ(argument_type='body'),
 ) -> HttpResponse:
 
     info = {
         "condition_name": payload.get('condition_name', 'Unknown condition'),
         "details": payload.get('details', 'No details.'),
         "incident_url": payload.get('incident_url', 'https://alerts.newrelic.com'),
-        "incident_acknowledge_url": payload.get('incident_acknowledge_url', 'https://alerts.newrelic.com'),
+        "incident_acknowledge_url": payload.get(
+            'incident_acknowledge_url', 'https://alerts.newrelic.com'
+        ),
         "status": payload.get('current_state', 'None'),
         "iso_timestamp": '',
         "owner": payload.get('owner', ''),
@@ -57,7 +62,9 @@ def api_newrelic_webhook(
     elif 'closed' in info['status']:
         content = DEFAULT_TEMPLATE.format(**info)
     else:
-        return json_error(_("The newrelic webhook requires current_state be in [open|acknowledged|closed]"))
+        return json_error(
+            _("The newrelic webhook requires current_state be in [open|acknowledged|closed]")
+        )
 
     topic_info = {
         "policy_name": payload.get('policy_name', 'Unknown Policy'),

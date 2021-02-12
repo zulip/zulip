@@ -10,9 +10,9 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, query_for_ids
 
 
-def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
-                              mobile_user_ids: Set[int],
-                              slim_presence: bool) -> Dict[str, Dict[str, Any]]:
+def get_status_dicts_for_rows(
+    all_rows: List[Dict[str, Any]], mobile_user_ids: Set[int], slim_presence: bool
+) -> Dict[str, Dict[str, Any]]:
 
     # Note that datetime values have sub-second granularity, which is
     # mostly important for avoiding test flakes, but it's also technically
@@ -21,7 +21,7 @@ def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
     # here prevents us from having to assume the caller is playing nice.
     all_rows = sorted(
         all_rows,
-        key = lambda row: (row['user_profile__id'], row['timestamp']),
+        key=lambda row: (row['user_profile__id'], row['timestamp']),
     )
 
     if slim_presence:
@@ -44,21 +44,21 @@ def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
 
     return user_statuses
 
-def get_modern_user_info(presence_rows: List[Dict[str, Any]],
-                         mobile_user_ids: Set[int]) -> Dict[str, Any]:
+
+def get_modern_user_info(
+    presence_rows: List[Dict[str, Any]], mobile_user_ids: Set[int]
+) -> Dict[str, Any]:
 
     active_timestamp = None
     for row in reversed(presence_rows):
         if row['status'] == UserPresence.ACTIVE:
-            active_timestamp = datetime_to_timestamp(
-                row['timestamp'])
+            active_timestamp = datetime_to_timestamp(row['timestamp'])
             break
 
     idle_timestamp = None
     for row in reversed(presence_rows):
         if row['status'] == UserPresence.IDLE:
-            idle_timestamp = datetime_to_timestamp(
-                row['timestamp'])
+            idle_timestamp = datetime_to_timestamp(row['timestamp'])
             break
 
     # Be stingy about bandwidth, and don't even include
@@ -74,8 +74,10 @@ def get_modern_user_info(presence_rows: List[Dict[str, Any]],
 
     return result
 
-def get_legacy_user_info(presence_rows: List[Dict[str, Any]],
-                         mobile_user_ids: Set[int]) -> Dict[str, Any]:
+
+def get_legacy_user_info(
+    presence_rows: List[Dict[str, Any]], mobile_user_ids: Set[int]
+) -> Dict[str, Any]:
 
     # The format of data here is for legacy users of our API,
     # including old versions of the mobile app.
@@ -87,7 +89,7 @@ def get_legacy_user_info(presence_rows: List[Dict[str, Any]],
         timestamp = datetime_to_timestamp(dt)
         push_enabled = row['user_profile__enable_offline_push_notifications']
         has_push_devices = row['user_profile__id'] in mobile_user_ids
-        pushable = (push_enabled and has_push_devices)
+        pushable = push_enabled and has_push_devices
 
         info = dict(
             client=client_name,
@@ -118,8 +120,10 @@ def get_legacy_user_info(presence_rows: List[Dict[str, Any]],
 
     return result
 
-def get_presence_for_user(user_profile_id: int,
-                          slim_presence: bool=False) -> Dict[str, Dict[str, Any]]:
+
+def get_presence_for_user(
+    user_profile_id: int, slim_presence: bool = False
+) -> Dict[str, Dict[str, Any]]:
     query = UserPresence.objects.filter(user_profile_id=user_profile_id).values(
         'client__name',
         'status',
@@ -138,7 +142,9 @@ def get_presence_for_user(user_profile_id: int,
     return get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
 
 
-def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict[str, Dict[str, Any]]:
+def get_status_dict_by_realm(
+    realm_id: int, slim_presence: bool = False
+) -> Dict[str, Dict[str, Any]]:
     two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
     query = UserPresence.objects.filter(
         realm_id=realm_id,
@@ -156,9 +162,7 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
 
     presence_rows = list(query)
 
-    mobile_query = PushDeviceToken.objects.distinct(
-        'user_id'
-    ).values_list(
+    mobile_query = PushDeviceToken.objects.distinct('user_id').values_list(
         'user_id',
         flat=True,
     )
@@ -182,8 +186,10 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
 
     return get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
 
-def get_presences_for_realm(realm: Realm,
-                            slim_presence: bool) -> Dict[str, Dict[str, Dict[str, Any]]]:
+
+def get_presences_for_realm(
+    realm: Realm, slim_presence: bool
+) -> Dict[str, Dict[str, Dict[str, Any]]]:
 
     if realm.presence_disabled:
         # Return an empty dict if presence is disabled in this realm
@@ -191,8 +197,10 @@ def get_presences_for_realm(realm: Realm,
 
     return get_status_dict_by_realm(realm.id, slim_presence)
 
-def get_presence_response(requesting_user_profile: UserProfile,
-                          slim_presence: bool) -> Dict[str, Any]:
+
+def get_presence_response(
+    requesting_user_profile: UserProfile, slim_presence: bool
+) -> Dict[str, Any]:
     realm = requesting_user_profile.realm
     server_timestamp = time.time()
     presences = get_presences_for_realm(realm, slim_presence)

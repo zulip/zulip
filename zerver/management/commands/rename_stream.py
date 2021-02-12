@@ -10,10 +10,10 @@ class Command(ZulipBaseCommand):
     help = """Change the stream name for a realm."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('old_name', metavar='<old name>',
-                            help='name of stream to be renamed')
-        parser.add_argument('new_name', metavar='<new name>',
-                            help='new name to rename the stream to')
+        parser.add_argument('old_name', metavar='<old name>', help='name of stream to be renamed')
+        parser.add_argument(
+            'new_name', metavar='<new name>', help='new name to rename the stream to'
+        )
         self.add_realm_args(parser, True)
 
     def handle(self, *args: Any, **options: str) -> None:

@@ -10,10 +10,8 @@ from zerver.worker.queue_processors import get_active_worker_queues
 
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument(dest="queue_name", nargs='?',
-                            help="queue to purge")
-        parser.add_argument('--all', action="store_true",
-                            help="purge all queues")
+        parser.add_argument(dest="queue_name", nargs='?', help="queue to purge")
+        parser.add_argument('--all', action="store_true", help="purge all queues")
 
     help = "Discards all messages from the given queue"
 
@@ -30,8 +28,9 @@ class Command(BaseCommand):
             raise CommandError("Missing queue_name argument!")
         else:
             queue_name = options['queue_name']
-            if not (queue_name in get_active_worker_queues() or
-                    queue_name.startswith("notify_tornado")):
+            if not (
+                queue_name in get_active_worker_queues() or queue_name.startswith("notify_tornado")
+            ):
                 raise CommandError(f"Unknown queue {queue_name}")
 
             print(f"Purging queue {queue_name}")

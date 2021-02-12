@@ -61,6 +61,7 @@ class MissedMessageTest(ZulipTestCase):
         message_type = 'private'
         assert_missing([othello.id])
 
+
 class TestBulkGetHuddleUserIds(ZulipTestCase):
     def test_bulk_get_huddle_user_ids(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -78,7 +79,9 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
         second_huddle_recipient = messages[1].recipient
         second_huddle_user_ids = list(get_huddle_user_ids(second_huddle_recipient))
 
-        huddle_user_ids = bulk_get_huddle_user_ids([first_huddle_recipient, second_huddle_recipient])
+        huddle_user_ids = bulk_get_huddle_user_ids(
+            [first_huddle_recipient, second_huddle_recipient]
+        )
         self.assertEqual(huddle_user_ids[first_huddle_recipient.id], first_huddle_user_ids)
         self.assertEqual(huddle_user_ids[second_huddle_recipient.id], second_huddle_user_ids)
 

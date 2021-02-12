@@ -43,6 +43,7 @@ ALL_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
     },
 }
 
+
 def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     # For manual testing, it can be convenient to set
     # ALWAYS_SEND_ALL_HOTSPOTS=True in `zproject/dev_settings.py` to
@@ -50,34 +51,43 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     # ALWAYS_SEND_ALL_HOTSPOTS has some bugs; see ReadTheDocs (link
     # above) for details.
     if settings.ALWAYS_SEND_ALL_HOTSPOTS:
-        return [{
-            'name': hotspot,
-            'title': str(ALL_HOTSPOTS[hotspot]['title']),
-            'description': str(ALL_HOTSPOTS[hotspot]['description']),
-            'delay': 0,
-        } for hotspot in ALL_HOTSPOTS]
+        return [
+            {
+                'name': hotspot,
+                'title': str(ALL_HOTSPOTS[hotspot]['title']),
+                'description': str(ALL_HOTSPOTS[hotspot]['description']),
+                'delay': 0,
+            }
+            for hotspot in ALL_HOTSPOTS
+        ]
 
     if user.tutorial_status == UserProfile.TUTORIAL_FINISHED:
         return []
 
-    seen_hotspots = frozenset(UserHotspot.objects.filter(user=user).values_list('hotspot', flat=True))
+    seen_hotspots = frozenset(
+        UserHotspot.objects.filter(user=user).values_list('hotspot', flat=True)
+    )
     for hotspot in ['intro_reply', 'intro_streams', 'intro_topics', 'intro_gear', 'intro_compose']:
         if hotspot not in seen_hotspots:
-            return [{
-                'name': hotspot,
-                'title': str(ALL_HOTSPOTS[hotspot]['title']),
-                'description': str(ALL_HOTSPOTS[hotspot]['description']),
-                'delay': 0.5,
-            }]
+            return [
+                {
+                    'name': hotspot,
+                    'title': str(ALL_HOTSPOTS[hotspot]['title']),
+                    'description': str(ALL_HOTSPOTS[hotspot]['description']),
+                    'delay': 0.5,
+                }
+            ]
 
     user.tutorial_status = UserProfile.TUTORIAL_FINISHED
     user.save(update_fields=['tutorial_status'])
     return []
 
+
 def copy_hotpots(source_profile: UserProfile, target_profile: UserProfile) -> None:
     for userhotspot in frozenset(UserHotspot.objects.filter(user=source_profile)):
-        UserHotspot.objects.create(user=target_profile, hotspot=userhotspot.hotspot,
-                                   timestamp=userhotspot.timestamp)
+        UserHotspot.objects.create(
+            user=target_profile, hotspot=userhotspot.hotspot, timestamp=userhotspot.timestamp
+        )
 
     target_profile.tutorial_status = source_profile.tutorial_status
     target_profile.onboarding_steps = source_profile.onboarding_steps

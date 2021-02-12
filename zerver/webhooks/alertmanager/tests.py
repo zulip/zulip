@@ -15,7 +15,10 @@ class AlertmanagerHookTests(WebhookTestCase):
 """.strip()
 
         self.check_webhook(
-            "alert", expected_topic, expected_message, "application/json",
+            "alert",
+            expected_topic,
+            expected_message,
+            "application/json",
         )
 
     def test_single_error_issue_message(self) -> None:
@@ -25,5 +28,8 @@ class AlertmanagerHookTests(WebhookTestCase):
 """.strip()
 
         self.check_webhook(
-            "single_alert", expected_topic, expected_message, "application/json",
+            "single_alert",
+            expected_topic,
+            expected_message,
+            "application/json",
         )

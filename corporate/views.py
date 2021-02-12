@@ -51,15 +51,22 @@ from zerver.models import UserProfile, get_realm
 
 billing_logger = logging.getLogger('corporate.stripe')
 
+
 def unsign_seat_count(signed_seat_count: str, salt: str) -> int:
     try:
         return int(unsign_string(signed_seat_count, salt))
     except signing.BadSignature:
         raise BillingError('tampered seat count')
 
+
 def check_upgrade_parameters(
-        billing_modality: str, schedule: str, license_management: Optional[str], licenses: Optional[int],
-        has_stripe_token: bool, seat_count: int) -> None:
+    billing_modality: str,
+    schedule: str,
+    license_management: Optional[str],
+    licenses: Optional[int],
+    has_stripe_token: bool,
+    seat_count: int,
+) -> None:
     if billing_modality not in ['send_invoice', 'charge_automatically']:
         raise BillingError('unknown billing_modality')
     if schedule not in ['annual', 'monthly']:
@@ -78,13 +85,17 @@ def check_upgrade_parameters(
         max_licenses = MAX_INVOICED_LICENSES
 
     if licenses is None or licenses < min_licenses:
-        raise BillingError('not enough licenses',
-                           _("You must invoice for at least {} users.").format(min_licenses))
+        raise BillingError(
+            'not enough licenses', _("You must invoice for at least {} users.").format(min_licenses)
+        )
 
     if max_licenses is not None and licenses > max_licenses:
-        message = _("Invoices with more than {} licenses can't be processed from this page. To complete "
-                    "the upgrade, please contact {}.").format(max_licenses, settings.ZULIP_ADMINISTRATOR)
+        message = _(
+            "Invoices with more than {} licenses can't be processed from this page. To complete "
+            "the upgrade, please contact {}."
+        ).format(max_licenses, settings.ZULIP_ADMINISTRATOR)
         raise BillingError('too many licenses', message)
+
 
 # Should only be called if the customer is being charged automatically
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
@@ -95,7 +106,8 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     if stripe_source.object == "card":
         assert isinstance(stripe_source, stripe.Card)
         return _("{brand} ending in {last4}").format(
-            brand=stripe_source.brand, last4=stripe_source.last4,
+            brand=stripe_source.brand,
+            last4=stripe_source.last4,
         )
     # There might be one-off stuff we do for a particular customer that
     # would land them here. E.g. by default we don't support ACH for
@@ -105,16 +117,20 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
         email=settings.ZULIP_ADMINISTRATOR,
     )  # nocoverage
 
+
 @require_organization_member
 @has_request_variables
-def upgrade(request: HttpRequest, user: UserProfile,
-            billing_modality: str=REQ(validator=check_string),
-            schedule: str=REQ(validator=check_string),
-            license_management: Optional[str]=REQ(validator=check_string, default=None),
-            licenses: Optional[int]=REQ(validator=check_int, default=None),
-            stripe_token: Optional[str]=REQ(validator=check_string, default=None),
-            signed_seat_count: str=REQ(validator=check_string),
-            salt: str=REQ(validator=check_string)) -> HttpResponse:
+def upgrade(
+    request: HttpRequest,
+    user: UserProfile,
+    billing_modality: str = REQ(validator=check_string),
+    schedule: str = REQ(validator=check_string),
+    license_management: Optional[str] = REQ(validator=check_string, default=None),
+    licenses: Optional[int] = REQ(validator=check_int, default=None),
+    stripe_token: Optional[str] = REQ(validator=check_string, default=None),
+    signed_seat_count: str = REQ(validator=check_string),
+    salt: str = REQ(validator=check_string),
+) -> HttpResponse:
     try:
         seat_count = unsign_seat_count(signed_seat_count, salt)
         if billing_modality == 'charge_automatically' and license_management == 'automatic':
@@ -123,21 +139,34 @@ def upgrade(request: HttpRequest, user: UserProfile,
             schedule = 'annual'
             license_management = 'manual'
         check_upgrade_parameters(
-            billing_modality, schedule, license_management, licenses,
-            stripe_token is not None, seat_count)
+            billing_modality,
+            schedule,
+            license_management,
+            licenses,
+            stripe_token is not None,
+            seat_count,
+        )
         assert licenses is not None
         automanage_licenses = license_management == 'automatic'
 
-        billing_schedule = {'annual': CustomerPlan.ANNUAL,
-                            'monthly': CustomerPlan.MONTHLY}[schedule]
+        billing_schedule = {'annual': CustomerPlan.ANNUAL, 'monthly': CustomerPlan.MONTHLY}[
+            schedule
+        ]
         process_initial_upgrade(user, licenses, automanage_licenses, billing_schedule, stripe_token)
     except BillingError as e:
         if not settings.TEST_SUITE:  # nocoverage
             billing_logger.warning(
                 "BillingError during upgrade: %s. user=%s, realm=%s (%s), billing_modality=%s, "
                 "schedule=%s, license_management=%s, licenses=%s, has stripe_token: %s",
-                e.description, user.id, user.realm.id, user.realm.string_id, billing_modality,
-                schedule, license_management, licenses, stripe_token is not None,
+                e.description,
+                user.id,
+                user.realm.id,
+                user.realm.string_id,
+                billing_modality,
+                schedule,
+                license_management,
+                licenses,
+                stripe_token is not None,
             )
         return json_error(e.message, data={'error_description': e.description})
     except Exception:
@@ -147,6 +176,7 @@ def upgrade(request: HttpRequest, user: UserProfile,
         return json_error(error_message, data={'error_description': error_description})
     else:
         return json_success()
+
 
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
@@ -158,7 +188,9 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     billing_page_url = reverse(billing_home)
 
     customer = get_customer_by_realm(user.realm)
-    if customer is not None and (get_current_plan_by_customer(customer) is not None or customer.sponsorship_pending):
+    if customer is not None and (
+        get_current_plan_by_customer(customer) is not None or customer.sponsorship_pending
+    ):
         if request.GET.get("onboarding") is not None:
             billing_page_url = f"{billing_page_url}?onboarding=true"
         return HttpResponseRedirect(billing_page_url)
@@ -194,20 +226,26 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     response = render(request, 'corporate/upgrade.html', context=context)
     return response
 
+
 @require_organization_member
 @has_request_variables
-def sponsorship(request: HttpRequest, user: UserProfile,
-                organization_type: str=REQ("organization-type", validator=check_string),
-                website: str=REQ("website", validator=check_string),
-                description: str=REQ("description", validator=check_string)) -> HttpResponse:
+def sponsorship(
+    request: HttpRequest,
+    user: UserProfile,
+    organization_type: str = REQ("organization-type", validator=check_string),
+    website: str = REQ("website", validator=check_string),
+    description: str = REQ("description", validator=check_string),
+) -> HttpResponse:
     realm = user.realm
 
     requested_by = user.full_name
     user_role = user.get_role_name()
 
     support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
-    support_url = urljoin(support_realm_uri, urlunsplit(("", "", reverse("support"),
-                          urlencode({"q": realm.string_id}), "")))
+    support_url = urljoin(
+        support_realm_uri,
+        urlunsplit(("", "", reverse("support"), urlencode({"q": realm.string_id}), "")),
+    )
 
     context = {
         "requested_by": requested_by,
@@ -232,6 +270,7 @@ def sponsorship(request: HttpRequest, user: UserProfile,
     user.save(update_fields=["is_billing_admin"])
 
     return json_success()
+
 
 @zulip_login_required
 def billing_home(request: HttpRequest) -> HttpResponse:
@@ -266,14 +305,18 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         if last_ledger_entry is not None:
             if new_plan is not None:  # nocoverage
                 plan = new_plan
-            assert(plan is not None)  # for mypy
+            assert plan is not None  # for mypy
             free_trial = plan.status == CustomerPlan.FREE_TRIAL
             downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
-            switch_to_annual_at_end_of_cycle = plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
+            switch_to_annual_at_end_of_cycle = (
+                plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
+            )
             licenses = last_ledger_entry.licenses
             licenses_used = get_latest_seat_count(user.realm)
             # Should do this in javascript, using the user's timezone
-            renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=start_of_next_billing_cycle(plan, now))
+            renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
+                dt=start_of_next_billing_cycle(plan, now)
+            )
             renewal_cents = renewal_amount(plan, now)
             charge_automatically = plan.charge_automatically
             stripe_customer = stripe_get_customer(customer.stripe_customer_id)
@@ -303,36 +346,46 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 
     return render(request, 'corporate/billing.html', context=context)
 
+
 @require_billing_access
 @has_request_variables
-def change_plan_status(request: HttpRequest, user: UserProfile,
-                       status: int=REQ("status", validator=check_int)) -> HttpResponse:
-    assert(status in [CustomerPlan.ACTIVE, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-                      CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE, CustomerPlan.ENDED])
+def change_plan_status(
+    request: HttpRequest, user: UserProfile, status: int = REQ("status", validator=check_int)
+) -> HttpResponse:
+    assert status in [
+        CustomerPlan.ACTIVE,
+        CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+        CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
+        CustomerPlan.ENDED,
+    ]
 
     plan = get_current_plan_by_realm(user.realm)
-    assert(plan is not None)  # for mypy
+    assert plan is not None  # for mypy
 
     if status == CustomerPlan.ACTIVE:
-        assert(plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
+        assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
         do_change_plan_status(plan, status)
     elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
-        assert(plan.status == CustomerPlan.ACTIVE)
+        assert plan.status == CustomerPlan.ACTIVE
         downgrade_at_the_end_of_billing_cycle(user.realm)
     elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
-        assert(plan.billing_schedule == CustomerPlan.MONTHLY)
-        assert(plan.status == CustomerPlan.ACTIVE)
-        assert(plan.fixed_price is None)
+        assert plan.billing_schedule == CustomerPlan.MONTHLY
+        assert plan.status == CustomerPlan.ACTIVE
+        assert plan.fixed_price is None
         do_change_plan_status(plan, status)
     elif status == CustomerPlan.ENDED:
-        assert(plan.status == CustomerPlan.FREE_TRIAL)
+        assert plan.status == CustomerPlan.FREE_TRIAL
         downgrade_now_without_creating_additional_invoices(user.realm)
     return json_success()
 
+
 @require_billing_access
 @has_request_variables
-def replace_payment_source(request: HttpRequest, user: UserProfile,
-                           stripe_token: str=REQ("stripe_token", validator=check_string)) -> HttpResponse:
+def replace_payment_source(
+    request: HttpRequest,
+    user: UserProfile,
+    stripe_token: str = REQ("stripe_token", validator=check_string),
+) -> HttpResponse:
     try:
         do_replace_payment_source(user, stripe_token, pay_invoices=True)
     except BillingError as e:

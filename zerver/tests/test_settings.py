@@ -15,7 +15,6 @@ from zerver.models import UserProfile, get_user_profile_by_api_key
 
 
 class ChangeSettingsTest(ZulipTestCase):
-
     def check_well_formed_change_settings_response(self, result: Dict[str, Any]) -> None:
         self.assertIn("full_name", result)
 
@@ -24,15 +23,13 @@ class ChangeSettingsTest(ZulipTestCase):
     def check_for_toggle_param(self, pattern: str, param: str) -> None:
         self.login('hamlet')
         user_profile = self.example_user('hamlet')
-        json_result = self.client_post(pattern,
-                                       {param: orjson.dumps(True).decode()})
+        json_result = self.client_post(pattern, {param: orjson.dumps(True).decode()})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user('hamlet')
         self.assertEqual(getattr(user_profile, param), True)
 
-        json_result = self.client_post(pattern,
-                                       {param: orjson.dumps(False).decode()})
+        json_result = self.client_post(pattern, {param: orjson.dumps(False).decode()})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user('hamlet')
@@ -43,15 +40,13 @@ class ChangeSettingsTest(ZulipTestCase):
     def check_for_toggle_param_patch(self, pattern: str, param: str) -> None:
         self.login('hamlet')
         user_profile = self.example_user('hamlet')
-        json_result = self.client_patch(pattern,
-                                        {param: orjson.dumps(True).decode()})
+        json_result = self.client_patch(pattern, {param: orjson.dumps(True).decode()})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user('hamlet')
         self.assertEqual(getattr(user_profile, param), True)
 
-        json_result = self.client_patch(pattern,
-                                        {param: orjson.dumps(False).decode()})
+        json_result = self.client_patch(pattern, {param: orjson.dumps(False).decode()})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user('hamlet')
@@ -70,7 +65,8 @@ class ChangeSettingsTest(ZulipTestCase):
                 full_name='Foo Bar',
                 old_password=initial_password(user.delivery_email),
                 new_password='foobar1',
-            ))
+            ),
+        )
         self.assert_json_success(json_result)
         result = orjson.loads(json_result.content)
         self.check_well_formed_change_settings_response(result)
@@ -103,7 +99,8 @@ class ChangeSettingsTest(ZulipTestCase):
                     full_name='Foo Bar',
                     old_password=initial_password(self.example_email("hamlet")),
                     new_password='easy',
-                ))
+                ),
+            )
             self.assert_json_error(json_result, "New password is too weak!")
 
             json_result = self.client_patch(
@@ -112,7 +109,8 @@ class ChangeSettingsTest(ZulipTestCase):
                     full_name='Foo Bar',
                     old_password=initial_password(self.example_email("hamlet")),
                     new_password='f657gdGGk9',
-                ))
+                ),
+            )
             self.assert_json_success(json_result)
 
     def test_illegal_name_changes(self) -> None:
@@ -121,8 +119,7 @@ class ChangeSettingsTest(ZulipTestCase):
         full_name = user.full_name
 
         with self.settings(NAME_CHANGES_DISABLED=True):
-            json_result = self.client_patch("/json/settings",
-                                            dict(full_name='Foo Bar'))
+            json_result = self.client_patch("/json/settings", dict(full_name='Foo Bar'))
 
         # We actually fail silently here, since this only happens if
         # somebody is trying to game our API, and there's no reason to
@@ -133,21 +130,18 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assertEqual(user.full_name, full_name)
 
         # Now try a too-long name
-        json_result = self.client_patch("/json/settings",
-                                        dict(full_name='x' * 1000))
+        json_result = self.client_patch("/json/settings", dict(full_name='x' * 1000))
         self.assert_json_error(json_result, 'Name too long!')
 
         # Now try a too-short name
-        json_result = self.client_patch("/json/settings",
-                                        dict(full_name='x'))
+        json_result = self.client_patch("/json/settings", dict(full_name='x'))
         self.assert_json_error(json_result, 'Name too short!')
 
     def test_illegal_characters_in_name_changes(self) -> None:
         self.login('hamlet')
 
         # Now try a name with invalid characters
-        json_result = self.client_patch("/json/settings",
-                                        dict(full_name='Opheli*'))
+        json_result = self.client_patch("/json/settings", dict(full_name='Opheli*'))
         self.assert_json_error(json_result, 'Invalid characters in name!')
 
     def test_change_email_to_disposable_email(self) -> None:
@@ -158,8 +152,7 @@ class ChangeSettingsTest(ZulipTestCase):
         realm.emails_restricted_to_domains = False
         realm.save()
 
-        json_result = self.client_patch("/json/settings",
-                                        dict(email='hamlet@mailnator.com'))
+        json_result = self.client_patch("/json/settings", dict(email='hamlet@mailnator.com'))
         self.assert_json_error(json_result, 'Please use your real email address.')
 
     # This is basically a don't-explode test.
@@ -170,8 +163,9 @@ class ChangeSettingsTest(ZulipTestCase):
             #
             # TODO: Make this work more like do_test_realm_update_api
             if notification_setting != 'notification_sound':
-                self.check_for_toggle_param_patch("/json/settings/notifications",
-                                                  notification_setting)
+                self.check_for_toggle_param_patch(
+                    "/json/settings/notifications", notification_setting
+                )
 
     def test_change_notification_sound(self) -> None:
         pattern = "/json/settings/notifications"
@@ -179,20 +173,17 @@ class ChangeSettingsTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
 
-        json_result = self.client_patch(pattern,
-                                        {param: orjson.dumps("invalid").decode()})
+        json_result = self.client_patch(pattern, {param: orjson.dumps("invalid").decode()})
         self.assert_json_error(json_result, "Invalid notification sound 'invalid'")
 
-        json_result = self.client_patch(pattern,
-                                        {param: orjson.dumps("ding").decode()})
+        json_result = self.client_patch(pattern, {param: orjson.dumps("ding").decode()})
         self.assert_json_success(json_result)
 
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user('hamlet')
         self.assertEqual(getattr(user_profile, param), "ding")
 
-        json_result = self.client_patch(pattern,
-                                        {param: orjson.dumps('zulip').decode()})
+        json_result = self.client_patch(pattern, {param: orjson.dumps('zulip').decode()})
 
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
@@ -201,7 +192,9 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_toggling_boolean_user_display_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""
-        boolean_settings = (s for s in UserProfile.property_types if UserProfile.property_types[s] is bool)
+        boolean_settings = (
+            s for s in UserProfile.property_types if UserProfile.property_types[s] is bool
+        )
         for display_setting in boolean_settings:
             self.check_for_toggle_param_patch("/json/settings/display", display_setting)
 
@@ -215,7 +208,8 @@ class ChangeSettingsTest(ZulipTestCase):
             dict(
                 old_password='bad_password',
                 new_password="ignored",
-            ))
+            ),
+        )
         self.assert_json_error(result, "Wrong password!")
 
     def test_wrong_old_password_rate_limiter(self) -> None:
@@ -229,14 +223,16 @@ class ChangeSettingsTest(ZulipTestCase):
                     dict(
                         old_password='bad_password',
                         new_password="ignored",
-                    ))
+                    ),
+                )
                 self.assert_json_error(result, "Wrong password!")
                 result = self.client_patch(
                     "/json/settings",
                     dict(
                         old_password='bad_password',
                         new_password="ignored",
-                    ))
+                    ),
+                )
                 self.assert_json_error(result, "Wrong password!")
 
                 # We're over the limit, so we'll get blocked even with the correct password.
@@ -245,8 +241,11 @@ class ChangeSettingsTest(ZulipTestCase):
                     dict(
                         old_password=initial_password(self.example_email("hamlet")),
                         new_password="ignored",
-                    ))
-                self.assert_json_error(result, "You're making too many attempts! Try again in 10 seconds.")
+                    ),
+                )
+                self.assert_json_error(
+                    result, "You're making too many attempts! Try again in 10 seconds."
+                )
 
             # After time passes, we should be able to succeed if we give the correct password.
             with mock.patch('time.time', return_value=start_time + 11):
@@ -255,28 +254,35 @@ class ChangeSettingsTest(ZulipTestCase):
                     dict(
                         old_password=initial_password(self.example_email("hamlet")),
                         new_password='foobar1',
-                    ))
+                    ),
+                )
                 self.assert_json_success(json_result)
 
             remove_ratelimit_rule(10, 2, domain='authenticate_by_username')
 
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
-                                                'zproject.backends.EmailAuthBackend',
-                                                'zproject.backends.ZulipDummyBackend'))
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            'zproject.backends.ZulipLDAPAuthBackend',
+            'zproject.backends.EmailAuthBackend',
+            'zproject.backends.ZulipDummyBackend',
+        )
+    )
     def test_change_password_ldap_backend(self) -> None:
         self.init_default_ldap_database()
         ldap_user_attr_map = {'full_name': 'cn', 'short_name': 'sn'}
 
         self.login('hamlet')
 
-        with self.settings(LDAP_APPEND_DOMAIN="zulip.com",
-                           AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+        with self.settings(
+            LDAP_APPEND_DOMAIN="zulip.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
+        ):
             result = self.client_patch(
                 "/json/settings",
                 dict(
                     old_password=initial_password(self.example_email("hamlet")),
                     new_password="ignored",
-                ))
+                ),
+            )
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
 
             result = self.client_patch(
@@ -284,31 +290,36 @@ class ChangeSettingsTest(ZulipTestCase):
                 dict(
                     old_password=self.ldap_password("hamlet"),  # hamlet's password in LDAP
                     new_password="ignored",
-                ))
+                ),
+            )
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
 
-        with self.settings(LDAP_APPEND_DOMAIN="example.com",
-                           AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map), \
-                self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
+        with self.settings(
+            LDAP_APPEND_DOMAIN="example.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
+        ), self.assertLogs('zulip.ldap', 'DEBUG') as debug_log:
             result = self.client_patch(
                 "/json/settings",
                 dict(
                     old_password=initial_password(self.example_email("hamlet")),
                     new_password="ignored",
-                ))
+                ),
+            )
             self.assert_json_success(result)
-            self.assertEqual(debug_log.output, [
-                'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email hamlet@zulip.com does not match LDAP domain example.com.'
-            ])
+            self.assertEqual(
+                debug_log.output,
+                [
+                    'DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email hamlet@zulip.com does not match LDAP domain example.com.'
+                ],
+            )
 
-        with self.settings(LDAP_APPEND_DOMAIN=None,
-                           AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+        with self.settings(LDAP_APPEND_DOMAIN=None, AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             result = self.client_patch(
                 "/json/settings",
                 dict(
                     old_password=initial_password(self.example_email("hamlet")),
                     new_password="ignored",
-                ))
+                ),
+            )
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
 
     def test_changing_nothing_returns_error(self) -> None:
@@ -318,18 +329,17 @@ class ChangeSettingsTest(ZulipTestCase):
         probably use a patch interface for these changes.)
         """
         self.login('hamlet')
-        result = self.client_patch("/json/settings",
-                                   dict(old_password='ignored'))
+        result = self.client_patch("/json/settings", dict(old_password='ignored'))
         self.assert_json_error(result, "Please fill out all fields.")
 
     def do_test_change_user_display_setting(self, setting_name: str) -> None:
 
         test_changes: Dict[str, Any] = dict(
-            default_language = 'de',
-            emojiset = 'google',
-            timezone = 'US/Mountain',
-            demote_inactive_streams = 2,
-            color_scheme = 2,
+            default_language='de',
+            emojiset='google',
+            timezone='US/Mountain',
+            demote_inactive_streams=2,
+            color_scheme=2,
         )
 
         self.login('hamlet')
@@ -363,7 +373,9 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_change_user_display_setting(self) -> None:
         """Test updating each non-boolean setting in UserProfile property_types"""
-        user_settings = (s for s in UserProfile.property_types if UserProfile.property_types[s] is not bool)
+        user_settings = (
+            s for s in UserProfile.property_types if UserProfile.property_types[s] is not bool
+        )
         for setting in user_settings:
             self.do_test_change_user_display_setting(setting)
 
@@ -397,6 +409,7 @@ class ChangeSettingsTest(ZulipTestCase):
             with get_test_image_file('img.png') as fp1:
                 result = self.client_post("/json/users/me/avatar", {'f1': fp1})
             self.assert_json_error(result, "Avatar changes are disabled in this organization.", 400)
+
 
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self) -> None:

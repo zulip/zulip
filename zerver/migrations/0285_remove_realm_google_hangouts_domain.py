@@ -15,6 +15,7 @@ VIDEO_CHAT_PROVIDERS = {
     },
 }
 
+
 def remove_google_hangouts_provider(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     # We are removing the Google Hangout integration because Google has
     # removed the Hangouts brand. All the realms that used Hangouts as
@@ -23,6 +24,7 @@ def remove_google_hangouts_provider(apps: StateApps, schema_editor: DatabaseSche
     Realm.objects.filter(video_chat_provider=VIDEO_CHAT_PROVIDERS['google_hangouts']['id']).update(
         video_chat_provider=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id']
     )
+
 
 class Migration(migrations.Migration):
 
@@ -36,8 +38,6 @@ class Migration(migrations.Migration):
             name='google_hangouts_domain',
         ),
         migrations.RunPython(
-            remove_google_hangouts_provider,
-            reverse_code=migrations.RunPython.noop,
-            elidable=True
+            remove_google_hangouts_provider, reverse_code=migrations.RunPython.noop, elidable=True
         ),
     ]

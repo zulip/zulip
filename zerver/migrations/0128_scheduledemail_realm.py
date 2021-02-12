@@ -7,7 +7,8 @@ from django.db.migrations.state import StateApps
 
 
 def set_realm_for_existing_scheduledemails(
-        apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+    apps: StateApps, schema_editor: DatabaseSchemaEditor
+) -> None:
     scheduledemail_model = apps.get_model("zerver", "ScheduledEmail")
     preregistrationuser_model = apps.get_model("zerver", "PreregistrationUser")
     for scheduledemail in scheduledemail_model.objects.all():
@@ -23,6 +24,7 @@ def set_realm_for_existing_scheduledemails(
     # Shouldn't be needed, but just in case
     scheduledemail_model.objects.filter(realm=None).delete()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -34,14 +36,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='scheduledemail',
             name='realm',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'),
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'
+            ),
         ),
-
         # Sets realm for existing ScheduledEmails
-        migrations.RunPython(set_realm_for_existing_scheduledemails,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
-
+        migrations.RunPython(
+            set_realm_for_existing_scheduledemails,
+            reverse_code=migrations.RunPython.noop,
+            elidable=True,
+        ),
         # Require ScheduledEmail.realm to be non-null
         migrations.AlterField(
             model_name='scheduledemail',

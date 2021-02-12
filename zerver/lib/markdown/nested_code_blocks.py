@@ -15,6 +15,7 @@ class NestedCodeBlocksRenderer(Extension):
             -500,
         )
 
+
 class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
@@ -25,9 +26,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
         for block in nested_code_blocks:
             tag, text = block.result
             codehilite_block = self.get_codehilite_block(text)
-            self.replace_element(block.family.grandparent,
-                                 codehilite_block,
-                                 block.family.parent)
+            self.replace_element(block.family.grandparent, codehilite_block, block.family.parent)
 
     def get_code_tags(self, e: Element) -> Optional[Tuple[str, Optional[str]]]:
         if e.tag == "code":
@@ -35,7 +34,8 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
         return None
 
     def get_nested_code_blocks(
-        self, code_tags: List[ResultWithFamily[Tuple[str, Optional[str]]]],
+        self,
+        code_tags: List[ResultWithFamily[Tuple[str, Optional[str]]]],
     ) -> List[ResultWithFamily[Tuple[str, Optional[str]]]]:
         nested_code_blocks = []
         for code_tag in code_tags:
@@ -46,7 +46,11 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
                 # that means that the <code> element inside is its
                 # only thing inside the bullet, we can confidently say
                 # that this is a nested code block
-                if parent.text is None and len(list(parent)) == 1 and len(list(parent.itertext())) == 1:
+                if (
+                    parent.text is None
+                    and len(list(parent)) == 1
+                    and len(list(parent.itertext())) == 1
+                ):
                     nested_code_blocks.append(code_tag)
 
         return nested_code_blocks
@@ -59,9 +63,10 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
         return div
 
     def replace_element(
-            self, parent: Optional[Element],
-            replacement: Element,
-            element_to_replace: Element,
+        self,
+        parent: Optional[Element],
+        replacement: Element,
+        element_to_replace: Element,
     ) -> None:
         if parent is None:
             return
@@ -70,6 +75,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
             if child is element_to_replace:
                 parent.insert(index, replacement)
                 parent.remove(element_to_replace)
+
 
 def makeExtension(*args: Any, **kwargs: str) -> NestedCodeBlocksRenderer:
     return NestedCodeBlocksRenderer(**kwargs)

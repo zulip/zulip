@@ -7,7 +7,8 @@ from psycopg2.sql import SQL
 
 
 def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    stream_query = SQL('''
+    stream_query = SQL(
+        '''
         SELECT
             zerver_stream.name,
             zerver_stream.realm_id,
@@ -19,7 +20,8 @@ def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
             zerver_recipient.type_id = zerver_stream.id AND
             zerver_recipient.type = 2
         )
-    ''')
+    '''
+    )
 
     stream_dict = {}
 
@@ -64,6 +66,7 @@ def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
         cursor.execute('DELETE from zerver_mutedtopic')
 
     MutedTopic.objects.bulk_create(new_objs)
+
 
 class Migration(migrations.Migration):
 

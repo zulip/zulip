@@ -19,6 +19,7 @@ def remove_name_illegal_chars(apps: StateApps, schema_editor: DatabaseSchemaEdit
         user.full_name = "".join(stripped)
         user.save(update_fields=["full_name"])
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

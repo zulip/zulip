@@ -32,13 +32,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
     # (E.g. because this is a development backup).
     tarball_file.seek(0, 0)
     subprocess.call(
-        [
-            "tar",
-            "--directory=/etc/zulip",
-            "--strip-components=2",
-            "-xz",
-            "zulip-backup/settings"
-        ],
+        ["tar", "--directory=/etc/zulip", "--strip-components=2", "-xz", "zulip-backup/settings"],
         stdin=tarball_file,
     )
 
@@ -67,7 +61,8 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         assert not any("|" in name or "|" in path for name, path in paths)
         transform_args = [
             r"--transform=s|^zulip-backup/{}(/.*)?$|{}\1|x".format(
-                re.escape(name), path.replace("\\", r"\\"),
+                re.escape(name),
+                path.replace("\\", r"\\"),
             )
             for name, path in paths
         ]
@@ -96,24 +91,28 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
 
         run(
             [
-                os.path.join(
-                    settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions"
-                ),
-                db["NAME"]
+                os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions"),
+                db["NAME"],
             ],
             env=postgresql_env,
         )
         run(["dropdb", "--if-exists", "--", db["NAME"]], cwd="/", env=postgresql_env)
-        run(["createdb", "--owner=zulip", "--template=template0", "--", db["NAME"]], cwd="/", env=postgresql_env)
+        run(
+            ["createdb", "--owner=zulip", "--template=template0", "--", db["NAME"]],
+            cwd="/",
+            env=postgresql_env,
+        )
         os.setresuid(0, 0, 0)
 
         if settings.PRODUCTION:
             # In case we are restoring a backup from an older Zulip
             # version, there may be new secrets to generate.
-            subprocess.check_call([
-                os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "generate_secrets.py"),
-                "--production",
-            ])
+            subprocess.check_call(
+                [
+                    os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "generate_secrets.py"),
+                    "--production",
+                ]
+            )
 
             # If there is a local RabbitMQ, we need to reconfigure it
             # to ensure the RabbitMQ password matches the value in the
@@ -121,24 +120,21 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
             # only do this if RabbitMQ is configured to run locally on
             # the system.
             rabbitmq_host = subprocess.check_output(
-                [os.path.join(settings.DEPLOY_ROOT,
-                              "scripts", "get-django-setting"),
-                 "RABBITMQ_HOST"], universal_newlines=True).strip()
+                [
+                    os.path.join(settings.DEPLOY_ROOT, "scripts", "get-django-setting"),
+                    "RABBITMQ_HOST",
+                ],
+                universal_newlines=True,
+            ).strip()
             if rabbitmq_host in ["127.0.0.1", "::1", "localhost", "localhost6"]:
-                run([os.path.join(settings.DEPLOY_ROOT,
-                                  "scripts", "setup", "configure-rabbitmq")])
+                run([os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "configure-rabbitmq")])
 
             # In production, we also need to do a `zulip-puppet-apply`
             # in order to apply any configuration from
             # /etc/zulip/zulip.conf to this system, since it was
             # originally installed without the restored copy of that
             # file.
-            run(
-                [
-                    os.path.join(settings.DEPLOY_ROOT, "scripts", "zulip-puppet-apply"),
-                    "-f"
-                ]
-            )
+            run([os.path.join(settings.DEPLOY_ROOT, "scripts", "zulip-puppet-apply"), "-f"])
 
         # Now, restore the the database backup using pg_restore.  This
         # needs to run after zulip-puppet-apply to ensure full-text

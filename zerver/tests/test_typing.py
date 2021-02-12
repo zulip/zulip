@@ -31,6 +31,7 @@ class TypingValidateOperatorTest(ZulipTestCase):
         result = self.api_post(sender, '/api/v1/typing', params)
         self.assert_json_error(result, 'Invalid \'op\' value (should be start or stop)')
 
+
 class TypingValidateUsersTest(ZulipTestCase):
     def test_empty_array(self) -> None:
         """
@@ -65,6 +66,7 @@ class TypingValidateUsersTest(ZulipTestCase):
         invalid = '[9999999]'
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start', 'to': invalid})
         self.assert_json_error(result, 'Invalid user ID 9999999')
+
 
 class TypingHappyPathTest(ZulipTestCase):
     def test_start_to_single_recipient(self) -> None:

@@ -16,8 +16,12 @@ from zerver.lib.types import ViewFuncT
 from zerver.logging_handlers import AdminNotifyHandler, HasRequest
 
 captured_request: Optional[HttpRequest] = None
-captured_exc_info: Optional[Union[Tuple[Type[BaseException], BaseException, TracebackType], Tuple[None, None, None]]] = None
-def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewFuncT]:
+captured_exc_info: Optional[
+    Union[Tuple[Type[BaseException], BaseException, TracebackType], Tuple[None, None, None]]
+] = None
+
+
+def capture_and_throw(domain: Optional[str] = None) -> Callable[[ViewFuncT], ViewFuncT]:
     def wrapper(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func)
         def wrapped_view(request: HttpRequest, *args: object, **kwargs: object) -> NoReturn:
@@ -29,8 +33,11 @@ def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewF
                 global captured_exc_info
                 captured_exc_info = sys.exc_info()
                 raise e
+
         return cast(ViewFuncT, wrapped_view)  # https://github.com/python/mypy/issues/1927
+
     return wrapper
+
 
 class AdminNotifyHandlerTest(ZulipTestCase):
     logger = logging.getLogger('django')
@@ -52,10 +59,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         super().tearDown()
 
     def get_admin_zulip_handler(self) -> AdminNotifyHandler:
-        return [
-            h for h in logging.getLogger('').handlers
-            if isinstance(h, AdminNotifyHandler)
-        ][0]
+        return [h for h in logging.getLogger('').handlers if isinstance(h, AdminNotifyHandler)][0]
 
     @patch('zerver.logging_handlers.try_git_describe')
     def test_basic(self, mock_function: MagicMock) -> None:
@@ -66,28 +70,30 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             raise Exception("Testing error!")
         except Exception:
             exc_info = sys.exc_info()
-        record = self.logger.makeRecord('name', logging.ERROR, 'function', 16,
-                                        'message', {}, exc_info)
+        record = self.logger.makeRecord(
+            'name', logging.ERROR, 'function', 16, 'message', {}, exc_info
+        )
         handler.emit(record)
 
     def simulate_error(self) -> logging.LogRecord:
         self.login('hamlet')
-        with patch("zerver.decorator.rate_limit") as rate_limit_patch, \
-                self.assertLogs('django.request', level='ERROR') as request_error_log, \
-                self.assertLogs('zerver.middleware.json_error_handler', level='ERROR') as json_error_handler_log:
+        with patch("zerver.decorator.rate_limit") as rate_limit_patch, self.assertLogs(
+            'django.request', level='ERROR'
+        ) as request_error_log, self.assertLogs(
+            'zerver.middleware.json_error_handler', level='ERROR'
+        ) as json_error_handler_log:
             rate_limit_patch.side_effect = capture_and_throw
             result = self.client_get("/json/users")
             self.assert_json_error(result, "Internal server error", status_code=500)
             rate_limit_patch.assert_called_once()
-        self.assertEqual(request_error_log.output, [
-            'ERROR:django.request:Internal Server Error: /json/users'
-        ])
-        self.assertTrue(
-            'ERROR:zerver.middleware.json_error_handler:Traceback (most recent call last):' in json_error_handler_log.output[0]
+        self.assertEqual(
+            request_error_log.output, ['ERROR:django.request:Internal Server Error: /json/users']
         )
         self.assertTrue(
-            'Exception: Request error' in json_error_handler_log.output[0]
+            'ERROR:zerver.middleware.json_error_handler:Traceback (most recent call last):'
+            in json_error_handler_log.output[0]
         )
+        self.assertTrue('Exception: Request error' in json_error_handler_log.output[0])
 
         record = self.logger.makeRecord(
             'name',
@@ -140,8 +146,10 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
         # Test that `add_request_metadata` throwing an exception is fine
         with patch("zerver.logging_handlers.traceback.print_exc"):
-            with patch("zerver.logging_handlers.add_request_metadata",
-                       side_effect=Exception("Unexpected exception!")):
+            with patch(
+                "zerver.logging_handlers.add_request_metadata",
+                side_effect=Exception("Unexpected exception!"),
+            ):
                 report = self.run_handler(record)
         self.assertNotIn("user", report)
         self.assertIn("message", report)
@@ -163,6 +171,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         # Now simulate a DisallowedHost exception
         def get_host_error() -> None:
             raise Exception("Get host failure!")
+
         orig_get_host = record.request.get_host
         record.request.get_host = get_host_error
         report = self.run_handler(record)
@@ -175,8 +184,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("stack_trace", report)
 
         # Test an exception_filter exception
-        with patch("zerver.logging_handlers.get_exception_reporter_filter",
-                   return_value=15):
+        with patch("zerver.logging_handlers.get_exception_reporter_filter", return_value=15):
             record.request.method = "POST"
             report = self.run_handler(record)
             record.request.method = "GET"
@@ -188,17 +196,20 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("stack_trace", report)
 
         # Test the catch-all exception handler doesn't throw
-        with patch('zerver.lib.error_notify.notify_server_error',
-                   side_effect=Exception("queue error")):
+        with patch(
+            'zerver.lib.error_notify.notify_server_error', side_effect=Exception("queue error")
+        ):
             self.handler.emit(record)
         with self.settings(STAGING_ERROR_NOTIFICATIONS=False):
-            with mock_queue_publish('zerver.logging_handlers.queue_json_publish',
-                                    side_effect=Exception("queue error")) as m:
+            with mock_queue_publish(
+                'zerver.logging_handlers.queue_json_publish', side_effect=Exception("queue error")
+            ) as m:
                 with patch('logging.warning') as log_mock:
                     self.handler.emit(record)
                     m.assert_called_once()
-                    log_mock.assert_called_once_with('Reporting an exception triggered an exception!',
-                                                     exc_info=True)
+                    log_mock.assert_called_once_with(
+                        'Reporting an exception triggered an exception!', exc_info=True
+                    )
             with mock_queue_publish('zerver.logging_handlers.queue_json_publish') as m:
                 with patch('logging.warning') as log_mock:
                     self.handler.emit(record)
@@ -226,6 +237,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
 
+
 class LoggingConfigTest(ZulipTestCase):
     @staticmethod
     def all_loggers() -> Iterator[logging.Logger]:
@@ -244,13 +256,20 @@ class LoggingConfigTest(ZulipTestCase):
             for handler in logger.handlers:
                 assert not isinstance(handler, AdminEmailHandler)
 
+
 class ErrorFiltersTest(ZulipTestCase):
     def test_clean_data_from_query_parameters(self) -> None:
         from zerver.filters import clean_data_from_query_parameters
-        self.assertEqual(clean_data_from_query_parameters("api_key=abcdz&stream=1"),
-                         "api_key=******&stream=******")
-        self.assertEqual(clean_data_from_query_parameters("api_key=abcdz&stream=foo&topic=bar"),
-                         "api_key=******&stream=******&topic=******")
+
+        self.assertEqual(
+            clean_data_from_query_parameters("api_key=abcdz&stream=1"),
+            "api_key=******&stream=******",
+        )
+        self.assertEqual(
+            clean_data_from_query_parameters("api_key=abcdz&stream=foo&topic=bar"),
+            "api_key=******&stream=******&topic=******",
+        )
+
 
 class RateLimitFilterTest(ZulipTestCase):
     # This logger has special settings configured in
@@ -259,7 +278,9 @@ class RateLimitFilterTest(ZulipTestCase):
 
     def test_recursive_filter_handling(self) -> None:
         def mocked_cache_get(key: str) -> int:
-            self.logger.error("Log an error to trigger recursive filter() calls in _RateLimitFilter.")
+            self.logger.error(
+                "Log an error to trigger recursive filter() calls in _RateLimitFilter."
+            )
             raise Exception
 
         with patch("zerver.lib.logging_util.cache.get", side_effect=mocked_cache_get) as m:

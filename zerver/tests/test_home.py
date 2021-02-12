@@ -33,6 +33,7 @@ from zerver.worker.queue_processors import UserActivityWorker
 
 logger_string = "zulip.soft_deactivation"
 
+
 class HomeTest(ZulipTestCase):
 
     # Keep this list sorted!!!
@@ -249,8 +250,9 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
                 self.check_rendered_logged_in_app(result)
-        self.assertEqual(set(result["Cache-Control"].split(", ")),
-                         {"must-revalidate", "no-store", "no-cache"})
+        self.assertEqual(
+            set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
+        )
 
         self.assert_length(queries, 39)
         self.assert_length(cache_mock.call_args_list, 5)
@@ -370,17 +372,17 @@ class HomeTest(ZulipTestCase):
         self.assertIn('test_stream_7', html)
 
     def _get_home_page(self, **kwargs: Any) -> HttpResponse:
-        with \
-                patch('zerver.lib.events.request_event_queue', return_value=42), \
-                patch('zerver.lib.events.get_user_events', return_value=[]):
+        with patch('zerver.lib.events.request_event_queue', return_value=42), patch(
+            'zerver.lib.events.get_user_events', return_value=[]
+        ):
             result = self.client_get('/', dict(**kwargs))
         return result
 
     def _sanity_check(self, result: HttpResponse) -> None:
-        '''
+        """
         Use this for tests that are geared toward specific edge cases, but
         which still want the home page to load properly.
-        '''
+        """
         html = result.content.decode('utf-8')
         if 'Compose your message' not in html:
             raise AssertionError('Home page probably did not load.')
@@ -393,9 +395,7 @@ class HomeTest(ZulipTestCase):
             user.tos_version = user_tos_version
             user.save()
 
-            with \
-                    self.settings(TERMS_OF_SERVICE='whatever'), \
-                    self.settings(TOS_VERSION='99.99'):
+            with self.settings(TERMS_OF_SERVICE='whatever'), self.settings(TOS_VERSION='99.99'):
 
                 result = self.client_get('/', dict(stream='Denmark'))
 
@@ -406,8 +406,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.login_user(user)
 
-        result = self.client_get('/',
-                                 HTTP_USER_AGENT="ZulipElectron/2.3.82")
+        result = self.client_get('/', HTTP_USER_AGENT="ZulipElectron/2.3.82")
         html = result.content.decode('utf-8')
         self.assertIn('You are using old version of the Zulip desktop', html)
 
@@ -422,8 +421,7 @@ class HomeTest(ZulipTestCase):
             "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)",
         ]
         for user_agent in unsupported_user_agents:
-            result = self.client_get('/',
-                                     HTTP_USER_AGENT=user_agent)
+            result = self.client_get('/', HTTP_USER_AGENT=user_agent)
             html = result.content.decode('utf-8')
             self.assertIn('Internet Explorer is not supported by Zulip.', html)
 
@@ -434,9 +432,9 @@ class HomeTest(ZulipTestCase):
         user.tos_version = None
         user.save()
 
-        with \
-                self.settings(FIRST_TIME_TOS_TEMPLATE='hello.html'), \
-                self.settings(TOS_VERSION='99.99'):
+        with self.settings(FIRST_TIME_TOS_TEMPLATE='hello.html'), self.settings(
+            TOS_VERSION='99.99'
+        ):
             result = self.client_post('/accounts/accept_terms/')
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)
@@ -466,8 +464,9 @@ class HomeTest(ZulipTestCase):
         self._sanity_check(result)
         html = result.content.decode('utf-8')
         self.assertIn('lunch', html)
-        self.assertEqual(set(result["Cache-Control"].split(", ")),
-                         {"must-revalidate", "no-store", "no-cache"})
+        self.assertEqual(
+            set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
+        )
 
     def test_notifications_stream(self) -> None:
         realm = get_realm('zulip')
@@ -476,7 +475,9 @@ class HomeTest(ZulipTestCase):
         self.login('hamlet')
         result = self._get_home_page()
         page_params = self._get_page_params(result)
-        self.assertEqual(page_params['realm_notifications_stream_id'], get_stream('Denmark', realm).id)
+        self.assertEqual(
+            page_params['realm_notifications_stream_id'], get_stream('Denmark', realm).id
+        )
 
     def create_bot(self, owner: UserProfile, bot_email: str, bot_name: str) -> UserProfile:
         user = do_create_user(
@@ -511,7 +512,9 @@ class HomeTest(ZulipTestCase):
         self.login('hamlet')
         result = self._get_home_page()
         page_params = self._get_page_params(result)
-        self.assertEqual(page_params['realm_signup_notifications_stream_id'], get_stream('Denmark', realm).id)
+        self.assertEqual(
+            page_params['realm_signup_notifications_stream_id'], get_stream('Denmark', realm).id
+        )
 
     def test_people(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -556,8 +559,7 @@ class HomeTest(ZulipTestCase):
             users = page_params[field]
             self.assertTrue(len(users) >= 3, field)
             for rec in users:
-                self.assertEqual(rec['user_id'],
-                                 get_user(rec['email'], realm).id)
+                self.assertEqual(rec['user_id'], get_user(rec['email'], realm).id)
                 if field == 'realm_bots':
                     self.assertNotIn('is_bot', rec)
                     self.assertIn('is_active', rec)
@@ -596,50 +598,56 @@ class HomeTest(ZulipTestCase):
 
         by_email = lambda d: d['email']
 
-        self.assertEqual(sorted(cross_bots, key=by_email), sorted([
-            dict(
-                avatar_version=email_gateway_bot.avatar_version,
-                bot_owner_id=None,
-                bot_type=1,
-                email=email_gateway_bot.email,
-                user_id=email_gateway_bot.id,
-                full_name=email_gateway_bot.full_name,
-                is_active=True,
-                is_bot=True,
-                is_admin=False,
-                is_owner=False,
-                is_cross_realm_bot=True,
-                is_guest=False,
+        self.assertEqual(
+            sorted(cross_bots, key=by_email),
+            sorted(
+                [
+                    dict(
+                        avatar_version=email_gateway_bot.avatar_version,
+                        bot_owner_id=None,
+                        bot_type=1,
+                        email=email_gateway_bot.email,
+                        user_id=email_gateway_bot.id,
+                        full_name=email_gateway_bot.full_name,
+                        is_active=True,
+                        is_bot=True,
+                        is_admin=False,
+                        is_owner=False,
+                        is_cross_realm_bot=True,
+                        is_guest=False,
+                    ),
+                    dict(
+                        avatar_version=email_gateway_bot.avatar_version,
+                        bot_owner_id=None,
+                        bot_type=1,
+                        email=notification_bot.email,
+                        user_id=notification_bot.id,
+                        full_name=notification_bot.full_name,
+                        is_active=True,
+                        is_bot=True,
+                        is_admin=False,
+                        is_owner=False,
+                        is_cross_realm_bot=True,
+                        is_guest=False,
+                    ),
+                    dict(
+                        avatar_version=email_gateway_bot.avatar_version,
+                        bot_owner_id=None,
+                        bot_type=1,
+                        email=welcome_bot.email,
+                        user_id=welcome_bot.id,
+                        full_name=welcome_bot.full_name,
+                        is_active=True,
+                        is_bot=True,
+                        is_admin=False,
+                        is_owner=False,
+                        is_cross_realm_bot=True,
+                        is_guest=False,
+                    ),
+                ],
+                key=by_email,
             ),
-            dict(
-                avatar_version=email_gateway_bot.avatar_version,
-                bot_owner_id=None,
-                bot_type=1,
-                email=notification_bot.email,
-                user_id=notification_bot.id,
-                full_name=notification_bot.full_name,
-                is_active=True,
-                is_bot=True,
-                is_admin=False,
-                is_owner=False,
-                is_cross_realm_bot=True,
-                is_guest=False,
-            ),
-            dict(
-                avatar_version=email_gateway_bot.avatar_version,
-                bot_owner_id=None,
-                bot_type=1,
-                email=welcome_bot.email,
-                user_id=welcome_bot.id,
-                full_name=welcome_bot.full_name,
-                is_active=True,
-                is_bot=True,
-                is_admin=False,
-                is_owner=False,
-                is_cross_realm_bot=True,
-                is_guest=False,
-            ),
-        ], key=by_email))
+        )
 
     def test_new_stream(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -697,9 +705,14 @@ class HomeTest(ZulipTestCase):
         self.assertNotIn('Billing', result_html)
 
         # realm owner, with inactive CustomerPlan -> show billing link
-        CustomerPlan.objects.create(customer=customer, billing_cycle_anchor=timezone_now(),
-                                    billing_schedule=CustomerPlan.ANNUAL, next_invoice_date=timezone_now(),
-                                    tier=CustomerPlan.STANDARD, status=CustomerPlan.ENDED)
+        CustomerPlan.objects.create(
+            customer=customer,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.ANNUAL,
+            next_invoice_date=timezone_now(),
+            tier=CustomerPlan.STANDARD,
+            status=CustomerPlan.ENDED,
+        )
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertIn('Billing', result_html)
 
@@ -788,48 +801,67 @@ class HomeTest(ZulipTestCase):
 
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/static/images/logo/zulip-org-logo.svg?version=0")
+        self.assertEqual(
+            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
+        )
 
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/static/images/logo/zulip-org-logo.svg?version=0")
+        self.assertEqual(
+            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
+        )
 
-        do_change_logo_source(user_profile.realm, Realm.LOGO_UPLOADED, night=False, acting_user=user_profile)
+        do_change_logo_source(
+            user_profile.realm, Realm.LOGO_UPLOADED, night=False, acting_user=user_profile
+        )
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(compute_navbar_logo_url(page_params),
-                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
+        self.assertEqual(
+            compute_navbar_logo_url(page_params),
+            f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2",
+        )
 
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(compute_navbar_logo_url(page_params),
-                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
+        self.assertEqual(
+            compute_navbar_logo_url(page_params),
+            f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2",
+        )
 
-        do_change_logo_source(user_profile.realm, Realm.LOGO_UPLOADED, night=True, acting_user=user_profile)
+        do_change_logo_source(
+            user_profile.realm, Realm.LOGO_UPLOADED, night=True, acting_user=user_profile
+        )
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(compute_navbar_logo_url(page_params),
-                         f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2")
+        self.assertEqual(
+            compute_navbar_logo_url(page_params),
+            f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2",
+        )
 
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(compute_navbar_logo_url(page_params),
-                         f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2")
+        self.assertEqual(
+            compute_navbar_logo_url(page_params),
+            f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2",
+        )
 
         # This configuration isn't super supported in the UI and is a
         # weird choice, but we have a test for it anyway.
-        do_change_logo_source(user_profile.realm, Realm.LOGO_DEFAULT, night=False, acting_user=user_profile)
+        do_change_logo_source(
+            user_profile.realm, Realm.LOGO_DEFAULT, night=False, acting_user=user_profile
+        )
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(compute_navbar_logo_url(page_params),
-                         f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2")
+        self.assertEqual(
+            compute_navbar_logo_url(page_params),
+            f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2",
+        )
 
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(compute_navbar_logo_url(page_params),
-                         "/static/images/logo/zulip-org-logo.svg?version=0")
+        self.assertEqual(
+            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
+        )
 
     def test_generate_204(self) -> None:
         self.login('hamlet')
@@ -841,25 +873,29 @@ class HomeTest(ZulipTestCase):
 
         hamlet = self.example_user('hamlet')
         self.login_user(hamlet)
-        self.client_post("/json/messages/flags",
-                         {"messages": orjson.dumps([msg_id]).decode(),
-                          "op": "add",
-                          "flag": "read"})
+        self.client_post(
+            "/json/messages/flags",
+            {"messages": orjson.dumps([msg_id]).decode(), "op": "add", "flag": "read"},
+        )
 
         # Manually process the UserActivity
         now = timezone_now()
         activity_time = calendar.timegm(now.timetuple())
-        user_activity_event = {'user_profile_id': hamlet.id,
-                               'client': 'test-client',
-                               'query': 'update_message_flags',
-                               'time': activity_time}
+        user_activity_event = {
+            'user_profile_id': hamlet.id,
+            'client': 'test-client',
+            'query': 'update_message_flags',
+            'time': activity_time,
+        }
 
         yesterday = now - timedelta(days=1)
         activity_time_2 = calendar.timegm(yesterday.timetuple())
-        user_activity_event_2 = {'user_profile_id': hamlet.id,
-                                 'client': 'test-client-2',
-                                 'query': 'update_message_flags',
-                                 'time': activity_time_2}
+        user_activity_event_2 = {
+            'user_profile_id': hamlet.id,
+            'client': 'test-client-2',
+            'query': 'update_message_flags',
+            'time': activity_time_2,
+        }
         UserActivityWorker().consume_batch([user_activity_event, user_activity_event_2])
 
         # verify furthest_read_time is last activity time, irrespective of client
@@ -887,13 +923,19 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
             self._sanity_check(result)
 
-    def send_test_message(self, content: str, sender_name: str='iago',
-                          stream_name: str='Denmark', topic_name: str='foo') -> int:
+    def send_test_message(
+        self,
+        content: str,
+        sender_name: str = 'iago',
+        stream_name: str = 'Denmark',
+        topic_name: str = 'foo',
+    ) -> int:
         sender = self.example_user(sender_name)
-        return self.send_stream_message(sender, stream_name,
-                                        content=content, topic_name=topic_name)
+        return self.send_stream_message(sender, stream_name, content=content, topic_name=topic_name)
 
-    def soft_activate_and_get_unread_count(self, stream: str='Denmark', topic: str='foo') -> int:
+    def soft_activate_and_get_unread_count(
+        self, stream: str = 'Denmark', topic: str = 'foo'
+    ) -> int:
         stream_narrow = self._get_home_page(stream=stream, topic=topic)
         page_params = self._get_page_params(stream_narrow)
         return page_params['unread_msgs']['count']
@@ -914,10 +956,13 @@ class HomeTest(ZulipTestCase):
 
         with self.assertLogs(logger_string, level='INFO') as info_log:
             do_soft_deactivate_users([long_term_idle_user])
-        self.assertEqual(info_log.output, [
-            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
-            f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
-        ])
+        self.assertEqual(
+            info_log.output,
+            [
+                f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
+                f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process',
+            ],
+        )
 
         self.login_user(long_term_idle_user)
         message = 'Test Message 2'
@@ -939,10 +984,13 @@ class HomeTest(ZulipTestCase):
         self.send_test_message('Testing', sender_name='hamlet')
         with self.assertLogs(logger_string, level='INFO') as info_log:
             do_soft_deactivate_users([long_term_idle_user])
-        self.assertEqual(info_log.output, [
-            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
-            f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
-        ])
+        self.assertEqual(
+            info_log.output,
+            [
+                f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
+                f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process',
+            ],
+        )
 
         message = 'Test Message 1'
         self.send_test_message(message)
@@ -968,10 +1016,13 @@ class HomeTest(ZulipTestCase):
 
         with self.assertLogs(logger_string, level='INFO') as info_log:
             do_soft_deactivate_users([long_term_idle_user])
-        self.assertEqual(info_log.output, [
-            f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
-            f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process'
-        ])
+        self.assertEqual(
+            info_log.output,
+            [
+                f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
+                f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process',
+            ],
+        )
 
         message = 'Test Message 3'
         self.send_test_message(message)
@@ -1000,9 +1051,9 @@ class HomeTest(ZulipTestCase):
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)
-        with \
-                patch('zerver.lib.events.request_event_queue', return_value=42), \
-                patch('zerver.lib.events.get_user_events', return_value=[]):
+        with patch('zerver.lib.events.request_event_queue', return_value=42), patch(
+            'zerver.lib.events.get_user_events', return_value=[]
+        ):
             result = self.client_get('/de/')
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['default_language'], 'es')

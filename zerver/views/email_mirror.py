@@ -9,7 +9,9 @@ from zerver.lib.response import json_error, json_success
 @internal_notify_view(False)
 @has_request_variables
 def email_mirror_message(
-    request: HttpRequest, rcpt_to: str = REQ(), msg_base64: str = REQ(),
+    request: HttpRequest,
+    rcpt_to: str = REQ(),
+    msg_base64: str = REQ(),
 ) -> HttpResponse:
     result = mirror_email_message(rcpt_to, msg_base64)
     if result["status"] == "error":

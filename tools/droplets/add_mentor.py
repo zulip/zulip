@@ -20,8 +20,7 @@ import requests
 
 parser = ArgumentParser(description='Give a mentor ssh access to this machine.')
 parser.add_argument('username', help='GitHub username of the mentor.')
-parser.add_argument('--remove', help='Remove his/her key from the machine.',
-                    action='store_true')
+parser.add_argument('--remove', help='Remove his/her key from the machine.', action='store_true')
 
 # Wrap keys with line comments for easier key removal.
 append_key = """\
@@ -29,6 +28,7 @@ append_key = """\
 {key}
 #}}}}<{username}>
 """
+
 
 def get_mentor_keys(username: str) -> List[str]:
     url = f'https://api.github.com/users/{username}/keys'
@@ -51,8 +51,9 @@ if __name__ == '__main__':
     authorized_keys = os.path.expanduser('~/.ssh/authorized_keys')
 
     if args.remove:
-        remove_re = re.compile('#<{0}>{{{{.+}}}}<{0}>(\n)?'.format(args.username),
-                               re.DOTALL | re.MULTILINE)
+        remove_re = re.compile(
+            '#<{0}>{{{{.+}}}}<{0}>(\n)?'.format(args.username), re.DOTALL | re.MULTILINE
+        )
 
         with open(authorized_keys, 'r+') as f:
             old_content = f.read()

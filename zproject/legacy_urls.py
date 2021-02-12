@@ -10,7 +10,6 @@ import zerver.views.tutorial
 
 legacy_urls = [
     # These are json format views used by the web client.  They require a logged in browser.
-
     # We should remove this endpoint and all code related to it.
     # It returns a 404 if the stream doesn't exist, which is confusing
     # for devs, and I don't think we need to go to the server

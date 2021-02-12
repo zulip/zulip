@@ -39,8 +39,11 @@ SUPPORTED_CHECK_TYPES = (
 
 @webhook_view('Pingdom')
 @has_request_variables
-def api_pingdom_webhook(request: HttpRequest, user_profile: UserProfile,
-                        payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_pingdom_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     check_type = get_check_type(payload)
 
     if check_type in SUPPORTED_CHECK_TYPES:

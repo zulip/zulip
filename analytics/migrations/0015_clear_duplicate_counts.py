@@ -20,17 +20,23 @@ def clear_duplicate_counts(apps: StateApps, schema_editor: DatabaseSchemaEditor)
     this means deleting the extra rows, but for LoggingCountStat objects, we need to
     additionally combine the sums.
     """
-    count_tables = dict(realm=apps.get_model('analytics', 'RealmCount'),
-                        user=apps.get_model('analytics', 'UserCount'),
-                        stream=apps.get_model('analytics', 'StreamCount'),
-                        installation=apps.get_model('analytics', 'InstallationCount'))
+    count_tables = dict(
+        realm=apps.get_model('analytics', 'RealmCount'),
+        user=apps.get_model('analytics', 'UserCount'),
+        stream=apps.get_model('analytics', 'StreamCount'),
+        installation=apps.get_model('analytics', 'InstallationCount'),
+    )
 
     for name, count_table in count_tables.items():
         value = [name, 'property', 'end_time']
         if name == 'installation':
             value = ['property', 'end_time']
-        counts = count_table.objects.filter(subgroup=None).values(*value).annotate(
-            Count('id'), Sum('value')).filter(id__count__gt=1)
+        counts = (
+            count_table.objects.filter(subgroup=None)
+            .values(*value)
+            .annotate(Count('id'), Sum('value'))
+            .filter(id__count__gt=1)
+        )
 
         for count in counts:
             count.pop('id__count')
@@ -47,6 +53,7 @@ def clear_duplicate_counts(apps: StateApps, schema_editor: DatabaseSchemaEditor)
             for duplicate_count in to_cleanup:
                 duplicate_count.delete()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -54,6 +61,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(clear_duplicate_counts,
-                             reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(clear_duplicate_counts, reverse_code=migrations.RunPython.noop),
     ]

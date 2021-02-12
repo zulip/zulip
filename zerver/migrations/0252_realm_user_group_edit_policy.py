@@ -2,6 +2,8 @@
 from django.db import migrations, models
 
 USER_GROUP_EDIT_POLICY_MEMBERS = 1
+
+
 class Migration(migrations.Migration):
 
     dependencies = [

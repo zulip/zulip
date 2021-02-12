@@ -4,6 +4,7 @@ from typing import Callable, TypeVar, cast
 
 FuncT = TypeVar('FuncT', bound=Callable[..., object])
 
+
 def profiled(func: FuncT) -> FuncT:
     """
     This decorator should obviously be used only in a dev environment.
@@ -30,4 +31,5 @@ def profiled(func: FuncT) -> FuncT:
         retval = prof.runcall(func_, *args, **kwargs)
         prof.dump_stats(fn)
         return retval
+
     return cast(FuncT, wrapped_func)  # https://github.com/python/mypy/issues/1927

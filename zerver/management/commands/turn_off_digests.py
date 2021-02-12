@@ -10,9 +10,11 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         self.add_realm_args(parser)
 
-        self.add_user_list_args(parser,
-                                help='Turn off digests for this comma-separated list of email addresses.',
-                                all_users_help="Turn off digests for everyone in realm.")
+        self.add_user_list_args(
+            parser,
+            help='Turn off digests for this comma-separated list of email addresses.',
+            all_users_help="Turn off digests for everyone in realm.",
+        )
 
     def handle(self, **options: str) -> None:
         realm = self.get_realm(options)
@@ -22,7 +24,11 @@ class Command(ZulipBaseCommand):
         for user_profile in user_profiles:
             already_disabled_prefix = ""
             if user_profile.enable_digest_emails:
-                do_change_notification_settings(user_profile, 'enable_digest_emails', False, acting_user=None)
+                do_change_notification_settings(
+                    user_profile, 'enable_digest_emails', False, acting_user=None
+                )
             else:
                 already_disabled_prefix = "(already off) "
-            print(f"{already_disabled_prefix}{user_profile.full_name} <{user_profile.delivery_email}>")
+            print(
+                f"{already_disabled_prefix}{user_profile.full_name} <{user_profile.delivery_email}>"
+            )

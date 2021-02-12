@@ -14,7 +14,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CustomerPlan',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('licenses', models.IntegerField()),
                 ('automanage_licenses', models.BooleanField(default=False)),
                 ('charge_automatically', models.BooleanField(default=False)),
@@ -27,7 +32,12 @@ class Migration(migrations.Migration):
                 ('next_billing_date', models.DateTimeField(db_index=True)),
                 ('tier', models.SmallIntegerField()),
                 ('status', models.SmallIntegerField(default=1)),
-                ('customer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='corporate.Customer')),
+                (
+                    'customer',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to='corporate.Customer'
+                    ),
+                ),
             ],
         ),
     ]

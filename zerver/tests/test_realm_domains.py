@@ -27,9 +27,13 @@ class RealmDomainTest(ZulipTestCase):
         result = self.client_get("/json/realm/domains")
         self.assert_json_success(result)
         received = orjson.dumps(result.json()['domains'], option=orjson.OPT_SORT_KEYS)
-        expected = orjson.dumps([{'domain': 'zulip.com', 'allow_subdomains': False},
-                                 {'domain': 'acme.com', 'allow_subdomains': True}],
-                                option=orjson.OPT_SORT_KEYS)
+        expected = orjson.dumps(
+            [
+                {'domain': 'zulip.com', 'allow_subdomains': False},
+                {'domain': 'acme.com', 'allow_subdomains': True},
+            ],
+            option=orjson.OPT_SORT_KEYS,
+        )
         self.assertEqual(received, expected)
 
     def test_not_realm_admin(self) -> None:
@@ -43,8 +47,10 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_create_realm_domain(self) -> None:
         self.login('iago')
-        data = {'domain': orjson.dumps('').decode(),
-                'allow_subdomains': orjson.dumps(True).decode()}
+        data = {
+            'domain': orjson.dumps('').decode(),
+            'allow_subdomains': orjson.dumps(True).decode(),
+        }
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_error(result, 'Invalid domain: Domain can\'t be empty.')
 
@@ -52,34 +58,42 @@ class RealmDomainTest(ZulipTestCase):
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_success(result)
         realm = get_realm('zulip')
-        self.assertTrue(RealmDomain.objects.filter(realm=realm, domain='acme.com',
-                                                   allow_subdomains=True).exists())
+        self.assertTrue(
+            RealmDomain.objects.filter(
+                realm=realm, domain='acme.com', allow_subdomains=True
+            ).exists()
+        )
 
         result = self.client_post("/json/realm/domains", info=data)
-        self.assert_json_error(result, 'The domain acme.com is already a part of your organization.')
+        self.assert_json_error(
+            result, 'The domain acme.com is already a part of your organization.'
+        )
 
         mit_user_profile = self.mit_user("sipbtest")
         self.login_user(mit_user_profile)
 
         do_change_user_role(mit_user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
-        result = self.client_post("/json/realm/domains", info=data,
-                                  HTTP_HOST=mit_user_profile.realm.host)
+        result = self.client_post(
+            "/json/realm/domains", info=data, HTTP_HOST=mit_user_profile.realm.host
+        )
         self.assert_json_success(result)
 
     def test_patch_realm_domain(self) -> None:
         self.login('iago')
         realm = get_realm('zulip')
-        RealmDomain.objects.create(realm=realm, domain='acme.com',
-                                   allow_subdomains=False)
+        RealmDomain.objects.create(realm=realm, domain='acme.com', allow_subdomains=False)
         data = {
             'allow_subdomains': orjson.dumps(True).decode(),
         }
         url = "/json/realm/domains/acme.com"
         result = self.client_patch(url, data)
         self.assert_json_success(result)
-        self.assertTrue(RealmDomain.objects.filter(realm=realm, domain='acme.com',
-                                                   allow_subdomains=True).exists())
+        self.assertTrue(
+            RealmDomain.objects.filter(
+                realm=realm, domain='acme.com', allow_subdomains=True
+            ).exists()
+        )
 
         url = "/json/realm/domains/non-existent.com"
         result = self.client_patch(url, data)
@@ -117,7 +131,9 @@ class RealmDomainTest(ZulipTestCase):
         realm1 = do_create_realm('testrealm1', 'Test Realm 1', emails_restricted_to_domains=True)
         realm2 = do_create_realm('testrealm2', 'Test Realm 2', emails_restricted_to_domains=True)
 
-        realm_domain = RealmDomain.objects.create(realm=realm1, domain='test1.com', allow_subdomains=False)
+        realm_domain = RealmDomain.objects.create(
+            realm=realm1, domain='test1.com', allow_subdomains=False
+        )
         RealmDomain.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=True)
 
         email_allowed_for_realm('user@test1.com', realm1)
@@ -140,8 +156,19 @@ class RealmDomainTest(ZulipTestCase):
             RealmDomain.objects.create(realm=realm, domain='zulip.com', allow_subdomains=True)
 
     def test_validate_domain(self) -> None:
-        invalid_domains = ['', 'test', 't.', 'test.', '.com', '-test', 'test...com',
-                           'test-', 'test_domain.com', 'test.-domain.com', 'a' * 255 + ".com"]
+        invalid_domains = [
+            '',
+            'test',
+            't.',
+            'test.',
+            '.com',
+            '-test',
+            'test...com',
+            'test-',
+            'test_domain.com',
+            'test.-domain.com',
+            'a' * 255 + ".com",
+        ]
         for domain in invalid_domains:
             with self.assertRaises(ValidationError):
                 validate_domain(domain)

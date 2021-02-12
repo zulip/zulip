@@ -13,6 +13,7 @@ from zerver.lib.logging_util import log_to_file
 logger = logging.getLogger(__name__)
 log_to_file(logger, settings.DIGEST_LOG_PATH)
 
+
 class Command(BaseCommand):
     help = """Enqueue digest emails for users that haven't checked the app
 in a while.

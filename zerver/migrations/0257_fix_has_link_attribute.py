@@ -9,6 +9,7 @@ from django.db.migrations.state import StateApps
 
 BATCH_SIZE = 1000
 
+
 def process_batch(apps: StateApps, id_start: int, id_end: int, last_id: int) -> None:
     Message = apps.get_model('zerver', 'Message')
     for message in Message.objects.filter(id__gte=id_start, id__lte=id_end).order_by("id"):
@@ -44,15 +45,18 @@ def process_batch(apps: StateApps, id_start: int, id_end: int, last_id: int) -> 
             has_image = True
             break
 
-        if (message.has_link == has_link and
-                message.has_attachment == has_attachment and
-                message.has_image == has_image):
+        if (
+            message.has_link == has_link
+            and message.has_attachment == has_attachment
+            and message.has_image == has_image
+        ):
             # No need to spend time with the database if there aren't changes.
             continue
         message.has_image = has_image
         message.has_link = has_link
         message.has_attachment = has_attachment
         message.save(update_fields=['has_link', 'has_attachment', 'has_image'])
+
 
 def fix_has_link(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Message = apps.get_model('zerver', 'Message')
@@ -79,6 +83,7 @@ def fix_has_link(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
         # Copy for the last batch.
         process_batch(apps, id_range_lower_bound, last_id, last_id)
 
+
 class Migration(migrations.Migration):
     atomic = False
 
@@ -87,7 +92,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(fix_has_link,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(fix_has_link, reverse_code=migrations.RunPython.noop, elidable=True),
     ]

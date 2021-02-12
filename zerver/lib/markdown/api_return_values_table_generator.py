@@ -13,6 +13,7 @@ from .api_arguments_table_generator import generate_data_type
 
 REGEXP = re.compile(r'\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 
+
 class MarkdownReturnValuesTableGenerator(Extension):
     def __init__(self, configs: Mapping[str, Any] = {}) -> None:
         self.config: Dict[str, Any] = {}
@@ -55,14 +56,15 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 preceding = line_split[0]
                 following = line_split[-1]
                 text = [preceding, *text, following]
-                lines = lines[:loc] + text + lines[loc+1:]
+                lines = lines[:loc] + text + lines[loc + 1 :]
                 break
             else:
                 done = True
         return lines
 
-    def render_desc(self, description: str, spacing: int, data_type: str,
-                    return_value: Optional[str]=None) -> str:
+    def render_desc(
+        self, description: str, spacing: int, data_type: str, return_value: Optional[str] = None
+    ) -> str:
         description = description.replace('\n', '\n' + ((spacing + 4) * ' '))
         if return_value is None:
             # HACK: It's not clear how to use OpenAPI data to identify
@@ -80,8 +82,26 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             if len(arr) == 1 or '\n' in arr[0]:
                 return (spacing * " ") + "* " + description
             (key_name, key_description) = arr
-            return (spacing * " ") + "* " + key_name + ": " + '<span class="api-field-type">' + data_type + "</span> "  + key_description
-        return (spacing * " ") + "* `" + return_value + "`: " + '<span class="api-field-type">' + data_type + "</span> "  + description
+            return (
+                (spacing * " ")
+                + "* "
+                + key_name
+                + ": "
+                + '<span class="api-field-type">'
+                + data_type
+                + "</span> "
+                + key_description
+            )
+        return (
+            (spacing * " ")
+            + "* `"
+            + return_value
+            + "`: "
+            + '<span class="api-field-type">'
+            + data_type
+            + "</span> "
+            + description
+        )
 
     def render_table(self, return_values: Dict[str, Any], spacing: int) -> List[str]:
         IGNORE = ["result", "msg"]
@@ -96,8 +116,11 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 # specialized description for that particular case. The description used
                 # right below is the main description.
                 data_type = generate_data_type(return_values[return_value])
-                ans.append(self.render_desc(return_values[return_value]['description'],
-                                            spacing, data_type, return_value))
+                ans.append(
+                    self.render_desc(
+                        return_values[return_value]['description'], spacing, data_type, return_value
+                    )
+                )
                 for element in return_values[return_value]['oneOf']:
                     if 'description' not in element:
                         continue
@@ -113,28 +136,41 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             data_type = generate_data_type(return_values[return_value])
             # Test to make sure deprecated keys are marked appropriately.
             if likely_deprecated_parameter(description):
-                assert(return_values[return_value]['deprecated'])
+                assert return_values[return_value]['deprecated']
             ans.append(self.render_desc(description, spacing, data_type, return_value))
             if 'properties' in return_values[return_value]:
                 ans += self.render_table(return_values[return_value]['properties'], spacing + 4)
             if return_values[return_value].get('additionalProperties', False):
                 data_type = generate_data_type(return_values[return_value]['additionalProperties'])
-                ans.append(self.render_desc(return_values[return_value]['additionalProperties']
-                                            ['description'], spacing + 4, data_type))
+                ans.append(
+                    self.render_desc(
+                        return_values[return_value]['additionalProperties']['description'],
+                        spacing + 4,
+                        data_type,
+                    )
+                )
                 if 'properties' in return_values[return_value]['additionalProperties']:
-                    ans += self.render_table(return_values[return_value]['additionalProperties']
-                                             ['properties'], spacing + 8)
-            if ('items' in return_values[return_value] and
-                    'properties' in return_values[return_value]['items']):
-                ans += self.render_table(return_values[return_value]['items']['properties'], spacing + 4)
+                    ans += self.render_table(
+                        return_values[return_value]['additionalProperties']['properties'],
+                        spacing + 8,
+                    )
+            if (
+                'items' in return_values[return_value]
+                and 'properties' in return_values[return_value]['items']
+            ):
+                ans += self.render_table(
+                    return_values[return_value]['items']['properties'], spacing + 4
+                )
         return ans
 
     def render_events(self, events_dict: Dict[str, Any]) -> List[str]:
         text: List[str] = []
         # Use argument section design for better visuals
         # Directly using `###` for subheading causes errors so use h3 with made up id.
-        argument_template = ('<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">' +
-                             ' {event_type} {op}</h3></p></div> \n{description}\n\n\n')
+        argument_template = (
+            '<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">'
+            + ' {event_type} {op}</h3></p></div> \n{description}\n\n\n'
+        )
         for events in events_dict['oneOf']:
             # `id` is present in every event so it will be redundant to display
             # it every time. So remove it from the dictionary.
@@ -151,8 +187,11 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 h3_id += '-' + op_str
                 op_str = f'<span class="api-argument-deprecated">op: {op_str}</span>'
             description = events['description']
-            text.append(argument_template.format(event_type=event_type_str, op=op_str,
-                        description=description, h3_id=h3_id))
+            text.append(
+                argument_template.format(
+                    event_type=event_type_str, op=op_str, description=description, h3_id=h3_id
+                )
+            )
             text += self.render_table(events['properties'], 0)
             # This part is for adding examples of individual events
             text.append('**Example**')
@@ -161,5 +200,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             text.append(example)
             text.append('```\n\n')
         return text
+
+
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownReturnValuesTableGenerator:
     return MarkdownReturnValuesTableGenerator(kwargs)

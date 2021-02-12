@@ -11,6 +11,7 @@ from zerver.lib.queue import queue_json_publish
 def error(*args: Any) -> None:
     raise Exception('We cannot enqueue because settings.USING_RABBITMQ is False.')
 
+
 class Command(BaseCommand):
     help = """Read JSON lines from a file and enqueue them to a worker queue.
 
@@ -23,10 +24,12 @@ You can use "-" to represent stdin.
 """
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('queue_name', metavar='<queue>',
-                            help="name of worker queue to enqueue to")
-        parser.add_argument('file_name', metavar='<file>',
-                            help="name of file containing JSON lines")
+        parser.add_argument(
+            'queue_name', metavar='<queue>', help="name of worker queue to enqueue to"
+        )
+        parser.add_argument(
+            'file_name', metavar='<file>', help="name of file containing JSON lines"
+        )
 
     def handle(self, *args: Any, **options: str) -> None:
         queue_name = options['queue_name']

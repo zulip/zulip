@@ -32,11 +32,15 @@ class TrelloHookTests(WebhookTestCase):
         self.check_webhook("removing_label_from_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_member_was_added_to_card(self) -> None:
-        expected_message = "TomaszKolek added TomaszKolek to [Card name](https://trello.com/c/9BduUcVQ)."
+        expected_message = (
+            "TomaszKolek added TomaszKolek to [Card name](https://trello.com/c/9BduUcVQ)."
+        )
         self.check_webhook("adding_member_to_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_member_was_removed_from_card(self) -> None:
-        expected_message = "TomaszKolek removed Trello from [Card name](https://trello.com/c/9BduUcVQ)."
+        expected_message = (
+            "TomaszKolek removed Trello from [Card name](https://trello.com/c/9BduUcVQ)."
+        )
         self.check_webhook("removing_member_from_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_due_date_was_set(self) -> None:
@@ -48,7 +52,9 @@ class TrelloHookTests(WebhookTestCase):
         self.check_webhook("changing_due_date_on_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_due_date_was_removed(self) -> None:
-        expected_message = "TomaszKolek removed the due date from [Card name](https://trello.com/c/9BduUcVQ)."
+        expected_message = (
+            "TomaszKolek removed the due date from [Card name](https://trello.com/c/9BduUcVQ)."
+        )
         self.check_webhook("removing_due_date_from_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_card_was_archived(self) -> None:
@@ -80,15 +86,21 @@ class TrelloHookTests(WebhookTestCase):
         self.check_webhook("uncheck_item_on_card_checklist", "Zulip", expected_message)
 
     def test_trello_webhook_when_member_was_removed_from_board(self) -> None:
-        expected_message = "TomaszKolek removed Trello from [Welcome Board](https://trello.com/b/iqXXzYEj)."
+        expected_message = (
+            "TomaszKolek removed Trello from [Welcome Board](https://trello.com/b/iqXXzYEj)."
+        )
         self.check_webhook("removing_member_from_board", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_member_was_added_to_board(self) -> None:
-        expected_message = "TomaszKolek added Trello to [Welcome Board](https://trello.com/b/iqXXzYEj)."
+        expected_message = (
+            "TomaszKolek added Trello to [Welcome Board](https://trello.com/b/iqXXzYEj)."
+        )
         self.check_webhook("adding_member_to_board", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_list_was_added_to_board(self) -> None:
-        expected_message = "TomaszKolek added New list list to [Welcome Board](https://trello.com/b/iqXXzYEj)."
+        expected_message = (
+            "TomaszKolek added New list list to [Welcome Board](https://trello.com/b/iqXXzYEj)."
+        )
         self.check_webhook("adding_new_list_to_board", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_comment_was_added_to_card(self) -> None:
@@ -150,10 +162,7 @@ class TrelloHookTests(WebhookTestCase):
                 model="whatever",
                 action=dict(
                     type="updateCard",
-                    data=dict(
-                        card=card,
-                        old=old
-                    ),
+                    data=dict(card=card, old=old),
                 ),
             )
             payload = orjson.dumps(data).decode()
@@ -164,7 +173,9 @@ class TrelloHookTests(WebhookTestCase):
         self.check_webhook("adding_description_to_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_description_was_removed_from_card(self) -> None:
-        expected_message = "Marco Matarazzo removed description from [New Card](https://trello.com/c/P2r0z66z)."
+        expected_message = (
+            "Marco Matarazzo removed description from [New Card](https://trello.com/c/P2r0z66z)."
+        )
         self.check_webhook("removing_description_from_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_description_was_changed_on_card(self) -> None:

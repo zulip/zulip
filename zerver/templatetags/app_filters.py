@@ -23,12 +23,15 @@ from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, i
 
 register = Library()
 
+
 def and_n_others(values: List[str], limit: int) -> str:
     # A helper for the commonly appended "and N other(s)" string, with
     # the appropriate pluralization.
     return " and {} other{}".format(
-        len(values) - limit, "" if len(values) == limit + 1 else "s",
+        len(values) - limit,
+        "" if len(values) == limit + 1 else "s",
     )
+
 
 @register.filter(name='display_list', is_safe=True)
 def display_list(values: List[str], display_limit: int) -> str:
@@ -48,16 +51,15 @@ def display_list(values: List[str], display_limit: int) -> str:
         display_string = f"{values[0]}"
     elif len(values) <= display_limit:
         # Fewer than `display_limit` values, show all of them.
-        display_string = ", ".join(
-            f"{value}" for value in values[:-1])
+        display_string = ", ".join(f"{value}" for value in values[:-1])
         display_string += f" and {values[-1]}"
     else:
         # More than `display_limit` values, only mention a few.
-        display_string = ", ".join(
-            f"{value}" for value in values[:display_limit])
+        display_string = ", ".join(f"{value}" for value in values[:display_limit])
         display_string += and_n_others(values, display_limit)
 
     return display_string
+
 
 md_extensions: Optional[List[Any]] = None
 md_macro_extension: Optional[Any] = None
@@ -75,9 +77,9 @@ docs_without_macros = [
 @ignore_unhashable_lru_cache(512)
 @items_tuple_to_dict
 @register.filter(name='render_markdown_path', is_safe=True)
-def render_markdown_path(markdown_file_path: str,
-                         context: Mapping[str, Any]={},
-                         pure_markdown: bool=False) -> str:
+def render_markdown_path(
+    markdown_file_path: str, context: Mapping[str, Any] = {}, pure_markdown: bool = False
+) -> str:
     """Given a path to a Markdown file, return the rendered HTML.
 
     Note that this assumes that any HTML in the Markdown file is
@@ -86,8 +88,10 @@ def render_markdown_path(markdown_file_path: str,
 
     # We set this global hackishly
     from zerver.lib.markdown.help_settings_links import set_relative_settings_links
+
     set_relative_settings_links(bool(context.get('html_settings_links')))
     from zerver.lib.markdown.help_relative_links import set_relative_help_links
+
     set_relative_help_links(bool(context.get('html_settings_links')))
 
     global md_extensions
@@ -105,9 +109,11 @@ def render_markdown_path(markdown_file_path: str,
                 run_content_validators=context.get('run_content_validators', False),
             ),
             zerver.lib.markdown.api_arguments_table_generator.makeExtension(
-                base_path='templates/zerver/api/'),
+                base_path='templates/zerver/api/'
+            ),
             zerver.lib.markdown.api_return_values_table_generator.makeExtension(
-                base_path='templates/zerver/api/'),
+                base_path='templates/zerver/api/'
+            ),
             zerver.lib.markdown.nested_code_blocks.makeExtension(),
             zerver.lib.markdown.tabbed_sections.makeExtension(),
             zerver.lib.markdown.help_settings_links.makeExtension(),
@@ -116,7 +122,8 @@ def render_markdown_path(markdown_file_path: str,
         ]
     if md_macro_extension is None:
         md_macro_extension = zerver.lib.markdown.include.makeExtension(
-            base_path='templates/zerver/help/include/')
+            base_path='templates/zerver/help/include/'
+        )
     extensions = md_extensions
     if 'api_url' in context:
         # We need to generate the API code examples extension each
@@ -124,9 +131,12 @@ def render_markdown_path(markdown_file_path: str,
         #
         # TODO: Convert this to something more efficient involving
         # passing the API URL as a direct parameter.
-        extensions = [*extensions, zerver.openapi.markdown_extension.makeExtension(
-            api_url=context["api_url"],
-        )]
+        extensions = [
+            *extensions,
+            zerver.openapi.markdown_extension.makeExtension(
+                api_url=context["api_url"],
+            ),
+        ]
     if not any(doc in markdown_file_path for doc in docs_without_macros):
         extensions = [md_macro_extension, *extensions]
 

@@ -16,5 +16,6 @@ class Migration(migrations.Migration):
             WHERE zerver_userprofile.id = zerver_userpresence.user_profile_id;
             """,
             reverse_sql='UPDATE zerver_userpresence SET realm_id = NULL',
-            elidable=True),
+            elidable=True,
+        ),
     ]

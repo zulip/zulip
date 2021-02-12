@@ -12,10 +12,16 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='archivedreaction',
-            unique_together={('user_profile', 'message', 'emoji_name'), ('user_profile', 'message', 'reaction_type', 'emoji_code')},
+            unique_together={
+                ('user_profile', 'message', 'emoji_name'),
+                ('user_profile', 'message', 'reaction_type', 'emoji_code'),
+            },
         ),
         migrations.AlterUniqueTogether(
             name='reaction',
-            unique_together={('user_profile', 'message', 'emoji_name'), ('user_profile', 'message', 'reaction_type', 'emoji_code')},
+            unique_together={
+                ('user_profile', 'message', 'emoji_name'),
+                ('user_profile', 'message', 'reaction_type', 'emoji_code'),
+            },
         ),
     ]

@@ -10,8 +10,8 @@ def backfill_first_message_id(apps: StateApps, schema_editor: DatabaseSchemaEdit
     Message = apps.get_model('zerver', 'Message')
     for stream in Stream.objects.all():
         first_message = Message.objects.filter(
-            recipient__type_id=stream.id,
-            recipient__type=2).first()
+            recipient__type_id=stream.id, recipient__type=2
+        ).first()
         if first_message is None:
             # No need to change anything if the outcome is the default of None
             continue
@@ -19,13 +19,14 @@ def backfill_first_message_id(apps: StateApps, schema_editor: DatabaseSchemaEdit
         stream.first_message_id = first_message.id
         stream.save()
 
+
 class Migration(migrations.Migration):
     dependencies = [
         ('zerver', '0209_stream_first_message_id'),
     ]
 
     operations = [
-        migrations.RunPython(backfill_first_message_id,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            backfill_first_message_id, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

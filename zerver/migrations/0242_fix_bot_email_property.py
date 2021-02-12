@@ -12,6 +12,7 @@ def fix_bot_email_property(apps: StateApps, schema_editor: DatabaseSchemaEditor)
             user_profile.email = user_profile.delivery_email
             user_profile.save(update_fields=["email"])
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -19,7 +20,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(fix_bot_email_property,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            fix_bot_email_property, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

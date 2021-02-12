@@ -33,8 +33,10 @@ AGENT_REPLIED_TEMPLATE = """
 ```
 """.strip()
 
+
 def ticket_started_body(payload: Dict[str, Any]) -> str:
     return TICKET_STARTED_TEMPLATE.format(**payload)
+
 
 def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[str]:
     state = payload['state']
@@ -60,6 +62,7 @@ def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[str]:
     else:
         return None
 
+
 def replied_body(payload: Dict[str, Any], actor: str, action: str) -> str:
     actor_url = "http://api.groovehq.com/v1/{}/".format(actor + 's')
     actor = payload['links']['author']['href'].split(actor_url)[1]
@@ -75,6 +78,7 @@ def replied_body(payload: Dict[str, Any], actor: str, action: str) -> str:
 
     return body
 
+
 def get_event_handler(event: str) -> Callable[..., str]:
     # The main reason for this function existence is because of mypy
     handler: Any = EVENTS_FUNCTION_MAPPER.get(event)
@@ -82,10 +86,14 @@ def get_event_handler(event: str) -> Callable[..., str]:
         raise UnsupportedWebhookEventType(event)
     return handler
 
+
 @webhook_view('Groove')
 @has_request_variables
-def api_groove_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_groove_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     event = validate_extract_webhook_http_header(request, 'X_GROOVE_EVENT', 'Groove')
     assert event is not None
     handler = get_event_handler(event)
@@ -97,6 +105,7 @@ def api_groove_webhook(request: HttpRequest, user_profile: UserProfile,
         check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()
+
 
 EVENTS_FUNCTION_MAPPER = {
     'ticket_started': ticket_started_body,

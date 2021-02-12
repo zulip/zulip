@@ -5,10 +5,13 @@ from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def migrate_fix_invalid_bot_owner_values(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def migrate_fix_invalid_bot_owner_values(
+    apps: StateApps, schema_editor: DatabaseSchemaEditor
+) -> None:
     """Fixes UserProfile objects that incorrectly had a bot_owner set"""
     UserProfile = apps.get_model('zerver', 'UserProfile')
     UserProfile.objects.filter(is_bot=False).exclude(bot_owner=None).update(bot_owner=None)
+
 
 class Migration(migrations.Migration):
 
@@ -20,5 +23,6 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             migrate_fix_invalid_bot_owner_values,
             reverse_code=migrations.RunPython.noop,
-            elidable=True),
+            elidable=True,
+        ),
     ]

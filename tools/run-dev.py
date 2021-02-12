@@ -37,29 +37,26 @@ behavior, the reverse proxy itself does *not* automatically restart on changes
 to this file.
 '''
 
-parser = argparse.ArgumentParser(description=DESCRIPTION,
-                                 formatter_class=argparse.RawTextHelpFormatter)
+parser = argparse.ArgumentParser(
+    description=DESCRIPTION, formatter_class=argparse.RawTextHelpFormatter
+)
 
-parser.add_argument('--test',
-                    action='store_true',
-                    help='Use the testing database and ports')
-parser.add_argument('--minify',
-                    action='store_true',
-                    help='Minifies assets for testing in dev')
-parser.add_argument('--interface',
-                    help='Set the IP or hostname for the proxy to listen on')
-parser.add_argument('--no-clear-memcached',
-                    action='store_false', dest='clear_memcached',
-                    help='Do not clear memcached on startup')
-parser.add_argument('--streamlined',
-                    action="store_true",
-                    help='Avoid thumbor, etc.')
-parser.add_argument('--force',
-                    action="store_true",
-                    help='Run command despite possible problems.')
-parser.add_argument('--enable-tornado-logging',
-                    action="store_true",
-                    help='Enable access logs from tornado proxy server.')
+parser.add_argument('--test', action='store_true', help='Use the testing database and ports')
+parser.add_argument('--minify', action='store_true', help='Minifies assets for testing in dev')
+parser.add_argument('--interface', help='Set the IP or hostname for the proxy to listen on')
+parser.add_argument(
+    '--no-clear-memcached',
+    action='store_false',
+    dest='clear_memcached',
+    help='Do not clear memcached on startup',
+)
+parser.add_argument('--streamlined', action="store_true", help='Avoid thumbor, etc.')
+parser.add_argument('--force', action="store_true", help='Run command despite possible problems.')
+parser.add_argument(
+    '--enable-tornado-logging',
+    action="store_true",
+    help='Enable access logs from tornado proxy server.',
+)
 options = parser.parse_args()
 
 assert_provisioning_status_ok(options.force)
@@ -130,12 +127,24 @@ if not os.path.exists(os.path.dirname(pid_file_path)):
 with open(pid_file_path, 'w+') as f:
     f.write(str(os.getpgrp()) + "\n")
 
+
 def server_processes() -> List[List[str]]:
     main_cmds = [
-        ['./manage.py', 'rundjangoserver',
-         *manage_args, *runserver_args, f'127.0.0.1:{django_port}'],
-        ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado',
-         *manage_args, f'127.0.0.1:{tornado_port}'],
+        [
+            './manage.py',
+            'rundjangoserver',
+            *manage_args,
+            *runserver_args,
+            f'127.0.0.1:{django_port}',
+        ],
+        [
+            'env',
+            'PYTHONUNBUFFERED=1',
+            './manage.py',
+            'runtornado',
+            *manage_args,
+            f'127.0.0.1:{tornado_port}',
+        ],
     ]
 
     if options.streamlined:
@@ -145,15 +154,23 @@ def server_processes() -> List[List[str]]:
 
     other_cmds = [
         ['./manage.py', 'process_queue', '--all', *manage_args],
-        ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
-         './puppet/zulip/files/postgresql/process_fts_updates', '--quiet'],
+        [
+            'env',
+            'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
+            './puppet/zulip/files/postgresql/process_fts_updates',
+            '--quiet',
+        ],
         ['./manage.py', 'deliver_scheduled_messages'],
-        ['/srv/zulip-thumbor-venv/bin/thumbor', '--conf=./zthumbor/thumbor_settings.py',
-         f'--port={thumbor_port}'],
+        [
+            '/srv/zulip-thumbor-venv/bin/thumbor',
+            '--conf=./zthumbor/thumbor_settings.py',
+            f'--port={thumbor_port}',
+        ],
     ]
 
     # NORMAL (but slower) operation:
     return main_cmds + other_cmds
+
 
 def do_one_time_webpack_compile() -> None:
     # We just need to compile webpack assets once at startup, not run a daemon,
@@ -161,6 +178,7 @@ def do_one_time_webpack_compile() -> None:
     # copies on the same system, so this model lets us run the Puppeteer tests
     # with a running development server.
     subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
+
 
 def start_webpack_watcher() -> "subprocess.Popen[bytes]":
     webpack_cmd = ['./tools/webpack', '--watch', f'--port={webpack_port}']
@@ -176,18 +194,22 @@ def start_webpack_watcher() -> "subprocess.Popen[bytes]":
         webpack_cmd.append("--host=0.0.0.0")
     return subprocess.Popen(webpack_cmd)
 
+
 def transform_url(protocol: str, path: str, query: str, target_port: int, target_host: str) -> str:
     # generate url with target host
     host = ":".join((target_host, str(target_port)))
     # Here we are going to rewrite the path a bit so that it is in parity with
     # what we will have for production
     if path.startswith('/thumbor'):
-        path = path[len('/thumbor'):]
+        path = path[len('/thumbor') :]
     newpath = urlunparse((protocol, host, path, '', query, ''))
     return newpath
 
+
 @gen.engine
-def fetch_request(url: str, callback: Any, **kwargs: Any) -> "Generator[Callable[..., Any], Any, None]":
+def fetch_request(
+    url: str, callback: Any, **kwargs: Any
+) -> "Generator[Callable[..., Any], Any, None]":
     # use large timeouts to handle polling requests
     req = httpclient.HTTPRequest(
         url,
@@ -209,7 +231,8 @@ class BaseHandler(web.RequestHandler):
     target_port: int
 
     def _add_request_headers(
-        self, exclude_lower_headers_list: Sequence[str] = [],
+        self,
+        exclude_lower_headers_list: Sequence[str] = [],
     ) -> httputil.HTTPHeaders:
         headers = httputil.HTTPHeaders()
         for header, v in self.request.headers.get_all():
@@ -309,8 +332,10 @@ class ErrorHandler(BaseHandler):
         self.write('path not supported')
         self.finish()
 
+
 def using_thumbor() -> bool:
     return not options.streamlined
+
 
 class Application(web.Application):
     def __init__(self, enable_logging: bool = False) -> None:
@@ -339,6 +364,7 @@ def shutdown_handler(*args: Any, **kwargs: Any) -> None:
     else:
         io_loop.stop()
 
+
 def print_listeners() -> None:
     external_host = os.getenv('EXTERNAL_HOST', f'localhost:{proxy_port}')
     print(f"\nStarting Zulip on:\n\n\t{CYAN}http://{external_host}/{ENDC}\n\nInternal ports:")
@@ -357,6 +383,7 @@ def print_listeners() -> None:
     for port, label in ports:
         print(f'   {port}: {label}')
     print()
+
 
 children = []
 

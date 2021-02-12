@@ -24,14 +24,14 @@ realms used for testing; consider using deactivate_realm instead."""
             is_bot=False,
         ).count()
 
-        message_count = Message.objects.filter(
-            sender__realm=realm
-        ).count()
+        message_count = Message.objects.filter(sender__realm=realm).count()
 
         print(f"This realm has {user_count} users and {message_count} messages.\n")
 
-        print("This command will \033[91mPERMANENTLY DELETE\033[0m all data for this realm.  "
-              "Most use cases will be better served by scrub_realm and/or deactivate_realm.")
+        print(
+            "This command will \033[91mPERMANENTLY DELETE\033[0m all data for this realm.  "
+            "Most use cases will be better served by scrub_realm and/or deactivate_realm."
+        )
 
         confirmation = input("Type the name of the realm to confirm: ")
         if confirmation != realm.string_id:

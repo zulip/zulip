@@ -12,12 +12,18 @@ if settings.DEBUG:
 
     def static_path(path: str) -> str:
         return find(path) or "/nonexistent"
+
+
 else:
+
     def static_path(path: str) -> str:
         return os.path.join(settings.STATIC_ROOT, path)
 
+
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
-    def hashed_name(self, name: str, content: Optional[str]=None, filename: Optional[str]=None) -> str:
+    def hashed_name(
+        self, name: str, content: Optional[str] = None, filename: Optional[str] = None
+    ) -> str:
         ext = os.path.splitext(name)[1]
         if name.startswith("webpack-bundles"):
             # Hack to avoid renaming already-hashnamed webpack bundles
@@ -43,6 +49,7 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # And same story for translation files, sound files, etc.
             return name
         return super().hashed_name(name, content, filename)
+
 
 class ZulipStorage(IgnoreBundlesManifestStaticFilesStorage):
     # This is a hack to use staticfiles.json from within the

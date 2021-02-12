@@ -8,7 +8,8 @@ from django.db.migrations.state import StateApps
 
 
 def clear_preregistrationuser_invited_as_admin(
-        apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+    apps: StateApps, schema_editor: DatabaseSchemaEditor
+) -> None:
     """This migration fixes any PreregistrationUser objects that might
     have been already corrupted to have the administrator role by the
     buggy original version of migration
@@ -25,9 +26,10 @@ def clear_preregistrationuser_invited_as_admin(
     INVITED_AS_MEMBER = 1
     INVITED_AS_REALM_ADMIN = 2
     PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
-    PreregistrationUser.objects.filter(
-        invited_as=INVITED_AS_REALM_ADMIN).update(
-            invited_as=INVITED_AS_MEMBER)
+    PreregistrationUser.objects.filter(invited_as=INVITED_AS_REALM_ADMIN).update(
+        invited_as=INVITED_AS_MEMBER
+    )
+
 
 class Migration(migrations.Migration):
 
@@ -37,7 +39,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            clear_preregistrationuser_invited_as_admin,
-            reverse_code=migrations.RunPython.noop
+            clear_preregistrationuser_invited_as_admin, reverse_code=migrations.RunPython.noop
         ),
     ]

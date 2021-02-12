@@ -9,8 +9,9 @@ from zerver.lib.timestamp import floor_to_day, floor_to_hour, verify_UTC
 # If min_length is greater than 0, pads the list to the left.
 # So informally, time_range(Sep 20, Sep 22, day, None) returns [Sep 20, Sep 21, Sep 22],
 # and time_range(Sep 20, Sep 22, day, 5) returns [Sep 18, Sep 19, Sep 20, Sep 21, Sep 22]
-def time_range(start: datetime, end: datetime, frequency: str,
-               min_length: Optional[int]) -> List[datetime]:
+def time_range(
+    start: datetime, end: datetime, frequency: str, min_length: Optional[int]
+) -> List[datetime]:
     verify_UTC(start)
     verify_UTC(end)
     if frequency == CountStat.HOUR:
@@ -24,7 +25,7 @@ def time_range(start: datetime, end: datetime, frequency: str,
 
     times = []
     if min_length is not None:
-        start = min(start, end - (min_length-1)*step)
+        start = min(start, end - (min_length - 1) * step)
     current = end
     while current >= start:
         times.append(current)

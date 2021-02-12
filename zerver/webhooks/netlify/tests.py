@@ -24,9 +24,10 @@ class NetlifyHookTests(WebhookTestCase):
 
     def test_failed_message(self) -> None:
         expected_topic = "master"
-        expected_message = ("The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) "
-                            "on branch master failed during stage 'building site': Build script returned non-zero exit code: 127"
-                            )
+        expected_message = (
+            "The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) "
+            "on branch master failed during stage 'building site': Build script returned non-zero exit code: 127"
+        )
 
         self.check_webhook(
             "deploy_failed", expected_topic, expected_message, content_type="application/json"
@@ -34,9 +35,10 @@ class NetlifyHookTests(WebhookTestCase):
 
     def test_locked_message(self) -> None:
         expected_topic = "master"
-        expected_message = ("The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) "
-                            "on branch master is now locked."
-                            )
+        expected_message = (
+            "The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) "
+            "on branch master is now locked."
+        )
 
         self.check_webhook(
             "deploy_locked", expected_topic, expected_message, content_type="application/json"
@@ -44,9 +46,10 @@ class NetlifyHookTests(WebhookTestCase):
 
     def test_unlocked_message(self) -> None:
         expected_topic = "master"
-        expected_message = ("The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) "
-                            "on branch master is now unlocked."
-                            )
+        expected_message = (
+            "The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) "
+            "on branch master is now unlocked."
+        )
 
         self.check_webhook(
             "deploy_unlocked", expected_topic, expected_message, content_type="application/json"

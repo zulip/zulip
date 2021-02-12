@@ -13,7 +13,8 @@ def backfill_subscription_log_events(apps: StateApps, schema_editor: DatabaseSch
     objects_to_create = []
 
     subs_query = Subscription.objects.select_related(
-        "user_profile", "user_profile__realm", "recipient").filter(recipient__type=2)
+        "user_profile", "user_profile__realm", "recipient"
+    ).filter(recipient__type=2)
     for sub in subs_query:
         entry = RealmAuditLog(
             realm=sub.user_profile.realm,
@@ -22,7 +23,8 @@ def backfill_subscription_log_events(apps: StateApps, schema_editor: DatabaseSch
             event_last_message_id=0,
             event_type='subscription_created',
             event_time=migration_time,
-            backfilled=True)
+            backfilled=True,
+        )
         objects_to_create.append(entry)
     RealmAuditLog.objects.bulk_create(objects_to_create)
     objects_to_create = []
@@ -37,10 +39,12 @@ def backfill_subscription_log_events(apps: StateApps, schema_editor: DatabaseSch
             event_last_message_id=event_last_message_id,
             event_type='subscription_deactivated',
             event_time=migration_time_for_deactivation,
-            backfilled=True)
+            backfilled=True,
+        )
         objects_to_create.append(entry)
     RealmAuditLog.objects.bulk_create(objects_to_create)
     objects_to_create = []
+
 
 def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
@@ -60,6 +64,7 @@ class Migration(migrations.Migration):
             name='event_last_message_id',
             field=models.IntegerField(null=True),
         ),
-        migrations.RunPython(backfill_subscription_log_events,
-                             reverse_code=reverse_code, elidable=True),
+        migrations.RunPython(
+            backfill_subscription_log_events, reverse_code=reverse_code, elidable=True
+        ),
     ]

@@ -11,6 +11,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='userprofile',
             name='avatar_source',
-            field=models.CharField(choices=[('G', 'Hosted by Gravatar'), ('U', 'Uploaded by user')], max_length=1, default='G'),
+            field=models.CharField(
+                choices=[('G', 'Hosted by Gravatar'), ('U', 'Uploaded by user')],
+                max_length=1,
+                default='G',
+            ),
         ),
     ]

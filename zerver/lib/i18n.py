@@ -20,10 +20,13 @@ def get_language_list() -> List[Dict[str, Any]]:
         languages = orjson.loads(reader.read())
         return languages['name_map']
 
+
 def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dict[str, str]]]:
-    language_list = [lang for lang in get_language_list()
-                     if 'percent_translated' not in lang or
-                        lang['percent_translated'] >= 5.]
+    language_list = [
+        lang
+        for lang in get_language_list()
+        if 'percent_translated' not in lang or lang['percent_translated'] >= 5.0
+    ]
 
     formatted_list = []
     lang_len = len(language_list)
@@ -57,6 +60,7 @@ def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dic
 
     return formatted_list
 
+
 def get_language_name(code: str) -> str:
     for lang in get_language_list():
         if code in (lang['code'], lang['locale']):
@@ -65,10 +69,12 @@ def get_language_name(code: str) -> str:
     logging.error("Unknown language code '%s'", code)
     return "Unknown"
 
+
 def get_available_language_codes() -> List[str]:
     language_list = get_language_list()
     codes = [language['code'] for language in language_list]
     return codes
+
 
 def get_language_translation_data(language: str) -> Dict[str, str]:
     if language == 'en':
@@ -82,10 +88,9 @@ def get_language_translation_data(language: str) -> Dict[str, str]:
         print(f'Translation for {language} not found at {path}')
         return {}
 
+
 def get_and_set_request_language(
-    request: HttpRequest,
-    user_configured_language: str,
-    testing_url_language: Optional[str]=None
+    request: HttpRequest, user_configured_language: str, testing_url_language: Optional[str] = None
 ) -> str:
     # We pick a language for the user as follows:
     # * First priority is the language in the URL, for debugging.

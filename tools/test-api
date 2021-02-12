@@ -21,9 +21,9 @@ from tools.lib.test_server import test_server_running
 
 usage = """test-api [options]"""
 parser = argparse.ArgumentParser(usage)
-parser.add_argument('--force',
-                    action="store_true",
-                    help='Run tests despite possible provisioning problems.')
+parser.add_argument(
+    '--force', action="store_true", help='Run tests despite possible provisioning problems.'
+)
 options = parser.parse_args()
 
 assert_provisioning_status_ok(options.force)
@@ -92,7 +92,7 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     # Test error payloads
     client = Client(
         email=email,
-        api_key='X'*32,
+        api_key='X' * 32,
         site=site,
     )
     test_invalid_api_key(client)

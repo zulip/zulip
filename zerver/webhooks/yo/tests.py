@@ -19,8 +19,9 @@ class YoHookTests(WebhookTestCase):
             user_ip="127.0.0.1",
         )
         expected_message = "Yo from IAGO"
-        self.send_and_test_private_message('', expected_message=expected_message,
-                                           content_type="application/x-www-form-urlencoded")
+        self.send_and_test_private_message(
+            '', expected_message=expected_message, content_type="application/x-www-form-urlencoded"
+        )
 
     def get_payload(self, fixture_name: str) -> Dict[str, str]:
         return {}

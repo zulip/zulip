@@ -13,6 +13,7 @@ def default_option_handler_factory(address_option: str) -> Callable[[Dict[str, A
 
     return option_setter
 
+
 optional_address_tokens = {
     "show-sender": default_option_handler_factory("show-sender"),
     "include-footer": default_option_handler_factory("include-footer"),
@@ -21,8 +22,10 @@ optional_address_tokens = {
     "prefer-html": lambda options: options.update(prefer_text=False),
 }
 
+
 class ZulipEmailForwardError(Exception):
     pass
+
 
 def get_email_gateway_message_string_from_address(address: str) -> str:
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
@@ -38,10 +41,12 @@ def get_email_gateway_message_string_from_address(address: str) -> str:
 
     return msg_string
 
-def encode_email_address(stream: Stream, show_sender: bool=False) -> str:
+
+def encode_email_address(stream: Stream, show_sender: bool = False) -> str:
     return encode_email_address_helper(stream.name, stream.email_token, show_sender)
 
-def encode_email_address_helper(name: str, email_token: str, show_sender: bool=False) -> str:
+
+def encode_email_address_helper(name: str, email_token: str, show_sender: bool = False) -> str:
     # Some deployments may not use the email gateway
     if settings.EMAIL_GATEWAY_PATTERN == '':
         return ''
@@ -68,6 +73,7 @@ def encode_email_address_helper(name: str, email_token: str, show_sender: bool=F
         encoded_token += ".show-sender"
 
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
+
 
 def decode_email_address(email: str) -> Tuple[str, Dict[str, bool]]:
     # Perform the reverse of encode_email_address. Returns a tuple of

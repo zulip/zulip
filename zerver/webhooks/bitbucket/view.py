@@ -13,9 +13,12 @@ from zerver.models import UserProfile
 
 @authenticated_rest_api_view(webhook_client_name="Bitbucket")
 @has_request_variables
-def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Mapping[str, Any]=REQ(validator=check_dict([])),
-                          branches: Optional[str]=REQ(default=None)) -> HttpResponse:
+def api_bitbucket_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Mapping[str, Any] = REQ(validator=check_dict([])),
+    branches: Optional[str] = REQ(default=None),
+) -> HttpResponse:
     repository = payload['repository']
 
     commits = [
@@ -24,9 +27,8 @@ def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
             'sha': commit.get('raw_node'),
             'message': commit.get('message'),
             'url': '{}{}commits/{}'.format(
-                payload.get('canon_url'),
-                repository.get('absolute_url'),
-                commit.get('raw_node')),
+                payload.get('canon_url'), repository.get('absolute_url'), commit.get('raw_node')
+            ),
         }
         for commit in payload['commits']
     ]
@@ -46,10 +48,9 @@ def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
 
         committer = payload.get('user')
         content = get_push_commits_event_message(
-            committer if committer is not None else 'Someone',
-            None, branch, commits)
+            committer if committer is not None else 'Someone', None, branch, commits
+        )
         subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=repository['name'], branch=branch)
 
-    check_send_webhook_message(request, user_profile, subject, content,
-                               unquote_url_parameters=True)
+    check_send_webhook_message(request, user_profile, subject, content, unquote_url_parameters=True)
     return json_success()

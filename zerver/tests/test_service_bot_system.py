@@ -20,6 +20,7 @@ BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.EMBEDDED_BOT: 'embedded_bots',
 }
 
+
 class TestServiceBotBasics(ZulipTestCase):
     def _get_outgoing_bot(self) -> UserProfile:
         outgoing_bot = do_create_user(
@@ -35,7 +36,7 @@ class TestServiceBotBasics(ZulipTestCase):
 
     def test_service_events_for_pms(self) -> None:
         sender = self.example_user('hamlet')
-        assert(not sender.is_bot)
+        assert not sender.is_bot
 
         outgoing_bot = self._get_outgoing_bot()
         assert outgoing_bot.bot_type is not None
@@ -60,7 +61,7 @@ class TestServiceBotBasics(ZulipTestCase):
 
     def test_spurious_mentions(self) -> None:
         sender = self.example_user('hamlet')
-        assert(not sender.is_bot)
+        assert not sender.is_bot
 
         outgoing_bot = self._get_outgoing_bot()
         assert outgoing_bot.bot_type is not None
@@ -84,7 +85,7 @@ class TestServiceBotBasics(ZulipTestCase):
 
     def test_service_events_for_stream_mentions(self) -> None:
         sender = self.example_user('hamlet')
-        assert(not sender.is_bot)
+        assert not sender.is_bot
 
         outgoing_bot = self._get_outgoing_bot()
         assert outgoing_bot.bot_type is not None
@@ -119,7 +120,7 @@ class TestServiceBotBasics(ZulipTestCase):
         """Service bots should not get access to mentions if they aren't a
         direct recipient."""
         sender = self.example_user('hamlet')
-        assert(not sender.is_bot)
+        assert not sender.is_bot
 
         outgoing_bot = self._get_outgoing_bot()
         assert outgoing_bot.bot_type is not None
@@ -160,24 +161,32 @@ class TestServiceBotBasics(ZulipTestCase):
             )
 
         self.assertEqual(len(event_dict), 0)
-        self.assertEqual(m.output, [f"ERROR:root:Unexpected bot_type for Service bot id={bot.id}: {wrong_bot_type}"])
+        self.assertEqual(
+            m.output,
+            [f"ERROR:root:Unexpected bot_type for Service bot id={bot.id}: {wrong_bot_type}"],
+        )
+
 
 class TestServiceBotStateHandler(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")
-        self.bot_profile = do_create_user(email="embedded-bot-1@zulip.com",
-                                          password="test",
-                                          realm=get_realm("zulip"),
-                                          full_name="EmbeddedBo1",
-                                          bot_type=UserProfile.EMBEDDED_BOT,
-                                          bot_owner=self.user_profile)
-        self.second_bot_profile = do_create_user(email="embedded-bot-2@zulip.com",
-                                                 password="test",
-                                                 realm=get_realm("zulip"),
-                                                 full_name="EmbeddedBot2",
-                                                 bot_type=UserProfile.EMBEDDED_BOT,
-                                                 bot_owner=self.user_profile)
+        self.bot_profile = do_create_user(
+            email="embedded-bot-1@zulip.com",
+            password="test",
+            realm=get_realm("zulip"),
+            full_name="EmbeddedBo1",
+            bot_type=UserProfile.EMBEDDED_BOT,
+            bot_owner=self.user_profile,
+        )
+        self.second_bot_profile = do_create_user(
+            email="embedded-bot-2@zulip.com",
+            password="test",
+            realm=get_realm("zulip"),
+            full_name="EmbeddedBot2",
+            bot_type=UserProfile.EMBEDDED_BOT,
+            bot_owner=self.user_profile,
+        )
 
     def test_basic_storage_and_retrieval(self) -> None:
         storage = StateHandler(self.bot_profile)
@@ -187,9 +196,9 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertEqual(storage.get('some other key'), 'some other value')
         self.assertTrue(storage.contains('some key'))
         self.assertFalse(storage.contains('nonexistent key'))
-        self.assertRaisesMessage(StateError,
-                                 "Key does not exist.",
-                                 lambda: storage.get('nonexistent key'))
+        self.assertRaisesMessage(
+            StateError, "Key does not exist.", lambda: storage.get('nonexistent key')
+        )
         storage.put('some key', 'a new value')
         self.assertEqual(storage.get('some key'), 'a new value')
         second_storage = StateHandler(self.second_bot_profile)
@@ -217,7 +226,10 @@ class TestServiceBotStateHandler(ZulipTestCase):
         key = 'capacity-filling entry'
         storage.put(key, 'x' * (settings.USER_STATE_SIZE_LIMIT - len(key)))
 
-        with self.assertRaisesMessage(StateError, "Request exceeds storage limit by 32 characters. The limit is 100 characters."):
+        with self.assertRaisesMessage(
+            StateError,
+            "Request exceeds storage limit by 32 characters. The limit is 100 characters.",
+        ):
             storage.put('too much data', 'a few bits too long')
 
         second_storage = StateHandler(self.second_bot_profile)
@@ -329,14 +341,18 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(result.json()['storage'], {})
 
+
 class TestServiceBotConfigHandler(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")
-        self.bot_profile = self.create_test_bot('embedded', self.user_profile,
-                                                full_name='Embedded bot',
-                                                bot_type=UserProfile.EMBEDDED_BOT,
-                                                service_name='helloworld')
+        self.bot_profile = self.create_test_bot(
+            'embedded',
+            self.user_profile,
+            full_name='Embedded bot',
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name='helloworld',
+        )
         self.bot_handler = EmbeddedBotHandler(self.bot_profile)
 
     def test_basic_storage_and_retrieval(self) -> None:
@@ -358,17 +374,23 @@ class TestServiceBotConfigHandler(ZulipTestCase):
 
     @override_settings(BOT_CONFIG_SIZE_LIMIT=100)
     def test_config_entry_limit(self) -> None:
-        set_bot_config(self.bot_profile, "some key", 'x' * (settings.BOT_CONFIG_SIZE_LIMIT-8))
-        self.assertRaisesMessage(ConfigError,
-                                 "Cannot store configuration. Request would require 101 characters. "
-                                 "The current configuration size limit is 100 characters.",
-                                 lambda: set_bot_config(self.bot_profile, "some key", 'x' * (settings.BOT_CONFIG_SIZE_LIMIT-8+1)))
-        set_bot_config(self.bot_profile, "some key", 'x' * (settings.BOT_CONFIG_SIZE_LIMIT-20))
+        set_bot_config(self.bot_profile, "some key", 'x' * (settings.BOT_CONFIG_SIZE_LIMIT - 8))
+        self.assertRaisesMessage(
+            ConfigError,
+            "Cannot store configuration. Request would require 101 characters. "
+            "The current configuration size limit is 100 characters.",
+            lambda: set_bot_config(
+                self.bot_profile, "some key", 'x' * (settings.BOT_CONFIG_SIZE_LIMIT - 8 + 1)
+            ),
+        )
+        set_bot_config(self.bot_profile, "some key", 'x' * (settings.BOT_CONFIG_SIZE_LIMIT - 20))
         set_bot_config(self.bot_profile, "another key", 'x')
-        self.assertRaisesMessage(ConfigError,
-                                 "Cannot store configuration. Request would require 116 characters. "
-                                 "The current configuration size limit is 100 characters.",
-                                 lambda: set_bot_config(self.bot_profile, "yet another key", 'x'))
+        self.assertRaisesMessage(
+            ConfigError,
+            "Cannot store configuration. Request would require 116 characters. "
+            "The current configuration size limit is 100 characters.",
+            lambda: set_bot_config(self.bot_profile, "yet another key", 'x'),
+        )
 
     def test_load_bot_config_template(self) -> None:
         bot_config = load_bot_config_template('giphy')
@@ -381,7 +403,9 @@ class TestServiceBotConfigHandler(ZulipTestCase):
         self.assertEqual(len(bot_config), 0)
 
     def test_bot_send_pm_with_empty_recipients_list(self) -> None:
-        with self.assertRaisesRegex(EmbeddedBotEmptyRecipientsList, 'Message must have recipients!'):
+        with self.assertRaisesRegex(
+            EmbeddedBotEmptyRecipientsList, 'Message must have recipients!'
+        ):
             self.bot_handler.send_message(message={'type': 'private', 'to': []})
 
 
@@ -394,25 +418,30 @@ def for_all_bot_types(test_func: Callable[..., None]) -> Callable[..., None]:
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
             test_func(*args, **kwargs)
+
     return _wrapped
 
-class TestServiceBotEventTriggers(ZulipTestCase):
 
+class TestServiceBotEventTriggers(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")
-        self.bot_profile = do_create_user(email="foo-bot@zulip.com",
-                                          password="test",
-                                          realm=get_realm("zulip"),
-                                          full_name="FooBot",
-                                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-                                          bot_owner=self.user_profile)
-        self.second_bot_profile = do_create_user(email="bar-bot@zulip.com",
-                                                 password="test",
-                                                 realm=get_realm("zulip"),
-                                                 full_name="BarBot",
-                                                 bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-                                                 bot_owner=self.user_profile)
+        self.bot_profile = do_create_user(
+            email="foo-bot@zulip.com",
+            password="test",
+            realm=get_realm("zulip"),
+            full_name="FooBot",
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            bot_owner=self.user_profile,
+        )
+        self.second_bot_profile = do_create_user(
+            email="bar-bot@zulip.com",
+            password="test",
+            realm=get_realm("zulip"),
+            full_name="BarBot",
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            bot_owner=self.user_profile,
+        )
 
     @for_all_bot_types
     @patch_queue_publish('zerver.lib.actions.queue_json_publish')
@@ -435,32 +464,33 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.assertEqual(trigger_event["message"]["type"], message_type)
             self.assertEqual(trigger_event['trigger'], trigger)
             self.assertEqual(trigger_event['user_profile_id'], self.bot_profile.id)
+
         mock_queue_json_publish.side_effect = check_values_passed
 
-        self.send_stream_message(
-            self.user_profile,
-            'Denmark',
-            content)
+        self.send_stream_message(self.user_profile, 'Denmark', content)
         self.assertTrue(mock_queue_json_publish.called)
 
     @patch_queue_publish('zerver.lib.actions.queue_json_publish')
-    def test_no_trigger_on_stream_message_without_mention(self, mock_queue_json_publish: mock.Mock) -> None:
+    def test_no_trigger_on_stream_message_without_mention(
+        self, mock_queue_json_publish: mock.Mock
+    ) -> None:
         sender = self.user_profile
         self.send_stream_message(sender, "Denmark")
         self.assertFalse(mock_queue_json_publish.called)
 
     @for_all_bot_types
     @patch_queue_publish('zerver.lib.actions.queue_json_publish')
-    def test_no_trigger_on_stream_mention_from_bot(self, mock_queue_json_publish: mock.Mock) -> None:
-        self.send_stream_message(
-            self.second_bot_profile,
-            'Denmark',
-            '@**FooBot** foo bar!!!')
+    def test_no_trigger_on_stream_mention_from_bot(
+        self, mock_queue_json_publish: mock.Mock
+    ) -> None:
+        self.send_stream_message(self.second_bot_profile, 'Denmark', '@**FooBot** foo bar!!!')
         self.assertFalse(mock_queue_json_publish.called)
 
     @for_all_bot_types
     @patch_queue_publish('zerver.lib.actions.queue_json_publish')
-    def test_trigger_on_personal_message_from_user(self, mock_queue_json_publish: mock.Mock) -> None:
+    def test_trigger_on_personal_message_from_user(
+        self, mock_queue_json_publish: mock.Mock
+    ) -> None:
         sender = self.user_profile
         recipient = self.bot_profile
 
@@ -480,6 +510,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             ]
             self.assertTrue(sender.email in display_recipients)
             self.assertTrue(recipient.email in display_recipients)
+
         mock_queue_json_publish.side_effect = check_values_passed
 
         self.send_personal_message(sender, recipient, 'test')
@@ -487,7 +518,9 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
     @for_all_bot_types
     @patch_queue_publish('zerver.lib.actions.queue_json_publish')
-    def test_no_trigger_on_personal_message_from_bot(self, mock_queue_json_publish: mock.Mock) -> None:
+    def test_no_trigger_on_personal_message_from_bot(
+        self, mock_queue_json_publish: mock.Mock
+    ) -> None:
         sender = self.second_bot_profile
         recipient = self.bot_profile
         self.send_personal_message(sender, recipient)
@@ -515,6 +548,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.assertEqual(trigger_event["trigger"], "private_message")
             self.assertEqual(trigger_event["message"]["sender_email"], sender.email)
             self.assertEqual(trigger_event["message"]["type"], 'private')
+
         mock_queue_json_publish.side_effect = check_values_passed
 
         self.send_huddle_message(sender, recipients, 'test')
@@ -522,7 +556,9 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
     @for_all_bot_types
     @patch_queue_publish('zerver.lib.actions.queue_json_publish')
-    def test_no_trigger_on_huddle_message_from_bot(self, mock_queue_json_publish: mock.Mock) -> None:
+    def test_no_trigger_on_huddle_message_from_bot(
+        self, mock_queue_json_publish: mock.Mock
+    ) -> None:
         sender = self.second_bot_profile
         recipients = [self.user_profile, self.bot_profile]
         self.send_huddle_message(sender, recipients)

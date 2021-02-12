@@ -20,8 +20,8 @@ def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
 
     return None, None
 
-def get_extra_data_from_widget_type(content: str,
-                                    widget_type: Optional[str]) -> Any:
+
+def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) -> Any:
     if widget_type == 'poll':
         # This is used to extract the question from the poll command.
         # The command '/poll question' will pre-set the question in the poll
@@ -43,11 +43,12 @@ def get_extra_data_from_widget_type(content: str,
         return extra_data
     return None
 
+
 def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
-    '''
+    """
     This code works with the webapp; mobile and other
     clients should also start supporting this soon.
-    '''
+    """
     message_content = send_request.message.content
     sender_id = send_request.message.sender_id
     message_id = send_request.message.id

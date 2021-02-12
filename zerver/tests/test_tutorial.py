@@ -40,13 +40,15 @@ class TutorialTests(ZulipTestCase):
         self.login_user(user)
         self.send_personal_message(user, bot, content)
         user_messages = message_stream_count(user)
-        expected_response = ("Congratulations on your first reply! :tada:\n\n"
-                             "Feel free to continue using this space to practice your new messaging "
-                             "skills. Or, try clicking on some of the stream names to your left!")
+        expected_response = (
+            "Congratulations on your first reply! :tada:\n\n"
+            "Feel free to continue using this space to practice your new messaging "
+            "skills. Or, try clicking on some of the stream names to your left!"
+        )
         self.assertEqual(most_recent_message(user).content, expected_response)
         # Welcome bot shouldn't respond to further PMs.
         self.send_personal_message(user, bot, content)
-        self.assertEqual(message_stream_count(user), user_messages+1)
+        self.assertEqual(message_stream_count(user), user_messages + 1)
 
     def test_no_response_to_group_pm(self) -> None:
         user1 = self.example_user('hamlet')
@@ -59,4 +61,4 @@ class TutorialTests(ZulipTestCase):
         self.assertEqual(most_recent_message(user1).content, content)
         # Welcome bot should still respond to initial PM after group PM.
         self.send_personal_message(user1, bot, content)
-        self.assertEqual(message_stream_count(user1), user1_messages+2)
+        self.assertEqual(message_stream_count(user1), user1_messages + 2)

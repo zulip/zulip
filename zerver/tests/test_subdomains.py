@@ -8,23 +8,28 @@ from zerver.models import Realm
 
 class SubdomainsTest(ZulipTestCase):
     def test_get_subdomain(self) -> None:
-
         def request_mock(host: str) -> Any:
             request = mock.Mock(spec=['get_host'])
             request.attach_mock(mock.Mock(return_value=host), 'get_host')
             return request
 
-        def test(expected: str, host: str, *, plusport: bool=True,
-                 external_host: str='example.org',
-                 realm_hosts: Mapping[str, str]={},
-                 root_aliases: Sequence[str]=[]) -> None:
-            with self.settings(EXTERNAL_HOST=external_host,
-                               REALM_HOSTS=realm_hosts,
-                               ROOT_SUBDOMAIN_ALIASES=root_aliases):
+        def test(
+            expected: str,
+            host: str,
+            *,
+            plusport: bool = True,
+            external_host: str = 'example.org',
+            realm_hosts: Mapping[str, str] = {},
+            root_aliases: Sequence[str] = [],
+        ) -> None:
+            with self.settings(
+                EXTERNAL_HOST=external_host,
+                REALM_HOSTS=realm_hosts,
+                ROOT_SUBDOMAIN_ALIASES=root_aliases,
+            ):
                 self.assertEqual(get_subdomain(request_mock(host)), expected)
                 if plusport and ':' not in host:
-                    self.assertEqual(get_subdomain(request_mock(host + ':443')),
-                                     expected)
+                    self.assertEqual(get_subdomain(request_mock(host + ':443')), expected)
 
         ROOT = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
 

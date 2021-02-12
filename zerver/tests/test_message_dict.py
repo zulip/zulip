@@ -26,7 +26,7 @@ from zerver.models import (
 
 class MessageDictTest(ZulipTestCase):
     def test_both_codepaths(self) -> None:
-        '''
+        """
         We have two different codepaths that
         extract a particular shape of dictionary
         for messages to send to clients:
@@ -67,7 +67,7 @@ class MessageDictTest(ZulipTestCase):
 
         This test simply verifies that the two codepaths
         ultimately provide the same result.
-        '''
+        """
 
         def reload_message(msg_id: int) -> Message:
             # Get a clean copy of the message, and
@@ -77,9 +77,8 @@ class MessageDictTest(ZulipTestCase):
             return msg
 
         def get_send_message_payload(
-                msg_id: int,
-                apply_markdown: bool,
-                client_gravatar: bool) -> Dict[str, Any]:
+            msg_id: int, apply_markdown: bool, client_gravatar: bool
+        ) -> Dict[str, Any]:
             msg = reload_message(msg_id)
             wide_dict = MessageDict.wide_dict(msg)
 
@@ -91,9 +90,8 @@ class MessageDictTest(ZulipTestCase):
             return narrow_dict
 
         def get_fetch_payload(
-                msg_id: int,
-                apply_markdown: bool,
-                client_gravatar: bool) -> Dict[str, Any]:
+            msg_id: int, apply_markdown: bool, client_gravatar: bool
+        ) -> Dict[str, Any]:
             msg = reload_message(msg_id)
             unhydrated_dict = MessageDict.to_dict_uncached_helper([msg])[0]
             # The next step mutates the dict in place
@@ -168,8 +166,9 @@ class MessageDictTest(ZulipTestCase):
                 message.save()
                 ids.append(message.id)
 
-                Reaction.objects.create(user_profile=sender, message=message,
-                                        emoji_name='simple_smile')
+                Reaction.objects.create(
+                    user_profile=sender, message=message, emoji_name='simple_smile'
+                )
 
         num_ids = len(ids)
         self.assertTrue(num_ids >= 600)
@@ -178,10 +177,7 @@ class MessageDictTest(ZulipTestCase):
         with queries_captured() as queries:
             rows = list(MessageDict.get_raw_db_rows(ids))
 
-            objs = [
-                MessageDict.build_dict_from_raw_db_row(row)
-                for row in rows
-            ]
+            objs = [MessageDict.build_dict_from_raw_db_row(row) for row in rows]
             MessageDict.post_process_dicts(objs, apply_markdown=False, client_gravatar=False)
 
         self.assert_length(queries, 7)
@@ -238,7 +234,9 @@ class MessageDictTest(ZulipTestCase):
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
         row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row)
-        error_content = '<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
+        error_content = (
+            '<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
+        )
         self.assertEqual(dct['rendered_content'], error_content)
 
     def test_topic_links_use_stream_realm(self) -> None:
@@ -251,16 +249,18 @@ class MessageDictTest(ZulipTestCase):
         url = 'https://trac.example.com/ticket/123'
         topic_name = 'test #123'
 
-        realm_filter = RealmFilter(realm=zulip_realm,
-                                   pattern=r"#(?P<id>[0-9]{2,8})",
-                                   url_format_string=url_format_string)
+        realm_filter = RealmFilter(
+            realm=zulip_realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
+        )
         self.assertEqual(
             realm_filter.__str__(),
-            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>')
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>',
+        )
 
         def get_message(sender: UserProfile) -> Message:
-            msg_id = self.send_stream_message(sender, 'Denmark', 'hello world', topic_name,
-                                              zulip_realm)
+            msg_id = self.send_stream_message(
+                sender, 'Denmark', 'hello world', topic_name, zulip_realm
+            )
             return Message.objects.get(id=msg_id)
 
         def assert_topic_links(links: List[str], msg: Message) -> None:
@@ -294,35 +294,39 @@ class MessageDictTest(ZulipTestCase):
         message.save()
 
         reaction = Reaction.objects.create(
-            message=message, user_profile=sender,
-            emoji_name='simple_smile')
+            message=message, user_profile=sender, emoji_name='simple_smile'
+        )
         row = MessageDict.get_raw_db_rows([message.id])[0]
         msg_dict = MessageDict.build_dict_from_raw_db_row(row)
-        self.assertEqual(msg_dict['reactions'][0]['emoji_name'],
-                         reaction.emoji_name)
+        self.assertEqual(msg_dict['reactions'][0]['emoji_name'], reaction.emoji_name)
         self.assertEqual(msg_dict['reactions'][0]['user_id'], sender.id)
-        self.assertEqual(msg_dict['reactions'][0]['user']['id'],
-                         sender.id)
-        self.assertEqual(msg_dict['reactions'][0]['user']['email'],
-                         sender.email)
-        self.assertEqual(msg_dict['reactions'][0]['user']['full_name'],
-                         sender.full_name)
+        self.assertEqual(msg_dict['reactions'][0]['user']['id'], sender.id)
+        self.assertEqual(msg_dict['reactions'][0]['user']['email'], sender.email)
+        self.assertEqual(msg_dict['reactions'][0]['user']['full_name'], sender.full_name)
 
     def test_missing_anchor(self) -> None:
         self.login('hamlet')
         result = self.client_get(
-            "/json/messages", {"use_first_unread_anchor": "false", "num_before": "1", "num_after": "1"})
+            "/json/messages",
+            {"use_first_unread_anchor": "false", "num_before": "1", "num_after": "1"},
+        )
 
-        self.assert_json_error(
-            result, "Missing 'anchor' argument.")
+        self.assert_json_error(result, "Missing 'anchor' argument.")
 
     def test_invalid_anchor(self) -> None:
         self.login('hamlet')
         result = self.client_get(
-            "/json/messages", {"use_first_unread_anchor": "false", "num_before": "1", "num_after": "1", "anchor": "chocolate"})
+            "/json/messages",
+            {
+                "use_first_unread_anchor": "false",
+                "num_before": "1",
+                "num_after": "1",
+                "anchor": "chocolate",
+            },
+        )
 
-        self.assert_json_error(
-            result, "Invalid anchor")
+        self.assert_json_error(result, "Invalid anchor")
+
 
 class MessageHydrationTest(ZulipTestCase):
     def test_hydrate_stream_recipient_info(self) -> None:
@@ -473,9 +477,13 @@ class MessageHydrationTest(ZulipTestCase):
         # Make sure the email is up-to-date.
         self.assertEqual(cordelia_display_recipient['email'], cordelia_new_email)
 
+
 class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
-    def _verify_display_recipient(self, display_recipient: DisplayRecipientT,
-                                  expected_recipient_objects: Union[Stream, List[UserProfile]]) -> None:
+    def _verify_display_recipient(
+        self,
+        display_recipient: DisplayRecipientT,
+        expected_recipient_objects: Union[Stream, List[UserProfile]],
+    ) -> None:
         if isinstance(expected_recipient_objects, Stream):
             self.assertEqual(display_recipient, expected_recipient_objects.name)
 
@@ -526,8 +534,12 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             allow_edit_history=False,
         )
 
-        self._verify_display_recipient(messages[0]['display_recipient'], get_stream("Verona", cordelia.realm))
-        self._verify_display_recipient(messages[1]['display_recipient'], get_stream("Denmark", cordelia.realm))
+        self._verify_display_recipient(
+            messages[0]['display_recipient'], get_stream("Verona", cordelia.realm)
+        )
+        self._verify_display_recipient(
+            messages[1]['display_recipient'], get_stream("Denmark", cordelia.realm)
+        )
 
     def test_display_recipient_huddle(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -548,8 +560,12 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             allow_edit_history=False,
         )
 
-        self._verify_display_recipient(messages[0]['display_recipient'], [hamlet, cordelia, othello])
-        self._verify_display_recipient(messages[1]['display_recipient'], [hamlet, cordelia, othello, iago])
+        self._verify_display_recipient(
+            messages[0]['display_recipient'], [hamlet, cordelia, othello]
+        )
+        self._verify_display_recipient(
+            messages[1]['display_recipient'], [hamlet, cordelia, othello, iago]
+        )
 
     def test_display_recipient_various_types(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -574,12 +590,21 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             allow_edit_history=False,
         )
 
-        self._verify_display_recipient(messages[0]['display_recipient'], [hamlet, cordelia, othello])
-        self._verify_display_recipient(messages[1]['display_recipient'], get_stream("Verona", hamlet.realm))
+        self._verify_display_recipient(
+            messages[0]['display_recipient'], [hamlet, cordelia, othello]
+        )
+        self._verify_display_recipient(
+            messages[1]['display_recipient'], get_stream("Verona", hamlet.realm)
+        )
         self._verify_display_recipient(messages[2]['display_recipient'], [hamlet, cordelia])
-        self._verify_display_recipient(messages[3]['display_recipient'], get_stream("Denmark", hamlet.realm))
-        self._verify_display_recipient(messages[4]['display_recipient'], [hamlet, cordelia, othello, iago])
+        self._verify_display_recipient(
+            messages[3]['display_recipient'], get_stream("Denmark", hamlet.realm)
+        )
+        self._verify_display_recipient(
+            messages[4]['display_recipient'], [hamlet, cordelia, othello, iago]
+        )
         self._verify_display_recipient(messages[5]['display_recipient'], [cordelia, othello])
+
 
 class SewMessageAndReactionTest(ZulipTestCase):
     def test_sew_messages_and_reaction(self) -> None:
@@ -606,17 +631,14 @@ class SewMessageAndReactionTest(ZulipTestCase):
                 message.set_topic_name('whatever')
                 message.save()
                 needed_ids.append(message.id)
-                reaction = Reaction(user_profile=sender, message=message,
-                                    emoji_name='simple_smile')
+                reaction = Reaction(user_profile=sender, message=message, emoji_name='simple_smile')
                 reaction.save()
 
-        messages = Message.objects.filter(id__in=needed_ids).values(
-            *['id', 'content'])
+        messages = Message.objects.filter(id__in=needed_ids).values(*['id', 'content'])
         reactions = Reaction.get_raw_db_rows(needed_ids)
         tied_data = sew_messages_and_reactions(messages, reactions)
         for data in tied_data:
             self.assertEqual(len(data['reactions']), 1)
-            self.assertEqual(data['reactions'][0]['emoji_name'],
-                             'simple_smile')
+            self.assertEqual(data['reactions'][0]['emoji_name'], 'simple_smile')
             self.assertTrue(data['id'])
             self.assertTrue(data['content'])

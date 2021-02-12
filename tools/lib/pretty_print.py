@@ -37,27 +37,47 @@ def pretty_print_html(html: str, num_spaces: int = 4) -> str:
     # we proceed, we will push/pop info dictionaries on/off a stack.
     for token in tokens:
 
-        if token.kind in ('html_start', 'handlebars_start', 'handlebars_singleton',
-                          'html_singleton', 'django_start',
-                          'jinja2_whitespace_stripped_type2_start',
-                          'jinja2_whitespace_stripped_start',) and stack[-1]['tag'] != 'pre':
+        if (
+            token.kind
+            in (
+                'html_start',
+                'handlebars_start',
+                'handlebars_singleton',
+                'html_singleton',
+                'django_start',
+                'jinja2_whitespace_stripped_type2_start',
+                'jinja2_whitespace_stripped_start',
+            )
+            and stack[-1]['tag'] != 'pre'
+        ):
             # An HTML start tag should only cause a new indent if we
             # are on a new line.
-            if (token.tag not in ('extends', 'include', 'else', 'elif') and
-                    (is_django_block_tag(token.tag) or
-                        token.kind != 'django_start')):
+            if token.tag not in ('extends', 'include', 'else', 'elif') and (
+                is_django_block_tag(token.tag) or token.kind != 'django_start'
+            ):
                 is_block = token.line > stack[-1]['line']
 
                 if is_block:
-                    if (((token.kind == 'handlebars_start' and
-                            stack[-1]['token_kind'] == 'handlebars_start') or
-                            (token.kind in {'django_start',
-                                            'jinja2_whitespace_stripped_type2_start',
-                                            'jinja2_whitespace_stripped_start'} and
-                             stack[-1]['token_kind'] in {'django_start',
-                                                         'jinja2_whitespace_stripped_type2_start',
-                                                         'jinja2_whitespace_stripped_start'})) and
-                            not stack[-1]['indenting']):
+                    if (
+                        (
+                            token.kind == 'handlebars_start'
+                            and stack[-1]['token_kind'] == 'handlebars_start'
+                        )
+                        or (
+                            token.kind
+                            in {
+                                'django_start',
+                                'jinja2_whitespace_stripped_type2_start',
+                                'jinja2_whitespace_stripped_start',
+                            }
+                            and stack[-1]['token_kind']
+                            in {
+                                'django_start',
+                                'jinja2_whitespace_stripped_type2_start',
+                                'jinja2_whitespace_stripped_start',
+                            }
+                        )
+                    ) and not stack[-1]['indenting']:
                         info = stack.pop()
                         info['depth'] = info['depth'] + 1
                         info['indenting'] = True
@@ -66,7 +86,7 @@ def pretty_print_html(html: str, num_spaces: int = 4) -> str:
                     new_depth = stack[-1]['depth'] + 1
                     extra_indent = stack[-1]['extra_indent']
                     line = lines[token.line - 1]
-                    adjustment = len(line)-len(line.lstrip()) + 1
+                    adjustment = len(line) - len(line.lstrip()) + 1
                     offset = (1 + extra_indent + new_depth * num_spaces) - adjustment
                     info = dict(
                         block=True,
@@ -98,10 +118,18 @@ def pretty_print_html(html: str, num_spaces: int = 4) -> str:
                         ignore_lines=[],
                     )
                 stack.append(info)
-        elif (token.kind in ('html_end', 'handlebars_end', 'html_singleton_end',
-                             'django_end', 'handlebars_singleton_end',
-                             'jinja2_whitespace_stripped_end',) and
-              (stack[-1]['tag'] != 'pre' or token.tag == 'pre')):
+        elif (
+            token.kind
+            in (
+                'html_end',
+                'handlebars_end',
+                'html_singleton_end',
+                'django_end',
+                'handlebars_singleton_end',
+                'jinja2_whitespace_stripped_end',
+            )
+            and (stack[-1]['tag'] != 'pre' or token.tag == 'pre')
+        ):
             info = stack.pop()
             if info['block']:
                 # We are at the end of an indentation block.  We
@@ -118,17 +146,19 @@ def pretty_print_html(html: str, num_spaces: int = 4) -> str:
                 else:
                     offsets[start_line] = info['offset']
                     line = lines[token.line - 1]
-                    adjustment = len(line)-len(line.lstrip()) + 1
+                    adjustment = len(line) - len(line.lstrip()) + 1
                     if adjustment == token.col and token.kind != 'html_singleton_end':
-                        offsets[end_line] = (info['offset'] +
-                                             info['adjustment'] -
-                                             adjustment +
-                                             info['extra_indent'] -
-                                             info['extra_indent_prev'])
-                    elif (start_line + info['line_span'] - 1 == end_line and
-                            info['line_span'] > 1):
-                        offsets[end_line] = (1 + info['extra_indent'] +
-                                             (info['depth'] + 1) * num_spaces) - adjustment
+                        offsets[end_line] = (
+                            info['offset']
+                            + info['adjustment']
+                            - adjustment
+                            + info['extra_indent']
+                            - info['extra_indent_prev']
+                        )
+                    elif start_line + info['line_span'] - 1 == end_line and info['line_span'] > 1:
+                        offsets[end_line] = (
+                            1 + info['extra_indent'] + (info['depth'] + 1) * num_spaces
+                        ) - adjustment
                         # We would like singleton tags and tags which spread over
                         # multiple lines to have 2 space indentation.
                         offsets[end_line] -= 2
@@ -141,22 +171,26 @@ def pretty_print_html(html: str, num_spaces: int = 4) -> str:
                         if line_num not in offsets:
                             line = lines[line_num - 1]
                             new_depth = info['depth'] + 1
-                            if (line.lstrip().startswith('{{else}}') or
-                                    line.lstrip().startswith('{% else %}') or
-                                    line.lstrip().startswith('{% elif')):
+                            if (
+                                line.lstrip().startswith('{{else}}')
+                                or line.lstrip().startswith('{% else %}')
+                                or line.lstrip().startswith('{% elif')
+                            ):
                                 new_depth = info['actual_depth']
                             extra_indent = info['extra_indent']
-                            adjustment = len(line)-len(line.lstrip()) + 1
+                            adjustment = len(line) - len(line.lstrip()) + 1
                             offset = (1 + extra_indent + new_depth * num_spaces) - adjustment
                             if line_num <= start_line + info['line_span'] - 1:
                                 # We would like singleton tags and tags which spread over
                                 # multiple lines to have 2 space indentation.
                                 offset -= 2
                             offsets[line_num] = offset
-                        elif (token.kind in ('handlebars_end', 'django_end') and
-                                info['indenting'] and
-                                line_num < info['adjust_offset_until'] and
-                                line_num not in info['ignore_lines']):
+                        elif (
+                            token.kind in ('handlebars_end', 'django_end')
+                            and info['indenting']
+                            and line_num < info['adjust_offset_until']
+                            and line_num not in info['ignore_lines']
+                        ):
                             offsets[line_num] += num_spaces
                 elif token.tag != 'pre':
                     for line_num in range(start_line + 1, end_line):
@@ -181,7 +215,7 @@ def pretty_print_html(html: str, num_spaces: int = 4) -> str:
             if offset > 0:
                 pretty_line = (' ' * offset) + pretty_line
             elif offset < 0:
-                pretty_line = pretty_line[-1 * offset:]
+                pretty_line = pretty_line[-1 * offset :]
                 assert line.strip() == pretty_line.strip()
         formatted_lines.append(pretty_line)
 
@@ -199,8 +233,11 @@ def validate_indent_html(fn: str, fix: bool) -> int:
                 f.write(phtml)
             # Since we successfully fixed the issues, we exit with status 0
             return 0
-        print('Invalid Indentation detected in file: '
-              f'{fn}\nDiff for the file against expected indented file:', flush=True)
+        print(
+            'Invalid Indentation detected in file: '
+            f'{fn}\nDiff for the file against expected indented file:',
+            flush=True,
+        )
         subprocess.run(['diff', fn, '-'], input=phtml, universal_newlines=True)
         print()
         print("This problem can be fixed with the `--fix` option.")

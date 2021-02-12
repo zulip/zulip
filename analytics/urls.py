@@ -22,21 +22,17 @@ from zerver.lib.rest import rest_path
 i18n_urlpatterns = [
     # Server admin (user_profile.is_staff) visible stats pages
     path('activity', get_activity),
-    path('activity/support', support,
-         name='support'),
+    path('activity/support', support, name='support'),
     path('realm_activity/<realm_str>/', get_realm_activity),
     path('user_activity/<email>/', get_user_activity),
-
     path('stats/realm/<realm_str>/', stats_for_realm),
     path('stats/installation', stats_for_installation),
-    path('stats/remote/<int:remote_server_id>/installation',
-         stats_for_remote_installation),
-    path('stats/remote/<int:remote_server_id>/realm/<int:remote_realm_id>/',
-         stats_for_remote_realm),
-
+    path('stats/remote/<int:remote_server_id>/installation', stats_for_remote_installation),
+    path(
+        'stats/remote/<int:remote_server_id>/realm/<int:remote_realm_id>/', stats_for_remote_realm
+    ),
     # User-visible stats page
-    path('stats', stats,
-         name='stats'),
+    path('stats', stats, name='stats'),
 ]
 
 # These endpoints are a part of the API (V1), which uses:
@@ -49,16 +45,17 @@ i18n_urlpatterns = [
 # All of these paths are accessed by either a /json or /api prefix
 v1_api_and_json_patterns = [
     # get data for the graphs at /stats
-    rest_path('analytics/chart_data',
-              GET=get_chart_data),
-    rest_path('analytics/chart_data/realm/<realm_str>',
-              GET=get_chart_data_for_realm),
-    rest_path('analytics/chart_data/installation',
-              GET=get_chart_data_for_installation),
-    rest_path('analytics/chart_data/remote/<int:remote_server_id>/installation',
-              GET=get_chart_data_for_remote_installation),
-    rest_path('analytics/chart_data/remote/<int:remote_server_id>/realm/<int:remote_realm_id>',
-              GET=get_chart_data_for_remote_realm),
+    rest_path('analytics/chart_data', GET=get_chart_data),
+    rest_path('analytics/chart_data/realm/<realm_str>', GET=get_chart_data_for_realm),
+    rest_path('analytics/chart_data/installation', GET=get_chart_data_for_installation),
+    rest_path(
+        'analytics/chart_data/remote/<int:remote_server_id>/installation',
+        GET=get_chart_data_for_remote_installation,
+    ),
+    rest_path(
+        'analytics/chart_data/remote/<int:remote_server_id>/realm/<int:remote_realm_id>',
+        GET=get_chart_data_for_remote_realm,
+    ),
 ]
 
 i18n_urlpatterns += [

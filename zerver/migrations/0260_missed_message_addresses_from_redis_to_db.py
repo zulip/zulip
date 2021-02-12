@@ -12,7 +12,10 @@ from zerver.lib.redis_utils import get_redis_client
 def generate_missed_message_token() -> str:
     return 'mm' + secrets.token_hex(16)
 
-def move_missed_message_addresses_to_database(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+
+def move_missed_message_addresses_to_database(
+    apps: StateApps, schema_editor: DatabaseSchemaEditor
+) -> None:
     redis_client = get_redis_client()
     MissedMessageEmailAddress = apps.get_model('zerver', 'MissedMessageEmailAddress')
     UserProfile = apps.get_model('zerver', 'UserProfile')
@@ -50,16 +53,18 @@ def move_missed_message_addresses_to_database(apps: StateApps, schema_editor: Da
             recipient = Recipient.objects.get(id=recipient_id)
 
             if recipient.type == RECIPIENT_STREAM:
-                message = Message.objects.filter(subject__iexact=topic_name,
-                                                 recipient_id=recipient.id).latest('id')
+                message = Message.objects.filter(
+                    subject__iexact=topic_name, recipient_id=recipient.id
+                ).latest('id')
             elif recipient.type == RECIPIENT_PERSONAL:
                 # Tie to the latest PM from the sender to this user;
                 # we expect at least one existed because it generated
                 # this missed-message email, so we can skip the
                 # normally required additioanl check for messages we
                 # ourselves sent to the target user.
-                message = Message.objects.filter(recipient_id=user_profile.recipient_id,
-                                                 sender_id=recipient.type_id).latest('id')
+                message = Message.objects.filter(
+                    recipient_id=user_profile.recipient_id, sender_id=recipient.type_id
+                ).latest('id')
             else:
                 message = Message.objects.filter(recipient_id=recipient.id).latest('id')
         except ObjectDoesNotExist:
@@ -75,12 +80,13 @@ def move_missed_message_addresses_to_database(apps: StateApps, schema_editor: Da
         # the address will take longer to expire than it would have in
         # Redis, but this small issue is probably worth the simplicity
         # of not having to figure out the precise timestamp.
-        MissedMessageEmailAddress.objects.create(message=message,
-                                                 user_profile=user_profile,
-                                                 email_token=generate_missed_message_token())
+        MissedMessageEmailAddress.objects.create(
+            message=message, user_profile=user_profile, email_token=generate_missed_message_token()
+        )
         # We successfully transferred this missed-message email's data
         # to the database, so this message can be deleted from Redis.
         redis_client.delete(key)
+
 
 class Migration(migrations.Migration):
     # Atomicity is not feasible here, since we're doing operations on Redis too.
@@ -93,7 +99,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(move_missed_message_addresses_to_database,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            move_missed_message_addresses_to_database,
+            reverse_code=migrations.RunPython.noop,
+            elidable=True,
+        ),
     ]

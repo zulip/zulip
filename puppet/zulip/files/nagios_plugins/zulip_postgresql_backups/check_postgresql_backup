@@ -12,13 +12,18 @@ states = {
     "UNKNOWN": 3,
 }
 
+
 def report(state: str, msg: str) -> None:
     print(f"{state}: {msg}")
     exit(states[state])
 
-if subprocess.check_output(['psql', '-v', 'ON_ERROR_STOP=1',
-                            'postgres', '-t', '-c',
-                            'SELECT pg_is_in_recovery()']).strip() != b'f':
+
+if (
+    subprocess.check_output(
+        ['psql', '-v', 'ON_ERROR_STOP=1', 'postgres', '-t', '-c', 'SELECT pg_is_in_recovery()']
+    ).strip()
+    != b'f'
+):
     report('OK', 'this is not the primary')
 
 try:

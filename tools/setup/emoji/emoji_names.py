@@ -114,7 +114,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # zip_it from https://mashable.com/2015/10/23/ios-9-1-emoji-guide/,
     # lips_sealed from https://emojipedia.org/zipper-mouth-face/, rest seemed
     # like reasonable additions
-    '1f910': {'canonical_name': 'silence', 'aliases': ['quiet', 'hush', 'zip_it', 'lips_are_sealed']},
+    '1f910': {
+        'canonical_name': 'silence',
+        'aliases': ['quiet', 'hush', 'zip_it', 'lips_are_sealed'],
+    },
     # queasy seemed like a natural addition
     '1f922': {'canonical_name': 'nauseated', 'aliases': ['queasy']},
     '1f927': {'canonical_name': 'sneezing', 'aliases': []},
@@ -123,14 +126,20 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # flu from https://mashable.com/2015/10/23/ios-9-1-emoji-guide/, sick from
     # https://emojipedia.org/face-with-thermometer/, face_with_thermometer so
     # it shows up in typeahead (thermometer taken by Objects/82)
-    '1f912': {'canonical_name': 'sick', 'aliases': ['flu', 'face_with_thermometer', 'ill', 'fever']},
+    '1f912': {
+        'canonical_name': 'sick',
+        'aliases': ['flu', 'face_with_thermometer', 'ill', 'fever'],
+    },
     # hurt and injured from https://beebom.com/emoji-meanings/. Chose hurt as
     # primary since I think it can cover a wider set of things (e.g. emotional
     # hurt)
     '1f915': {'canonical_name': 'hurt', 'aliases': ['head_bandage', 'injured']},
     # devil from https://emojipedia.org/smiling-face-with-horns/,
     # smiling_face_with_horns from gemoji/Unicode
-    '1f608': {'canonical_name': 'smiling_devil', 'aliases': ['smiling_imp', 'smiling_face_with_horns']},
+    '1f608': {
+        'canonical_name': 'smiling_devil',
+        'aliases': ['smiling_imp', 'smiling_face_with_horns'],
+    },
     # angry_devil from https://beebom.com/emoji-meanings/
     '1f47f': {'canonical_name': 'devil', 'aliases': ['imp', 'angry_devil']},
     '1f479': {'canonical_name': 'ogre', 'aliases': []},
@@ -141,7 +150,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f47b': {'canonical_name': 'ghost', 'aliases': ['boo', 'spooky', 'haunted']},
     '1f480': {'canonical_name': 'skull', 'aliases': []},
     # alternates seemed like reasonable additions
-    '2620': {'canonical_name': 'skull_and_crossbones', 'aliases': ['pirate', 'death', 'hazard', 'toxic', 'poison']},
+    '2620': {
+        'canonical_name': 'skull_and_crossbones',
+        'aliases': ['pirate', 'death', 'hazard', 'toxic', 'poison'],
+    },
     # ufo seemed like a natural addition
     '1f47d': {'canonical_name': 'alien', 'aliases': ['ufo']},
     '1f47e': {'canonical_name': 'space_invader', 'aliases': []},
@@ -195,7 +207,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f447': {'canonical_name': 'point_down', 'aliases': []},
     # People/114 is point_up. These seemed better than naming it point_up_2,
     # and point_of_information means it will come up in typeahead for 'point'
-    '261d': {'canonical_name': 'wait_one_second', 'aliases': ['point_of_information', 'asking_a_question']},
+    '261d': {
+        'canonical_name': 'wait_one_second',
+        'aliases': ['point_of_information', 'asking_a_question'],
+    },
     '270b': {'canonical_name': 'hand', 'aliases': ['raised_hand']},
     # seems like best emoji for stop, raised_back_of_hand doesn't seem that
     # useful
@@ -327,7 +342,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # safety and invincibility inspired by
     # https://mashable.com/2015/10/23/ios-9-1-emoji-guide/. hard_hat and
     # rescue_worker seem like good additions
-    '26d1': {'canonical_name': 'helmet', 'aliases': ['hard_hat', 'rescue_worker', 'safety_first', 'invincible']},
+    '26d1': {
+        'canonical_name': 'helmet',
+        'aliases': ['hard_hat', 'rescue_worker', 'safety_first', 'invincible'],
+    },
     # backpack from gemoji, dominates satchel on Google Trends
     '1f392': {'canonical_name': 'backpack', 'aliases': ['satchel']},
     '1f45d': {'canonical_name': 'pouch', 'aliases': []},
@@ -529,7 +547,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '26c5': {'canonical_name': 'partly_sunny', 'aliases': ['partly_cloudy']},
     '1f325': {'canonical_name': 'cloudy', 'aliases': []},
     # sunshowers seems like a more fun term
-    '1f326': {'canonical_name': 'sunshowers', 'aliases': ['sun_and_rain', 'partly_sunny_with_rain']},
+    '1f326': {
+        'canonical_name': 'sunshowers',
+        'aliases': ['sun_and_rain', 'partly_sunny_with_rain'],
+    },
     # pride and lgbtq seem like reasonable additions
     '1f308': {'canonical_name': 'rainbow', 'aliases': ['pride', 'lgbtq']},
     # overcast seems like a good addition
@@ -622,7 +643,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f354': {'canonical_name': 'hamburger', 'aliases': []},
     '1f35f': {'canonical_name': 'fries', 'aliases': []},
     # https://emojipedia.org/stuffed-flatbread/
-    '1f959': {'canonical_name': 'doner_kebab', 'aliases': ['shawarma', 'souvlaki', 'stuffed_flatbread']},
+    '1f959': {
+        'canonical_name': 'doner_kebab',
+        'aliases': ['shawarma', 'souvlaki', 'stuffed_flatbread'],
+    },
     '1f32e': {'canonical_name': 'taco', 'aliases': []},
     '1f32f': {'canonical_name': 'burrito', 'aliases': []},
     '1f957': {'canonical_name': 'salad', 'aliases': []},
@@ -689,7 +713,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # Seems like the best emoji for hungry and meal. fork_and_knife_and_plate
     # is from gemoji/Unicode, and I think is better than the shorter iamcal
     # version in this case. The rest just seemed like good additions.
-    '1f37d': {'canonical_name': 'hungry', 'aliases': ['meal', 'table_setting', 'fork_and_knife_with_plate', 'lets_eat']},
+    '1f37d': {
+        'canonical_name': 'hungry',
+        'aliases': ['meal', 'table_setting', 'fork_and_knife_with_plate', 'lets_eat'],
+    },
     # most people interested in this sport call it football
     '26bd': {'canonical_name': 'football', 'aliases': ['soccer']},
     '1f3c0': {'canonical_name': 'basketball', 'aliases': []},
@@ -831,7 +858,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # the iamcal names
     '1f69a': {'canonical_name': 'moving_truck', 'aliases': []},
     # see Places/11 for truck. Rest seem reasonable additions.
-    '1f69b': {'canonical_name': 'truck', 'aliases': ['tractor-trailer', 'big_rig', 'semi_truck', 'transport_truck']},
+    '1f69b': {
+        'canonical_name': 'truck',
+        'aliases': ['tractor-trailer', 'big_rig', 'semi_truck', 'transport_truck'],
+    },
     '1f69c': {'canonical_name': 'tractor', 'aliases': []},
     # kick_scooter and scooter seem better for Places/14 and Places /16 than
     # scooter and motor_scooter.
@@ -873,7 +903,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f687': {'canonical_name': 'subway', 'aliases': []},
     # all the glyphs of oncoming vehicles have names like oncoming_*. The
     # alternate names are to parallel the alternates to Places/27.
-    '1f68a': {'canonical_name': 'oncoming_tram', 'aliases': ['oncoming_streetcar', 'oncoming_trolley']},
+    '1f68a': {
+        'canonical_name': 'oncoming_tram',
+        'aliases': ['oncoming_streetcar', 'oncoming_trolley'],
+    },
     '1f689': {'canonical_name': 'station', 'aliases': []},
     '1f681': {'canonical_name': 'helicopter', 'aliases': []},
     '1f6e9': {'canonical_name': 'small_airplane', 'aliases': []},
@@ -1067,7 +1100,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f6e2': {'canonical_name': 'oil_drum', 'aliases': ['commodities']},
     # losing money from https://emojipedia.org/money-with-wings/,
     # easy_come_easy_go seems like a reasonable addition
-    '1f4b8': {'canonical_name': 'losing_money', 'aliases': ['easy_come_easy_go', 'money_with_wings']},
+    '1f4b8': {
+        'canonical_name': 'losing_money',
+        'aliases': ['easy_come_easy_go', 'money_with_wings'],
+    },
     # I think the _bills, _banknotes etc versions of these are arguably more
     # fun to use in chat, and certainly match the glyphs better
     '1f4b5': {'canonical_name': 'dollar_bills', 'aliases': []},
@@ -1130,9 +1166,15 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f511': {'canonical_name': 'key', 'aliases': []},
     # encrypted from https://www.iemoji.com/view/emoji/1081/objects/old-key,
     # secret from https://mashable.com/2015/10/23/ios-9-1-emoji-guide/
-    '1f5dd': {'canonical_name': 'secret', 'aliases': ['dungeon', 'old_key', 'encrypted', 'clue', 'hint']},
+    '1f5dd': {
+        'canonical_name': 'secret',
+        'aliases': ['dungeon', 'old_key', 'encrypted', 'clue', 'hint'],
+    },
     '1f6aa': {'canonical_name': 'door', 'aliases': []},
-    '1f6cb': {'canonical_name': 'living_room', 'aliases': ['furniture', 'couch_and_lamp', 'lifestyles']},
+    '1f6cb': {
+        'canonical_name': 'living_room',
+        'aliases': ['furniture', 'couch_and_lamp', 'lifestyles'],
+    },
     '1f6cf': {'canonical_name': 'bed', 'aliases': ['bedroom']},
     # guestrooms from iemoji, would add hotel but taken by Places/94
     '1f6cc': {'canonical_name': 'in_bed', 'aliases': ['accommodations', 'guestrooms']},
@@ -1226,8 +1268,14 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f50d': {'canonical_name': 'search', 'aliases': ['find', 'magnifying_glass']},
     # '1f50e': {'canonical_name': 'X', 'aliases': ['mag_right']},
     # https://emojipedia.org/lock-with-ink-pen/
-    '1f50f': {'canonical_name': 'privacy', 'aliases': ['key_signing', 'digital_security', 'protected']},
-    '1f510': {'canonical_name': 'secure', 'aliases': ['lock_with_key', 'safe', 'commitment', 'loyalty']},
+    '1f50f': {
+        'canonical_name': 'privacy',
+        'aliases': ['key_signing', 'digital_security', 'protected'],
+    },
+    '1f510': {
+        'canonical_name': 'secure',
+        'aliases': ['lock_with_key', 'safe', 'commitment', 'loyalty'],
+    },
     '1f512': {'canonical_name': 'locked', 'aliases': []},
     '1f513': {'canonical_name': 'unlocked', 'aliases': []},
     # seems the best glyph for love and love_you
@@ -1329,7 +1377,10 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     '1f506': {'canonical_name': 'brightness', 'aliases': ['high_brightness']},
     '303d': {'canonical_name': 'part_alternation', 'aliases': []},
     '26a0': {'canonical_name': 'warning', 'aliases': ['caution', 'danger']},
-    '1f6b8': {'canonical_name': 'children_crossing', 'aliases': ['school_crossing', 'drive_with_care']},
+    '1f6b8': {
+        'canonical_name': 'children_crossing',
+        'aliases': ['school_crossing', 'drive_with_care'],
+    },
     '1f531': {'canonical_name': 'trident', 'aliases': []},
     '269c': {'canonical_name': 'fleur_de_lis', 'aliases': []},
     '1f530': {'canonical_name': 'beginner', 'aliases': []},

@@ -23,36 +23,45 @@ def validate_token(token_str: str, kind: int) -> None:
         except Exception:
             raise JsonableError(_('Invalid APNS token'))
 
+
 @human_users_only
 @has_request_variables
-def add_apns_device_token(request: HttpRequest, user_profile: UserProfile,
-                          token: str=REQ(),
-                          appid: str=REQ(default=settings.ZULIP_IOS_APP_ID),
-                          ) -> HttpResponse:
+def add_apns_device_token(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    token: str = REQ(),
+    appid: str = REQ(default=settings.ZULIP_IOS_APP_ID),
+) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     add_push_device_token(user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)
     return json_success()
 
+
 @human_users_only
 @has_request_variables
-def add_android_reg_id(request: HttpRequest, user_profile: UserProfile,
-                       token: str=REQ()) -> HttpResponse:
+def add_android_reg_id(
+    request: HttpRequest, user_profile: UserProfile, token: str = REQ()
+) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
     add_push_device_token(user_profile, token, PushDeviceToken.GCM)
     return json_success()
 
+
 @human_users_only
 @has_request_variables
-def remove_apns_device_token(request: HttpRequest, user_profile: UserProfile,
-                             token: str=REQ()) -> HttpResponse:
+def remove_apns_device_token(
+    request: HttpRequest, user_profile: UserProfile, token: str = REQ()
+) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     remove_push_device_token(user_profile, token, PushDeviceToken.APNS)
     return json_success()
 
+
 @human_users_only
 @has_request_variables
-def remove_android_reg_id(request: HttpRequest, user_profile: UserProfile,
-                          token: str=REQ()) -> HttpResponse:
+def remove_android_reg_id(
+    request: HttpRequest, user_profile: UserProfile, token: str = REQ()
+) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
     remove_push_device_token(user_profile, token, PushDeviceToken.GCM)
     return json_success()

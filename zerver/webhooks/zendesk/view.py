@@ -10,14 +10,19 @@ from zerver.models import UserProfile
 
 def truncate(string: str, length: int) -> str:
     if len(string) > length:
-        string = string[:length-3] + '...'
+        string = string[: length - 3] + '...'
     return string
+
 
 @authenticated_rest_api_view(webhook_client_name="Zendesk")
 @has_request_variables
-def api_zendesk_webhook(request: HttpRequest, user_profile: UserProfile,
-                        ticket_title: str=REQ(), ticket_id: str=REQ(),
-                        message: str=REQ()) -> HttpResponse:
+def api_zendesk_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    ticket_title: str = REQ(),
+    ticket_id: str = REQ(),
+    message: str = REQ(),
+) -> HttpResponse:
     """
     Zendesk uses triggers with message templates. This webhook uses the
     ticket_id and ticket_title to create a subject. And passes with zendesk

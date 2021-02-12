@@ -17,6 +17,7 @@ def set_subdomain_of_default_realm(apps: StateApps, schema_editor: DatabaseSchem
             default_realm.subdomain = "zulip"
             default_realm.save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

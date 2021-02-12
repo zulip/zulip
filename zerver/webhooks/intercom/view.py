@@ -64,6 +64,7 @@ New user created:
 * **Email**: {email}
 """.strip()
 
+
 class MLStripper(HTMLParser):
     def __init__(self) -> None:
         self.reset()
@@ -77,10 +78,12 @@ class MLStripper(HTMLParser):
     def get_data(self) -> str:
         return ''.join(self.fed)
 
+
 def strip_tags(html: str) -> str:
     s = MLStripper()
     s.feed(html)
     return s.get_data()
+
 
 def get_topic_for_contacts(user: Dict[str, Any]) -> str:
     topic = "{type}: {name}".format(
@@ -90,15 +93,18 @@ def get_topic_for_contacts(user: Dict[str, Any]) -> str:
 
     return topic
 
+
 def get_company_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     body = COMPANY_CREATED.format(**payload['data']['item'])
     return ('Companies', body)
+
 
 def get_contact_added_email_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     user = payload['data']['item']
     body = CONTACT_EMAIL_ADDED.format(email=user['email'])
     topic = get_topic_for_contacts(user)
     return (topic, body)
+
 
 def get_contact_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     contact = payload['data']['item']
@@ -112,6 +118,7 @@ def get_contact_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     topic = get_topic_for_contacts(contact)
     return (topic, body)
 
+
 def get_contact_signed_up_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     contact = payload['data']['item']
     body = CONTACT_SIGNED_UP.format(
@@ -123,11 +130,13 @@ def get_contact_signed_up_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     topic = get_topic_for_contacts(contact)
     return (topic, body)
 
+
 def get_contact_tag_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     body = CONTACT_TAG_CREATED.format(**payload['data']['item']['tag'])
     contact = payload['data']['item']['contact']
     topic = get_topic_for_contacts(contact)
     return (topic, body)
+
 
 def get_contact_tag_deleted_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     body = CONTACT_TAG_DELETED.format(**payload['data']['item']['tag'])
@@ -135,15 +144,17 @@ def get_contact_tag_deleted_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     topic = get_topic_for_contacts(contact)
     return (topic, body)
 
+
 def get_conversation_admin_assigned_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     body = CONVERSATION_ADMIN_ASSIGNED.format(**payload['data']['item']['assignee'])
     user = payload['data']['item']['user']
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
+
 def get_conversation_admin_message(
-        payload: Dict[str, Any],
-        action: str,
+    payload: Dict[str, Any],
+    action: str,
 ) -> Tuple[str, str]:
     assignee = payload['data']['item']['assignee']
     user = payload['data']['item']['user']
@@ -154,9 +165,10 @@ def get_conversation_admin_message(
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
+
 def get_conversation_admin_reply_message(
-        payload: Dict[str, Any],
-        action: str,
+    payload: Dict[str, Any],
+    action: str,
 ) -> Tuple[str, str]:
     assignee = payload['data']['item']['assignee']
     user = payload['data']['item']['user']
@@ -170,8 +182,8 @@ def get_conversation_admin_reply_message(
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
-def get_conversation_admin_single_created_message(
-        payload: Dict[str, Any]) -> Tuple[str, str]:
+
+def get_conversation_admin_single_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     assignee = payload['data']['item']['assignee']
     user = payload['data']['item']['user']
     conversation_body = payload['data']['item']['conversation_message']['body']
@@ -183,6 +195,7 @@ def get_conversation_admin_single_created_message(
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
+
 def get_conversation_user_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     user = payload['data']['item']['user']
     conversation_body = payload['data']['item']['conversation_message']['body']
@@ -193,6 +206,7 @@ def get_conversation_user_created_message(payload: Dict[str, Any]) -> Tuple[str,
     )
     topic = get_topic_for_contacts(user)
     return (topic, body)
+
 
 def get_conversation_user_replied_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     user = payload['data']['item']['user']
@@ -206,10 +220,12 @@ def get_conversation_user_replied_message(payload: Dict[str, Any]) -> Tuple[str,
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
+
 def get_event_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     event = payload['data']['item']
     body = EVENT_CREATED.format(**event)
     return ('Events', body)
+
 
 def get_user_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     user = payload['data']['item']
@@ -217,10 +233,12 @@ def get_user_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
+
 def get_user_deleted_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     user = payload['data']['item']
     topic = get_topic_for_contacts(user)
     return (topic, 'User deleted.')
+
 
 def get_user_email_updated_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     user = payload['data']['item']
@@ -228,9 +246,10 @@ def get_user_email_updated_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
+
 def get_user_tagged_message(
-        payload: Dict[str, Any],
-        action: str,
+    payload: Dict[str, Any],
+    action: str,
 ) -> Tuple[str, str]:
     user = payload['data']['item']['user']
     tag = payload['data']['item']['tag']
@@ -241,11 +260,13 @@ def get_user_tagged_message(
     )
     return (topic, body)
 
+
 def get_user_unsubscribed_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     user = payload['data']['item']
     body = 'User unsubscribed from emails.'
     topic = get_topic_for_contacts(user)
     return (topic, body)
+
 
 EVENT_TO_FUNCTION_MAPPER = {
     'company.created': get_company_created_message,
@@ -259,8 +280,12 @@ EVENT_TO_FUNCTION_MAPPER = {
     'conversation.admin.opened': partial(get_conversation_admin_message, action='opened'),
     'conversation.admin.snoozed': partial(get_conversation_admin_message, action='snoozed'),
     'conversation.admin.unsnoozed': partial(get_conversation_admin_message, action='unsnoozed'),
-    'conversation.admin.replied': partial(get_conversation_admin_reply_message, action='replied to'),
-    'conversation.admin.noted': partial(get_conversation_admin_reply_message, action='added a note to'),
+    'conversation.admin.replied': partial(
+        get_conversation_admin_reply_message, action='replied to'
+    ),
+    'conversation.admin.noted': partial(
+        get_conversation_admin_reply_message, action='added a note to'
+    ),
     'conversation.admin.single.created': get_conversation_admin_single_created_message,
     'conversation.user.created': get_conversation_user_created_message,
     'conversation.user.replied': get_conversation_user_replied_message,
@@ -276,16 +301,21 @@ EVENT_TO_FUNCTION_MAPPER = {
     'visitor.signed_up': get_contact_signed_up_message,
 }
 
+
 def get_event_handler(event_type: str) -> Callable[..., Tuple[str, str]]:
     handler: Any = EVENT_TO_FUNCTION_MAPPER.get(event_type)
     if handler is None:
         raise UnsupportedWebhookEventType(event_type)
     return handler
 
+
 @webhook_view('Intercom')
 @has_request_variables
-def api_intercom_webhook(request: HttpRequest, user_profile: UserProfile,
-                         payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_intercom_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     event_type = payload['topic']
     if event_type == 'ping':
         return json_success()

@@ -10,11 +10,8 @@ class Command(BaseCommand):
     help = """Clear analytics tables."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--force',
-                            action='store_true',
-                            help="Actually do it.")
-        parser.add_argument('--property',
-                            help="The property of the stat to be cleared.")
+        parser.add_argument('--force', action='store_true', help="Actually do it.")
+        parser.add_argument('--property', help="The property of the stat to be cleared.")
 
     def handle(self, *args: Any, **options: Any) -> None:
         property = options['property']

@@ -10,6 +10,7 @@ def migrate_set_order_value(apps: StateApps, schema_editor: DatabaseSchemaEditor
     CustomProfileField = apps.get_model('zerver', 'CustomProfileField')
     CustomProfileField.objects.all().update(order=F('id'))
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -22,7 +23,7 @@ class Migration(migrations.Migration):
             name='order',
             field=models.IntegerField(default=0),
         ),
-        migrations.RunPython(migrate_set_order_value,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            migrate_set_order_value, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

@@ -27,21 +27,28 @@ class Command(DjangoCommand):
         # Need to check migrations here, so can't use the
         # requires_migrations_check attribute.
         self.check_migrations()
-        self.stdout.write((
-            "Django process (re)started. Quit the server with %(quit_command)s.\n"
-        ) % {
-            "version": self.get_version(),
-            "settings": settings.SETTINGS_MODULE,
-            "protocol": self.protocol,
-            "addr": '[%s]' % self.addr if self._raw_ipv6 else self.addr,
-            "port": self.port,
-            "quit_command": quit_command,
-        })
+        self.stdout.write(
+            ("Django process (re)started. Quit the server with %(quit_command)s.\n")
+            % {
+                "version": self.get_version(),
+                "settings": settings.SETTINGS_MODULE,
+                "protocol": self.protocol,
+                "addr": '[%s]' % self.addr if self._raw_ipv6 else self.addr,
+                "port": self.port,
+                "quit_command": quit_command,
+            }
+        )
 
         try:
             handler = self.get_handler(*args, **options)
-            run(self.addr, int(self.port), handler,
-                ipv6=self.use_ipv6, threading=threading, server_cls=self.server_cls)
+            run(
+                self.addr,
+                int(self.port),
+                handler,
+                ipv6=self.use_ipv6,
+                threading=threading,
+                server_cls=self.server_cls,
+            )
         except socket.error as e:
             # Use helpful error messages instead of ugly tracebacks.
             ERRORS = {
@@ -60,5 +67,3 @@ class Command(DjangoCommand):
             if shutdown_message:
                 self.stdout.write(shutdown_message)
             sys.exit(0)
-
-

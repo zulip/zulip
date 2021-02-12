@@ -16,6 +16,7 @@ YARN_PACKAGE_JSON = os.path.join(ZULIP_SRV_PATH, 'zulip-yarn/package.json')
 
 DEFAULT_PRODUCTION = False
 
+
 def get_yarn_args(production: bool) -> List[str]:
     if production:
         yarn_args = ["--prod"]
@@ -23,8 +24,10 @@ def get_yarn_args(production: bool) -> List[str]:
         yarn_args = []
     return yarn_args
 
+
 def generate_sha1sum_node_modules(
-    setup_dir: Optional[str] = None, production: bool = DEFAULT_PRODUCTION,
+    setup_dir: Optional[str] = None,
+    production: bool = DEFAULT_PRODUCTION,
 ) -> str:
     if setup_dir is None:
         setup_dir = os.path.realpath(os.getcwd())
@@ -45,6 +48,7 @@ def generate_sha1sum_node_modules(
     sha1sum.update(''.join(sorted(yarn_args)).encode('utf8'))
     return sha1sum.hexdigest()
 
+
 def setup_node_modules(
     production: bool = DEFAULT_PRODUCTION,
     prefer_offline: bool = False,
@@ -58,9 +62,7 @@ def setup_node_modules(
     success_stamp = os.path.join(target_path, '.success-stamp')
     # Check if a cached version already exists
     if not os.path.exists(success_stamp):
-        do_yarn_install(target_path,
-                        yarn_args,
-                        success_stamp)
+        do_yarn_install(target_path, yarn_args, success_stamp)
 
     print("Using cached node modules from {}".format(cached_node_modules))
     if os.path.islink('node_modules'):
@@ -68,6 +70,7 @@ def setup_node_modules(
     elif os.path.isdir('node_modules'):
         shutil.rmtree('node_modules')
     os.symlink(cached_node_modules, 'node_modules')
+
 
 def do_yarn_install(
     target_path: str,
@@ -86,7 +89,8 @@ def do_yarn_install(
         shutil.copytree("node_modules/", cached_node_modules, symlinks=True)
     if os.environ.get('CUSTOM_CA_CERTIFICATES'):
         run([YARN_BIN, "config", "set", "cafile", os.environ['CUSTOM_CA_CERTIFICATES']])
-    run([YARN_BIN, "install", "--non-interactive", "--frozen-lockfile", *yarn_args],
-        cwd=target_path)
+    run(
+        [YARN_BIN, "install", "--non-interactive", "--frozen-lockfile", *yarn_args], cwd=target_path
+    )
     with open(success_stamp, 'w'):
         pass

@@ -151,7 +151,7 @@ def html_branches(text: str, fn: Optional[str] = None) -> List[HtmlTreeBranch]:
     return branches
 
 
-def html_tag_tree(text: str, fn: Optional[str]=None) -> Node:
+def html_tag_tree(text: str, fn: Optional[str] = None) -> Node:
     tokens = tokenize(text)
     top_level = Node(token=None, parent=None)
     stack = [top_level]
@@ -183,9 +183,11 @@ def build_id_dict(templates: List[str]) -> (Dict[str, List[str]]):
         try:
             list_tags = tokenize(text)
         except FormattedException as e:
-            raise Exception(f'''
+            raise Exception(
+                f'''
                 fn: {fn}
-                {e}''')
+                {e}'''
+            )
 
         for tag in list_tags:
             info = get_tag_info(tag)

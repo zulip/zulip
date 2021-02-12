@@ -17,8 +17,10 @@ def get_canonical_timezone_map() -> Dict[str, str]:
                 canonical[alias] = name
     return canonical
 
+
 def canonicalize_timezone(key: str) -> str:
     return get_canonical_timezone_map().get(key, key)
+
 
 # Note: some of these abbreviations are fundamentally ambiguous (see
 # zerver/tests/test_timezone.py), so you should never rely on them as

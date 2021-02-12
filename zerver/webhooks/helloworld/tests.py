@@ -41,8 +41,11 @@ class HelloWorldHookTests(WebhookTestCase):
         self.url = self.build_webhook_url()
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
 
-        self.send_and_test_private_message('goodbye', expected_message=expected_message,
-                                           content_type="application/x-www-form-urlencoded")
+        self.send_and_test_private_message(
+            'goodbye',
+            expected_message=expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_stream_error_pm_to_bot_owner(self) -> None:
         # Note that this is really just a test for check_send_webhook_message
@@ -50,9 +53,12 @@ class HelloWorldHookTests(WebhookTestCase):
         self.url = self.build_webhook_url()
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
         expected_message = "Your bot `webhook-bot@zulip.com` tried to send a message to stream #**nonexistent**, but that stream does not exist. Click [here](#streams/new) to create it."
-        self.send_and_test_private_message('goodbye', expected_message=expected_message,
-                                           content_type='application/x-www-form-urlencoded',
-                                           sender=notification_bot)
+        self.send_and_test_private_message(
+            'goodbye',
+            expected_message=expected_message,
+            content_type='application/x-www-form-urlencoded',
+            sender=notification_bot,
+        )
 
     def test_custom_topic(self) -> None:
         # Note that this is really just a test for check_send_webhook_message

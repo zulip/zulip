@@ -356,11 +356,13 @@ STATSD_HOST = ''
 
 # Configuration for JWT auth.
 if TYPE_CHECKING:
+
     class JwtAuthKey(TypedDict):
         key: str
         # See https://pyjwt.readthedocs.io/en/latest/algorithms.html for a list
         # of supported algorithms.
         algorithms: List[str]
+
 
 JWT_AUTH_KEYS: Dict[str, "JwtAuthKey"] = {}
 

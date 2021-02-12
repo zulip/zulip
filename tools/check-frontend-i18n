@@ -23,16 +23,16 @@ def find_handlebars(translatable_strings: List[str]) -> List[str]:
             errored.append(string)
     return errored
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--no-generate',
-                        action='store_true',
-                        help="Don't run makemessages command.")
+    parser.add_argument(
+        '--no-generate', action='store_true', help="Don't run makemessages command."
+    )
     args = parser.parse_args()
 
     if not args.no_generate:
-        subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'],
-                        stderr=subprocess.STDOUT)
+        subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'], stderr=subprocess.STDOUT)
 
     with open('locale/en/translations.json') as f:
         data = json.load(f)
@@ -44,10 +44,11 @@ if __name__ == '__main__':
     print(WARNING + "Translation strings contain handlebars:" + ENDC)
     print('\n'.join(found))
 
-    print(WARNING +
-          "See https://zulip.readthedocs.io/en/latest/translating/translating.html#frontend-translations "
-          "on how you can insert variables in the frontend translatable "
-          "strings." +
-          ENDC)
+    print(
+        WARNING
+        + "See https://zulip.readthedocs.io/en/latest/translating/translating.html#frontend-translations "
+        "on how you can insert variables in the frontend translatable "
+        "strings." + ENDC
+    )
     print(FAIL + "Failed!" + ENDC)
     sys.exit(1)

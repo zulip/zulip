@@ -95,11 +95,15 @@ IGNORED_PHRASES = [
     r"user@example.com",
     # Fragments of larger strings
     (r'your subscriptions on your Streams page'),
-    (r'Change notification settings for individual streams on your '
-     '<a href="/#streams">Streams page</a>.'),
-    (r'Looking for our '
-     '<a href="/integrations" target="_blank">Integrations</a> or '
-     '<a href="/api" target="_blank">API</a> documentation?'),
+    (
+        r'Change notification settings for individual streams on your '
+        '<a href="/#streams">Streams page</a>.'
+    ),
+    (
+        r'Looking for our '
+        '<a href="/integrations" target="_blank">Integrations</a> or '
+        '<a href="/api" target="_blank">API</a> documentation?'
+    ),
     r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
     r"one or more people...",
     r"confirmation email",
@@ -112,7 +116,6 @@ IGNORED_PHRASES = [
     r"an unknown operating system",
     r"Go to Settings",
     r"Like Organization logo",
-
     # SPECIAL CASES
     # Enter is usually capitalized
     r"Press Enter to send",
@@ -137,11 +140,9 @@ IGNORED_PHRASES = [
     r"\bN\b",
     # Capital c feels obtrusive in clear status option
     r"clear",
-
     r"group private messages with __recipient__",
     r"private messages with __recipient__",
     r"private messages with yourself",
-
     # TO CLEAN UP
     # Just want to avoid churning login.html right now
     r"or Choose a user",
@@ -166,8 +167,7 @@ IGNORED_PHRASES.sort(key=lambda regex: len(regex), reverse=True)
 # text using BeautifulSoup and then removes extra whitespaces from
 # it. This step enables us to add HTML in our regexes directly.
 COMPILED_IGNORED_PHRASES = [
-    re.compile(' '.join(BeautifulSoup(regex, 'lxml').text.split()))
-    for regex in IGNORED_PHRASES
+    re.compile(' '.join(BeautifulSoup(regex, 'lxml').text.split())) for regex in IGNORED_PHRASES
 ]
 
 SPLIT_BOUNDARY = '?.!'  # Used to split string into sentences.
@@ -185,6 +185,7 @@ BANNED_WORDS = {
     'realm': 'The term realm should not appear in user-facing strings. Use organization instead.',
 }
 
+
 def get_safe_phrase(phrase: str) -> str:
     """
     Safe phrase is in lower case and doesn't contain characters which can
@@ -193,6 +194,7 @@ def get_safe_phrase(phrase: str) -> str:
     """
     phrase = SPLIT_BOUNDARY_REGEX.sub('_', phrase)
     return phrase.lower()
+
 
 def replace_with_safe_phrase(matchobj: Match[str]) -> str:
     """
@@ -218,6 +220,7 @@ def replace_with_safe_phrase(matchobj: Match[str]) -> str:
 
     return safe_string
 
+
 def get_safe_text(text: str) -> str:
     """
     This returns text which is rendered by BeautifulSoup and is in the
@@ -230,9 +233,11 @@ def get_safe_text(text: str) -> str:
 
     return text
 
+
 def is_capitalized(safe_text: str) -> bool:
     sentences = SPLIT_BOUNDARY_REGEX.split(safe_text)
     return not any(DISALLOWED_REGEX.search(sentence.strip()) for sentence in sentences)
+
 
 def check_banned_words(text: str) -> List[str]:
     lower_cased_text = text.lower()
@@ -248,6 +253,7 @@ def check_banned_words(text: str) -> List[str]:
             errors.append(msg)
 
     return errors
+
 
 def check_capitalization(strings: List[str]) -> Tuple[List[str], List[str], List[str]]:
     errors = []

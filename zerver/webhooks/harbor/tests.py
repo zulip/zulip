@@ -14,8 +14,7 @@ class HarborHookTests(WebhookTestCase):
         self.check_webhook("push_image", expected_topic, expected_message)
 
     @patch('zerver.lib.webhooks.common.check_send_webhook_message')
-    def test_delete_image_ignored(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def test_delete_image_ignored(self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url()
         payload = self.get_body('delete_image')
         result = self.client_post(self.url, payload, content_type="application/json")

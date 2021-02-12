@@ -14,12 +14,13 @@ from zerver.models import UserProfile
 def api_dropbox_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    challenge: Optional[str]=REQ(default=None),
+    challenge: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     if request.method == 'POST':
         topic = 'Dropbox'
-        check_send_webhook_message(request, user_profile, topic,
-                                   "File has been updated on Dropbox!")
+        check_send_webhook_message(
+            request, user_profile, topic, "File has been updated on Dropbox!"
+        )
         return json_success()
     else:
         if challenge is None:

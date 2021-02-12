@@ -23,6 +23,7 @@ def move_to_seperate_table(apps: StateApps, schema_editor: DatabaseSchemaEditor)
             for word in word_dict.values()
         )
 
+
 def move_back_to_user_profile(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     AlertWord = apps.get_model('zerver', 'AlertWord')
     UserProfile = apps.get_model('zerver', 'UserProfile')
@@ -38,6 +39,7 @@ def move_back_to_user_profile(apps: StateApps, schema_editor: DatabaseSchemaEdit
         user_profile = UserProfile.objects.get(id=user_id)
         user_profile.alert_words = orjson.dumps(words).decode()
         user_profile.save(update_fields=['alert_words'])
+
 
 class Migration(migrations.Migration):
 

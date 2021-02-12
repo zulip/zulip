@@ -26,9 +26,7 @@ class TimeZoneTest(ZulipTestCase):
             ("IST", +7200),  # Israel Standard Time
             ("IST", +3600),  # Ireland Standard Time
         ]
-        missing = set(dict(reversed(ambiguous_abbrevs)).items()) - set(
-            common_timezones.items()
-        )
+        missing = set(dict(reversed(ambiguous_abbrevs)).items()) - set(common_timezones.items())
         assert not missing, missing
 
         now = timezone_now()
@@ -44,8 +42,7 @@ class TimeZoneTest(ZulipTestCase):
                 assert delta is not None
                 offset = delta.total_seconds()
                 assert (
-                    common_timezones[abbrev] == offset
-                    or (abbrev, offset) in ambiguous_abbrevs
+                    common_timezones[abbrev] == offset or (abbrev, offset) in ambiguous_abbrevs
                 ), (name, abbrev, offset)
                 extra.discard((abbrev, offset))
         assert not extra, extra

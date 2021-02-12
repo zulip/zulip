@@ -48,6 +48,7 @@ from zproject.backends import check_password_strength, email_belongs_to_ldap
 
 AVATAR_CHANGES_DISABLED_ERROR = ugettext_lazy("Avatar changes are disabled in this organization.")
 
+
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
         email_change_object = get_object_from_key(confirmation_key, Confirmation.EMAIL_CHANGE)
@@ -65,26 +66,37 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
     context = {'realm_name': user_profile.realm.name, 'new_email': new_email}
     language = user_profile.default_language
-    send_email('zerver/emails/notify_change_in_email', to_emails=[old_email],
-               from_name=FromAddress.security_email_from_name(user_profile=user_profile),
-               from_address=FromAddress.SUPPORT, language=language,
-               context=context,
-               realm=user_profile.realm)
+    send_email(
+        'zerver/emails/notify_change_in_email',
+        to_emails=[old_email],
+        from_name=FromAddress.security_email_from_name(user_profile=user_profile),
+        from_address=FromAddress.SUPPORT,
+        language=language,
+        context=context,
+        realm=user_profile.realm,
+    )
 
     ctx = {
-        'new_email_html_tag': SafeString(f'<a href="mailto:{escape(new_email)}">{escape(new_email)}</a>'),
-        'old_email_html_tag': SafeString(f'<a href="mailto:{escape(old_email)}">{escape(old_email)}</a>'),
-
+        'new_email_html_tag': SafeString(
+            f'<a href="mailto:{escape(new_email)}">{escape(new_email)}</a>'
+        ),
+        'old_email_html_tag': SafeString(
+            f'<a href="mailto:{escape(old_email)}">{escape(old_email)}</a>'
+        ),
     }
     return render(request, 'confirmation/confirm_email_change.html', context=ctx)
 
+
 @human_users_only
 @has_request_variables
-def json_change_settings(request: HttpRequest, user_profile: UserProfile,
-                         full_name: str=REQ(default=""),
-                         email: str=REQ(default=""),
-                         old_password: str=REQ(default=""),
-                         new_password: str=REQ(default="")) -> HttpResponse:
+def json_change_settings(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    full_name: str = REQ(default=""),
+    email: str = REQ(default=""),
+    old_password: str = REQ(default=""),
+    new_password: str = REQ(default=""),
+) -> HttpResponse:
     if not (full_name or new_password or email):
         return json_error(_("Please fill out all fields."))
 
@@ -94,14 +106,21 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("Your Zulip password is managed in LDAP"))
 
         try:
-            if not authenticate(request, username=user_profile.delivery_email, password=old_password,
-                                realm=user_profile.realm, return_data=return_data):
+            if not authenticate(
+                request,
+                username=user_profile.delivery_email,
+                password=old_password,
+                realm=user_profile.realm,
+                return_data=return_data,
+            ):
                 return json_error(_("Wrong password!"))
         except RateLimited as e:
             assert e.secs_to_freedom is not None
             secs_to_freedom = int(e.secs_to_freedom)
             return json_error(
-                _("You're making too many attempts! Try again in {} seconds.").format(secs_to_freedom),
+                _("You're making too many attempts! Try again in {} seconds.").format(
+                    secs_to_freedom
+                ),
             )
 
         if not check_password_strength(new_password):
@@ -159,34 +178,37 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 
     return json_success(result)
 
+
 emojiset_choices = {emojiset['key'] for emojiset in UserProfile.emojiset_choices()}
+
 
 @human_users_only
 @has_request_variables
 def update_display_settings_backend(
-        request: HttpRequest, user_profile: UserProfile,
-        twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
-        dense_mode: Optional[bool]=REQ(validator=check_bool, default=None),
-        starred_message_counts: Optional[bool]=REQ(validator=check_bool, default=None),
-        fluid_layout_width: Optional[bool]=REQ(validator=check_bool, default=None),
-        high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None),
-        color_scheme: Optional[int]=REQ(validator=check_int_in(
-            UserProfile.COLOR_SCHEME_CHOICES), default=None),
-        translate_emoticons: Optional[bool]=REQ(validator=check_bool, default=None),
-        default_language: Optional[str]=REQ(validator=check_string, default=None),
-        left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
-        emojiset: Optional[str]=REQ(validator=check_string_in(
-            emojiset_choices), default=None),
-        demote_inactive_streams: Optional[int]=REQ(validator=check_int_in(
-            UserProfile.DEMOTE_STREAMS_CHOICES), default=None),
-        timezone: Optional[str]=REQ(validator=check_string_in(pytz.all_timezones_set),
-                                    default=None)) -> HttpResponse:
+    request: HttpRequest,
+    user_profile: UserProfile,
+    twenty_four_hour_time: Optional[bool] = REQ(validator=check_bool, default=None),
+    dense_mode: Optional[bool] = REQ(validator=check_bool, default=None),
+    starred_message_counts: Optional[bool] = REQ(validator=check_bool, default=None),
+    fluid_layout_width: Optional[bool] = REQ(validator=check_bool, default=None),
+    high_contrast_mode: Optional[bool] = REQ(validator=check_bool, default=None),
+    color_scheme: Optional[int] = REQ(
+        validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
+    ),
+    translate_emoticons: Optional[bool] = REQ(validator=check_bool, default=None),
+    default_language: Optional[str] = REQ(validator=check_string, default=None),
+    left_side_userlist: Optional[bool] = REQ(validator=check_bool, default=None),
+    emojiset: Optional[str] = REQ(validator=check_string_in(emojiset_choices), default=None),
+    demote_inactive_streams: Optional[int] = REQ(
+        validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
+    ),
+    timezone: Optional[str] = REQ(validator=check_string_in(pytz.all_timezones_set), default=None),
+) -> HttpResponse:
 
     # We can't use REQ for this widget because
     # get_available_language_codes requires provisioning to be
     # complete.
-    if (default_language is not None and
-            default_language not in get_available_language_codes()):
+    if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid default_language"))
 
     request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
@@ -198,38 +220,46 @@ def update_display_settings_backend(
 
     return json_success(result)
 
+
 @human_users_only
 @has_request_variables
 def json_change_notify_settings(
-        request: HttpRequest, user_profile: UserProfile,
-        enable_stream_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_stream_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_stream_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_stream_audible_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        wildcard_mentions_notify: Optional[bool]=REQ(validator=check_bool, default=None),
-        notification_sound: Optional[str]=REQ(validator=check_string, default=None),
-        enable_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_sounds: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_offline_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_offline_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_online_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_digest_emails: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_login_emails: Optional[bool]=REQ(validator=check_bool, default=None),
-        message_content_in_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        pm_content_in_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        desktop_icon_count_display: Optional[int]=REQ(validator=check_int, default=None),
-        realm_name_in_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        presence_enabled: Optional[bool]=REQ(validator=check_bool, default=None),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    enable_stream_desktop_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_stream_email_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_stream_push_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_stream_audible_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
+    wildcard_mentions_notify: Optional[bool] = REQ(validator=check_bool, default=None),
+    notification_sound: Optional[str] = REQ(validator=check_string, default=None),
+    enable_desktop_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_sounds: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_offline_email_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_offline_push_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_online_push_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_digest_emails: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_login_emails: Optional[bool] = REQ(validator=check_bool, default=None),
+    message_content_in_email_notifications: Optional[bool] = REQ(
+        validator=check_bool, default=None
+    ),
+    pm_content_in_desktop_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
+    desktop_icon_count_display: Optional[int] = REQ(validator=check_int, default=None),
+    realm_name_in_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
+    presence_enabled: Optional[bool] = REQ(validator=check_bool, default=None),
 ) -> HttpResponse:
     result = {}
 
     # Stream notification settings.
 
-    if (notification_sound is not None and
-            notification_sound not in get_available_notification_sounds()):
+    if (
+        notification_sound is not None
+        and notification_sound not in get_available_notification_sounds()
+    ):
         raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
 
-    req_vars = {k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types}
+    req_vars = {
+        k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types
+    }
 
     for k, v in list(req_vars.items()):
         if v is not None and getattr(user_profile, k) != v:
@@ -237,6 +267,7 @@ def json_change_notify_settings(
             result[k] = v
 
     return json_success(result)
+
 
 def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if len(request.FILES) != 1:
@@ -246,30 +277,36 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
         return json_error(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     user_file = list(request.FILES.values())[0]
-    if ((settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size):
-        return json_error(_("Uploaded file is larger than the allowed limit of {} MiB").format(
-            settings.MAX_AVATAR_FILE_SIZE,
-        ))
+    if (settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size:
+        return json_error(
+            _("Uploaded file is larger than the allowed limit of {} MiB").format(
+                settings.MAX_AVATAR_FILE_SIZE,
+            )
+        )
     upload_avatar_image(user_file, user_profile, user_profile)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     user_avatar_url = avatar_url(user_profile)
 
     json_result = dict(
-        avatar_url = user_avatar_url,
+        avatar_url=user_avatar_url,
     )
     return json_success(json_result)
+
 
 def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
         return json_error(str(AVATAR_CHANGES_DISABLED_ERROR))
 
-    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile)
+    do_change_avatar_fields(
+        user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile
+    )
     gravatar_url = avatar_url(user_profile)
 
     json_result = dict(
-        avatar_url = gravatar_url,
+        avatar_url=gravatar_url,
     )
     return json_success(json_result)
+
 
 # We don't use @human_users_only here, because there are use cases for
 # a bot regenerating its own API key.
@@ -277,13 +314,15 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
 def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     new_api_key = do_regenerate_api_key(user_profile, user_profile)
     json_result = dict(
-        api_key = new_api_key,
+        api_key=new_api_key,
     )
     return json_success(json_result)
 
+
 @human_users_only
 @has_request_variables
-def change_enter_sends(request: HttpRequest, user_profile: UserProfile,
-                       enter_sends: bool=REQ(validator=check_bool)) -> HttpResponse:
+def change_enter_sends(
+    request: HttpRequest, user_profile: UserProfile, enter_sends: bool = REQ(validator=check_bool)
+) -> HttpResponse:
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()

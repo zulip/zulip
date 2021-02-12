@@ -19,8 +19,10 @@ from zthumbor.loaders.helpers import THUMBOR_EXTERNAL_TYPE, THUMBOR_LOCAL_FILE_T
 def is_thumbor_enabled() -> bool:
     return settings.THUMBOR_URL != ''
 
+
 def user_uploads_or_external(url: str) -> bool:
     return not is_safe_url(url, allowed_hosts=None) or url.startswith("/user_uploads/")
+
 
 def get_source_type(url: str) -> str:
     if not url.startswith('/user_uploads/'):
@@ -31,9 +33,8 @@ def get_source_type(url: str) -> str:
         return THUMBOR_LOCAL_FILE_TYPE
     return THUMBOR_S3_TYPE
 
-def generate_thumbnail_url(path: str,
-                           size: str='0x0',
-                           is_camo_url: bool=False) -> str:
+
+def generate_thumbnail_url(path: str, size: str = '0x0', is_camo_url: bool = False) -> str:
     path = urljoin("/", path)
 
     if not is_thumbor_enabled():

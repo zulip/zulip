@@ -19,11 +19,10 @@ class Command(ZulipBaseCommand):
     with (for example) any bots owned by the user."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('email', metavar='<email>',
-                            help="email of user to export")
-        parser.add_argument('--output',
-                            dest='output_dir',
-                            help='Directory to write exported data to.')
+        parser.add_argument('email', metavar='<email>', help="email of user to export")
+        parser.add_argument(
+            '--output', dest='output_dir', help='Directory to write exported data to.'
+        )
         self.add_realm_args(parser)
 
     def handle(self, *args: Any, **options: Any) -> None:

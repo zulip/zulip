@@ -9,9 +9,12 @@ class Command(BaseCommand):
     help = """Send some stats to statsd."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('operation', metavar='<operation>',
-                            choices=['incr', 'decr', 'timing', 'timer', 'gauge'],
-                            help="incr|decr|timing|timer|gauge")
+        parser.add_argument(
+            'operation',
+            metavar='<operation>',
+            choices=['incr', 'decr', 'timing', 'timer', 'gauge'],
+            help="incr|decr|timing|timer|gauge",
+        )
         parser.add_argument('name', metavar='<name>')
         parser.add_argument('val', metavar='<val>')
 

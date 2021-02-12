@@ -18,9 +18,11 @@ from .card_actions import IGNORED_CARD_ACTIONS, SUPPORTED_CARD_ACTIONS, process_
 @webhook_view('Trello')
 @return_success_on_head_request
 @has_request_variables
-def api_trello_webhook(request: HttpRequest,
-                       user_profile: UserProfile,
-                       payload: Mapping[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_trello_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Mapping[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     payload = orjson.loads(request.body)
     action_type = payload['action'].get('type')
     message = get_subject_and_body(payload, action_type)
@@ -31,6 +33,7 @@ def api_trello_webhook(request: HttpRequest,
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
+
 
 def get_subject_and_body(payload: Mapping[str, Any], action_type: str) -> Optional[Tuple[str, str]]:
     if action_type in SUPPORTED_CARD_ACTIONS:

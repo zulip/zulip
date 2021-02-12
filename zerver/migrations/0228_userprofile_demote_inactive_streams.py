@@ -2,6 +2,8 @@
 from django.db import migrations, models
 
 DEMOTE_STREAMS_AUTOMATIC = 1
+
+
 class Migration(migrations.Migration):
 
     dependencies = [

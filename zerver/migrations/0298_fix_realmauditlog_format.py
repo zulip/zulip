@@ -96,11 +96,13 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
         # Sanity check that the original event has exactly the keys we expect.
         assert set(extra_data.keys()) <= {OLD_VALUE, NEW_VALUE}
 
-        ra.extra_data = json.dumps({
-            OLD_VALUE: old_value,
-            NEW_VALUE: new_value,
-            "property": prop,
-        })
+        ra.extra_data = json.dumps(
+            {
+                OLD_VALUE: old_value,
+                NEW_VALUE: new_value,
+                "property": prop,
+            }
+        )
         ra.save(update_fields=["extra_data"])
 
 
@@ -111,7 +113,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(update_realmauditlog_values,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            update_realmauditlog_values, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

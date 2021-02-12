@@ -16,9 +16,11 @@ from zerver.lib.test_classes import ZulipTestCase
 
 RANDOM_KEY_PREFIX = secrets.token_hex(16)
 
+
 class RateLimitedTestObject(RateLimitedObject):
-    def __init__(self, name: str, rules: List[Tuple[int, int]],
-                 backend: Type[RateLimiterBackend]) -> None:
+    def __init__(
+        self, name: str, rules: List[Tuple[int, int]], backend: Type[RateLimiterBackend]
+    ) -> None:
         self.name = name
         self._rules = rules
         self._rules.sort(key=lambda x: x[0])
@@ -29,6 +31,7 @@ class RateLimitedTestObject(RateLimitedObject):
 
     def rules(self) -> List[Tuple[int, int]]:
         return self._rules
+
 
 class RateLimiterBackendBase(ZulipTestCase):
     __unittest_skip__ = True
@@ -42,8 +45,12 @@ class RateLimiterBackendBase(ZulipTestCase):
 
         return obj
 
-    def make_request(self, obj: RateLimitedTestObject, expect_ratelimited: bool=False,
-                     verify_api_calls_left: bool=True) -> None:
+    def make_request(
+        self,
+        obj: RateLimitedTestObject,
+        expect_ratelimited: bool = False,
+        verify_api_calls_left: bool = True,
+    ) -> None:
         key = obj.key()
         if key not in self.requests_record:
             self.requests_record[key] = []
@@ -76,8 +83,9 @@ class RateLimiterBackendBase(ZulipTestCase):
 
         return self.api_calls_left_from_history(history, max_window, max_calls, now)
 
-    def api_calls_left_from_history(self, history: List[float], max_window: int,
-                                    max_calls: int, now: float) -> Tuple[int, float]:
+    def api_calls_left_from_history(
+        self, history: List[float], max_window: int, max_calls: int, now: float
+    ) -> Tuple[int, float]:
         """
         This depends on the algorithm used in the backend, and should be defined by the test class.
         """
@@ -140,12 +148,14 @@ class RateLimiterBackendBase(ZulipTestCase):
         with mock.patch('time.time', return_value=(start_time + 2.1)):
             self.make_request(obj)
 
+
 class RedisRateLimiterBackendTest(RateLimiterBackendBase):
     __unittest_skip__ = False
     backend = RedisRateLimiterBackend
 
-    def api_calls_left_from_history(self, history: List[float], max_window: int,
-                                    max_calls: int, now: float) -> Tuple[int, float]:
+    def api_calls_left_from_history(
+        self, history: List[float], max_window: int, max_calls: int, now: float
+    ) -> Tuple[int, float]:
         latest_timestamp = history[-1]
         relevant_requests = [t for t in history if (t >= now - max_window)]
         relevant_requests_amount = len(relevant_requests)
@@ -164,12 +174,14 @@ class RedisRateLimiterBackendTest(RateLimiterBackendBase):
         obj.block_access(1)
         self.make_request(obj, expect_ratelimited=True, verify_api_calls_left=False)
 
+
 class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
     __unittest_skip__ = False
     backend = TornadoInMemoryRateLimiterBackend
 
-    def api_calls_left_from_history(self, history: List[float], max_window: int,
-                                    max_calls: int, now: float) -> Tuple[int, float]:
+    def api_calls_left_from_history(
+        self, history: List[float], max_window: int, max_calls: int, now: float
+    ) -> Tuple[int, float]:
         reset_time = 0.0
         for timestamp in history:
             reset_time = max(reset_time, timestamp) + (max_window / max_calls)
@@ -199,6 +211,7 @@ class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
 
         with mock.patch('time.time', return_value=(start_time + 1.01)):
             self.make_request(obj, expect_ratelimited=False, verify_api_calls_left=False)
+
 
 class RateLimitedObjectsTest(ZulipTestCase):
     def test_user_rate_limits(self) -> None:

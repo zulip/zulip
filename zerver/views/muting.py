@@ -20,11 +20,13 @@ from zerver.lib.validator import check_int
 from zerver.models import UserProfile
 
 
-def mute_topic(user_profile: UserProfile,
-               stream_id: Optional[int],
-               stream_name: Optional[str],
-               topic_name: str,
-               date_muted: datetime.datetime) -> HttpResponse:
+def mute_topic(
+    user_profile: UserProfile,
+    stream_id: Optional[int],
+    stream_name: Optional[str],
+    topic_name: str,
+    date_muted: datetime.datetime,
+) -> HttpResponse:
     if stream_name is not None:
         (stream, sub) = access_stream_by_name(user_profile, stream_name)
     else:
@@ -37,10 +39,10 @@ def mute_topic(user_profile: UserProfile,
     do_mute_topic(user_profile, stream, topic_name, date_muted)
     return json_success()
 
-def unmute_topic(user_profile: UserProfile,
-                 stream_id: Optional[int],
-                 stream_name: Optional[str],
-                 topic_name: str) -> HttpResponse:
+
+def unmute_topic(
+    user_profile: UserProfile, stream_id: Optional[int], stream_name: Optional[str], topic_name: str
+) -> HttpResponse:
     error = _("Topic is not muted")
 
     if stream_name is not None:
@@ -55,13 +57,16 @@ def unmute_topic(user_profile: UserProfile,
     do_unmute_topic(user_profile, stream, topic_name)
     return json_success()
 
+
 @has_request_variables
-def update_muted_topic(request: HttpRequest,
-                       user_profile: UserProfile,
-                       stream_id: Optional[int]=REQ(validator=check_int, default=None),
-                       stream: Optional[str]=REQ(default=None),
-                       topic: str=REQ(),
-                       op: str=REQ()) -> HttpResponse:
+def update_muted_topic(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: Optional[int] = REQ(validator=check_int, default=None),
+    stream: Optional[str] = REQ(default=None),
+    topic: str = REQ(),
+    op: str = REQ(),
+) -> HttpResponse:
 
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
 

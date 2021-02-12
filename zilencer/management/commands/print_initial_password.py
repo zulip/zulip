@@ -12,8 +12,12 @@ class Command(ZulipBaseCommand):
     fmt = '%-30s %-16s  %-32s'
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('emails', metavar='<email>', nargs='*',
-                            help="email of user to show password and API key for")
+        parser.add_argument(
+            'emails',
+            metavar='<email>',
+            nargs='*',
+            help="email of user to show password and API key for",
+        )
         self.add_realm_args(parser)
 
     def handle(self, *args: Any, **options: str) -> None:

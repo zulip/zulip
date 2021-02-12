@@ -19,6 +19,7 @@ def update_role(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
             user.role = UserProfile.ROLE_MEMBER
         user.save(update_fields=['role'])
 
+
 def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model('zerver', 'UserProfile')
     UserProfile.ROLE_REALM_ADMINISTRATOR = 200
@@ -30,6 +31,7 @@ def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
         elif user.role == UserProfile.ROLE_GUEST:
             user.is_guest = True
             user.save(update_fields=['is_guest'])
+
 
 class Migration(migrations.Migration):
 
@@ -43,6 +45,5 @@ class Migration(migrations.Migration):
             name='role',
             field=models.PositiveSmallIntegerField(null=True),
         ),
-
         migrations.RunPython(update_role, reverse_code=reverse_code, elidable=True),
     ]

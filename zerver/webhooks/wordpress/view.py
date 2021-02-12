@@ -19,16 +19,20 @@ New blog user registered:
 """.strip()
 WP_LOGIN_TEMPLATE = 'User {name} logged in.'
 
+
 @webhook_view("WordPress", notify_bot_owner_on_invalid_json=False)
 @has_request_variables
-def api_wordpress_webhook(request: HttpRequest, user_profile: UserProfile,
-                          hook: str=REQ(default="WordPress Action"),
-                          post_title: str=REQ(default="New WordPress Post"),
-                          post_type: str=REQ(default="post"),
-                          post_url: str=REQ(default="WordPress Post URL"),
-                          display_name: str=REQ(default="New User Name"),
-                          user_email: str=REQ(default="New User Email"),
-                          user_login: str=REQ(default="Logged in User")) -> HttpResponse:
+def api_wordpress_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    hook: str = REQ(default="WordPress Action"),
+    post_title: str = REQ(default="New WordPress Post"),
+    post_type: str = REQ(default="post"),
+    post_url: str = REQ(default="WordPress Post URL"),
+    display_name: str = REQ(default="New User Name"),
+    user_email: str = REQ(default="New User Email"),
+    user_login: str = REQ(default="Logged in User"),
+) -> HttpResponse:
     # remove trailing whitespace (issue for some test fixtures)
     hook = hook.rstrip()
 

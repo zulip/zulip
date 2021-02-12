@@ -89,17 +89,23 @@ GITHUB_URL_TEMPLATES = {
 
 @webhook_view('Semaphore')
 @has_request_variables
-def api_semaphore_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_semaphore_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
 
     content, project_name, branch_name = (
         semaphore_classic(payload) if 'event' in payload else semaphore_2(payload)
     )
     subject = (
-        TOPIC_TEMPLATE.format(project=project_name, branch=branch_name) if branch_name else project_name
+        TOPIC_TEMPLATE.format(project=project_name, branch=branch_name)
+        if branch_name
+        else project_name
     )
     check_send_webhook_message(request, user_profile, subject, content)
     return json_success()
+
 
 def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str]:
     # semaphore only gives the last commit, even if there were multiple commits
@@ -150,6 +156,7 @@ def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str]:
 
     return content, project_name, branch_name
 
+
 def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
     repo_url = payload["repository"]["url"]
     project_name = payload["project"]["name"]
@@ -172,7 +179,9 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
             commit_id=commit_id,
             commit_hash=commit_id[:7],
             commit_message=summary_line(payload["revision"]["commit_message"]),
-            commit_url=GITHUB_URL_TEMPLATES['commit'].format(repo_url=repo_url, commit_id=commit_id),
+            commit_url=GITHUB_URL_TEMPLATES['commit'].format(
+                repo_url=repo_url, commit_id=commit_id
+            ),
         )
         template = GH_PUSH_TEMPLATE if is_github_repo(repo_url) else PUSH_TEMPLATE
         content = template.format(**context)
@@ -182,7 +191,8 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         pull_request_title = pull_request["name"]
         pull_request_number = pull_request["number"]
         pull_request_url = GITHUB_URL_TEMPLATES['pull_request'].format(
-            repo_url=repo_url, pr_number=pull_request_number)
+            repo_url=repo_url, pr_number=pull_request_number
+        )
         context.update(
             branch_name=branch_name,
             pull_request_title=pull_request_title,
@@ -207,8 +217,10 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         content = DEFAULT_TEMPLATE.format(**context)
     return content, project_name, branch_name
 
+
 def is_github_repo(repo_url: str) -> bool:
     return urlparse(repo_url).hostname == 'github.com'
+
 
 def summary_line(message: str) -> str:
     return message.splitlines()[0]

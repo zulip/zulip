@@ -38,19 +38,22 @@ def fix_messages(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
         return
 
     def get_bot_by_delivery_email(email: str) -> Any:
-        return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip(),
-                                                        realm=internal_realm)
+        return UserProfile.objects.select_related().get(
+            delivery_email__iexact=email.strip(), realm=internal_realm
+        )
 
     notification_bot = get_bot_by_delivery_email(settings.NOTIFICATION_BOT)
 
     def fix_messages_by_bot(bot_profile: Any) -> None:
         Message.objects.filter(sender=bot_profile).update(sender=notification_bot)
-        Message.objects.filter(recipient=bot_profile.recipient).update(recipient=notification_bot.recipient)
+        Message.objects.filter(recipient=bot_profile.recipient).update(
+            recipient=notification_bot.recipient
+        )
 
     def clean_up_bot(bot_profile: Any) -> None:
-        huddle_recipient_ids = Subscription.objects \
-            .filter(user_profile_id=bot_profile.id, recipient__type=RECIPIENT_HUDDLE) \
-            .values_list('recipient_id', flat=True)
+        huddle_recipient_ids = Subscription.objects.filter(
+            user_profile_id=bot_profile.id, recipient__type=RECIPIENT_HUDDLE
+        ).values_list('recipient_id', flat=True)
         Huddle.objects.filter(recipient_id__in=huddle_recipient_ids).delete()
         Recipient.objects.filter(id__in=huddle_recipient_ids).delete()
 
@@ -74,6 +77,7 @@ def fix_messages(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     except UserProfile.DoesNotExist:
         pass
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -81,7 +85,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(fix_messages,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(fix_messages, reverse_code=migrations.RunPython.noop, elidable=True),
     ]

@@ -20,10 +20,12 @@ import requests
 # usage: python check-issue-labels
 # Pass --force as an argument to run without a token.
 
+
 def get_config() -> configparser.ConfigParser:
     config = configparser.ConfigParser()
     config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'conf.ini'))
     return config
+
 
 def area_labeled(issue: Dict[str, Any]) -> bool:
     for label in issue["labels"]:
@@ -32,8 +34,10 @@ def area_labeled(issue: Dict[str, Any]) -> bool:
             return True
     return False
 
+
 def is_issue(item: Dict[str, Any]) -> bool:
     return "issues" in item["html_url"]
+
 
 def get_next_page_url(link_header: str) -> Optional[str]:
     matches = re.findall(r'\<(\S+)\>; rel=\"next\"', link_header)
@@ -41,6 +45,7 @@ def get_next_page_url(link_header: str) -> Optional[str]:
         return matches[0]
     except IndexError:
         return None
+
 
 def check_issue_labels() -> None:
     parser = argparse.ArgumentParser()
@@ -52,8 +57,10 @@ def check_issue_labels() -> None:
         try:
             token = config.get('github', 'api_token')
         except configparser.Error:
-            print("Error fetching GitHub API token. Copy conf.ini-template to conf.ini and populate with "
-                  "your API token. If you want to continue without using a token use --force.")
+            print(
+                "Error fetching GitHub API token. Copy conf.ini-template to conf.ini and populate with "
+                "your API token. If you want to continue without using a token use --force."
+            )
             sys.exit(1)
 
     next_page_url: Optional[str] = 'https://api.github.com/repos/zulip/zulip/issues'
@@ -67,8 +74,10 @@ def check_issue_labels() -> None:
             if response.status_code == 401:
                 sys.exit("Error. Please check the token.")
             if response.status_code == 403:
-                sys.exit("403 Error. This is generally caused when API limit is exceeded. You use an API "
-                         "token to overcome this limit.")
+                sys.exit(
+                    "403 Error. This is generally caused when API limit is exceeded. You use an API "
+                    "token to overcome this limit."
+                )
         except requests.exceptions.RequestException as e:
             print(e)
             sys.exit(1)
@@ -83,6 +92,7 @@ def check_issue_labels() -> None:
         print("\n".join(unlabeled_issue_urls))
     else:
         print("No GitHub issues found with missing area labels.")
+
 
 if __name__ == '__main__':
     check_issue_labels()

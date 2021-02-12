@@ -30,6 +30,7 @@ def try_git_describe() -> Optional[str]:
     except (FileNotFoundError, subprocess.CalledProcessError):  # nocoverage
         return None
 
+
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
     report['has_request'] = True
 
@@ -40,6 +41,7 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
     report['server_name'] = request.META.get('SERVER_NAME', None)
     try:
         from django.contrib.auth.models import AnonymousUser
+
         user_profile = request.user
         if isinstance(user_profile, AnonymousUser):
             user_full_name = None
@@ -67,8 +69,11 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
 
     exception_filter = get_exception_reporter_filter(request)
     try:
-        report['data'] = exception_filter.get_post_parameters(request) \
-            if request.method == 'POST' else request.GET
+        report['data'] = (
+            exception_filter.get_post_parameters(request)
+            if request.method == 'POST'
+            else request.GET
+        )
     except Exception:
         # exception_filter.get_post_parameters will throw
         # RequestDataTooBig if there's a really big file uploaded
@@ -81,13 +86,15 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
         # exception if the host is invalid
         report['host'] = platform.node()
 
+
 @runtime_checkable
 class HasRequest(Protocol):
     request: HttpRequest
 
+
 class AdminNotifyHandler(logging.Handler):
     """An logging handler that sends the log/exception to the queue to be
-       turned into an email and/or a Zulip message for the server admins.
+    turned into an email and/or a Zulip message for the server admins.
     """
 
     # adapted in part from django/utils/log.py
@@ -124,7 +131,9 @@ class AdminNotifyHandler(logging.Handler):
             if record.exc_info:
                 stack_trace = ''.join(traceback.format_exception(*record.exc_info))
                 message = str(record.exc_info[1])
-                is_markdown_rendering_exception = record.msg.startswith('Exception in Markdown parser')
+                is_markdown_rendering_exception = record.msg.startswith(
+                    'Exception in Markdown parser'
+                )
             else:
                 stack_trace = 'No stack trace available'
                 message = record.getMessage()
@@ -154,8 +163,11 @@ class AdminNotifyHandler(logging.Handler):
             logging.warning("Reporting an error to admins...")
             logging.warning(
                 "Reporting an error to admins: %s %s %s %s %s",
-                record.levelname, report['logger_name'], report['log_module'],
-                report['message'], report['stack_trace'],
+                record.levelname,
+                report['logger_name'],
+                report['log_module'],
+                report['message'],
+                report['stack_trace'],
             )
 
         try:
@@ -163,12 +175,16 @@ class AdminNotifyHandler(logging.Handler):
                 # On staging, process the report directly so it can happen inside this
                 # try/except to prevent looping
                 from zerver.lib.error_notify import notify_server_error
+
                 notify_server_error(report, is_markdown_rendering_exception)
             else:
-                queue_json_publish('error_reports', dict(
-                    type = "server",
-                    report = report,
-                ))
+                queue_json_publish(
+                    'error_reports',
+                    dict(
+                        type="server",
+                        report=report,
+                    ),
+                )
         except Exception:
             # If this breaks, complain loudly but don't pass the traceback up the stream
             # However, we *don't* want to use logging.exception since that could trigger a loop.

@@ -167,12 +167,8 @@ EXEMPT_FILES = {
 }
 
 parser = argparse.ArgumentParser(USAGE)
-parser.add_argument('--coverage',
-                    action="store_true",
-                    help='Get coverage report')
-parser.add_argument('--force',
-                    action="store_true",
-                    help='Run tests despite possible problems.')
+parser.add_argument('--coverage', action="store_true", help='Get coverage report')
+parser.add_argument('--force', action="store_true", help='Run tests despite possible problems.')
 parser.add_argument('args', nargs=argparse.REMAINDER)
 options = parser.parse_args()
 individual_files = options.args
@@ -180,6 +176,7 @@ individual_files = options.args
 from tools.lib.test_script import assert_provisioning_status_ok
 
 assert_provisioning_status_ok(options.force)
+
 
 def get_dev_host() -> str:
     # See similar code in dev_settings.py.  We only use
@@ -203,8 +200,10 @@ def get_dev_host() -> str:
         # default, via the "zulipdev.com" hostname.
         return 'zulipdev.com:9991'
 
+
 def print_error(msg: str) -> None:
     print(BOLDRED + 'ERROR:' + ENDC + ' ' + msg)
+
 
 def clean_file(orig_fn: str) -> str:
     fn = orig_fn
@@ -218,9 +217,11 @@ def clean_file(orig_fn: str) -> str:
         sys.exit(1)
     return fn
 
+
 def clean_files(fns: List[str]) -> List[str]:
     cleaned_files = [clean_file(fn) for fn in fns]
     return cleaned_files
+
 
 def run_tests_via_node_js() -> int:
     os.environ['TZ'] = 'UTC'
@@ -264,7 +265,10 @@ def run_tests_via_node_js() -> int:
         sys.exit(1)
     return ret
 
-def check_line_coverage(fn: str, line_coverage: Dict[Any, Any], line_mapping: Dict[Any, Any], log: bool = True) -> bool:
+
+def check_line_coverage(
+    fn: str, line_coverage: Dict[Any, Any], line_mapping: Dict[Any, Any], log: bool = True
+) -> bool:
     missing_lines = []
     for line in line_coverage:
         if line_coverage[line] == 0:
@@ -278,6 +282,7 @@ def check_line_coverage(fn: str, line_coverage: Dict[Any, Any], line_mapping: Di
         return False
     return True
 
+
 def read_coverage() -> Any:
     coverage_json = None
     try:
@@ -288,13 +293,14 @@ def read_coverage() -> Any:
         raise
     return coverage_json
 
+
 def enforce_proper_coverage(coverage_json: Any) -> bool:
     all_js_files = set(
-        glob.glob('static/js/*.js') +
-        glob.glob('static/js/*.ts') +
-        glob.glob('static/shared/js/*.js') +
-        glob.glob('static/shared/js/*.ts') +
-        glob.glob('static/js/billing/*.js'),
+        glob.glob('static/js/*.js')
+        + glob.glob('static/js/*.ts')
+        + glob.glob('static/shared/js/*.js')
+        + glob.glob('static/shared/js/*.ts')
+        + glob.glob('static/js/billing/*.js'),
     )
     enforce_fully_covered = all_js_files - EXEMPT_FILES
 
@@ -332,8 +338,9 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
         print("One or more fully covered files are miscategorized.")
         print("Remove the file(s) from EXEMPT_FILES in `tools/test-js-with-node`.")
 
-    problems_encountered = (coverage_lost or coverage_not_enforced)
+    problems_encountered = coverage_lost or coverage_not_enforced
     return problems_encountered
+
 
 ret = run_tests_via_node_js()
 

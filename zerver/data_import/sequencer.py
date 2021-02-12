@@ -11,6 +11,7 @@ for data imports that's usually easy to
 manage.
 '''
 
+
 def _seq() -> Callable[[], int]:
     i = 0
 
@@ -21,13 +22,14 @@ def _seq() -> Callable[[], int]:
 
     return next_one
 
-def sequencer() -> Callable[[str], int]:
-    '''
-        Use like this:
 
-        NEXT_ID = sequencer()
-        message_id = NEXT_ID('message')
-    '''
+def sequencer() -> Callable[[str], int]:
+    """
+    Use like this:
+
+    NEXT_ID = sequencer()
+    message_id = NEXT_ID('message')
+    """
     seq_dict: Dict[str, Callable[[], int]] = {}
 
     def next_one(name: str) -> int:
@@ -37,6 +39,7 @@ def sequencer() -> Callable[[str], int]:
         return seq()
 
     return next_one
+
 
 '''
 NEXT_ID is a singleton used by an entire process, which is
@@ -49,6 +52,7 @@ import of the file.
 
 NEXT_ID = sequencer()
 
+
 def is_int(key: Any) -> bool:
     try:
         n = int(key)
@@ -56,6 +60,7 @@ def is_int(key: Any) -> bool:
         return False
 
     return n <= 999999999
+
 
 class IdMapper:
     def __init__(self) -> None:

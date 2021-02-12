@@ -85,9 +85,7 @@ EXEMPT_OPENAPI_NAMES = [
 ]
 
 
-def get_event_checker(
-    event: Dict[str, Any]
-) -> Optional[Callable[[str, Dict[str, Any]], None]]:
+def get_event_checker(event: Dict[str, Any]) -> Optional[Callable[[str, Dict[str, Any]], None]]:
     name = event["type"]
     if "op" in event:
         name += "_" + event["op"]
@@ -180,9 +178,9 @@ def from_openapi(node: Dict[str, Any]) -> Any:
 
 
 def validate_openapi_against_event_schema() -> None:
-    node = openapi_spec.openapi()["paths"]["/events"]["get"]["responses"]["200"][
-        "content"
-    ]["application/json"]["schema"]["properties"]["events"]["items"]["oneOf"]
+    node = openapi_spec.openapi()["paths"]["/events"]["get"]["responses"]["200"]["content"][
+        "application/json"
+    ]["schema"]["properties"]["events"]["items"]["oneOf"]
 
     for sub_node in node:
         name = sub_node["properties"]["type"]["enum"][0]

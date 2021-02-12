@@ -13,13 +13,10 @@ from zerver.lib.topic import get_topic_history_for_public_stream, messages_for_t
 from zerver.models import Message, UserProfile
 
 
-def archive(request: HttpRequest,
-            stream_id: int,
-            topic_name: str) -> HttpResponse:
-
-    def get_response(rendered_message_list: List[str],
-                     is_web_public: bool,
-                     stream_name: str) -> HttpResponse:
+def archive(request: HttpRequest, stream_id: int, topic_name: str) -> HttpResponse:
+    def get_response(
+        rendered_message_list: List[str], is_web_public: bool, stream_name: str
+    ) -> HttpResponse:
         return render(
             request,
             'zerver/archive/index.html',
@@ -43,7 +40,9 @@ def archive(request: HttpRequest,
         messages_for_topic(
             stream_recipient_id=stream.recipient_id,
             topic_name=topic_name,
-        ).select_related('sender').order_by('date_sent'),
+        )
+        .select_related('sender')
+        .order_by('date_sent'),
     )
 
     if not all_messages:
@@ -61,12 +60,12 @@ def archive(request: HttpRequest,
                 prev_sender = msg.sender
             include_sender = True
         if status_message:
-            status_message = msg.rendered_content[4+3: -4]
+            status_message = msg.rendered_content[4 + 3 : -4]
         context = {
             'sender_full_name': msg.sender.full_name,
-            'timestampstr': datetime_to_timestamp(msg.last_edit_time
-                                                  if msg.last_edit_time
-                                                  else msg.date_sent),
+            'timestampstr': datetime_to_timestamp(
+                msg.last_edit_time if msg.last_edit_time else msg.date_sent
+            ),
             'message_content': msg.rendered_content,
             'avatar_url': get_gravatar_url(msg.sender.delivery_email, 1),
             'include_sender': include_sender,
@@ -75,6 +74,7 @@ def archive(request: HttpRequest,
         rendered_msg = loader.render_to_string('zerver/archive/single_message.html', context)
         rendered_message_list.append(rendered_msg)
     return get_response(rendered_message_list, True, stream.name)
+
 
 def get_web_public_topics_backend(request: HttpRequest, stream_id: int) -> HttpResponse:
     try:

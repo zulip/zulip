@@ -51,8 +51,7 @@ request = {
     'anchor': 0,
     'num_before': 0,
     'num_after': max_id,
-    'narrow': [{'operator': 'stream',
-                'operand': options.stream}],
+    'narrow': [{'operator': 'stream', 'operand': options.stream}],
     'apply_markdown': False,
 }
 
@@ -71,9 +70,18 @@ for msg in result['messages']:
     if msg['type'] != 'stream':
         continue
     # Remove extraneous metadata
-    for k in ['flags', 'edit_history', 'topic_links',
-              'avatar_url', 'recipient_id',
-              'content_type', 'client', 'sender_realm_str', 'id', 'type']:
+    for k in [
+        'flags',
+        'edit_history',
+        'topic_links',
+        'avatar_url',
+        'recipient_id',
+        'content_type',
+        'client',
+        'sender_realm_str',
+        'id',
+        'type',
+    ]:
         msg.pop(k, None)
     messages.append(msg)
 

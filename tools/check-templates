@@ -24,16 +24,19 @@ EXCLUDED_FILES = [
     'static/assets/icons/template.hbs',
 ]
 
+
 def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: List[str]) -> None:
     by_lang = lister.list_files(
         targets=targets,
         modified_only=args.modified,
         ftypes=['hbs', 'html'],
-        group_by_ftype=True, exclude=EXCLUDED_FILES,
+        group_by_ftype=True,
+        exclude=EXCLUDED_FILES,
     )
 
     check_handlebar_templates(by_lang['hbs'], fix)
     check_html_templates(by_lang['html'], all_dups, fix)
+
 
 def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) -> None:
     # Our files with .html extensions are usually for Django, but we also
@@ -72,22 +75,28 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             'searchbox_form',
             'searchbox',
         ]
-        bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
-                        if (ids not in IGNORE_IDS) and len(fns) > 1}
+        bad_ids_dict = {
+            ids: fns
+            for ids, fns in template_id_dict.items()
+            if (ids not in IGNORE_IDS) and len(fns) > 1
+        }
 
         if all_dups:
-            ignorable_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
-                                  if ids in IGNORE_IDS and len(fns) > 1}
+            ignorable_ids_dict = {
+                ids: fns
+                for ids, fns in template_id_dict.items()
+                if ids in IGNORE_IDS and len(fns) > 1
+            }
 
             for ids, fns in ignorable_ids_dict.items():
-                logging.warning("Duplicate ID(s) detected :Id '" + ids +
-                                "' present at following files:")
+                logging.warning(
+                    "Duplicate ID(s) detected :Id '" + ids + "' present at following files:"
+                )
                 for fn in fns:
                     print(fn)
 
         for ids, fns in bad_ids_dict.items():
-            logging.error("Duplicate ID(s) detected :Id '" + ids +
-                          "' present at following files:")
+            logging.error("Duplicate ID(s) detected :Id '" + ids + "' present at following files:")
             for fn in fns:
                 print(fn)
         return bad_ids_dict
@@ -133,6 +142,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             if not validate_indent_html(fn, fix):
                 sys.exit(1)
 
+
 def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
     # Check all our handlebars templates.
     templates = [fn for fn in templates if fn.endswith('.hbs')]
@@ -153,17 +163,18 @@ def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
         if not validate_indent_html(fn, fix):
             sys.exit(1)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--modified',
-                        action='store_true',
-                        help='only check modified files')
-    parser.add_argument('--all-dups',
-                        action="store_true",
-                        help='Run lint tool to detect duplicate ids on ignored files as well')
-    parser.add_argument('--fix',
-                        action='store_true',
-                        help='Automatically fix indentation problems.')
+    parser.add_argument('-m', '--modified', action='store_true', help='only check modified files')
+    parser.add_argument(
+        '--all-dups',
+        action="store_true",
+        help='Run lint tool to detect duplicate ids on ignored files as well',
+    )
+    parser.add_argument(
+        '--fix', action='store_true', help='Automatically fix indentation problems.'
+    )
     parser.add_argument('targets', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     check_our_files(args.modified, args.all_dups, args.fix, args.targets)

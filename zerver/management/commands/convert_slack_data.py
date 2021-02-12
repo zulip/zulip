@@ -13,19 +13,23 @@ class Command(BaseCommand):
     help = """Convert the Slack data into Zulip data format."""
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('slack_data_zip', nargs='+',
-                            metavar='<Slack data zip>',
-                            help="Zipped Slack data")
+        parser.add_argument(
+            'slack_data_zip', nargs='+', metavar='<Slack data zip>', help="Zipped Slack data"
+        )
 
-        parser.add_argument('--token', metavar='<slack_token>',
-                            help='Slack legacy token of the organsation')
+        parser.add_argument(
+            '--token', metavar='<slack_token>', help='Slack legacy token of the organsation'
+        )
 
-        parser.add_argument('--output', dest='output_dir',
-                            help='Directory to write exported data to.')
+        parser.add_argument(
+            '--output', dest='output_dir', help='Directory to write exported data to.'
+        )
 
-        parser.add_argument('--threads',
-                            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-                            help='Threads to use in exporting UserMessage objects in parallel')
+        parser.add_argument(
+            '--threads',
+            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
+            help='Threads to use in exporting UserMessage objects in parallel',
+        )
 
         parser.formatter_class = argparse.RawTextHelpFormatter
 

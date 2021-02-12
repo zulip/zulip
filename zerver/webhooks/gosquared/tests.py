@@ -10,7 +10,9 @@ class GoSquaredHookTests(WebhookTestCase):
     # Note: Include a test function per each distinct message condition your integration supports
     def test_traffic_message(self) -> None:
         expected_topic = "GoSquared - requestb.in"
-        expected_message = "[requestb.in](https://www.gosquared.com/now/GSN-595854-T) has 33 visitors online."
+        expected_message = (
+            "[requestb.in](https://www.gosquared.com/now/GSN-595854-T) has 33 visitors online."
+        )
 
         self.check_webhook(
             "traffic_spike",

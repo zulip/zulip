@@ -11,11 +11,15 @@ from zerver.lib.send_email import FromAddress
 class Command(sendtestemail.Command):
     def handle(self, *args: Any, **kwargs: str) -> None:
         if settings.WARN_NO_EMAIL:
-            raise CommandError("Outgoing email not yet configured, see\n  "
-                               "https://zulip.readthedocs.io/en/latest/production/email.html")
+            raise CommandError(
+                "Outgoing email not yet configured, see\n  "
+                "https://zulip.readthedocs.io/en/latest/production/email.html"
+            )
         if len(kwargs['email']) == 0:
-            raise CommandError("Usage: /home/zulip/deployments/current/manage.py "
-                               "send_test_email username@example.com")
+            raise CommandError(
+                "Usage: /home/zulip/deployments/current/manage.py "
+                "send_test_email username@example.com"
+            )
 
         print("If you run into any trouble, read:")
         print()
@@ -26,11 +30,13 @@ class Command(sendtestemail.Command):
         print()
         print("Sending 2 test emails from:")
 
-        message = ("Success!  If you receive this message (and a second with a different subject), "
-                   "you've successfully configured sending emails from your Zulip server.  "
-                   "Remember that you need to restart "
-                   "the Zulip server with /home/zulip/deployments/current/scripts/restart-server "
-                   "after changing the settings in /etc/zulip before your changes will take effect.")
+        message = (
+            "Success!  If you receive this message (and a second with a different subject), "
+            "you've successfully configured sending emails from your Zulip server.  "
+            "Remember that you need to restart "
+            "the Zulip server with /home/zulip/deployments/current/scripts/restart-server "
+            "after changing the settings in /etc/zulip before your changes will take effect."
+        )
         sender = FromAddress.SUPPORT
         print(f"  * {sender}")
         send_mail("Zulip email test", message, sender, kwargs['email'])

@@ -19,11 +19,13 @@ ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../
 def get_webhook_integrations() -> List[str]:
     return [integration.name for integration in WEBHOOK_INTEGRATIONS]
 
+
 def get_valid_integration_name(name: str) -> Optional[str]:
     for integration_name in get_webhook_integrations():
         if name == integration_name:
             return integration_name
     return None
+
 
 def dev_panel(request: HttpRequest) -> HttpResponse:
     integrations = get_webhook_integrations()
@@ -31,10 +33,10 @@ def dev_panel(request: HttpRequest) -> HttpResponse:
     context = {"integrations": integrations, "bots": bots}
     return render(request, "zerver/integrations/development/dev_panel.html", context)
 
-def send_webhook_fixture_message(url: str,
-                                 body: str,
-                                 is_json: bool,
-                                 custom_headers: Dict[str, Any]) -> HttpResponse:
+
+def send_webhook_fixture_message(
+    url: str, body: str, is_json: bool, custom_headers: Dict[str, Any]
+) -> HttpResponse:
     client = Client()
     realm = get_realm("zulip")
     standardized_headers = standardize_headers(custom_headers)
@@ -43,12 +45,13 @@ def send_webhook_fixture_message(url: str,
         content_type = standardized_headers.pop("HTTP_CONTENT_TYPE", "application/json")
     else:
         content_type = standardized_headers.pop("HTTP_CONTENT_TYPE", "text/plain")
-    return client.post(url, body, content_type=content_type, HTTP_HOST=http_host,
-                       **standardized_headers)
+    return client.post(
+        url, body, content_type=content_type, HTTP_HOST=http_host, **standardized_headers
+    )
+
 
 @has_request_variables
-def get_fixtures(request: HttpResponse,
-                 integration_name: str=REQ()) -> HttpResponse:
+def get_fixtures(request: HttpResponse, integration_name: str = REQ()) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:
         return json_error(f"\"{integration_name}\" is not a valid webhook integration.", status=404)
@@ -57,7 +60,8 @@ def get_fixtures(request: HttpResponse,
     fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")
     if not os.path.exists(fixtures_dir):
         msg = ("The integration \"{valid_integration_name}\" does not have fixtures.").format(
-            valid_integration_name=valid_integration_name)
+            valid_integration_name=valid_integration_name
+        )
         return json_error(msg, status=404)
 
     for fixture in os.listdir(fixtures_dir):
@@ -69,12 +73,13 @@ def get_fixtures(request: HttpResponse,
         except orjson.JSONDecodeError:
             pass  # The file extension will be used to determine the type.
 
-        headers_raw = get_fixture_http_headers(valid_integration_name,
-                                               "".join(fixture.split(".")[:-1]))
+        headers_raw = get_fixture_http_headers(
+            valid_integration_name, "".join(fixture.split(".")[:-1])
+        )
 
         def fix_name(header: str) -> str:
             if header.startswith("HTTP_"):  # HTTP_ is a prefix intended for Django.
-                return header[len("HTTP_"):]
+                return header[len("HTTP_") :]
             return header
 
         headers = {fix_name(k): v for k, v in headers_raw.items()}
@@ -84,30 +89,30 @@ def get_fixtures(request: HttpResponse,
 
 
 @has_request_variables
-def check_send_webhook_fixture_message(request: HttpRequest,
-                                       url: str=REQ(),
-                                       body: str=REQ(),
-                                       is_json: bool=REQ(validator=check_bool),
-                                       custom_headers: str=REQ()) -> HttpResponse:
+def check_send_webhook_fixture_message(
+    request: HttpRequest,
+    url: str = REQ(),
+    body: str = REQ(),
+    is_json: bool = REQ(validator=check_bool),
+    custom_headers: str = REQ(),
+) -> HttpResponse:
     try:
         custom_headers_dict = orjson.loads(custom_headers)
     except orjson.JSONDecodeError as ve:
         return json_error(f"Custom HTTP headers are not in a valid JSON format. {ve}")  # nolint
 
-    response = send_webhook_fixture_message(url, body, is_json,
-                                            custom_headers_dict)
+    response = send_webhook_fixture_message(url, body, is_json, custom_headers_dict)
     if response.status_code == 200:
-        responses = [{"status_code": response.status_code,
-                      "message": response.content.decode()}]
+        responses = [{"status_code": response.status_code, "message": response.content.decode()}]
         return json_success({"responses": responses})
     else:
         return response
 
 
 @has_request_variables
-def send_all_webhook_fixture_messages(request: HttpRequest,
-                                      url: str=REQ(),
-                                      integration_name: str=REQ()) -> HttpResponse:
+def send_all_webhook_fixture_messages(
+    request: HttpRequest, url: str = REQ(), integration_name: str = REQ()
+) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:
         return json_error(f"\"{integration_name}\" is not a valid webhook integration.", status=404)
@@ -115,7 +120,8 @@ def send_all_webhook_fixture_messages(request: HttpRequest,
     fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")
     if not os.path.exists(fixtures_dir):
         msg = ("The integration \"{valid_integration_name}\" does not have fixtures.").format(
-            valid_integration_name=valid_integration_name)
+            valid_integration_name=valid_integration_name
+        )
         return json_error(msg, status=404)
 
     responses = []
@@ -131,7 +137,11 @@ def send_all_webhook_fixture_messages(request: HttpRequest,
         else:
             is_json = False
         response = send_webhook_fixture_message(url, content, is_json, headers)
-        responses.append({"status_code": response.status_code,
-                          "fixture_name": fixture,
-                          "message": response.content.decode()})
+        responses.append(
+            {
+                "status_code": response.status_code,
+                "fixture_name": fixture,
+                "message": response.content.decode(),
+            }
+        )
     return json_success({"responses": responses})

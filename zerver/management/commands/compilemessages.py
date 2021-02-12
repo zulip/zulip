@@ -17,14 +17,12 @@ from pyuca import Collator
 
 
 class Command(compilemessages.Command):
-
     def add_arguments(self, parser: CommandParser) -> None:
         super().add_arguments(parser)
 
         parser.add_argument(
-            '--strict', '-s',
-            action='store_true',
-            help='Stop execution in case of errors.')
+            '--strict', '-s', action='store_true', help='Stop execution in case of errors.'
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         super().handle(*args, **options)
@@ -67,7 +65,7 @@ class Command(compilemessages.Command):
     def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
         try:
             team = polib.pofile(po_filename).metadata["Language-Team"]
-            return team[:team.rindex(" (")]
+            return team[: team.rindex(" (")]
         except (KeyError, ValueError):
             raise Exception(f"Unknown language {locale}")
 
@@ -100,12 +98,14 @@ class Command(compilemessages.Command):
 
         for locale in locales:
             if locale == 'en':
-                data['languages'].append({
-                    'name': 'English',
-                    'name_local': 'English',
-                    'code': 'en',
-                    'locale': 'en',
-                })
+                data['languages'].append(
+                    {
+                        'name': 'English',
+                        'name_local': 'English',
+                        'code': 'en',
+                        'locale': 'en',
+                    }
+                )
                 continue
 
             lc_messages_path = os.path.join(locale_path, locale, 'LC_MESSAGES')

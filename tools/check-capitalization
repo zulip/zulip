@@ -20,17 +20,18 @@ DJANGO_PO_REGEX = re.compile('msgid "(.*?)"')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--show-ignored',
-                        action='store_true',
-                        help='Show strings that passed the check because they contained ignored phrases.')
-    parser.add_argument('--no-generate',
-                        action='store_true',
-                        help="Don't run makemessages command.")
+    parser.add_argument(
+        '--show-ignored',
+        action='store_true',
+        help='Show strings that passed the check because they contained ignored phrases.',
+    )
+    parser.add_argument(
+        '--no-generate', action='store_true', help="Don't run makemessages command."
+    )
     args = parser.parse_args()
 
     if not args.no_generate:
-        subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'],
-                        stderr=subprocess.STDOUT)
+        subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'], stderr=subprocess.STDOUT)
 
     with open('locale/en/translations.json') as f:
         data = json.load(f)
@@ -64,7 +65,9 @@ if __name__ == '__main__':
 
     if frontend_errors or backend_errors or banned_errors_back or banned_errors_front:
         # Point the user to the documentation on what the policy is.
-        docs_url = "https://zulip.readthedocs.io/en/latest/translating/translating.html#capitalization"
+        docs_url = (
+            "https://zulip.readthedocs.io/en/latest/translating/translating.html#capitalization"
+        )
         print(WARNING + "See " + docs_url + ENDC)
         print(FAIL + "Failed!" + ENDC)
         sys.exit(1)

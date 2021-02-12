@@ -12,5 +12,4 @@ class Migration(migrations.Migration):
         ('zerver', '0285_remove_realm_google_hangouts_domain'),
     ]
 
-    operations: List[Any] = [
-    ]
+    operations: List[Any] = []

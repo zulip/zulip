@@ -10,14 +10,18 @@ from zerver.models import UserProfile
 ZULIP_MESSAGE_TEMPLATE = "**{message_sender}**: `{text}`"
 VALID_OPTIONS = {'SHOULD_NOT_BE_MAPPED': '0', 'SHOULD_BE_MAPPED': '1'}
 
+
 @webhook_view('Slack', notify_bot_owner_on_invalid_json=False)
 @has_request_variables
-def api_slack_webhook(request: HttpRequest, user_profile: UserProfile,
-                      user_name: str=REQ(),
-                      text: str=REQ(),
-                      channel_name: str=REQ(),
-                      stream: str=REQ(default='slack'),
-                      channels_map_to_topics: str=REQ(default='1')) -> HttpRequest:
+def api_slack_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_name: str = REQ(),
+    text: str = REQ(),
+    channel_name: str = REQ(),
+    stream: str = REQ(default='slack'),
+    channels_map_to_topics: str = REQ(default='1'),
+) -> HttpRequest:
 
     if channels_map_to_topics not in list(VALID_OPTIONS.values()):
         return json_error(_('Error: channels_map_to_topics parameter other than 0 or 1'))

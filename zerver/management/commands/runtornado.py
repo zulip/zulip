@@ -37,21 +37,31 @@ def handle_callback_exception(callback: Callable[..., Any]) -> None:
     logging.exception("Exception in callback", stack_info=True)
     app_log.error("Exception in callback %r", callback, exc_info=True)
 
+
 class Command(BaseCommand):
     help = "Starts a Tornado Web server wrapping Django."
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('addrport', nargs="?",
-                            help='[optional port number or ipaddr:port]\n '
-                                 '(use multiple ports to start multiple servers)')
+        parser.add_argument(
+            'addrport',
+            nargs="?",
+            help='[optional port number or ipaddr:port]\n '
+            '(use multiple ports to start multiple servers)',
+        )
 
-        parser.add_argument('--nokeepalive', action='store_true',
-                            dest='no_keep_alive',
-                            help="Tells Tornado to NOT keep alive http connections.")
+        parser.add_argument(
+            '--nokeepalive',
+            action='store_true',
+            dest='no_keep_alive',
+            help="Tells Tornado to NOT keep alive http connections.",
+        )
 
-        parser.add_argument('--noxheaders', action='store_false',
-                            dest='xheaders',
-                            help="Tells Tornado to NOT override remote IP with X-Real-IP.")
+        parser.add_argument(
+            '--noxheaders',
+            action='store_false',
+            dest='xheaders',
+            help="Tells Tornado to NOT override remote IP with X-Real-IP.",
+        )
 
     def handle(self, addrport: str, **options: bool) -> None:
         interactive_debug_listen()
@@ -74,12 +84,14 @@ class Command(BaseCommand):
         no_keep_alive = options.get('no_keep_alive', False)
 
         if settings.DEBUG:
-            logging.basicConfig(level=logging.INFO,
-                                format='%(asctime)s %(levelname)-8s %(message)s')
+            logging.basicConfig(
+                level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s'
+            )
 
         def inner_run() -> None:
             from django.conf import settings
             from django.utils import translation
+
             translation.activate(settings.LANGUAGE_CODE)
 
             # We pass display_num_errors=False, since Django will
@@ -92,8 +104,9 @@ class Command(BaseCommand):
                 assert isinstance(queue_client, TornadoQueueClient)
                 # Process notifications received via RabbitMQ
                 queue_name = notify_tornado_queue_name(port)
-                queue_client.start_json_consumer(queue_name,
-                                                 get_wrapped_process_notification(queue_name))
+                queue_client.start_json_consumer(
+                    queue_name, get_wrapped_process_notification(queue_name)
+                )
 
             try:
                 # Application is an instance of Django's standard wsgi handler.
@@ -102,12 +115,13 @@ class Command(BaseCommand):
                     zulip_autoreload_start()
 
                 # start tornado web server in single-threaded mode
-                http_server = httpserver.HTTPServer(application,
-                                                    xheaders=xheaders,
-                                                    no_keep_alive=no_keep_alive)
+                http_server = httpserver.HTTPServer(
+                    application, xheaders=xheaders, no_keep_alive=no_keep_alive
+                )
                 http_server.listen(port, address=addr)
 
                 from zerver.tornado.ioloop_logging import logging_data
+
                 logging_data['port'] = str(port)
                 setup_event_queue(port)
                 add_client_gc_hook(missedmessage_hook)

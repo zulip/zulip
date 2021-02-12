@@ -19,12 +19,16 @@ def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse
         return json_error(_("You must upload exactly one icon."))
 
     icon_file = list(request.FILES.values())[0]
-    if ((settings.MAX_ICON_FILE_SIZE * 1024 * 1024) < icon_file.size):
-        return json_error(_("Uploaded file is larger than the allowed limit of {} MiB").format(
-            settings.MAX_ICON_FILE_SIZE,
-        ))
+    if (settings.MAX_ICON_FILE_SIZE * 1024 * 1024) < icon_file.size:
+        return json_error(
+            _("Uploaded file is larger than the allowed limit of {} MiB").format(
+                settings.MAX_ICON_FILE_SIZE,
+            )
+        )
     upload_icon_image(icon_file, user_profile)
-    do_change_icon_source(user_profile.realm, user_profile.realm.ICON_UPLOADED, acting_user=user_profile)
+    do_change_icon_source(
+        user_profile.realm, user_profile.realm.ICON_UPLOADED, acting_user=user_profile
+    )
     icon_url = realm_icon_url(user_profile.realm)
 
     json_result = dict(
@@ -38,7 +42,9 @@ def delete_icon_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     # We don't actually delete the icon because it might still
     # be needed if the URL was cached and it is rewritten
     # in any case after next update.
-    do_change_icon_source(user_profile.realm, user_profile.realm.ICON_FROM_GRAVATAR, acting_user=user_profile)
+    do_change_icon_source(
+        user_profile.realm, user_profile.realm.ICON_FROM_GRAVATAR, acting_user=user_profile
+    )
     gravatar_url = realm_icon_url(user_profile.realm)
     json_result = dict(
         icon_url=gravatar_url,

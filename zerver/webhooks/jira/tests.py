@@ -60,11 +60,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
             url = self.build_webhook_url()
             payload = dict(webhookEvent=action)
             with patch("zerver.webhooks.jira.view.check_send_webhook_message") as m:
-                result = self.client_post(
-                    url,
-                    payload,
-                    content_type="application/json"
-                )
+                result = self.client_post(url, payload, content_type="application/json")
             self.assertFalse(m.called)
             self.assert_json_success(result)
 

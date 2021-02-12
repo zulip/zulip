@@ -13,6 +13,7 @@ def delete_old_scheduled_jobs(apps: StateApps, schema_editor: DatabaseSchemaEdit
     ScheduledJob = apps.get_model('zerver', 'ScheduledJob')
     ScheduledJob.objects.all().delete()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

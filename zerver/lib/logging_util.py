@@ -28,6 +28,7 @@ class _RateLimitFilter:
     Adapted from https://djangosnippets.org/snippets/2242/.
 
     """
+
     last_error = datetime.min.replace(tzinfo=timezone.utc)
     # This thread-local variable is used to detect recursive
     # exceptions during exception handling (primarily intended for
@@ -71,8 +72,7 @@ class _RateLimitFilter:
         try:
             # Track duplicate errors
             duplicate = False
-            rate = getattr(settings, f'{self.__class__.__name__.upper()}_LIMIT',
-                           600)  # seconds
+            rate = getattr(settings, f'{self.__class__.__name__.upper()}_LIMIT', 600)  # seconds
 
             if rate > 0:
                 (use_cache, should_reset_handling_exception) = self.can_use_remote_cache()
@@ -87,7 +87,7 @@ class _RateLimitFilter:
                         cache.set(key, 1, rate)
                 else:
                     min_date = timezone_now() - timedelta(seconds=rate)
-                    duplicate = (self.last_error >= min_date)
+                    duplicate = self.last_error >= min_date
                     if not duplicate:
                         self.last_error = timezone_now()
 
@@ -96,24 +96,31 @@ class _RateLimitFilter:
             if should_reset_handling_exception:
                 self.handling_exception.value = False
 
+
 class ZulipLimiter(_RateLimitFilter):
     pass
 
+
 class EmailLimiter(_RateLimitFilter):
     pass
+
 
 class ReturnTrue(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         return True
 
+
 class ReturnEnabled(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         return settings.LOGGING_ENABLED
 
+
 class RequireReallyDeployed(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         from django.conf import settings
+
         return settings.PRODUCTION
+
 
 def skip_200_and_304(record: logging.LogRecord) -> bool:
     # Apparently, `status_code` is added by Django and is not an actual
@@ -124,6 +131,7 @@ def skip_200_and_304(record: logging.LogRecord) -> bool:
 
     return True
 
+
 def skip_site_packages_logs(record: logging.LogRecord) -> bool:
     # This skips the log records that are generated from libraries
     # installed in site packages.
@@ -132,12 +140,13 @@ def skip_site_packages_logs(record: logging.LogRecord) -> bool:
         return False
     return True
 
+
 def find_log_caller_module(record: logging.LogRecord) -> Optional[str]:
-    '''Find the module name corresponding to where this record was logged.
+    """Find the module name corresponding to where this record was logged.
 
     Sadly `record.module` is just the innermost component of the full
     module name, so we have to go reconstruct this ourselves.
-    '''
+    """
     # Repeat a search similar to that in logging.Logger.findCaller.
     # The logging call should still be on the stack somewhere; search until
     # we find something in the same source file, and that should give the
@@ -150,10 +159,12 @@ def find_log_caller_module(record: logging.LogRecord) -> Optional[str]:
             return None
         f = f.f_back
 
+
 logger_nicknames = {
     'root': '',  # This one is more like undoing a nickname.
     'zulip.requests': 'zr',  # Super common.
 }
+
 
 def find_log_origin(record: logging.LogRecord) -> str:
     logger_name = logger_nicknames.get(record.name, record.name)
@@ -170,23 +181,27 @@ def find_log_origin(record: logging.LogRecord) -> str:
         # In multi-sharded Tornado, it's often valuable to have which shard is
         # responsible for the request in the logs.
         from zerver.tornado.ioloop_logging import logging_data
+
         shard = logging_data.get('port', 'unknown')
         logger_name = f"{logger_name}:{shard}"
 
     return logger_name
 
+
 log_level_abbrevs = {
-    'DEBUG':    'DEBG',
-    'INFO':     'INFO',
-    'WARNING':  'WARN',
-    'ERROR':    'ERR',
+    'DEBUG': 'DEBG',
+    'INFO': 'INFO',
+    'WARNING': 'WARN',
+    'ERROR': 'ERR',
     'CRITICAL': 'CRIT',
 }
+
 
 def abbrev_log_levelname(levelname: str) -> str:
     # It's unlikely someone will set a custom log level with a custom name,
     # but it's an option, so we shouldn't crash if someone does.
     return log_level_abbrevs.get(levelname, levelname[:4])
+
 
 class ZulipFormatter(logging.Formatter):
     # Used in the base implementation.  Default uses `,`.
@@ -211,6 +226,7 @@ class ZulipFormatter(logging.Formatter):
             setattr(record, 'zulip_decorated', True)
         return super().format(record)
 
+
 class ZulipWebhookFormatter(ZulipFormatter):
     def _compute_fmt(self) -> str:
         basic = super()._compute_fmt()
@@ -229,6 +245,7 @@ class ZulipWebhookFormatter(ZulipFormatter):
 
     def format(self, record: logging.LogRecord) -> str:
         from zerver.lib.request import get_current_request
+
         request = get_current_request()
         if not request:
             setattr(record, 'user', None)
@@ -255,7 +272,8 @@ class ZulipWebhookFormatter(ZulipFormatter):
         for header in request.META.keys():
             if header.lower().startswith('http_x'):
                 header_text += custom_header_template.format(
-                    header=header, value=request.META[header])
+                    header=header, value=request.META[header]
+                )
 
         header_message = header_text if header_text else None
 
@@ -267,10 +285,12 @@ class ZulipWebhookFormatter(ZulipFormatter):
         setattr(record, 'payload', payload)
         return super().format(record)
 
-def log_to_file(logger: Logger,
-                filename: str,
-                log_format: str="%(asctime)s %(levelname)-8s %(message)s",
-                ) -> None:
+
+def log_to_file(
+    logger: Logger,
+    filename: str,
+    log_format: str = "%(asctime)s %(levelname)-8s %(message)s",
+) -> None:
     """Note: `filename` should be declared in zproject/computed_settings.py with zulip_path."""
     formatter = logging.Formatter(log_format)
     handler = logging.FileHandler(filename)

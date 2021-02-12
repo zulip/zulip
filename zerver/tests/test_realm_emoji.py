@@ -7,15 +7,13 @@ from zerver.models import Realm, RealmEmoji, UserProfile, get_realm
 
 
 class RealmEmojiTest(ZulipTestCase):
-
     def create_test_emoji(self, name: str, author: UserProfile) -> RealmEmoji:
         with get_test_image_file('img.png') as img_file:
-            realm_emoji = check_add_realm_emoji(realm=author.realm,
-                                                name=name,
-                                                author=author,
-                                                image_file=img_file)
+            realm_emoji = check_add_realm_emoji(
+                realm=author.realm, name=name, author=author, image_file=img_file
+            )
             if realm_emoji is None:
-                raise Exception("Error creating test emoji.")   # nocoverage
+                raise Exception("Error creating test emoji.")  # nocoverage
         return realm_emoji
 
     def create_test_emoji_with_no_author(self, name: str, realm: Realm) -> RealmEmoji:
@@ -78,7 +76,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertEqual(len(content["emoji"]), 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
         self.assertIn('author_id', test_emoji)
-        author = UserProfile.objects.get(id = test_emoji['author_id'])
+        author = UserProfile.objects.get(id=test_emoji['author_id'])
         self.assertEqual(author.email, email)
 
     def test_realm_emoji_repr(self) -> None:

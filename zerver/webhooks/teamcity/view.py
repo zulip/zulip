@@ -25,19 +25,21 @@ in your TeamCity webhook configuration. Contact {support_email} if you
 need further help!
 """
 
+
 def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Optional[UserProfile]:
     try:
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,
         # and beginning of email address
         user = UserProfile.objects.filter(
-            Q(full_name__iexact=teamcity_username) |
-            Q(email__istartswith=teamcity_username),
+            Q(full_name__iexact=teamcity_username) | Q(email__istartswith=teamcity_username),
             is_active=True,
-            realm=realm).order_by("id")[0]
+            realm=realm,
+        ).order_by("id")[0]
         return user
     except IndexError:
         return None
+
 
 def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) -> Optional[str]:
     for property in property_list:
@@ -45,10 +47,14 @@ def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) 
             return property['value']
     return None
 
+
 @webhook_view('Teamcity')
 @has_request_variables
-def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
-                         payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_teamcity_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     message = payload.get('build')
     if message is None:
         # Ignore third-party specific (e.g. Slack) payload formats
@@ -57,8 +63,7 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
             bot_name=user_profile.full_name,
             support_email=FromAddress.SUPPORT,
         ).strip()
-        send_rate_limited_pm_notification_to_bot_owner(
-            user_profile, user_profile.realm, message)
+        send_rate_limited_pm_notification_to_bot_owner(user_profile, user_profile.realm, message)
 
         return json_success()
 
@@ -102,7 +107,10 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
         topic = build_name
 
     # Check if this is a personal build, and if so try to private message the user who triggered it.
-    if get_teamcity_property_value(message['teamcityProperties'], 'env.BUILD_IS_PERSONAL') == 'true':
+    if (
+        get_teamcity_property_value(message['teamcityProperties'], 'env.BUILD_IS_PERSONAL')
+        == 'true'
+    ):
         # The triggeredBy field gives us the teamcity user full name, and the
         # "teamcity.build.triggeredBy.username" property gives us the teamcity username.
         # Let's try finding the user email from both.
@@ -110,15 +118,22 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
         teamcity_user = guess_zulip_user_from_teamcity(teamcity_fullname, user_profile.realm)
 
         if teamcity_user is None:
-            teamcity_shortname = get_teamcity_property_value(message['teamcityProperties'],
-                                                             'teamcity.build.triggeredBy.username')
+            teamcity_shortname = get_teamcity_property_value(
+                message['teamcityProperties'], 'teamcity.build.triggeredBy.username'
+            )
             if teamcity_shortname is not None:
-                teamcity_user = guess_zulip_user_from_teamcity(teamcity_shortname, user_profile.realm)
+                teamcity_user = guess_zulip_user_from_teamcity(
+                    teamcity_shortname, user_profile.realm
+                )
 
         if teamcity_user is None:
             # We can't figure out who started this build - there's nothing we can do here.
-            logging.info("Teamcity webhook couldn't find a matching Zulip user for "
-                         "Teamcity user '%s' or '%s'", teamcity_fullname, teamcity_shortname)
+            logging.info(
+                "Teamcity webhook couldn't find a matching Zulip user for "
+                "Teamcity user '%s' or '%s'",
+                teamcity_fullname,
+                teamcity_shortname,
+            )
             return json_success()
 
         body = f"Your personal build for {body}"

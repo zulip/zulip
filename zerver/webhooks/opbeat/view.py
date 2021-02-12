@@ -89,8 +89,7 @@ def format_object(
                 else:
                     message += f'\n>{key}: {value}'
             if key == 'subject':
-                message = format_object(
-                    obj['subject'], obj['subject_type'], message + '\n')
+                message = format_object(obj['subject'], obj['subject_type'], message + '\n')
             if ':' in key:
                 value, value_type = key.split(':')
                 message = format_object(obj[value], value_type, message + '\n')
@@ -99,8 +98,11 @@ def format_object(
 
 @webhook_view("Opbeat")
 @has_request_variables
-def api_opbeat_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_opbeat_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     """
     This uses the subject name from opbeat to make the subject,
     and the summary from Opbeat as the message body, with

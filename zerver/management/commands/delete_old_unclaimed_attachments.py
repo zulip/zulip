@@ -13,15 +13,21 @@ class Command(BaseCommand):
               One week is taken as the default value."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('-w', '--weeks',
-                            dest='delta_weeks',
-                            default=5,
-                            type=int,
-                            help="Limiting value of how old the file can be.")
+        parser.add_argument(
+            '-w',
+            '--weeks',
+            dest='delta_weeks',
+            default=5,
+            type=int,
+            help="Limiting value of how old the file can be.",
+        )
 
-        parser.add_argument('-f', '--for-real',
-                            action='store_true',
-                            help="Actually remove the files from the storage.")
+        parser.add_argument(
+            '-f',
+            '--for-real',
+            action='store_true',
+            help="Actually remove the files from the storage.",
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         delta_weeks = options['delta_weeks']

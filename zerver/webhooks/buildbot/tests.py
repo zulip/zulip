@@ -8,7 +8,9 @@ class BuildbotHookTests(WebhookTestCase):
 
     def test_build_started(self) -> None:
         expected_topic = "buildbot-hello"
-        expected_message = "Build [#33](http://exampleurl.com/#builders/1/builds/33) for **runtests** started."
+        expected_message = (
+            "Build [#33](http://exampleurl.com/#builders/1/builds/33) for **runtests** started."
+        )
         self.check_webhook("started", expected_topic, expected_message)
 
     def test_build_success(self) -> None:

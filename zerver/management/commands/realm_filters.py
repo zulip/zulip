@@ -23,13 +23,18 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
 """
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--op',
-                            default="show",
-                            help='What operation to do (add, show, remove).')
-        parser.add_argument('pattern', metavar='<pattern>', nargs='?',
-                            help="regular expression to match")
-        parser.add_argument('url_format_string', metavar='<URL pattern>', nargs='?',
-                            help="format string to substitute")
+        parser.add_argument(
+            '--op', default="show", help='What operation to do (add, show, remove).'
+        )
+        parser.add_argument(
+            'pattern', metavar='<pattern>', nargs='?', help="regular expression to match"
+        )
+        parser.add_argument(
+            'url_format_string',
+            metavar='<URL pattern>',
+            nargs='?',
+            help="format string to substitute",
+        )
         self.add_realm_args(parser, True)
 
     def handle(self, *args: Any, **options: str) -> None:

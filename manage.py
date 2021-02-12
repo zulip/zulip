@@ -31,7 +31,9 @@ if __name__ == "__main__":
         # which case it's a production server, not a dev environment)
         # and lack of access for /etc/zulip/zulip-secrets.conf (which
         # should be only readable by root and zulip)
-        print("Error accessing Zulip secrets; manage.py in production must be run as the zulip user.")
+        print(
+            "Error accessing Zulip secrets; manage.py in production must be run as the zulip user."
+        )
         sys.exit(1)
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")

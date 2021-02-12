@@ -26,10 +26,14 @@ ZABBIX_MESSAGE_TEMPLATE = """
 * {item}
 """.strip()
 
+
 @webhook_view('Zabbix')
 @has_request_variables
-def api_zabbix_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_zabbix_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
 
     try:
         body = get_body_for_http_request(payload)
@@ -39,16 +43,17 @@ def api_zabbix_webhook(request: HttpRequest, user_profile: UserProfile,
             bot_name=user_profile.full_name,
             support_email=FromAddress.SUPPORT,
         ).strip()
-        send_rate_limited_pm_notification_to_bot_owner(
-            user_profile, user_profile.realm, message)
+        send_rate_limited_pm_notification_to_bot_owner(user_profile, user_profile.realm, message)
 
         return json_error(_("Invalid payload"))
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
+
 def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
     return ZABBIX_TOPIC_TEMPLATE.format(hostname=payload['hostname'])
+
 
 def get_body_for_http_request(payload: Dict[str, Any]) -> str:
     hostname = payload['hostname']

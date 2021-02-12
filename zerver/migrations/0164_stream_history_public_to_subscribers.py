@@ -7,13 +7,16 @@ from django.db.migrations.state import StateApps
 
 
 def set_initial_value_for_history_public_to_subscribers(
-        apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+    apps: StateApps, schema_editor: DatabaseSchemaEditor
+) -> None:
     stream_model = apps.get_model("zerver", "Stream")
     streams = stream_model.objects.all()
 
     for stream in streams:
         if stream.invite_only:
-            stream.history_public_to_subscribers = getattr(settings, 'PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS', False)
+            stream.history_public_to_subscribers = getattr(
+                settings, 'PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS', False
+            )
         else:
             stream.history_public_to_subscribers = True
 
@@ -21,6 +24,7 @@ def set_initial_value_for_history_public_to_subscribers(
             stream.history_public_to_subscribers = False
 
         stream.save(update_fields=["history_public_to_subscribers"])
+
 
 class Migration(migrations.Migration):
 
@@ -34,7 +38,9 @@ class Migration(migrations.Migration):
             name='history_public_to_subscribers',
             field=models.BooleanField(default=False),
         ),
-        migrations.RunPython(set_initial_value_for_history_public_to_subscribers,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            set_initial_value_for_history_public_to_subscribers,
+            reverse_code=migrations.RunPython.noop,
+            elidable=True,
+        ),
     ]

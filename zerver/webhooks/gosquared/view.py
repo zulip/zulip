@@ -21,29 +21,30 @@ The {status} **{name}** messaged:
 
 @webhook_view('GoSquared')
 @has_request_variables
-def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body')) -> HttpResponse:
+def api_gosquared_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Dict[str, Any]] = REQ(argument_type='body'),
+) -> HttpResponse:
     body = ""
     topic = ""
 
     # Unfortunately, there is no other way to infer the event type
     # than just inferring it from the payload's attributes
     # Traffic spike/dip event
-    if (payload.get('concurrents') is not None and
-            payload.get('siteDetails') is not None):
+    if payload.get('concurrents') is not None and payload.get('siteDetails') is not None:
         domain_name = payload['siteDetails']['domain']
         user_num = payload['concurrents']
         user_acc = payload['siteDetails']['acct']
         acc_url = 'https://www.gosquared.com/now/' + user_acc
-        body = TRAFFIC_SPIKE_TEMPLATE.format(website_name=domain_name,
-                                             website_url=acc_url,
-                                             user_num=user_num)
+        body = TRAFFIC_SPIKE_TEMPLATE.format(
+            website_name=domain_name, website_url=acc_url, user_num=user_num
+        )
         topic = f'GoSquared - {domain_name}'
         check_send_webhook_message(request, user_profile, topic, body)
 
     # Live chat message event
-    elif (payload.get('message') is not None and
-          payload.get('person') is not None):
+    elif payload.get('message') is not None and payload.get('person') is not None:
         # Only support non-private messages
         if not payload['message']['private']:
             session_title = payload['message']['session']['title']

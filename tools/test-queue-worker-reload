@@ -15,6 +15,7 @@ sanity_check.check_venv(__file__)
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 successful_worker_launch = '[process_queue] 15 queue worker threads were launched\n'
 
+
 def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
     failed = False
     i = 0
@@ -53,14 +54,17 @@ def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
 
     return failed
 
+
 if __name__ == '__main__':
     print('\nStarting Development Server')
     args = [f"{TOOLS_DIR}/run-dev.py"]
     run_dev = subprocess.Popen(
         args,
         bufsize=1,  # line buffered
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        universal_newlines=True)
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+    )
     failed = check_worker_launch(run_dev)
 
     if failed:

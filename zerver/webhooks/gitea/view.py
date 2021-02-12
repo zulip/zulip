@@ -14,8 +14,8 @@ from zerver.webhooks.gogs.view import gogs_webhook_main
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITEA_EVENT")
 
-def format_pull_request_event(payload: Dict[str, Any],
-                              include_title: bool=False) -> str:
+
+def format_pull_request_event(payload: Dict[str, Any], include_title: bool = False) -> str:
     assignee = payload['pull_request']['assignee']
     data = {
         'user_name': payload['pull_request']['user']['username'],
@@ -34,11 +34,23 @@ def format_pull_request_event(payload: Dict[str, Any],
 
     return get_pull_request_event_message(**data)
 
+
 @webhook_view('Gitea')
 @has_request_variables
-def api_gitea_webhook(request: HttpRequest, user_profile: UserProfile,
-                      payload: Dict[str, Any]=REQ(argument_type='body'),
-                      branches: Optional[str]=REQ(default=None),
-                      user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
-    return gogs_webhook_main('Gitea', 'X_GITEA_EVENT', format_pull_request_event,
-                             request, user_profile, payload, branches, user_specified_topic)
+def api_gitea_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+    branches: Optional[str] = REQ(default=None),
+    user_specified_topic: Optional[str] = REQ("topic", default=None),
+) -> HttpResponse:
+    return gogs_webhook_main(
+        'Gitea',
+        'X_GITEA_EVENT',
+        format_pull_request_event,
+        request,
+        user_profile,
+        payload,
+        branches,
+        user_specified_topic,
+    )

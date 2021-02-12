@@ -42,6 +42,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
         'user_name': user.full_name,
     }
 
+
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
@@ -57,11 +58,13 @@ def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
             request.realm = None
     return request.realm
 
+
 def get_valid_realm_from_request(request: HttpRequest) -> Realm:
     realm = get_realm_from_request(request)
     if realm is None:
         raise InvalidSubdomainError()
     return realm
+
 
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request
@@ -88,8 +91,10 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     find_team_link_disabled = settings.FIND_TEAM_LINK_DISABLED
     allow_search_engine_indexing = False
 
-    if (settings.ROOT_DOMAIN_LANDING_PAGE
-            and get_subdomain(request) == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN):
+    if (
+        settings.ROOT_DOMAIN_LANDING_PAGE
+        and get_subdomain(request) == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+    ):
         register_link_disabled = True
         login_link_disabled = True
         find_team_link_disabled = False
@@ -115,7 +120,9 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         settings_comments_path = "/etc/zulip/settings.py"
 
     support_email = FromAddress.SUPPORT
-    support_email_html_tag = SafeString(f'<a href="mailto:{escape(support_email)}">{escape(support_email)}</a>')
+    support_email_html_tag = SafeString(
+        f'<a href="mailto:{escape(support_email)}">{escape(support_email)}</a>'
+    )
 
     # We can't use request.client here because we might not be using
     # an auth decorator that sets it, but we can call its helper to
@@ -162,6 +169,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
 
     return context
 
+
 def login_context(request: HttpRequest) -> Dict[str, Any]:
     realm = get_realm_from_request(request)
 
@@ -202,12 +210,13 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     # by the desktop client. We expand it with IDs of the <button> elements corresponding
     # to the authentication methods.
     context['page_params'] = dict(
-        external_authentication_methods = get_external_method_dicts(realm),
+        external_authentication_methods=get_external_method_dicts(realm),
     )
     for auth_dict in context['page_params']['external_authentication_methods']:
         auth_dict['button_id_suffix'] = "auth_button_{}".format(auth_dict['name'])
 
     return context
+
 
 def latest_info_context() -> Dict[str, str]:
     context = {

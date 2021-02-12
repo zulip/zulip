@@ -11,30 +11,33 @@ ParamsT = TypeVar('ParamsT')
 
 # Similar to the tracking done in Django's CursorDebugWrapper, but done at the
 # psycopg2 cursor level so it works with SQLAlchemy.
-def wrapper_execute(self: CursorObj,
-                    action: Callable[[Query, ParamsT], CursorObj],
-                    sql: Query,
-                    params: ParamsT) -> CursorObj:
+def wrapper_execute(
+    self: CursorObj, action: Callable[[Query, ParamsT], CursorObj], sql: Query, params: ParamsT
+) -> CursorObj:
     start = time.time()
     try:
         return action(sql, params)
     finally:
         stop = time.time()
         duration = stop - start
-        self.connection.queries.append({
-            'time': f"{duration:.3f}",
-        })
+        self.connection.queries.append(
+            {
+                'time': f"{duration:.3f}",
+            }
+        )
+
 
 class TimeTrackingCursor(cursor):
     """A psycopg2 cursor class that tracks the time spent executing queries."""
 
-    def execute(self, query: Query,
-                vars: Optional[Params]=None) -> 'TimeTrackingCursor':
+    def execute(self, query: Query, vars: Optional[Params] = None) -> 'TimeTrackingCursor':
         return wrapper_execute(self, super().execute, query, vars)
 
-    def executemany(self, query: Query,
-                    vars: Iterable[Params]) -> 'TimeTrackingCursor':  # nocoverage
+    def executemany(
+        self, query: Query, vars: Iterable[Params]
+    ) -> 'TimeTrackingCursor':  # nocoverage
         return wrapper_execute(self, super().executemany, query, vars)
+
 
 class TimeTrackingConnection(connection):
     """A psycopg2 connection class that uses TimeTrackingCursors."""
@@ -47,8 +50,10 @@ class TimeTrackingConnection(connection):
         kwargs.setdefault('cursor_factory', TimeTrackingCursor)
         return connection.cursor(self, *args, **kwargs)
 
+
 def reset_queries() -> None:
     from django.db import connections
+
     for conn in connections.all():
         if conn.connection is not None:
             conn.connection.queries = []

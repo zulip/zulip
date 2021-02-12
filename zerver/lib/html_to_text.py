@@ -33,6 +33,7 @@ def html_to_text(content: Union[str, bytes], tags: Mapping[str, str] = {'p': ' |
             break
     return escape(' '.join(text.split()))
 
-@cache_with_key(open_graph_description_cache_key, timeout=3600*24)
+
+@cache_with_key(open_graph_description_cache_key, timeout=3600 * 24)
 def get_content_description(content: bytes, request: HttpRequest) -> str:
     return html_to_text(content)

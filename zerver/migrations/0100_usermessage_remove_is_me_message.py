@@ -13,11 +13,41 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='archivedusermessage',
             name='flags',
-            field=bitfield.models.BitField(['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned', 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse', 'has_alert_word', 'historical'], default=0),
+            field=bitfield.models.BitField(
+                [
+                    'read',
+                    'starred',
+                    'collapsed',
+                    'mentioned',
+                    'wildcard_mentioned',
+                    'summarize_in_home',
+                    'summarize_in_stream',
+                    'force_expand',
+                    'force_collapse',
+                    'has_alert_word',
+                    'historical',
+                ],
+                default=0,
+            ),
         ),
         migrations.AlterField(
             model_name='usermessage',
             name='flags',
-            field=bitfield.models.BitField(['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned', 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse', 'has_alert_word', 'historical'], default=0),
+            field=bitfield.models.BitField(
+                [
+                    'read',
+                    'starred',
+                    'collapsed',
+                    'mentioned',
+                    'wildcard_mentioned',
+                    'summarize_in_home',
+                    'summarize_in_stream',
+                    'force_expand',
+                    'force_collapse',
+                    'has_alert_word',
+                    'historical',
+                ],
+                default=0,
+            ),
         ),
     ]

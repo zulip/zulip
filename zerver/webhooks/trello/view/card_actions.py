@@ -49,8 +49,10 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     CHANGE_LIST: 'moved {card_url_template} from {old_list} to {new_list}.',
     CHANGE_NAME: 'renamed the card from "{old_name}" to {card_url_template}.',
     SET_DESC: 'set description for {card_url_template} to:\n~~~ quote\n{desc}\n~~~\n',
-    CHANGE_DESC: ('changed description for {card_url_template} from\n' +
-                  '~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n'),
+    CHANGE_DESC: (
+        'changed description for {card_url_template} from\n'
+        + '~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n'
+    ),
     REMOVE_DESC: 'removed description from {card_url_template}.',
     ARCHIVE: 'archived {card_url_template}.',
     REOPEN: 'reopened {card_url_template}.',
@@ -67,14 +69,17 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     UPDATE_CHECK_ITEM_STATE: '{action} **{item_name}** in **{checklist_name}** ({card_url_template}).',
 }
 
+
 def prettify_date(date_string: str) -> str:
     return date_string.replace('T', ' ').replace('.000', '').replace('Z', ' UTC')
+
 
 def process_card_action(payload: Mapping[str, Any], action_type: str) -> Optional[Tuple[str, str]]:
     proper_action = get_proper_action(payload, action_type)
     if proper_action is not None:
         return get_subject(payload), get_body(payload, proper_action)
     return None
+
 
 def get_proper_action(payload: Mapping[str, Any], action_type: str) -> Optional[str]:
     if action_type == 'updateCard':
@@ -119,19 +124,23 @@ def get_proper_action(payload: Mapping[str, Any], action_type: str) -> Optional[
 
     return action_type
 
+
 def get_subject(payload: Mapping[str, Any]) -> str:
     return get_action_data(payload)['board'].get('name')
+
 
 def get_body(payload: Mapping[str, Any], action_type: str) -> str:
     message_body = ACTIONS_TO_FILL_BODY_MAPPER[action_type](payload, action_type)
     creator = payload['action']['memberCreator'].get('fullName')
     return f'{creator} {message_body}'
 
+
 def get_added_checklist_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
         'checklist_name': get_action_data(payload)['checklist'].get('name'),
     }
     return fill_appropriate_message_content(payload, action_type, data)
+
 
 def get_update_check_item_body(payload: Mapping[str, Any], action_type: str) -> str:
     action = get_action_data(payload)
@@ -143,12 +152,14 @@ def get_update_check_item_body(payload: Mapping[str, Any], action_type: str) -> 
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
+
 def get_added_attachment_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
         'attachment_url': get_action_data(payload)['attachment'].get('url'),
         'attachment_name': get_action_data(payload)['attachment'].get('name'),
     }
     return fill_appropriate_message_content(payload, action_type, data)
+
 
 def get_updated_card_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
@@ -158,6 +169,7 @@ def get_updated_card_body(payload: Mapping[str, Any], action_type: str) -> str:
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
+
 def get_renamed_card_body(payload: Mapping[str, Any], action_type: str) -> str:
 
     data = {
@@ -166,6 +178,7 @@ def get_renamed_card_body(payload: Mapping[str, Any], action_type: str) -> str:
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
+
 def get_added_label_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
         'color': get_action_data(payload).get('value'),
@@ -173,11 +186,13 @@ def get_added_label_body(payload: Mapping[str, Any], action_type: str) -> str:
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
+
 def get_managed_member_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
         'member_name': payload['action']['member'].get('fullName'),
     }
     return fill_appropriate_message_content(payload, action_type, data)
+
 
 def get_comment_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
@@ -185,11 +200,13 @@ def get_comment_body(payload: Mapping[str, Any], action_type: str) -> str:
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
+
 def get_managed_due_date_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
         'due_date': prettify_date(get_action_data(payload)['card'].get('due')),
     }
     return fill_appropriate_message_content(payload, action_type, data)
+
 
 def get_changed_due_date_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
@@ -198,11 +215,13 @@ def get_changed_due_date_body(payload: Mapping[str, Any], action_type: str) -> s
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
+
 def get_managed_desc_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
         'desc': get_action_data(payload)['card']['desc'],
     }
     return fill_appropriate_message_content(payload, action_type, data)
+
 
 def get_changed_desc_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
@@ -211,32 +230,42 @@ def get_changed_desc_body(payload: Mapping[str, Any], action_type: str) -> str:
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
+
 def get_body_by_action_type_without_data(payload: Mapping[str, Any], action_type: str) -> str:
     return fill_appropriate_message_content(payload, action_type)
 
-def fill_appropriate_message_content(payload: Mapping[str, Any],
-                                     action_type: str,
-                                     data: Mapping[str, Any] = {}) -> str:
+
+def fill_appropriate_message_content(
+    payload: Mapping[str, Any], action_type: str, data: Mapping[str, Any] = {}
+) -> str:
     data = dict(data)
     if 'card_url_template' not in data:
         data['card_url_template'] = get_filled_card_url_template(payload)
     message_body = get_message_body(action_type)
     return message_body.format(**data)
 
+
 def get_filled_card_url_template(payload: Mapping[str, Any]) -> str:
-    return TRELLO_CARD_URL_TEMPLATE.format(card_name=get_card_name(payload), card_url=get_card_url(payload))
+    return TRELLO_CARD_URL_TEMPLATE.format(
+        card_name=get_card_name(payload), card_url=get_card_url(payload)
+    )
+
 
 def get_card_url(payload: Mapping[str, Any]) -> str:
     return 'https://trello.com/c/{}'.format(get_action_data(payload)['card'].get('shortLink'))
 
+
 def get_message_body(action_type: str) -> str:
     return ACTIONS_TO_MESSAGE_MAPPER[action_type]
+
 
 def get_card_name(payload: Mapping[str, Any]) -> str:
     return get_action_data(payload)['card'].get('name')
 
+
 def get_action_data(payload: Mapping[str, Any]) -> Mapping[str, Any]:
     return payload['action'].get('data')
+
 
 ACTIONS_TO_FILL_BODY_MAPPER = {
     CREATE: get_body_by_action_type_without_data,

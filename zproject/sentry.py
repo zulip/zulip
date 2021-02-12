@@ -16,6 +16,7 @@ from .config import PRODUCTION
 if TYPE_CHECKING:
     from sentry_sdk._types import Event, Hint
 
+
 def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
     if "exc_info" in hint:
         _, exc_value, _ = hint["exc_info"]
@@ -26,6 +27,7 @@ def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
 
     from zerver.lib.request import get_current_request
     from zerver.models import get_user_profile_by_id
+
     with capture_internal_exceptions():
         # event.user is the user context, from Sentry, which is
         # pre-populated with some keys via its Django integration:
@@ -53,6 +55,7 @@ def add_context(event: 'Event', hint: 'Hint') -> Optional['Event']:
             if hasattr(request, 'realm'):
                 event['tags'].setdefault('realm', request.realm.string_id)
     return event
+
 
 def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
     if not dsn:

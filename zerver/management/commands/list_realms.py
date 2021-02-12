@@ -15,9 +15,9 @@ Usage examples:
 ./manage.py list_realms --all"""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--all",
-                            action="store_true",
-                            help="Print all the configuration settings of the realms.")
+        parser.add_argument(
+            "--all", action="store_true", help="Print all the configuration settings of the realms."
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         realms = Realm.objects.all()
@@ -33,11 +33,11 @@ Usage examples:
             for realm in realms:
                 display_string_id = realm.string_id if realm.string_id != '' else "''"
                 if realm.deactivated:
-                    print(self.style.ERROR(outer_format.format(
-                        realm.id,
-                        display_string_id,
-                        realm.name,
-                        realm.uri)))
+                    print(
+                        self.style.ERROR(
+                            outer_format.format(realm.id, display_string_id, realm.name, realm.uri)
+                        )
+                    )
                     deactivated = True
                 else:
                     print(outer_format.format(realm.id, display_string_id, realm.name, realm.uri))

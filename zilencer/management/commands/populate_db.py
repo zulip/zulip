@@ -85,6 +85,7 @@ DEFAULT_EMOJIS = [
     ('hundred_points', '1f4af'),
 ]
 
+
 def clear_database() -> None:
     # Hacky function only for use inside populate_db.  Designed to
     # allow running populate_db repeatedly in series to work without
@@ -95,18 +96,30 @@ def clear_database() -> None:
     # database that would be used with it (i.e. zproject.dev_settings).
     if default_cache['BACKEND'] == 'django_bmemcached.memcached.BMemcached':
         bmemcached.Client(
-            (default_cache['LOCATION'],), **default_cache['OPTIONS'],
+            (default_cache['LOCATION'],),
+            **default_cache['OPTIONS'],
         ).flush_all()
 
     model: Any = None  # Hack because mypy doesn't know these are model classes
-    for model in [Message, Stream, UserProfile, Recipient,
-                  Realm, Subscription, Huddle, UserMessage, Client,
-                  DefaultStream]:
+    for model in [
+        Message,
+        Stream,
+        UserProfile,
+        Recipient,
+        Realm,
+        Subscription,
+        Huddle,
+        UserMessage,
+        Client,
+        DefaultStream,
+    ]:
         model.objects.all().delete()
     Session.objects.all().delete()
 
+
 # Suppress spammy output from the push notifications logger
 push_notifications_logger.disabled = True
+
 
 def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
     subscriptions_to_add = []
@@ -121,18 +134,22 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, An
             s = Subscription(
                 recipient=recipient,
                 user_profile=profile,
-                color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
+                color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)],
+            )
             subscriptions_to_add.append(s)
 
-            log = RealmAuditLog(realm=profile.realm,
-                                modified_user=profile,
-                                modified_stream=stream,
-                                event_last_message_id=0,
-                                event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
-                                event_time=event_time)
+            log = RealmAuditLog(
+                realm=profile.realm,
+                modified_user=profile,
+                modified_stream=stream,
+                event_last_message_id=0,
+                event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+                event_time=event_time,
+            )
             all_subscription_logs.append(log)
     Subscription.objects.bulk_create(subscriptions_to_add)
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
+
 
 def create_alert_words(realm_id: int) -> None:
     user_ids = UserProfile.objects.filter(
@@ -163,86 +180,95 @@ def create_alert_words(realm_id: int) -> None:
                 AlertWord(
                     realm_id=realm_id,
                     user_profile_id=user_id,
-                    word = alert_words[i],
+                    word=alert_words[i],
                 )
             )
 
     AlertWord.objects.bulk_create(recs)
 
+
 class Command(BaseCommand):
     help = "Populate a test database"
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('-n', '--num-messages',
-                            type=int,
-                            default=500,
-                            help='The number of messages to create.')
+        parser.add_argument(
+            '-n', '--num-messages', type=int, default=500, help='The number of messages to create.'
+        )
 
-        parser.add_argument('-b', '--batch-size',
-                            type=int,
-                            default=1000,
-                            help='How many messages to process in a single batch')
+        parser.add_argument(
+            '-b',
+            '--batch-size',
+            type=int,
+            default=1000,
+            help='How many messages to process in a single batch',
+        )
 
-        parser.add_argument('--extra-users',
-                            type=int,
-                            default=0,
-                            help='The number of extra users to create')
+        parser.add_argument(
+            '--extra-users', type=int, default=0, help='The number of extra users to create'
+        )
 
-        parser.add_argument('--extra-bots',
-                            type=int,
-                            default=0,
-                            help='The number of extra bots to create')
+        parser.add_argument(
+            '--extra-bots', type=int, default=0, help='The number of extra bots to create'
+        )
 
-        parser.add_argument('--extra-streams',
-                            type=int,
-                            default=0,
-                            help='The number of extra streams to create')
+        parser.add_argument(
+            '--extra-streams', type=int, default=0, help='The number of extra streams to create'
+        )
 
-        parser.add_argument('--max-topics',
-                            type=int,
-                            help='The number of maximum topics to create')
+        parser.add_argument('--max-topics', type=int, help='The number of maximum topics to create')
 
-        parser.add_argument('--huddles',
-                            dest='num_huddles',
-                            type=int,
-                            default=3,
-                            help='The number of huddles to create.')
+        parser.add_argument(
+            '--huddles',
+            dest='num_huddles',
+            type=int,
+            default=3,
+            help='The number of huddles to create.',
+        )
 
-        parser.add_argument('--personals',
-                            dest='num_personals',
-                            type=int,
-                            default=6,
-                            help='The number of personal pairs to create.')
+        parser.add_argument(
+            '--personals',
+            dest='num_personals',
+            type=int,
+            default=6,
+            help='The number of personal pairs to create.',
+        )
 
-        parser.add_argument('--threads',
-                            type=int,
-                            default=1,
-                            help='The number of threads to use.')
+        parser.add_argument('--threads', type=int, default=1, help='The number of threads to use.')
 
-        parser.add_argument('--percent-huddles',
-                            type=float,
-                            default=15,
-                            help='The percent of messages to be huddles.')
+        parser.add_argument(
+            '--percent-huddles',
+            type=float,
+            default=15,
+            help='The percent of messages to be huddles.',
+        )
 
-        parser.add_argument('--percent-personals',
-                            type=float,
-                            default=15,
-                            help='The percent of messages to be personals.')
+        parser.add_argument(
+            '--percent-personals',
+            type=float,
+            default=15,
+            help='The percent of messages to be personals.',
+        )
 
-        parser.add_argument('--stickyness',
-                            type=float,
-                            default=20,
-                            help='The percent of messages to repeat recent folks.')
+        parser.add_argument(
+            '--stickyness',
+            type=float,
+            default=20,
+            help='The percent of messages to repeat recent folks.',
+        )
 
-        parser.add_argument('--nodelete',
-                            action="store_false",
-                            dest='delete',
-                            help='Whether to delete all the existing messages.')
+        parser.add_argument(
+            '--nodelete',
+            action="store_false",
+            dest='delete',
+            help='Whether to delete all the existing messages.',
+        )
 
-        parser.add_argument('--test-suite',
-                            action="store_true",
-                            help='Configures populate_db to create a deterministic '
-                            'data set for the backend tests.')
+        parser.add_argument(
+            '--test-suite',
+            action="store_true",
+            help='Configures populate_db to create a deterministic '
+            'data set for the backend tests.',
+        )
 
     def handle(self, **options: Any) -> None:
         if options["percent_huddles"] + options["percent_personals"] > 100:
@@ -276,21 +302,33 @@ class Command(BaseCommand):
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             create_internal_realm()
             zulip_realm = Realm.objects.create(
-                string_id="zulip", name="Zulip Dev", emails_restricted_to_domains=False,
+                string_id="zulip",
+                name="Zulip Dev",
+                emails_restricted_to_domains=False,
                 email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 description="The Zulip development environment default organization."
-                            "  It's great for testing!",
-                invite_required=False, org_type=Realm.CORPORATE)
+                "  It's great for testing!",
+                invite_required=False,
+                org_type=Realm.CORPORATE,
+            )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
                 mit_realm = Realm.objects.create(
-                    string_id="zephyr", name="MIT", emails_restricted_to_domains=True,
-                    invite_required=False, org_type=Realm.CORPORATE)
+                    string_id="zephyr",
+                    name="MIT",
+                    emails_restricted_to_domains=True,
+                    invite_required=False,
+                    org_type=Realm.CORPORATE,
+                )
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
                 lear_realm = Realm.objects.create(
-                    string_id="lear", name="Lear & Co.", emails_restricted_to_domains=False,
-                    invite_required=False, org_type=Realm.CORPORATE)
+                    string_id="lear",
+                    name="Lear & Co.",
+                    emails_restricted_to_domains=False,
+                    invite_required=False,
+                    org_type=Realm.CORPORATE,
+                )
 
                 # Default to allowing all members to send mentions in
                 # large streams for the test suite to keep
@@ -324,17 +362,67 @@ class Command(BaseCommand):
                 names.append((full_name, f'extrauser{i}@zulip.com'))
 
             if num_names > num_boring_names:
-                fnames = ['Amber', 'Arpita', 'Bob', 'Cindy', 'Daniela', 'Dan', 'Dinesh',
-                          'Faye', 'François', 'George', 'Hank', 'Irene',
-                          'James', 'Janice', 'Jenny', 'Jill', 'John',
-                          'Kate', 'Katelyn', 'Kobe', 'Lexi', 'Manish', 'Mark', 'Matt', 'Mayna',
-                          'Michael', 'Pete', 'Peter', 'Phil', 'Phillipa', 'Preston',
-                          'Sally', 'Scott', 'Sandra', 'Steve', 'Stephanie',
-                          'Vera']
+                fnames = [
+                    'Amber',
+                    'Arpita',
+                    'Bob',
+                    'Cindy',
+                    'Daniela',
+                    'Dan',
+                    'Dinesh',
+                    'Faye',
+                    'François',
+                    'George',
+                    'Hank',
+                    'Irene',
+                    'James',
+                    'Janice',
+                    'Jenny',
+                    'Jill',
+                    'John',
+                    'Kate',
+                    'Katelyn',
+                    'Kobe',
+                    'Lexi',
+                    'Manish',
+                    'Mark',
+                    'Matt',
+                    'Mayna',
+                    'Michael',
+                    'Pete',
+                    'Peter',
+                    'Phil',
+                    'Phillipa',
+                    'Preston',
+                    'Sally',
+                    'Scott',
+                    'Sandra',
+                    'Steve',
+                    'Stephanie',
+                    'Vera',
+                ]
                 mnames = ['de', 'van', 'von', 'Shaw', 'T.']
-                lnames = ['Adams', 'Agarwal', 'Beal', 'Benson', 'Bonita', 'Davis',
-                          'George', 'Harden', 'James', 'Jones', 'Johnson', 'Jordan',
-                          'Lee', 'Leonard', 'Singh', 'Smith', 'Patel', 'Towns', 'Wall']
+                lnames = [
+                    'Adams',
+                    'Agarwal',
+                    'Beal',
+                    'Benson',
+                    'Bonita',
+                    'Davis',
+                    'George',
+                    'Harden',
+                    'James',
+                    'Jones',
+                    'Johnson',
+                    'Jordan',
+                    'Lee',
+                    'Leonard',
+                    'Singh',
+                    'Smith',
+                    'Patel',
+                    'Towns',
+                    'Wall',
+                ]
 
             for i in range(num_boring_names, num_names):
                 fname = random.choice(fnames) + str(i)
@@ -378,18 +466,31 @@ class Command(BaseCommand):
             # If a stream is not supplied in the webhook URL, the webhook
             # will (in some cases) send the notification as a PM to the
             # owner of the webhook bot, so bot_owner can't be None
-            create_users(zulip_realm, zulip_webhook_bots,
-                         bot_type=UserProfile.INCOMING_WEBHOOK_BOT, bot_owner=zoe)
+            create_users(
+                zulip_realm,
+                zulip_webhook_bots,
+                bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+                bot_owner=zoe,
+            )
             aaron = get_user_by_delivery_email("AARON@zulip.com", zulip_realm)
 
             zulip_outgoing_bots = [
                 ("Outgoing Webhook", "outgoing-webhook@zulip.com"),
             ]
-            create_users(zulip_realm, zulip_outgoing_bots,
-                         bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
+            create_users(
+                zulip_realm,
+                zulip_outgoing_bots,
+                bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+                bot_owner=aaron,
+            )
             outgoing_webhook = get_user("outgoing-webhook@zulip.com", zulip_realm)
-            add_service("outgoing-webhook", user_profile=outgoing_webhook, interface=Service.GENERIC,
-                        base_url="http://127.0.0.1:5002", token=generate_api_key())
+            add_service(
+                "outgoing-webhook",
+                user_profile=outgoing_webhook,
+                interface=Service.GENERIC,
+                base_url="http://127.0.0.1:5002",
+                token=generate_api_key(),
+            )
 
             # Add the realm internal bots to each realm.
             create_if_missing_realm_internal_bots()
@@ -406,8 +507,7 @@ class Command(BaseCommand):
 
             bulk_create_streams(zulip_realm, stream_dict)
             recipient_streams: List[int] = [
-                Stream.objects.get(name=name, realm=zulip_realm).id
-                for name in stream_list
+                Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list
             ]
 
             # Create subscriptions to streams.  The following
@@ -418,8 +518,9 @@ class Command(BaseCommand):
             # across platforms.
 
             subscriptions_list: List[Tuple[UserProfile, Recipient]] = []
-            profiles: Sequence[UserProfile] = UserProfile.objects.select_related().filter(
-                is_bot=False).order_by("email")
+            profiles: Sequence[UserProfile] = (
+                UserProfile.objects.select_related().filter(is_bot=False).order_by("email")
+            )
 
             if options["test_suite"]:
                 subscriptions_map = {
@@ -463,80 +564,96 @@ class Command(BaseCommand):
             for profile, recipient in subscriptions_list:
                 i += 1
                 color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
-                s = Subscription(
-                    recipient=recipient,
-                    user_profile=profile,
-                    color=color)
+                s = Subscription(recipient=recipient, user_profile=profile, color=color)
 
                 subscriptions_to_add.append(s)
 
-                log = RealmAuditLog(realm=profile.realm,
-                                    modified_user=profile,
-                                    modified_stream_id=recipient.type_id,
-                                    event_last_message_id=0,
-                                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
-                                    event_time=event_time)
+                log = RealmAuditLog(
+                    realm=profile.realm,
+                    modified_user=profile,
+                    modified_stream_id=recipient.type_id,
+                    event_last_message_id=0,
+                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+                    event_time=event_time,
+                )
                 all_subscription_logs.append(log)
 
             Subscription.objects.bulk_create(subscriptions_to_add)
             RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
             # Create custom profile field data
-            phone_number = try_add_realm_custom_profile_field(zulip_realm, "Phone number",
-                                                              CustomProfileField.SHORT_TEXT,
-                                                              hint='')
-            biography = try_add_realm_custom_profile_field(zulip_realm, "Biography",
-                                                           CustomProfileField.LONG_TEXT,
-                                                           hint='What are you known for?')
-            favorite_food = try_add_realm_custom_profile_field(zulip_realm, "Favorite food",
-                                                               CustomProfileField.SHORT_TEXT,
-                                                               hint="Or drink, if you'd prefer")
+            phone_number = try_add_realm_custom_profile_field(
+                zulip_realm, "Phone number", CustomProfileField.SHORT_TEXT, hint=''
+            )
+            biography = try_add_realm_custom_profile_field(
+                zulip_realm,
+                "Biography",
+                CustomProfileField.LONG_TEXT,
+                hint='What are you known for?',
+            )
+            favorite_food = try_add_realm_custom_profile_field(
+                zulip_realm,
+                "Favorite food",
+                CustomProfileField.SHORT_TEXT,
+                hint="Or drink, if you'd prefer",
+            )
             field_data: ProfileFieldData = {
                 'vim': {'text': 'Vim', 'order': '1'},
                 'emacs': {'text': 'Emacs', 'order': '2'},
             }
-            favorite_editor = try_add_realm_custom_profile_field(zulip_realm,
-                                                                 "Favorite editor",
-                                                                 CustomProfileField.CHOICE,
-                                                                 field_data=field_data)
-            birthday = try_add_realm_custom_profile_field(zulip_realm, "Birthday",
-                                                          CustomProfileField.DATE)
-            favorite_website = try_add_realm_custom_profile_field(zulip_realm, "Favorite website",
-                                                                  CustomProfileField.URL,
-                                                                  hint="Or your personal blog's URL")
-            mentor = try_add_realm_custom_profile_field(zulip_realm, "Mentor",
-                                                        CustomProfileField.USER)
+            favorite_editor = try_add_realm_custom_profile_field(
+                zulip_realm, "Favorite editor", CustomProfileField.CHOICE, field_data=field_data
+            )
+            birthday = try_add_realm_custom_profile_field(
+                zulip_realm, "Birthday", CustomProfileField.DATE
+            )
+            favorite_website = try_add_realm_custom_profile_field(
+                zulip_realm,
+                "Favorite website",
+                CustomProfileField.URL,
+                hint="Or your personal blog's URL",
+            )
+            mentor = try_add_realm_custom_profile_field(
+                zulip_realm, "Mentor", CustomProfileField.USER
+            )
             github_profile = try_add_realm_default_custom_profile_field(zulip_realm, "github")
 
             # Fill in values for Iago and Hamlet
             hamlet = get_user_by_delivery_email("hamlet@zulip.com", zulip_realm)
-            do_update_user_custom_profile_data_if_changed(iago, [
-                {"id": phone_number.id, "value": "+1-234-567-8901"},
-                {"id": biography.id, "value": "Betrayer of Othello."},
-                {"id": favorite_food.id, "value": "Apples"},
-                {"id": favorite_editor.id, "value": "emacs"},
-                {"id": birthday.id, "value": "2000-01-01"},
-                {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
-                {"id": mentor.id, "value": [hamlet.id]},
-                {"id": github_profile.id, "value": 'zulip'},
-            ])
-            do_update_user_custom_profile_data_if_changed(hamlet, [
-                {"id": phone_number.id, "value": "+0-11-23-456-7890"},
-                {
-                    "id": biography.id,
-                    "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
-                },
-                {"id": favorite_food.id, "value": "Dark chocolate"},
-                {"id": favorite_editor.id, "value": "vim"},
-                {"id": birthday.id, "value": "1900-01-01"},
-                {"id": favorite_website.id, "value": "https://blog.zulig.org"},
-                {"id": mentor.id, "value": [iago.id]},
-                {"id": github_profile.id, "value": 'zulipbot'},
-            ])
+            do_update_user_custom_profile_data_if_changed(
+                iago,
+                [
+                    {"id": phone_number.id, "value": "+1-234-567-8901"},
+                    {"id": biography.id, "value": "Betrayer of Othello."},
+                    {"id": favorite_food.id, "value": "Apples"},
+                    {"id": favorite_editor.id, "value": "emacs"},
+                    {"id": birthday.id, "value": "2000-01-01"},
+                    {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
+                    {"id": mentor.id, "value": [hamlet.id]},
+                    {"id": github_profile.id, "value": 'zulip'},
+                ],
+            )
+            do_update_user_custom_profile_data_if_changed(
+                hamlet,
+                [
+                    {"id": phone_number.id, "value": "+0-11-23-456-7890"},
+                    {
+                        "id": biography.id,
+                        "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
+                    },
+                    {"id": favorite_food.id, "value": "Dark chocolate"},
+                    {"id": favorite_editor.id, "value": "vim"},
+                    {"id": birthday.id, "value": "1900-01-01"},
+                    {"id": favorite_website.id, "value": "https://blog.zulig.org"},
+                    {"id": mentor.id, "value": [iago.id]},
+                    {"id": github_profile.id, "value": 'zulipbot'},
+                ],
+            )
         else:
             zulip_realm = get_realm("zulip")
-            recipient_streams = [klass.type_id for klass in
-                                 Recipient.objects.filter(type=Recipient.STREAM)]
+            recipient_streams = [
+                klass.type_id for klass in Recipient.objects.filter(type=Recipient.STREAM)
+            ]
 
         # Extract a list of all users
         user_profiles: List[UserProfile] = list(UserProfile.objects.filter(is_bot=False))
@@ -554,11 +671,13 @@ class Command(BaseCommand):
                 client = get_client("website")
                 if user.full_name[0] <= 'H':
                     client = get_client("ZulipAndroid")
-                UserPresence.objects.get_or_create(user_profile=user,
-                                                   realm_id=user.realm_id,
-                                                   client=client,
-                                                   timestamp=date,
-                                                   status=status)
+                UserPresence.objects.get_or_create(
+                    user_profile=user,
+                    realm_id=user.realm_id,
+                    client=client,
+                    timestamp=date,
+                    status=status,
+                )
 
         user_profiles_ids = [user_profile.id for user_profile in user_profiles]
 
@@ -567,8 +686,9 @@ class Command(BaseCommand):
             get_huddle(random.sample(user_profiles_ids, random.randint(3, 4)))
 
         # Create several initial pairs for personals
-        personals_pairs = [random.sample(user_profiles_ids, 2)
-                           for i in range(options["num_personals"])]
+        personals_pairs = [
+            random.sample(user_profiles_ids, 2) for i in range(options["num_personals"])
+        ]
 
         create_alert_words(zulip_realm.id)
 
@@ -609,8 +729,10 @@ class Command(BaseCommand):
                 zulip_stream_dict: Dict[str, Dict[str, Any]] = {
                     "devel": {"description": "For developing"},
                     "all": {"description": "For **everything**"},
-                    "announce": {"description": "For announcements",
-                                 'stream_post_policy': Stream.STREAM_POST_POLICY_ADMINS},
+                    "announce": {
+                        "description": "For announcements",
+                        'stream_post_policy': Stream.STREAM_POST_POLICY_ADMINS,
+                    },
                     "design": {"description": "For design"},
                     "support": {"description": "For support"},
                     "social": {"description": "For socializing"},
@@ -642,8 +764,9 @@ class Command(BaseCommand):
 
                 # Add a few default streams
                 for default_stream_name in ["design", "devel", "social", "support"]:
-                    DefaultStream.objects.create(realm=zulip_realm,
-                                                 stream=get_stream(default_stream_name, zulip_realm))
+                    DefaultStream.objects.create(
+                        realm=zulip_realm, stream=get_stream(default_stream_name, zulip_realm)
+                    )
 
                 # Now subscribe everyone to these streams
                 subscribe_users_to_streams(zulip_realm, zulip_stream_dict)
@@ -651,12 +774,15 @@ class Command(BaseCommand):
             if not options["test_suite"]:
                 # Update pointer of each user to point to the last message in their
                 # UserMessage rows with sender_id=user_profile_id.
-                users = list(UserMessage.objects.filter(
-                    message__sender_id=F('user_profile_id')).values(
-                    'user_profile_id').annotate(pointer=Max('message_id')))
+                users = list(
+                    UserMessage.objects.filter(message__sender_id=F('user_profile_id'))
+                    .values('user_profile_id')
+                    .annotate(pointer=Max('message_id'))
+                )
                 for user in users:
                     UserProfile.objects.filter(id=user['user_profile_id']).update(
-                        pointer=user['pointer'])
+                        pointer=user['pointer']
+                    )
 
             create_user_groups()
 
@@ -671,7 +797,9 @@ class Command(BaseCommand):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
                 count += 1
-            jobs.append((count, personals_pairs, options, self.stdout.write, random.randint(0, 10**10)))
+            jobs.append(
+                (count, personals_pairs, options, self.stdout.write, random.randint(0, 10 ** 10))
+            )
 
         for job in jobs:
             generate_and_send_messages(job)
@@ -686,13 +814,16 @@ class Command(BaseCommand):
                     ("Zulip Trac Bot", "trac-bot@zulip.com"),
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                 ]
-                create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
+                create_users(
+                    zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT
+                )
 
             mark_all_messages_as_read()
             self.stdout.write("Successfully populated test database.\n")
 
+
 def mark_all_messages_as_read() -> None:
-    '''
+    """
     We want to keep these two flags intact after we
     create messages:
 
@@ -700,17 +831,21 @@ def mark_all_messages_as_read() -> None:
         is_private
 
     But we will mark all messages as read to save a step for users.
-    '''
+    """
     # Mark all messages as read
     UserMessage.objects.all().update(
         flags=F('flags').bitor(UserMessage.flags.read),
     )
 
+
 recipient_hash: Dict[int, Recipient] = {}
+
+
 def get_recipient_by_id(rid: int) -> Recipient:
     if rid in recipient_hash:
         return recipient_hash[rid]
     return Recipient.objects.get(id=rid)
+
 
 # Create some test messages, including:
 # - multiple streams
@@ -719,13 +854,15 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple personals converastions
 # - multiple messages per subject
 # - both single and multi-line content
-def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
-                                           Callable[[str], Any], int]) -> int:
+def generate_and_send_messages(
+    data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any], int]
+) -> int:
     (tot_messages, personals_pairs, options, output, random_seed) = data
     random.seed(random_seed)
 
-    with open(os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
-                           "test_messages.json"), "rb") as infile:
+    with open(
+        os.path.join(get_or_create_dev_uuid_var_path('test-backend'), "test_messages.json"), "rb"
+    ) as infile:
         dialog = orjson.loads(infile.read())
     random.shuffle(dialog)
     texts = itertools.cycle(dialog)
@@ -737,8 +874,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
 
     huddle_members: Dict[int, List[int]] = {}
     for h in recipient_huddles:
-        huddle_members[h] = [s.user_profile.id for s in
-                             Subscription.objects.filter(recipient_id=h)]
+        huddle_members[h] = [s.user_profile.id for s in Subscription.objects.filter(recipient_id=h)]
 
     # Generate different topics for each stream
     possible_topics = {}
@@ -758,8 +894,10 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
         message.content = next(texts)
 
         randkey = random.randint(1, random_max)
-        if (num_messages > 0 and
-                random.randint(1, random_max) * 100. / random_max < options["stickyness"]):
+        if (
+            num_messages > 0
+            and random.randint(1, random_max) * 100.0 / random_max < options["stickyness"]
+        ):
             # Use an old recipient
             message_type, recipient_id, saved_data = recipients[num_messages - 1]
             if message_type == Recipient.PERSONAL:
@@ -770,14 +908,17 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
                 message.recipient = get_recipient_by_id(recipient_id)
             elif message_type == Recipient.HUDDLE:
                 message.recipient = get_recipient_by_id(recipient_id)
-        elif (randkey <= random_max * options["percent_huddles"] / 100.):
+        elif randkey <= random_max * options["percent_huddles"] / 100.0:
             message_type = Recipient.HUDDLE
             message.recipient = get_recipient_by_id(random.choice(recipient_huddles))
-        elif (randkey <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.):
+        elif (
+            randkey
+            <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.0
+        ):
             message_type = Recipient.PERSONAL
             personals_pair = random.choice(personals_pairs)
             random.shuffle(personals_pair)
-        elif (randkey <= random_max * 1.0):
+        elif randkey <= random_max * 1.0:
             message_type = Recipient.STREAM
             message.recipient = get_recipient_by_id(random.choice(recipient_streams))
 
@@ -785,14 +926,16 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
             sender_id = random.choice(huddle_members[message.recipient.id])
             message.sender = get_user_profile_by_id(sender_id)
         elif message_type == Recipient.PERSONAL:
-            message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
-                                                      type_id=personals_pair[0])
+            message.recipient = Recipient.objects.get(
+                type=Recipient.PERSONAL, type_id=personals_pair[0]
+            )
             message.sender = get_user_profile_by_id(personals_pair[1])
             saved_data['personals_pair'] = personals_pair
         elif message_type == Recipient.STREAM:
             # Pick a random subscriber to the stream
-            message.sender = random.choice(Subscription.objects.filter(
-                recipient=message.recipient)).user_profile
+            message.sender = random.choice(
+                Subscription.objects.filter(recipient=message.recipient)
+            ).user_profile
             message.subject = random.choice(possible_topics[message.recipient.id])
             saved_data['subject'] = message.subject
 
@@ -813,6 +956,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
 
     return tot_messages
 
+
 def send_messages(messages: List[Message]) -> None:
     # We disable USING_RABBITMQ here, so that deferred work is
     # executed in do_send_message_messages, rather than being
@@ -829,6 +973,7 @@ def send_messages(messages: List[Message]) -> None:
     bulk_create_reactions(messages)
     settings.USING_RABBITMQ = True
 
+
 def get_message_to_users(message_ids: List[int]) -> Dict[int, List[int]]:
     rows = UserMessage.objects.filter(
         message_id__in=message_ids,
@@ -840,6 +985,7 @@ def get_message_to_users(message_ids: List[int]) -> Dict[int, List[int]]:
         result[row["message_id"]].append(row["user_profile_id"])
 
     return result
+
 
 def bulk_create_reactions(all_messages: List[Message]) -> None:
     reactions: List[Reaction] = []
@@ -873,11 +1019,13 @@ def bulk_create_reactions(all_messages: List[Message]) -> None:
                         message_id=message_id,
                         emoji_name=emoji_name,
                         emoji_code=emoji_code,
-                        reaction_type=Reaction.UNICODE_EMOJI
+                        reaction_type=Reaction.UNICODE_EMOJI,
                     )
                     reactions.append(reaction)
 
     Reaction.objects.bulk_create(reactions)
+
+
 def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> datetime:
     # Spoofing time not supported with threading
     if threads != 1:
@@ -887,17 +1035,17 @@ def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> date
     # of 3 days. Then, distributes remaining messages over past 24 hours.
     amount_in_first_chunk = int(tot_messages * 0.8)
     amount_in_second_chunk = tot_messages - amount_in_first_chunk
-    if (num_messages < amount_in_first_chunk):
+    if num_messages < amount_in_first_chunk:
         # Distribute starting from 5 days ago, over a period
         # of 3 days:
-        spoofed_date = timezone_now() - timezone_timedelta(days = 5)
+        spoofed_date = timezone_now() - timezone_timedelta(days=5)
         interval_size = 3 * 24 * 60 * 60 / amount_in_first_chunk
         lower_bound = interval_size * num_messages
         upper_bound = interval_size * (num_messages + 1)
 
     else:
         # We're in the last 20% of messages, distribute them over the last 24 hours:
-        spoofed_date = timezone_now() - timezone_timedelta(days = 1)
+        spoofed_date = timezone_now() - timezone_timedelta(days=1)
         interval_size = 24 * 60 * 60 / amount_in_second_chunk
         lower_bound = interval_size * (num_messages - amount_in_first_chunk)
         upper_bound = interval_size * (num_messages - amount_in_first_chunk + 1)
@@ -907,9 +1055,11 @@ def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> date
 
     return spoofed_date
 
+
 def create_user_groups() -> None:
     zulip = get_realm('zulip')
-    members = [get_user_by_delivery_email('cordelia@zulip.com', zulip),
-               get_user_by_delivery_email('hamlet@zulip.com', zulip)]
-    create_user_group("hamletcharacters", members, zulip,
-                      description="Characters of Hamlet")
+    members = [
+        get_user_by_delivery_email('cordelia@zulip.com', zulip),
+        get_user_by_delivery_email('hamlet@zulip.com', zulip),
+    ]
+    create_user_group("hamletcharacters", members, zulip, description="Characters of Hamlet")

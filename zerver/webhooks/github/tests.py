@@ -13,6 +13,7 @@ TOPIC_ORGANIZATION = "baxterandthehackers organization"
 TOPIC_BRANCH = "public-repo / changes"
 TOPIC_WIKI = "public-repo / Wiki Pages"
 
+
 class GitHubWebhookTest(WebhookTestCase):
     STREAM_NAME = 'github'
     URL_TEMPLATE = "/api/v1/external/github?stream={stream}&api_key={api_key}"
@@ -141,7 +142,9 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("issues", expected_topic, expected_message)
 
     def test_membership_msg(self) -> None:
-        expected_message = "baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team."
+        expected_message = (
+            "baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team."
+        )
         self.check_webhook("membership", TOPIC_ORGANIZATION, expected_message)
 
     def test_membership_removal_msg(self) -> None:
@@ -184,7 +187,9 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__closed", expected_topic, expected_message)
 
     def test_pull_request_merged_msg(self) -> None:
-        expected_message = "baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        expected_message = (
+            "baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        )
         self.check_webhook("pull_request__merged", TOPIC_PR, expected_message)
 
     def test_public_msg(self) -> None:
@@ -212,7 +217,9 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("release", TOPIC_REPO, expected_message)
 
     def test_page_build_msg(self) -> None:
-        expected_message = "GitHub Pages build, triggered by baxterthehacker, has finished building."
+        expected_message = (
+            "GitHub Pages build, triggered by baxterthehacker, has finished building."
+        )
         self.check_webhook("page_build", TOPIC_REPO, expected_message)
 
     def test_status_msg(self) -> None:
@@ -270,7 +277,9 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__assigned", expected_topic, expected_message)
 
     def test_pull_request_unassigned_msg(self) -> None:
-        expected_message = "eeshangarg unassigned [PR #1](https://github.com/zulip-test-org/helloworld/pull/1)."
+        expected_message = (
+            "eeshangarg unassigned [PR #1](https://github.com/zulip-test-org/helloworld/pull/1)."
+        )
         self.check_webhook(
             "pull_request__unassigned",
             "helloworld / PR #1 Mention that Zulip rocks!",
@@ -442,9 +451,7 @@ A temporary team so that I can get some webhook fixtures!
                 bogus_key1={},
                 bogus_key2={},
             ),
-            team=dict(
-                name="My Team"
-            ),
+            team=dict(name="My Team"),
         )
 
         log_mock = patch("zerver.decorator.webhook_unsupported_events_logger.exception")
@@ -462,7 +469,7 @@ A temporary team so that I can get some webhook fixtures!
             message=stream_message,
             stream_name=self.STREAM_NAME,
             topic_name="team My Team",
-            content="Team has changes to `bogus_key1/bogus_key2` data."
+            content="Team has changes to `bogus_key1/bogus_key2` data.",
         )
 
         m.assert_called_once()

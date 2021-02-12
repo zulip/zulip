@@ -78,6 +78,7 @@ EMOJI_POS_INFO_TEMPLATE = """\
 # change directory
 os.chdir(EMOJI_SCRIPT_DIR_PATH)
 
+
 def main() -> None:
     if not os.access(EMOJI_CACHE_PATH, os.W_OK):
         # Note: In production, this block will fail, since we don't
@@ -112,14 +113,17 @@ def main() -> None:
     for filename in to_remove:
         os.remove(os.path.join(TARGET_EMOJI_STYLES, filename))
 
+
 def percent(f: float) -> str:
     return f'{f * 100:0.3f}%'
+
 
 def get_square_size(emoji_data: List[Dict[str, Any]]) -> int:
     """
     Spritesheets are usually NxN squares, and we have to
     infer N from the sheet_x/sheet_y values of emojis.
     """
+
     def get_offsets(emoji_data: List[Dict[str, Any]]) -> Iterator[int]:
         for emoji_dict in emoji_data:
             yield emoji_dict['sheet_x']
@@ -132,10 +136,10 @@ def get_square_size(emoji_data: List[Dict[str, Any]]) -> int:
     n = max(get_offsets(emoji_data)) + 1
     return n
 
-def generate_sprite_css_files(cache_path: str,
-                              emoji_data: List[Dict[str, Any]],
-                              emojiset: str,
-                              alt_name: str) -> None:
+
+def generate_sprite_css_files(
+    cache_path: str, emoji_data: List[Dict[str, Any]], emojiset: str, alt_name: str
+) -> None:
     """
     Spritesheets are usually NxN squares.
     """
@@ -224,10 +228,11 @@ def generate_sprite_css_files(cache_path: str,
             ),
         )
 
+
 def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
-    def ensure_emoji_image(emoji_dict: Dict[str, Any],
-                           src_emoji_farm: str,
-                           target_emoji_farm: str) -> None:
+    def ensure_emoji_image(
+        emoji_dict: Dict[str, Any], src_emoji_farm: str, target_emoji_farm: str
+    ) -> None:
         # We use individual images from emoji farm for rendering emojis
         # in notification messages. We have a custom emoji formatter in
         # notifications processing code that converts `span` tags to
@@ -239,9 +244,9 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         dst_file = os.path.join(target_emoji_farm, img_file_name)
         shutil.copy2(src_file, dst_file)
 
-    def setup_emoji_farm(emojiset: str,
-                         emoji_data: List[Dict[str, Any]],
-                         alt_name: Optional[str]=None) -> None:
+    def setup_emoji_farm(
+        emojiset: str, emoji_data: List[Dict[str, Any]], alt_name: Optional[str] = None
+    ) -> None:
         # `alt_name` is an optional parameter that we use to avoid duplicating below
         # code. It is only used while setting up google-blob emojiset as it is just
         # a wrapper for an older version of emoji-datasource package due to which we
@@ -251,7 +256,8 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
 
         # Copy individual emoji images from npm packages.
         src_emoji_farm = os.path.join(
-            NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', alt_name, '64')
+            NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', alt_name, '64'
+        )
         target_emoji_farm = os.path.join(cache_path, 'images-' + emojiset + '-64')
         os.makedirs(target_emoji_farm, exist_ok=True)
         print("Copying individual image files...")
@@ -281,16 +287,17 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         setup_emoji_farm(emojiset, emoji_data)
 
     # Set up old Google "blobs" emojiset.
-    GOOGLE_BLOB_EMOJI_DATA_PATH = os.path.join(NODE_MODULES_PATH,
-                                               'emoji-datasource-google-blob',
-                                               'emoji.json')
+    GOOGLE_BLOB_EMOJI_DATA_PATH = os.path.join(
+        NODE_MODULES_PATH, 'emoji-datasource-google-blob', 'emoji.json'
+    )
     with open(GOOGLE_BLOB_EMOJI_DATA_PATH, "rb") as fp:
         blob_emoji_data = orjson.loads(fp.read())
     setup_emoji_farm('google-blob', blob_emoji_data, 'google')
 
-def setup_old_emoji_farm(cache_path: str,
-                         emoji_map: Dict[str, str],
-                         emoji_data: List[Dict[str, Any]]) -> None:
+
+def setup_old_emoji_farm(
+    cache_path: str, emoji_map: Dict[str, str], emoji_data: List[Dict[str, Any]]
+) -> None:
     # Code for setting up old emoji farm.
     os.chdir(cache_path)
     emoji_cache_path = os.path.join(cache_path, 'images', 'emoji')
@@ -320,6 +327,7 @@ def setup_old_emoji_farm(cache_path: str,
         except FileExistsError:
             pass
 
+
 def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> None:
     # This function generates the main data file about emoji that are
     # consumed by the webapp, mobile apps, Markdown processor, etc.
@@ -329,13 +337,18 @@ def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> 
 
     EMOJI_CODES_FILE_PATH = os.path.join(cache_path, 'emoji_codes.json')
     with open(EMOJI_CODES_FILE_PATH, 'wb') as emoji_codes_file:
-        emoji_codes_file.write(orjson.dumps({
-            'names': names,
-            'name_to_codepoint': name_to_codepoint,
-            'codepoint_to_name': codepoint_to_name,
-            'emoji_catalog': emoji_catalog,
-            'emoticon_conversions': EMOTICON_CONVERSIONS,
-        }))
+        emoji_codes_file.write(
+            orjson.dumps(
+                {
+                    'names': names,
+                    'name_to_codepoint': name_to_codepoint,
+                    'codepoint_to_name': codepoint_to_name,
+                    'emoji_catalog': emoji_catalog,
+                    'emoticon_conversions': EMOTICON_CONVERSIONS,
+                }
+            )
+        )
+
 
 def dump_emojis(cache_path: str) -> None:
     with open('emoji_map.json', "rb") as emoji_map_file:
@@ -356,6 +369,7 @@ def dump_emojis(cache_path: str) -> None:
 
     # Generate various map files.
     generate_map_files(cache_path, emoji_catalog)
+
 
 if __name__ == "__main__":
     main()

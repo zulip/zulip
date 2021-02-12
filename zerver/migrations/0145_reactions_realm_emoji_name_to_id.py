@@ -24,17 +24,21 @@ def realm_emoji_name_to_id(apps: StateApps, schema_editor: DatabaseSchemaEditor)
             # Realm emoji used in this reaction has been deleted so this
             # reaction should also be deleted. We don't need to reverse
             # this step in migration reversal code.
-            print(f"Reaction for ({emoji_name}, {reaction.message_id}) refers to deleted custom emoji {reaction.user_profile_id}; deleting")
+            print(
+                f"Reaction for ({emoji_name}, {reaction.message_id}) refers to deleted custom emoji {reaction.user_profile_id}; deleting"
+            )
             reaction.delete()
         else:
             reaction.emoji_code = realm_emoji["id"]
             reaction.save()
+
 
 def reversal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Reaction = apps.get_model('zerver', 'Reaction')
     for reaction in Reaction.objects.filter(reaction_type='realm_emoji'):
         reaction.emoji_code = reaction.emoji_name
         reaction.save()
+
 
 class Migration(migrations.Migration):
 
@@ -43,7 +47,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(realm_emoji_name_to_id,
-                             reverse_code=reversal,
-                             elidable=True),
+        migrations.RunPython(realm_emoji_name_to_id, reverse_code=reversal, elidable=True),
     ]

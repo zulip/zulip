@@ -5,10 +5,13 @@ from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def disable_realm_digest_emails_enabled(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def disable_realm_digest_emails_enabled(
+    apps: StateApps, schema_editor: DatabaseSchemaEditor
+) -> None:
     Realm = apps.get_model("zerver", "Realm")
     realms = Realm.objects.filter(digest_emails_enabled=True)
     realms.update(digest_emails_enabled=False)
+
 
 class Migration(migrations.Migration):
 
@@ -22,7 +25,9 @@ class Migration(migrations.Migration):
             name='digest_emails_enabled',
             field=models.BooleanField(default=False),
         ),
-        migrations.RunPython(disable_realm_digest_emails_enabled,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            disable_realm_digest_emails_enabled,
+            reverse_code=migrations.RunPython.noop,
+            elidable=True,
+        ),
     ]

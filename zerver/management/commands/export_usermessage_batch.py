@@ -13,13 +13,13 @@ class Command(BaseCommand):
     help = """UserMessage fetching helper for export.py"""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--path',
-                            help='Path to find messages.json archives')
-        parser.add_argument('--thread',
-                            help='Thread ID')
-        parser.add_argument('--consent-message-id',
-                            type=int,
-                            help='ID of the message advertising users to react with thumbs up')
+        parser.add_argument('--path', help='Path to find messages.json archives')
+        parser.add_argument('--thread', help='Thread ID')
+        parser.add_argument(
+            '--consent-message-id',
+            type=int,
+            help='ID of the message advertising users to react with thumbs up',
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         logging.info("Starting UserMessage batch thread %s", options['thread'])

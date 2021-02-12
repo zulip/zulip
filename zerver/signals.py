@@ -16,6 +16,7 @@ from zerver.models import UserProfile
 
 JUST_CREATED_THRESHOLD = 60
 
+
 def get_device_browser(user_agent: str) -> Optional[str]:
     user_agent = user_agent.lower()
     if "zulip" in user_agent:
@@ -97,7 +98,8 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
             'to_user_ids': [user.id],
             'from_name': FromAddress.security_email_from_name(user_profile=user),
             'from_address': FromAddress.NOREPLY,
-            'context': context}
+            'context': context,
+        }
         queue_json_publish("email_senders", email_dict)
 
 

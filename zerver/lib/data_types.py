@@ -28,6 +28,7 @@ class DictType:
     accounted for in required_keys and optional_keys, and recursive
     validation of types of fields.
     """
+
     def __init__(
         self,
         required_keys: Sequence[Tuple[str, Any]],
@@ -74,6 +75,7 @@ class DictType:
 @dataclass
 class EnumType:
     """An enum with the set of valid values declared."""
+
     valid_vals: Sequence[Any]
 
     def check_data(self, var_name: str, val: Dict[str, Any]) -> None:
@@ -86,6 +88,7 @@ class EnumType:
 
 class Equals:
     """Type requiring a specific value."""
+
     def __init__(self, expected_value: Any) -> None:
         self.expected_value = expected_value
 
@@ -106,6 +109,7 @@ class Equals:
 class NumberType:
     """A Union[float, int]; needed to align with the `number` type in
     OpenAPI, because isinstance(4, float) == False"""
+
     def check_data(self, var_name: str, val: Optional[Any]) -> None:
         if isinstance(val, int) or isinstance(val, float):
             return
@@ -117,6 +121,7 @@ class NumberType:
 
 class ListType:
     """List with every object having the declared sub_type."""
+
     def __init__(self, sub_type: Any, length: Optional[int] = None) -> None:
         self.sub_type = sub_type
         self.length = length
@@ -137,6 +142,7 @@ class ListType:
 @dataclass
 class StringDictType:
     """Type that validates an object is a Dict[str, str]"""
+
     value_type: Any
 
     def check_data(self, var_name: str, val: Dict[Any, Any]) -> None:
@@ -173,6 +179,7 @@ class OptionalType:
 class TupleType:
     """Deprecated; we'd like to avoid using tuples in our API.  Validates
     the tuple has the sequence of sub_types."""
+
     sub_types: Sequence[Any]
 
     def check_data(self, var_name: str, val: Any) -> None:
@@ -188,9 +195,7 @@ class TupleType:
 
     def schema(self, var_name: str) -> str:
         sub_schemas = "\n".join(
-            sorted(
-                schema(str(i), sub_type) for i, sub_type in enumerate(self.sub_types)
-            )
+            sorted(schema(str(i), sub_type) for i, sub_type in enumerate(self.sub_types))
         )
         return f"{var_name} (tuple):\n{indent(sub_schemas)}"
 
@@ -257,11 +262,14 @@ def event_dict_type(
     assert "type" in rkeys
     assert "id" not in keys
     return DictType(
-        required_keys=list(required_keys) + [("id", int)], optional_keys=optional_keys,
+        required_keys=list(required_keys) + [("id", int)],
+        optional_keys=optional_keys,
     )
 
 
-def make_checker(data_type: DictType,) -> Callable[[str, Dict[str, object]], None]:
+def make_checker(
+    data_type: DictType,
+) -> Callable[[str, Dict[str, object]], None]:
     def f(var_name: str, event: Dict[str, Any]) -> None:
         check_data(data_type, var_name, event)
 

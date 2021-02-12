@@ -5,6 +5,7 @@ from django.utils.translation import ugettext as _
 
 T = TypeVar("T", bound="AbstractEnum")
 
+
 class AbstractEnum(Enum):
     '''An enumeration whose members are used strictly for their names.'''
 
@@ -23,6 +24,7 @@ class AbstractEnum(Enum):
 
     def __reduce_ex__(self, proto: object) -> NoReturn:
         raise AssertionError("Not implemented")
+
 
 class ErrorCode(AbstractEnum):
     BAD_REQUEST = ()  # Generic name, from the name of HTTP 400.
@@ -49,8 +51,9 @@ class ErrorCode(AbstractEnum):
     NONEXISTENT_SUBDOMAIN = ()
     RATE_LIMIT_HIT = ()
 
+
 class JsonableError(Exception):
-    '''A standardized error format we can turn into a nice JSON HTTP response.
+    """A standardized error format we can turn into a nice JSON HTTP response.
 
     This class can be invoked in a couple ways.
 
@@ -82,7 +85,7 @@ class JsonableError(Exception):
        and an error code.
 
     Subclasses may also override `http_status_code`.
-    '''
+    """
 
     # Override this in subclasses, as needed.
     code: ErrorCode = ErrorCode.BAD_REQUEST
@@ -100,12 +103,12 @@ class JsonableError(Exception):
 
     @staticmethod
     def msg_format() -> str:
-        '''Override in subclasses.  Gets the items in `data_fields` as format args.
+        """Override in subclasses.  Gets the items in `data_fields` as format args.
 
         This should return (a translation of) a string literal.
         The reason it's not simply a class attribute is to allow
         translation to work.
-        '''
+        """
         # Secretly this gets one more format arg not in `data_fields`: `_msg`.
         # That's for the sake of the `JsonableError` base logic itself, for
         # the simplest form of use where we just get a plain message string
@@ -122,14 +125,14 @@ class JsonableError(Exception):
 
     @property
     def msg(self) -> str:
-        format_data = dict(((f, getattr(self, f)) for f in self.data_fields),
-                           _msg=getattr(self, '_msg', None))
+        format_data = dict(
+            ((f, getattr(self, f)) for f in self.data_fields), _msg=getattr(self, '_msg', None)
+        )
         return self.msg_format().format(**format_data)
 
     @property
     def data(self) -> Dict[str, Any]:
-        return dict(((f, getattr(self, f)) for f in self.data_fields),
-                    code=self.code.name)
+        return dict(((f, getattr(self, f)) for f in self.data_fields), code=self.code.name)
 
     def to_json(self) -> Dict[str, Any]:
         d = {'result': 'error', 'msg': self.msg}
@@ -138,6 +141,7 @@ class JsonableError(Exception):
 
     def __str__(self) -> str:
         return self.msg
+
 
 class StreamDoesNotExistError(JsonableError):
     code = ErrorCode.STREAM_DOES_NOT_EXIST
@@ -150,6 +154,7 @@ class StreamDoesNotExistError(JsonableError):
     def msg_format() -> str:
         return _("Stream '{stream}' does not exist")
 
+
 class StreamWithIDDoesNotExistError(JsonableError):
     code = ErrorCode.STREAM_DOES_NOT_EXIST
     data_fields = ['stream_id']
@@ -160,6 +165,7 @@ class StreamWithIDDoesNotExistError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Stream with ID '{stream_id}' does not exist")
+
 
 class CannotDeactivateLastUserError(JsonableError):
     code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
@@ -173,6 +179,7 @@ class CannotDeactivateLastUserError(JsonableError):
     def msg_format() -> str:
         return _("Cannot deactivate the only {entity}.")
 
+
 class InvalidMarkdownIncludeStatement(JsonableError):
     code = ErrorCode.INVALID_MARKDOWN_INCLUDE_STATEMENT
     data_fields = ['include_statement']
@@ -184,11 +191,12 @@ class InvalidMarkdownIncludeStatement(JsonableError):
     def msg_format() -> str:
         return _("Invalid Markdown include statement: {include_statement}")
 
+
 class RateLimited(JsonableError):
     code = ErrorCode.RATE_LIMIT_HIT
     http_status_code = 429
 
-    def __init__(self, secs_to_freedom: Optional[float]=None) -> None:
+    def __init__(self, secs_to_freedom: Optional[float] = None) -> None:
         self.secs_to_freedom = secs_to_freedom
 
     @staticmethod
@@ -210,12 +218,14 @@ class RateLimited(JsonableError):
 
         return data_dict
 
+
 class InvalidJSONError(JsonableError):
     code = ErrorCode.INVALID_JSON
 
     @staticmethod
     def msg_format() -> str:
         return _("Malformed JSON")
+
 
 class OrganizationMemberRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
@@ -227,6 +237,7 @@ class OrganizationMemberRequired(JsonableError):
     def msg_format() -> str:
         return _("Must be an organization member")
 
+
 class OrganizationAdministratorRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
@@ -236,6 +247,7 @@ class OrganizationAdministratorRequired(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Must be an organization administrator")
+
 
 class OrganizationOwnerRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
@@ -247,6 +259,7 @@ class OrganizationOwnerRequired(JsonableError):
     def msg_format() -> str:
         return _("Must be an organization owner")
 
+
 class StreamAdministratorRequired(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
@@ -257,8 +270,10 @@ class StreamAdministratorRequired(JsonableError):
     def msg_format() -> str:
         return _("Must be an organization or stream administrator")
 
+
 class MarkdownRenderingException(Exception):
     pass
+
 
 class InvalidAPIKeyError(JsonableError):
     code = ErrorCode.INVALID_API_KEY
@@ -271,10 +286,12 @@ class InvalidAPIKeyError(JsonableError):
     def msg_format() -> str:
         return _("Invalid API key")
 
+
 class InvalidAPIKeyFormatError(InvalidAPIKeyError):
     @staticmethod
     def msg_format() -> str:
         return _("Malformed API key")
+
 
 class UnsupportedWebhookEventType(JsonableError):
     code = ErrorCode.UNSUPPORTED_WEBHOOK_EVENT_TYPE
@@ -288,6 +305,7 @@ class UnsupportedWebhookEventType(JsonableError):
     def msg_format() -> str:
         return _("The '{event_type}' event isn't currently supported by the {webhook_name} webhook")
 
+
 class MissingAuthenticationError(JsonableError):
     code = ErrorCode.UNAUTHENTICATED_USER
     http_status_code = 401
@@ -297,6 +315,7 @@ class MissingAuthenticationError(JsonableError):
 
     # No msg_format is defined since this exception is caught and
     # converted into json_unauthorized in Zulip's middleware.
+
 
 class InvalidSubdomainError(JsonableError):
     code = ErrorCode.NONEXISTENT_SUBDOMAIN
@@ -308,6 +327,7 @@ class InvalidSubdomainError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Invalid subdomain")
+
 
 class ZephyrMessageAlreadySentException(Exception):
     def __init__(self, message_id: int) -> None:

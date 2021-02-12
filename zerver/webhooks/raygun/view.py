@@ -13,8 +13,11 @@ from zerver.models import UserProfile
 
 @webhook_view('Raygun')
 @has_request_variables
-def api_raygun_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any] = REQ(argument_type='body')) -> HttpResponse:
+def api_raygun_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     # The payload contains 'event' key. This 'event' key has a value of either
     # 'error_notification' or 'error_activity'. 'error_notification' happens
     # when an error is caught in an application, where as 'error_activity'
@@ -123,7 +126,7 @@ def notification_message_follow_up(payload: Dict[str, Any]) -> str:
         # Cut the "MinuteFollowUp" from the possible event types, then add "
         # minute" after that. So prefix for "OneMinuteFollowUp" is "One
         # minute", where "FiveMinuteFollowUp" is "Five minute".
-        prefix = followup_type[:len(followup_type) - 14] + " minute"
+        prefix = followup_type[: len(followup_type) - 14] + " minute"
 
     message += f"{prefix} {followup_link_md}:\n"
 
@@ -246,8 +249,7 @@ def activity_message(payload: Dict[str, Any]) -> str:
         assigned_to = payload['error']['assignedTo']
         message += f"{user} assigned {error_link_md} to {assigned_to}:\n"
 
-    message += "* **Timestamp**: {}\n".format(
-        parse_time(payload['error']['activityDate']))
+    message += "* **Timestamp**: {}\n".format(parse_time(payload['error']['activityDate']))
 
     message += make_app_info_chunk(payload['application'])
 
@@ -272,8 +274,11 @@ def compose_activity_message(payload: Dict[str, Any]) -> str:
     # But, they all are almost identical and the only differences between them
     # are the keys at line 9 (check fixtures). So there's no need to split
     # the function like the notification one.
-    if event_type == "StatusChanged" or event_type == "AssignedToUser" \
-            or event_type == "CommentAdded":
+    if (
+        event_type == "StatusChanged"
+        or event_type == "AssignedToUser"
+        or event_type == "CommentAdded"
+    ):
         return activity_message(payload)
     else:
         raise UnsupportedWebhookEventType(event_type)
@@ -291,6 +296,5 @@ def parse_time(timestamp: str) -> str:
 
     format = "%Y-%m-%dT%H:%M:%S"
     format += "Z" if timestamp[-1:] == "Z" else ""
-    parsed_time = time.strftime("%c", time.strptime(timestamp,
-                                                    format))
+    parsed_time = time.strftime("%c", time.strptime(timestamp, format))
     return parsed_time
