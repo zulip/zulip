@@ -25,7 +25,7 @@ DESC_TEMPLATE = """
 
 SUPPORTED_CHECK_TYPES = (
     'HTTP',
-    'HTTP_CUSTOM'
+    'HTTP_CUSTOM',
     'HTTPS',
     'SMTP',
     'POP3',

@@ -100,7 +100,7 @@ def is_slow_query(time_delta: float, path: str) -> bool:
     return True
 
 statsd_blacklisted_requests = [
-    'do_confirm', 'signup_send_confirm', 'new_realm_send_confirm,'
+    'do_confirm', 'signup_send_confirm', 'new_realm_send_confirm',
     'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
     'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
     'accounts.unsubscribe', 'apple-touch-icon', 'emoji', 'json.bots',
