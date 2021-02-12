@@ -9,7 +9,7 @@
 // become clear as you keep reading.
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 // Let's start with testing
@@ -572,14 +572,28 @@ run_test("unread_ops", (override) => {
     override(overlays, "is_active", () => false);
     override(overlays, "recent_topics_open", () => false);
 
-    // First, test for a message list that cannot read messages
-    current_msg_list.can_mark_messages_read = () => false;
-    unread_ops.process_visible();
+    // First, test for a message list that cannot read messages.  Here
+    // we use with_field to limit the scope of our stub function.
+    with_field(
+        current_msg_list,
+        "can_mark_messages_read",
+        () => false,
+        () => {
+            unread_ops.process_visible();
+        },
+    );
+
     assert.deepEqual(channel_post_opts, undefined);
 
-    current_msg_list.can_mark_messages_read = () => true;
-    // Do the main thing we're testing!
-    unread_ops.process_visible();
+    with_field(
+        current_msg_list,
+        "can_mark_messages_read",
+        () => true,
+        () => {
+            // Do the main thing we're testing!
+            unread_ops.process_visible();
+        },
+    );
 
     // The most important side effect of the above call is that
     // we post info to the server.  We can verify that the correct
