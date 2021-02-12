@@ -98,16 +98,22 @@ exports.with_overrides = function (test_function) {
     const unused_funcs = new Map();
     const funcs = new Map();
 
-    const override = function (module, func_name, f) {
+    const override = function (obj, func_name, f) {
+        // Given an object `obj` (which is usually a module object),
+        // we re-map `obj[func_name]` to the `f` passed in by the caller.
+        // Then the outer function here (`with_overrides`) automatically
+        // restores the original value of `obj[func_name]` as its last
+        // step.  Generally our code calls `run_test`, which wraps
+        // `with_overrides`.
         if (typeof f !== "function") {
             throw new TypeError("You can only override with a function.");
         }
 
-        if (!funcs.has(module)) {
-            funcs.set(module, new Map());
+        if (!funcs.has(obj)) {
+            funcs.set(obj, new Map());
         }
 
-        if (funcs.get(module).has(func_name)) {
+        if (funcs.get(obj).has(func_name)) {
             // Prevent overriding the same function twice, so that
             // it's super easy to reason about our logic to restore
             // the original function.  Usually if somebody sees this
@@ -117,22 +123,22 @@ exports.with_overrides = function (test_function) {
             );
         }
 
-        funcs.get(module).set(func_name, true);
+        funcs.get(obj).set(func_name, true);
 
-        if (!unused_funcs.has(module)) {
-            unused_funcs.set(module, new Map());
+        if (!unused_funcs.has(obj)) {
+            unused_funcs.set(obj, new Map());
         }
 
-        unused_funcs.get(module).set(func_name, true);
+        unused_funcs.get(obj).set(func_name, true);
 
-        const old_f = module[func_name];
-        module[func_name] = function (...args) {
-            unused_funcs.get(module).delete(func_name);
+        const old_f = obj[func_name];
+        obj[func_name] = function (...args) {
+            unused_funcs.get(obj).delete(func_name);
             return f.apply(this, args);
         };
 
         restore_callbacks.push(() => {
-            module[func_name] = old_f;
+            obj[func_name] = old_f;
         });
     };
 
