@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0267_backfill_userpresence_realm_id'),
+        ("zerver", "0267_backfill_userpresence_realm_id"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userpresence',
-            name='realm',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'),
+            model_name="userpresence",
+            name="realm",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"),
         ),
         migrations.AlterIndexTogether(
-            name='userpresence',
-            index_together={('realm', 'timestamp')},
+            name="userpresence",
+            index_together={("realm", "timestamp")},
         ),
     ]

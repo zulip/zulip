@@ -40,13 +40,13 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
             # Now verify the return value matches the queue actions
             if email_notice:
-                self.assertTrue(notified['email_notified'])
+                self.assertTrue(notified["email_notified"])
             else:
-                self.assertFalse(notified.get('email_notified', False))
+                self.assertFalse(notified.get("email_notified", False))
             if mobile_notice:
-                self.assertTrue(notified['push_notified'])
+                self.assertTrue(notified["push_notified"])
             else:
-                self.assertFalse(notified.get('push_notified', False))
+                self.assertFalse(notified.get("push_notified", False))
         return email_notice, mobile_notice
 
     def test_enqueue_notifications(self) -> None:
@@ -101,8 +101,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             always_push_notify=False,
             idle=True,
             already_notified={
-                'push_notified': True,
-                'email_notified': False,
+                "push_notified": True,
+                "email_notified": False,
             },
         )
         self.assertTrue(email_notice is not None)
@@ -120,8 +120,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             always_push_notify=False,
             idle=True,
             already_notified={
-                'push_notified': False,
-                'email_notified': True,
+                "push_notified": False,
+                "email_notified": True,
             },
         )
         self.assertTrue(email_notice is None)
@@ -296,10 +296,10 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         We used to have a bug with stream_watchers, where we set their flags to
         None.
         """
-        cordelia = self.example_user('cordelia')
-        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
         realm = hamlet.realm
-        stream_name = 'Denmark'
+        stream_name = "Denmark"
 
         self.unsubscribe(hamlet, stream_name)
 
@@ -307,8 +307,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             all_public_streams=True,
             apply_markdown=True,
             client_gravatar=True,
-            client_type_name='home grown API program',
-            event_types=['message'],
+            client_type_name="home grown API program",
+            event_types=["message"],
             last_connection_time=time.time(),
             queue_timeout=0,
             realm_id=realm.id,
@@ -333,7 +333,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
     def test_end_to_end_missedmessage_hook(self) -> None:
         """Tests what arguments missedmessage_hook passes into maybe_enqueue_notifications.
         Combined with the previous test, this ensures that the missedmessage_hook is correct"""
-        user_profile = self.example_user('hamlet')
+        user_profile = self.example_user("hamlet")
 
         user_profile.enable_online_push_notifications = False
         user_profile.save()
@@ -407,7 +407,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': False, 'push_notified': False},
+                    {"email_notified": False, "push_notified": False},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -434,7 +434,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     None,
                     False,
                     True,
-                    {'email_notified': True, 'push_notified': True},
+                    {"email_notified": True, "push_notified": True},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -463,7 +463,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': True, 'push_notified': True},
+                    {"email_notified": True, "push_notified": True},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -492,7 +492,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': True, 'push_notified': True},
+                    {"email_notified": True, "push_notified": True},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -525,13 +525,13 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': False, 'push_notified': False},
+                    {"email_notified": False, "push_notified": False},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
         # Wildcard mentions in muted streams don't notify.
-        change_subscription_properties(user_profile, stream, sub, {'is_muted': True})
+        change_subscription_properties(user_profile, stream, sub, {"is_muted": True})
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
         msg_id = self.send_stream_message(
@@ -555,11 +555,11 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': False, 'push_notified': False},
+                    {"email_notified": False, "push_notified": False},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
-        change_subscription_properties(user_profile, stream, sub, {'is_muted': False})
+        change_subscription_properties(user_profile, stream, sub, {"is_muted": False})
 
         # With wildcard_mentions_notify=False, we treat the user as not mentioned.
         user_profile.wildcard_mentions_notify = False
@@ -587,7 +587,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': False, 'push_notified': False},
+                    {"email_notified": False, "push_notified": False},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -623,7 +623,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': True, 'push_notified': True},
+                    {"email_notified": True, "push_notified": True},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -633,7 +633,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         sub.save()
 
         # Test the hook with a stream message with stream_push_notify
-        change_subscription_properties(user_profile, stream, sub, {'push_notifications': True})
+        change_subscription_properties(user_profile, stream, sub, {"push_notifications": True})
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
         msg_id = self.send_stream_message(
@@ -657,7 +657,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': False, 'push_notified': False},
+                    {"email_notified": False, "push_notified": False},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -665,7 +665,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # Test the hook with a stream message with stream_email_notify
         client_descriptor = allocate_event_queue()
         change_subscription_properties(
-            user_profile, stream, sub, {'push_notifications': False, 'email_notifications': True}
+            user_profile, stream, sub, {"push_notifications": False, "email_notifications": True}
         )
         self.assertTrue(client_descriptor.event_queue.empty())
         msg_id = self.send_stream_message(
@@ -689,7 +689,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': False, 'push_notified': False},
+                    {"email_notified": False, "push_notified": False},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -698,7 +698,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # a muted topic, which we should not push notify for
         client_descriptor = allocate_event_queue()
         change_subscription_properties(
-            user_profile, stream, sub, {'push_notifications': True, 'email_notifications': False}
+            user_profile, stream, sub, {"push_notifications": True, "email_notifications": False}
         )
 
         self.assertTrue(client_descriptor.event_queue.empty())
@@ -727,7 +727,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': False, 'push_notified': False},
+                    {"email_notified": False, "push_notified": False},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -736,11 +736,11 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # a muted stream, which we should not push notify for
         client_descriptor = allocate_event_queue()
         change_subscription_properties(
-            user_profile, stream, sub, {'push_notifications': False, 'email_notifications': True}
+            user_profile, stream, sub, {"push_notifications": False, "email_notifications": True}
         )
 
         self.assertTrue(client_descriptor.event_queue.empty())
-        change_subscription_properties(user_profile, stream, sub, {'is_muted': True})
+        change_subscription_properties(user_profile, stream, sub, {"is_muted": True})
         msg_id = self.send_stream_message(
             self.example_user("iago"), "Denmark", content="what's up everyone?"
         )
@@ -762,14 +762,14 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     "Denmark",
                     False,
                     True,
-                    {'email_notified': False, 'push_notified': False},
+                    {"email_notified": False, "push_notified": False},
                 ),
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
         # Clean up the state we just changed (not necessary unless we add more test code below)
         change_subscription_properties(
-            user_profile, stream, sub, {'push_notifications': True, 'is_muted': False}
+            user_profile, stream, sub, {"push_notifications": True, "is_muted": False}
         )
 
 
@@ -800,13 +800,13 @@ class FileReloadLogicTest(ZulipTestCase):
 
 class EventQueueTest(ZulipTestCase):
     def get_client_descriptor(self) -> ClientDescriptor:
-        hamlet = self.example_user('hamlet')
+        hamlet = self.example_user("hamlet")
         realm = hamlet.realm
         queue_data = dict(
             all_public_streams=False,
             apply_markdown=False,
             client_gravatar=True,
-            client_type_name='website',
+            client_type_name="website",
             event_types=None,
             last_connection_time=time.time(),
             queue_timeout=0,
@@ -823,7 +823,7 @@ class EventQueueTest(ZulipTestCase):
         self.assertEqual(client.to_dict(), new_client.to_dict())
 
         client_dict = client.to_dict()
-        del client_dict['event_queue']['newest_pruned_id']
+        del client_dict["event_queue"]["newest_pruned_id"]
         new_client = ClientDescriptor.from_dict(client_dict)
         self.assertEqual(client_dict, new_client.to_dict())
 
@@ -851,18 +851,18 @@ class EventQueueTest(ZulipTestCase):
         client = self.get_client_descriptor()
         queue = client.event_queue
 
-        '''
+        """
         The update_message_flags events are special, because
         they can be collapsed together.  Given two umfe's, we:
             * use the latest timestamp
             * concatenate the messages
-        '''
+        """
 
         def umfe(timestamp: int, messages: List[int]) -> Dict[str, Any]:
             return dict(
-                type='update_message_flags',
-                operation='add',
-                flag='read',
+                type="update_message_flags",
+                operation="add",
+                flag="read",
                 all=False,
                 timestamp=timestamp,
                 messages=messages,
@@ -871,10 +871,10 @@ class EventQueueTest(ZulipTestCase):
         events = [
             umfe(timestamp=1, messages=[101]),
             umfe(timestamp=2, messages=[201, 202]),
-            dict(type='unknown'),
-            dict(type='restart', server_generation="1"),
+            dict(type="unknown"),
+            dict(type="restart", server_generation="1"),
             umfe(timestamp=3, messages=[301, 302, 303]),
-            dict(type='restart', server_generation="2"),
+            dict(type="restart", server_generation="2"),
             umfe(timestamp=4, messages=[401, 402, 403, 404]),
         ]
 
@@ -886,13 +886,13 @@ class EventQueueTest(ZulipTestCase):
         self.assertEqual(
             queue.contents(),
             [
-                dict(id=2, type='unknown'),
-                dict(id=5, type='restart', server_generation="2"),
+                dict(id=2, type="unknown"),
+                dict(id=5, type="restart", server_generation="2"),
                 dict(
                     id=6,
-                    type='update_message_flags',
-                    operation='add',
-                    flag='read',
+                    type="update_message_flags",
+                    operation="add",
+                    flag="read",
                     all=False,
                     timestamp=4,
                     messages=[101, 201, 202, 301, 302, 303, 401, 402, 403, 404],
@@ -900,34 +900,34 @@ class EventQueueTest(ZulipTestCase):
             ],
         )
 
-        '''
+        """
         Note that calling queue.contents() has the side
         effect that we will no longer be able to collapse
         the previous events, so the next event will just
         get added to the queue, rather than collapsed.
-        '''
+        """
         queue.push(
             umfe(timestamp=5, messages=[501, 502, 503, 504, 505]),
         )
         self.assertEqual(
             queue.contents(),
             [
-                dict(id=2, type='unknown'),
-                dict(id=5, type='restart', server_generation="2"),
+                dict(id=2, type="unknown"),
+                dict(id=5, type="restart", server_generation="2"),
                 dict(
                     id=6,
-                    type='update_message_flags',
-                    operation='add',
-                    flag='read',
+                    type="update_message_flags",
+                    operation="add",
+                    flag="read",
                     all=False,
                     timestamp=4,
                     messages=[101, 201, 202, 301, 302, 303, 401, 402, 403, 404],
                 ),
                 dict(
                     id=7,
-                    type='update_message_flags',
-                    operation='add',
-                    flag='read',
+                    type="update_message_flags",
+                    operation="add",
+                    flag="read",
                     all=False,
                     timestamp=5,
                     messages=[501, 502, 503, 504, 505],
@@ -964,8 +964,8 @@ class EventQueueTest(ZulipTestCase):
             queue.contents(),
             [
                 {
-                    'id': 1,
-                    'type': 'update_message_flags',
+                    "id": 1,
+                    "type": "update_message_flags",
                     "all": False,
                     "flag": "read",
                     "operation": "add",
@@ -1005,8 +1005,8 @@ class EventQueueTest(ZulipTestCase):
             queue.contents(),
             [
                 {
-                    'id': 1,
-                    'type': 'update_message_flags',
+                    "id": 1,
+                    "type": "update_message_flags",
                     "all": False,
                     "flag": "collapsed",
                     "operation": "remove",
@@ -1031,16 +1031,16 @@ class EventQueueTest(ZulipTestCase):
         # Verify the server_generation event is stored as a virtual event
         self.assertEqual(
             queue.virtual_events,
-            {'restart': {'id': 0, 'type': 'restart', 'server_generation': 1, "timestamp": "1"}},
+            {"restart": {"id": 0, "type": "restart", "server_generation": 1, "timestamp": "1"}},
         )
         # And we can reconstruct newest_pruned_id etc.
         self.verify_to_dict_end_to_end(client)
 
         queue.push({"type": "unknown", "timestamp": "1"})
-        self.assertEqual(list(queue.queue), [{'id': 1, 'type': 'unknown', "timestamp": "1"}])
+        self.assertEqual(list(queue.queue), [{"id": 1, "type": "unknown", "timestamp": "1"}])
         self.assertEqual(
             queue.virtual_events,
-            {'restart': {'id': 0, 'type': 'restart', 'server_generation': 1, "timestamp": "1"}},
+            {"restart": {"id": 0, "type": "restart", "server_generation": 1, "timestamp": "1"}},
         )
         # And we can still reconstruct newest_pruned_id etc. correctly
         self.verify_to_dict_end_to_end(client)
@@ -1049,8 +1049,8 @@ class EventQueueTest(ZulipTestCase):
         self.assertEqual(
             queue.contents(),
             [
-                {'id': 0, 'type': 'restart', "server_generation": 1, "timestamp": "1"},
-                {'id': 1, 'type': 'unknown', "timestamp": "1"},
+                {"id": 0, "type": "restart", "server_generation": 1, "timestamp": "1"},
+                {"id": 1, "type": "unknown", "timestamp": "1"},
             ],
         )
 

@@ -114,15 +114,15 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
     # user can enter their information on a cleaner URL.
     return render(
         request,
-        'confirmation/confirm_preregistrationuser.html',
-        context={'key': confirmation_key, 'full_name': request.GET.get("full_name", None)},
+        "confirmation/confirm_preregistrationuser.html",
+        context={"key": confirmation_key, "full_name": request.GET.get("full_name", None)},
     )
 
 
 @require_post
 def accounts_register(request: HttpRequest) -> HttpResponse:
     try:
-        key = request.POST.get('key', default='')
+        key = request.POST.get("key", default="")
         confirmation = Confirmation.objects.get(confirmation_key=key)
     except Confirmation.DoesNotExist:
         return render(request, "zerver/confirmation_link_expired_error.html")
@@ -185,9 +185,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     full_name = None
     require_ldap_password = False
 
-    if request.POST.get('from_confirmation'):
+    if request.POST.get("from_confirmation"):
         try:
-            del request.session['authenticated_full_name']
+            del request.session["authenticated_full_name"]
         except KeyError:
             pass
 
@@ -236,8 +236,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # filled out by the user) we want the form to validate,
             # so they can be directly registered without having to
             # go through this interstitial.
-            form = RegistrationForm({'full_name': ldap_full_name}, realm_creation=realm_creation)
-            request.session['authenticated_full_name'] = ldap_full_name
+            form = RegistrationForm({"full_name": ldap_full_name}, realm_creation=realm_creation)
+            request.session["authenticated_full_name"] = ldap_full_name
             name_validated = True
         elif realm is not None and realm.is_zephyr_mirror_realm:
             # For MIT users, we can get an authoritative name from Hesiod.
@@ -246,24 +246,24 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # zephyr mirroring realm.
             hesiod_name = compute_mit_user_fullname(email)
             form = RegistrationForm(
-                initial={'full_name': hesiod_name if "@" not in hesiod_name else ""},
+                initial={"full_name": hesiod_name if "@" not in hesiod_name else ""},
                 realm_creation=realm_creation,
             )
             name_validated = True
         elif prereg_user.full_name:
             if prereg_user.full_name_validated:
-                request.session['authenticated_full_name'] = prereg_user.full_name
+                request.session["authenticated_full_name"] = prereg_user.full_name
                 name_validated = True
                 form = RegistrationForm(
-                    {'full_name': prereg_user.full_name}, realm_creation=realm_creation
+                    {"full_name": prereg_user.full_name}, realm_creation=realm_creation
                 )
             else:
                 form = RegistrationForm(
-                    initial={'full_name': prereg_user.full_name}, realm_creation=realm_creation
+                    initial={"full_name": prereg_user.full_name}, realm_creation=realm_creation
                 )
-        elif 'full_name' in request.POST:
+        elif "full_name" in request.POST:
             form = RegistrationForm(
-                initial={'full_name': request.POST.get('full_name')},
+                initial={"full_name": request.POST.get("full_name")},
                 realm_creation=realm_creation,
             )
         else:
@@ -275,18 +275,18 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # verified name from you on file, use that. Otherwise, fall
             # back to the full name in the request.
             try:
-                postdata.update(full_name=request.session['authenticated_full_name'])
+                postdata.update(full_name=request.session["authenticated_full_name"])
                 name_validated = True
             except KeyError:
                 pass
         form = RegistrationForm(postdata, realm_creation=realm_creation)
 
     if not (password_auth_enabled(realm) and password_required):
-        form['password'].field.required = False
+        form["password"].field.required = False
 
     if form.is_valid():
-        if password_auth_enabled(realm) and form['password'].field.required:
-            password = form.cleaned_data['password']
+        if password_auth_enabled(realm) and form["password"].field.required:
+            password = form.cleaned_data["password"]
         else:
             # If the user wasn't prompted for a password when
             # completing the authentication form (because they're
@@ -296,21 +296,21 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             password = None
 
         if realm_creation:
-            string_id = form.cleaned_data['realm_subdomain']
-            realm_name = form.cleaned_data['realm_name']
+            string_id = form.cleaned_data["realm_subdomain"]
+            realm_name = form.cleaned_data["realm_name"]
             realm = do_create_realm(string_id, realm_name)
             setup_realm_internal_bots(realm)
         assert realm is not None
 
-        full_name = form.cleaned_data['full_name']
-        default_stream_group_names = request.POST.getlist('default_stream_group')
+        full_name = form.cleaned_data["full_name"]
+        default_stream_group_names = request.POST.getlist("default_stream_group")
         default_stream_groups = lookup_default_stream_groups(default_stream_group_names, realm)
 
         timezone = ""
-        if 'timezone' in request.POST and request.POST['timezone'] in pytz.all_timezones_set:
-            timezone = request.POST['timezone']
+        if "timezone" in request.POST and request.POST["timezone"] in pytz.all_timezones_set:
+            timezone = request.POST["timezone"]
 
-        if 'source_realm' in request.POST and request.POST["source_realm"] != "on":
+        if "source_realm" in request.POST and request.POST["source_realm"] != "on":
             source_profile = get_source_profile(email, request.POST["source_realm"])
         else:
             source_profile = None
@@ -375,7 +375,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                     # user-friendly error message, but it doesn't
                     # particularly matter, because the registration form
                     # is hidden for most users.
-                    view_url = reverse('login')
+                    view_url = reverse("login")
                     query = urlencode({"email": email})
                     redirect_url = add_query_to_redirect_url(view_url, query)
                     return HttpResponseRedirect(redirect_url)
@@ -392,7 +392,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             do_activate_user(user_profile, acting_user=user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
-            do_set_user_display_setting(user_profile, 'timezone', timezone)
+            do_set_user_display_setting(user_profile, "timezone", timezone)
             # TODO: When we clean up the `do_activate_user` code path,
             # make it respect invited_as_admin / is_realm_admin.
 
@@ -420,7 +420,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # root domain, we need to log them into the subdomain for
             # their new realm.
             return redirect_and_log_into_subdomain(
-                ExternalAuthResult(user_profile=user_profile, data_dict={'is_realm_creation': True})
+                ExternalAuthResult(user_profile=user_profile, data_dict={"is_realm_creation": True})
             )
 
         # This dummy_backend check below confirms the user is
@@ -431,50 +431,50 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             return_data=return_data,
             use_dummy_backend=True,
         )
-        if return_data.get('invalid_subdomain'):
+        if return_data.get("invalid_subdomain"):
             # By construction, this should never happen.
             logging.error(
                 "Subdomain mismatch in registration %s: %s",
                 realm.subdomain,
                 user_profile.delivery_email,
             )
-            return redirect('/')
+            return redirect("/")
 
         return login_and_go_to_home(request, auth_result)
 
     return render(
         request,
-        'zerver/register.html',
+        "zerver/register.html",
         context={
-            'form': form,
-            'email': email,
-            'key': key,
-            'full_name': request.session.get('authenticated_full_name', None),
-            'lock_name': name_validated and name_changes_disabled(realm),
+            "form": form,
+            "email": email,
+            "key": key,
+            "full_name": request.session.get("authenticated_full_name", None),
+            "lock_name": name_validated and name_changes_disabled(realm),
             # password_auth_enabled is normally set via our context processor,
             # but for the registration form, there is no logged in user yet, so
             # we have to set it here.
-            'creating_new_team': realm_creation,
-            'password_required': password_auth_enabled(realm) and password_required,
-            'require_ldap_password': require_ldap_password,
-            'password_auth_enabled': password_auth_enabled(realm),
-            'root_domain_available': is_root_domain_available(),
-            'default_stream_groups': [] if realm is None else get_default_stream_groups(realm),
-            'accounts': get_accounts_for_email(email),
-            'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
-            'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
-            'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
-            'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+            "creating_new_team": realm_creation,
+            "password_required": password_auth_enabled(realm) and password_required,
+            "require_ldap_password": require_ldap_password,
+            "password_auth_enabled": password_auth_enabled(realm),
+            "root_domain_available": is_root_domain_available(),
+            "default_stream_groups": [] if realm is None else get_default_stream_groups(realm),
+            "accounts": get_accounts_for_email(email),
+            "MAX_REALM_NAME_LENGTH": str(Realm.MAX_REALM_NAME_LENGTH),
+            "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
+            "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
+            "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
         },
     )
 
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     mobile_flow_otp = get_expirable_session_var(
-        request.session, 'registration_mobile_flow_otp', delete=True
+        request.session, "registration_mobile_flow_otp", delete=True
     )
     desktop_flow_otp = get_expirable_session_var(
-        request.session, 'registration_desktop_flow_otp', delete=True
+        request.session, "registration_desktop_flow_otp", delete=True
     )
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
@@ -484,7 +484,7 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     do_login(request, user_profile)
     # Using 'mark_sanitized' to work around false positive where Pysa thinks
     # that 'user_profile' is user-controlled
-    return HttpResponseRedirect(mark_sanitized(user_profile.realm.uri) + reverse('home'))
+    return HttpResponseRedirect(mark_sanitized(user_profile.realm.uri) + reverse("home"))
 
 
 def prepare_activation_url(
@@ -513,7 +513,7 @@ def prepare_activation_url(
 
     activation_url = create_confirmation_link(prereg_user, confirmation_type)
     if settings.DEVELOPMENT and realm_creation:
-        request.session['confirmation_key'] = {'confirmation_key': activation_url.split('/')[-1]}
+        request.session["confirmation_key"] = {"confirmation_key": activation_url.split("/")[-1]}
     return activation_url
 
 
@@ -521,17 +521,17 @@ def send_confirm_registration_email(
     email: str, activation_url: str, language: str, realm: Optional[Realm] = None
 ) -> None:
     send_email(
-        'zerver/emails/confirm_registration',
+        "zerver/emails/confirm_registration",
         to_emails=[email],
         from_address=FromAddress.tokenized_no_reply_address(),
         language=language,
-        context={'activate_url': activation_url},
+        context={"activate_url": activation_url},
         realm=realm,
     )
 
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
-    login_url = reverse('login')
+    login_url = reverse("login")
     redirect_url = add_query_to_redirect_url(
         login_url, urlencode({"email": email, "already_registered": 1})
     )
@@ -546,7 +546,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             request,
             "zerver/realm_creation_failed.html",
             context={
-                'message': _('The organization creation link has expired' ' or is not valid.')
+                "message": _("The organization creation link has expired" " or is not valid.")
             },
         )
     if not settings.OPEN_REALM_CREATION:
@@ -554,15 +554,15 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             return render(
                 request,
                 "zerver/realm_creation_failed.html",
-                context={'message': _('New organization creation disabled')},
+                context={"message": _("New organization creation disabled")},
             )
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # with a few restrictions on their email address.
-    if request.method == 'POST':
+    if request.method == "POST":
         form = RealmCreationForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
+            email = form.cleaned_data["email"]
             activation_url = prepare_activation_url(email, request, realm_creation=True)
             if key_record is not None and key_record.presume_email_valid:
                 # The user has a token created from the server command line;
@@ -575,18 +575,18 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             try:
                 send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE)
             except smtplib.SMTPException as e:
-                logging.error('Error in create_realm: %s', str(e))
+                logging.error("Error in create_realm: %s", str(e))
                 return HttpResponseRedirect("/config-error/smtp")
 
             if key_record is not None:
                 key_record.delete()
-            return HttpResponseRedirect(reverse('new_realm_send_confirm', kwargs={'email': email}))
+            return HttpResponseRedirect(reverse("new_realm_send_confirm", kwargs={"email": email}))
     else:
         form = RealmCreationForm()
     return render(
         request,
-        'zerver/create_realm.html',
-        context={'form': form, 'current_url': request.get_full_path},
+        "zerver/create_realm.html",
+        context={"form": form, "current_url": request.get_full_path},
     )
 
 
@@ -612,10 +612,10 @@ def accounts_home(
         from_multiuse_invite = True
         invited_as = multiuse_object.invited_as
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
         if form.is_valid():
-            email = form.cleaned_data['email']
+            email = form.cleaned_data["email"]
 
             try:
                 validate_email_not_already_in_realm(realm, email)
@@ -630,10 +630,10 @@ def accounts_home(
                     email, activation_url, request.LANGUAGE_CODE, realm=realm
                 )
             except smtplib.SMTPException as e:
-                logging.error('Error in accounts_home: %s', str(e))
+                logging.error("Error in accounts_home: %s", str(e))
                 return HttpResponseRedirect("/config-error/smtp")
 
-            return HttpResponseRedirect(reverse('signup_send_confirm', kwargs={'email': email}))
+            return HttpResponseRedirect(reverse("signup_send_confirm", kwargs={"email": email}))
 
     else:
         form = HomepageForm(realm=realm)
@@ -644,7 +644,7 @@ def accounts_home(
         multiuse_object_key=multiuse_object_key,
         from_multiuse_invite=from_multiuse_invite,
     )
-    return render(request, 'zerver/accounts_home.html', context=context)
+    return render(request, "zerver/accounts_home.html", context=context)
 
 
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
@@ -668,13 +668,13 @@ def generate_204(request: HttpRequest) -> HttpResponse:
 def find_account(request: HttpRequest) -> HttpResponse:
     from zerver.context_processors import common_context
 
-    url = reverse('find_account')
+    url = reverse("find_account")
 
     emails: List[str] = []
-    if request.method == 'POST':
+    if request.method == "POST":
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
-            emails = form.cleaned_data['emails']
+            emails = form.cleaned_data["emails"]
 
             # Django doesn't support __iexact__in lookup with EmailField, so we have
             # to use Qs to get around that without needing to do multiple queries.
@@ -690,7 +690,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     email=user.delivery_email,
                 )
                 send_email(
-                    'zerver/emails/find_team',
+                    "zerver/emails/find_team",
                     to_user_ids=[user.id],
                     context=context,
                     from_address=FromAddress.SUPPORT,
@@ -699,16 +699,16 @@ def find_account(request: HttpRequest) -> HttpResponse:
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
             # are associated with Zulip.
-            data = urllib.parse.urlencode({'emails': ','.join(emails)})
+            data = urllib.parse.urlencode({"emails": ",".join(emails)})
             return redirect(add_query_to_redirect_url(url, data))
     else:
         form = FindMyTeamForm()
-        result = request.GET.get('emails')
+        result = request.GET.get("emails")
         # The below validation is perhaps unnecessary, in that we
         # shouldn't get able to get here with an invalid email unless
         # the user hand-edits the URLs.
         if result:
-            for email in result.split(','):
+            for email in result.split(","):
                 try:
                     validators.validate_email(email)
                     emails.append(email)
@@ -717,20 +717,20 @@ def find_account(request: HttpRequest) -> HttpResponse:
 
     return render(
         request,
-        'zerver/find_account.html',
-        context={'form': form, 'current_url': lambda: url, 'emails': emails},
+        "zerver/find_account.html",
+        context={"form": form, "current_url": lambda: url, "emails": emails},
     )
 
 
 def realm_redirect(request: HttpRequest) -> HttpResponse:
-    if request.method == 'POST':
+    if request.method == "POST":
         form = RealmRedirectForm(request.POST)
         if form.is_valid():
-            subdomain = form.cleaned_data['subdomain']
+            subdomain = form.cleaned_data["subdomain"]
             realm = get_realm(subdomain)
             redirect_to = get_safe_redirect_to(request.GET.get("next", ""), realm.uri)
             return HttpResponseRedirect(redirect_to)
     else:
         form = RealmRedirectForm()
 
-    return render(request, 'zerver/realm_redirect.html', context={'form': form})
+    return render(request, "zerver/realm_redirect.html", context={"form": form})

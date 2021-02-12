@@ -4,10 +4,10 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TravisHookTests(WebhookTestCase):
-    STREAM_NAME = 'travis'
+    STREAM_NAME = "travis"
     URL_TEMPLATE = "/api/v1/external/travis?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'travis'
-    TOPIC = 'builds'
+    FIXTURE_DIR_NAME = "travis"
+    TOPIC = "builds"
 
     def test_travis_message(self) -> None:
         """
@@ -34,7 +34,7 @@ class TravisHookTests(WebhookTestCase):
         self.subscribe(self.test_user, self.STREAM_NAME)
         result = self.client_post(
             self.url,
-            self.get_body('pull_request'),
+            self.get_body("pull_request"),
             content_type="application/x-www-form-urlencoded",
         )
         self.assert_json_success(result)
@@ -59,5 +59,5 @@ class TravisHookTests(WebhookTestCase):
 
     def get_body(self, fixture_name: str) -> str:
         return urllib.parse.urlencode(
-            {'payload': self.webhook_fixture_data("travis", fixture_name, file_type="json")}
+            {"payload": self.webhook_fixture_data("travis", fixture_name, file_type="json")}
         )

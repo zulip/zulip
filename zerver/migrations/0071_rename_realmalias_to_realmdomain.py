@@ -5,12 +5,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0070_userhotspot'),
+        ("zerver", "0070_userhotspot"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='RealmAlias',
-            new_name='RealmDomain',
+            old_name="RealmAlias",
+            new_name="RealmDomain",
         ),
     ]

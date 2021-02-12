@@ -29,11 +29,11 @@ EMOTICON_CONVERSIONS = emoji_codes["emoticon_conversions"]
 
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
 possible_emoticon_regexes = (re.escape(emoticon) for emoticon in possible_emoticons)
-terminal_symbols = ',.;?!()\\[\\] "\'\\n\\t'  # from composebox_typeahead.js
+terminal_symbols = ",.;?!()\\[\\] \"'\\n\\t"  # from composebox_typeahead.js
 emoticon_regex = (
-    f'(?<![^{terminal_symbols}])(?P<emoticon>('
-    + ')|('.join(possible_emoticon_regexes)
-    + f'))(?![^{terminal_symbols}])'
+    f"(?<![^{terminal_symbols}])(?P<emoticon>("
+    + ")|(".join(possible_emoticon_regexes)
+    + f"))(?![^{terminal_symbols}])"
 )
 
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
@@ -50,8 +50,8 @@ def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
     realm_emojis = realm.get_active_emoji()
     realm_emoji = realm_emojis.get(emoji_name)
     if realm_emoji is not None:
-        return str(realm_emojis[emoji_name]['id']), Reaction.REALM_EMOJI
-    if emoji_name == 'zulip':
+        return str(realm_emojis[emoji_name]["id"]), Reaction.REALM_EMOJI
+    if emoji_name == "zulip":
         return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
     if emoji_name in name_to_codepoint:
         return name_to_codepoint[emoji_name], Reaction.UNICODE_EMOJI
@@ -112,7 +112,7 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str] = Non
 
 def check_valid_emoji_name(emoji_name: str) -> None:
     if emoji_name:
-        if re.match(r'^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
+        if re.match(r"^[0-9a-z.\-_]+(?<![.\-_])$", emoji_name):
             return
         raise JsonableError(_("Invalid characters in emoji name"))
     raise JsonableError(_("Emoji name is missing"))
@@ -124,4 +124,4 @@ def get_emoji_url(emoji_file_name: str, realm_id: int) -> str:
 
 def get_emoji_file_name(emoji_file_name: str, emoji_id: int) -> str:
     _, image_ext = os.path.splitext(emoji_file_name)
-    return ''.join((str(emoji_id), image_ext))
+    return "".join((str(emoji_id), image_ext))

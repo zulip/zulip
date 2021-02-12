@@ -12,7 +12,7 @@ from zerver.models import RealmFilter, UserProfile, realm_filters_for_realm
 # Custom realm filters
 def list_filters(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     filters = realm_filters_for_realm(user_profile.realm_id)
-    return json_success({'filters': filters})
+    return json_success({"filters": filters})
 
 
 @require_realm_admin
@@ -29,7 +29,7 @@ def create_filter(
             pattern=pattern,
             url_format_string=url_format_string,
         )
-        return json_success({'id': filter_id})
+        return json_success({"id": filter_id})
     except ValidationError as e:
         return json_error(e.messages[0], data={"errors": dict(e)})
 
@@ -39,5 +39,5 @@ def delete_filter(request: HttpRequest, user_profile: UserProfile, filter_id: in
     try:
         do_remove_realm_filter(realm=user_profile.realm, id=filter_id)
     except RealmFilter.DoesNotExist:
-        return json_error(_('Filter not found'))
+        return json_error(_("Filter not found"))
     return json_success()

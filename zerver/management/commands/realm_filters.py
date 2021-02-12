@@ -24,15 +24,15 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            '--op', default="show", help='What operation to do (add, show, remove).'
+            "--op", default="show", help="What operation to do (add, show, remove)."
         )
         parser.add_argument(
-            'pattern', metavar='<pattern>', nargs='?', help="regular expression to match"
+            "pattern", metavar="<pattern>", nargs="?", help="regular expression to match"
         )
         parser.add_argument(
-            'url_format_string',
-            metavar='<URL pattern>',
-            nargs='?',
+            "url_format_string",
+            metavar="<URL pattern>",
+            nargs="?",
             help="format string to substitute",
         )
         self.add_realm_args(parser, True)
@@ -44,13 +44,13 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
             print(f"{realm.string_id}: {all_realm_filters().get(realm.id, [])}")
             sys.exit(0)
 
-        pattern = options['pattern']
+        pattern = options["pattern"]
         if not pattern:
             self.print_help("./manage.py", "realm_filters")
             raise CommandError
 
         if options["op"] == "add":
-            url_format_string = options['url_format_string']
+            url_format_string = options["url_format_string"]
             if not url_format_string:
                 self.print_help("./manage.py", "realm_filters")
                 raise CommandError

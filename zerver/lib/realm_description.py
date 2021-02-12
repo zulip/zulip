@@ -17,4 +17,4 @@ def get_realm_rendered_description(realm: Realm) -> str:
 @cache_with_key(realm_text_description_cache_key, timeout=3600 * 24 * 7)
 def get_realm_text_description(realm: Realm) -> str:
     html_description = get_realm_rendered_description(realm)
-    return html_to_text(html_description, {'p': ' | ', 'li': ' * '})
+    return html_to_text(html_description, {"p": " | ", "li": " * "})

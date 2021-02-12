@@ -2,9 +2,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ThinkstHookTests(WebhookTestCase):
-    STREAM_NAME = 'thinkst'
+    STREAM_NAME = "thinkst"
     URL_TEMPLATE = "/api/v1/external/thinkst?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'thinkst'
+    FIXTURE_DIR_NAME = "thinkst"
 
     def test_canary_dummy(self) -> None:
         expected_message = (
@@ -152,7 +152,7 @@ class ThinkstHookTests(WebhookTestCase):
         )
 
     def test_canary_with_specific_topic(self) -> None:
-        self.url = self.build_webhook_url(topic='foo')
+        self.url = self.build_webhook_url(topic="foo")
         expected_message = (
             "**:alert: Canary *0000000testnode* has been triggered!**\n\n"
             "This is a dummy incident.\n\n"
@@ -232,7 +232,7 @@ class ThinkstHookTests(WebhookTestCase):
         )
 
     def test_canarytoken_with_specific_topic(self) -> None:
-        self.url = self.build_webhook_url(topic='foo')
+        self.url = self.build_webhook_url(topic="foo")
         expected_message = (
             "**:alert: Canarytoken *test document* has been triggered!**\n\n"
             "A MS Word .docx Document Canarytoken has been triggered over doc-msword "

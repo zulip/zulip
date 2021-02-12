@@ -7,9 +7,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TrelloHookTests(WebhookTestCase):
-    STREAM_NAME = 'trello'
+    STREAM_NAME = "trello"
     URL_TEMPLATE = "/api/v1/external/trello?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'trello'
+    FIXTURE_DIR_NAME = "trello"
 
     def test_trello_confirmation_request(self) -> None:
         response = self.client_head(self.build_webhook_url())
@@ -20,15 +20,15 @@ class TrelloHookTests(WebhookTestCase):
         self.check_webhook("changing_cards_list", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_card_was_renamed(self) -> None:
-        expected_message = "TomaszKolek renamed the card from \"Old name\" to [New name](https://trello.com/c/r33ylX2Z)."
+        expected_message = 'TomaszKolek renamed the card from "Old name" to [New name](https://trello.com/c/r33ylX2Z).'
         self.check_webhook("renaming_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_label_was_added_to_card(self) -> None:
-        expected_message = "TomaszKolek added a green label with \"text value\" to [Card name](https://trello.com/c/r33ylX2Z)."
+        expected_message = 'TomaszKolek added a green label with "text value" to [Card name](https://trello.com/c/r33ylX2Z).'
         self.check_webhook("adding_label_to_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_label_was_removing_from_card(self) -> None:
-        expected_message = "TomaszKolek removed a green label with \"text value\" from [New Card](https://trello.com/c/r33ylX2Z)."
+        expected_message = 'TomaszKolek removed a green label with "text value" from [New Card](https://trello.com/c/r33ylX2Z).'
         self.check_webhook("removing_label_from_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_member_was_added_to_card(self) -> None:
@@ -118,11 +118,11 @@ class TrelloHookTests(WebhookTestCase):
         self.assert_json_success(result)
 
     def test_trello_webhook_when_card_is_moved_within_single_list_ignore(self) -> None:
-        payload = self.get_body('moving_card_within_single_list')
+        payload = self.get_body("moving_card_within_single_list")
         self.verify_post_is_ignored(payload)
 
     def test_trello_webhook_when_board_background_is_changed_ignore(self) -> None:
-        payload = self.get_body('change_board_background_image')
+        payload = self.get_body("change_board_background_image")
         self.verify_post_is_ignored(payload)
 
     def test_ignored_card_actions(self) -> None:

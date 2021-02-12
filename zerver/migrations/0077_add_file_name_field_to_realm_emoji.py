@@ -4,17 +4,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('zerver', '0076_userprofile_emojiset'),
+        ("zerver", "0076_userprofile_emojiset"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realmemoji',
-            name='file_name',
+            model_name="realmemoji",
+            name="file_name",
             field=models.TextField(db_index=True, null=True),
         ),
         migrations.RemoveField(
-            model_name='realmemoji',
-            name='img_url',
+            model_name="realmemoji",
+            name="img_url",
         ),
     ]

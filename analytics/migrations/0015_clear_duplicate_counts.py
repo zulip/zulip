@@ -21,29 +21,29 @@ def clear_duplicate_counts(apps: StateApps, schema_editor: DatabaseSchemaEditor)
     additionally combine the sums.
     """
     count_tables = dict(
-        realm=apps.get_model('analytics', 'RealmCount'),
-        user=apps.get_model('analytics', 'UserCount'),
-        stream=apps.get_model('analytics', 'StreamCount'),
-        installation=apps.get_model('analytics', 'InstallationCount'),
+        realm=apps.get_model("analytics", "RealmCount"),
+        user=apps.get_model("analytics", "UserCount"),
+        stream=apps.get_model("analytics", "StreamCount"),
+        installation=apps.get_model("analytics", "InstallationCount"),
     )
 
     for name, count_table in count_tables.items():
-        value = [name, 'property', 'end_time']
-        if name == 'installation':
-            value = ['property', 'end_time']
+        value = [name, "property", "end_time"]
+        if name == "installation":
+            value = ["property", "end_time"]
         counts = (
             count_table.objects.filter(subgroup=None)
             .values(*value)
-            .annotate(Count('id'), Sum('value'))
+            .annotate(Count("id"), Sum("value"))
             .filter(id__count__gt=1)
         )
 
         for count in counts:
-            count.pop('id__count')
-            total_value = count.pop('value__sum')
+            count.pop("id__count")
+            total_value = count.pop("value__sum")
             duplicate_counts = list(count_table.objects.filter(**count))
             first_count = duplicate_counts[0]
-            if count['property'] in ["invites_sent::day", "active_users_log:is_bot:day"]:
+            if count["property"] in ["invites_sent::day", "active_users_log:is_bot:day"]:
                 # For LoggingCountStat objects, the right fix is to combine the totals;
                 # for other CountStat objects, we expect the duplicates to have the same value.
                 # And so all we need to do is delete them.
@@ -57,7 +57,7 @@ def clear_duplicate_counts(apps: StateApps, schema_editor: DatabaseSchemaEditor)
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('analytics', '0014_remove_fillstate_last_modified'),
+        ("analytics", "0014_remove_fillstate_last_modified"),
     ]
 
     operations = [

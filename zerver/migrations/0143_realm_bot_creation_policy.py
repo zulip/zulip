@@ -34,13 +34,13 @@ def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0142_userprofile_translate_emoticons'),
+        ("zerver", "0142_userprofile_translate_emoticons"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='bot_creation_policy',
+            model_name="realm",
+            name="bot_creation_policy",
             field=models.PositiveSmallIntegerField(default=BOT_CREATION_EVERYONE),
         ),
         migrations.RunPython(

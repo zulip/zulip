@@ -15,14 +15,14 @@ outcome_to_formatted_status_map = {
 }
 
 
-@webhook_view('CircleCI')
+@webhook_view("CircleCI")
 @has_request_variables
 def api_circleci_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
-    payload = payload['payload']
+    payload = payload["payload"]
     subject = get_subject(payload)
     body = get_body(payload)
 

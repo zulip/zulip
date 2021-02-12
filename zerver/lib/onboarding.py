@@ -18,11 +18,11 @@ from zerver.models import Message, Realm, UserProfile, get_system_bot
 
 def missing_any_realm_internal_bots() -> bool:
     bot_emails = [
-        bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,)
+        bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,)
         for bot in settings.REALM_INTERNAL_BOTS
     ]
     bot_counts = dict(
-        UserProfile.objects.filter(email__in=bot_emails).values_list('email').annotate(Count('id'))
+        UserProfile.objects.filter(email__in=bot_emails).values_list("email").annotate(Count("id"))
     )
     realm_count = Realm.objects.count()
     return any(bot_counts.get(email, 0) < realm_count for email in bot_emails)
@@ -35,7 +35,7 @@ def setup_realm_internal_bots(realm: Realm) -> None:
     already exists.
     """
     internal_bots = [
-        (bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
+        (bot["name"], bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,))
         for bot in settings.REALM_INTERNAL_BOTS
     ]
     create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
@@ -172,24 +172,24 @@ def send_initial_realm_messages(realm: Realm) -> None:
 
     welcome_messages: List[Dict[str, str]] = [
         {
-            'stream': Realm.INITIAL_PRIVATE_STREAM_NAME,
-            'topic': "private streams",
-            'content': content_of_private_streams_topic,
+            "stream": Realm.INITIAL_PRIVATE_STREAM_NAME,
+            "topic": "private streams",
+            "content": content_of_private_streams_topic,
         },
         {
-            'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            'topic': "topic demonstration",
-            'content': content1_of_topic_demonstration_topic,
+            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            "topic": "topic demonstration",
+            "content": content1_of_topic_demonstration_topic,
         },
         {
-            'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            'topic': "topic demonstration",
-            'content': content2_of_topic_demonstration_topic,
+            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            "topic": "topic demonstration",
+            "content": content2_of_topic_demonstration_topic,
         },
         {
-            'stream': realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            'topic': "swimming turtles",
-            'content': content_of_swimming_turtles_topic,
+            "stream": realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            "topic": "swimming turtles",
+            "content": content_of_swimming_turtles_topic,
         },
     ]
 
@@ -197,9 +197,9 @@ def send_initial_realm_messages(realm: Realm) -> None:
         internal_prep_stream_message_by_name(
             realm,
             welcome_bot,
-            message['stream'],
-            message['topic'],
-            message['content'],
+            message["stream"],
+            message["topic"],
+            message["content"],
         )
         for message in welcome_messages
     ]
@@ -208,6 +208,6 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # We find the one of our just-sent messages with turtle.png in it,
     # and react to it.  This is a bit hacky, but works and is kinda a
     # 1-off thing.
-    turtle_message = Message.objects.get(id__in=message_ids, content__icontains='cute/turtle.png')
-    (emoji_code, reaction_type) = emoji_name_to_emoji_code(realm, 'turtle')
-    do_add_reaction(welcome_bot, turtle_message, 'turtle', emoji_code, reaction_type)
+    turtle_message = Message.objects.get(id__in=message_ids, content__icontains="cute/turtle.png")
+    (emoji_code, reaction_type) = emoji_name_to_emoji_code(realm, "turtle")
+    do_add_reaction(welcome_bot, turtle_message, "turtle", emoji_code, reaction_type)

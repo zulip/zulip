@@ -147,7 +147,7 @@ def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
 def api_freshdesk_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
     ticket_data = payload["freshdesk_webhook"]
 

@@ -55,7 +55,7 @@ def json_response(
             content,
             option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_PASSTHROUGH_DATETIME,
         ),
-        content_type='application/json',
+        content_type="application/json",
         status=status,
     )
 
@@ -73,7 +73,7 @@ def json_response_from_error(exception: JsonableError) -> HttpResponse:
     calling this function.
     """
     response = json_response(
-        'error', msg=exception.msg, data=exception.data, status=exception.http_status_code
+        "error", msg=exception.msg, data=exception.data, status=exception.http_status_code
     )
 
     for header, value in exception.extra_headers.items():

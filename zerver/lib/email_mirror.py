@@ -45,12 +45,12 @@ logger = logging.getLogger(__name__)
 
 def redact_email_address(error_message: str) -> str:
     if not settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK:
-        domain = settings.EMAIL_GATEWAY_PATTERN.rsplit('@')[-1]
+        domain = settings.EMAIL_GATEWAY_PATTERN.rsplit("@")[-1]
     else:
         # EMAIL_GATEWAY_EXTRA_PATTERN_HACK is of the form '@example.com'
         domain = settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK[1:]
 
-    address_match = re.search('\\b(\\S*?)@' + domain, error_message)
+    address_match = re.search("\\b(\\S*?)@" + domain, error_message)
     if address_match:
         email_address = address_match.group(0)
         # Annotate basic info about the address before scrubbing:
@@ -104,7 +104,7 @@ def log_and_report(email_message: EmailMessage, error_message: str, to: Optional
 
 
 def generate_missed_message_token() -> str:
-    return 'mm' + secrets.token_hex(16)
+    return "mm" + secrets.token_hex(16)
 
 
 def is_missed_message_address(address: str) -> bool:
@@ -121,14 +121,14 @@ def is_mm_32_format(msg_string: Optional[str]) -> bool:
     Missed message strings are formatted with a little "mm" prefix
     followed by a randomly generated 32-character string.
     """
-    return msg_string is not None and msg_string.startswith('mm') and len(msg_string) == 34
+    return msg_string is not None and msg_string.startswith("mm") and len(msg_string) == 34
 
 
 def get_missed_message_token_from_address(address: str) -> str:
     msg_string = get_email_gateway_message_string_from_address(address)
 
     if not is_mm_32_format(msg_string):
-        raise ZulipEmailForwardError('Could not parse missed message address')
+        raise ZulipEmailForwardError("Could not parse missed message address")
 
     return msg_string
 
@@ -153,7 +153,7 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
 
 
 def create_missed_message_address(user_profile: UserProfile, message: Message) -> str:
-    if settings.EMAIL_GATEWAY_PATTERN == '':
+    if settings.EMAIL_GATEWAY_PATTERN == "":
         logger.warning(
             "EMAIL_GATEWAY_PATTERN is an empty string, using "
             "NOREPLY_EMAIL_ADDRESS in the 'from' field."
@@ -180,11 +180,11 @@ def construct_zulip_body(
     if not include_footer:
         body = filter_footer(body)
 
-    if not body.endswith('\n'):
-        body += '\n'
+    if not body.endswith("\n"):
+        body += "\n"
     body += extract_and_upload_attachments(message, realm)
     if not body.rstrip():
-        body = '(No email body)'
+        body = "(No email body)"
 
     if show_sender:
         sender = str(message.get("From", ""))
@@ -331,7 +331,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
                     message.get("From"),
                 )
 
-    return '\n'.join(attachment_links)
+    return "\n".join(attachment_links)
 
 
 def decode_stream_email_address(email: str) -> Tuple[Stream, Dict[str, bool]]:
@@ -359,7 +359,7 @@ def find_emailgateway_recipient(message: EmailMessage) -> str:
         "CC",
     ]
 
-    pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
+    pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split("%s")]
     match_email_re = re.compile(".*?".join(pattern_parts))
 
     for header_name in recipient_headers:
@@ -397,8 +397,8 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
 
     stream, options = decode_stream_email_address(to)
     # Don't remove quotations if message is forwarded, unless otherwise specified:
-    if 'include_quotes' not in options:
-        options['include_quotes'] = is_forwarded(subject_header)
+    if "include_quotes" not in options:
+        options["include_quotes"] = is_forwarded(subject_header)
 
     body = construct_zulip_body(message, stream.realm, **options)
     send_zulip(get_system_bot(settings.EMAIL_GATEWAY_BOT), stream, subject, body)
@@ -441,14 +441,14 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
     elif recipient.type == Recipient.PERSONAL:
         display_recipient = get_display_recipient(recipient)
         assert not isinstance(display_recipient, str)
-        recipient_str = display_recipient[0]['email']
+        recipient_str = display_recipient[0]["email"]
         recipient_user = get_user(recipient_str, user_profile.realm)
         internal_send_private_message(user_profile.realm, user_profile, recipient_user, body)
     elif recipient.type == Recipient.HUDDLE:
         display_recipient = get_display_recipient(recipient)
         assert not isinstance(display_recipient, str)
-        emails = [user_dict['email'] for user_dict in display_recipient]
-        recipient_str = ', '.join(emails)
+        emails = [user_dict["email"] for user_dict in display_recipient]
+        recipient_str = ", ".join(emails)
         internal_send_huddle_message(user_profile.realm, user_profile, emails, body)
     else:
         raise AssertionError("Invalid recipient type!")

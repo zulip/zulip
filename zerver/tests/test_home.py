@@ -222,33 +222,33 @@ class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
         # Keep this list sorted!!!
         html_bits = [
-            'Compose your message here...',
-            'Exclude messages with topic',
-            'Keyboard shortcuts',
-            'Loading...',
-            'Manage streams',
-            'Narrow to topic',
-            'Next message',
-            'Search streams',
+            "Compose your message here...",
+            "Exclude messages with topic",
+            "Keyboard shortcuts",
+            "Loading...",
+            "Manage streams",
+            "Narrow to topic",
+            "Next message",
+            "Search streams",
             # Verify that the app styles get included
-            'app-stubentry.js',
-            'data-params',
+            "app-stubentry.js",
+            "data-params",
         ]
 
-        self.login('hamlet')
+        self.login("hamlet")
 
         # Create bot for realm_bots testing. Must be done before fetching home_page.
         bot_info = {
-            'full_name': 'The Bot of Hamlet',
-            'short_name': 'hambot',
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
         }
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
         flush_per_request_caches()
         with queries_captured() as queries:
-            with patch('zerver.lib.cache.cache_set') as cache_mock:
-                result = self._get_home_page(stream='Denmark')
+            with patch("zerver.lib.cache.cache_set") as cache_mock:
+                result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
         self.assertEqual(
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
@@ -257,11 +257,11 @@ class HomeTest(ZulipTestCase):
         self.assert_length(queries, 39)
         self.assert_length(cache_mock.call_args_list, 5)
 
-        html = result.content.decode('utf-8')
+        html = result.content.decode("utf-8")
 
         for html_bit in html_bits:
             if html_bit not in html:
-                raise AssertionError(f'{html_bit} not in result')
+                raise AssertionError(f"{html_bit} not in result")
 
         page_params = self._get_page_params(result)
 
@@ -272,47 +272,47 @@ class HomeTest(ZulipTestCase):
         # TODO: Inspect the page_params data further.
         # print(orjson.dumps(page_params, option=orjson.OPT_INDENT_2).decode())
         realm_bots_expected_keys = [
-            'api_key',
-            'avatar_url',
-            'bot_type',
-            'default_all_public_streams',
-            'default_events_register_stream',
-            'default_sending_stream',
-            'email',
-            'full_name',
-            'is_active',
-            'owner_id',
-            'services',
-            'user_id',
+            "api_key",
+            "avatar_url",
+            "bot_type",
+            "default_all_public_streams",
+            "default_events_register_stream",
+            "default_sending_stream",
+            "email",
+            "full_name",
+            "is_active",
+            "owner_id",
+            "services",
+            "user_id",
         ]
 
-        realm_bots_actual_keys = sorted(str(key) for key in page_params['realm_bots'][0].keys())
+        realm_bots_actual_keys = sorted(str(key) for key in page_params["realm_bots"][0].keys())
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
     def test_logged_out_home(self) -> None:
-        result = self.client_get('/')
+        result = self.client_get("/")
         self.assertEqual(result.status_code, 200)
 
         page_params = self._get_page_params(result)
         actual_keys = sorted(str(k) for k in page_params.keys())
         removed_keys = [
-            'last_event_id',
-            'narrow',
-            'narrow_stream',
+            "last_event_id",
+            "narrow",
+            "narrow_stream",
         ]
         expected_keys = [i for i in self.expected_page_params_keys if i not in removed_keys]
         self.assertEqual(actual_keys, expected_keys)
 
     def test_home_under_2fa_without_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
-            self.login('iago')
+            self.login("iago")
             result = self._get_home_page()
             # Should be successful because otp device is not configured.
             self.check_rendered_logged_in_app(result)
 
     def test_home_under_2fa_with_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
-            user_profile = self.example_user('iago')
+            user_profile = self.example_user("iago")
             self.create_default_device(user_profile)
             self.login_user(user_profile)
             result = self._get_home_page()
@@ -327,18 +327,18 @@ class HomeTest(ZulipTestCase):
 
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
-        self.login('iago')
+        self.login("iago")
         flush_per_request_caches()
         with queries_captured() as queries:
-            with patch('zerver.lib.cache.cache_set') as cache_mock:
+            with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
             self.assert_length(queries, 36)
 
     def test_num_queries_with_streams(self) -> None:
-        main_user = self.example_user('hamlet')
-        other_user = self.example_user('cordelia')
+        main_user = self.example_user("hamlet")
+        other_user = self.example_user("cordelia")
 
         realm_id = main_user.realm_id
 
@@ -347,7 +347,7 @@ class HomeTest(ZulipTestCase):
         # Try to make page-load do extra work for various subscribed
         # streams.
         for i in range(10):
-            stream_name = 'test_stream_' + str(i)
+            stream_name = "test_stream_" + str(i)
             stream = self.make_stream(stream_name)
             DefaultStream.objects.create(
                 realm_id=realm_id,
@@ -368,14 +368,14 @@ class HomeTest(ZulipTestCase):
         self.assert_length(queries2, 34)
 
         # Do a sanity check that our new streams were in the payload.
-        html = result.content.decode('utf-8')
-        self.assertIn('test_stream_7', html)
+        html = result.content.decode("utf-8")
+        self.assertIn("test_stream_7", html)
 
     def _get_home_page(self, **kwargs: Any) -> HttpResponse:
-        with patch('zerver.lib.events.request_event_queue', return_value=42), patch(
-            'zerver.lib.events.get_user_events', return_value=[]
+        with patch("zerver.lib.events.request_event_queue", return_value=42), patch(
+            "zerver.lib.events.get_user_events", return_value=[]
         ):
-            result = self.client_get('/', dict(**kwargs))
+            result = self.client_get("/", dict(**kwargs))
         return result
 
     def _sanity_check(self, result: HttpResponse) -> None:
@@ -383,35 +383,35 @@ class HomeTest(ZulipTestCase):
         Use this for tests that are geared toward specific edge cases, but
         which still want the home page to load properly.
         """
-        html = result.content.decode('utf-8')
-        if 'Compose your message' not in html:
-            raise AssertionError('Home page probably did not load.')
+        html = result.content.decode("utf-8")
+        if "Compose your message" not in html:
+            raise AssertionError("Home page probably did not load.")
 
     def test_terms_of_service(self) -> None:
-        user = self.example_user('hamlet')
+        user = self.example_user("hamlet")
         self.login_user(user)
 
-        for user_tos_version in [None, '1.1', '2.0.3.4']:
+        for user_tos_version in [None, "1.1", "2.0.3.4"]:
             user.tos_version = user_tos_version
             user.save()
 
-            with self.settings(TERMS_OF_SERVICE='whatever'), self.settings(TOS_VERSION='99.99'):
+            with self.settings(TERMS_OF_SERVICE="whatever"), self.settings(TOS_VERSION="99.99"):
 
-                result = self.client_get('/', dict(stream='Denmark'))
+                result = self.client_get("/", dict(stream="Denmark"))
 
-            html = result.content.decode('utf-8')
-            self.assertIn('Accept the new Terms of Service', html)
+            html = result.content.decode("utf-8")
+            self.assertIn("Accept the new Terms of Service", html)
 
     def test_banned_desktop_app_versions(self) -> None:
-        user = self.example_user('hamlet')
+        user = self.example_user("hamlet")
         self.login_user(user)
 
-        result = self.client_get('/', HTTP_USER_AGENT="ZulipElectron/2.3.82")
-        html = result.content.decode('utf-8')
-        self.assertIn('You are using old version of the Zulip desktop', html)
+        result = self.client_get("/", HTTP_USER_AGENT="ZulipElectron/2.3.82")
+        html = result.content.decode("utf-8")
+        self.assertIn("You are using old version of the Zulip desktop", html)
 
     def test_unsupported_browser(self) -> None:
-        user = self.example_user('hamlet')
+        user = self.example_user("hamlet")
         self.login_user(user)
 
         # currently we don't support IE, so some of IE's user agents are added.
@@ -421,68 +421,68 @@ class HomeTest(ZulipTestCase):
             "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)",
         ]
         for user_agent in unsupported_user_agents:
-            result = self.client_get('/', HTTP_USER_AGENT=user_agent)
-            html = result.content.decode('utf-8')
-            self.assertIn('Internet Explorer is not supported by Zulip.', html)
+            result = self.client_get("/", HTTP_USER_AGENT=user_agent)
+            html = result.content.decode("utf-8")
+            self.assertIn("Internet Explorer is not supported by Zulip.", html)
 
     def test_terms_of_service_first_time_template(self) -> None:
-        user = self.example_user('hamlet')
+        user = self.example_user("hamlet")
         self.login_user(user)
 
         user.tos_version = None
         user.save()
 
-        with self.settings(FIRST_TIME_TOS_TEMPLATE='hello.html'), self.settings(
-            TOS_VERSION='99.99'
+        with self.settings(FIRST_TIME_TOS_TEMPLATE="hello.html"), self.settings(
+            TOS_VERSION="99.99"
         ):
-            result = self.client_post('/accounts/accept_terms/')
+            result = self.client_post("/accounts/accept_terms/")
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)
             self.assert_in_response("Chat for distributed teams", result)
 
     def test_accept_terms_of_service(self) -> None:
-        self.login('hamlet')
+        self.login("hamlet")
 
-        result = self.client_post('/accounts/accept_terms/')
+        result = self.client_post("/accounts/accept_terms/")
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("I agree to the", result)
 
-        result = self.client_post('/accounts/accept_terms/', {'terms': True})
+        result = self.client_post("/accounts/accept_terms/", {"terms": True})
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result['Location'], '/')
+        self.assertEqual(result["Location"], "/")
 
     def test_bad_narrow(self) -> None:
-        self.login('hamlet')
-        with self.assertLogs(level='WARNING') as m:
-            result = self._get_home_page(stream='Invalid Stream')
-            self.assertEqual(m.output, ['WARNING:root:Invalid narrow requested, ignoring'])
+        self.login("hamlet")
+        with self.assertLogs(level="WARNING") as m:
+            result = self._get_home_page(stream="Invalid Stream")
+            self.assertEqual(m.output, ["WARNING:root:Invalid narrow requested, ignoring"])
         self._sanity_check(result)
 
     def test_topic_narrow(self) -> None:
-        self.login('hamlet')
-        result = self._get_home_page(stream='Denmark', topic='lunch')
+        self.login("hamlet")
+        result = self._get_home_page(stream="Denmark", topic="lunch")
         self._sanity_check(result)
-        html = result.content.decode('utf-8')
-        self.assertIn('lunch', html)
+        html = result.content.decode("utf-8")
+        self.assertIn("lunch", html)
         self.assertEqual(
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
     def test_notifications_stream(self) -> None:
-        realm = get_realm('zulip')
-        realm.notifications_stream_id = get_stream('Denmark', realm).id
+        realm = get_realm("zulip")
+        realm.notifications_stream_id = get_stream("Denmark", realm).id
         realm.save()
-        self.login('hamlet')
+        self.login("hamlet")
         result = self._get_home_page()
         page_params = self._get_page_params(result)
         self.assertEqual(
-            page_params['realm_notifications_stream_id'], get_stream('Denmark', realm).id
+            page_params["realm_notifications_stream_id"], get_stream("Denmark", realm).id
         )
 
     def create_bot(self, owner: UserProfile, bot_email: str, bot_name: str) -> UserProfile:
         user = do_create_user(
             email=bot_email,
-            password='123',
+            password="123",
             realm=owner.realm,
             full_name=bot_name,
             bot_type=UserProfile.DEFAULT_BOT,
@@ -493,7 +493,7 @@ class HomeTest(ZulipTestCase):
     def create_non_active_user(self, realm: Realm, email: str, name: str) -> UserProfile:
         user = do_create_user(
             email=email,
-            password='123',
+            password="123",
             realm=realm,
             full_name=name,
         )
@@ -506,40 +506,40 @@ class HomeTest(ZulipTestCase):
         return user
 
     def test_signup_notifications_stream(self) -> None:
-        realm = get_realm('zulip')
-        realm.signup_notifications_stream = get_stream('Denmark', realm)
+        realm = get_realm("zulip")
+        realm.signup_notifications_stream = get_stream("Denmark", realm)
         realm.save()
-        self.login('hamlet')
+        self.login("hamlet")
         result = self._get_home_page()
         page_params = self._get_page_params(result)
         self.assertEqual(
-            page_params['realm_signup_notifications_stream_id'], get_stream('Denmark', realm).id
+            page_params["realm_signup_notifications_stream_id"], get_stream("Denmark", realm).id
         )
 
     def test_people(self) -> None:
-        hamlet = self.example_user('hamlet')
-        realm = get_realm('zulip')
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
         self.login_user(hamlet)
 
         bots = {}
         for i in range(3):
             bots[i] = self.create_bot(
                 owner=hamlet,
-                bot_email=f'bot-{i}@zulip.com',
-                bot_name=f'Bot {i}',
+                bot_email=f"bot-{i}@zulip.com",
+                bot_name=f"Bot {i}",
             )
 
         for i in range(3):
             defunct_user = self.create_non_active_user(
                 realm=realm,
-                email=f'defunct-{i}@zulip.com',
-                name=f'Defunct User {i}',
+                email=f"defunct-{i}@zulip.com",
+                name=f"Defunct User {i}",
             )
 
         result = self._get_home_page()
         page_params = self._get_page_params(result)
 
-        '''
+        """
         We send three lists of users.  The first two below are disjoint
         lists of users, and the records we send for them have identical
         structure.
@@ -547,30 +547,30 @@ class HomeTest(ZulipTestCase):
         The realm_bots bucket is somewhat redundant, since all bots will
         be in one of the first two buckets.  They do include fields, however,
         that normal users don't care about, such as default_sending_stream.
-        '''
+        """
 
         buckets = [
-            'realm_users',
-            'realm_non_active_users',
-            'realm_bots',
+            "realm_users",
+            "realm_non_active_users",
+            "realm_bots",
         ]
 
         for field in buckets:
             users = page_params[field]
             self.assertTrue(len(users) >= 3, field)
             for rec in users:
-                self.assertEqual(rec['user_id'], get_user(rec['email'], realm).id)
-                if field == 'realm_bots':
-                    self.assertNotIn('is_bot', rec)
-                    self.assertIn('is_active', rec)
-                    self.assertIn('owner_id', rec)
+                self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
+                if field == "realm_bots":
+                    self.assertNotIn("is_bot", rec)
+                    self.assertIn("is_active", rec)
+                    self.assertIn("owner_id", rec)
                 else:
-                    self.assertIn('is_bot', rec)
-                    self.assertNotIn('is_active', rec)
+                    self.assertIn("is_bot", rec)
+                    self.assertNotIn("is_active", rec)
 
-        active_ids = {p['user_id'] for p in page_params['realm_users']}
-        non_active_ids = {p['user_id'] for p in page_params['realm_non_active_users']}
-        bot_ids = {p['user_id'] for p in page_params['realm_bots']}
+        active_ids = {p["user_id"] for p in page_params["realm_users"]}
+        non_active_ids = {p["user_id"] for p in page_params["realm_non_active_users"]}
+        bot_ids = {p["user_id"] for p in page_params["realm_bots"]}
 
         self.assertIn(hamlet.id, active_ids)
         self.assertIn(defunct_user.id, non_active_ids)
@@ -583,20 +583,20 @@ class HomeTest(ZulipTestCase):
         self.assertNotIn(hamlet.id, non_active_ids)
         self.assertNotIn(defunct_user.id, active_ids)
 
-        cross_bots = page_params['cross_realm_bots']
+        cross_bots = page_params["cross_realm_bots"]
         self.assertEqual(len(cross_bots), 3)
-        cross_bots.sort(key=lambda d: d['email'])
+        cross_bots.sort(key=lambda d: d["email"])
         for cross_bot in cross_bots:
             # These are either nondeterministic or boring
-            del cross_bot['timezone']
-            del cross_bot['avatar_url']
-            del cross_bot['date_joined']
+            del cross_bot["timezone"]
+            del cross_bot["avatar_url"]
+            del cross_bot["date_joined"]
 
         notification_bot = self.notification_bot()
         email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
         welcome_bot = get_system_bot(settings.WELCOME_BOT)
 
-        by_email = lambda d: d['email']
+        by_email = lambda d: d["email"]
 
         self.assertEqual(
             sorted(cross_bots, key=by_email),
@@ -651,17 +651,17 @@ class HomeTest(ZulipTestCase):
 
     def test_new_stream(self) -> None:
         user_profile = self.example_user("hamlet")
-        stream_name = 'New stream'
+        stream_name = "New stream"
         self.subscribe(user_profile, stream_name)
         self.login_user(user_profile)
         result = self._get_home_page(stream=stream_name)
         page_params = self._get_page_params(result)
-        self.assertEqual(page_params['narrow_stream'], stream_name)
-        self.assertEqual(page_params['narrow'], [dict(operator='stream', operand=stream_name)])
-        self.assertEqual(page_params['max_message_id'], -1)
+        self.assertEqual(page_params["narrow_stream"], stream_name)
+        self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
+        self.assertEqual(page_params["max_message_id"], -1)
 
     def test_invites_by_admins_only(self) -> None:
-        user_profile = self.example_user('hamlet')
+        user_profile = self.example_user("hamlet")
 
         realm = user_profile.realm
         realm.invite_by_admins_only = True
@@ -670,17 +670,17 @@ class HomeTest(ZulipTestCase):
         self.login_user(user_profile)
         self.assertFalse(user_profile.is_realm_admin)
         result = self._get_home_page()
-        html = result.content.decode('utf-8')
-        self.assertNotIn('Invite more users', html)
+        html = result.content.decode("utf-8")
+        self.assertNotIn("Invite more users", html)
 
         user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         user_profile.save()
         result = self._get_home_page()
-        html = result.content.decode('utf-8')
-        self.assertIn('Invite more users', html)
+        html = result.content.decode("utf-8")
+        self.assertIn("Invite more users", html)
 
     def test_show_invites_for_guest_users(self) -> None:
-        user_profile = self.example_user('polonius')
+        user_profile = self.example_user("polonius")
 
         realm = user_profile.realm
         realm.invite_by_admins_only = False
@@ -688,21 +688,21 @@ class HomeTest(ZulipTestCase):
 
         self.login_user(user_profile)
         self.assertFalse(user_profile.is_realm_admin)
-        self.assertFalse(get_realm('zulip').invite_by_admins_only)
+        self.assertFalse(get_realm("zulip").invite_by_admins_only)
         result = self._get_home_page()
-        html = result.content.decode('utf-8')
-        self.assertNotIn('Invite more users', html)
+        html = result.content.decode("utf-8")
+        self.assertNotIn("Invite more users", html)
 
     def test_show_billing(self) -> None:
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
-        user = self.example_user('desdemona')
+        user = self.example_user("desdemona")
 
         # realm owner, but no CustomerPlan -> no billing link
         user.role = UserProfile.ROLE_REALM_OWNER
         user.save(update_fields=["role"])
         self.login_user(user)
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertNotIn('Billing', result_html)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertNotIn("Billing", result_html)
 
         # realm owner, with inactive CustomerPlan -> show billing link
         CustomerPlan.objects.create(
@@ -713,47 +713,47 @@ class HomeTest(ZulipTestCase):
             tier=CustomerPlan.STANDARD,
             status=CustomerPlan.ENDED,
         )
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertIn('Billing', result_html)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertIn("Billing", result_html)
 
         # realm admin, with CustomerPlan -> no billing link
         user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         user.save(update_fields=["role"])
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertNotIn('Billing', result_html)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertNotIn("Billing", result_html)
 
         # billing admin, with CustomerPlan -> show billing link
         user.role = UserProfile.ROLE_MEMBER
         user.is_billing_admin = True
-        user.save(update_fields=['role', 'is_billing_admin'])
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertIn('Billing', result_html)
+        user.save(update_fields=["role", "is_billing_admin"])
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertIn("Billing", result_html)
 
         # member, with CustomerPlan -> no billing link
         user.is_billing_admin = False
-        user.save(update_fields=['is_billing_admin'])
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertNotIn('Billing', result_html)
+        user.save(update_fields=["is_billing_admin"])
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertNotIn("Billing", result_html)
 
         # guest, with CustomerPlan -> no billing link
         user.role = UserProfile.ROLE_GUEST
-        user.save(update_fields=['role'])
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertNotIn('Billing', result_html)
+        user.save(update_fields=["role"])
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertNotIn("Billing", result_html)
 
         # billing admin, but no CustomerPlan -> no billing link
         user.role = UserProfile.ROLE_MEMBER
         user.is_billing_admin = True
-        user.save(update_fields=['role', 'is_billing_admin'])
+        user.save(update_fields=["role", "is_billing_admin"])
         CustomerPlan.objects.all().delete()
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertNotIn('Billing', result_html)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertNotIn("Billing", result_html)
 
         # billing admin, with sponsorship pending -> show billing link
         customer.sponsorship_pending = True
         customer.save(update_fields=["sponsorship_pending"])
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertIn('Billing', result_html)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertIn("Billing", result_html)
 
         # billing admin, no customer object -> make sure it doesn't crash
         customer.delete()
@@ -764,36 +764,36 @@ class HomeTest(ZulipTestCase):
         realm = get_realm("zulip")
 
         # Don't show plans to guest users
-        self.login('polonius')
+        self.login("polonius")
         realm.plan_type = Realm.LIMITED
         realm.save(update_fields=["plan_type"])
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertNotIn('Plans', result_html)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertNotIn("Plans", result_html)
 
         # Show plans link to all other users if plan_type is LIMITED
-        self.login('hamlet')
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertIn('Plans', result_html)
+        self.login("hamlet")
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertIn("Plans", result_html)
 
         # Show plans link to no one, including admins, if SELF_HOSTED or STANDARD
         realm.plan_type = Realm.SELF_HOSTED
         realm.save(update_fields=["plan_type"])
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertNotIn('Plans', result_html)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertNotIn("Plans", result_html)
 
         realm.plan_type = Realm.STANDARD
         realm.save(update_fields=["plan_type"])
-        result_html = self._get_home_page().content.decode('utf-8')
-        self.assertNotIn('Plans', result_html)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertNotIn("Plans", result_html)
 
     def test_desktop_home(self) -> None:
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_get("/desktop_home")
         self.assertEqual(result.status_code, 301)
         self.assertTrue(result["Location"].endswith("/desktop_home/"))
         result = self.client_get("/desktop_home/")
         self.assertEqual(result.status_code, 302)
-        path = urllib.parse.urlparse(result['Location']).path
+        path = urllib.parse.urlparse(result["Location"]).path
         self.assertEqual(path, "/")
 
     def test_compute_navbar_logo_url(self) -> None:
@@ -864,14 +864,14 @@ class HomeTest(ZulipTestCase):
         )
 
     def test_generate_204(self) -> None:
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_get("/api/v1/generate_204")
         self.assertEqual(result.status_code, 204)
 
     def test_furthest_read_time(self) -> None:
         msg_id = self.send_test_message("hello!", sender_name="iago")
 
-        hamlet = self.example_user('hamlet')
+        hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         self.client_post(
             "/json/messages/flags",
@@ -882,19 +882,19 @@ class HomeTest(ZulipTestCase):
         now = timezone_now()
         activity_time = calendar.timegm(now.timetuple())
         user_activity_event = {
-            'user_profile_id': hamlet.id,
-            'client': 'test-client',
-            'query': 'update_message_flags',
-            'time': activity_time,
+            "user_profile_id": hamlet.id,
+            "client": "test-client",
+            "query": "update_message_flags",
+            "time": activity_time,
         }
 
         yesterday = now - timedelta(days=1)
         activity_time_2 = calendar.timegm(yesterday.timetuple())
         user_activity_event_2 = {
-            'user_profile_id': hamlet.id,
-            'client': 'test-client-2',
-            'query': 'update_message_flags',
-            'time': activity_time_2,
+            "user_profile_id": hamlet.id,
+            "client": "test-client-2",
+            "query": "update_message_flags",
+            "time": activity_time_2,
         }
         UserActivityWorker().consume_batch([user_activity_event, user_activity_event_2])
 
@@ -912,40 +912,40 @@ class HomeTest(ZulipTestCase):
         self.assertIsNotNone(furthest_read_time)
 
     def test_subdomain_homepage(self) -> None:
-        self.login('hamlet')
+        self.login("hamlet")
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            with patch('zerver.views.home.get_subdomain', return_value=""):
+            with patch("zerver.views.home.get_subdomain", return_value=""):
                 result = self._get_home_page()
             self.assertEqual(result.status_code, 200)
-            self.assert_in_response('Chat for distributed teams', result)
+            self.assert_in_response("Chat for distributed teams", result)
 
-            with patch('zerver.views.home.get_subdomain', return_value="subdomain"):
+            with patch("zerver.views.home.get_subdomain", return_value="subdomain"):
                 result = self._get_home_page()
             self._sanity_check(result)
 
     def send_test_message(
         self,
         content: str,
-        sender_name: str = 'iago',
-        stream_name: str = 'Denmark',
-        topic_name: str = 'foo',
+        sender_name: str = "iago",
+        stream_name: str = "Denmark",
+        topic_name: str = "foo",
     ) -> int:
         sender = self.example_user(sender_name)
         return self.send_stream_message(sender, stream_name, content=content, topic_name=topic_name)
 
     def soft_activate_and_get_unread_count(
-        self, stream: str = 'Denmark', topic: str = 'foo'
+        self, stream: str = "Denmark", topic: str = "foo"
     ) -> int:
         stream_narrow = self._get_home_page(stream=stream, topic=topic)
         page_params = self._get_page_params(stream_narrow)
-        return page_params['unread_msgs']['count']
+        return page_params["unread_msgs"]["count"]
 
     def test_unread_count_user_soft_deactivation(self) -> None:
         # In this test we make sure if a soft deactivated user had unread
         # messages before deactivation they remain same way after activation.
-        long_term_idle_user = self.example_user('hamlet')
+        long_term_idle_user = self.example_user("hamlet")
         self.login_user(long_term_idle_user)
-        message = 'Test Message 1'
+        message = "Test Message 1"
         self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
@@ -954,18 +954,18 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(user_msg_list[-1].content, message)
         self.logout()
 
-        with self.assertLogs(logger_string, level='INFO') as info_log:
+        with self.assertLogs(logger_string, level="INFO") as info_log:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(
             info_log.output,
             [
-                f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
-                f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process',
+                f"INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}",
+                f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
             ],
         )
 
         self.login_user(long_term_idle_user)
-        message = 'Test Message 2'
+        message = "Test Message 2"
         self.send_test_message(message)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
@@ -978,21 +978,21 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
     def test_multiple_user_soft_deactivations(self) -> None:
-        long_term_idle_user = self.example_user('hamlet')
+        long_term_idle_user = self.example_user("hamlet")
         # We are sending this message to ensure that long_term_idle_user has
         # at least one UserMessage row.
-        self.send_test_message('Testing', sender_name='hamlet')
-        with self.assertLogs(logger_string, level='INFO') as info_log:
+        self.send_test_message("Testing", sender_name="hamlet")
+        with self.assertLogs(logger_string, level="INFO") as info_log:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(
             info_log.output,
             [
-                f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
-                f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process',
+                f"INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}",
+                f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
             ],
         )
 
-        message = 'Test Message 1'
+        message = "Test Message 1"
         self.send_test_message(message)
         self.login_user(long_term_idle_user)
         with queries_captured() as queries:
@@ -1003,7 +1003,7 @@ class HomeTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
-        message = 'Test Message 2'
+        message = "Test Message 2"
         self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
@@ -1014,17 +1014,17 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
         self.logout()
 
-        with self.assertLogs(logger_string, level='INFO') as info_log:
+        with self.assertLogs(logger_string, level="INFO") as info_log:
             do_soft_deactivate_users([long_term_idle_user])
         self.assertEqual(
             info_log.output,
             [
-                f'INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}',
-                f'INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process',
+                f"INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}",
+                f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
             ],
         )
 
-        message = 'Test Message 3'
+        message = "Test Message 3"
         self.send_test_message(message)
         self.login_user(long_term_idle_user)
         with queries_captured() as queries:
@@ -1035,7 +1035,7 @@ class HomeTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
-        message = 'Test Message 4'
+        message = "Test Message 4"
         self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 5)
@@ -1046,30 +1046,30 @@ class HomeTest(ZulipTestCase):
 
     def test_url_language(self) -> None:
         user = self.example_user("hamlet")
-        user.default_language = 'es'
+        user.default_language = "es"
         user.save()
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)
-        with patch('zerver.lib.events.request_event_queue', return_value=42), patch(
-            'zerver.lib.events.get_user_events', return_value=[]
+        with patch("zerver.lib.events.request_event_queue", return_value=42), patch(
+            "zerver.lib.events.get_user_events", return_value=[]
         ):
-            result = self.client_get('/de/')
+            result = self.client_get("/de/")
         page_params = self._get_page_params(result)
-        self.assertEqual(page_params['default_language'], 'es')
+        self.assertEqual(page_params["default_language"], "es")
         # TODO: Verify that the actual language we're using in the
         # translation data is German.
 
     def test_translation_data(self) -> None:
         user = self.example_user("hamlet")
-        user.default_language = 'es'
+        user.default_language = "es"
         user.save()
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
-        self.assertEqual(page_params['default_language'], 'es')
+        self.assertEqual(page_params["default_language"], "es")
 
     def test_compute_show_invites_and_add_streams_admin(self) -> None:
         user = self.example_user("iago")

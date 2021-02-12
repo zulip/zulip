@@ -47,19 +47,19 @@ MIT_REALM_DAYS = 100
 class RetentionTestingBase(ZulipTestCase):
     def _get_usermessage_ids(self, message_ids: List[int]) -> List[int]:
         return list(
-            UserMessage.objects.filter(message_id__in=message_ids).values_list('id', flat=True)
+            UserMessage.objects.filter(message_id__in=message_ids).values_list("id", flat=True)
         )
 
     def _verify_archive_data(
         self, expected_message_ids: List[int], expected_usermessage_ids: List[int]
     ) -> None:
         self.assertEqual(
-            set(ArchivedMessage.objects.values_list('id', flat=True)),
+            set(ArchivedMessage.objects.values_list("id", flat=True)),
             set(expected_message_ids),
         )
 
         self.assertEqual(
-            set(ArchivedUserMessage.objects.values_list('id', flat=True)),
+            set(ArchivedUserMessage.objects.values_list("id", flat=True)),
             set(expected_usermessage_ids),
         )
 
@@ -72,14 +72,14 @@ class RetentionTestingBase(ZulipTestCase):
     ) -> None:
         # Check that the data was restored:
         self.assertEqual(
-            set(Message.objects.filter(id__in=expected_message_ids).values_list('id', flat=True)),
+            set(Message.objects.filter(id__in=expected_message_ids).values_list("id", flat=True)),
             set(expected_message_ids),
         )
 
         self.assertEqual(
             set(
                 UserMessage.objects.filter(id__in=expected_usermessage_ids).values_list(
-                    'id', flat=True
+                    "id", flat=True
                 )
             ),
             set(expected_usermessage_ids),
@@ -87,12 +87,12 @@ class RetentionTestingBase(ZulipTestCase):
 
         # The Messages and UserMessages should still be in the archive - we don't delete them.
         self.assertEqual(
-            set(ArchivedMessage.objects.values_list('id', flat=True)),
+            set(ArchivedMessage.objects.values_list("id", flat=True)),
             set(expected_message_ids),
         )
 
         self.assertEqual(
-            set(ArchivedUserMessage.objects.values_list('id', flat=True)),
+            set(ArchivedUserMessage.objects.values_list("id", flat=True)),
             set(expected_usermessage_ids),
         )
 
@@ -100,8 +100,8 @@ class RetentionTestingBase(ZulipTestCase):
 class ArchiveMessagesTestingBase(RetentionTestingBase):
     def setUp(self) -> None:
         super().setUp()
-        self.zulip_realm = get_realm('zulip')
-        self.mit_realm = get_realm('zephyr')
+        self.zulip_realm = get_realm("zulip")
+        self.mit_realm = get_realm("zephyr")
         self._set_realm_message_retention_value(self.zulip_realm, ZULIP_REALM_DAYS)
         self._set_realm_message_retention_value(self.mit_realm, MIT_REALM_DAYS)
 
@@ -124,8 +124,8 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
 
     def _make_mit_messages(self, message_quantity: int, date_sent: datetime) -> Any:
         # send messages from mit.edu realm and change messages pub date
-        sender = self.mit_user('espuser')
-        recipient = self.mit_user('starnine')
+        sender = self.mit_user("espuser")
+        recipient = self.mit_user("starnine")
         msg_ids = [self.send_personal_message(sender, recipient) for i in range(message_quantity)]
 
         self._change_messages_date_sent(msg_ids, date_sent)
@@ -133,23 +133,23 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
 
     def _send_cross_realm_personal_message(self) -> int:
         # Send message from bot to users from different realm.
-        bot_email = 'notification-bot@zulip.com'
+        bot_email = "notification-bot@zulip.com"
         get_user_profile_by_email(bot_email)
         zulip_user = self.example_user("hamlet")
         msg_id = internal_send_private_message(
             realm=self.zulip_realm,
             sender=get_system_bot(bot_email),
             recipient_user=zulip_user,
-            content='test message',
+            content="test message",
         )
         assert msg_id is not None
         return msg_id
 
     def _make_expired_zulip_messages(self, message_quantity: int) -> List[int]:
         msg_ids = list(
-            Message.objects.order_by('id')
+            Message.objects.order_by("id")
             .filter(sender__realm=self.zulip_realm)
-            .values_list('id', flat=True)[3 : 3 + message_quantity]
+            .values_list("id", flat=True)[3 : 3 + message_quantity]
         )
         self._change_messages_date_sent(
             msg_ids,
@@ -164,9 +164,9 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         host = user_profile.realm.host
         realm_id = get_realm("zulip").id
         dummy_files = [
-            ('zulip.txt', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
-            ('temp_file.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
-            ('abc.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size),
+            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt", sample_size),
+            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py", sample_size),
+            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py", sample_size),
         ]
 
         for file_name, path_id, size in dummy_files:
@@ -182,15 +182,15 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         expired_message_id = self.send_stream_message(user_profile, "Denmark", body)
         actual_message_id = self.send_stream_message(user_profile, "Denmark", body)
 
-        othello = self.example_user('othello')
+        othello = self.example_user("othello")
         other_message_id = self.send_stream_message(othello, "Denmark", body)
         self._change_messages_date_sent(
             [expired_message_id], timezone_now() - timedelta(days=MIT_REALM_DAYS + 1)
         )
         return {
-            'expired_message_id': expired_message_id,
-            'actual_message_id': actual_message_id,
-            'other_user_message_id': other_message_id,
+            "expired_message_id": expired_message_id,
+            "actual_message_id": actual_message_id,
+            "other_user_message_id": other_message_id,
         }
 
 
@@ -214,9 +214,9 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 
         # Change some Zulip messages to be expired:
         expired_zulip_msg_ids = list(
-            Message.objects.order_by('id')
+            Message.objects.order_by("id")
             .filter(sender__realm=self.zulip_realm)
-            .values_list('id', flat=True)[3:10]
+            .values_list("id", flat=True)[3:10]
         )
         self._change_messages_date_sent(
             expired_zulip_msg_ids,
@@ -247,9 +247,9 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # Change some Zulip messages date_sent, but the realm has no retention policy,
         # so they shouldn't get archived
         zulip_msg_ids = list(
-            Message.objects.order_by('id')
+            Message.objects.order_by("id")
             .filter(sender__realm=self.zulip_realm)
-            .values_list('id', flat=True)[3:10]
+            .values_list("id", flat=True)[3:10]
         )
         self._change_messages_date_sent(
             zulip_msg_ids,
@@ -320,13 +320,13 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
             self._verify_archive_data([], [])
 
             self.assertEqual(
-                set(Message.objects.filter(id__in=expired_msg_ids).values_list('id', flat=True)),
+                set(Message.objects.filter(id__in=expired_msg_ids).values_list("id", flat=True)),
                 set(expired_msg_ids),
             )
             self.assertEqual(
                 set(
                     UserMessage.objects.filter(id__in=expired_usermsg_ids).values_list(
-                        'id', flat=True
+                        "id", flat=True
                     )
                 ),
                 set(expired_usermsg_ids),
@@ -376,18 +376,18 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         self.assertEqual(ArchivedAttachment.objects.count(), 3)
         self.assertEqual(
             list(
-                ArchivedAttachment.objects.distinct('messages__id').values_list(
-                    'messages__id', flat=True
+                ArchivedAttachment.objects.distinct("messages__id").values_list(
+                    "messages__id", flat=True
                 )
             ),
-            [msgs_ids['expired_message_id']],
+            [msgs_ids["expired_message_id"]],
         )
         self.assertEqual(Attachment.objects.count(), 3)
 
         # Now make `actual_message_id` expired too.  We still don't
         # delete the Attachment objects.
         self._change_messages_date_sent(
-            [msgs_ids['actual_message_id']], timezone_now() - timedelta(days=MIT_REALM_DAYS + 1)
+            [msgs_ids["actual_message_id"]], timezone_now() - timedelta(days=MIT_REALM_DAYS + 1)
         )
         archive_messages()
         self.assertEqual(Attachment.objects.count(), 3)
@@ -396,7 +396,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # expired.  We should now delete the Attachment objects and
         # each ArchivedAttachment object should list all 3 messages.
         self._change_messages_date_sent(
-            [msgs_ids['other_user_message_id']], timezone_now() - timedelta(days=MIT_REALM_DAYS + 1)
+            [msgs_ids["other_user_message_id"]], timezone_now() - timedelta(days=MIT_REALM_DAYS + 1)
         )
 
         archive_messages()
@@ -404,9 +404,9 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         self.assertEqual(ArchivedAttachment.objects.count(), 3)
         self.assertEqual(
             list(
-                ArchivedAttachment.objects.distinct('messages__id')
-                .order_by('messages__id')
-                .values_list('messages__id', flat=True)
+                ArchivedAttachment.objects.distinct("messages__id")
+                .order_by("messages__id")
+                .values_list("messages__id", flat=True)
             ),
             sorted(msgs_ids.values()),
         )
@@ -418,9 +418,9 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         self.assertEqual(ArchivedAttachment.objects.count(), 3)
         self.assertEqual(
             list(
-                Attachment.objects.distinct('messages__id')
-                .order_by('messages__id')
-                .values_list('messages__id', flat=True)
+                Attachment.objects.distinct("messages__id")
+                .order_by("messages__id")
+                .values_list("messages__id", flat=True)
             ),
             sorted(msgs_ids.values()),
         )
@@ -459,21 +459,21 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 class TestArchivingSubMessages(ArchiveMessagesTestingBase):
     def test_archiving_submessages(self) -> None:
         expired_msg_ids = self._make_expired_zulip_messages(2)
-        cordelia = self.example_user('cordelia')
-        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
 
         do_add_submessage(
             realm=self.zulip_realm,
             sender_id=cordelia.id,
             message_id=expired_msg_ids[0],
-            msg_type='whatever',
+            msg_type="whatever",
             content='{"name": "alice", "salary": 20}',
         )
         do_add_submessage(
             realm=self.zulip_realm,
             sender_id=hamlet.id,
             message_id=expired_msg_ids[0],
-            msg_type='whatever',
+            msg_type="whatever",
             content='{"name": "john", "salary": 30}',
         )
 
@@ -481,12 +481,12 @@ class TestArchivingSubMessages(ArchiveMessagesTestingBase):
             realm=self.zulip_realm,
             sender_id=cordelia.id,
             message_id=expired_msg_ids[1],
-            msg_type='whatever',
+            msg_type="whatever",
             content='{"name": "jack", "salary": 10}',
         )
 
         submessage_ids = list(
-            SubMessage.objects.filter(message_id__in=expired_msg_ids).values_list('id', flat=True),
+            SubMessage.objects.filter(message_id__in=expired_msg_ids).values_list("id", flat=True),
         )
 
         self.assertEqual(len(submessage_ids), 3)
@@ -497,7 +497,7 @@ class TestArchivingSubMessages(ArchiveMessagesTestingBase):
         self.assertEqual(
             set(
                 ArchivedSubMessage.objects.filter(id__in=submessage_ids).values_list(
-                    'id', flat=True
+                    "id", flat=True
                 )
             ),
             set(submessage_ids),
@@ -505,7 +505,7 @@ class TestArchivingSubMessages(ArchiveMessagesTestingBase):
 
         restore_all_data_from_archive()
         self.assertEqual(
-            set(SubMessage.objects.filter(id__in=submessage_ids).values_list('id', flat=True)),
+            set(SubMessage.objects.filter(id__in=submessage_ids).values_list("id", flat=True)),
             set(submessage_ids),
         )
 
@@ -514,24 +514,24 @@ class TestArchivingReactions(ArchiveMessagesTestingBase):
     def test_archiving_reactions(self) -> None:
         expired_msg_ids = self._make_expired_zulip_messages(2)
 
-        hamlet = self.example_user('hamlet')
-        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
 
         for sender in [hamlet, cordelia]:
             self.api_post(
                 sender,
-                f'/api/v1/messages/{expired_msg_ids[0]}/reactions',
+                f"/api/v1/messages/{expired_msg_ids[0]}/reactions",
                 zulip_reaction_info(),
             )
 
         self.api_post(
             hamlet,
-            f'/api/v1/messages/{expired_msg_ids[1]}/reactions',
+            f"/api/v1/messages/{expired_msg_ids[1]}/reactions",
             zulip_reaction_info(),
         )
 
         reaction_ids = list(
-            Reaction.objects.filter(message_id__in=expired_msg_ids).values_list('id', flat=True),
+            Reaction.objects.filter(message_id__in=expired_msg_ids).values_list("id", flat=True),
         )
 
         self.assertEqual(len(reaction_ids), 3)
@@ -540,13 +540,13 @@ class TestArchivingReactions(ArchiveMessagesTestingBase):
         self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 0)
 
         self.assertEqual(
-            set(ArchivedReaction.objects.filter(id__in=reaction_ids).values_list('id', flat=True)),
+            set(ArchivedReaction.objects.filter(id__in=reaction_ids).values_list("id", flat=True)),
             set(reaction_ids),
         )
 
         restore_all_data_from_archive()
         self.assertEqual(
-            set(Reaction.objects.filter(id__in=reaction_ids).values_list('id', flat=True)),
+            set(Reaction.objects.filter(id__in=reaction_ids).values_list("id", flat=True)),
             set(reaction_ids),
         )
 
@@ -554,20 +554,20 @@ class TestArchivingReactions(ArchiveMessagesTestingBase):
 class MoveMessageToArchiveBase(RetentionTestingBase):
     def setUp(self) -> None:
         super().setUp()
-        self.sender = self.example_user('hamlet')
-        self.recipient = self.example_user('cordelia')
+        self.sender = self.example_user("hamlet")
+        self.recipient = self.example_user("cordelia")
 
     def _create_attachments(self) -> None:
         sample_size = 10
         realm_id = get_realm("zulip").id
         dummy_files = [
-            ('zulip.txt', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
-            ('temp_file.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
-            ('abc.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size),
-            ('hello.txt', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt', sample_size),
-            ('new.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py', sample_size),
+            ("zulip.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt", sample_size),
+            ("temp_file.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py", sample_size),
+            ("abc.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py", sample_size),
+            ("hello.txt", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt", sample_size),
+            ("new.py", f"{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py", sample_size),
         ]
-        user_profile = self.example_user('hamlet')
+        user_profile = self.example_user("hamlet")
         for file_name, path_id, size in dummy_files:
             create_attachment(file_name, path_id, user_profile, size)
 
@@ -786,26 +786,26 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
 class MoveMessageToArchiveWithSubMessages(MoveMessageToArchiveBase):
     def test_archiving_message_with_submessages(self) -> None:
         msg_id = self.send_stream_message(self.sender, "Verona")
-        cordelia = self.example_user('cordelia')
-        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
 
         do_add_submessage(
-            realm=get_realm('zulip'),
+            realm=get_realm("zulip"),
             sender_id=cordelia.id,
             message_id=msg_id,
-            msg_type='whatever',
+            msg_type="whatever",
             content='{"name": "alice", "salary": 20}',
         )
         do_add_submessage(
-            realm=get_realm('zulip'),
+            realm=get_realm("zulip"),
             sender_id=hamlet.id,
             message_id=msg_id,
-            msg_type='whatever',
+            msg_type="whatever",
             content='{"name": "john", "salary": 30}',
         )
 
         submessage_ids = list(
-            SubMessage.objects.filter(message_id=msg_id).values_list('id', flat=True),
+            SubMessage.objects.filter(message_id=msg_id).values_list("id", flat=True),
         )
 
         self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 2)
@@ -819,7 +819,7 @@ class MoveMessageToArchiveWithSubMessages(MoveMessageToArchiveBase):
 
         restore_all_data_from_archive()
         self.assertEqual(
-            set(SubMessage.objects.filter(id__in=submessage_ids).values_list('id', flat=True)),
+            set(SubMessage.objects.filter(id__in=submessage_ids).values_list("id", flat=True)),
             set(submessage_ids),
         )
 
@@ -828,15 +828,15 @@ class MoveMessageToArchiveWithReactions(MoveMessageToArchiveBase):
     def test_archiving_message_with_reactions(self) -> None:
         msg_id = self.send_stream_message(self.sender, "Verona")
 
-        for name in ['hamlet', 'cordelia']:
+        for name in ["hamlet", "cordelia"]:
             self.api_post(
                 self.example_user(name),
-                f'/api/v1/messages/{msg_id}/reactions',
+                f"/api/v1/messages/{msg_id}/reactions",
                 zulip_reaction_info(),
             )
 
         reaction_ids = list(
-            Reaction.objects.filter(message_id=msg_id).values_list('id', flat=True),
+            Reaction.objects.filter(message_id=msg_id).values_list("id", flat=True),
         )
 
         self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 2)
@@ -850,7 +850,7 @@ class MoveMessageToArchiveWithReactions(MoveMessageToArchiveBase):
 
         restore_all_data_from_archive()
         self.assertEqual(
-            set(Reaction.objects.filter(id__in=reaction_ids).values_list('id', flat=True)),
+            set(Reaction.objects.filter(id__in=reaction_ids).values_list("id", flat=True)),
             set(reaction_ids),
         )
 
@@ -869,7 +869,7 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
 
         message_ids_to_clean = list(
             ArchivedMessage.objects.filter(archive_transaction__in=transactions[0:-1]).values_list(
-                'id', flat=True
+                "id", flat=True
             )
         )
 
@@ -983,8 +983,8 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
 
 class TestRestoreStreamMessages(ArchiveMessagesTestingBase):
     def test_restore_retention_policy_deletions_for_stream(self) -> None:
-        cordelia = self.example_user('cordelia')
-        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
 
         realm = get_realm("zulip")
         stream_name = "Denmark"
@@ -1034,7 +1034,7 @@ class TestRestoreStreamMessages(ArchiveMessagesTestingBase):
 class TestDoDeleteMessages(ZulipTestCase):
     def test_do_delete_messages_multiple(self) -> None:
         realm = get_realm("zulip")
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
         message_ids = [self.send_stream_message(cordelia, "Denmark", str(i)) for i in range(0, 10)]
         messages = Message.objects.filter(id__in=message_ids)
 
@@ -1054,18 +1054,18 @@ class TestDoDeleteMessages(ZulipTestCase):
         deleted in a later release. This test is meant to ensure correctness of that block.
         """
         realm = get_realm("zulip")
-        cordelia = self.example_user('cordelia')
-        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
         message_id = self.send_personal_message(cordelia, hamlet)
         message = Message.objects.get(id=message_id)
 
         event = {
-            'type': 'delete_message',
-            'sender': message.sender.email,
-            'sender_id': message.sender_id,
-            'message_id': message.id,
-            'message_type': "private",
-            'recipient_id': message.recipient_id,
+            "type": "delete_message",
+            "sender": message.sender.email,
+            "sender_id": message.sender_id,
+            "message_id": message.id,
+            "message_type": "private",
+            "recipient_id": message.recipient_id,
         }
         move_messages_to_archive([message_id])
         # We only send the event to see no exception is thrown - as it would be if the block

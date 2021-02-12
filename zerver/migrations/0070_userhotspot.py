@@ -8,23 +8,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0069_realmauditlog_extra_data'),
+        ("zerver", "0069_realmauditlog_extra_data"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UserHotspot',
+            name="UserHotspot",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ('hotspot', models.CharField(max_length=30)),
-                ('timestamp', models.DateTimeField(default=django.utils.timezone.now)),
+                ("hotspot", models.CharField(max_length=30)),
+                ("timestamp", models.DateTimeField(default=django.utils.timezone.now)),
                 (
-                    'user',
+                    "user",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
                     ),
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.AlterUniqueTogether(
-            name='userhotspot',
-            unique_together={('user', 'hotspot')},
+            name="userhotspot",
+            unique_together={("user", "hotspot")},
         ),
     ]

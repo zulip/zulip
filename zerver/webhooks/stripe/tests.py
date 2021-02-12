@@ -5,9 +5,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class StripeHookTests(WebhookTestCase):
-    STREAM_NAME = 'test'
+    STREAM_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/stripe?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'stripe'
+    FIXTURE_DIR_NAME = "stripe"
 
     def test_charge_dispute_closed(self) -> None:
         expected_topic = "disputes"
@@ -145,7 +145,7 @@ Billing method: send invoice"""
         expected_topic = "cus_00000000000000"
         expected_message = "[Subscription](https://dashboard.stripe.com/subscriptions/sub_00000000000000) trial will end in 3 days"
         # 3 days before the end of the trial, plus a little bit to make sure the rounding is working
-        with mock.patch('time.time', return_value=1480892861 - 3 * 3600 * 24 + 100):
+        with mock.patch("time.time", return_value=1480892861 - 3 * 3600 * 24 + 100):
             # use fixture named stripe_customer_subscription_trial_will_end
             self.check_webhook(
                 "customer_subscription_trial_will_end",
@@ -228,12 +228,12 @@ Amount due: 0.00 INR
         expected_message = "A [refund](https://dashboard.stripe.com/refunds/pyr_abcde12345ABCDF) for a [payment](https://dashboard.stripe.com/payments/py_abcde12345ABCDG) of 12.34 EUR was updated."
         self.check_webhook("pseudo_refund_event", expected_topic, expected_message)
 
-    @patch('zerver.webhooks.stripe.view.check_send_webhook_message')
+    @patch("zerver.webhooks.stripe.view.check_send_webhook_message")
     def test_account_updated_without_previous_attributes_ignore(
         self, check_send_webhook_message_mock: MagicMock
     ) -> None:
         self.url = self.build_webhook_url()
-        payload = self.get_body('account_updated_without_previous_attributes')
+        payload = self.get_body("account_updated_without_previous_attributes")
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)

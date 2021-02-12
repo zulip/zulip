@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0149_realm_emoji_drop_unique_constraint'),
+        ("zerver", "0149_realm_emoji_drop_unique_constraint"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='allow_community_topic_editing',
+            model_name="realm",
+            name="allow_community_topic_editing",
             field=models.BooleanField(default=False),
         ),
     ]

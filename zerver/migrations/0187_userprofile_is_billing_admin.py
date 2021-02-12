@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0186_userprofile_starred_message_counts'),
+        ("zerver", "0186_userprofile_starred_message_counts"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='is_billing_admin',
+            model_name="userprofile",
+            name="is_billing_admin",
             field=models.BooleanField(db_index=True, default=False),
         ),
     ]

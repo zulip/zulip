@@ -5,11 +5,11 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class BeeminderHookTests(WebhookTestCase):
-    STREAM_NAME = 'beeminder'
+    STREAM_NAME = "beeminder"
     URL_TEMPLATE = "/api/v1/external/beeminder?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = "beeminder"
 
-    @patch('zerver.webhooks.beeminder.view.time.time')
+    @patch("zerver.webhooks.beeminder.view.time.time")
     def test_beeminder_derail(self, time: Any) -> None:
         time.return_value = 1517739100  # 5.6 hours from fixture value
         expected_topic = "beekeeper"
@@ -25,7 +25,7 @@ You are going to derail from goal **gainweight** in **5.6 hours**. You need **+2
             content_type="application/x-www-form-urlencoded",
         )
 
-    @patch('zerver.webhooks.beeminder.view.time.time')
+    @patch("zerver.webhooks.beeminder.view.time.time")
     def test_beeminder_derail_worried(self, time: Any) -> None:
         time.return_value = 1517739100  # 5.6 hours from fixture value
         expected_topic = "beekeeper"

@@ -360,11 +360,11 @@ def access_stream_by_id(
     return (stream, sub)
 
 
-def get_public_streams_queryset(realm: Realm) -> 'QuerySet[Stream]':
+def get_public_streams_queryset(realm: Realm) -> "QuerySet[Stream]":
     return Stream.objects.filter(realm=realm, invite_only=False, history_public_to_subscribers=True)
 
 
-def get_web_public_streams_queryset(realm: Realm) -> 'QuerySet[Stream]':
+def get_web_public_streams_queryset(realm: Realm) -> "QuerySet[Stream]":
     # In theory, is_web_public=True implies invite_only=False and
     # history_public_to_subscribers=True, but it's safer to include
     # this in the query.
@@ -514,7 +514,7 @@ def filter_stream_authorization(
     subscribed_recipient_ids = set(
         Subscription.objects.filter(
             user_profile=user_profile, recipient_id__in=recipient_ids, active=True
-        ).values_list('recipient_id', flat=True)
+        ).values_list("recipient_id", flat=True)
     )
 
     unauthorized_streams: List[Stream] = []
@@ -589,7 +589,7 @@ def list_to_streams(
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
-            if stream_dict.get('message_retention_days', None) is not None:
+            if stream_dict.get("message_retention_days", None) is not None:
                 message_retention_days_not_none = True
             missing_stream_dicts.append(stream_dict)
         else:
@@ -602,7 +602,7 @@ def list_to_streams(
     else:
         # autocreate=True path starts here
         if not user_profile.can_create_streams():
-            raise JsonableError(_('User cannot create streams.'))
+            raise JsonableError(_("User cannot create streams."))
         elif not autocreate:
             raise JsonableError(
                 _("Stream(s) ({}) do not exist").format(
@@ -611,7 +611,7 @@ def list_to_streams(
             )
         elif message_retention_days_not_none:
             if not user_profile.is_realm_owner:
-                raise JsonableError(_('User cannot create stream with this settings.'))
+                raise JsonableError(_("User cannot create stream with this settings."))
             user_profile.realm.ensure_not_on_limited_plan()
 
         # We already filtered out existing streams, so dup_streams

@@ -44,24 +44,24 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
     # message's last edit time
     if len(message_history) > 0:
         assert message.last_edit_time is not None
-        assert datetime_to_timestamp(message.last_edit_time) == message_history[0]['timestamp']
+        assert datetime_to_timestamp(message.last_edit_time) == message_history[0]["timestamp"]
 
     for entry in message_history:
-        entry['topic'] = prev_topic
+        entry["topic"] = prev_topic
         if LEGACY_PREV_TOPIC in entry:
             prev_topic = entry[LEGACY_PREV_TOPIC]
-            entry['prev_topic'] = prev_topic
+            entry["prev_topic"] = prev_topic
             del entry[LEGACY_PREV_TOPIC]
 
-        entry['content'] = prev_content
-        entry['rendered_content'] = prev_rendered_content
-        if 'prev_content' in entry:
-            del entry['prev_rendered_content_version']
-            prev_content = entry['prev_content']
-            prev_rendered_content = entry['prev_rendered_content']
+        entry["content"] = prev_content
+        entry["rendered_content"] = prev_rendered_content
+        if "prev_content" in entry:
+            del entry["prev_rendered_content_version"]
+            prev_content = entry["prev_content"]
+            prev_rendered_content = entry["prev_rendered_content"]
             assert prev_rendered_content is not None
-            entry['content_html_diff'] = highlight_html_differences(
-                prev_rendered_content, entry['rendered_content'], message.id
+            entry["content_html_diff"] = highlight_html_differences(
+                prev_rendered_content, entry["rendered_content"], message.id
             )
 
     message_history.append(
@@ -185,7 +185,7 @@ def update_message_backend(
             content=content,
         )
         user_info = get_user_info_for_message_updates(message.id)
-        prior_mention_user_ids = user_info['mention_user_ids']
+        prior_mention_user_ids = user_info["mention_user_ids"]
 
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be
@@ -194,7 +194,7 @@ def update_message_backend(
         rendered_content = render_incoming_message(
             message,
             content,
-            user_info['message_user_ids'],
+            user_info["message_user_ids"],
             user_profile.realm,
             mention_data=mention_data,
         )
@@ -229,18 +229,18 @@ def update_message_backend(
     )
 
     # Include the number of messages changed in the logs
-    request._log_data['extra'] = f"[{number_changed}]"
+    request._log_data["extra"] = f"[{number_changed}]"
     if links_for_embed:
         event_data = {
-            'message_id': message.id,
-            'message_content': message.content,
+            "message_id": message.id,
+            "message_content": message.content,
             # The choice of `user_profile.realm_id` rather than
             # `sender.realm_id` must match the decision made in the
             # `render_incoming_message` call earlier in this function.
-            'message_realm_id': user_profile.realm_id,
-            'urls': list(links_for_embed),
+            "message_realm_id": user_profile.realm_id,
+            "urls": list(links_for_embed),
         }
-        queue_json_publish('embed_links', event_data)
+        queue_json_publish("embed_links", event_data)
     return json_success()
 
 

@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0083_index_mentioned_user_messages'),
+        ("zerver", "0083_index_mentioned_user_messages"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realmemoji',
-            name='deactivated',
+            model_name="realmemoji",
+            name="deactivated",
             field=models.BooleanField(default=False),
         ),
     ]

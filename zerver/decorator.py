@@ -51,7 +51,7 @@ if settings.ZILENCER_ENABLED:
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
 
-FuncT = TypeVar('FuncT', bound=Callable[..., object])
+FuncT = TypeVar("FuncT", bound=Callable[..., object])
 
 
 def cachify(method: FuncT) -> FuncT:
@@ -73,21 +73,21 @@ def update_user_activity(
 ) -> None:
     # update_active_status also pushes to RabbitMQ, and it seems
     # redundant to log that here as well.
-    if request.META["PATH_INFO"] == '/json/users/me/presence':
+    if request.META["PATH_INFO"] == "/json/users/me/presence":
         return
 
     if query is not None:
         pass
-    elif hasattr(request, '_query'):
+    elif hasattr(request, "_query"):
         query = request._query
     else:
-        query = request.META['PATH_INFO']
+        query = request.META["PATH_INFO"]
 
     event = {
-        'query': query,
-        'user_profile_id': user_profile.id,
-        'time': datetime_to_timestamp(timezone_now()),
-        'client_id': request.client.id,
+        "query": query,
+        "user_profile_id": user_profile.id,
+        "time": datetime_to_timestamp(timezone_now()),
+        "client_id": request.client.id,
     }
     queue_json_publish("user_activity", event, lambda event: None)
 
@@ -99,16 +99,16 @@ def require_post(func: ViewFuncT) -> ViewFuncT:
         if request.method != "POST":
             err_method = request.method
             logging.warning(
-                'Method Not Allowed (%s): %s',
+                "Method Not Allowed (%s): %s",
                 err_method,
                 request.path,
-                extra={'status_code': 405, 'request': request},
+                extra={"status_code": 405, "request": request},
             )
-            if request.error_format == 'JSON':
+            if request.error_format == "JSON":
                 return json_method_not_allowed(["POST"])
             else:
                 return TemplateResponse(
-                    request, "404.html", context={'status_code': 405}, status=405
+                    request, "404.html", context={"status_code": 405}, status=405
                 )
         return func(request, *args, **kwargs)
 
@@ -167,10 +167,10 @@ def get_client_name(request: HttpRequest) -> str:
     # If the API request specified a client in the request content,
     # that has priority.  Otherwise, extract the client from the
     # User-Agent.
-    if 'client' in request.GET:  # nocoverage
-        return request.GET['client']
-    if 'client' in request.POST:
-        return request.POST['client']
+    if "client" in request.GET:  # nocoverage
+        return request.GET["client"]
+    if "client" in request.POST:
+        return request.POST["client"]
     if "HTTP_USER_AGENT" in request.META:
         user_agent: Optional[Dict[str, str]] = parse_user_agent(request.META["HTTP_USER_AGENT"])
     else:
@@ -211,7 +211,7 @@ def process_client(
 
 class InvalidZulipServerError(JsonableError):
     code = ErrorCode.INVALID_ZULIP_SERVER
-    data_fields = ['role']
+    data_fields = ["role"]
 
     def __init__(self, role: str) -> None:
         self.role: str = role
@@ -240,7 +240,7 @@ def validate_api_key(
         role = role.strip()
 
     # If `role` doesn't look like an email, it might be a uuid.
-    if settings.ZILENCER_ENABLED and role is not None and '@' not in role:
+    if settings.ZILENCER_ENABLED and role is not None and "@" not in role:
         try:
             remote_server = get_remote_server_by_uuid(role)
         except RemoteZulipServer.DoesNotExist:
@@ -349,7 +349,7 @@ def webhook_view(
             )
 
             if settings.RATE_LIMITING:
-                rate_limit_user(request, user_profile, domain='api_by_user')
+                rate_limit_user(request, user_profile, domain="api_by_user")
             try:
                 return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
@@ -641,11 +641,11 @@ def authenticated_rest_api_view(
             try:
                 # Grab the base64-encoded authentication string, decode it, and split it into
                 # the email and API key
-                auth_type, credentials = request.META['HTTP_AUTHORIZATION'].split()
+                auth_type, credentials = request.META["HTTP_AUTHORIZATION"].split()
                 # case insensitive per RFC 1945
                 if auth_type.lower() != "basic":
                     return json_error(_("This endpoint requires HTTP basic authentication."))
-                role, api_key = base64.b64decode(credentials).decode('utf-8').split(":")
+                role, api_key = base64.b64decode(credentials).decode("utf-8").split(":")
             except ValueError:
                 return json_unauthorized(_("Invalid authorization header for basic auth"))
             except KeyError:
@@ -704,7 +704,7 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
 
         if not request.POST:
             # Only take action if POST is empty.
-            if request.META.get('CONTENT_TYPE', '').startswith('multipart'):
+            if request.META.get("CONTENT_TYPE", "").startswith("multipart"):
                 # Note that request._files is just the private attribute that backs the
                 # FILES property, so we are essentially setting request.FILES here.  (In
                 # Django 1.5 FILES was still a read-only property.)
@@ -781,7 +781,7 @@ def authenticated_json_view(
 
 
 def is_local_addr(addr: str) -> bool:
-    return addr in ('127.0.0.1', '::1')
+    return addr in ("127.0.0.1", "::1")
 
 
 # These views are used by the main Django server to notify the Tornado server
@@ -789,8 +789,8 @@ def is_local_addr(addr: str) -> bool:
 # secret, and also the originating IP (for now).
 def authenticate_notify(request: HttpRequest) -> bool:
     return (
-        is_local_addr(request.META['REMOTE_ADDR'])
-        and request.POST.get('secret') == settings.SHARED_SECRET
+        is_local_addr(request.META["REMOTE_ADDR"])
+        and request.POST.get("secret") == settings.SHARED_SECRET
     )
 
 
@@ -798,8 +798,8 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
-    return (request.client and request.client.name.lower() == 'internal') and (
-        is_local_addr(request.META['REMOTE_ADDR']) or settings.DEBUG_RATE_LIMITING
+    return (request.client and request.client.name.lower() == "internal") and (
+        is_local_addr(request.META["REMOTE_ADDR"]) or settings.DEBUG_RATE_LIMITING
     )
 
 
@@ -818,14 +818,14 @@ def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFun
             request: HttpRequest, *args: object, **kwargs: object
         ) -> HttpResponse:
             if not authenticate_notify(request):
-                return json_error(_('Access denied'), status=403)
-            is_tornado_request = hasattr(request, '_tornado_handler')
+                return json_error(_("Access denied"), status=403)
+            is_tornado_request = hasattr(request, "_tornado_handler")
             # These next 2 are not security checks; they are internal
             # assertions to help us find bugs.
             if is_tornado_view and not is_tornado_request:
-                raise RuntimeError('Tornado notify view called with no Tornado handler')
+                raise RuntimeError("Tornado notify view called with no Tornado handler")
             if not is_tornado_view and is_tornado_request:
-                raise RuntimeError('Django notify view called with Tornado handler')
+                raise RuntimeError("Django notify view called with Tornado handler")
             request._requestor_for_logs = "internal"
             return view_func(request, *args, **kwargs)
 
@@ -864,7 +864,7 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     RateLimitedUser(user, domain=domain).rate_limit_request(request)
 
 
-def rate_limit(domain: str = 'api_by_user') -> Callable[[ViewFuncT], ViewFuncT]:
+def rate_limit(domain: str = "api_by_user") -> Callable[[ViewFuncT], ViewFuncT]:
     """Rate-limits a view. Takes an optional 'domain' param if you wish to
     rate limit different types of API calls independently.
 
@@ -907,7 +907,7 @@ def rate_limit(domain: str = 'api_by_user') -> Callable[[ViewFuncT], ViewFuncT]:
 def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
-        if request.method == 'HEAD':
+        if request.method == "HEAD":
             return json_success()
         return view_func(request, *args, **kwargs)
 
@@ -915,7 +915,7 @@ def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
 
 
 def zulip_otp_required(
-    redirect_field_name: str = 'next',
+    redirect_field_name: str = "next",
     login_url: str = settings.HOME_NOT_LOGGED_IN,
 ) -> Callable[[ViewFuncT], ViewFuncT]:
     """

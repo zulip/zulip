@@ -17,7 +17,7 @@ def start_server(logfile_name: str) -> Tuple[bool, str]:
     failure = True
     key = "Quit the server with CTRL-C."
     datalog = []
-    with open(logfile_name, 'r', buffering=0) as logfile:
+    with open(logfile_name, "r", buffering=0) as logfile:
         for i in range(200):
             time.sleep(0.5)
             print(f"{i}. Polling run-dev...")
@@ -25,18 +25,18 @@ def start_server(logfile_name: str) -> Tuple[bool, str]:
             if new_data:
                 datalog.append(new_data)
 
-            if key in ''.join(datalog):
+            if key in "".join(datalog):
                 failure = False
                 break
 
-    return failure, ''.join(datalog)
+    return failure, "".join(datalog)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Testing development server start!")
 
-    logfile_name = '/tmp/run-dev-output'
-    with open(logfile_name, 'wb', buffering=0) as logfile:
+    logfile_name = "/tmp/run-dev-output"
+    with open(logfile_name, "wb", buffering=0) as logfile:
         run_dev = subprocess.Popen(
             [os.path.join(TOOLS_DIR, "run-dev.py")], stdout=logfile, stderr=subprocess.STDOUT
         )
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     run_dev.send_signal(signal.SIGINT)
     run_dev.wait()
 
-    if 'Traceback' in log:
+    if "Traceback" in log:
         failure = True
 
     if failure:

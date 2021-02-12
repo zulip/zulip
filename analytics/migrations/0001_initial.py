@@ -6,54 +6,54 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0030_realm_org_type'),
+        ("zerver", "0030_realm_org_type"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Anomaly',
+            name="Anomaly",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        verbose_name='ID', serialize=False, auto_created=True, primary_key=True
+                        verbose_name="ID", serialize=False, auto_created=True, primary_key=True
                     ),
                 ),
-                ('info', models.CharField(max_length=1000)),
+                ("info", models.CharField(max_length=1000)),
             ],
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='HuddleCount',
+            name="HuddleCount",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        verbose_name='ID', serialize=False, auto_created=True, primary_key=True
+                        verbose_name="ID", serialize=False, auto_created=True, primary_key=True
                     ),
                 ),
                 (
-                    'huddle',
+                    "huddle",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Recipient'
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Recipient"
                     ),
                 ),
                 (
-                    'user',
+                    "user",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
                     ),
                 ),
-                ('property', models.CharField(max_length=40)),
-                ('end_time', models.DateTimeField()),
-                ('interval', models.CharField(max_length=20)),
-                ('value', models.BigIntegerField()),
+                ("property", models.CharField(max_length=40)),
+                ("end_time", models.DateTimeField()),
+                ("interval", models.CharField(max_length=20)),
+                ("value", models.BigIntegerField()),
                 (
-                    'anomaly',
+                    "anomaly",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        to='analytics.Anomaly',
+                        to="analytics.Anomaly",
                         null=True,
                     ),
                 ),
@@ -61,23 +61,23 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='InstallationCount',
+            name="InstallationCount",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        verbose_name='ID', serialize=False, auto_created=True, primary_key=True
+                        verbose_name="ID", serialize=False, auto_created=True, primary_key=True
                     ),
                 ),
-                ('property', models.CharField(max_length=40)),
-                ('end_time', models.DateTimeField()),
-                ('interval', models.CharField(max_length=20)),
-                ('value', models.BigIntegerField()),
+                ("property", models.CharField(max_length=40)),
+                ("end_time", models.DateTimeField()),
+                ("interval", models.CharField(max_length=20)),
+                ("value", models.BigIntegerField()),
                 (
-                    'anomaly',
+                    "anomaly",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        to='analytics.Anomaly',
+                        to="analytics.Anomaly",
                         null=True,
                     ),
                 ),
@@ -85,29 +85,29 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='RealmCount',
+            name="RealmCount",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        verbose_name='ID', serialize=False, auto_created=True, primary_key=True
+                        verbose_name="ID", serialize=False, auto_created=True, primary_key=True
                     ),
                 ),
                 (
-                    'realm',
+                    "realm",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
                     ),
                 ),
-                ('property', models.CharField(max_length=40)),
-                ('end_time', models.DateTimeField()),
-                ('interval', models.CharField(max_length=20)),
-                ('value', models.BigIntegerField()),
+                ("property", models.CharField(max_length=40)),
+                ("end_time", models.DateTimeField()),
+                ("interval", models.CharField(max_length=20)),
+                ("value", models.BigIntegerField()),
                 (
-                    'anomaly',
+                    "anomaly",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        to='analytics.Anomaly',
+                        to="analytics.Anomaly",
                         null=True,
                     ),
                 ),
@@ -115,35 +115,35 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='StreamCount',
+            name="StreamCount",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        verbose_name='ID', serialize=False, auto_created=True, primary_key=True
+                        verbose_name="ID", serialize=False, auto_created=True, primary_key=True
                     ),
                 ),
                 (
-                    'realm',
+                    "realm",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
                     ),
                 ),
                 (
-                    'stream',
+                    "stream",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Stream'
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Stream"
                     ),
                 ),
-                ('property', models.CharField(max_length=40)),
-                ('end_time', models.DateTimeField()),
-                ('interval', models.CharField(max_length=20)),
-                ('value', models.BigIntegerField()),
+                ("property", models.CharField(max_length=40)),
+                ("end_time", models.DateTimeField()),
+                ("interval", models.CharField(max_length=20)),
+                ("value", models.BigIntegerField()),
                 (
-                    'anomaly',
+                    "anomaly",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        to='analytics.Anomaly',
+                        to="analytics.Anomaly",
                         null=True,
                     ),
                 ),
@@ -151,35 +151,35 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='UserCount',
+            name="UserCount",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        verbose_name='ID', serialize=False, auto_created=True, primary_key=True
+                        verbose_name="ID", serialize=False, auto_created=True, primary_key=True
                     ),
                 ),
                 (
-                    'realm',
+                    "realm",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
                     ),
                 ),
                 (
-                    'user',
+                    "user",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
                     ),
                 ),
-                ('property', models.CharField(max_length=40)),
-                ('end_time', models.DateTimeField()),
-                ('interval', models.CharField(max_length=20)),
-                ('value', models.BigIntegerField()),
+                ("property", models.CharField(max_length=40)),
+                ("end_time", models.DateTimeField()),
+                ("interval", models.CharField(max_length=20)),
+                ("value", models.BigIntegerField()),
                 (
-                    'anomaly',
+                    "anomaly",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        to='analytics.Anomaly',
+                        to="analytics.Anomaly",
                         null=True,
                     ),
                 ),
@@ -187,23 +187,23 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.AlterUniqueTogether(
-            name='usercount',
-            unique_together={('user', 'property', 'end_time', 'interval')},
+            name="usercount",
+            unique_together={("user", "property", "end_time", "interval")},
         ),
         migrations.AlterUniqueTogether(
-            name='streamcount',
-            unique_together={('stream', 'property', 'end_time', 'interval')},
+            name="streamcount",
+            unique_together={("stream", "property", "end_time", "interval")},
         ),
         migrations.AlterUniqueTogether(
-            name='realmcount',
-            unique_together={('realm', 'property', 'end_time', 'interval')},
+            name="realmcount",
+            unique_together={("realm", "property", "end_time", "interval")},
         ),
         migrations.AlterUniqueTogether(
-            name='installationcount',
-            unique_together={('property', 'end_time', 'interval')},
+            name="installationcount",
+            unique_together={("property", "end_time", "interval")},
         ),
         migrations.AlterUniqueTogether(
-            name='huddlecount',
-            unique_together={('huddle', 'property', 'end_time', 'interval')},
+            name="huddlecount",
+            unique_together={("huddle", "property", "end_time", "interval")},
         ),
     ]

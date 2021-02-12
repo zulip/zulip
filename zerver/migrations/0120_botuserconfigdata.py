@@ -8,23 +8,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0119_userprofile_night_mode'),
+        ("zerver", "0119_userprofile_night_mode"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='BotUserConfigData',
+            name="BotUserConfigData",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.AutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
                     ),
                 ),
-                ('key', models.TextField(db_index=True)),
-                ('value', models.TextField()),
+                ("key", models.TextField(db_index=True)),
+                ("value", models.TextField()),
                 (
-                    'bot_profile',
+                    "bot_profile",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
                     ),
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.AlterUniqueTogether(
-            name='botuserconfigdata',
-            unique_together={('bot_profile', 'key')},
+            name="botuserconfigdata",
+            unique_together={("bot_profile", "key")},
         ),
     ]

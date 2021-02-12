@@ -23,18 +23,18 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            '--time',
-            '-t',
-            help='Update stat tables from current state to '
-            '--time. Defaults to the current time.',
+            "--time",
+            "-t",
+            help="Update stat tables from current state to "
+            "--time. Defaults to the current time.",
             default=timezone_now().isoformat(),
         )
-        parser.add_argument('--utc', action='store_true', help="Interpret --time in UTC.")
+        parser.add_argument("--utc", action="store_true", help="Interpret --time in UTC.")
         parser.add_argument(
-            '--stat', '-s', help="CountStat to process. If omitted, all stats are processed."
+            "--stat", "-s", help="CountStat to process. If omitted, all stats are processed."
         )
         parser.add_argument(
-            '--verbose', action='store_true', help="Print timing information to stdout."
+            "--verbose", action="store_true", help="Print timing information to stdout."
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -59,8 +59,8 @@ class Command(BaseCommand):
             logger.info("No realms, stopping update_analytics_counts")
             return
 
-        fill_to_time = parse_datetime(options['time'])
-        if options['utc']:
+        fill_to_time = parse_datetime(options["time"])
+        if options["utc"]:
             fill_to_time = fill_to_time.replace(tzinfo=timezone.utc)
         if fill_to_time.tzinfo is None:
             raise ValueError(
@@ -69,23 +69,23 @@ class Command(BaseCommand):
 
         fill_to_time = floor_to_hour(fill_to_time.astimezone(timezone.utc))
 
-        if options['stat'] is not None:
-            stats = [COUNT_STATS[options['stat']]]
+        if options["stat"] is not None:
+            stats = [COUNT_STATS[options["stat"]]]
         else:
             stats = list(COUNT_STATS.values())
 
         logger.info("Starting updating analytics counts through %s", fill_to_time)
-        if options['verbose']:
+        if options["verbose"]:
             start = time.time()
             last = start
 
         for stat in stats:
             process_count_stat(stat, fill_to_time)
-            if options['verbose']:
+            if options["verbose"]:
                 print(f"Updated {stat.property} in {time.time() - last:.3f}s")
                 last = time.time()
 
-        if options['verbose']:
+        if options["verbose"]:
             print(
                 f"Finished updating analytics counts through {fill_to_time} in {time.time() - start:.3f}s"
             )

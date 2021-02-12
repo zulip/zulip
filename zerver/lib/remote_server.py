@@ -46,7 +46,7 @@ def send_to_push_bouncer(
 
     """
     url = urllib.parse.urljoin(
-        settings.PUSH_NOTIFICATION_BOUNCER_URL, '/api/v1/remotes/' + endpoint
+        settings.PUSH_NOTIFICATION_BOUNCER_URL, "/api/v1/remotes/" + endpoint
     )
     api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID, settings.ZULIP_ORG_KEY)
 
@@ -77,8 +77,8 @@ def send_to_push_bouncer(
     elif res.status_code >= 400:
         # If JSON parsing errors, just let that exception happen
         result_dict = orjson.loads(res.content)
-        msg = result_dict['msg']
-        if 'code' in result_dict and result_dict['code'] == 'INVALID_ZULIP_SERVER':
+        msg = result_dict["msg"]
+        if "code" in result_dict and result_dict["code"] == "INVALID_ZULIP_SERVER":
             # Invalid Zulip server credentials should email this server's admins
             raise PushNotificationBouncerException(
                 _("Push notifications bouncer error: {}").format(msg)
@@ -110,12 +110,12 @@ def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Mapping[str
 
 
 REALMAUDITLOG_PUSHED_FIELDS = [
-    'id',
-    'realm',
-    'event_time',
-    'backfilled',
-    'extra_data',
-    'event_type',
+    "id",
+    "realm",
+    "event_time",
+    "backfilled",
+    "extra_data",
+    "event_type",
 ]
 
 
@@ -125,25 +125,25 @@ def build_analytics_data(
     # We limit the batch size on the client side to avoid OOM kills timeouts, etc.
     MAX_CLIENT_BATCH_SIZE = 10000
     data = {}
-    data['analytics_realmcount'] = [
+    data["analytics_realmcount"] = [
         model_to_dict(row) for row in realm_count_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
     ]
-    data['analytics_installationcount'] = [
+    data["analytics_installationcount"] = [
         model_to_dict(row)
         for row in installation_count_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
     ]
-    data['zerver_realmauditlog'] = [
+    data["zerver_realmauditlog"] = [
         model_to_dict(row, fields=REALMAUDITLOG_PUSHED_FIELDS)
         for row in realmauditlog_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
     ]
 
-    floatify_datetime_fields(data, 'analytics_realmcount')
-    floatify_datetime_fields(data, 'analytics_installationcount')
-    floatify_datetime_fields(data, 'zerver_realmauditlog')
+    floatify_datetime_fields(data, "analytics_realmcount")
+    floatify_datetime_fields(data, "analytics_installationcount")
+    floatify_datetime_fields(data, "zerver_realmauditlog")
     return (
-        data['analytics_realmcount'],
-        data['analytics_installationcount'],
-        data['zerver_realmauditlog'],
+        data["analytics_realmcount"],
+        data["analytics_installationcount"],
+        data["zerver_realmauditlog"],
     )
 
 
@@ -155,9 +155,9 @@ def send_analytics_to_remote_server() -> None:
         logging.warning(e.msg)
         return
 
-    last_acked_realm_count_id = result['last_realm_count_id']
-    last_acked_installation_count_id = result['last_installation_count_id']
-    last_acked_realmauditlog_id = result['last_realmauditlog_id']
+    last_acked_realm_count_id = result["last_realm_count_id"]
+    last_acked_installation_count_id = result["last_installation_count_id"]
+    last_acked_realmauditlog_id = result["last_realmauditlog_id"]
 
     (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
         realm_count_query=RealmCount.objects.filter(id__gt=last_acked_realm_count_id),
@@ -173,10 +173,10 @@ def send_analytics_to_remote_server() -> None:
         return
 
     request = {
-        'realm_counts': orjson.dumps(realm_count_data).decode(),
-        'installation_counts': orjson.dumps(installation_count_data).decode(),
-        'realmauditlog_rows': orjson.dumps(realmauditlog_data).decode(),
-        'version': orjson.dumps(ZULIP_VERSION).decode(),
+        "realm_counts": orjson.dumps(realm_count_data).decode(),
+        "installation_counts": orjson.dumps(installation_count_data).decode(),
+        "realmauditlog_rows": orjson.dumps(realmauditlog_data).decode(),
+        "version": orjson.dumps(ZULIP_VERSION).decode(),
     }
 
     # Gather only entries with an ID greater than last_realm_count_id

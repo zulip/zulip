@@ -54,36 +54,36 @@ from urllib.request import Request, urlopen
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-r', '--recipient', default='', help="Original recipient.")
+parser.add_argument("-r", "--recipient", default="", help="Original recipient.")
 
-parser.add_argument('-s', '--shared-secret', default='', help="Secret access key.")
+parser.add_argument("-s", "--shared-secret", default="", help="Secret access key.")
 
 parser.add_argument(
-    '-d',
-    '--dst-host',
+    "-d",
+    "--dst-host",
     dest="host",
-    default='https://127.0.0.1',
+    default="https://127.0.0.1",
     help="Destination server address for uploading email from email mirror. "
     "Address must contain a HTTP protocol.",
 )
 
 parser.add_argument(
-    '-u',
-    '--dst-url',
+    "-u",
+    "--dst-url",
     dest="url",
-    default='/email_mirror_message',
+    default="/email_mirror_message",
     help="Destination relative URL for uploading email from email mirror.",
 )
 
 parser.add_argument(
-    '-n',
-    '--not-verify-ssl',
+    "-n",
+    "--not-verify-ssl",
     dest="verify_ssl",
-    action='store_false',
+    action="store_false",
     help="Disable ssl certificate verifying for self-signed certificates",
 )
 
-parser.add_argument('-t', '--test', action='store_true', help="Test mode.")
+parser.add_argument("-t", "--test", action="store_true", help="Test mode.")
 
 options = parser.parse_args()
 
@@ -94,7 +94,7 @@ def process_response_error(e: HTTPError) -> None:
     if e.code == 400:
         response_content = e.read()
         response_data = json.loads(response_content)
-        print(response_data['msg'])
+        print(response_data["msg"])
         exit(posix.EX_NOUSER)
     else:
         print("4.4.2 Connection dropped: Internal server error.")
@@ -121,12 +121,12 @@ def send_email_mirror(
     secrets_file = RawConfigParser()
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
     if not shared_secret:
-        shared_secret = secrets_file.get('secrets', 'shared_secret')
+        shared_secret = secrets_file.get("secrets", "shared_secret")
 
     if test:
         exit(0)
 
-    if host == 'https://127.0.0.1':
+    if host == "https://127.0.0.1":
         # Don't try to verify SSL when posting to 127.0.0.1; it won't
         # work, and connections to 127.0.0.1 are secure without SSL.
         verify_ssl = False
@@ -145,7 +145,7 @@ def send_email_mirror(
         "msg_base64": base64.b64encode(msg_bytes).decode(),
         "secret": shared_secret,
     }
-    req = Request(url=urljoin(host, url), data=urlencode(data).encode('utf8'))
+    req = Request(url=urljoin(host, url), data=urlencode(data).encode("utf8"))
     try:
         urlopen(req, context=context)
     except HTTPError as err:

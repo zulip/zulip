@@ -12,7 +12,7 @@ class Command(ZulipBaseCommand):
 
         self.add_user_list_args(
             parser,
-            help='Turn off digests for this comma-separated list of email addresses.',
+            help="Turn off digests for this comma-separated list of email addresses.",
             all_users_help="Turn off digests for everyone in realm.",
         )
 
@@ -25,7 +25,7 @@ class Command(ZulipBaseCommand):
             already_disabled_prefix = ""
             if user_profile.enable_digest_emails:
                 do_change_notification_settings(
-                    user_profile, 'enable_digest_emails', False, acting_user=None
+                    user_profile, "enable_digest_emails", False, acting_user=None
                 )
             else:
                 already_disabled_prefix = "(already off) "

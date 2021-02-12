@@ -169,13 +169,13 @@ class TestVideoCall(ZulipTestCase):
         self.assert_json_success(response)
 
     def test_create_bigbluebutton_link(self) -> None:
-        with mock.patch('zerver.views.video_calls.random.randint', return_value="1"), mock.patch(
-            'secrets.token_bytes', return_value=b"\x00" * 7
+        with mock.patch("zerver.views.video_calls.random.randint", return_value="1"), mock.patch(
+            "secrets.token_bytes", return_value=b"\x00" * 7
         ):
             response = self.client_get("/json/calls/bigbluebutton/create")
             self.assert_json_success(response)
             self.assertEqual(
-                response.json()['url'],
+                response.json()["url"],
                 "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22"
                 "&checksum=%22697939301a52d3a2f0b3c3338895c1a5ab528933%22",
             )

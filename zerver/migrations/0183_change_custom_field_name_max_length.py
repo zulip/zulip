@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0182_set_initial_value_is_private_flag'),
+        ("zerver", "0182_set_initial_value_is_private_flag"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='customprofilefield',
-            name='name',
+            model_name="customprofilefield",
+            name="name",
             field=models.CharField(max_length=40),
         ),
     ]

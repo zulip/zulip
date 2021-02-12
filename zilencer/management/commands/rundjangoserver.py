@@ -18,10 +18,10 @@ class Command(DjangoCommand):
         # to be raised in the child process, raise it now.
         autoreload.raise_last_exception()
 
-        threading = options['use_threading']
+        threading = options["use_threading"]
         # 'shutdown_message' is a stealth option.
-        shutdown_message = options.get('shutdown_message', '')
-        quit_command = 'CTRL-BREAK' if sys.platform == 'win32' else 'CONTROL-C'
+        shutdown_message = options.get("shutdown_message", "")
+        quit_command = "CTRL-BREAK" if sys.platform == "win32" else "CONTROL-C"
 
         self.check(display_num_errors=False)
         # Need to check migrations here, so can't use the
@@ -33,7 +33,7 @@ class Command(DjangoCommand):
                 "version": self.get_version(),
                 "settings": settings.SETTINGS_MODULE,
                 "protocol": self.protocol,
-                "addr": '[%s]' % self.addr if self._raw_ipv6 else self.addr,
+                "addr": "[%s]" % self.addr if self._raw_ipv6 else self.addr,
                 "port": self.port,
                 "quit_command": quit_command,
             }

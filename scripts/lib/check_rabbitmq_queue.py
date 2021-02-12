@@ -9,20 +9,20 @@ from typing import Any, DefaultDict, Dict, List
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 normal_queues = [
-    'deferred_work',
-    'digest_emails',
-    'email_mirror',
-    'embed_links',
-    'embedded_bots',
-    'error_reports',
-    'invites',
-    'email_senders',
-    'missedmessage_emails',
-    'missedmessage_mobile_notifications',
-    'outgoing_webhooks',
-    'user_activity',
-    'user_activity_interval',
-    'user_presence',
+    "deferred_work",
+    "digest_emails",
+    "email_mirror",
+    "embed_links",
+    "embedded_bots",
+    "error_reports",
+    "invites",
+    "email_senders",
+    "missedmessage_emails",
+    "missedmessage_mobile_notifications",
+    "outgoing_webhooks",
+    "user_activity",
+    "user_activity_interval",
+    "user_presence",
 ]
 
 OK = 0
@@ -56,9 +56,9 @@ def analyze_queue_stats(
 ) -> Dict[str, Any]:
     now = int(time.time())
     if stats == {}:
-        return dict(status=UNKNOWN, name=queue_name, message='invalid or no stats data')
+        return dict(status=UNKNOWN, name=queue_name, message="invalid or no stats data")
 
-    if now - stats['update_time'] > 180 and queue_count_rabbitmqctl > 10:
+    if now - stats["update_time"] > 180 and queue_count_rabbitmqctl > 10:
         # Queue isn't updating the stats file and has some events in
         # the backlog, it's likely stuck.
         #
@@ -75,19 +75,19 @@ def analyze_queue_stats(
         return dict(
             status=CRITICAL,
             name=queue_name,
-            message='queue appears to be stuck, last update {}, queue size {}'.format(
-                stats['update_time'], queue_count_rabbitmqctl
+            message="queue appears to be stuck, last update {}, queue size {}".format(
+                stats["update_time"], queue_count_rabbitmqctl
             ),
         )
 
     current_size = queue_count_rabbitmqctl
-    average_consume_time = stats['recent_average_consume_time']
+    average_consume_time = stats["recent_average_consume_time"]
     if average_consume_time is None:
         # Queue just started; we can't effectively estimate anything.
         #
         # If the queue is stuck in this state and not processing
         # anything, eventually the `update_time` rule above will fire.
-        return dict(status=OK, name=queue_name, message='')
+        return dict(status=OK, name=queue_name, message="")
 
     expected_time_to_clear_backlog = current_size * average_consume_time
     if expected_time_to_clear_backlog > MAX_SECONDS_TO_CLEAR[queue_name]:
@@ -99,10 +99,10 @@ def analyze_queue_stats(
         return dict(
             status=status,
             name=queue_name,
-            message=f'clearing the backlog will take too long: {expected_time_to_clear_backlog}s, size: {current_size}',
+            message=f"clearing the backlog will take too long: {expected_time_to_clear_backlog}s, size: {current_size}",
         )
 
-    return dict(status=OK, name=queue_name, message='')
+    return dict(status=OK, name=queue_name, message="")
 
 
 WARN_COUNT_THRESHOLD_DEFAULT = 10
@@ -118,22 +118,22 @@ def check_other_queues(queue_counts_dict: Dict[str, int]) -> List[Dict[str, Any]
             continue
 
         if count > CRITICAL_COUNT_THRESHOLD_DEFAULT:
-            results.append(dict(status=CRITICAL, name=queue, message=f'count critical: {count}'))
+            results.append(dict(status=CRITICAL, name=queue, message=f"count critical: {count}"))
         elif count > WARN_COUNT_THRESHOLD_DEFAULT:
-            results.append(dict(status=WARNING, name=queue, message=f'count warning: {count}'))
+            results.append(dict(status=WARNING, name=queue, message=f"count warning: {count}"))
         else:
-            results.append(dict(status=OK, name=queue, message=''))
+            results.append(dict(status=OK, name=queue, message=""))
 
     return results
 
 
 def check_rabbitmq_queues() -> None:
-    pattern = re.compile(r'(\w+)\t(\d+)\t(\d+)')
-    if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
+    pattern = re.compile(r"(\w+)\t(\d+)\t(\d+)")
+    if "USER" in os.environ and not os.environ["USER"] in ["root", "rabbitmq"]:
         print("This script must be run as the root or rabbitmq user")
 
     list_queues_output = subprocess.check_output(
-        ['/usr/sbin/rabbitmqctl', 'list_queues', 'name', 'messages', 'consumers'],
+        ["/usr/sbin/rabbitmqctl", "list_queues", "name", "messages", "consumers"],
         universal_newlines=True,
     )
     queue_counts_rabbitmqctl = {}
@@ -150,7 +150,7 @@ def check_rabbitmq_queues() -> None:
                 queues_with_consumers.append(queue)
 
     queue_stats_dir = subprocess.check_output(
-        [os.path.join(ZULIP_PATH, 'scripts/get-django-setting'), 'QUEUE_STATS_DIR'],
+        [os.path.join(ZULIP_PATH, "scripts/get-django-setting"), "QUEUE_STATS_DIR"],
         universal_newlines=True,
     ).strip()
     queue_stats: Dict[str, Dict[str, Any]] = {}
@@ -174,16 +174,16 @@ def check_rabbitmq_queues() -> None:
 
     results.extend(check_other_queues(queue_counts_rabbitmqctl))
 
-    status = max(result['status'] for result in results)
+    status = max(result["status"] for result in results)
 
     now = int(time.time())
 
     if status > 0:
         queue_error_template = "queue {} problem: {}:{}"
-        error_message = '; '.join(
-            queue_error_template.format(result['name'], states[result['status']], result['message'])
+        error_message = "; ".join(
+            queue_error_template.format(result["name"], states[result["status"]], result["message"])
             for result in results
-            if result['status'] > 0
+            if result["status"] > 0
         )
         print(f"{now}|{status}|{states[status]}|{error_message}")
     else:

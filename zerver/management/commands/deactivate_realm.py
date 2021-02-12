@@ -10,7 +10,7 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            '--redirect_url', metavar='<redirect_url>', help="URL to which the realm has moved"
+            "--redirect_url", metavar="<redirect_url>", help="URL to which the realm has moved"
         )
         self.add_realm_args(parser, True)
 
@@ -19,12 +19,12 @@ class Command(ZulipBaseCommand):
 
         assert realm is not None  # Should be ensured by parser
 
-        if options['redirect_url']:
-            print("Setting the redirect URL to", options['redirect_url'])
-            do_add_deactivated_redirect(realm, options['redirect_url'])
+        if options["redirect_url"]:
+            print("Setting the redirect URL to", options["redirect_url"])
+            do_add_deactivated_redirect(realm, options["redirect_url"])
 
         if realm.deactivated:
-            print("The realm", options['realm_id'], "is already deactivated.")
+            print("The realm", options["realm_id"], "is already deactivated.")
             exit(0)
 
         print("Deactivating", options["realm_id"])

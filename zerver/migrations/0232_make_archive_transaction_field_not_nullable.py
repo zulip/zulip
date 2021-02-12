@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0231_add_archive_transaction_model'),
+        ("zerver", "0231_add_archive_transaction_model"),
     ]
 
     operations = [
@@ -31,10 +31,10 @@ class Migration(migrations.Migration):
             elidable=True,
         ),
         migrations.AlterField(
-            model_name='archivedmessage',
-            name='archive_transaction',
+            model_name="archivedmessage",
+            name="archive_transaction",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to='zerver.ArchiveTransaction'
+                on_delete=django.db.models.deletion.CASCADE, to="zerver.ArchiveTransaction"
             ),
         ),
     ]

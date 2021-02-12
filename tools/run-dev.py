@@ -21,10 +21,10 @@ sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
 from tools.lib.test_script import assert_provisioning_status_ok
 
-if 'posix' in os.name and os.geteuid() == 0:
+if "posix" in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")
 
-DESCRIPTION = '''
+DESCRIPTION = """
 Starts the app listening on localhost, for local development.
 
 This script launches the Django and Tornado servers, then runs a reverse proxy
@@ -35,27 +35,27 @@ which serves to both of them.  After it's all up and running, browse to
 Note that, while runserver and runtornado have the usual auto-restarting
 behavior, the reverse proxy itself does *not* automatically restart on changes
 to this file.
-'''
+"""
 
 parser = argparse.ArgumentParser(
     description=DESCRIPTION, formatter_class=argparse.RawTextHelpFormatter
 )
 
-parser.add_argument('--test', action='store_true', help='Use the testing database and ports')
-parser.add_argument('--minify', action='store_true', help='Minifies assets for testing in dev')
-parser.add_argument('--interface', help='Set the IP or hostname for the proxy to listen on')
+parser.add_argument("--test", action="store_true", help="Use the testing database and ports")
+parser.add_argument("--minify", action="store_true", help="Minifies assets for testing in dev")
+parser.add_argument("--interface", help="Set the IP or hostname for the proxy to listen on")
 parser.add_argument(
-    '--no-clear-memcached',
-    action='store_false',
-    dest='clear_memcached',
-    help='Do not clear memcached on startup',
+    "--no-clear-memcached",
+    action="store_false",
+    dest="clear_memcached",
+    help="Do not clear memcached on startup",
 )
-parser.add_argument('--streamlined', action="store_true", help='Avoid thumbor, etc.')
-parser.add_argument('--force', action="store_true", help='Run command despite possible problems.')
+parser.add_argument("--streamlined", action="store_true", help="Avoid thumbor, etc.")
+parser.add_argument("--force", action="store_true", help="Run command despite possible problems.")
 parser.add_argument(
-    '--enable-tornado-logging',
+    "--enable-tornado-logging",
     action="store_true",
-    help='Enable access logs from tornado proxy server.',
+    help="Enable access logs from tornado proxy server.",
 )
 options = parser.parse_args()
 
@@ -83,14 +83,14 @@ if options.test:
     base_port = 9981
     settings_module = "zproject.test_settings"
     # Don't auto-reload when running Puppeteer tests
-    runserver_args = ['--noreload']
+    runserver_args = ["--noreload"]
 else:
     settings_module = "zproject.settings"
 
-manage_args = [f'--settings={settings_module}']
-os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
+manage_args = [f"--settings={settings_module}"]
+os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from scripts.lib.zulip_tools import CYAN, ENDC, FAIL
 
@@ -100,13 +100,13 @@ tornado_port = base_port + 2
 webpack_port = base_port + 3
 thumbor_port = base_port + 4
 
-os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+os.chdir(os.path.join(os.path.dirname(__file__), ".."))
 
 # Clean up stale .pyc files etc.
-subprocess.check_call('./tools/clean-repo')
+subprocess.check_call("./tools/clean-repo")
 
 if options.clear_memcached:
-    subprocess.check_call('./scripts/setup/flush-memcached')
+    subprocess.check_call("./scripts/setup/flush-memcached")
 
 # Set up a new process group, so that we can later kill run{server,tornado}
 # and all of the processes they spawn.
@@ -117,33 +117,33 @@ os.setpgrp()
 # terminal in question.
 
 if options.test:
-    pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/puppeteer/run_dev.pid'))
+    pid_file_path = os.path.join(os.path.join(os.getcwd(), "var/puppeteer/run_dev.pid"))
 else:
-    pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/run/run_dev.pid'))
+    pid_file_path = os.path.join(os.path.join(os.getcwd(), "var/run/run_dev.pid"))
 
 # Required for compatibility python versions.
 if not os.path.exists(os.path.dirname(pid_file_path)):
     os.makedirs(os.path.dirname(pid_file_path))
-with open(pid_file_path, 'w+') as f:
+with open(pid_file_path, "w+") as f:
     f.write(str(os.getpgrp()) + "\n")
 
 
 def server_processes() -> List[List[str]]:
     main_cmds = [
         [
-            './manage.py',
-            'rundjangoserver',
+            "./manage.py",
+            "rundjangoserver",
             *manage_args,
             *runserver_args,
-            f'127.0.0.1:{django_port}',
+            f"127.0.0.1:{django_port}",
         ],
         [
-            'env',
-            'PYTHONUNBUFFERED=1',
-            './manage.py',
-            'runtornado',
+            "env",
+            "PYTHONUNBUFFERED=1",
+            "./manage.py",
+            "runtornado",
             *manage_args,
-            f'127.0.0.1:{tornado_port}',
+            f"127.0.0.1:{tornado_port}",
         ],
     ]
 
@@ -153,18 +153,18 @@ def server_processes() -> List[List[str]]:
         return main_cmds
 
     other_cmds = [
-        ['./manage.py', 'process_queue', '--all', *manage_args],
+        ["./manage.py", "process_queue", "--all", *manage_args],
         [
-            'env',
-            'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
-            './puppet/zulip/files/postgresql/process_fts_updates',
-            '--quiet',
+            "env",
+            "PGHOST=127.0.0.1",  # Force password authentication using .pgpass
+            "./puppet/zulip/files/postgresql/process_fts_updates",
+            "--quiet",
         ],
-        ['./manage.py', 'deliver_scheduled_messages'],
+        ["./manage.py", "deliver_scheduled_messages"],
         [
-            '/srv/zulip-thumbor-venv/bin/thumbor',
-            '--conf=./zthumbor/thumbor_settings.py',
-            f'--port={thumbor_port}',
+            "/srv/zulip-thumbor-venv/bin/thumbor",
+            "--conf=./zthumbor/thumbor_settings.py",
+            f"--port={thumbor_port}",
         ],
     ]
 
@@ -177,17 +177,17 @@ def do_one_time_webpack_compile() -> None:
     # in test mode.  Additionally, webpack-dev-server doesn't support running 2
     # copies on the same system, so this model lets us run the Puppeteer tests
     # with a running development server.
-    subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
+    subprocess.check_call(["./tools/webpack", "--quiet", "--test"])
 
 
 def start_webpack_watcher() -> "subprocess.Popen[bytes]":
-    webpack_cmd = ['./tools/webpack', '--watch', f'--port={webpack_port}']
+    webpack_cmd = ["./tools/webpack", "--watch", f"--port={webpack_port}"]
     if options.minify:
-        webpack_cmd.append('--minify')
+        webpack_cmd.append("--minify")
     if options.interface is None:
         # If interface is None and we're listening on all ports, we also need
         # to disable the webpack host check so that webpack will serve assets.
-        webpack_cmd.append('--disable-host-check')
+        webpack_cmd.append("--disable-host-check")
     if options.interface:
         webpack_cmd.append(f"--host={options.interface}")
     else:
@@ -200,9 +200,9 @@ def transform_url(protocol: str, path: str, query: str, target_port: int, target
     host = ":".join((target_host, str(target_port)))
     # Here we are going to rewrite the path a bit so that it is in parity with
     # what we will have for production
-    if path.startswith('/thumbor'):
-        path = path[len('/thumbor') :]
-    newpath = urlunparse((protocol, host, path, '', query, ''))
+    if path.startswith("/thumbor"):
+        path = path[len("/thumbor") :]
+    newpath = urlunparse((protocol, host, path, "", query, ""))
     return newpath
 
 
@@ -226,7 +226,7 @@ def fetch_request(
 
 class BaseHandler(web.RequestHandler):
     # target server ip
-    target_host: str = '127.0.0.1'
+    target_host: str = "127.0.0.1"
     # target server port
     target_port: int
 
@@ -264,7 +264,7 @@ class BaseHandler(web.RequestHandler):
     def handle_response(self, response: Any) -> None:
         if response.error and not isinstance(response.error, httpclient.HTTPError):
             self.set_status(500)
-            self.write('Internal server error:\n' + str(response.error))
+            self.write("Internal server error:\n" + str(response.error))
         else:
             self.set_status(response.code, response.reason)
             self._headers = httputil.HTTPHeaders()  # clear tornado default header
@@ -278,10 +278,10 @@ class BaseHandler(web.RequestHandler):
 
     @web.asynchronous
     def prepare(self) -> None:
-        if 'X-REAL-IP' not in self.request.headers:
-            self.request.headers['X-REAL-IP'] = self.request.remote_ip
-        if 'X-FORWARDED_PORT' not in self.request.headers:
-            self.request.headers['X-FORWARDED-PORT'] = str(proxy_port)
+        if "X-REAL-IP" not in self.request.headers:
+            self.request.headers["X-REAL-IP"] = self.request.remote_ip
+        if "X-FORWARDED_PORT" not in self.request.headers:
+            self.request.headers["X-FORWARDED-PORT"] = str(proxy_port)
         url = transform_url(
             self.request.protocol,
             self.request.path,
@@ -296,15 +296,15 @@ class BaseHandler(web.RequestHandler):
                 method=self.request.method,
                 headers=self._add_request_headers(["upgrade-insecure-requests"]),
                 follow_redirects=False,
-                body=getattr(self.request, 'body'),
+                body=getattr(self.request, "body"),
                 allow_nonstandard_methods=True,
             )
         except httpclient.HTTPError as e:
-            if hasattr(e, 'response') and e.response:
+            if hasattr(e, "response") and e.response:
                 self.handle_response(e.response)
             else:
                 self.set_status(500)
-                self.write('Internal server error:\n' + str(e))
+                self.write("Internal server error:\n" + str(e))
                 self.finish()
 
 
@@ -327,9 +327,9 @@ class ThumborHandler(BaseHandler):
 class ErrorHandler(BaseHandler):
     @web.asynchronous
     def prepare(self) -> None:
-        print(FAIL + 'Unexpected request: ' + ENDC, self.request.path)
+        print(FAIL + "Unexpected request: " + ENDC, self.request.path)
         self.set_status(500)
-        self.write('path not supported')
+        self.write("path not supported")
         self.finish()
 
 
@@ -349,7 +349,7 @@ class Application(web.Application):
         super().__init__(handlers, enable_logging=enable_logging)
 
     def log_request(self, handler: BaseHandler) -> None:
-        if self.settings['enable_logging']:
+        if self.settings["enable_logging"]:
             super().log_request(handler)
 
 
@@ -366,22 +366,22 @@ def shutdown_handler(*args: Any, **kwargs: Any) -> None:
 
 
 def print_listeners() -> None:
-    external_host = os.getenv('EXTERNAL_HOST', f'localhost:{proxy_port}')
+    external_host = os.getenv("EXTERNAL_HOST", f"localhost:{proxy_port}")
     print(f"\nStarting Zulip on:\n\n\t{CYAN}http://{external_host}/{ENDC}\n\nInternal ports:")
     ports = [
-        (proxy_port, 'Development server proxy (connect here)'),
-        (django_port, 'Django'),
-        (tornado_port, 'Tornado'),
+        (proxy_port, "Development server proxy (connect here)"),
+        (django_port, "Django"),
+        (tornado_port, "Tornado"),
     ]
 
     if not options.test:
-        ports.append((webpack_port, 'webpack'))
+        ports.append((webpack_port, "webpack"))
 
     if using_thumbor():
-        ports.append((thumbor_port, 'Thumbor'))
+        ports.append((thumbor_port, "Thumbor"))
 
     for port, label in ports:
-        print(f'   {port}: {label}')
+        print(f"   {port}: {label}")
     print()
 
 
@@ -401,7 +401,7 @@ try:
         app.listen(proxy_port, address=options.interface)
     except OSError as e:
         if e.errno == 98:
-            print('\n\nERROR: You probably have another server running!!!\n\n')
+            print("\n\nERROR: You probably have another server running!!!\n\n")
         raise
 
     print_listeners()

@@ -350,8 +350,8 @@ def get_story_update_estimate_body(payload: Dict[str, Any]) -> str:
 
 def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
     ref: Dict[str, Any] = {}
-    for reference in payload['references']:
-        if reference['id'] == ref_id:
+    for reference in payload["references"]:
+        if reference["id"] == ref_id:
             ref = reference
 
     return ref
@@ -361,25 +361,25 @@ def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) ->
     action = get_action_with_primary_id(payload)
 
     story: Dict[str, Any] = {}
-    for a in payload['actions']:
-        if a['entity_type'] == 'story' and a['changes'].get('workflow_state_id') is not None:
+    for a in payload["actions"]:
+        if a["entity_type"] == "story" and a["changes"].get("workflow_state_id") is not None:
             story = a
 
-    new_state_id = story['changes']['workflow_state_id']['new']
-    old_state_id = story['changes']['workflow_state_id']['old']
-    new_state = get_reference_by_id(payload, new_state_id)['name']
-    old_state = get_reference_by_id(payload, old_state_id)['name']
+    new_state_id = story["changes"]["workflow_state_id"]["new"]
+    old_state_id = story["changes"]["workflow_state_id"]["old"]
+    new_state = get_reference_by_id(payload, new_state_id)["name"]
+    old_state = get_reference_by_id(payload, old_state_id)["name"]
 
     kwargs = {
-        'name_template': STORY_NAME_TEMPLATE.format(**story),
-        'name': action.get('number') if entity == 'pull-request' else action.get('name'),
-        'url': action['url'],
-        'new': new_state,
-        'old': old_state,
+        "name_template": STORY_NAME_TEMPLATE.format(**story),
+        "name": action.get("number") if entity == "pull-request" else action.get("name"),
+        "url": action["url"],
+        "new": new_state,
+        "old": old_state,
     }
 
     template = (
-        STORY_GITHUB_PR_TEMPLATE if entity == 'pull-request' else STORY_GITHUB_BRANCH_TEMPLATE
+        STORY_GITHUB_PR_TEMPLATE if entity == "pull-request" else STORY_GITHUB_BRANCH_TEMPLATE
     )
     return template.format(**kwargs)
 
@@ -427,15 +427,15 @@ def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
 
     label_id = label_ids_added[0]
 
-    label_name = ''
+    label_name = ""
     for action in payload["actions"]:
-        if action['id'] == label_id:
-            label_name = action.get('name', '')
+        if action["id"] == label_id:
+            label_name = action.get("name", "")
 
     if not label_name:
         for reference in payload["references"]:
             if reference["id"] == label_id:
-                label_name = reference.get('name', '')
+                label_name = reference.get("name", "")
 
     kwargs.update(label_name=label_name)
 
@@ -492,7 +492,7 @@ def get_entity_name(payload: Dict[str, Any], entity: Optional[str] = None) -> Op
     action = get_action_with_primary_id(payload)
     name = action.get("name")
 
-    if name is None or action['entity_type'] == 'branch':
+    if name is None or action["entity_type"] == "branch":
         for action in payload["actions"]:
             if action["entity_type"] == entity:
                 name = action["name"]
@@ -512,11 +512,11 @@ def get_name_template(entity: str) -> str:
 
 
 EVENT_BODY_FUNCTION_MAPPER = {
-    "story_update_archived": partial(get_update_archived_body, entity='story'),
-    "epic_update_archived": partial(get_update_archived_body, entity='epic'),
+    "story_update_archived": partial(get_update_archived_body, entity="story"),
+    "epic_update_archived": partial(get_update_archived_body, entity="epic"),
     "story_create": get_story_create_body,
-    "pull-request_create": partial(get_story_create_github_entity_body, entity='pull-request'),
-    "branch_create": partial(get_story_create_github_entity_body, entity='branch'),
+    "pull-request_create": partial(get_story_create_github_entity_body, entity="pull-request"),
+    "branch_create": partial(get_story_create_github_entity_body, entity="branch"),
     "story_delete": get_delete_body,
     "epic_delete": get_delete_body,
     "story-task_create": partial(get_story_task_body, action="added to"),
@@ -530,37 +530,37 @@ EVENT_BODY_FUNCTION_MAPPER = {
     "story_update_project": get_story_update_project_body,
     "story_update_type": get_story_update_type_body,
     "epic_create": get_epic_create_body,
-    "epic-comment_create": partial(get_comment_added_body, entity='epic'),
-    "story-comment_create": partial(get_comment_added_body, entity='story'),
-    "epic_update_description": partial(get_update_description_body, entity='epic'),
-    "story_update_description": partial(get_update_description_body, entity='story'),
+    "epic-comment_create": partial(get_comment_added_body, entity="epic"),
+    "story-comment_create": partial(get_comment_added_body, entity="story"),
+    "epic_update_description": partial(get_update_description_body, entity="epic"),
+    "story_update_description": partial(get_update_description_body, entity="story"),
     "epic_update_state": get_epic_update_state_body,
     "story_update_state": get_story_update_state_body,
-    "epic_update_name": partial(get_update_name_body, entity='epic'),
-    "story_update_name": partial(get_update_name_body, entity='story'),
+    "epic_update_name": partial(get_update_name_body, entity="epic"),
+    "story_update_name": partial(get_update_name_body, entity="story"),
 }
 
 EVENT_TOPIC_FUNCTION_MAPPER = {
-    "story": partial(get_entity_name, entity='story'),
-    "pull-request": partial(get_entity_name, entity='story'),
-    "branch": partial(get_entity_name, entity='story'),
-    "story-comment": partial(get_entity_name, entity='story'),
-    "story-task": partial(get_entity_name, entity='story'),
-    "epic": partial(get_entity_name, entity='epic'),
-    "epic-comment": partial(get_entity_name, entity='epic'),
+    "story": partial(get_entity_name, entity="story"),
+    "pull-request": partial(get_entity_name, entity="story"),
+    "branch": partial(get_entity_name, entity="story"),
+    "story-comment": partial(get_entity_name, entity="story"),
+    "story-task": partial(get_entity_name, entity="story"),
+    "epic": partial(get_entity_name, entity="epic"),
+    "epic-comment": partial(get_entity_name, entity="epic"),
 }
 
 IGNORED_EVENTS = {
-    'story-comment_update',
+    "story-comment_update",
 }
 
 
-@webhook_view('ClubHouse')
+@webhook_view("ClubHouse")
 @has_request_variables
 def api_clubhouse_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Optional[Dict[str, Any]] = REQ(argument_type='body'),
+    payload: Optional[Dict[str, Any]] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     # Clubhouse has a tendency to send empty POST requests to

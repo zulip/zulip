@@ -26,7 +26,7 @@ def get_device_browser(user_agent: str) -> Optional[str]:
     elif "opera" in user_agent or "opr/" in user_agent:
         return "Opera"
     elif ("chrome" in user_agent or "crios" in user_agent) and "chromium" not in user_agent:
-        return 'Chrome'
+        return "Chrome"
     elif "firefox" in user_agent and "seamonkey" not in user_agent and "chrome" not in user_agent:
         return "Firefox"
     elif "chromium" in user_agent:
@@ -75,30 +75,30 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         if (timezone_now() - user.date_joined).total_seconds() <= JUST_CREATED_THRESHOLD:
             return
 
-        user_agent = request.META.get('HTTP_USER_AGENT', "").lower()
+        user_agent = request.META.get("HTTP_USER_AGENT", "").lower()
 
         context = common_context(user)
-        context['user_email'] = user.delivery_email
+        context["user_email"] = user.delivery_email
         user_tz = user.timezone
-        if user_tz == '':
+        if user_tz == "":
             user_tz = timezone_get_current_timezone_name()
         local_time = timezone_now().astimezone(pytz.timezone(user_tz))
         if user.twenty_four_hour_time:
-            hhmm_string = local_time.strftime('%H:%M')
+            hhmm_string = local_time.strftime("%H:%M")
         else:
-            hhmm_string = local_time.strftime('%I:%M%p')
-        context['login_time'] = local_time.strftime(f'%A, %B %d, %Y at {hhmm_string} %Z')
-        context['device_ip'] = request.META.get('REMOTE_ADDR') or _("Unknown IP address")
-        context['device_os'] = get_device_os(user_agent) or _("an unknown operating system")
-        context['device_browser'] = get_device_browser(user_agent) or _("An unknown browser")
-        context['unsubscribe_link'] = one_click_unsubscribe_link(user, 'login')
+            hhmm_string = local_time.strftime("%I:%M%p")
+        context["login_time"] = local_time.strftime(f"%A, %B %d, %Y at {hhmm_string} %Z")
+        context["device_ip"] = request.META.get("REMOTE_ADDR") or _("Unknown IP address")
+        context["device_os"] = get_device_os(user_agent) or _("an unknown operating system")
+        context["device_browser"] = get_device_browser(user_agent) or _("An unknown browser")
+        context["unsubscribe_link"] = one_click_unsubscribe_link(user, "login")
 
         email_dict = {
-            'template_prefix': 'zerver/emails/notify_new_login',
-            'to_user_ids': [user.id],
-            'from_name': FromAddress.security_email_from_name(user_profile=user),
-            'from_address': FromAddress.NOREPLY,
-            'context': context,
+            "template_prefix": "zerver/emails/notify_new_login",
+            "to_user_ids": [user.id],
+            "from_name": FromAddress.security_email_from_name(user_profile=user),
+            "from_address": FromAddress.NOREPLY,
+            "context": context,
         }
         queue_json_publish("email_senders", email_dict)
 

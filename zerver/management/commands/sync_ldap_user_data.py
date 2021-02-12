@@ -11,7 +11,7 @@ from zerver.models import UserProfile
 from zproject.backends import ZulipLDAPException, sync_user_from_ldap
 
 ## Setup ##
-logger = logging.getLogger('zulip.sync_ldap_user_data')
+logger = logging.getLogger("zulip.sync_ldap_user_data")
 log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 
 # Run this on a cronjob to pick up on name changes.
@@ -64,19 +64,19 @@ def sync_ldap_user_data(
 class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            '-f',
-            '--force',
+            "-f",
+            "--force",
             action="store_true",
-            help='Disable the protection against deactivating all users.',
+            help="Disable the protection against deactivating all users.",
         )
 
         self.add_realm_args(parser)
         self.add_user_list_args(parser)
 
     def handle(self, *args: Any, **options: Any) -> None:
-        if options.get('realm_id') is not None:
+        if options.get("realm_id") is not None:
             realm = self.get_realm(options)
             user_profiles = self.get_users(options, realm, is_bot=False, include_deactivated=True)
         else:
             user_profiles = UserProfile.objects.select_related().filter(is_bot=False)
-        sync_ldap_user_data(user_profiles, not options['force'])
+        sync_ldap_user_data(user_profiles, not options["force"])

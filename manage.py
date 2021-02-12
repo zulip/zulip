@@ -21,8 +21,8 @@ if __name__ == "__main__":
 
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
-    PRODUCTION = config_file.has_option('machine', 'deploy_type')
-    HAS_SECRETS = os.access('/etc/zulip/zulip-secrets.conf', os.R_OK)
+    PRODUCTION = config_file.has_option("machine", "deploy_type")
+    HAS_SECRETS = os.access("/etc/zulip/zulip-secrets.conf", os.R_OK)
 
     if PRODUCTION and not HAS_SECRETS:
         # The best way to detect running manage.py as another user in

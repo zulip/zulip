@@ -15,12 +15,12 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            '--op', default="show", help='What operation to do (add, show, remove).'
+            "--op", default="show", help="What operation to do (add, show, remove)."
         )
         parser.add_argument(
-            '--allow-subdomains', action="store_true", help='Whether subdomains are allowed or not.'
+            "--allow-subdomains", action="store_true", help="Whether subdomains are allowed or not."
         )
-        parser.add_argument('domain', metavar='<domain>', nargs='?', help="domain to add or remove")
+        parser.add_argument("domain", metavar="<domain>", nargs="?", help="domain to add or remove")
         self.add_realm_args(parser, True)
 
     def handle(self, *args: Any, **options: str) -> None:
@@ -35,7 +35,7 @@ class Command(ZulipBaseCommand):
                     print(realm_domain["domain"] + " (subdomains not allowed)")
             sys.exit(0)
 
-        domain = options['domain'].strip().lower()
+        domain = options["domain"].strip().lower()
         try:
             validate_domain(domain)
         except ValidationError as e:

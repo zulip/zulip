@@ -10,8 +10,8 @@ from django.utils.timezone import now as timezone_now
 
 
 def set_realm_admins_as_realm_owners(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    UserProfile = apps.get_model('zerver', 'UserProfile')
-    RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
+    UserProfile = apps.get_model("zerver", "UserProfile")
+    RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
 
     UserProfile.ROLE_REALM_OWNER = 100
     UserProfile.ROLE_REALM_ADMINISTRATOR = 200
@@ -19,11 +19,11 @@ def set_realm_admins_as_realm_owners(apps: StateApps, schema_editor: DatabaseSch
     UserProfile.ROLE_GUEST = 600
 
     RealmAuditLog.USER_ROLE_CHANGED = 105
-    RealmAuditLog.OLD_VALUE = '1'
-    RealmAuditLog.NEW_VALUE = '2'
-    RealmAuditLog.ROLE_COUNT = '10'
-    RealmAuditLog.ROLE_COUNT_HUMANS = '11'
-    RealmAuditLog.ROLE_COUNT_BOTS = '12'
+    RealmAuditLog.OLD_VALUE = "1"
+    RealmAuditLog.NEW_VALUE = "2"
+    RealmAuditLog.ROLE_COUNT = "10"
+    RealmAuditLog.ROLE_COUNT_HUMANS = "11"
+    RealmAuditLog.ROLE_COUNT_BOTS = "12"
 
     def realm_user_count_by_role(realm: Any) -> Dict[str, Any]:
         human_counts = {
@@ -34,10 +34,10 @@ def set_realm_admins_as_realm_owners(apps: StateApps, schema_editor: DatabaseSch
         }
         for value_dict in list(
             UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True)
-            .values('role')
-            .annotate(Count('role'))
+            .values("role")
+            .annotate(Count("role"))
         ):
-            human_counts[str(value_dict['role'])] = value_dict['role__count']
+            human_counts[str(value_dict["role"])] = value_dict["role__count"]
         bot_count = UserProfile.objects.filter(realm=realm, is_bot=True, is_active=True).count()
         return {
             RealmAuditLog.ROLE_COUNT_HUMANS: human_counts,
@@ -50,7 +50,7 @@ def set_realm_admins_as_realm_owners(apps: StateApps, schema_editor: DatabaseSch
         is_active=True, role=UserProfile.ROLE_REALM_ADMINISTRATOR
     ):
         user.role = UserProfile.ROLE_REALM_OWNER
-        user.save(update_fields=['role'])
+        user.save(update_fields=["role"])
         audit_log_entry = RealmAuditLog(
             realm=user.realm,
             modified_user=user,
@@ -71,7 +71,7 @@ def set_realm_admins_as_realm_owners(apps: StateApps, schema_editor: DatabaseSch
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0283_apple_auth'),
+        ("zerver", "0283_apple_auth"),
     ]
 
     operations = [

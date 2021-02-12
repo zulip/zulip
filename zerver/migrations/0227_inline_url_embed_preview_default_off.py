@@ -16,13 +16,13 @@ def disable_realm_inline_url_embed_preview(
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0226_archived_submessage_model'),
+        ("zerver", "0226_archived_submessage_model"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realm',
-            name='inline_url_embed_preview',
+            model_name="realm",
+            name="inline_url_embed_preview",
             field=models.BooleanField(default=False),
         ),
         migrations.RunPython(

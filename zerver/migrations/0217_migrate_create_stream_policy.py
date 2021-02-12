@@ -6,7 +6,7 @@ from django.db.migrations.state import StateApps
 
 
 def upgrade_create_stream_policy(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    Realm = apps.get_model('zerver', 'Realm')
+    Realm = apps.get_model("zerver", "Realm")
     Realm.CREATE_STREAM_POLICY_MEMBERS = 1
     Realm.CREATE_STREAM_POLICY_ADMINS = 2
     Realm.CREATE_STREAM_POLICY_WAITING_PERIOD = 3
@@ -24,7 +24,7 @@ def upgrade_create_stream_policy(apps: StateApps, schema_editor: DatabaseSchemaE
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0216_add_create_stream_policy'),
+        ("zerver", "0216_add_create_stream_policy"),
     ]
 
     operations = [

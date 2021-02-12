@@ -23,57 +23,57 @@ from zerver.models import UserProfile, get_realm, get_user
 
 class WebhooksCommonTestCase(ZulipTestCase):
     def test_webhook_http_header_header_exists(self) -> None:
-        webhook_bot = get_user('webhook-bot@zulip.com', get_realm('zulip'))
+        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
         request = HostRequestMock()
-        request.META['HTTP_X_CUSTOM_HEADER'] = 'custom_value'
+        request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
         request.user = webhook_bot
 
         header_value = validate_extract_webhook_http_header(
-            request, 'X_CUSTOM_HEADER', 'test_webhook'
+            request, "X_CUSTOM_HEADER", "test_webhook"
         )
 
-        self.assertEqual(header_value, 'custom_value')
+        self.assertEqual(header_value, "custom_value")
 
     def test_webhook_http_header_header_does_not_exist(self) -> None:
-        webhook_bot = get_user('webhook-bot@zulip.com', get_realm('zulip'))
+        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
         webhook_bot.last_reminder = None
         notification_bot = self.notification_bot()
         request = HostRequestMock()
         request.user = webhook_bot
-        request.path = 'some/random/path'
+        request.path = "some/random/path"
 
         exception_msg = "Missing the HTTP event header 'X_CUSTOM_HEADER'"
         with self.assertRaisesRegex(MissingHTTPEventHeader, exception_msg):
-            validate_extract_webhook_http_header(request, 'X_CUSTOM_HEADER', 'test_webhook')
+            validate_extract_webhook_http_header(request, "X_CUSTOM_HEADER", "test_webhook")
 
         msg = self.get_last_message()
         expected_message = MISSING_EVENT_HEADER_MESSAGE.format(
             bot_name=webhook_bot.full_name,
             request_path=request.path,
-            header_name='X_CUSTOM_HEADER',
-            integration_name='test_webhook',
+            header_name="X_CUSTOM_HEADER",
+            integration_name="test_webhook",
             support_email=FromAddress.SUPPORT,
         ).rstrip()
         self.assertEqual(msg.sender.email, notification_bot.email)
         self.assertEqual(msg.content, expected_message)
 
     def test_notify_bot_owner_on_invalid_json(self) -> None:
-        @webhook_view('ClientName', notify_bot_owner_on_invalid_json=False)
+        @webhook_view("ClientName", notify_bot_owner_on_invalid_json=False)
         def my_webhook_no_notify(request: HttpRequest, user_profile: UserProfile) -> None:
             raise InvalidJSONError("Malformed JSON")
 
-        @webhook_view('ClientName', notify_bot_owner_on_invalid_json=True)
+        @webhook_view("ClientName", notify_bot_owner_on_invalid_json=True)
         def my_webhook_notify(request: HttpRequest, user_profile: UserProfile) -> None:
             raise InvalidJSONError("Malformed JSON")
 
-        webhook_bot_email = 'webhook-bot@zulip.com'
-        webhook_bot_realm = get_realm('zulip')
+        webhook_bot_email = "webhook-bot@zulip.com"
+        webhook_bot_realm = get_realm("zulip")
         webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
         webhook_bot_api_key = get_api_key(webhook_bot)
         request = HostRequestMock()
-        request.POST['api_key'] = webhook_bot_api_key
+        request.POST["api_key"] = webhook_bot_api_key
         request.host = "zulip.testserver"
-        expected_msg = INVALID_JSON_MESSAGE.format(webhook_name='ClientName')
+        expected_msg = INVALID_JSON_MESSAGE.format(webhook_name="ClientName")
 
         last_message_id = self.get_last_message().id
         with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
@@ -135,8 +135,8 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
 
 class MissingEventHeaderTestCase(WebhookTestCase):
-    STREAM_NAME = 'groove'
-    URL_TEMPLATE = '/api/v1/external/groove?stream={stream}&api_key={api_key}'
+    STREAM_NAME = "groove"
+    URL_TEMPLATE = "/api/v1/external/groove?stream={stream}&api_key={api_key}"
 
     # This tests the validate_extract_webhook_http_header function with
     # an actual webhook, instead of just making a mock
@@ -144,20 +144,20 @@ class MissingEventHeaderTestCase(WebhookTestCase):
         self.subscribe(self.test_user, self.STREAM_NAME)
         result = self.client_post(
             self.url,
-            self.get_body('ticket_state_changed'),
+            self.get_body("ticket_state_changed"),
             content_type="application/x-www-form-urlencoded",
         )
         self.assert_json_error(result, "Missing the HTTP event header 'X_GROOVE_EVENT'")
 
-        webhook_bot = get_user('webhook-bot@zulip.com', get_realm('zulip'))
+        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
         webhook_bot.last_reminder = None
         notification_bot = self.notification_bot()
         msg = self.get_last_message()
         expected_message = MISSING_EVENT_HEADER_MESSAGE.format(
             bot_name=webhook_bot.full_name,
-            request_path='/api/v1/external/groove',
-            header_name='X_GROOVE_EVENT',
-            integration_name='Groove',
+            request_path="/api/v1/external/groove",
+            header_name="X_GROOVE_EVENT",
+            integration_name="Groove",
             support_email=FromAddress.SUPPORT,
         ).rstrip()
         if msg.sender.email != notification_bot.email:  # nocoverage

@@ -26,6 +26,6 @@ def lockfile(filename: str, shared: bool = False) -> Iterator[None]:
     If shared is True, use a LOCK_SH lock, otherwise LOCK_EX.
 
     The file is given by name and will be created if it does not exist."""
-    with open(filename, 'w') as lock:
+    with open(filename, "w") as lock:
         with flock(lock, shared=shared):
             yield

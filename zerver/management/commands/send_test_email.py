@@ -15,7 +15,7 @@ class Command(sendtestemail.Command):
                 "Outgoing email not yet configured, see\n  "
                 "https://zulip.readthedocs.io/en/latest/production/email.html"
             )
-        if len(kwargs['email']) == 0:
+        if len(kwargs["email"]) == 0:
             raise CommandError(
                 "Usage: /home/zulip/deployments/current/manage.py "
                 "send_test_email username@example.com"
@@ -39,15 +39,15 @@ class Command(sendtestemail.Command):
         )
         sender = FromAddress.SUPPORT
         print(f"  * {sender}")
-        send_mail("Zulip email test", message, sender, kwargs['email'])
+        send_mail("Zulip email test", message, sender, kwargs["email"])
         noreply_sender = FromAddress.tokenized_no_reply_address()
         print(f"  * {noreply_sender}")
-        send_mail("Zulip noreply email test", message, noreply_sender, kwargs['email'])
+        send_mail("Zulip noreply email test", message, noreply_sender, kwargs["email"])
         print()
-        print("Successfully sent 2 emails to {}!".format(", ".join(kwargs['email'])))
+        print("Successfully sent 2 emails to {}!".format(", ".join(kwargs["email"])))
 
-        if kwargs['managers']:
+        if kwargs["managers"]:
             mail_managers("Zulip manager email test", "This email was sent to the site managers.")
 
-        if kwargs['admins']:
+        if kwargs["admins"]:
             mail_admins("Zulip admins email test", "This email was sent to the site admins.")

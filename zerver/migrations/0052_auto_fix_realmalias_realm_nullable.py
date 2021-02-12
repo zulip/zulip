@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0051_realmalias_add_allow_subdomains'),
+        ("zerver", "0051_realmalias_add_allow_subdomains"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realmalias',
-            name='realm',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'),
+            model_name="realmalias",
+            name="realm",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"),
         ),
     ]

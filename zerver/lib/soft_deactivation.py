@@ -33,7 +33,7 @@ def filter_by_subscription_history(
     user_messages_to_insert: List[UserMessage] = []
 
     def store_user_message_to_insert(message: Message) -> None:
-        message = UserMessage(user_profile=user_profile, message_id=message['id'], flags=0)
+        message = UserMessage(user_profile=user_profile, message_id=message["id"], flags=0)
         user_messages_to_insert.append(message)
 
     for (stream_id, stream_messages_raw) in all_stream_messages.items():
@@ -67,7 +67,7 @@ def filter_by_subscription_history(
                 # event_last_message_id, we know they must have been
                 # subscribed immediately before the event.
                 for stream_message in stream_messages:
-                    if stream_message['id'] <= log_entry.event_last_message_id:
+                    if stream_message["id"] <= log_entry.event_last_message_id:
                         store_user_message_to_insert(stream_message)
                     else:
                         break
@@ -77,15 +77,15 @@ def filter_by_subscription_history(
             ):
                 initial_msg_count = len(stream_messages)
                 for i, stream_message in enumerate(stream_messages):
-                    if stream_message['id'] > log_entry.event_last_message_id:
+                    if stream_message["id"] > log_entry.event_last_message_id:
                         stream_messages = stream_messages[i:]
                         break
                 final_msg_count = len(stream_messages)
                 if initial_msg_count == final_msg_count:
-                    if stream_messages[-1]['id'] <= log_entry.event_last_message_id:
+                    if stream_messages[-1]["id"] <= log_entry.event_last_message_id:
                         stream_messages = []
             else:
-                raise AssertionError(f'{log_entry.event_type} is not a subscription event.')
+                raise AssertionError(f"{log_entry.event_type} is not a subscription event.")
 
         if len(stream_messages) > 0:
             # We do this check for last event since if the last subscription
@@ -143,12 +143,12 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     all_stream_subs = list(
         Subscription.objects.filter(
             user_profile=user_profile, recipient__type=Recipient.STREAM
-        ).values('recipient_id', 'recipient__type_id')
+        ).values("recipient_id", "recipient__type_id")
     )
 
     # For Stream messages we need to check messages against data from
     # RealmAuditLog for visibility to user. So we fetch the subscription logs.
-    stream_ids = [sub['recipient__type_id'] for sub in all_stream_subs]
+    stream_ids = [sub["recipient__type_id"] for sub in all_stream_subs]
     events = [
         RealmAuditLog.SUBSCRIPTION_CREATED,
         RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
@@ -162,11 +162,11 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # meantime.  Without that tiebreak, we could end up incorrectly
     # processing the ordering of those two subscription changes.
     subscription_logs = list(
-        RealmAuditLog.objects.select_related('modified_stream')
+        RealmAuditLog.objects.select_related("modified_stream")
         .filter(
             modified_user=user_profile, modified_stream__id__in=stream_ids, event_type__in=events
         )
-        .order_by('event_last_message_id', 'id')
+        .order_by("event_last_message_id", "id")
     )
 
     all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]] = defaultdict(list)
@@ -175,7 +175,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
 
     recipient_ids = []
     for sub in all_stream_subs:
-        stream_subscription_logs = all_stream_subscription_logs[sub['recipient__type_id']]
+        stream_subscription_logs = all_stream_subscription_logs[sub["recipient__type_id"]]
         if stream_subscription_logs[-1].event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
             assert stream_subscription_logs[-1].event_last_message_id is not None
             if (
@@ -185,29 +185,29 @@ def add_missing_messages(user_profile: UserProfile) -> None:
                 # We are going to short circuit this iteration as its no use
                 # iterating since user unsubscribed before soft-deactivation
                 continue
-        recipient_ids.append(sub['recipient_id'])
+        recipient_ids.append(sub["recipient_id"])
 
     all_stream_msgs = list(
         Message.objects.filter(
             recipient__id__in=recipient_ids, id__gt=user_profile.last_active_message_id
         )
-        .order_by('id')
-        .values('id', 'recipient__type_id')
+        .order_by("id")
+        .values("id", "recipient__type_id")
     )
     already_created_ums = set(
         UserMessage.objects.filter(
             user_profile=user_profile,
             message__recipient__type=Recipient.STREAM,
             message__id__gt=user_profile.last_active_message_id,
-        ).values_list('message__id', flat=True)
+        ).values_list("message__id", flat=True)
     )
 
     # Filter those messages for which UserMessage rows have been already created
-    all_stream_msgs = [msg for msg in all_stream_msgs if msg['id'] not in already_created_ums]
+    all_stream_msgs = [msg for msg in all_stream_msgs if msg["id"] not in already_created_ums]
 
     stream_messages: DefaultDict[int, List[Message]] = defaultdict(list)
     for msg in all_stream_msgs:
-        stream_messages[msg['recipient__type_id']].append(msg)
+        stream_messages[msg["recipient__type_id"]].append(msg)
 
     # Calling this function to filter out stream messages based upon
     # subscription logs and then store all UserMessage objects for bulk insert
@@ -225,14 +225,14 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         )
         UserMessage.objects.bulk_create(messages)
         user_profile.last_active_message_id = messages[-1].message_id
-        user_profile.save(update_fields=['last_active_message_id'])
+        user_profile.save(update_fields=["last_active_message_id"])
 
 
 def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     try:
         user_profile.last_active_message_id = (
             UserMessage.objects.filter(user_profile=user_profile)
-            .order_by('-message__id')[0]
+            .order_by("-message__id")[0]
             .message_id
         )
     except IndexError:  # nocoverage
@@ -240,8 +240,8 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
         # a message, we just use the overall max message ID.
         user_profile.last_active_message_id = Message.objects.last().id
     user_profile.long_term_idle = True
-    user_profile.save(update_fields=['long_term_idle', 'last_active_message_id'])
-    logger.info('Soft deactivated user %s', user_profile.id)
+    user_profile.save(update_fields=["long_term_idle", "last_active_message_id"])
+    logger.info("Soft deactivated user %s", user_profile.id)
 
 
 def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
@@ -283,7 +283,7 @@ def do_auto_soft_deactivate_users(
     users_deactivated = do_soft_deactivate_users(users_to_deactivate)
 
     if not settings.AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS:
-        logger.info('Not catching up users since AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS is off')
+        logger.info("Not catching up users since AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS is off")
         return users_deactivated
 
     if realm is not None:
@@ -297,14 +297,14 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[User
     if user_profile.long_term_idle:
         add_missing_messages(user_profile)
         user_profile.long_term_idle = False
-        user_profile.save(update_fields=['long_term_idle'])
+        user_profile.save(update_fields=["long_term_idle"])
         RealmAuditLog.objects.create(
             realm=user_profile.realm,
             modified_user=user_profile,
             event_type=RealmAuditLog.USER_SOFT_ACTIVATED,
             event_time=timezone_now(),
         )
-        logger.info('Soft Reactivated user %s', user_profile.id)
+        logger.info("Soft Reactivated user %s", user_profile.id)
         return user_profile
     return None
 
@@ -319,14 +319,14 @@ def get_users_for_soft_deactivation(
             user_profile__long_term_idle=False,
             **filter_kwargs,
         )
-        .values('user_profile_id')
-        .annotate(last_visit=Max('last_visit'))
+        .values("user_profile_id")
+        .annotate(last_visit=Max("last_visit"))
     )
     user_ids_to_deactivate = []
     today = timezone_now()
     for user_activity in users_activity:
-        if (today - user_activity['last_visit']).days > inactive_for_days:
-            user_ids_to_deactivate.append(user_activity['user_profile_id'])
+        if (today - user_activity["last_visit"]).days > inactive_for_days:
+            user_ids_to_deactivate.append(user_activity["user_profile_id"])
     users_to_deactivate = list(UserProfile.objects.filter(id__in=user_ids_to_deactivate))
     return users_to_deactivate
 

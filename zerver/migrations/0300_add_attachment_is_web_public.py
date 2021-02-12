@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0299_subscription_role'),
+        ("zerver", "0299_subscription_role"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='archivedattachment',
-            name='is_web_public',
+            model_name="archivedattachment",
+            name="is_web_public",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='attachment',
-            name='is_web_public',
+            model_name="attachment",
+            name="is_web_public",
             field=models.BooleanField(default=False),
         ),
     ]

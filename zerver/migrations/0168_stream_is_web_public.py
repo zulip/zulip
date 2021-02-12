@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0167_custom_profile_fields_sort_order'),
+        ("zerver", "0167_custom_profile_fields_sort_order"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='stream',
-            name='is_web_public',
+            model_name="stream",
+            name="is_web_public",
             field=models.BooleanField(default=False),
         ),
     ]

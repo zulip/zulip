@@ -10,7 +10,7 @@ import datetime
 import os
 import sys
 
-sys.path.append('/home/zulip/deployments/current')
+sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path
 
 setup_path()
@@ -18,9 +18,9 @@ setup_path()
 import django
 from django.utils.timezone import now as timezone_now
 
-os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
-sys.path.append('/home/zulip/deployments/current')
-sys.path.append('/home/zulip/deployments/current/zerver')
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+sys.path.append("/home/zulip/deployments/current")
+sys.path.append("/home/zulip/deployments/current/zerver")
 
 django.setup()
 

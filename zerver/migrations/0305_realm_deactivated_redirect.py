@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0304_remove_default_status_of_default_private_streams'),
+        ("zerver", "0304_remove_default_status_of_default_private_streams"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='deactivated_redirect',
+            model_name="realm",
+            name="deactivated_redirect",
             field=models.URLField(max_length=128, null=True),
         ),
     ]

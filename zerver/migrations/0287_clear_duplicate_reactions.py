@@ -11,16 +11,16 @@ def clear_duplicate_reactions(apps: StateApps, schema_editor: DatabaseSchemaEdit
     database via a race; the next migration will add the appropriate
     database-level unique constraint.
     """
-    Reaction = apps.get_model('zerver', 'Reaction')
+    Reaction = apps.get_model("zerver", "Reaction")
 
     duplicate_reactions = (
         Reaction.objects.all()
         .values("user_profile_id", "message_id", "reaction_type", "emoji_code")
-        .annotate(Count('id'))
+        .annotate(Count("id"))
         .filter(id__count__gt=1)
     )
     for duplicate_reaction in duplicate_reactions:
-        duplicate_reaction.pop('id__count')
+        duplicate_reaction.pop("id__count")
         to_cleanup = Reaction.objects.filter(**duplicate_reaction)[1:]
         for reaction in to_cleanup:
             reaction.delete()
@@ -29,7 +29,7 @@ def clear_duplicate_reactions(apps: StateApps, schema_editor: DatabaseSchemaEdit
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0286_merge_0260_0285'),
+        ("zerver", "0286_merge_0260_0285"),
     ]
 
     operations = [

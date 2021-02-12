@@ -13,7 +13,7 @@ from typing import Optional
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-logger = logging.getLogger('zulip.debug')
+logger = logging.getLogger("zulip.debug")
 
 # Interactive debugging code from
 # https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
@@ -23,12 +23,12 @@ logger = logging.getLogger('zulip.debug')
 def interactive_debug(sig: int, frame: FrameType) -> None:
     """Interrupt running process, and provide a python prompt for
     interactive debugging."""
-    d = {'_frame': frame}  # Allow access to frame object.
+    d = {"_frame": frame}  # Allow access to frame object.
     d.update(frame.f_globals)  # Unless shadowed by global
     d.update(frame.f_locals)
 
     message = "Signal received : entering python shell.\nTraceback:\n"
-    message += ''.join(traceback.format_stack(frame))
+    message += "".join(traceback.format_stack(frame))
     i = code.InteractiveConsole(d)
     i.interact(message)
 
@@ -52,7 +52,7 @@ def tracemalloc_dump() -> None:
     gc.collect()
     tracemalloc.take_snapshot().dump(path)
 
-    with open(f'/proc/{os.getpid()}/stat', 'rb') as f:
+    with open(f"/proc/{os.getpid()}/stat", "rb") as f:
         procstat = f.read().split()
     rss_pages = int(procstat[23])
     logger.info(
@@ -66,7 +66,7 @@ def tracemalloc_dump() -> None:
 
 
 def tracemalloc_listen_sock(sock: socket.socket) -> None:
-    logger.debug('pid %s: tracemalloc_listen_sock started!', os.getpid())
+    logger.debug("pid %s: tracemalloc_listen_sock started!", os.getpid())
     while True:
         sock.recv(1)
         tracemalloc_dump()
@@ -80,7 +80,7 @@ def tracemalloc_listen() -> None:
     if listener_pid == os.getpid():
         # Already set up -- and in this process, not just its parent.
         return
-    logger.debug('pid %s: tracemalloc_listen working...', os.getpid())
+    logger.debug("pid %s: tracemalloc_listen working...", os.getpid())
     listener_pid = os.getpid()
 
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
@@ -88,7 +88,7 @@ def tracemalloc_listen() -> None:
     sock.bind(path)
     thread = threading.Thread(target=lambda: tracemalloc_listen_sock(sock), daemon=True)
     thread.start()
-    logger.debug('pid %s: tracemalloc_listen done: %s', os.getpid(), path)
+    logger.debug("pid %s: tracemalloc_listen done: %s", os.getpid(), path)
 
 
 def maybe_tracemalloc_listen() -> None:
@@ -107,7 +107,7 @@ def maybe_tracemalloc_listen() -> None:
     You may also have to add a call to this function somewhere.
 
     """
-    if os.environ.get('PYTHONTRACEMALLOC'):
+    if os.environ.get("PYTHONTRACEMALLOC"):
         # If the server was started with `tracemalloc` tracing on, then
         # listen for a signal to dump `tracemalloc` snapshots.
         tracemalloc_listen()

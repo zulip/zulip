@@ -8,7 +8,7 @@ def check_venv(filename: str) -> None:
         print(f"You need to run {filename} inside a Zulip dev environment.")
         user_id = os.getuid()
         user_name = pwd.getpwuid(user_id).pw_name
-        if user_name != 'vagrant' and user_name != 'zulipdev':
+        if user_name != "vagrant" and user_name != "zulipdev":
             print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
         else:
             print(

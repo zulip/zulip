@@ -73,7 +73,7 @@ class MessagePOSTTest(ZulipTestCase):
     ) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(user, stream_name)
-            result = self.api_get(user, '/json/messages/' + str(msg_id))
+            result = self.api_get(user, "/json/messages/" + str(msg_id))
             self.assert_json_success(result)
         else:
             with self.assertRaisesRegex(JsonableError, error_msg):
@@ -84,7 +84,7 @@ class MessagePOSTTest(ZulipTestCase):
         Sending a message to a stream to which you are subscribed is
         successful.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {
@@ -101,7 +101,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Same as above, but for the API view
         """
-        user = self.example_user('hamlet')
+        user = self.example_user("hamlet")
         result = self.api_post(
             user,
             "/api/v1/messages",
@@ -116,9 +116,9 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_message_to_stream_with_nonexistent_id(self) -> None:
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
         bot = self.create_test_bot(
-            short_name='whatever',
+            short_name="whatever",
             user_profile=cordelia,
         )
         result = self.api_post(
@@ -146,9 +146,9 @@ class MessagePOSTTest(ZulipTestCase):
         Sending a message to a stream (by stream ID) to which you are
         subscribed is successful.
         """
-        self.login('hamlet')
-        realm = get_realm('zulip')
-        stream = get_stream('Verona', realm)
+        self.login("hamlet")
+        realm = get_realm("zulip")
+        stream = get_stream("Verona", realm)
         result = self.client_post(
             "/json/messages",
             {
@@ -177,8 +177,8 @@ class MessagePOSTTest(ZulipTestCase):
         # Admins and their owned bots can send to STREAM_POST_POLICY_ADMINS streams
         self._send_and_verify_message(admin_profile, stream_name)
         admin_owned_bot = self.create_test_bot(
-            short_name='whatever1',
-            full_name='whatever1',
+            short_name="whatever1",
+            full_name="whatever1",
             user_profile=admin_profile,
         )
         self._send_and_verify_message(admin_owned_bot, stream_name)
@@ -193,8 +193,8 @@ class MessagePOSTTest(ZulipTestCase):
             "Only organization administrators can send to this stream.",
         )
         non_admin_owned_bot = self.create_test_bot(
-            short_name='whatever2',
-            full_name='whatever2',
+            short_name="whatever2",
+            full_name="whatever2",
             user_profile=non_admin_profile,
         )
         self._send_and_verify_message(
@@ -205,10 +205,10 @@ class MessagePOSTTest(ZulipTestCase):
 
         # Bots without owner (except cross realm bot) cannot send to announcement only streams
         bot_without_owner = do_create_user(
-            email='free-bot@zulip.testserver',
-            password='',
+            email="free-bot@zulip.testserver",
+            password="",
             realm=non_admin_profile.realm,
-            full_name='freebot',
+            full_name="freebot",
             bot_type=UserProfile.DEFAULT_BOT,
         )
         self._send_and_verify_message(
@@ -220,9 +220,9 @@ class MessagePOSTTest(ZulipTestCase):
         # Cross realm bots should be allowed
         notification_bot = get_system_bot("notification-bot@zulip.com")
         internal_send_stream_message(
-            stream.realm, notification_bot, stream, 'Test topic', 'Test message by notification bot'
+            stream.realm, notification_bot, stream, "Test topic", "Test message by notification bot"
         )
-        self.assertEqual(self.get_last_message().content, 'Test message by notification bot')
+        self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
         guest_profile = self.example_user("polonius")
         # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
@@ -237,7 +237,7 @@ class MessagePOSTTest(ZulipTestCase):
         admin_profile = self.example_user("iago")
         self.login_user(admin_profile)
 
-        do_set_realm_property(admin_profile.realm, 'waiting_period_threshold', 10)
+        do_set_realm_property(admin_profile.realm, "waiting_period_threshold", 10)
         admin_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
         admin_profile.save()
         self.assertTrue(admin_profile.is_new_member)
@@ -251,8 +251,8 @@ class MessagePOSTTest(ZulipTestCase):
         # even if the admin is a new user
         self._send_and_verify_message(admin_profile, stream_name)
         admin_owned_bot = self.create_test_bot(
-            short_name='whatever1',
-            full_name='whatever1',
+            short_name="whatever1",
+            full_name="whatever1",
             user_profile=admin_profile,
         )
         self._send_and_verify_message(admin_owned_bot, stream_name)
@@ -271,8 +271,8 @@ class MessagePOSTTest(ZulipTestCase):
             non_admin_profile, stream_name, "New members cannot send to this stream."
         )
         non_admin_owned_bot = self.create_test_bot(
-            short_name='whatever2',
-            full_name='whatever2',
+            short_name="whatever2",
+            full_name="whatever2",
             user_profile=non_admin_profile,
         )
         self._send_and_verify_message(
@@ -281,10 +281,10 @@ class MessagePOSTTest(ZulipTestCase):
 
         # Bots without owner (except cross realm bot) cannot send to announcement only stream
         bot_without_owner = do_create_user(
-            email='free-bot@zulip.testserver',
-            password='',
+            email="free-bot@zulip.testserver",
+            password="",
             realm=non_admin_profile.realm,
-            full_name='freebot',
+            full_name="freebot",
             bot_type=UserProfile.DEFAULT_BOT,
         )
         self._send_and_verify_message(
@@ -294,9 +294,9 @@ class MessagePOSTTest(ZulipTestCase):
         # Cross realm bots should be allowed
         notification_bot = get_system_bot("notification-bot@zulip.com")
         internal_send_stream_message(
-            stream.realm, notification_bot, stream, 'Test topic', 'Test message by notification bot'
+            stream.realm, notification_bot, stream, "Test topic", "Test message by notification bot"
         )
-        self.assertEqual(self.get_last_message().content, 'Test message by notification bot')
+        self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
         guest_profile = self.example_user("polonius")
         # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
@@ -309,8 +309,8 @@ class MessagePOSTTest(ZulipTestCase):
         Sending messages without a to field should be sent to the default
         stream for the user_profile.
         """
-        user = self.example_user('hamlet')
-        user.default_sending_stream_id = get_stream('Verona', user.realm).id
+        user = self.example_user("hamlet")
+        user.default_sending_stream_id = get_stream("Verona", user.realm).id
         user.save()
         # The `to` field is required according to OpenAPI specification
         result = self.api_post(
@@ -333,7 +333,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a message to a nonexistent stream fails.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         self.assertFalse(Stream.objects.filter(name="nonexistent_stream"))
         result = self.client_post(
             "/json/messages",
@@ -351,7 +351,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Nonexistent stream name with bad characters should be escaped properly.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         self.assertFalse(Stream.objects.filter(name="""&<"'><non-existent>"""))
         result = self.client_post(
             "/json/messages",
@@ -373,7 +373,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
-        othello = self.example_user('othello')
+        othello = self.example_user("othello")
         result = self.client_post(
             "/json/messages",
             {
@@ -384,14 +384,14 @@ class MessagePOSTTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        message_id = orjson.loads(result.content)['id']
+        message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
         self.assertEqual(len(recent_conversations), 1)
         recent_conversation = list(recent_conversations.values())[0]
         recipient_id = list(recent_conversations.keys())[0]
-        self.assertEqual(set(recent_conversation['user_ids']), {othello.id})
-        self.assertEqual(recent_conversation['max_message_id'], message_id)
+        self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
+        self.assertEqual(recent_conversation["max_message_id"], message_id)
 
         # Now send a message to yourself and see how that interacts with the data structure
         result = self.client_post(
@@ -404,26 +404,26 @@ class MessagePOSTTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        self_message_id = orjson.loads(result.content)['id']
+        self_message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
         self.assertEqual(len(recent_conversations), 2)
         recent_conversation = recent_conversations[recipient_id]
-        self.assertEqual(set(recent_conversation['user_ids']), {othello.id})
-        self.assertEqual(recent_conversation['max_message_id'], message_id)
+        self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
+        self.assertEqual(recent_conversation["max_message_id"], message_id)
 
         # Now verify we have the appropriate self-pm data structure
         del recent_conversations[recipient_id]
         recent_conversation = list(recent_conversations.values())[0]
         recipient_id = list(recent_conversations.keys())[0]
-        self.assertEqual(set(recent_conversation['user_ids']), set())
-        self.assertEqual(recent_conversation['max_message_id'], self_message_id)
+        self.assertEqual(set(recent_conversation["user_ids"]), set())
+        self.assertEqual(recent_conversation["max_message_id"], self_message_id)
 
     def test_personal_message_by_id(self) -> None:
         """
         Sending a personal message to a valid user ID is successful.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {
@@ -443,7 +443,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a personal message to a valid user ID is successful.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {
@@ -475,8 +475,8 @@ class MessagePOSTTest(ZulipTestCase):
         Sending a personal message to yourself plus another user is successful,
         and counts as a message just to that user.
         """
-        hamlet = self.example_user('hamlet')
-        othello = self.example_user('othello')
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
         self.login_user(hamlet)
         result = self.client_post(
             "/json/messages",
@@ -496,7 +496,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a personal message to an invalid email returns error JSON.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {
@@ -512,10 +512,10 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a personal message to a deactivated user returns error JSON.
         """
-        othello = self.example_user('othello')
-        cordelia = self.example_user('cordelia')
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
         do_deactivate_user(othello)
-        self.login('hamlet')
+        self.login("hamlet")
 
         result = self.client_post(
             "/json/messages",
@@ -543,8 +543,8 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a message of unknown type returns error JSON.
         """
-        self.login('hamlet')
-        othello = self.example_user('othello')
+        self.login("hamlet")
+        othello = self.example_user("othello")
         result = self.client_post(
             "/json/messages",
             {
@@ -560,8 +560,8 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a message that is empty or only whitespace should fail
         """
-        self.login('hamlet')
-        othello = self.example_user('othello')
+        self.login("hamlet")
+        othello = self.example_user("othello")
         result = self.client_post(
             "/json/messages",
             {"type": "private", "content": " ", "client": "test suite", "to": othello.email},
@@ -572,7 +572,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a message that has empty string topic should fail
         """
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {
@@ -589,7 +589,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a message without topic should fail
         """
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {"type": "stream", "to": "Verona", "client": "test suite", "content": "Test message"},
@@ -600,7 +600,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Messages other than the type of "private" or "stream" are considered as invalid
         """
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {
@@ -617,7 +617,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending private message without recipients should fail
         """
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {"type": "private", "content": "Test content", "client": "test suite", "to": ""},
@@ -666,7 +666,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a mirrored personal message via the browser should not work.
         """
-        user = self.mit_user('starnine')
+        user = self.mit_user("starnine")
         self.login_user(user)
         result = self.client_post(
             "/json/messages",
@@ -712,9 +712,9 @@ class MessagePOSTTest(ZulipTestCase):
         }
 
         with mock.patch(
-            'DNS.dnslookup',
+            "DNS.dnslookup",
             return_value=[
-                ['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']
+                ["starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash"]
             ],
         ):
             result1 = self.api_post(
@@ -723,21 +723,21 @@ class MessagePOSTTest(ZulipTestCase):
             self.assert_json_success(result1)
 
         with mock.patch(
-            'DNS.dnslookup',
-            return_value=[['espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash']],
+            "DNS.dnslookup",
+            return_value=[["espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash"]],
         ):
             result2 = self.api_post(
                 self.mit_user("espuser"), "/api/v1/messages", msg, subdomain="zephyr"
             )
             self.assert_json_success(result2)
 
-        self.assertEqual(orjson.loads(result1.content)['id'], orjson.loads(result2.content)['id'])
+        self.assertEqual(orjson.loads(result1.content)["id"], orjson.loads(result2.content)["id"])
 
     def test_message_with_null_bytes(self) -> None:
         """
         A message with null bytes in it is handled.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         post_data = {
             "type": "stream",
             "to": "Verona",
@@ -752,7 +752,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         A message with mixed whitespace at the end is cleaned up.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         post_data = {
             "type": "stream",
             "to": "Verona",
@@ -770,7 +770,7 @@ class MessagePOSTTest(ZulipTestCase):
         Sending a message longer than the maximum message length succeeds but is
         truncated.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         long_message = "A" * (MAX_MESSAGE_LENGTH + 1)
         post_data = {
             "type": "stream",
@@ -792,7 +792,7 @@ class MessagePOSTTest(ZulipTestCase):
         Sending a message with a topic longer than the maximum topic length
         succeeds, but the topic is truncated.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         long_topic = "A" * (MAX_TOPIC_NAME_LENGTH + 1)
         post_data = {
             "type": "stream",
@@ -808,7 +808,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(sent_message.topic_name(), "A" * (MAX_TOPIC_NAME_LENGTH - 3) + "...")
 
     def test_send_forged_message_as_not_superuser(self) -> None:
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {
@@ -823,7 +823,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_send_message_as_not_superuser_to_different_domain(self) -> None:
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {
@@ -913,7 +913,7 @@ class MessagePOSTTest(ZulipTestCase):
     ) -> None:
         create_mirrored_message_users_mock.return_value = mock.Mock()
         user = self.mit_user("starnine")
-        user.realm.string_id = 'notzephyr'
+        user.realm.string_id = "notzephyr"
         user.realm.save()
         result = self.api_post(
             user,
@@ -952,19 +952,19 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_send_message_irc_mirror(self) -> None:
         reset_emails_in_zulip_realm()
-        self.login('hamlet')
+        self.login("hamlet")
         bot_info = {
-            'full_name': 'IRC bot',
-            'short_name': 'irc',
+            "full_name": "IRC bot",
+            "short_name": "irc",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
 
         email = "irc-bot@zulip.testserver"
-        user = get_user(email, get_realm('zulip'))
+        user = get_user(email, get_realm("zulip"))
         user.can_forge_sender = True
         user.save()
-        user = get_user(email, get_realm('zulip'))
+        user = get_user(email, get_realm("zulip"))
         self.subscribe(user, "IRCland")
 
         # Simulate a mirrored message with a slightly old timestamp.
@@ -1016,8 +1016,8 @@ class MessagePOSTTest(ZulipTestCase):
     def test_unsubscribed_can_forge_sender(self) -> None:
         reset_emails_in_zulip_realm()
 
-        cordelia = self.example_user('cordelia')
-        stream_name = 'private_stream'
+        cordelia = self.example_user("cordelia")
+        stream_name = "private_stream"
         self.make_stream(stream_name, invite_only=True)
 
         self.unsubscribe(cordelia, stream_name)
@@ -1031,20 +1031,20 @@ class MessagePOSTTest(ZulipTestCase):
                 type="stream",
                 to=stream_name,
                 client=client,
-                topic='whatever',
-                content='whatever',
+                topic="whatever",
+                content="whatever",
                 forged=orjson.dumps(forged).decode(),
             )
 
             # Only pass the 'sender' property when doing mirroring behavior.
             if forged:
-                payload['sender'] = sender_email
+                payload["sender"] = sender_email
 
             cordelia.can_forge_sender = False
             cordelia.save()
 
             result = self.api_post(cordelia, "/api/v1/messages", payload)
-            self.assert_json_error_contains(result, 'authorized')
+            self.assert_json_error_contains(result, "authorized")
 
             cordelia.can_forge_sender = True
             cordelia.save()
@@ -1054,36 +1054,36 @@ class MessagePOSTTest(ZulipTestCase):
 
         test_with(
             sender_email=cordelia.email,
-            client='test suite',
+            client="test suite",
             forged=False,
         )
 
         test_with(
-            sender_email='irc_person@zulip.com',
-            client='irc_mirror',
+            sender_email="irc_person@zulip.com",
+            client="irc_mirror",
             forged=True,
         )
 
     def test_bot_can_send_to_owner_stream(self) -> None:
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
         bot = self.create_test_bot(
-            short_name='whatever',
+            short_name="whatever",
             user_profile=cordelia,
         )
 
-        stream_name = 'private_stream'
+        stream_name = "private_stream"
         self.make_stream(stream_name, invite_only=True)
 
         payload = dict(
             type="stream",
             to=stream_name,
-            client='test suite',
-            topic='whatever',
-            content='whatever',
+            client="test suite",
+            topic="whatever",
+            content="whatever",
         )
 
         result = self.api_post(bot, "/api/v1/messages", payload)
-        self.assert_json_error_contains(result, 'Not authorized to send')
+        self.assert_json_error_contains(result, "Not authorized to send")
 
         # We subscribe the bot owner! (aka cordelia)
         assert bot.bot_owner is not None
@@ -1107,7 +1107,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "content": "Test message",
                 "topic": "Test topic",
             },
-            subdomain='zulipinternal',
+            subdomain="zulipinternal",
         )
 
         self.assert_json_success(result)
@@ -1118,16 +1118,16 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(message.recipient.type_id, stream.id)
 
     def test_guest_user(self) -> None:
-        sender = self.example_user('polonius')
+        sender = self.example_user("polonius")
 
-        stream_name = 'public stream'
+        stream_name = "public stream"
         self.make_stream(stream_name, invite_only=False)
         payload = dict(
             type="stream",
             to=stream_name,
-            client='test suite',
-            topic='whatever',
-            content='whatever',
+            client="test suite",
+            topic="whatever",
+            content="whatever",
         )
 
         # Guest user can't send message to unsubscribed public streams
@@ -1142,23 +1142,23 @@ class MessagePOSTTest(ZulipTestCase):
 
 class ScheduledMessageTest(ZulipTestCase):
     def last_scheduled_message(self) -> ScheduledMessage:
-        return ScheduledMessage.objects.all().order_by('-id')[0]
+        return ScheduledMessage.objects.all().order_by("-id")[0]
 
     def do_schedule_message(
         self,
         msg_type: str,
         to: str,
         msg: str,
-        defer_until: str = '',
-        tz_guess: str = '',
-        delivery_type: str = 'send_later',
-        realm_str: str = 'zulip',
+        defer_until: str = "",
+        tz_guess: str = "",
+        delivery_type: str = "send_later",
+        realm_str: str = "zulip",
     ) -> HttpResponse:
-        self.login('hamlet')
+        self.login("hamlet")
 
-        topic_name = ''
-        if msg_type == 'stream':
-            topic_name = 'Test topic'
+        topic_name = ""
+        if msg_type == "stream":
+            topic_name = "Test topic"
 
         payload = {
             "type": msg_type,
@@ -1173,7 +1173,7 @@ class ScheduledMessageTest(ZulipTestCase):
         if defer_until:
             payload["deliver_at"] = defer_until
         # `Topic` cannot be empty according to OpenAPI specification.
-        intentionally_undocumented: bool = topic_name == ''
+        intentionally_undocumented: bool = topic_name == ""
         result = self.client_post(
             "/json/messages", payload, intentionally_undocumented=intentionally_undocumented
         )
@@ -1185,55 +1185,55 @@ class ScheduledMessageTest(ZulipTestCase):
         defer_until_str = str(defer_until)
 
         # Scheduling a message to a stream you are subscribed is successful.
-        result = self.do_schedule_message('stream', 'Verona', content + ' 1', defer_until_str)
+        result = self.do_schedule_message("stream", "Verona", content + " 1", defer_until_str)
         message = self.last_scheduled_message()
         self.assert_json_success(result)
-        self.assertEqual(message.content, 'Test message 1')
-        self.assertEqual(message.topic_name(), 'Test topic')
+        self.assertEqual(message.content, "Test message 1")
+        self.assertEqual(message.topic_name(), "Test topic")
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
         # Scheduling a message for reminders.
         result = self.do_schedule_message(
-            'stream', 'Verona', content + ' 2', defer_until_str, delivery_type='remind'
+            "stream", "Verona", content + " 2", defer_until_str, delivery_type="remind"
         )
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.delivery_type, ScheduledMessage.REMIND)
 
         # Scheduling a private message is successful.
-        othello = self.example_user('othello')
-        hamlet = self.example_user('hamlet')
-        result = self.do_schedule_message('private', othello.email, content + ' 3', defer_until_str)
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        result = self.do_schedule_message("private", othello.email, content + " 3", defer_until_str)
         message = self.last_scheduled_message()
         self.assert_json_success(result)
-        self.assertEqual(message.content, 'Test message 3')
+        self.assertEqual(message.content, "Test message 3")
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 
         # Setting a reminder in PM's to other users causes a error.
         result = self.do_schedule_message(
-            'private', othello.email, content + ' 4', defer_until_str, delivery_type='remind'
+            "private", othello.email, content + " 4", defer_until_str, delivery_type="remind"
         )
-        self.assert_json_error(result, 'Reminders can only be set for streams.')
+        self.assert_json_error(result, "Reminders can only be set for streams.")
 
         # Setting a reminder in PM's to ourself is successful.
         # Required by reminders from message actions popover caret feature.
         result = self.do_schedule_message(
-            'private', hamlet.email, content + ' 5', defer_until_str, delivery_type='remind'
+            "private", hamlet.email, content + " 5", defer_until_str, delivery_type="remind"
         )
         message = self.last_scheduled_message()
         self.assert_json_success(result)
-        self.assertEqual(message.content, 'Test message 5')
+        self.assertEqual(message.content, "Test message 5")
         self.assertEqual(message.delivery_type, ScheduledMessage.REMIND)
 
         # Scheduling a message while guessing timezone.
-        tz_guess = 'Asia/Kolkata'
+        tz_guess = "Asia/Kolkata"
         result = self.do_schedule_message(
-            'stream', 'Verona', content + ' 6', defer_until_str, tz_guess=tz_guess
+            "stream", "Verona", content + " 6", defer_until_str, tz_guess=tz_guess
         )
         message = self.last_scheduled_message()
         self.assert_json_success(result)
-        self.assertEqual(message.content, 'Test message 6')
+        self.assertEqual(message.content, "Test message 6")
         local_tz = pytz.timezone(tz_guess)
         utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(utz_defer_until))
@@ -1242,12 +1242,12 @@ class ScheduledMessageTest(ZulipTestCase):
         # Test with users timezone setting as set to some timezone rather than
         # empty. This will help interpret timestamp in users local timezone.
         user = self.example_user("hamlet")
-        user.timezone = 'US/Pacific'
-        user.save(update_fields=['timezone'])
-        result = self.do_schedule_message('stream', 'Verona', content + ' 7', defer_until_str)
+        user.timezone = "US/Pacific"
+        user.save(update_fields=["timezone"])
+        result = self.do_schedule_message("stream", "Verona", content + " 7", defer_until_str)
         message = self.last_scheduled_message()
         self.assert_json_success(result)
-        self.assertEqual(message.content, 'Test message 7')
+        self.assertEqual(message.content, "Test message 7")
         local_tz = pytz.timezone(user.timezone)
         utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(utz_defer_until))
@@ -1259,24 +1259,24 @@ class ScheduledMessageTest(ZulipTestCase):
         defer_until = timezone_now()
         defer_until_str = str(defer_until)
 
-        result = self.do_schedule_message('stream', 'Verona', content + ' 1', defer_until_str)
-        self.assert_json_error(result, 'Time must be in the future.')
+        result = self.do_schedule_message("stream", "Verona", content + " 1", defer_until_str)
+        self.assert_json_error(result, "Time must be in the future.")
 
     def test_invalid_timestamp(self) -> None:
         # Scheduling a message from which timestamp couldn't be parsed
         # successfully should fail.
         content = "Test message"
-        defer_until = 'Missed the timestamp'
+        defer_until = "Missed the timestamp"
 
-        result = self.do_schedule_message('stream', 'Verona', content + ' 1', defer_until)
-        self.assert_json_error(result, 'Invalid time format')
+        result = self.do_schedule_message("stream", "Verona", content + " 1", defer_until)
+        self.assert_json_error(result, "Invalid time format")
 
     def test_missing_deliver_at(self) -> None:
         content = "Test message"
 
-        result = self.do_schedule_message('stream', 'Verona', content + ' 1')
+        result = self.do_schedule_message("stream", "Verona", content + " 1")
         self.assert_json_error(
-            result, 'Missing deliver_at in a request for delayed message delivery'
+            result, "Missing deliver_at in a request for delayed message delivery"
         )
 
 
@@ -1287,7 +1287,7 @@ class StreamMessagesTest(ZulipTestCase):
         """
         Check that messages sent to a stream reach all subscribers to that stream.
         """
-        realm = get_realm('zulip')
+        realm = get_realm("zulip")
         subscribers = self.users_subscribed_to_stream(stream_name, realm)
 
         # Outgoing webhook bots don't store UserMessage rows; they will be processed later.
@@ -1342,11 +1342,11 @@ class StreamMessagesTest(ZulipTestCase):
         num_messages = 2
         num_extra_users = 10
 
-        sender = self.example_user('cordelia')
+        sender = self.example_user("cordelia")
         realm = sender.realm
-        message_content = 'whatever'
-        stream = get_stream('Denmark', realm)
-        topic_name = 'lunch'
+        message_content = "whatever"
+        stream = get_stream("Denmark", realm)
+        topic_name = "lunch"
         recipient = stream.recipient
         sending_client = make_client(name="test suite")
 
@@ -1354,7 +1354,7 @@ class StreamMessagesTest(ZulipTestCase):
             # Make every other user be idle.
             long_term_idle = i % 2 > 0
 
-            email = f'foo{i}@example.com'
+            email = f"foo{i}@example.com"
             user = UserProfile.objects.create(
                 realm=realm,
                 email=email,
@@ -1375,7 +1375,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sending_client=sending_client,
             )
             message.set_topic_name(topic_name)
-            message_dict = build_message_send_dict({'message': message})
+            message_dict = build_message_send_dict({"message": message})
             do_send_messages([message_dict])
 
         before_um_count = UserMessage.objects.count()
@@ -1399,11 +1399,11 @@ class StreamMessagesTest(ZulipTestCase):
         for user_profile in recipient_list:
             self.subscribe(user_profile, "Denmark")
 
-        sender = self.example_user('hamlet')
+        sender = self.example_user("hamlet")
         sending_client = make_client(name="test suite")
-        stream_name = 'Denmark'
-        topic_name = 'foo'
-        content = 'whatever'
+        stream_name = "Denmark"
+        topic_name = "foo"
+        content = "whatever"
         realm = sender.realm
 
         # To get accurate count of the queries, we should make sure that
@@ -1425,7 +1425,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.assert_length(queries, 12)
 
     def test_stream_message_dict(self) -> None:
-        user_profile = self.example_user('iago')
+        user_profile = self.example_user("iago")
         self.subscribe(user_profile, "Denmark")
         self.send_stream_message(
             self.example_user("hamlet"), "Denmark", content="whatever", topic_name="my topic"
@@ -1434,25 +1434,25 @@ class StreamMessagesTest(ZulipTestCase):
         row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row)
         MessageDict.post_process_dicts([dct], apply_markdown=True, client_gravatar=False)
-        self.assertEqual(dct['display_recipient'], 'Denmark')
+        self.assertEqual(dct["display_recipient"], "Denmark")
 
-        stream = get_stream('Denmark', user_profile.realm)
-        self.assertEqual(dct['stream_id'], stream.id)
+        stream = get_stream("Denmark", user_profile.realm)
+        self.assertEqual(dct["stream_id"], stream.id)
 
     def test_stream_message_unicode(self) -> None:
-        receiving_user_profile = self.example_user('iago')
-        sender = self.example_user('hamlet')
+        receiving_user_profile = self.example_user("iago")
+        sender = self.example_user("hamlet")
         self.subscribe(receiving_user_profile, "Denmark")
         self.send_stream_message(sender, "Denmark", content="whatever", topic_name="my topic")
         message = most_recent_message(receiving_user_profile)
         self.assertEqual(
             str(message),
-            '<Message: Denmark / my topic / '
-            '<UserProfile: {} {}>>'.format(sender.email, sender.realm),
+            "<Message: Denmark / my topic / "
+            "<UserProfile: {} {}>>".format(sender.email, sender.realm),
         )
 
     def test_message_mentions(self) -> None:
-        user_profile = self.example_user('iago')
+        user_profile = self.example_user("iago")
         self.subscribe(user_profile, "Denmark")
         self.send_stream_message(
             self.example_user("hamlet"), "Denmark", content="test @**Iago** rules"
@@ -1463,7 +1463,7 @@ class StreamMessagesTest(ZulipTestCase):
         ).flags.mentioned.is_set
 
     def test_is_private_flag(self) -> None:
-        user_profile = self.example_user('iago')
+        user_profile = self.example_user("iago")
         self.subscribe(user_profile, "Denmark")
 
         self.send_stream_message(self.example_user("hamlet"), "Denmark", content="test")
@@ -1483,7 +1483,7 @@ class StreamMessagesTest(ZulipTestCase):
         )
 
     def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> Set[int]:
-        with mock.patch('zerver.lib.actions.send_event') as m:
+        with mock.patch("zerver.lib.actions.send_event") as m:
             self.send_stream_message(
                 user,
                 stream_name,
@@ -1491,14 +1491,14 @@ class StreamMessagesTest(ZulipTestCase):
             )
         self.assertEqual(m.call_count, 1)
         users = m.call_args[0][2]
-        user_ids = {u['id'] for u in users}
+        user_ids = {u["id"] for u in users}
         return user_ids
 
     def test_unsub_mention(self) -> None:
-        cordelia = self.example_user('cordelia')
-        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
 
-        stream_name = 'Test Stream'
+        stream_name = "Test Stream"
 
         self.subscribe(hamlet, stream_name)
 
@@ -1507,7 +1507,7 @@ class StreamMessagesTest(ZulipTestCase):
         ).delete()
 
         def mention_cordelia() -> Set[int]:
-            content = 'test @**Cordelia Lear** rules'
+            content = "test @**Cordelia Lear** rules"
 
             user_ids = self._send_stream_message(
                 user=hamlet,
@@ -1534,24 +1534,24 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertEqual(1, num_cordelia_messages())
 
     def test_message_bot_mentions(self) -> None:
-        cordelia = self.example_user('cordelia')
-        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
-        stream_name = 'Test Stream'
+        stream_name = "Test Stream"
 
         self.subscribe(hamlet, stream_name)
 
         normal_bot = do_create_user(
-            email='normal-bot@zulip.com',
-            password='',
+            email="normal-bot@zulip.com",
+            password="",
             realm=realm,
-            full_name='Normal Bot',
+            full_name="Normal Bot",
             bot_type=UserProfile.DEFAULT_BOT,
             bot_owner=cordelia,
         )
 
-        content = 'test @**Normal Bot** rules'
+        content = "test @**Normal Bot** rules"
 
         user_ids = self._send_stream_message(
             user=hamlet,
@@ -1572,7 +1572,7 @@ class StreamMessagesTest(ZulipTestCase):
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=sub_count):
             if not test_fails:
                 msg_id = self.send_stream_message(sender, "test_stream", content)
-                result = self.api_get(sender, '/json/messages/' + str(msg_id))
+                result = self.api_get(sender, "/json/messages/" + str(msg_id))
                 self.assert_json_success(result)
 
             else:
@@ -1660,8 +1660,8 @@ class StreamMessagesTest(ZulipTestCase):
                 self.send_stream_message(cordelia, "test_stream", content)
 
     def test_stream_message_mirroring(self) -> None:
-        user = self.mit_user('starnine')
-        self.subscribe(user, 'Verona')
+        user = self.mit_user("starnine")
+        self.subscribe(user, "Verona")
 
         do_change_can_forge_sender(user, True)
         result = self.api_post(
@@ -1709,7 +1709,7 @@ class StreamMessagesTest(ZulipTestCase):
         Sending a stream message containing non-ASCII characters in the stream
         name, topic, or message body succeeds.
         """
-        self.login('hamlet')
+        self.login("hamlet")
 
         # Subscribe everyone to a stream with non-ASCII characters.
         non_ascii_stream_name = "hümbüǵ"
@@ -1724,11 +1724,11 @@ class StreamMessagesTest(ZulipTestCase):
 
     def test_get_raw_unread_data_for_huddle_messages(self) -> None:
         users = [
-            self.example_user('hamlet'),
-            self.example_user('cordelia'),
-            self.example_user('iago'),
-            self.example_user('prospero'),
-            self.example_user('othello'),
+            self.example_user("hamlet"),
+            self.example_user("cordelia"),
+            self.example_user("iago"),
+            self.example_user("prospero"),
+            self.example_user("othello"),
         ]
 
         message1_id = self.send_huddle_message(users[0], users, "test content 1")
@@ -1747,9 +1747,9 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertEqual(len(recent_conversations), 1)
         recent_conversation = list(recent_conversations.values())[0]
         self.assertEqual(
-            set(recent_conversation['user_ids']), {user.id for user in users if user != users[1]}
+            set(recent_conversation["user_ids"]), {user.id for user in users if user != users[1]}
         )
-        self.assertEqual(recent_conversation['max_message_id'], message2_id)
+        self.assertEqual(recent_conversation["max_message_id"], message2_id)
 
 
 class PersonalMessageSendTest(ZulipTestCase):
@@ -1758,14 +1758,14 @@ class PersonalMessageSendTest(ZulipTestCase):
         If you send a personal to yourself, only you see it.
         """
         old_user_profiles = list(UserProfile.objects.all())
-        test_email = self.nonreg_email('test1')
+        test_email = self.nonreg_email("test1")
         self.register(test_email, "test1")
 
         old_messages = []
         for user_profile in old_user_profiles:
             old_messages.append(message_stream_count(user_profile))
 
-        user_profile = self.nonreg_user('test1')
+        user_profile = self.nonreg_user("test1")
         self.send_personal_message(user_profile, user_profile)
 
         new_messages = []
@@ -1774,7 +1774,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         self.assertEqual(old_messages, new_messages)
 
-        user_profile = self.nonreg_user('test1')
+        user_profile = self.nonreg_user("test1")
         recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
         self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
@@ -1814,7 +1814,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         """
         If you send a personal, only you and the recipient see it.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         self.assert_personal(
             sender=self.example_user("hamlet"),
             receiver=self.example_user("othello"),
@@ -1841,7 +1841,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         """
         Sending a PM containing non-ASCII characters succeeds.
         """
-        self.login('hamlet')
+        self.login("hamlet")
         self.assert_personal(
             sender=self.example_user("hamlet"),
             receiver=self.example_user("othello"),
@@ -1852,11 +1852,11 @@ class PersonalMessageSendTest(ZulipTestCase):
 class ExtractTest(ZulipTestCase):
     def test_extract_stream_indicator(self) -> None:
         self.assertEqual(
-            extract_stream_indicator('development'),
+            extract_stream_indicator("development"),
             "development",
         )
         self.assertEqual(
-            extract_stream_indicator('commas,are,fine'),
+            extract_stream_indicator("commas,are,fine"),
             "commas,are,fine",
         )
         self.assertEqual(
@@ -1874,7 +1874,7 @@ class ExtractTest(ZulipTestCase):
         # by mid 2020 at the latest.
         self.assertEqual(
             extract_stream_indicator('["social"]'),
-            'social',
+            "social",
         )
 
         self.assertEqual(
@@ -1882,58 +1882,58 @@ class ExtractTest(ZulipTestCase):
             123,
         )
 
-        with self.assertRaisesRegex(JsonableError, 'Invalid data type for stream'):
-            extract_stream_indicator('{}')
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream"):
+            extract_stream_indicator("{}")
 
-        with self.assertRaisesRegex(JsonableError, 'Invalid data type for stream'):
-            extract_stream_indicator('[{}]')
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream"):
+            extract_stream_indicator("[{}]")
 
-        with self.assertRaisesRegex(JsonableError, 'Expected exactly one stream'):
+        with self.assertRaisesRegex(JsonableError, "Expected exactly one stream"):
             extract_stream_indicator('[1,2,"general"]')
 
     def test_extract_private_recipients_emails(self) -> None:
 
         # JSON list w/dups, empties, and trailing whitespace
-        s = orjson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com']).decode()
+        s = orjson.dumps([" alice@zulip.com ", " bob@zulip.com ", "   ", "bob@zulip.com"]).decode()
         # sorted() gets confused by extract_private_recipients' return type
         # For testing, ignorance here is better than manual casting
         result = sorted(extract_private_recipients(s))
-        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
+        self.assertEqual(result, ["alice@zulip.com", "bob@zulip.com"])
 
         # simple string with one name
-        s = 'alice@zulip.com    '
-        self.assertEqual(extract_private_recipients(s), ['alice@zulip.com'])
+        s = "alice@zulip.com    "
+        self.assertEqual(extract_private_recipients(s), ["alice@zulip.com"])
 
         # JSON-encoded string
         s = '"alice@zulip.com"'
-        self.assertEqual(extract_private_recipients(s), ['alice@zulip.com'])
+        self.assertEqual(extract_private_recipients(s), ["alice@zulip.com"])
 
         # bare comma-delimited string
-        s = 'bob@zulip.com, alice@zulip.com'
+        s = "bob@zulip.com, alice@zulip.com"
         result = sorted(extract_private_recipients(s))
-        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
+        self.assertEqual(result, ["alice@zulip.com", "bob@zulip.com"])
 
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
         result = sorted(extract_private_recipients(s))
-        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
+        self.assertEqual(result, ["alice@zulip.com", "bob@zulip.com"])
 
         # Invalid data
-        s = orjson.dumps(dict(color='red')).decode()
-        with self.assertRaisesRegex(JsonableError, 'Invalid data type for recipients'):
+        s = orjson.dumps(dict(color="red")).decode()
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for recipients"):
             extract_private_recipients(s)
 
         s = orjson.dumps([{}]).decode()
-        with self.assertRaisesRegex(JsonableError, 'Invalid data type for recipients'):
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for recipients"):
             extract_private_recipients(s)
 
         # Empty list
-        self.assertEqual(extract_private_recipients('[]'), [])
+        self.assertEqual(extract_private_recipients("[]"), [])
 
         # Heterogeneous lists are not supported
-        mixed = orjson.dumps(['eeshan@example.com', 3, 4]).decode()
+        mixed = orjson.dumps(["eeshan@example.com", 3, 4]).decode()
         with self.assertRaisesRegex(
-            JsonableError, 'Recipient lists may contain emails or user IDs, but not both.'
+            JsonableError, "Recipient lists may contain emails or user IDs, but not both."
         ):
             extract_private_recipients(mixed)
 
@@ -1945,13 +1945,13 @@ class ExtractTest(ZulipTestCase):
 
         # Invalid data
         ids = orjson.dumps(dict(recipient=12)).decode()
-        with self.assertRaisesRegex(JsonableError, 'Invalid data type for recipients'):
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for recipients"):
             extract_private_recipients(ids)
 
         # Heterogeneous lists are not supported
-        mixed = orjson.dumps([3, 4, 'eeshan@example.com']).decode()
+        mixed = orjson.dumps([3, 4, "eeshan@example.com"]).decode()
         with self.assertRaisesRegex(
-            JsonableError, 'Recipient lists may contain emails or user IDs, but not both.'
+            JsonableError, "Recipient lists may contain emails or user IDs, but not both."
         ):
             extract_private_recipients(mixed)
 
@@ -1963,12 +1963,12 @@ class InternalPrepTest(ZulipTestCase):
         # code, since we are generally creating the messages
         # ourselves, but we want to make sure that the functions
         # won't actually explode if we give them bad content.
-        bad_content = ''
-        realm = get_realm('zulip')
-        cordelia = self.example_user('cordelia')
-        hamlet = self.example_user('hamlet')
-        othello = self.example_user('othello')
-        stream = get_stream('Verona', realm)
+        bad_content = ""
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        stream = get_stream("Verona", realm)
 
         with self.assertLogs(level="ERROR") as m:
             internal_send_private_message(
@@ -1979,7 +1979,7 @@ class InternalPrepTest(ZulipTestCase):
             )
 
         self.assertEqual(
-            m.output[0].split('\n')[0],
+            m.output[0].split("\n")[0],
             "ERROR:root:Error queueing internal message by {}: {}".format(
                 "cordelia@zulip.com", "Message must not be empty"
             ),
@@ -1994,7 +1994,7 @@ class InternalPrepTest(ZulipTestCase):
             )
 
         self.assertEqual(
-            m.output[0].split('\n')[0],
+            m.output[0].split("\n")[0],
             "ERROR:root:Error queueing internal message by {}: {}".format(
                 "cordelia@zulip.com", "Message must not be empty"
             ),
@@ -2004,13 +2004,13 @@ class InternalPrepTest(ZulipTestCase):
             internal_send_stream_message(
                 realm=realm,
                 sender=cordelia,
-                topic='whatever',
+                topic="whatever",
                 content=bad_content,
                 stream=stream,
             )
 
         self.assertEqual(
-            m.output[0].split('\n')[0],
+            m.output[0].split("\n")[0],
             "ERROR:root:Error queueing internal message by {}: {}".format(
                 "cordelia@zulip.com", "Message must not be empty"
             ),
@@ -2021,40 +2021,40 @@ class InternalPrepTest(ZulipTestCase):
                 realm=realm,
                 sender=cordelia,
                 stream_name=stream.name,
-                topic='whatever',
+                topic="whatever",
                 content=bad_content,
             )
 
         self.assertEqual(
-            m.output[0].split('\n')[0],
+            m.output[0].split("\n")[0],
             "ERROR:root:Error queueing internal message by {}: {}".format(
                 "cordelia@zulip.com", "Message must not be empty"
             ),
         )
 
     def test_error_handling(self) -> None:
-        realm = get_realm('zulip')
-        sender = self.example_user('cordelia')
-        recipient_user = self.example_user('hamlet')
-        content = 'x' * 15000
+        realm = get_realm("zulip")
+        sender = self.example_user("cordelia")
+        recipient_user = self.example_user("hamlet")
+        content = "x" * 15000
 
         result = internal_prep_private_message(
             realm=realm, sender=sender, recipient_user=recipient_user, content=content
         )
         assert result is not None
         message = result.message
-        self.assertIn('message was too long', message.content)
+        self.assertIn("message was too long", message.content)
 
         # Simulate sending a message to somebody not in the
         # realm of the sender.
-        recipient_user = self.mit_user('starnine')
+        recipient_user = self.mit_user("starnine")
         with self.assertLogs(level="ERROR") as m:
             result = internal_prep_private_message(
                 realm=realm, sender=sender, recipient_user=recipient_user, content=content
             )
 
         self.assertEqual(
-            m.output[0].split('\n')[0],
+            m.output[0].split("\n")[0],
             "ERROR:root:Error queueing internal message by {}: {}".format(
                 "cordelia@zulip.com",
                 "You can't send private messages outside of your organization.",
@@ -2062,11 +2062,11 @@ class InternalPrepTest(ZulipTestCase):
         )
 
     def test_ensure_stream_gets_called(self) -> None:
-        realm = get_realm('zulip')
-        sender = self.example_user('cordelia')
-        stream_name = 'test_stream'
-        topic = 'whatever'
-        content = 'hello'
+        realm = get_realm("zulip")
+        sender = self.example_user("cordelia")
+        stream_name = "test_stream"
+        topic = "whatever"
+        content = "hello"
 
         internal_prep_stream_message_by_name(
             realm=realm, sender=sender, stream_name=stream_name, topic=topic, content=content
@@ -2085,34 +2085,34 @@ class TestCrossRealmPMs(ZulipTestCase):
 
     def create_user(self, email: str) -> UserProfile:
         subdomain = email.split("@")[1]
-        self.register(email, 'test', subdomain=subdomain)
+        self.register(email, "test", subdomain=subdomain)
         return get_user(email, get_realm(subdomain))
 
     @override_settings(
         CROSS_REALM_BOT_EMAILS=[
-            'notification-bot@zulip.com',
-            'welcome-bot@zulip.com',
-            'support@3.example.com',
+            "notification-bot@zulip.com",
+            "welcome-bot@zulip.com",
+            "support@3.example.com",
         ]
     )
     def test_realm_scenarios(self) -> None:
-        self.make_realm('1.example.com')
-        r2 = self.make_realm('2.example.com')
-        self.make_realm('3.example.com')
+        self.make_realm("1.example.com")
+        r2 = self.make_realm("2.example.com")
+        self.make_realm("3.example.com")
 
         def assert_message_received(to_user: UserProfile, from_user: UserProfile) -> None:
             messages = get_user_messages(to_user)
             self.assertEqual(messages[-1].sender.id, from_user.id)
 
         def assert_invalid_user() -> Any:
-            return self.assertRaisesRegex(JsonableError, 'Invalid user ID ')
+            return self.assertRaisesRegex(JsonableError, "Invalid user ID ")
 
-        user1_email = 'user1@1.example.com'
-        user1a_email = 'user1a@1.example.com'
-        user2_email = 'user2@2.example.com'
-        user3_email = 'user3@3.example.com'
-        notification_bot_email = 'notification-bot@zulip.com'
-        support_email = 'support@3.example.com'  # note: not zulip.com
+        user1_email = "user1@1.example.com"
+        user1a_email = "user1a@1.example.com"
+        user2_email = "user2@2.example.com"
+        user3_email = "user3@3.example.com"
+        notification_bot_email = "notification-bot@zulip.com"
+        support_email = "support@3.example.com"  # note: not zulip.com
 
         user1 = self.create_user(user1_email)
         user1a = self.create_user(user1a_email)
@@ -2120,7 +2120,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         user3 = self.create_user(user3_email)
         notification_bot = get_system_bot(notification_bot_email)
         with self.settings(
-            CROSS_REALM_BOT_EMAILS=['notification-bot@zulip.com', 'welcome-bot@zulip.com']
+            CROSS_REALM_BOT_EMAILS=["notification-bot@zulip.com", "welcome-bot@zulip.com"]
         ):
             # HACK: We should probably be creating this "bot" user another
             # way, but since you can't register a user with a
@@ -2141,7 +2141,7 @@ class TestCrossRealmPMs(ZulipTestCase):
             realm=r2,
             sender=get_system_bot(notification_bot_email),
             recipient_user=get_user(user2_email, r2),
-            content='bla',
+            content="bla",
         )
         assert_message_received(user2, notification_bot)
 
@@ -2183,7 +2183,7 @@ class TestCrossRealmPMs(ZulipTestCase):
 
         # Users on non-zulip realms can't PM "ordinary" Zulip users
         with assert_invalid_user():
-            self.send_personal_message(user1, self.example_user('hamlet'))
+            self.send_personal_message(user1, self.example_user("hamlet"))
 
         # Users on three different realms cannot PM each other
         with assert_invalid_user():
@@ -2192,11 +2192,11 @@ class TestCrossRealmPMs(ZulipTestCase):
 
 class TestAddressee(ZulipTestCase):
     def test_addressee_for_user_ids(self) -> None:
-        realm = get_realm('zulip')
+        realm = get_realm("zulip")
         user_ids = [
-            self.example_user('cordelia').id,
-            self.example_user('hamlet').id,
-            self.example_user('othello').id,
+            self.example_user("cordelia").id,
+            self.example_user("hamlet").id,
+            self.example_user("othello").id,
         ]
 
         result = Addressee.for_user_ids(user_ids=user_ids, realm=realm)
@@ -2207,21 +2207,21 @@ class TestAddressee(ZulipTestCase):
 
     def test_addressee_for_user_ids_nonexistent_id(self) -> None:
         def assert_invalid_user_id() -> Any:
-            return self.assertRaisesRegex(JsonableError, 'Invalid user ID ')
+            return self.assertRaisesRegex(JsonableError, "Invalid user ID ")
 
         with assert_invalid_user_id():
-            Addressee.for_user_ids(user_ids=[779], realm=get_realm('zulip'))
+            Addressee.for_user_ids(user_ids=[779], realm=get_realm("zulip"))
 
     def test_addressee_legacy_build_for_user_ids(self) -> None:
-        realm = get_realm('zulip')
-        self.login('hamlet')
-        user_ids = [self.example_user('cordelia').id, self.example_user('othello').id]
+        realm = get_realm("zulip")
+        self.login("hamlet")
+        user_ids = [self.example_user("cordelia").id, self.example_user("othello").id]
 
         result = Addressee.legacy_build(
-            sender=self.example_user('hamlet'),
-            message_type_name='private',
+            sender=self.example_user("hamlet"),
+            message_type_name="private",
             message_to=user_ids,
-            topic_name='random_topic',
+            topic_name="random_topic",
             realm=realm,
         )
         user_profiles = result.user_profiles()
@@ -2230,17 +2230,17 @@ class TestAddressee(ZulipTestCase):
         self.assertEqual(set(result_user_ids), set(user_ids))
 
     def test_addressee_legacy_build_for_stream_id(self) -> None:
-        realm = get_realm('zulip')
-        self.login('iago')
-        sender = self.example_user('iago')
+        realm = get_realm("zulip")
+        self.login("iago")
+        sender = self.example_user("iago")
         self.subscribe(sender, "Denmark")
-        stream = get_stream('Denmark', realm)
+        stream = get_stream("Denmark", realm)
 
         result = Addressee.legacy_build(
             sender=sender,
-            message_type_name='stream',
+            message_type_name="stream",
             message_to=[stream.id],
-            topic_name='random_topic',
+            topic_name="random_topic",
             realm=realm,
         )
 
@@ -2250,12 +2250,12 @@ class TestAddressee(ZulipTestCase):
 
 class CheckMessageTest(ZulipTestCase):
     def test_basic_check_message_call(self) -> None:
-        sender = self.example_user('othello')
+        sender = self.example_user("othello")
         client = make_client(name="test suite")
-        stream_name = 'España y Francia'
+        stream_name = "España y Francia"
         self.make_stream(stream_name)
-        topic_name = 'issue'
-        message_content = 'whatever'
+        topic_name = "issue"
+        message_content = "whatever"
         addressee = Addressee.for_stream_name(stream_name, topic_name)
         ret = check_message(sender, client, addressee, message_content)
         self.assertEqual(ret.message.sender.id, sender.id)
@@ -2273,8 +2273,8 @@ class CheckMessageTest(ZulipTestCase):
         self.assertFalse(is_sender_subscriber)
         self.assertTrue(rome_stream.is_web_public)
 
-        topic_name = 'issue'
-        message_content = 'whatever'
+        topic_name = "issue"
+        message_content = "whatever"
         addressee = Addressee.for_stream_name(rome_stream.name, topic_name)
         ret = check_message(sender, client, addressee, message_content)
         self.assertEqual(ret.message.sender.id, sender.id)
@@ -2282,12 +2282,12 @@ class CheckMessageTest(ZulipTestCase):
     def test_bot_pm_feature(self) -> None:
         """We send a PM to a bot's owner if their bot sends a message to
         an unsubscribed stream"""
-        parent = self.example_user('othello')
+        parent = self.example_user("othello")
         bot = do_create_user(
-            email='othello-bot@zulip.com',
-            password='',
+            email="othello-bot@zulip.com",
+            password="",
             realm=parent.realm,
-            full_name='',
+            full_name="",
             bot_type=UserProfile.DEFAULT_BOT,
             bot_owner=parent,
         )
@@ -2295,10 +2295,10 @@ class CheckMessageTest(ZulipTestCase):
 
         sender = bot
         client = make_client(name="test suite")
-        stream_name = 'Россия'
-        topic_name = 'issue'
+        stream_name = "Россия"
+        topic_name = "issue"
         addressee = Addressee.for_stream_name(stream_name, topic_name)
-        message_content = 'whatever'
+        message_content = "whatever"
         old_count = message_stream_count(parent)
 
         # Try sending to stream that doesn't exist sends a reminder to
@@ -2327,17 +2327,17 @@ class CheckMessageTest(ZulipTestCase):
 
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 2)
-        self.assertEqual(ret.message.sender.email, 'othello-bot@zulip.com')
+        self.assertEqual(ret.message.sender.email, "othello-bot@zulip.com")
         self.assertIn("does not have any subscribers", most_recent_message(parent).content)
 
     def test_bot_pm_error_handling(self) -> None:
         # This just test some defensive code.
-        cordelia = self.example_user('cordelia')
+        cordelia = self.example_user("cordelia")
         test_bot = self.create_test_bot(
-            short_name='test',
+            short_name="test",
             user_profile=cordelia,
         )
-        content = 'whatever'
+        content = "whatever"
         good_realm = test_bot.realm
         wrong_realm = get_realm("zephyr")
         wrong_sender = cordelia

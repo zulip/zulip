@@ -106,15 +106,15 @@ def install_venv_deps(pip: str, requirements_file: str) -> None:
 
 
 def get_index_filename(venv_path: str) -> str:
-    return os.path.join(venv_path, 'package_index')
+    return os.path.join(venv_path, "package_index")
 
 
 def get_package_names(requirements_file: str) -> List[str]:
     packages = expand_reqs(requirements_file)
     cleaned = []
-    operators = ['~=', '==', '!=', '<', '>']
+    operators = ["~=", "==", "!=", "<", ">"]
     for package in packages:
-        if package.startswith("git+https://") and '#egg=' in package:
+        if package.startswith("git+https://") and "#egg=" in package:
             split_package = package.split("#egg=")
             if len(split_package) != 2:
                 raise Exception("Unexpected duplicate #egg in package {}".format(package))
@@ -141,9 +141,9 @@ def create_requirements_index_file(venv_path: str, requirements_file: str) -> st
     """
     index_filename = get_index_filename(venv_path)
     packages = get_package_names(requirements_file)
-    with open(index_filename, 'w') as writer:
-        writer.write('\n'.join(packages))
-        writer.write('\n')
+    with open(index_filename, "w") as writer:
+        writer.write("\n".join(packages))
+        writer.write("\n")
 
     return index_filename
 
@@ -154,7 +154,7 @@ def get_venv_packages(venv_path: str) -> Set[str]:
     package index file.
     """
     with open(get_index_filename(venv_path)) as reader:
-        return {p.strip() for p in reader.read().split('\n') if p.strip()}
+        return {p.strip() for p in reader.read().split("\n") if p.strip()}
 
 
 def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
@@ -205,7 +205,7 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
         # Here, we select the old virtualenv with the largest overlap
         overlaps = sorted(overlaps)
         _, source_venv_path, copied_packages = overlaps[-1]
-        print('Copying packages from {}'.format(source_venv_path))
+        print("Copying packages from {}".format(source_venv_path))
         clone_ve = "{}/bin/virtualenv-clone".format(source_venv_path)
         cmd = [clone_ve, source_venv_path, venv_path]
 
@@ -227,7 +227,7 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
         # right fix is to use
         # https://github.com/edwardgeorge/virtualenv-clone/pull/38,
         # but this rm is almost as good.
-        success_stamp_path = os.path.join(venv_path, 'success-stamp')
+        success_stamp_path = os.path.join(venv_path, "success-stamp")
         run_as_root(["rm", "-f", success_stamp_path])
 
         run_as_root(["chown", "-R", "{}:{}".format(os.getuid(), os.getgid()), venv_path])
@@ -253,15 +253,15 @@ def create_log_entry(
 ) -> None:
 
     venv_path = os.path.dirname(target_log)
-    with open(target_log, 'a') as writer:
+    with open(target_log, "a") as writer:
         writer.write("{}\n".format(venv_path))
         if copied_packages:
             writer.write("Copied from {}:\n".format(parent))
-            writer.write("\n".join('- {}'.format(p) for p in sorted(copied_packages)))
+            writer.write("\n".join("- {}".format(p) for p in sorted(copied_packages)))
             writer.write("\n")
 
         writer.write("New packages:\n")
-        writer.write("\n".join('- {}'.format(p) for p in sorted(new_packages)))
+        writer.write("\n".join("- {}".format(p) for p in sorted(new_packages)))
         writer.write("\n\n")
 
 
@@ -281,15 +281,15 @@ def do_patch_activate_script(venv_path: str) -> None:
     with open(script_path) as f:
         lines = f.readlines()
     for i, line in enumerate(lines):
-        if line.startswith('VIRTUAL_ENV='):
+        if line.startswith("VIRTUAL_ENV="):
             lines[i] = 'VIRTUAL_ENV="{}"\n'.format(venv_path)
 
-    with open(script_path, 'w') as f:
+    with open(script_path, "w") as f:
         f.write("".join(lines))
 
 
 def generate_hash(requirements_file: str) -> str:
-    path = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
+    path = os.path.join(ZULIP_PATH, "scripts", "lib", "hash_reqs.py")
     output = subprocess.check_output([path, requirements_file], universal_newlines=True)
     return output.split()[0]
 
@@ -303,7 +303,7 @@ def setup_virtualenv(
     sha1sum = generate_hash(requirements_file)
     # Check if a cached version already exists
     if target_venv_path is None:
-        cached_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, 'venv')
+        cached_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, "venv")
     else:
         cached_venv_path = os.path.join(
             VENV_CACHE_PATH, sha1sum, os.path.basename(target_venv_path)
@@ -311,7 +311,7 @@ def setup_virtualenv(
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
     if not os.path.exists(success_stamp):
         do_setup_virtualenv(cached_venv_path, requirements_file)
-        with open(success_stamp, 'w') as f:
+        with open(success_stamp, "w") as f:
             f.close()
 
     print("Using cached Python venv from {}".format(cached_venv_path))
@@ -347,7 +347,7 @@ def do_setup_virtualenv(venv_path: str, requirements_file: str) -> None:
     pip = os.path.join(venv_path, "bin", "pip")
 
     # use custom certificate if needed
-    if os.environ.get('CUSTOM_CA_CERTIFICATES'):
+    if os.environ.get("CUSTOM_CA_CERTIFICATES"):
         print("Configuring pip to use custom CA certificates...")
         add_cert_to_pipconf()
 

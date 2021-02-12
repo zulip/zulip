@@ -89,7 +89,7 @@ EVENT_FUNCTION_MAPPER = {
 def api_harbor_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     operator_username = "**{}**".format(payload["operator"])

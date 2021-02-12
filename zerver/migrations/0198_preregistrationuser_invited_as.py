@@ -28,13 +28,13 @@ def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0197_azure_active_directory_auth'),
+        ("zerver", "0197_azure_active_directory_auth"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='preregistrationuser',
-            name='invited_as',
+            model_name="preregistrationuser",
+            name="invited_as",
             field=models.PositiveSmallIntegerField(default=1),
         ),
         migrations.RunPython(

@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0132_realm_message_visibility_limit'),
+        ("zerver", "0132_realm_message_visibility_limit"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='BotUserConfigData',
-            new_name='BotConfigData',
+            old_name="BotUserConfigData",
+            new_name="BotConfigData",
         ),
     ]

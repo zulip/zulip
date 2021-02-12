@@ -26,8 +26,8 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         fill_state = self.get_fill_state()
-        status = fill_state['status']
-        message = fill_state['message']
+        status = fill_state["status"]
+        message = fill_state["message"]
 
         state_file_path = "/var/lib/nagios_state/check-analytics-state"
         state_file_tmp = state_file_path + "-tmp"
@@ -38,7 +38,7 @@ class Command(BaseCommand):
 
     def get_fill_state(self) -> Dict[str, Any]:
         if not Realm.objects.exists():
-            return {'status': 0, 'message': 'No realms exist, so not checking FillState.'}
+            return {"status": 0, "message": "No realms exist, so not checking FillState."}
 
         warning_unfilled_properties = []
         critical_unfilled_properties = []
@@ -49,7 +49,7 @@ class Command(BaseCommand):
             try:
                 verify_UTC(last_fill)
             except TimezoneNotUTCException:
-                return {'status': 2, 'message': f'FillState not in UTC for {property}'}
+                return {"status": 2, "message": f"FillState not in UTC for {property}"}
 
             if stat.frequency == CountStat.DAY:
                 floor_function = floor_to_day
@@ -62,8 +62,8 @@ class Command(BaseCommand):
 
             if floor_function(last_fill) != last_fill:
                 return {
-                    'status': 2,
-                    'message': f'FillState not on {stat.frequency} boundary for {property}',
+                    "status": 2,
+                    "message": f"FillState not on {stat.frequency} boundary for {property}",
                 }
 
             time_to_last_fill = timezone_now() - last_fill
@@ -73,18 +73,18 @@ class Command(BaseCommand):
                 warning_unfilled_properties.append(property)
 
         if len(critical_unfilled_properties) == 0 and len(warning_unfilled_properties) == 0:
-            return {'status': 0, 'message': 'FillState looks fine.'}
+            return {"status": 0, "message": "FillState looks fine."}
         if len(critical_unfilled_properties) == 0:
             return {
-                'status': 1,
-                'message': 'Missed filling {} once.'.format(
-                    ', '.join(warning_unfilled_properties),
+                "status": 1,
+                "message": "Missed filling {} once.".format(
+                    ", ".join(warning_unfilled_properties),
                 ),
             }
         return {
-            'status': 2,
-            'message': 'Missed filling {} once. Missed filling {} at least twice.'.format(
-                ', '.join(warning_unfilled_properties),
-                ', '.join(critical_unfilled_properties),
+            "status": 2,
+            "message": "Missed filling {} once. Missed filling {} at least twice.".format(
+                ", ".join(warning_unfilled_properties),
+                ", ".join(critical_unfilled_properties),
             ),
         }

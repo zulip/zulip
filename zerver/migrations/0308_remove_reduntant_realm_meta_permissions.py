@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0307_rename_api_super_user_to_can_forge_sender'),
+        ("zerver", "0307_rename_api_super_user_to_can_forge_sender"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='realm',
+            name="realm",
             options={},
         ),
     ]

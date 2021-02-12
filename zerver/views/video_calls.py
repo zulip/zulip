@@ -188,9 +188,9 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
         "/calls/bigbluebutton/join",
         urlencode(
             {
-                "meeting_id": "\"" + id + "\"",
-                "password": "\"" + password + "\"",
-                "checksum": "\"" + checksum + "\"",
+                "meeting_id": '"' + id + '"',
+                "password": '"' + password + '"',
+                "checksum": '"' + checksum + '"',
             }
         ),
     )

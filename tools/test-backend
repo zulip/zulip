@@ -23,117 +23,117 @@ from django.conf import settings
 from django.test.utils import get_runner
 
 target_fully_covered = [
-    'analytics/lib/*.py',
-    'analytics/models.py',
-    'analytics/tests/*.py',
-    'analytics/views.py',
+    "analytics/lib/*.py",
+    "analytics/models.py",
+    "analytics/tests/*.py",
+    "analytics/views.py",
     # zerver/ and zerver/lib/ are important core files
-    'zerver/*.py',
-    'zerver/lib/*.py',
-    'zerver/lib/*/*.py',
-    'zerver/lib/*/*/*.py',
-    'zerver/data_import/*.py',
-    'zerver/templatetags/*.py',
-    'zerver/tornado/*.py',
+    "zerver/*.py",
+    "zerver/lib/*.py",
+    "zerver/lib/*/*.py",
+    "zerver/lib/*/*/*.py",
+    "zerver/data_import/*.py",
+    "zerver/templatetags/*.py",
+    "zerver/tornado/*.py",
     # Billing files require 100% test coverage
-    'corporate/lib/stripe.py',
-    'corporate/views.py',
+    "corporate/lib/stripe.py",
+    "corporate/views.py",
     # Test files should have 100% coverage; test code that isn't run
     # is likely a bug in the test.
-    'zerver/tests/*.py',
-    'corporate/tests/*.py',
+    "zerver/tests/*.py",
+    "corporate/tests/*.py",
     # As a project, we require 100% test coverage in the views files.
-    'zerver/views/*.py',
-    'zproject/backends.py',
-    'confirmation/*.py',
-    'zerver/webhooks/*/*.py',
+    "zerver/views/*.py",
+    "zproject/backends.py",
+    "confirmation/*.py",
+    "zerver/webhooks/*/*.py",
     # Once we have a nice negative tests system, we can add these:
     # 'zerver/webhooks/*/*.py',
     # 'zerver/webhooks/*/*/*.py',
-    'zerver/worker/*.py',
+    "zerver/worker/*.py",
 ]
 
 not_yet_fully_covered = [
     # Analytics fixtures library is used to generate test fixtures;
     # isn't properly accounted for in test coverage analysis since it
     # runs before tests.
-    'analytics/lib/fixtures.py',
+    "analytics/lib/fixtures.py",
     # We have 100% coverage on the new stuff; need to refactor old stuff.
-    'analytics/views.py',
+    "analytics/views.py",
     # Major lib files should have 100% coverage
-    'zerver/lib/addressee.py',
-    'zerver/lib/markdown/__init__.py',
-    'zerver/lib/cache.py',
-    'zerver/lib/cache_helpers.py',
-    'zerver/lib/i18n.py',
-    'zerver/lib/email_notifications.py',
-    'zerver/lib/send_email.py',
-    'zerver/lib/url_preview/preview.py',
-    'zerver/worker/queue_processors.py',
+    "zerver/lib/addressee.py",
+    "zerver/lib/markdown/__init__.py",
+    "zerver/lib/cache.py",
+    "zerver/lib/cache_helpers.py",
+    "zerver/lib/i18n.py",
+    "zerver/lib/email_notifications.py",
+    "zerver/lib/send_email.py",
+    "zerver/lib/url_preview/preview.py",
+    "zerver/worker/queue_processors.py",
     # Markdown sub-libs should have full coverage too; a lot are really close
-    'zerver/lib/markdown/api_arguments_table_generator.py',
-    'zerver/lib/markdown/fenced_code.py',
-    'zerver/lib/markdown/help_relative_links.py',
-    'zerver/lib/markdown/nested_code_blocks.py',
+    "zerver/lib/markdown/api_arguments_table_generator.py",
+    "zerver/lib/markdown/fenced_code.py",
+    "zerver/lib/markdown/help_relative_links.py",
+    "zerver/lib/markdown/nested_code_blocks.py",
     # Other lib files that ideally would coverage, but aren't sorted
-    'zerver/__init__.py',
-    'zerver/filters.py',
-    'zerver/middleware.py',
-    'zerver/lib/bot_lib.py',
-    'zerver/lib/camo.py',
-    'zerver/lib/debug.py',
-    'zerver/lib/digest.py',
-    'zerver/lib/error_notify.py',
-    'zerver/lib/export.py',
-    'zerver/lib/fix_unreads.py',
-    'zerver/lib/html_diff.py',
-    'zerver/lib/import_realm.py',
-    'zerver/lib/logging_util.py',
-    'zerver/lib/migrate.py',
-    'zerver/lib/outgoing_webhook.py',
-    'zerver/lib/profile.py',
-    'zerver/lib/queue.py',
-    'zerver/lib/sqlalchemy_utils.py',
-    'zerver/lib/storage.py',
-    'zerver/lib/timeout.py',
-    'zerver/lib/unminify.py',
-    'zerver/lib/utils.py',
-    'zerver/lib/zephyr.py',
-    'zerver/templatetags/app_filters.py',
-    'zerver/templatetags/minified_js.py',
+    "zerver/__init__.py",
+    "zerver/filters.py",
+    "zerver/middleware.py",
+    "zerver/lib/bot_lib.py",
+    "zerver/lib/camo.py",
+    "zerver/lib/debug.py",
+    "zerver/lib/digest.py",
+    "zerver/lib/error_notify.py",
+    "zerver/lib/export.py",
+    "zerver/lib/fix_unreads.py",
+    "zerver/lib/html_diff.py",
+    "zerver/lib/import_realm.py",
+    "zerver/lib/logging_util.py",
+    "zerver/lib/migrate.py",
+    "zerver/lib/outgoing_webhook.py",
+    "zerver/lib/profile.py",
+    "zerver/lib/queue.py",
+    "zerver/lib/sqlalchemy_utils.py",
+    "zerver/lib/storage.py",
+    "zerver/lib/timeout.py",
+    "zerver/lib/unminify.py",
+    "zerver/lib/utils.py",
+    "zerver/lib/zephyr.py",
+    "zerver/templatetags/app_filters.py",
+    "zerver/templatetags/minified_js.py",
     # Low priority for coverage
-    'zerver/lib/ccache.py',
-    'zerver/lib/generate_test_data.py',
-    'zerver/lib/server_initialization.py',
-    'zerver/lib/test_fixtures.py',
-    'zerver/lib/test_runner.py',
-    'zerver/lib/test_console_output.py',
-    'zerver/openapi/python_examples.py',
+    "zerver/lib/ccache.py",
+    "zerver/lib/generate_test_data.py",
+    "zerver/lib/server_initialization.py",
+    "zerver/lib/test_fixtures.py",
+    "zerver/lib/test_runner.py",
+    "zerver/lib/test_console_output.py",
+    "zerver/openapi/python_examples.py",
     # Tornado should ideally have full coverage, but we're not there.
-    'zerver/tornado/autoreload.py',
-    'zerver/tornado/descriptors.py',
-    'zerver/tornado/django_api.py',
-    'zerver/tornado/event_queue.py',
-    'zerver/tornado/exceptions.py',
-    'zerver/tornado/handlers.py',
-    'zerver/tornado/ioloop_logging.py',
-    'zerver/tornado/sharding.py',
-    'zerver/tornado/views.py',
+    "zerver/tornado/autoreload.py",
+    "zerver/tornado/descriptors.py",
+    "zerver/tornado/django_api.py",
+    "zerver/tornado/event_queue.py",
+    "zerver/tornado/exceptions.py",
+    "zerver/tornado/handlers.py",
+    "zerver/tornado/ioloop_logging.py",
+    "zerver/tornado/sharding.py",
+    "zerver/tornado/views.py",
     # Data import files; relatively low priority
-    'zerver/data_import/sequencer.py',
-    'zerver/data_import/slack.py',
-    'zerver/data_import/gitter.py',
-    'zerver/data_import/import_util.py',
+    "zerver/data_import/sequencer.py",
+    "zerver/data_import/slack.py",
+    "zerver/data_import/gitter.py",
+    "zerver/data_import/import_util.py",
     # Webhook integrations with incomplete coverage
-    'zerver/webhooks/greenhouse/view.py',
-    'zerver/webhooks/jira/view.py',
-    'zerver/webhooks/librato/view.py',
-    'zerver/webhooks/pivotal/view.py',
-    'zerver/webhooks/semaphore/view.py',
-    'zerver/webhooks/solano/view.py',
-    'zerver/webhooks/teamcity/view.py',
-    'zerver/webhooks/travis/view.py',
-    'zerver/webhooks/zapier/view.py',
+    "zerver/webhooks/greenhouse/view.py",
+    "zerver/webhooks/jira/view.py",
+    "zerver/webhooks/librato/view.py",
+    "zerver/webhooks/pivotal/view.py",
+    "zerver/webhooks/semaphore/view.py",
+    "zerver/webhooks/solano/view.py",
+    "zerver/webhooks/teamcity/view.py",
+    "zerver/webhooks/travis/view.py",
+    "zerver/webhooks/zapier/view.py",
 ]
 
 enforce_fully_covered = sorted(
@@ -141,7 +141,7 @@ enforce_fully_covered = sorted(
     - {path for target in not_yet_fully_covered for path in glob.glob(target)}
 )
 
-FAILED_TEST_PATH = 'var/last_test_failure.json'
+FAILED_TEST_PATH = "var/last_test_failure.json"
 
 
 def get_failed_tests() -> List[str]:
@@ -155,7 +155,7 @@ def get_failed_tests() -> List[str]:
 
 def write_failed_tests(failed_tests: List[str]) -> None:
     if failed_tests:
-        with open(FAILED_TEST_PATH, 'wb') as f:
+        with open(FAILED_TEST_PATH, "wb") as f:
             f.write(orjson.dumps(failed_tests))
 
 
@@ -163,7 +163,7 @@ def write_failed_tests(failed_tests: List[str]) -> None:
 def block_internet() -> Iterator[None]:
     # Monkey-patching - responses library raises requests.ConnectionError when access to an unregistered URL
     # is attempted. We want to replace that with our own exception, so that it propagates all the way:
-    with mock.patch.object(responses, 'ConnectionError', new=ZulipInternetBlockedError):
+    with mock.patch.object(responses, "ConnectionError", new=ZulipInternetBlockedError):
         # We'll run all tests in this context manager. It'll cause an error to be raised (see above comment),
         # if any code attempts to access the internet.
         with responses.RequestsMock():
@@ -198,9 +198,9 @@ def main() -> None:
         update_test_databases_if_required,
     )
 
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
+    os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.test_settings"
     # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
-    os.environ['PYTHONUNBUFFERED'] = 'y'
+    os.environ["PYTHONUNBUFFERED"] = "y"
 
     usage = """test-backend [options]
     test-backend # Runs all backend tests
@@ -217,38 +217,38 @@ def main() -> None:
     )
 
     parser.add_argument(
-        '--nonfatal-errors',
+        "--nonfatal-errors",
         action="store_false",
         dest="fatal_errors",
         help="Continue past test failures to run all tests",
     )
-    parser.add_argument('--coverage', action="store_true", help='Compute test coverage.')
+    parser.add_argument("--coverage", action="store_true", help="Compute test coverage.")
     parser.add_argument(
-        '--verbose-coverage', action="store_true", help='Enable verbose print of coverage report.'
+        "--verbose-coverage", action="store_true", help="Enable verbose print of coverage report."
     )
     parser.add_argument(
-        '--no-cov-cleanup', action='store_true', help="Do not clean generated coverage files."
+        "--no-cov-cleanup", action="store_true", help="Do not clean generated coverage files."
     )
 
     parser.add_argument(
-        '--parallel',
-        dest='processes',
+        "--parallel",
+        dest="processes",
         type=int,
         default=default_parallel,
-        help='Specify the number of processes to run the '
-        'tests in. Default is the number of logical CPUs',
+        help="Specify the number of processes to run the "
+        "tests in. Default is the number of logical CPUs",
     )
-    parser.add_argument('--profile', action="store_true", help='Profile test runtime.')
-    parser.add_argument('--force', action="store_true", help='Run tests despite possible problems.')
+    parser.add_argument("--profile", action="store_true", help="Profile test runtime.")
+    parser.add_argument("--force", action="store_true", help="Run tests despite possible problems.")
     parser.add_argument(
-        '--no-shallow',
+        "--no-shallow",
         action="store_true",
         help="Don't allow shallow testing of templates (deprecated)",
     )
-    parser.add_argument('--verbose', action="store_true", help="Show detailed output")
-    parser.add_argument('--reverse', action="store_true", help="Run tests in reverse order.")
+    parser.add_argument("--verbose", action="store_true", help="Show detailed output")
+    parser.add_argument("--reverse", action="store_true", help="Run tests in reverse order.")
     parser.add_argument(
-        '--rerun',
+        "--rerun",
         action="store_true",
         help=(
             "Run the tests which failed the last time "
@@ -256,20 +256,20 @@ def main() -> None:
         ),
     )
     parser.add_argument(
-        '--include-webhooks',
+        "--include-webhooks",
         action="store_true",
         help=("Include webhook tests.  By default, they are skipped for performance."),
     )
     parser.add_argument(
-        '--generate-stripe-fixtures',
+        "--generate-stripe-fixtures",
         action="store_true",
         help=("Generate Stripe test fixtures by making requests to Stripe test network"),
     )
-    parser.add_argument('args', nargs='*')
+    parser.add_argument("args", nargs="*")
     parser.add_argument(
-        '--ban-console-output',
+        "--ban-console-output",
         action="store_true",
-        help='Require stdout and stderr to be clean of unexpected output.',
+        help="Require stdout and stderr to be clean of unexpected output.",
     )
 
     options = parser.parse_args()
@@ -283,7 +283,7 @@ def main() -> None:
     if parallel < 1:
         raise argparse.ArgumentTypeError("option processes: Only positive integers are allowed.")
 
-    zerver_test_dir = 'zerver/tests/'
+    zerver_test_dir = "zerver/tests/"
 
     # While running --rerun, we read var/last_test_failure.json to get
     # the list of tests that failed on the last run, and then pretend
@@ -302,7 +302,7 @@ def main() -> None:
 
         # to transform forward slashes '/' present in the argument into dots '.'
         for i, suite in enumerate(args):
-            args[i] = suite.rstrip('/').replace("/", ".")
+            args[i] = suite.rstrip("/").replace("/", ".")
 
         def rewrite_arguments(search_key: str) -> None:
             for root, dirs, files_names in os.walk(zerver_test_dir, topdown=False):
@@ -321,13 +321,13 @@ def main() -> None:
 
         for suite in args:
             if suite[0].isupper() and "test_" in suite:
-                classname = suite.rsplit('.', 1)[0]
+                classname = suite.rsplit(".", 1)[0]
                 rewrite_arguments(classname)
             elif suite[0].isupper():
-                rewrite_arguments(f'class {suite}(')
+                rewrite_arguments(f"class {suite}(")
 
         for i, suite in enumerate(args):
-            if suite.startswith('test'):
+            if suite.startswith("test"):
                 for root, dirs, files_names in os.walk(zerver_test_dir):
                     for file_name in files_names:
                         if file_name == suite or file_name == suite + ".py":
@@ -371,7 +371,7 @@ def main() -> None:
         import coverage
 
         cov = coverage.Coverage(
-            data_suffix="", config_file="tools/coveragerc", concurrency='multiprocessing'
+            data_suffix="", config_file="tools/coveragerc", concurrency="multiprocessing"
         )
         # Do not clean .coverage file in CircleCi job so that coverage data can be uploaded.
         if not options.no_cov_cleanup:
@@ -388,7 +388,7 @@ def main() -> None:
     # This is kind of hacky, but it's the most reliable way
     # to make sure instrumentation decorators know the
     # setting when they run.
-    os.environ['TEST_INSTRUMENT_URL_COVERAGE'] = 'TRUE'
+    os.environ["TEST_INSTRUMENT_URL_COVERAGE"] = "TRUE"
 
     # setup() needs to be called after coverage is started to get proper coverage reports of model
     # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
@@ -396,7 +396,7 @@ def main() -> None:
 
     update_test_databases_if_required()
 
-    subprocess.check_call(['tools/webpack', '--test'])
+    subprocess.check_call(["tools/webpack", "--test"])
 
     TestRunner = get_runner(settings)
 
@@ -424,7 +424,7 @@ def main() -> None:
         missed_count = len(templates_not_rendered)
         print(f"\nError: {missed_count} templates have no tests!")
         for template in templates_not_rendered:
-            print(f'  {template}')
+            print(f"  {template}")
         print("See zerver/tests/test_templates.py for the exclude list.")
         failures = True
 
@@ -436,7 +436,7 @@ def main() -> None:
         if options.verbose_coverage:
             print("Printing coverage data")
             cov.report(show_missing=False)
-        cov.html_report(directory='var/coverage')
+        cov.html_report(directory="var/coverage")
         print("HTML report saved; visit at http://127.0.0.1:9991/coverage/index.html")
     if full_suite and not failures and options.coverage:
         # Assert that various files have full coverage
@@ -473,7 +473,7 @@ def main() -> None:
             failures = True
     if options.profile:
         prof.disable()
-        with tempfile.NamedTemporaryFile(prefix='profile.data.', delete=False) as stats_file:
+        with tempfile.NamedTemporaryFile(prefix="profile.data.", delete=False) as stats_file:
             prof.dump_stats(stats_file.name)
             print(f"Profile data saved to {stats_file.name}")
             print(f"You can visualize it using e.g. `snakeviz {shlex.quote(stats_file.name)}`")

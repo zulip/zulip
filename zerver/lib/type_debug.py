@@ -6,43 +6,43 @@ from typing import IO, Any, Callable, Mapping, Sequence, TypeVar, cast
 def get_mapping_type_str(x: Mapping[Any, Any]) -> str:
     container_type = type(x).__name__
     if not x:
-        if container_type == 'dict':
-            return '{}'
+        if container_type == "dict":
+            return "{}"
         else:
-            return container_type + '([])'
+            return container_type + "([])"
     key = next(iter(x))
     key_type = get_type_str(key)
     value_type = get_type_str(x[key])
-    if container_type == 'dict':
+    if container_type == "dict":
         if len(x) == 1:
-            return f'{{{key_type}: {value_type}}}'
+            return f"{{{key_type}: {value_type}}}"
         else:
-            return f'{{{key_type}: {value_type}, ...}}'
+            return f"{{{key_type}: {value_type}, ...}}"
     else:
         if len(x) == 1:
-            return f'{container_type}([({key_type}, {value_type})])'
+            return f"{container_type}([({key_type}, {value_type})])"
         else:
-            return f'{container_type}([({key_type}, {value_type}), ...])'
+            return f"{container_type}([({key_type}, {value_type}), ...])"
 
 
 def get_sequence_type_str(x: Sequence[Any]) -> str:
     container_type = type(x).__name__
     if not x:
-        if container_type == 'list':
-            return '[]'
+        if container_type == "list":
+            return "[]"
         else:
-            return container_type + '([])'
+            return container_type + "([])"
     elem_type = get_type_str(x[0])
-    if container_type == 'list':
+    if container_type == "list":
         if len(x) == 1:
-            return '[' + elem_type + ']'
+            return "[" + elem_type + "]"
         else:
-            return '[' + elem_type + ', ...]'
+            return "[" + elem_type + ", ...]"
     else:
         if len(x) == 1:
-            return f'{container_type}([{elem_type}])'
+            return f"{container_type}([{elem_type}])"
         else:
-            return f'{container_type}([{elem_type}, ...])'
+            return f"{container_type}([{elem_type}, ...])"
 
 
 expansion_blacklist = (str, bytes)
@@ -50,15 +50,15 @@ expansion_blacklist = (str, bytes)
 
 def get_type_str(x: Any) -> str:
     if x is None:
-        return 'None'
+        return "None"
     elif isinstance(x, tuple):
         types = []
         for v in x:
             types.append(get_type_str(v))
         if len(x) == 1:
-            return '(' + types[0] + ',)'
+            return "(" + types[0] + ",)"
         else:
-            return '(' + ', '.join(types) + ')'
+            return "(" + ", ".join(types) + ")"
     elif isinstance(x, Mapping):
         return get_mapping_type_str(x)
     elif isinstance(x, Sequence) and not isinstance(x, expansion_blacklist):
@@ -67,7 +67,7 @@ def get_type_str(x: Any) -> str:
         return type(x).__name__
 
 
-FuncT = TypeVar('FuncT', bound=Callable[..., object])
+FuncT = TypeVar("FuncT", bound=Callable[..., object])
 
 
 def print_types_to(file_obj: IO[str]) -> Callable[[FuncT], FuncT]:

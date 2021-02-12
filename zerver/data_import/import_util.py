@@ -69,8 +69,8 @@ def build_zerver_realm(
         description=f"Organization imported from {other_product}!",
     )
     auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
-    realm_dict = model_to_dict(realm, exclude='authentication_methods')
-    realm_dict['authentication_methods'] = auth_methods
+    realm_dict = model_to_dict(realm, exclude="authentication_methods")
+    realm_dict["authentication_methods"] = auth_methods
     return [realm_dict]
 
 
@@ -103,12 +103,12 @@ def build_user_profile(
     )
     dct = model_to_dict(obj)
 
-    '''
+    """
     Even though short_name is no longer in the Zulip
     UserProfile, it's helpful to have it in our import
     dictionaries for legacy reasons.
-    '''
-    dct['short_name'] = short_name
+    """
+    dct["short_name"] = short_name
     return dct
 
 
@@ -140,8 +140,8 @@ def make_subscriber_map(zerver_subscription: List[ZerverFieldsT]) -> Dict[int, S
     """
     subscriber_map: Dict[int, Set[int]] = {}
     for sub in zerver_subscription:
-        user_id = sub['user_profile']
-        recipient_id = sub['recipient']
+        user_id = sub["user_profile"]
+        recipient_id = sub["recipient"]
         if recipient_id not in subscriber_map:
             subscriber_map[recipient_id] = set()
         subscriber_map[recipient_id].add(user_id)
@@ -159,9 +159,9 @@ def make_user_messages(
     zerver_usermessage = []
 
     for message in zerver_message:
-        message_id = message['id']
-        recipient_id = message['recipient']
-        sender_id = message['sender']
+        message_id = message["id"]
+        recipient_id = message["recipient"]
+        sender_id = message["sender"]
         mention_user_ids = mention_map[message_id]
         subscriber_ids = subscriber_map.get(recipient_id, set())
         user_ids = subscriber_ids | {sender_id}
@@ -181,9 +181,9 @@ def make_user_messages(
 
 def build_subscription(recipient_id: int, user_id: int, subscription_id: int) -> ZerverFieldsT:
     subscription = Subscription(color=random.choice(stream_colors), id=subscription_id)
-    subscription_dict = model_to_dict(subscription, exclude=['user_profile', 'recipient_id'])
-    subscription_dict['user_profile'] = user_id
-    subscription_dict['recipient'] = recipient_id
+    subscription_dict = model_to_dict(subscription, exclude=["user_profile", "recipient_id"])
+    subscription_dict["user_profile"] = user_id
+    subscription_dict["recipient"] = recipient_id
     return subscription_dict
 
 
@@ -201,22 +201,22 @@ def build_public_stream_subscriptions(
     """
     subscriptions: List[ZerverFieldsT] = []
 
-    public_stream_ids = {stream['id'] for stream in zerver_stream if not stream['invite_only']}
+    public_stream_ids = {stream["id"] for stream in zerver_stream if not stream["invite_only"]}
 
     public_stream_recipient_ids = {
-        recipient['id']
+        recipient["id"]
         for recipient in zerver_recipient
-        if recipient['type'] == Recipient.STREAM and recipient['type_id'] in public_stream_ids
+        if recipient["type"] == Recipient.STREAM and recipient["type_id"] in public_stream_ids
     }
 
-    user_ids = [user['id'] for user in zerver_userprofile]
+    user_ids = [user["id"] for user in zerver_userprofile]
 
     for recipient_id in public_stream_recipient_ids:
         for user_id in user_ids:
             subscription = build_subscription(
                 recipient_id=recipient_id,
                 user_id=user_id,
-                subscription_id=NEXT_ID('subscription'),
+                subscription_id=NEXT_ID("subscription"),
             )
             subscriptions.append(subscription)
 
@@ -231,12 +231,12 @@ def build_stream_subscriptions(
 
     subscriptions: List[ZerverFieldsT] = []
 
-    stream_ids = {stream['id'] for stream in zerver_stream}
+    stream_ids = {stream["id"] for stream in zerver_stream}
 
     recipient_map = {
-        recipient['id']: recipient['type_id']  # recipient_id -> stream_id
+        recipient["id"]: recipient["type_id"]  # recipient_id -> stream_id
         for recipient in zerver_recipient
-        if recipient['type'] == Recipient.STREAM and recipient['type_id'] in stream_ids
+        if recipient["type"] == Recipient.STREAM and recipient["type_id"] in stream_ids
     }
 
     for recipient_id, stream_id in recipient_map.items():
@@ -245,7 +245,7 @@ def build_stream_subscriptions(
             subscription = build_subscription(
                 recipient_id=recipient_id,
                 user_id=user_id,
-                subscription_id=NEXT_ID('subscription'),
+                subscription_id=NEXT_ID("subscription"),
             )
             subscriptions.append(subscription)
 
@@ -260,12 +260,12 @@ def build_huddle_subscriptions(
 
     subscriptions: List[ZerverFieldsT] = []
 
-    huddle_ids = {huddle['id'] for huddle in zerver_huddle}
+    huddle_ids = {huddle["id"] for huddle in zerver_huddle}
 
     recipient_map = {
-        recipient['id']: recipient['type_id']  # recipient_id -> stream_id
+        recipient["id"]: recipient["type_id"]  # recipient_id -> stream_id
         for recipient in zerver_recipient
-        if recipient['type'] == Recipient.HUDDLE and recipient['type_id'] in huddle_ids
+        if recipient["type"] == Recipient.HUDDLE and recipient["type_id"] in huddle_ids
     }
 
     for recipient_id, huddle_id in recipient_map.items():
@@ -274,7 +274,7 @@ def build_huddle_subscriptions(
             subscription = build_subscription(
                 recipient_id=recipient_id,
                 user_id=user_id,
-                subscription_id=NEXT_ID('subscription'),
+                subscription_id=NEXT_ID("subscription"),
             )
             subscriptions.append(subscription)
 
@@ -286,16 +286,16 @@ def build_personal_subscriptions(zerver_recipient: List[ZerverFieldsT]) -> List[
     subscriptions: List[ZerverFieldsT] = []
 
     personal_recipients = [
-        recipient for recipient in zerver_recipient if recipient['type'] == Recipient.PERSONAL
+        recipient for recipient in zerver_recipient if recipient["type"] == Recipient.PERSONAL
     ]
 
     for recipient in personal_recipients:
-        recipient_id = recipient['id']
-        user_id = recipient['type_id']
+        recipient_id = recipient["id"]
+        user_id = recipient["type_id"]
         subscription = build_subscription(
             recipient_id=recipient_id,
             user_id=user_id,
-            subscription_id=NEXT_ID('subscription'),
+            subscription_id=NEXT_ID("subscription"),
         )
         subscriptions.append(subscription)
 
@@ -326,33 +326,33 @@ def build_recipients(
     recipients = []
 
     for user in zerver_userprofile:
-        type_id = user['id']
+        type_id = user["id"]
         type = Recipient.PERSONAL
         recipient = Recipient(
             type_id=type_id,
-            id=NEXT_ID('recipient'),
+            id=NEXT_ID("recipient"),
             type=type,
         )
         recipient_dict = model_to_dict(recipient)
         recipients.append(recipient_dict)
 
     for stream in zerver_stream:
-        type_id = stream['id']
+        type_id = stream["id"]
         type = Recipient.STREAM
         recipient = Recipient(
             type_id=type_id,
-            id=NEXT_ID('recipient'),
+            id=NEXT_ID("recipient"),
             type=type,
         )
         recipient_dict = model_to_dict(recipient)
         recipients.append(recipient_dict)
 
     for huddle in zerver_huddle:
-        type_id = huddle['id']
+        type_id = huddle["id"]
         type = Recipient.HUDDLE
         recipient = Recipient(
             type_id=type_id,
-            id=NEXT_ID('recipient'),
+            id=NEXT_ID("recipient"),
             type=type,
         )
         recipient_dict = model_to_dict(recipient)
@@ -431,7 +431,7 @@ def build_user_message(
     if is_private:
         flags_mask += 2048  # For is_private
 
-    id = NEXT_ID('user_message')
+    id = NEXT_ID("user_message")
 
     usermessage = dict(
         id=id,
@@ -465,8 +465,8 @@ def build_stream(
         invite_only=invite_only,
         id=stream_id,
     )
-    stream_dict = model_to_dict(stream, exclude=['realm'])
-    stream_dict['realm'] = realm_id
+    stream_dict = model_to_dict(stream, exclude=["realm"])
+    stream_dict["realm"] = realm_id
     return stream_dict
 
 
@@ -501,11 +501,11 @@ def build_message(
     )
     zulip_message.set_topic_name(topic_name)
     zulip_message_dict = model_to_dict(
-        zulip_message, exclude=['recipient', 'sender', 'sending_client']
+        zulip_message, exclude=["recipient", "sender", "sending_client"]
     )
-    zulip_message_dict['sender'] = user_id
-    zulip_message_dict['sending_client'] = 1
-    zulip_message_dict['recipient'] = recipient_id
+    zulip_message_dict["sender"] = user_id
+    zulip_message_dict["sending_client"] = 1
+    zulip_message_dict["recipient"] = recipient_id
 
     return zulip_message_dict
 
@@ -522,21 +522,21 @@ def build_attachment(
     This function should be passed a 'fileinfo' dictionary, which contains
     information about 'size', 'created' (created time) and ['name'] (filename).
     """
-    attachment_id = NEXT_ID('attachment')
+    attachment_id = NEXT_ID("attachment")
 
     attachment = Attachment(
         id=attachment_id,
-        size=fileinfo['size'],
-        create_time=fileinfo['created'],
+        size=fileinfo["size"],
+        create_time=fileinfo["created"],
         is_realm_public=True,
         path_id=s3_path,
-        file_name=fileinfo['name'],
+        file_name=fileinfo["name"],
     )
 
-    attachment_dict = model_to_dict(attachment, exclude=['owner', 'messages', 'realm'])
-    attachment_dict['owner'] = user_id
-    attachment_dict['messages'] = list(message_ids)
-    attachment_dict['realm'] = realm_id
+    attachment_dict = model_to_dict(attachment, exclude=["owner", "messages", "realm"])
+    attachment_dict["owner"] = user_id
+    attachment_dict["messages"] = list(message_ids)
+    attachment_dict["realm"] = realm_id
 
     zerver_attachment.append(attachment_dict)
 
@@ -548,7 +548,7 @@ def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: List[s
     original_image_path = os.path.join(avatar_dir, avatar_upload_item[2])
 
     response = requests.get(avatar_url + size_url_suffix, stream=True)
-    with open(image_path, 'wb') as image_file:
+    with open(image_path, "wb") as image_file:
         shutil.copyfileobj(response.raw, image_file)
     shutil.copy(image_path, original_image_path)
 
@@ -558,7 +558,7 @@ def process_avatars(
     avatar_dir: str,
     realm_id: int,
     threads: int,
-    size_url_suffix: str = '',
+    size_url_suffix: str = "",
 ) -> List[ZerverFieldsT]:
     """
     This function gets the avatar of the user and saves it in the
@@ -573,27 +573,27 @@ def process_avatars(
     downloaded.  For simpler conversions see write_avatar_png.
     """
 
-    logging.info('######### GETTING AVATARS #########\n')
-    logging.info('DOWNLOADING AVATARS .......\n')
+    logging.info("######### GETTING AVATARS #########\n")
+    logging.info("DOWNLOADING AVATARS .......\n")
     avatar_original_list = []
     avatar_upload_list = []
     for avatar in avatar_list:
-        avatar_hash = user_avatar_path_from_ids(avatar['user_profile_id'], realm_id)
-        avatar_url = avatar['path']
+        avatar_hash = user_avatar_path_from_ids(avatar["user_profile_id"], realm_id)
+        avatar_url = avatar["path"]
         avatar_original = dict(avatar)
 
-        image_path = f'{avatar_hash}.png'
-        original_image_path = f'{avatar_hash}.original'
+        image_path = f"{avatar_hash}.png"
+        original_image_path = f"{avatar_hash}.original"
 
         avatar_upload_list.append([avatar_url, image_path, original_image_path])
         # We don't add the size field here in avatar's records.json,
         # since the metadata is not needed on the import end, and we
         # don't have it until we've downloaded the files anyway.
-        avatar['path'] = image_path
-        avatar['s3_path'] = image_path
+        avatar["path"] = image_path
+        avatar["s3_path"] = image_path
 
-        avatar_original['path'] = original_image_path
-        avatar_original['s3_path'] = original_image_path
+        avatar_original["path"] = original_image_path
+        avatar_original["s3_path"] = original_image_path
         avatar_original_list.append(avatar_original)
 
     # Run downloads in parallel
@@ -601,7 +601,7 @@ def process_avatars(
         partial(get_avatar, avatar_dir, size_url_suffix), avatar_upload_list, threads=threads
     )
 
-    logging.info('######### GETTING AVATARS FINISHED #########\n')
+    logging.info("######### GETTING AVATARS FINISHED #########\n")
     return avatar_list + avatar_original_list
 
 
@@ -617,10 +617,10 @@ def write_avatar_png(avatar_folder: str, realm_id: int, user_id: int, bits: byte
         realm_id=realm_id,
     )
 
-    image_fn = avatar_hash + '.original'
+    image_fn = avatar_hash + ".original"
     image_path = os.path.join(avatar_folder, image_fn)
 
-    with open(image_path, 'wb') as image_file:
+    with open(image_path, "wb") as image_file:
         image_file.write(bits)
 
     # Return metadata that eventually goes in records.json.
@@ -636,7 +636,7 @@ def write_avatar_png(avatar_folder: str, realm_id: int, user_id: int, bits: byte
     return metadata
 
 
-ListJobData = TypeVar('ListJobData')
+ListJobData = TypeVar("ListJobData")
 
 
 def wrapping_function(f: Callable[[ListJobData], None], item: ListJobData) -> None:
@@ -666,7 +666,7 @@ def get_uploads(upload_dir: str, upload: List[str]) -> None:
 
     response = requests.get(upload_url, stream=True)
     os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-    with open(upload_path, 'wb') as upload_file:
+    with open(upload_path, "wb") as upload_file:
         shutil.copyfileobj(response.raw, upload_file)
 
 
@@ -680,19 +680,19 @@ def process_uploads(
     1. upload_list: List of uploads to be mapped in uploads records.json file
     2. upload_dir: Folder where the downloaded uploads are saved
     """
-    logging.info('######### GETTING ATTACHMENTS #########\n')
-    logging.info('DOWNLOADING ATTACHMENTS .......\n')
+    logging.info("######### GETTING ATTACHMENTS #########\n")
+    logging.info("DOWNLOADING ATTACHMENTS .......\n")
     upload_url_list = []
     for upload in upload_list:
-        upload_url = upload['path']
-        upload_s3_path = upload['s3_path']
+        upload_url = upload["path"]
+        upload_s3_path = upload["s3_path"]
         upload_url_list.append([upload_url, upload_s3_path])
-        upload['path'] = upload_s3_path
+        upload["path"] = upload_s3_path
 
     # Run downloads in parallel
     run_parallel_wrapper(partial(get_uploads, upload_dir), upload_url_list, threads=threads)
 
-    logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')
+    logging.info("######### GETTING ATTACHMENTS FINISHED #########\n")
     return upload_list
 
 
@@ -714,7 +714,7 @@ def get_emojis(emoji_dir: str, upload: List[str]) -> None:
 
     response = requests.get(emoji_url, stream=True)
     os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
-    with open(upload_emoji_path, 'wb') as emoji_file:
+    with open(upload_emoji_path, "wb") as emoji_file:
         shutil.copyfileobj(response.raw, emoji_file)
 
 
@@ -734,33 +734,33 @@ def process_emojis(
     """
     emoji_records = []
     upload_emoji_list = []
-    logging.info('######### GETTING EMOJIS #########\n')
-    logging.info('DOWNLOADING EMOJIS .......\n')
+    logging.info("######### GETTING EMOJIS #########\n")
+    logging.info("DOWNLOADING EMOJIS .......\n")
     for emoji in zerver_realmemoji:
-        emoji_url = emoji_url_map[emoji['name']]
+        emoji_url = emoji_url_map[emoji["name"]]
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=emoji['realm'], emoji_file_name=emoji['name']
+            realm_id=emoji["realm"], emoji_file_name=emoji["name"]
         )
 
         upload_emoji_list.append([emoji_url, emoji_path])
 
         emoji_record = dict(emoji)
-        emoji_record['path'] = emoji_path
-        emoji_record['s3_path'] = emoji_path
-        emoji_record['realm_id'] = emoji_record['realm']
-        emoji_record.pop('realm')
+        emoji_record["path"] = emoji_path
+        emoji_record["s3_path"] = emoji_path
+        emoji_record["realm_id"] = emoji_record["realm"]
+        emoji_record.pop("realm")
 
         emoji_records.append(emoji_record)
 
     # Run downloads in parallel
     run_parallel_wrapper(partial(get_emojis, emoji_dir), upload_emoji_list, threads=threads)
 
-    logging.info('######### GETTING EMOJIS FINISHED #########\n')
+    logging.info("######### GETTING EMOJIS FINISHED #########\n")
     return emoji_records
 
 
 def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
     output_file = output_dir + file_path
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, 'wb') as fp:
+    with open(output_file, "wb") as fp:
         fp.write(orjson.dumps(data, option=orjson.OPT_INDENT_2))

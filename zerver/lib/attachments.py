@@ -8,7 +8,7 @@ from zerver.models import Attachment, UserProfile
 
 
 def user_attachments(user_profile: UserProfile) -> List[Dict[str, Any]]:
-    attachments = Attachment.objects.filter(owner=user_profile).prefetch_related('messages')
+    attachments = Attachment.objects.filter(owner=user_profile).prefetch_related("messages")
     return [a.to_dict() for a in attachments]
 
 

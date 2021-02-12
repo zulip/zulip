@@ -2,9 +2,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class AlertmanagerHookTests(WebhookTestCase):
-    STREAM_NAME = 'alertmanager'
+    STREAM_NAME = "alertmanager"
     URL_TEMPLATE = "/api/v1/external/alertmanager?&api_key={api_key}&stream={stream}&name=topic&desc=description"
-    FIXTURE_DIR_NAME = 'alertmanager'
+    FIXTURE_DIR_NAME = "alertmanager"
 
     def test_error_issue_message(self) -> None:
         expected_topic = "andromeda"

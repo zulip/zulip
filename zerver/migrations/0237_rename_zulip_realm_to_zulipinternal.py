@@ -10,8 +10,8 @@ def rename_zulip_realm_to_zulipinternal(
     if not settings.PRODUCTION:
         return
 
-    Realm = apps.get_model('zerver', 'Realm')
-    UserProfile = apps.get_model('zerver', 'UserProfile')
+    Realm = apps.get_model("zerver", "Realm")
+    UserProfile = apps.get_model("zerver", "UserProfile")
 
     if Realm.objects.count() == 0:
         # Database not yet populated, do nothing:
@@ -38,7 +38,7 @@ def rename_zulip_realm_to_zulipinternal(
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0236_remove_illegal_characters_email_full'),
+        ("zerver", "0236_remove_illegal_characters_email_full"),
     ]
 
     operations = [

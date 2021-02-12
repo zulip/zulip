@@ -9,12 +9,12 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@webhook_view('HomeAssistant')
+@webhook_view("HomeAssistant")
 @has_request_variables
 def api_homeassistant_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, str] = REQ(argument_type='body'),
+    payload: Dict[str, str] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     # construct the body of the message

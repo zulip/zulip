@@ -30,13 +30,13 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0222_userprofile_fluid_layout_width'),
+        ("zerver", "0222_userprofile_fluid_layout_width"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subscription',
-            name='is_muted',
+            model_name="subscription",
+            name="is_muted",
             field=models.NullBooleanField(default=False),
         ),
         migrations.RunPython(
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
             elidable=True,
         ),
         migrations.RemoveField(
-            model_name='subscription',
-            name='in_home_view',
+            model_name="subscription",
+            name="in_home_view",
         ),
     ]

@@ -4,14 +4,14 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class IntercomWebHookTests(WebhookTestCase):
-    STREAM_NAME = 'test'
+    STREAM_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/intercom?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'intercom'
+    FIXTURE_DIR_NAME = "intercom"
 
-    @patch('zerver.webhooks.intercom.view.check_send_webhook_message')
+    @patch("zerver.webhooks.intercom.view.check_send_webhook_message")
     def test_ping_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url()
-        payload = self.get_body('ping')
+        payload = self.get_body("ping")
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
@@ -248,9 +248,9 @@ New user created:
         )
 
     def test_user_tag_deleted(self) -> None:
-        expected_topic = 'User: eeshangarg'
+        expected_topic = "User: eeshangarg"
         expected_message = (
-            'The tag `CSV Import - 2019-03-26 22:46:04 UTC` was removed from the user.'
+            "The tag `CSV Import - 2019-03-26 22:46:04 UTC` was removed from the user."
         )
 
         self.check_webhook(

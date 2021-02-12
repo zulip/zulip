@@ -28,7 +28,7 @@ BITBUCKET_FORK_BODY = (
 )
 BRANCH_UPDATED_MESSAGE_TEMPLATE = "{user_name} pushed to branch {branch_name}. Head is now {head}."
 PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE = (
-    "{user_name} marked [PR #{number}]({url}) as \"needs work\"."
+    '{user_name} marked [PR #{number}]({url}) as "needs work".'
 )
 PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE_WITH_TITLE = """
 {user_name} marked [PR #{number} {title}]({url}) as \"needs work\".
@@ -111,7 +111,7 @@ def repo_forked_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
 
 def repo_modified_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
     subject_new = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=payload["new"]["name"])
-    new_name = payload['new']['name']
+    new_name = payload["new"]["name"]
     body = BITBUCKET_REPO_UPDATED_CHANGED.format(
         actor=get_user_name(payload),
         change="name",
@@ -119,7 +119,7 @@ def repo_modified_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
         old=payload["old"]["name"],
         new=new_name,
     )  # As of writing this, the only change we'd be notified about is a name change.
-    punctuation = '.' if new_name[-1] not in string.punctuation else ''
+    punctuation = "." if new_name[-1] not in string.punctuation else ""
     body = f"{body}{punctuation}"
     return [{"subject": subject_new, "body": body}]
 
@@ -248,10 +248,10 @@ def get_pr_opened_or_modified_body(
             )
         else:
             body = PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS.format(**parameters)
-        punctuation = ':' if description else '.'
+        punctuation = ":" if description else "."
         body = f"{body}{punctuation}"
         if description:
-            body += '\n' + CONTENT_MESSAGE_TEMPLATE.format(message=description)
+            body += "\n" + CONTENT_MESSAGE_TEMPLATE.format(message=description)
         return body
     return get_pull_request_event_message(
         user_name=get_user_name(payload),
@@ -292,7 +292,7 @@ def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[bool
                 number=pr["id"],
                 url=pr["links"]["self"][0]["href"],
             )
-        punctuation = '.' if pr['title'][-1] not in string.punctuation else ''
+        punctuation = "." if pr["title"][-1] not in string.punctuation else ""
         message = PULL_REQUEST_REASSIGNED_TO_NONE_TEMPLATE_WITH_TITLE.format(
             user_name=get_user_name(payload),
             number=pr["id"],

@@ -23,7 +23,7 @@ def _default_narrow(
 ) -> Iterable[Sequence[str]]:
     default_stream: Optional[Stream] = user_profile.default_events_register_stream
     if not narrow and default_stream is not None:
-        narrow = [['stream', default_stream.name]]
+        narrow = [["stream", default_stream.name]]
     return narrow
 
 
@@ -50,7 +50,7 @@ def events_register_backend(
             [
                 # Any new fields of `client_capabilities` should be optional. Add them here.
                 ("bulk_message_deletion", check_bool),
-                ('user_avatar_url_field_optional', check_bool),
+                ("user_avatar_url_field_optional", check_bool),
             ],
             value_validator=check_bool,
         ),

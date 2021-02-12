@@ -15,7 +15,7 @@ from zerver.models import UserProfile, get_user_profile_by_email
 def api_dialogflow_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
     email: str = REQ(),
 ) -> HttpResponse:
     status = payload["status"]["code"]

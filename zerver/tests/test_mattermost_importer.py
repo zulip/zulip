@@ -93,7 +93,7 @@ class MatterMostImporter(ZulipTestCase):
 
         team_name = "gryffindor"
         user = process_user(harry_dict, realm_id, team_name, user_id_mapper)
-        self.assertEqual(user["avatar_source"], 'G')
+        self.assertEqual(user["avatar_source"], "G")
         self.assertEqual(user["delivery_email"], "harry@zulip.com")
         self.assertEqual(user["email"], "harry@zulip.com")
         self.assertEqual(user["full_name"], "Harry Potter")
@@ -114,7 +114,7 @@ class MatterMostImporter(ZulipTestCase):
         snape_dict = username_to_user["snape"]
         snape_dict["is_mirror_dummy"] = True
         user = process_user(snape_dict, realm_id, team_name, user_id_mapper)
-        self.assertEqual(user["avatar_source"], 'G')
+        self.assertEqual(user["avatar_source"], "G")
         self.assertEqual(user["delivery_email"], "snape@zulip.com")
         self.assertEqual(user["email"], "snape@zulip.com")
         self.assertEqual(user["full_name"], "Severus Snape")
@@ -563,7 +563,7 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch('builtins.print') as mock_print, self.assertLogs(level='WARNING') as warn_log:
+        with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
@@ -571,86 +571,86 @@ class MatterMostImporter(ZulipTestCase):
             )
         self.assertEqual(
             mock_print.mock_calls,
-            [call('Generating data for', 'gryffindor'), call('Generating data for', 'slytherin')],
+            [call("Generating data for", "gryffindor"), call("Generating data for", "slytherin")],
         )
         self.assertEqual(
             warn_log.output,
             [
-                'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
-                'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
             ],
         )
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
-        self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, 'avatars')), True)
-        self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, 'emoji')), True)
+        self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, "avatars")), True)
+        self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, "emoji")), True)
         self.assertEqual(
-            os.path.exists(os.path.join(harry_team_output_dir, 'attachment.json')), True
+            os.path.exists(os.path.join(harry_team_output_dir, "attachment.json")), True
         )
 
-        realm = self.read_file(harry_team_output_dir, 'realm.json')
+        realm = self.read_file(harry_team_output_dir, "realm.json")
 
         self.assertEqual(
-            'Organization imported from Mattermost!', realm['zerver_realm'][0]['description']
+            "Organization imported from Mattermost!", realm["zerver_realm"][0]["description"]
         )
 
-        exported_user_ids = self.get_set(realm['zerver_userprofile'], 'id')
-        exported_user_full_names = self.get_set(realm['zerver_userprofile'], 'full_name')
-        self.assertEqual({'Harry Potter', 'Ron Weasley', 'Severus Snape'}, exported_user_full_names)
+        exported_user_ids = self.get_set(realm["zerver_userprofile"], "id")
+        exported_user_full_names = self.get_set(realm["zerver_userprofile"], "full_name")
+        self.assertEqual({"Harry Potter", "Ron Weasley", "Severus Snape"}, exported_user_full_names)
 
-        exported_user_emails = self.get_set(realm['zerver_userprofile'], 'email')
+        exported_user_emails = self.get_set(realm["zerver_userprofile"], "email")
         self.assertEqual(
-            {'harry@zulip.com', 'ron@zulip.com', 'snape@zulip.com'}, exported_user_emails
+            {"harry@zulip.com", "ron@zulip.com", "snape@zulip.com"}, exported_user_emails
         )
 
-        self.assertEqual(len(realm['zerver_stream']), 3)
-        exported_stream_names = self.get_set(realm['zerver_stream'], 'name')
+        self.assertEqual(len(realm["zerver_stream"]), 3)
+        exported_stream_names = self.get_set(realm["zerver_stream"], "name")
         self.assertEqual(
             exported_stream_names,
-            {'Gryffindor common room', 'Gryffindor quidditch team', 'Dumbledores army'},
+            {"Gryffindor common room", "Gryffindor quidditch team", "Dumbledores army"},
         )
         self.assertEqual(
-            self.get_set(realm['zerver_stream'], 'realm'), {realm['zerver_realm'][0]['id']}
+            self.get_set(realm["zerver_stream"], "realm"), {realm["zerver_realm"][0]["id"]}
         )
-        self.assertEqual(self.get_set(realm['zerver_stream'], 'deactivated'), {False})
+        self.assertEqual(self.get_set(realm["zerver_stream"], "deactivated"), {False})
 
-        self.assertEqual(len(realm['zerver_defaultstream']), 0)
+        self.assertEqual(len(realm["zerver_defaultstream"]), 0)
 
-        exported_recipient_ids = self.get_set(realm['zerver_recipient'], 'id')
+        exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
         self.assertEqual(len(exported_recipient_ids), 6)
-        exported_recipient_types = self.get_set(realm['zerver_recipient'], 'type')
+        exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
         self.assertEqual(exported_recipient_types, {1, 2})
-        exported_recipient_type_ids = self.get_set(realm['zerver_recipient'], 'type_id')
+        exported_recipient_type_ids = self.get_set(realm["zerver_recipient"], "type_id")
         self.assertEqual(len(exported_recipient_type_ids), 3)
 
         exported_subscription_userprofile = self.get_set(
-            realm['zerver_subscription'], 'user_profile'
+            realm["zerver_subscription"], "user_profile"
         )
         self.assertEqual(len(exported_subscription_userprofile), 3)
-        exported_subscription_recipients = self.get_set(realm['zerver_subscription'], 'recipient')
+        exported_subscription_recipients = self.get_set(realm["zerver_subscription"], "recipient")
         self.assertEqual(len(exported_subscription_recipients), 6)
 
-        messages = self.read_file(harry_team_output_dir, 'messages-000001.json')
+        messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
-        exported_messages_id = self.get_set(messages['zerver_message'], 'id')
-        self.assertIn(messages['zerver_message'][0]['sender'], exported_user_ids)
-        self.assertIn(messages['zerver_message'][0]['recipient'], exported_recipient_ids)
-        self.assertIn(messages['zerver_message'][0]['content'], 'harry joined the channel.\n\n')
+        exported_messages_id = self.get_set(messages["zerver_message"], "id")
+        self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
+        self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
+        self.assertIn(messages["zerver_message"][0]["content"], "harry joined the channel.\n\n")
 
         exported_usermessage_userprofiles = self.get_set(
-            messages['zerver_usermessage'], 'user_profile'
+            messages["zerver_usermessage"], "user_profile"
         )
         self.assertEqual(len(exported_usermessage_userprofiles), 3)
-        exported_usermessage_messages = self.get_set(messages['zerver_usermessage'], 'message')
+        exported_usermessage_messages = self.get_set(messages["zerver_usermessage"], "message")
         self.assertEqual(exported_usermessage_messages, exported_messages_id)
 
         with self.assertLogs(level="INFO"):
             do_import_realm(
                 import_dir=harry_team_output_dir,
-                subdomain='gryffindor',
+                subdomain="gryffindor",
             )
 
-        realm = get_realm('gryffindor')
+        realm = get_realm("gryffindor")
 
         self.assertFalse(get_user("harry@zulip.com", realm).is_mirror_dummy)
         self.assertFalse(get_user("ron@zulip.com", realm).is_mirror_dummy)
@@ -664,7 +664,7 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch('builtins.print') as mock_print, self.assertLogs(level="INFO"):
+        with patch("builtins.print") as mock_print, self.assertLogs(level="INFO"):
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
@@ -673,83 +673,83 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             mock_print.mock_calls,
             [
-                call('Generating data for', 'gryffindor'),
+                call("Generating data for", "gryffindor"),
             ],
         )
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
-        self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, 'avatars')), True)
-        self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, 'emoji')), True)
+        self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, "avatars")), True)
+        self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, "emoji")), True)
         self.assertEqual(
-            os.path.exists(os.path.join(harry_team_output_dir, 'attachment.json')), True
+            os.path.exists(os.path.join(harry_team_output_dir, "attachment.json")), True
         )
 
-        realm = self.read_file(harry_team_output_dir, 'realm.json')
+        realm = self.read_file(harry_team_output_dir, "realm.json")
 
         self.assertEqual(
-            'Organization imported from Mattermost!', realm['zerver_realm'][0]['description']
+            "Organization imported from Mattermost!", realm["zerver_realm"][0]["description"]
         )
 
-        exported_user_ids = self.get_set(realm['zerver_userprofile'], 'id')
-        exported_user_full_names = self.get_set(realm['zerver_userprofile'], 'full_name')
+        exported_user_ids = self.get_set(realm["zerver_userprofile"], "id")
+        exported_user_full_names = self.get_set(realm["zerver_userprofile"], "full_name")
         self.assertEqual(
-            {'Harry Potter', 'Ron Weasley', 'Ginny Weasley', 'Tom Riddle'}, exported_user_full_names
+            {"Harry Potter", "Ron Weasley", "Ginny Weasley", "Tom Riddle"}, exported_user_full_names
         )
 
-        exported_user_emails = self.get_set(realm['zerver_userprofile'], 'email')
+        exported_user_emails = self.get_set(realm["zerver_userprofile"], "email")
         self.assertEqual(
-            {'harry@zulip.com', 'ron@zulip.com', 'ginny@zulip.com', 'voldemort@zulip.com'},
+            {"harry@zulip.com", "ron@zulip.com", "ginny@zulip.com", "voldemort@zulip.com"},
             exported_user_emails,
         )
 
-        self.assertEqual(len(realm['zerver_stream']), 3)
-        exported_stream_names = self.get_set(realm['zerver_stream'], 'name')
+        self.assertEqual(len(realm["zerver_stream"]), 3)
+        exported_stream_names = self.get_set(realm["zerver_stream"], "name")
         self.assertEqual(
             exported_stream_names,
-            {'Gryffindor common room', 'Gryffindor quidditch team', 'Dumbledores army'},
+            {"Gryffindor common room", "Gryffindor quidditch team", "Dumbledores army"},
         )
         self.assertEqual(
-            self.get_set(realm['zerver_stream'], 'realm'), {realm['zerver_realm'][0]['id']}
+            self.get_set(realm["zerver_stream"], "realm"), {realm["zerver_realm"][0]["id"]}
         )
-        self.assertEqual(self.get_set(realm['zerver_stream'], 'deactivated'), {False})
+        self.assertEqual(self.get_set(realm["zerver_stream"], "deactivated"), {False})
 
-        self.assertEqual(len(realm['zerver_defaultstream']), 0)
+        self.assertEqual(len(realm["zerver_defaultstream"]), 0)
 
-        exported_recipient_ids = self.get_set(realm['zerver_recipient'], 'id')
+        exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
         self.assertEqual(len(exported_recipient_ids), 8)
-        exported_recipient_types = self.get_set(realm['zerver_recipient'], 'type')
+        exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
         self.assertEqual(exported_recipient_types, {1, 2, 3})
-        exported_recipient_type_ids = self.get_set(realm['zerver_recipient'], 'type_id')
+        exported_recipient_type_ids = self.get_set(realm["zerver_recipient"], "type_id")
         self.assertEqual(len(exported_recipient_type_ids), 4)
 
         exported_subscription_userprofile = self.get_set(
-            realm['zerver_subscription'], 'user_profile'
+            realm["zerver_subscription"], "user_profile"
         )
         self.assertEqual(len(exported_subscription_userprofile), 4)
-        exported_subscription_recipients = self.get_set(realm['zerver_subscription'], 'recipient')
+        exported_subscription_recipients = self.get_set(realm["zerver_subscription"], "recipient")
         self.assertEqual(len(exported_subscription_recipients), 8)
 
-        messages = self.read_file(harry_team_output_dir, 'messages-000001.json')
+        messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
-        exported_messages_id = self.get_set(messages['zerver_message'], 'id')
-        self.assertIn(messages['zerver_message'][0]['sender'], exported_user_ids)
-        self.assertIn(messages['zerver_message'][0]['recipient'], exported_recipient_ids)
-        self.assertIn(messages['zerver_message'][0]['content'], 'ron joined the channel.\n\n')
+        exported_messages_id = self.get_set(messages["zerver_message"], "id")
+        self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
+        self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
+        self.assertIn(messages["zerver_message"][0]["content"], "ron joined the channel.\n\n")
 
         exported_usermessage_userprofiles = self.get_set(
-            messages['zerver_usermessage'], 'user_profile'
+            messages["zerver_usermessage"], "user_profile"
         )
         self.assertEqual(len(exported_usermessage_userprofiles), 3)
-        exported_usermessage_messages = self.get_set(messages['zerver_usermessage'], 'message')
+        exported_usermessage_messages = self.get_set(messages["zerver_usermessage"], "message")
         self.assertEqual(exported_usermessage_messages, exported_messages_id)
 
         with self.assertLogs(level="INFO"):
             do_import_realm(
                 import_dir=harry_team_output_dir,
-                subdomain='gryffindor',
+                subdomain="gryffindor",
             )
 
-        realm = get_realm('gryffindor')
+        realm = get_realm("gryffindor")
 
         messages = Message.objects.filter(sender__realm=realm)
         for message in messages:
@@ -783,7 +783,7 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch('builtins.print') as mock_print, self.assertLogs(level='WARNING') as warn_log:
+        with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
@@ -791,26 +791,26 @@ class MatterMostImporter(ZulipTestCase):
             )
         self.assertEqual(
             mock_print.mock_calls,
-            [call('Generating data for', 'gryffindor'), call('Generating data for', 'slytherin')],
+            [call("Generating data for", "gryffindor"), call("Generating data for", "slytherin")],
         )
         self.assertEqual(
             warn_log.output,
             [
-                'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
-                'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
             ],
         )
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
-        messages = self.read_file(harry_team_output_dir, 'messages-000001.json')
+        messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
-        self.assertIn(messages['zerver_message'][0]['content'], 'xxxxx xxxxxx xxx xxxxxxx.\n\n')
+        self.assertIn(messages["zerver_message"][0]["content"], "xxxxx xxxxxx xxx xxxxxxx.\n\n")
 
     def test_import_data_to_existing_database(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch('builtins.print') as mock_print, self.assertLogs(level='WARNING') as warn_log:
+        with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
@@ -818,13 +818,13 @@ class MatterMostImporter(ZulipTestCase):
             )
         self.assertEqual(
             mock_print.mock_calls,
-            [call('Generating data for', 'gryffindor'), call('Generating data for', 'slytherin')],
+            [call("Generating data for", "gryffindor"), call("Generating data for", "slytherin")],
         )
         self.assertEqual(
             warn_log.output,
             [
-                'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
-                'WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export',
+                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
             ],
         )
 
@@ -833,10 +833,10 @@ class MatterMostImporter(ZulipTestCase):
         with self.assertLogs(level="INFO"):
             do_import_realm(
                 import_dir=harry_team_output_dir,
-                subdomain='gryffindor',
+                subdomain="gryffindor",
             )
 
-        realm = get_realm('gryffindor')
+        realm = get_realm("gryffindor")
 
         realm_users = UserProfile.objects.filter(realm=realm)
         messages = Message.objects.filter(sender__in=realm_users)

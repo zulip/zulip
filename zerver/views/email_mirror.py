@@ -15,5 +15,5 @@ def email_mirror_message(
 ) -> HttpResponse:
     result = mirror_email_message(rcpt_to, msg_base64)
     if result["status"] == "error":
-        return json_error(result['msg'])
+        return json_error(result["msg"])
     return json_success()

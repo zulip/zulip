@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0155_change_default_realm_description'),
+        ("zerver", "0155_change_default_realm_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customprofilefield',
-            name='hint',
-            field=models.CharField(default='', max_length=80, null=True),
+            model_name="customprofilefield",
+            name="hint",
+            field=models.CharField(default="", max_length=80, null=True),
         ),
     ]

@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict
 
-'''
+"""
 This module helps you set up a bunch
 of sequences, similar to how database
 sequences work.
@@ -9,7 +9,7 @@ You need to be a bit careful here, since
 you're dealing with a big singleton, but
 for data imports that's usually easy to
 manage.
-'''
+"""
 
 
 def _seq() -> Callable[[], int]:
@@ -41,14 +41,14 @@ def sequencer() -> Callable[[str], int]:
     return next_one
 
 
-'''
+"""
 NEXT_ID is a singleton used by an entire process, which is
 almost always reasonable.  If you want to have two parallel
 sequences, just use different `name` values.
 
 This object gets created once and only once during the first
 import of the file.
-'''
+"""
 
 NEXT_ID = sequencer()
 
@@ -77,7 +77,7 @@ class IdMapper:
         if is_int(their_id):
             our_id = int(their_id)
             if self.cnt > 0:
-                raise Exception('mixed key styles')
+                raise Exception("mixed key styles")
         else:
             self.cnt += 1
             our_id = self.cnt

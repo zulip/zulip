@@ -45,11 +45,11 @@ def make_realm(realm_id: int, team: Dict[str, Any]) -> ZerverFieldsT:
     domain_name = settings.EXTERNAL_HOST
     realm_subdomain = team["name"]
 
-    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Mattermost')
+    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, "Mattermost")
     realm = build_realm(zerver_realm, realm_id, domain_name)
 
     # We may override these later.
-    realm['zerver_defaultstream'] = []
+    realm["zerver_defaultstream"] = []
 
     return realm
 
@@ -69,16 +69,16 @@ def process_user(
         full_name = "{} {}".format(user_dict["first_name"], user_dict["last_name"])
         if full_name.strip():
             return full_name
-        return user_dict['username']
+        return user_dict["username"]
 
-    avatar_source = 'G'
+    avatar_source = "G"
     full_name = get_full_name(user_dict)
-    id = user_id_mapper.get(user_dict['username'])
-    delivery_email = user_dict['email']
-    email = user_dict['email']
-    short_name = user_dict['username']
+    id = user_id_mapper.get(user_dict["username"])
+    delivery_email = user_dict["email"]
+    email = user_dict["email"]
+    short_name = user_dict["username"]
     date_joined = int(timezone_now().timestamp())
-    timezone = 'UTC'
+    timezone = "UTC"
 
     role = UserProfile.ROLE_MEMBER
     if is_team_admin(user_dict):
@@ -135,7 +135,7 @@ def convert_channel_data(
     realm_id: int,
     team_name: str,
 ) -> List[ZerverFieldsT]:
-    channel_data_list = [d for d in channel_data if d['team'] == team_name]
+    channel_data_list = [d for d in channel_data if d["team"] == team_name]
 
     channel_members_map: Dict[str, List[str]] = {}
     channel_admins_map: Dict[str, List[str]] = {}
@@ -167,26 +167,26 @@ def convert_channel_data(
         # Channel can have two types in Mattermost
         # "O" for a public channel.
         # "P" for a private channel.
-        if channel_type == 'O':
+        if channel_type == "O":
             return False
-        elif channel_type == 'P':
+        elif channel_type == "P":
             return True
         else:  # nocoverage
-            raise Exception('unexpected value')
+            raise Exception("unexpected value")
 
     streams = []
     initialize_stream_membership_dicts()
 
     for channel_dict in channel_data_list:
         now = int(timezone_now().timestamp())
-        stream_id = stream_id_mapper.get(channel_dict['name'])
+        stream_id = stream_id_mapper.get(channel_dict["name"])
         stream_name = channel_dict["name"]
-        invite_only = get_invite_only_value_from_channel_type(channel_dict['type'])
+        invite_only = get_invite_only_value_from_channel_type(channel_dict["type"])
 
         stream = build_stream(
             date_created=now,
             realm_id=realm_id,
-            name=channel_dict['display_name'],
+            name=channel_dict["display_name"],
             # Purpose describes how the channel should be used. It is similar to
             # stream description and is shown in channel list to help others decide
             # whether to join.
@@ -194,7 +194,7 @@ def convert_channel_data(
             # Can be used for advertising the purpose of stream, making announcements as
             # well as including frequently used links. So probably not a bad idea to use
             # this as description if the channel purpose is empty.
-            description=channel_dict["purpose"] or channel_dict['header'],
+            description=channel_dict["purpose"] or channel_dict["header"],
             stream_id=stream_id,
             # Mattermost export don't include data of archived(~ deactivated) channels.
             deactivated=False,
@@ -222,7 +222,7 @@ def generate_huddle_name(huddle_members: List[str]) -> str:
     # lifetime of export tool run, as it doesn't appear in the output.
     import hashlib
 
-    return hashlib.md5(''.join(sorted(huddle_members)).encode('utf-8')).hexdigest()
+    return hashlib.md5("".join(sorted(huddle_members)).encode("utf-8")).hexdigest()
 
 
 def convert_huddle_data(
@@ -262,12 +262,12 @@ def build_reactions(
 ) -> None:
     realmemoji = {}
     for realm_emoji in zerver_realmemoji:
-        realmemoji[realm_emoji['name']] = realm_emoji['id']
+        realmemoji[realm_emoji["name"]] = realm_emoji["id"]
 
     # For the Unicode emoji codes, we use equivalent of
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
     for mattermost_reaction in reactions:
-        emoji_name = mattermost_reaction['emoji_name']
+        emoji_name = mattermost_reaction["emoji_name"]
         username = mattermost_reaction["user"]
         # Check in Unicode emoji
         if emoji_name in name_to_codepoint:
@@ -283,7 +283,7 @@ def build_reactions(
         if not user_id_mapper.has(username):
             continue
 
-        reaction_id = NEXT_ID('reaction')
+        reaction_id = NEXT_ID("reaction")
         reaction = Reaction(
             id=reaction_id,
             emoji_code=emoji_code,
@@ -291,9 +291,9 @@ def build_reactions(
             reaction_type=reaction_type,
         )
 
-        reaction_dict = model_to_dict(reaction, exclude=['message', 'user_profile'])
-        reaction_dict['message'] = message_id
-        reaction_dict['user_profile'] = user_id_mapper.get(username)
+        reaction_dict = model_to_dict(reaction, exclude=["message", "user_profile"])
+        reaction_dict["message"] = message_id
+        reaction_dict["user_profile"] = user_id_mapper.get(username)
         total_reactions.append(reaction_dict)
 
 
@@ -326,15 +326,15 @@ def process_raw_message_batch(
     def fix_mentions(content: str, mention_user_ids: Set[int]) -> str:
         for user_id in mention_user_ids:
             user = user_handler.get_user(user_id=user_id)
-            mattermost_mention = '@{short_name}'.format(**user)
-            zulip_mention = '@**{full_name}**'.format(**user)
+            mattermost_mention = "@{short_name}".format(**user)
+            zulip_mention = "@**{full_name}**".format(**user)
             content = content.replace(mattermost_mention, zulip_mention)
 
-        content = content.replace('@channel', '@**all**')
-        content = content.replace('@all', '@**all**')
+        content = content.replace("@channel", "@**all**")
+        content = content.replace("@all", "@**all**")
         # We don't have an equivalent for Mattermost's @here mention which mentions all users
         # online in the channel.
-        content = content.replace('@here', '@**all**')
+        content = content.replace("@here", "@**all**")
         return content
 
     mention_map: Dict[int, Set[int]] = {}
@@ -347,22 +347,22 @@ def process_raw_message_batch(
     pm_members = {}
 
     for raw_message in raw_messages:
-        message_id = NEXT_ID('message')
+        message_id = NEXT_ID("message")
         mention_user_ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         mention_map[message_id] = mention_user_ids
 
         content = fix_mentions(
-            content=raw_message['content'],
+            content=raw_message["content"],
             mention_user_ids=mention_user_ids,
         )
         content = h.handle(content)
 
         if len(content) > 10000:  # nocoverage
-            logging.info('skipping too-long message of length %s', len(content))
+            logging.info("skipping too-long message of length %s", len(content))
             continue
 
-        date_sent = raw_message['date_sent']
-        sender_user_id = raw_message['sender_id']
+        date_sent = raw_message["date_sent"]
+        sender_user_id = raw_message["sender_id"]
         if "channel_name" in raw_message:
             recipient_id = get_recipient_id_from_receiver_name(
                 raw_message["channel_name"], Recipient.STREAM
@@ -384,7 +384,7 @@ def process_raw_message_batch(
 
         rendered_content = None
 
-        topic_name = 'imported from mattermost'
+        topic_name = "imported from mattermost"
 
         message = build_message(
             content=content,
@@ -418,7 +418,7 @@ def process_raw_message_batch(
         zerver_usermessage=zerver_usermessage,
     )
 
-    dump_file_id = NEXT_ID('dump_file_id' + str(realm_id))
+    dump_file_id = NEXT_ID("dump_file_id" + str(realm_id))
     message_file = f"/messages-{dump_file_id:06}.json"
     create_converted_data_files(message_json, output_dir, message_file)
 
@@ -456,11 +456,11 @@ def process_posts(
     def message_to_dict(post_dict: Dict[str, Any]) -> Dict[str, Any]:
         sender_username = post_dict["user"]
         sender_id = user_id_mapper.get(sender_username)
-        content = post_dict['message']
+        content = post_dict["message"]
 
         if masking_content:
-            content = re.sub('[a-z]', 'x', content)
-            content = re.sub('[A-Z]', 'X', content)
+            content = re.sub("[a-z]", "x", content)
+            content = re.sub("[A-Z]", "X", content)
 
         if "reactions" in post_dict:
             reactions = post_dict["reactions"] or []
@@ -470,7 +470,7 @@ def process_posts(
         message_dict = dict(
             sender_id=sender_id,
             content=content,
-            date_sent=int(post_dict['create_at'] / 1000),
+            date_sent=int(post_dict["create_at"] / 1000),
             reactions=reactions,
         )
         if "channel" in post_dict:
@@ -496,7 +496,7 @@ def process_posts(
         # For now, we just append the replies immediately after the original message.
         if message_replies is not None:
             for reply in message_replies:
-                if 'channel' in post_dict:
+                if "channel" in post_dict:
                     reply["channel"] = post_dict["channel"]
                 else:  # nocoverage
                     reply["channel_members"] = post_dict["channel_members"]
@@ -547,12 +547,12 @@ def write_message_data(
     user_id_to_recipient_id = {}
 
     for d in zerver_recipient:
-        if d['type'] == Recipient.STREAM:
-            stream_id_to_recipient_id[d['type_id']] = d['id']
-        elif d['type'] == Recipient.HUDDLE:
-            huddle_id_to_recipient_id[d['type_id']] = d['id']
-        if d['type'] == Recipient.PERSONAL:
-            user_id_to_recipient_id[d['type_id']] = d['id']
+        if d["type"] == Recipient.STREAM:
+            stream_id_to_recipient_id[d["type_id"]] = d["id"]
+        elif d["type"] == Recipient.HUDDLE:
+            huddle_id_to_recipient_id[d["type_id"]] = d["id"]
+        if d["type"] == Recipient.PERSONAL:
+            user_id_to_recipient_id[d["type_id"]] = d["id"]
 
     def get_recipient_id_from_receiver_name(receiver_name: str, recipient_type: int) -> int:
         if recipient_type == Recipient.STREAM:
@@ -623,21 +623,21 @@ def write_emoticon_data(
     directory structure.
     """
 
-    logging.info('Starting to process emoticons')
+    logging.info("Starting to process emoticons")
 
     flat_data = [
         dict(
-            path=d['image'],
-            name=d['name'],
+            path=d["image"],
+            name=d["name"],
         )
         for d in custom_emoji_data
     ]
 
-    emoji_folder = os.path.join(output_dir, 'emoji')
+    emoji_folder = os.path.join(output_dir, "emoji")
     os.makedirs(emoji_folder, exist_ok=True)
 
     def process(data: ZerverFieldsT) -> ZerverFieldsT:
-        source_sub_path = data['path']
+        source_sub_path = data["path"]
         source_path = os.path.join(data_dir, source_sub_path)
 
         target_fn = data["name"]
@@ -659,22 +659,22 @@ def write_emoticon_data(
             s3_path=target_path,
             file_name=target_fn,
             realm_id=realm_id,
-            name=data['name'],
+            name=data["name"],
         )
 
     emoji_records = list(map(process, flat_data))
-    create_converted_data_files(emoji_records, output_dir, '/emoji/records.json')
+    create_converted_data_files(emoji_records, output_dir, "/emoji/records.json")
 
     realmemoji = [
         build_realm_emoji(
             realm_id=realm_id,
-            name=rec['name'],
-            id=NEXT_ID('realmemoji'),
-            file_name=rec['file_name'],
+            name=rec["name"],
+            id=NEXT_ID("realmemoji"),
+            file_name=rec["file_name"],
         )
         for rec in emoji_records
     ]
-    logging.info('Done processing emoticons')
+    logging.info("Done processing emoticons")
 
     return realmemoji
 
@@ -799,7 +799,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             realm_id=realm_id,
             team_name=team_name,
         )
-        realm['zerver_stream'] = zerver_stream
+        realm["zerver_stream"] = zerver_stream
 
         zerver_huddle: List[ZerverFieldsT] = []
         if len(mattermost_data["team"]) == 1:
@@ -812,7 +812,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
                 realm_id=realm_id,
                 team_name=team_name,
             )
-            realm['zerver_huddle'] = zerver_huddle
+            realm["zerver_huddle"] = zerver_huddle
 
         all_users = user_handler.get_all_users()
 
@@ -821,7 +821,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             zerver_stream=zerver_stream,
             zerver_huddle=zerver_huddle,
         )
-        realm['zerver_recipient'] = zerver_recipient
+        realm["zerver_recipient"] = zerver_recipient
 
         stream_subscriptions = build_stream_subscriptions(
             get_users=subscriber_handler.get_users,
@@ -842,7 +842,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         # Mattermost currently supports only exporting messages from channels.
         # Personal messages and huddles are not exported.
         zerver_subscription = personal_subscriptions + stream_subscriptions + huddle_subscriptions
-        realm['zerver_subscription'] = zerver_subscription
+        realm["zerver_subscription"] = zerver_subscription
 
         zerver_realmemoji = write_emoticon_data(
             realm_id=realm_id,
@@ -850,7 +850,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             data_dir=mattermost_data_dir,
             output_dir=realm_output_dir,
         )
-        realm['zerver_realmemoji'] = zerver_realmemoji
+        realm["zerver_realmemoji"] = zerver_realmemoji
 
         subscriber_map = make_subscriber_map(
             zerver_subscription=zerver_subscription,
@@ -874,20 +874,20 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             zerver_realmemoji=zerver_realmemoji,
             total_reactions=total_reactions,
         )
-        realm['zerver_reaction'] = total_reactions
-        realm['zerver_userprofile'] = user_handler.get_all_users()
-        realm['sort_by_date'] = True
+        realm["zerver_reaction"] = total_reactions
+        realm["zerver_userprofile"] = user_handler.get_all_users()
+        realm["sort_by_date"] = True
 
-        create_converted_data_files(realm, realm_output_dir, '/realm.json')
+        create_converted_data_files(realm, realm_output_dir, "/realm.json")
         # Mattermost currently doesn't support exporting avatars
-        create_converted_data_files([], realm_output_dir, '/avatars/records.json')
+        create_converted_data_files([], realm_output_dir, "/avatars/records.json")
         # Mattermost currently doesn't support exporting uploads
-        create_converted_data_files([], realm_output_dir, '/uploads/records.json')
+        create_converted_data_files([], realm_output_dir, "/uploads/records.json")
 
         # Mattermost currently doesn't support exporting attachments
         attachment: Dict[str, List[Any]] = {"zerver_attachment": []}
-        create_converted_data_files(attachment, realm_output_dir, '/attachment.json')
+        create_converted_data_files(attachment, realm_output_dir, "/attachment.json")
 
-        logging.info('Start making tarball')
-        subprocess.check_call(["tar", "-czf", realm_output_dir + '.tar.gz', realm_output_dir, '-P'])
-        logging.info('Done making tarball')
+        logging.info("Start making tarball")
+        subprocess.check_call(["tar", "-czf", realm_output_dir + ".tar.gz", realm_output_dir, "-P"])
+        logging.info("Done making tarball")

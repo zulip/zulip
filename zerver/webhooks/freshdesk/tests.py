@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FreshdeskHookTests(WebhookTestCase):
-    STREAM_NAME = 'freshdesk'
+    STREAM_NAME = "freshdesk"
     URL_TEMPLATE = "/api/v1/external/freshdesk?stream={stream}"
     FIXTURE_DIR_NAME = "freshdesk"
 
@@ -28,7 +28,7 @@ Test ticket description ☃.
 
         self.api_stream_message(
             self.test_user,
-            'ticket_created',
+            "ticket_created",
             expected_topic,
             expected_message,
             content_type="application/x-www-form-urlencoded",
@@ -48,7 +48,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
 
         self.api_stream_message(
             self.test_user,
-            'status_changed',
+            "status_changed",
             expected_topic,
             expected_message,
             content_type="application/x-www-form-urlencoded",
@@ -67,22 +67,22 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
 """.strip()
         self.api_stream_message(
             self.test_user,
-            'priority_changed',
+            "priority_changed",
             expected_topic,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
-    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
+    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
     def test_unknown_event_payload_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         """
         Ignore unknown event payloads.
         """
         self.url = self.build_webhook_url()
-        payload = self.get_body('unknown_payload')
+        payload = self.get_body("unknown_payload")
         kwargs = {
-            'HTTP_AUTHORIZATION': self.encode_email(self.test_user.email),
-            'content_type': 'application/x-www-form-urlencoded',
+            "HTTP_AUTHORIZATION": self.encode_email(self.test_user.email),
+            "content_type": "application/x-www-form-urlencoded",
         }
         result = self.client_post(self.url, payload, **kwargs)
         self.assertFalse(check_send_webhook_message_mock.called)

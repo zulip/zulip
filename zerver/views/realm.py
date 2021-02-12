@@ -121,7 +121,7 @@ def update_realm(
         if True not in list(authentication_methods.values()):
             return json_error(_("At least one authentication method must be enabled."))
     if video_chat_provider is not None and video_chat_provider not in {
-        p['id'] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
+        p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
     }:
         return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
 
@@ -147,7 +147,7 @@ def update_realm(
         if v is not None and getattr(realm, k) != v:
             do_set_realm_property(realm, k, v, acting_user=user_profile)
             if isinstance(v, str):
-                data[k] = 'updated'
+                data[k] = "updated"
             else:
                 data[k] = v
 
@@ -158,7 +158,7 @@ def update_realm(
         realm.authentication_methods_dict() != authentication_methods
     ):
         do_set_realm_authentication_methods(realm, authentication_methods, acting_user=user_profile)
-        data['authentication_methods'] = authentication_methods
+        data["authentication_methods"] = authentication_methods
     # The message_editing settings are coupled to each other, and thus don't fit
     # into the do_set_realm_property framework.
     if (
@@ -185,9 +185,9 @@ def update_realm(
             allow_community_topic_editing,
             acting_user=user_profile,
         )
-        data['allow_message_editing'] = allow_message_editing
-        data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
-        data['allow_community_topic_editing'] = allow_community_topic_editing
+        data["allow_message_editing"] = allow_message_editing
+        data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
+        data["allow_community_topic_editing"] = allow_community_topic_editing
 
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
@@ -203,7 +203,7 @@ def update_realm(
             do_set_realm_notifications_stream(
                 realm, new_notifications_stream, notifications_stream_id, acting_user=user_profile
             )
-            data['notifications_stream_id'] = notifications_stream_id
+            data["notifications_stream_id"] = notifications_stream_id
 
     if signup_notifications_stream_id is not None:
         if realm.signup_notifications_stream is None or (
@@ -220,14 +220,14 @@ def update_realm(
                 signup_notifications_stream_id,
                 acting_user=user_profile,
             )
-            data['signup_notifications_stream_id'] = signup_notifications_stream_id
+            data["signup_notifications_stream_id"] = signup_notifications_stream_id
 
     if default_code_block_language is not None:
         # Migrate '', used in the API to encode the default/None behavior of this feature.
-        if default_code_block_language == '':
-            data['default_code_block_language'] = None
+        if default_code_block_language == "":
+            data["default_code_block_language"] = None
         else:
-            data['default_code_block_language'] = default_code_block_language
+            data["default_code_block_language"] = default_code_block_language
 
     return json_success(data)
 
@@ -253,7 +253,7 @@ def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpRespo
     try:
         realm = get_object_from_key(confirmation_key, Confirmation.REALM_REACTIVATION)
     except ConfirmationKeyException:
-        return render(request, 'zerver/realm_reactivation_link_error.html')
+        return render(request, "zerver/realm_reactivation_link_error.html")
     do_reactivate_realm(realm)
     context = {"realm": realm}
-    return render(request, 'zerver/realm_reactivation.html', context)
+    return render(request, "zerver/realm_reactivation.html", context)

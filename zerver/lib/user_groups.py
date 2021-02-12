@@ -41,14 +41,14 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
         )
 
     membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
-        'user_group_id', 'user_profile_id'
+        "user_group_id", "user_profile_id"
     )
     for (user_group_id, user_profile_id) in membership:
-        group_dicts[user_group_id]['members'].append(user_profile_id)
+        group_dicts[user_group_id]["members"].append(user_profile_id)
     for group_dict in group_dicts.values():
-        group_dict['members'] = sorted(group_dict['members'])
+        group_dict["members"] = sorted(group_dict["members"])
 
-    return sorted(group_dicts.values(), key=lambda group_dict: group_dict['id'])
+    return sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"])
 
 
 def get_user_groups(user_profile: UserProfile) -> List[UserGroup]:
@@ -78,7 +78,7 @@ def check_remove_user_from_user_group(user_profile: UserProfile, user_group: Use
 
 
 def create_user_group(
-    name: str, members: List[UserProfile], realm: Realm, description: str = ''
+    name: str, members: List[UserProfile], realm: Realm, description: str = ""
 ) -> UserGroup:
     with transaction.atomic():
         user_group = UserGroup.objects.create(name=name, realm=realm, description=description)
@@ -97,5 +97,5 @@ def get_memberships_of_users(user_group: UserGroup, members: List[UserProfile]) 
     return list(
         UserGroupMembership.objects.filter(
             user_group=user_group, user_profile__in=members
-        ).values_list('user_profile_id', flat=True)
+        ).values_list("user_profile_id", flat=True)
     )

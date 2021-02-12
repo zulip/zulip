@@ -31,8 +31,8 @@ def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> Non
 
 def is_web_public_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
     for element in narrow:
-        operator = element['operator']
-        if 'operand' not in element:
+        operator = element["operator"]
+        if "operand" not in element:
             return False
         if operator not in ["streams", "stream", "topic", "sender", "has", "search", "near", "id"]:
             return False
@@ -47,9 +47,9 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
         # Web public queries are only allowed for limited types of narrows.
         # term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
         if (
-            term['operator'] == 'streams'
-            and term['operand'] == 'web-public'
-            and term['negated'] is False
+            term["operator"] == "streams"
+            and term["operand"] == "web-public"
+            and term["negated"] is False
         ):
             return True
 

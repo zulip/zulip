@@ -11,7 +11,7 @@ BATCH_SIZE = 1000
 
 
 def process_batch(apps: StateApps, id_start: int, id_end: int, last_id: int) -> None:
-    Message = apps.get_model('zerver', 'Message')
+    Message = apps.get_model("zerver", "Message")
     for message in Message.objects.filter(id__gte=id_start, id__lte=id_end).order_by("id"):
         if message.rendered_content == "":
             # There have been bugs in the past that made it possible
@@ -55,11 +55,11 @@ def process_batch(apps: StateApps, id_start: int, id_end: int, last_id: int) -> 
         message.has_image = has_image
         message.has_link = has_link
         message.has_attachment = has_attachment
-        message.save(update_fields=['has_link', 'has_attachment', 'has_image'])
+        message.save(update_fields=["has_link", "has_attachment", "has_image"])
 
 
 def fix_has_link(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    Message = apps.get_model('zerver', 'Message')
+    Message = apps.get_model("zerver", "Message")
     if not Message.objects.exists():
         # Nothing to do, and Message.objects.latest() will crash.
         return
@@ -88,7 +88,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0256_userprofile_stream_set_recipient_column_values'),
+        ("zerver", "0256_userprofile_stream_set_recipient_column_values"),
     ]
 
     operations = [

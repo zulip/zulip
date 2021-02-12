@@ -34,7 +34,7 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
         # allow any email through
         return lambda email: None
 
-    '''
+    """
     RESTRICTIVE REALMS:
 
     Some realms only allow emails within a set
@@ -43,14 +43,14 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
     We get the set of domains up front so that
     folks can validate multiple emails without
     multiple round trips to the database.
-    '''
+    """
 
     query = RealmDomain.objects.filter(realm=realm)
-    rows = list(query.values('allow_subdomains', 'domain'))
+    rows = list(query.values("allow_subdomains", "domain"))
 
-    allowed_domains = {r['domain'] for r in rows}
+    allowed_domains = {r["domain"] for r in rows}
 
-    allowed_subdomains = {r['domain'] for r in rows if r['allow_subdomains']}
+    allowed_subdomains = {r["domain"] for r in rows if r["allow_subdomains"]}
 
     def validate(email: str) -> None:
         """
@@ -59,7 +59,7 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
         a small whitelist.
         """
 
-        if '+' in email_to_username(email):
+        if "+" in email_to_username(email):
             raise EmailContainsPlusError
 
         domain = email_to_domain(email)
@@ -68,7 +68,7 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
             return
 
         while len(domain) > 0:
-            subdomain, sep, domain = domain.partition('.')
+            subdomain, sep, domain = domain.partition(".")
             if domain in allowed_subdomains:
                 return
 
@@ -113,7 +113,7 @@ def validate_email_is_valid(
 
 
 def email_reserved_for_system_bots_error(email: str) -> str:
-    return f'{email} is reserved for system bots'
+    return f"{email} is reserved for system bots"
 
 
 def get_existing_user_errors(
@@ -132,19 +132,19 @@ def get_existing_user_errors(
     errors: Dict[str, Tuple[str, bool]] = {}
 
     users = get_users_by_delivery_email(emails, target_realm).only(
-        'delivery_email',
-        'is_active',
-        'is_mirror_dummy',
+        "delivery_email",
+        "is_active",
+        "is_mirror_dummy",
     )
 
-    '''
+    """
     A note on casing: We will preserve the casing used by
     the user for email in most of this code.  The only
     exception is when we do existence checks against
     the `user_dict` dictionary.  (We don't allow two
     users in the same realm to have the same effective
     delivery email.)
-    '''
+    """
     user_dict = {user.delivery_email.lower(): user for user in users}
 
     def process_email(email: str) -> None:
@@ -152,7 +152,7 @@ def get_existing_user_errors(
             if verbose:
                 msg = email_reserved_for_system_bots_error(email)
             else:
-                msg = _('Reserved for system bots.')
+                msg = _("Reserved for system bots.")
             deactivated = False
             errors[email] = (msg, deactivated)
             return
@@ -168,14 +168,14 @@ def get_existing_user_errors(
                 raise AssertionError("Mirror dummy user is already active!")
             return
 
-        '''
+        """
         Email has already been taken by a "normal" user.
-        '''
+        """
         deactivated = not existing_user_profile.is_active
 
         if existing_user_profile.is_active:
             if verbose:
-                msg = _('{email} already has an account').format(email=email)
+                msg = _("{email} already has an account").format(email=email)
             else:
                 msg = _("Already has an account.")
         else:

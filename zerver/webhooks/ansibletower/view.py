@@ -16,19 +16,19 @@ ANSIBLETOWER_JOB_MESSAGE_TEMPLATE = """
 {hosts_final_data}
 """.strip()
 
-ANSIBLETOWER_JOB_HOST_ROW_TEMPLATE = '* {hostname}: {status}\n'
+ANSIBLETOWER_JOB_HOST_ROW_TEMPLATE = "* {hostname}: {status}\n"
 
 
-@webhook_view('AnsibleTower')
+@webhook_view("AnsibleTower")
 @has_request_variables
 def api_ansibletower_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     body = get_body(payload)
-    subject = payload['name']
+    subject = payload["name"]
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
@@ -47,47 +47,47 @@ def extract_friendly_name(payload: Dict[str, Any]) -> str:
 
 def get_body(payload: Dict[str, Any]) -> str:
     friendly_name = extract_friendly_name(payload)
-    if friendly_name == 'Job':
-        hosts_list_data = payload['hosts']
+    if friendly_name == "Job":
+        hosts_list_data = payload["hosts"]
         hosts_data = []
-        for host in payload['hosts']:
-            if hosts_list_data[host].get('failed') is True:
-                hoststatus = 'Failed'
-            elif hosts_list_data[host].get('failed') is False:
-                hoststatus = 'Success'
+        for host in payload["hosts"]:
+            if hosts_list_data[host].get("failed") is True:
+                hoststatus = "Failed"
+            elif hosts_list_data[host].get("failed") is False:
+                hoststatus = "Success"
             hosts_data.append(
                 {
-                    'hostname': host,
-                    'status': hoststatus,
+                    "hostname": host,
+                    "status": hoststatus,
                 }
             )
 
-        if payload['status'] == "successful":
-            status = 'was successful'
+        if payload["status"] == "successful":
+            status = "was successful"
         else:
-            status = 'failed'
+            status = "failed"
 
         return ANSIBLETOWER_JOB_MESSAGE_TEMPLATE.format(
-            name=payload['name'],
+            name=payload["name"],
             friendly_name=friendly_name,
-            id=payload['id'],
-            url=payload['url'],
+            id=payload["id"],
+            url=payload["url"],
             status=status,
             hosts_final_data=get_hosts_content(hosts_data),
         )
 
     else:
 
-        if payload['status'] == "successful":
-            status = 'was successful'
+        if payload["status"] == "successful":
+            status = "was successful"
         else:
-            status = 'failed'
+            status = "failed"
 
         data = {
-            "name": payload['name'],
+            "name": payload["name"],
             "friendly_name": friendly_name,
-            "id": payload['id'],
-            "url": payload['url'],
+            "id": payload["id"],
+            "url": payload["url"],
             "status": status,
         }
 
@@ -95,11 +95,11 @@ def get_body(payload: Dict[str, Any]) -> str:
 
 
 def get_hosts_content(hosts_data: List[Dict[str, Any]]) -> str:
-    hosts_data = sorted(hosts_data, key=operator.itemgetter('hostname'))
-    hosts_content = ''
+    hosts_data = sorted(hosts_data, key=operator.itemgetter("hostname"))
+    hosts_content = ""
     for host in hosts_data:
         hosts_content += ANSIBLETOWER_JOB_HOST_ROW_TEMPLATE.format(
-            hostname=host.get('hostname'),
-            status=host.get('status'),
+            hostname=host.get("hostname"),
+            status=host.get("status"),
         )
     return hosts_content

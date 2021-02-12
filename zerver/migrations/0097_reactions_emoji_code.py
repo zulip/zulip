@@ -16,43 +16,43 @@ def populate_new_fields(apps: StateApps, schema_editor: DatabaseSchemaEditor) ->
     with open(path_to_unified_reactions, "rb") as f:
         unified_reactions = orjson.loads(f.read())
 
-    Reaction = apps.get_model('zerver', 'Reaction')
+    Reaction = apps.get_model("zerver", "Reaction")
     for reaction in Reaction.objects.all():
         reaction.emoji_code = unified_reactions.get(reaction.emoji_name)
         if reaction.emoji_code is None:
             # If it's not present in the unified_reactions map, it's a realm emoji.
             reaction.emoji_code = reaction.emoji_name
-            if reaction.emoji_name == 'zulip':
+            if reaction.emoji_name == "zulip":
                 # `:zulip:` emoji is a zulip special custom emoji.
-                reaction.reaction_type = 'zulip_extra_emoji'
+                reaction.reaction_type = "zulip_extra_emoji"
             else:
-                reaction.reaction_type = 'realm_emoji'
+                reaction.reaction_type = "realm_emoji"
         reaction.save()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0096_add_password_required'),
+        ("zerver", "0096_add_password_required"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='reaction',
-            name='emoji_code',
-            field=models.TextField(default='unset'),
+            model_name="reaction",
+            name="emoji_code",
+            field=models.TextField(default="unset"),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='reaction',
-            name='reaction_type',
+            model_name="reaction",
+            name="reaction_type",
             field=models.CharField(
                 choices=[
-                    ('unicode_emoji', 'Unicode emoji'),
-                    ('realm_emoji', 'Custom emoji'),
-                    ('zulip_extra_emoji', 'Zulip extra emoji'),
+                    ("unicode_emoji", "Unicode emoji"),
+                    ("realm_emoji", "Custom emoji"),
+                    ("zulip_extra_emoji", "Zulip extra emoji"),
                 ],
-                default='unicode_emoji',
+                default="unicode_emoji",
                 max_length=30,
             ),
         ),

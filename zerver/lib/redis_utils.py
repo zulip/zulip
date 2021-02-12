@@ -41,7 +41,7 @@ def put_dict_in_redis(
     token_length: int = 64,
     token: Optional[str] = None,
 ) -> str:
-    key_length = len(key_format) - len('{token}') + token_length
+    key_length = len(key_format) - len("{token}") + token_length
     if key_length > MAX_KEY_LENGTH:
         raise ZulipRedisKeyTooLongError(
             f"Requested key too long in put_dict_in_redis. Key format: {key_format}, token length: {token_length}",

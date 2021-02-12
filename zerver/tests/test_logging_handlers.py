@@ -40,7 +40,7 @@ def capture_and_throw(domain: Optional[str] = None) -> Callable[[ViewFuncT], Vie
 
 
 class AdminNotifyHandlerTest(ZulipTestCase):
-    logger = logging.getLogger('django')
+    logger = logging.getLogger("django")
 
     def setUp(self) -> None:
         super().setUp()
@@ -59,9 +59,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         super().tearDown()
 
     def get_admin_zulip_handler(self) -> AdminNotifyHandler:
-        return [h for h in logging.getLogger('').handlers if isinstance(h, AdminNotifyHandler)][0]
+        return [h for h in logging.getLogger("").handlers if isinstance(h, AdminNotifyHandler)][0]
 
-    @patch('zerver.logging_handlers.try_git_describe')
+    @patch("zerver.logging_handlers.try_git_describe")
     def test_basic(self, mock_function: MagicMock) -> None:
         mock_function.return_value = None
         """A random exception passes happily through AdminNotifyHandler"""
@@ -71,36 +71,36 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         except Exception:
             exc_info = sys.exc_info()
         record = self.logger.makeRecord(
-            'name', logging.ERROR, 'function', 16, 'message', {}, exc_info
+            "name", logging.ERROR, "function", 16, "message", {}, exc_info
         )
         handler.emit(record)
 
     def simulate_error(self) -> logging.LogRecord:
-        self.login('hamlet')
+        self.login("hamlet")
         with patch("zerver.decorator.rate_limit") as rate_limit_patch, self.assertLogs(
-            'django.request', level='ERROR'
+            "django.request", level="ERROR"
         ) as request_error_log, self.assertLogs(
-            'zerver.middleware.json_error_handler', level='ERROR'
+            "zerver.middleware.json_error_handler", level="ERROR"
         ) as json_error_handler_log:
             rate_limit_patch.side_effect = capture_and_throw
             result = self.client_get("/json/users")
             self.assert_json_error(result, "Internal server error", status_code=500)
             rate_limit_patch.assert_called_once()
         self.assertEqual(
-            request_error_log.output, ['ERROR:django.request:Internal Server Error: /json/users']
+            request_error_log.output, ["ERROR:django.request:Internal Server Error: /json/users"]
         )
         self.assertTrue(
-            'ERROR:zerver.middleware.json_error_handler:Traceback (most recent call last):'
+            "ERROR:zerver.middleware.json_error_handler:Traceback (most recent call last):"
             in json_error_handler_log.output[0]
         )
-        self.assertTrue('Exception: Request error' in json_error_handler_log.output[0])
+        self.assertTrue("Exception: Request error" in json_error_handler_log.output[0])
 
         record = self.logger.makeRecord(
-            'name',
+            "name",
             logging.ERROR,
-            'function',
+            "function",
             15,
-            'message',
+            "message",
             {},
             captured_exc_info,
             extra={"request": captured_request},
@@ -108,18 +108,18 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         return record
 
     def run_handler(self, record: logging.LogRecord) -> Dict[str, object]:
-        with patch('zerver.lib.error_notify.notify_server_error') as patched_notify:
+        with patch("zerver.lib.error_notify.notify_server_error") as patched_notify:
             self.handler.emit(record)
             patched_notify.assert_called_once()
             return patched_notify.call_args[0][0]
 
-    @patch('zerver.logging_handlers.try_git_describe')
+    @patch("zerver.logging_handlers.try_git_describe")
     def test_long_exception_request(self, mock_function: MagicMock) -> None:
         mock_function.return_value = None
         """A request with no stack and multi-line report.getMessage() is handled properly"""
         record = self.simulate_error()
         record.exc_info = None
-        record.msg = 'message\nmoremesssage\nmore'
+        record.msg = "message\nmoremesssage\nmore"
 
         report = self.run_handler(record)
         self.assertIn("user", report)
@@ -127,10 +127,10 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
-        self.assertEqual(report['stack_trace'], 'message\nmoremesssage\nmore')
-        self.assertEqual(report['message'], 'message')
+        self.assertEqual(report["stack_trace"], "message\nmoremesssage\nmore")
+        self.assertEqual(report["message"], "message")
 
-    @patch('zerver.logging_handlers.try_git_describe')
+    @patch("zerver.logging_handlers.try_git_describe")
     def test_request(self, mock_function: MagicMock) -> None:
         mock_function.return_value = None
         """A normal request is handled properly"""
@@ -166,7 +166,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("stack_trace", report)
 
         # Put it back so we continue to test the non-anonymous case
-        record.request.user = self.example_user('hamlet')
+        record.request.user = self.example_user("hamlet")
 
         # Now simulate a DisallowedHost exception
         def get_host_error() -> None:
@@ -197,21 +197,21 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
         # Test the catch-all exception handler doesn't throw
         with patch(
-            'zerver.lib.error_notify.notify_server_error', side_effect=Exception("queue error")
+            "zerver.lib.error_notify.notify_server_error", side_effect=Exception("queue error")
         ):
             self.handler.emit(record)
         with self.settings(STAGING_ERROR_NOTIFICATIONS=False):
             with mock_queue_publish(
-                'zerver.logging_handlers.queue_json_publish', side_effect=Exception("queue error")
+                "zerver.logging_handlers.queue_json_publish", side_effect=Exception("queue error")
             ) as m:
-                with patch('logging.warning') as log_mock:
+                with patch("logging.warning") as log_mock:
                     self.handler.emit(record)
                     m.assert_called_once()
                     log_mock.assert_called_once_with(
-                        'Reporting an exception triggered an exception!', exc_info=True
+                        "Reporting an exception triggered an exception!", exc_info=True
                     )
-            with mock_queue_publish('zerver.logging_handlers.queue_json_publish') as m:
-                with patch('logging.warning') as log_mock:
+            with mock_queue_publish("zerver.logging_handlers.queue_json_publish") as m:
+                with patch("logging.warning") as log_mock:
                     self.handler.emit(record)
                     m.assert_called_once()
                     log_mock.assert_not_called()
@@ -224,7 +224,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
-        self.assertEqual(report["stack_trace"], 'No stack trace available')
+        self.assertEqual(report["stack_trace"], "No stack trace available")
 
         # Test arbitrary exceptions from request.user
         record.request.user = None

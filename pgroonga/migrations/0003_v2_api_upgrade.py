@@ -6,7 +6,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('pgroonga', '0002_html_escape_subject'),
+        ("pgroonga", "0002_html_escape_subject"),
     ]
 
     database_setting = settings.DATABASES["default"]

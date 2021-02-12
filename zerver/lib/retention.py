@@ -56,7 +56,7 @@ from zerver.models import (
     get_user_including_cross_realm,
 )
 
-logger = logging.getLogger('zulip.retention')
+logger = logging.getLogger("zulip.retention")
 log_to_file(logger, settings.RETENTION_LOG_PATH)
 
 MESSAGE_BATCH_SIZE = 1000
@@ -69,22 +69,22 @@ TRANSACTION_DELETION_BATCH_SIZE = 100
 # code for managing these related tables.
 models_with_message_key: List[Dict[str, Any]] = [
     {
-        'class': Reaction,
-        'archive_class': ArchivedReaction,
-        'table_name': 'zerver_reaction',
-        'archive_table_name': 'zerver_archivedreaction',
+        "class": Reaction,
+        "archive_class": ArchivedReaction,
+        "table_name": "zerver_reaction",
+        "archive_table_name": "zerver_archivedreaction",
     },
     {
-        'class': SubMessage,
-        'archive_class': ArchivedSubMessage,
-        'table_name': 'zerver_submessage',
-        'archive_table_name': 'zerver_archivedsubmessage',
+        "class": SubMessage,
+        "archive_class": ArchivedSubMessage,
+        "table_name": "zerver_submessage",
+        "archive_table_name": "zerver_archivedsubmessage",
     },
     {
-        'class': UserMessage,
-        'archive_class': ArchivedUserMessage,
-        'table_name': 'zerver_usermessage',
-        'archive_table_name': 'zerver_archivedusermessage',
+        "class": UserMessage,
+        "archive_class": ArchivedUserMessage,
+        "table_name": "zerver_usermessage",
+        "archive_table_name": "zerver_archivedusermessage",
     },
 ]
 
@@ -106,8 +106,8 @@ def move_rows(
     src_fields = [Identifier(src_db_table, field.column) for field in base_model._meta.fields]
     dst_fields = [Identifier(field.column) for field in base_model._meta.fields]
     sql_args = {
-        'src_fields': SQL(',').join(src_fields),
-        'dst_fields': SQL(',').join(dst_fields),
+        "src_fields": SQL(",").join(src_fields),
+        "dst_fields": SQL(",").join(dst_fields),
     }
     sql_args.update(kwargs)
     with connection.cursor() as cursor:
@@ -304,10 +304,10 @@ def move_models_with_message_key_to_archive(msg_ids: List[int]) -> None:
         """
         )
         move_rows(
-            model['class'],
+            model["class"],
             query,
-            table_name=Identifier(model['table_name']),
-            archive_table_name=Identifier(model['archive_table_name']),
+            table_name=Identifier(model["table_name"]),
+            archive_table_name=Identifier(model["archive_table_name"]),
             message_ids=Literal(tuple(msg_ids)),
         )
 
@@ -460,7 +460,7 @@ def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
     query_one = (
         Stream.objects.exclude(message_retention_days=-1)
         .exclude(realm__message_retention_days=-1)
-        .select_related('realm', 'recipient')
+        .select_related("realm", "recipient")
     )
     # Second category are streams that are in realms without a realm-wide retention policy,
     # but have their own stream-specific policy enabled.
@@ -468,7 +468,7 @@ def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
         Stream.objects.filter(realm__message_retention_days=-1)
         .exclude(message_retention_days__isnull=True)
         .exclude(message_retention_days=-1)
-        .select_related('realm', 'recipient')
+        .select_related("realm", "recipient")
     )
     query = query_one.union(query_two)
 
@@ -531,7 +531,7 @@ def restore_messages_from_archive(archive_transaction_id: int) -> List[int]:
     return move_rows(
         Message,
         query,
-        src_db_table='zerver_archivedmessage',
+        src_db_table="zerver_archivedmessage",
         returning_id=Literal(True),
         archive_transaction_id=Literal(archive_transaction_id),
     )
@@ -551,12 +551,12 @@ def restore_models_with_message_key_from_archive(archive_transaction_id: int) ->
         )
 
         move_rows(
-            model['class'],
+            model["class"],
             query,
-            src_db_table=model['archive_table_name'],
-            table_name=Identifier(model['table_name']),
+            src_db_table=model["archive_table_name"],
+            table_name=Identifier(model["table_name"]),
             archive_transaction_id=Literal(archive_transaction_id),
-            archive_table_name=Identifier(model['archive_table_name']),
+            archive_table_name=Identifier(model["archive_table_name"]),
         )
 
 
@@ -578,7 +578,7 @@ def restore_attachments_from_archive(archive_transaction_id: int) -> None:
     move_rows(
         Attachment,
         query,
-        src_db_table='zerver_archivedattachment',
+        src_db_table="zerver_archivedattachment",
         archive_transaction_id=Literal(archive_transaction_id),
     )
 
@@ -662,7 +662,7 @@ def restore_retention_policy_deletions_for_stream(stream: Stream) -> None:
     """
     relevant_transactions = ArchiveTransaction.objects.filter(
         archivedmessage__recipient=stream.recipient, type=ArchiveTransaction.RETENTION_POLICY_BASED
-    ).distinct('id')
+    ).distinct("id")
 
     restore_data_from_archive_by_transactions(list(relevant_transactions))
 
@@ -691,6 +691,6 @@ def parse_message_retention_days(
     if isinstance(value, str) and value in special_values_map.keys():
         return special_values_map[value]
     if isinstance(value, str) or value <= 0:
-        raise RequestVariableConversionError('message_retention_days', value)
+        raise RequestVariableConversionError("message_retention_days", value)
     assert isinstance(value, int)
     return value

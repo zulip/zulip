@@ -18,12 +18,12 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         super().setUp()
         self.user_profile = self.example_user("othello")
         self.bot_profile = self.create_test_bot(
-            'embedded',
+            "embedded",
             self.user_profile,
-            full_name='Embedded bot',
+            full_name="Embedded bot",
             bot_type=UserProfile.EMBEDDED_BOT,
-            service_name='helloworld',
-            config_data=orjson.dumps({'foo': 'bar'}).decode(),
+            service_name="helloworld",
+            config_data=orjson.dumps({"foo": "bar"}).decode(),
         )
 
     def test_pm_to_embedded_bot(self) -> None:
@@ -35,7 +35,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         display_recipient = get_display_recipient(last_message.recipient)
         assert isinstance(display_recipient, list)
         self.assert_length(display_recipient, 1)
-        self.assertEqual(display_recipient[0]['email'], self.user_profile.email)
+        self.assertEqual(display_recipient[0]["email"], self.user_profile.email)
 
     def test_stream_message_to_embedded_bot(self) -> None:
         assert self.bot_profile is not None
@@ -60,7 +60,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
     def test_message_to_embedded_bot_with_initialize(self) -> None:
         assert self.bot_profile is not None
         with patch(
-            'zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.initialize', create=True
+            "zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.initialize", create=True
         ) as mock_initialize:
             self.send_stream_message(
                 self.user_profile,
@@ -73,33 +73,33 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
     def test_embedded_bot_quit_exception(self) -> None:
         assert self.bot_profile is not None
         with patch(
-            'zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message',
+            "zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message",
             side_effect=EmbeddedBotQuitException("I'm quitting!"),
         ):
-            with self.assertLogs(level='WARNING') as m:
+            with self.assertLogs(level="WARNING") as m:
                 self.send_stream_message(
                     self.user_profile,
                     "Denmark",
                     content=f"@**{self.bot_profile.full_name}** foo",
                     topic_name="bar",
                 )
-                self.assertEqual(m.output, ['WARNING:root:I\'m quitting!'])
+                self.assertEqual(m.output, ["WARNING:root:I'm quitting!"])
 
 
 class TestEmbeddedBotFailures(ZulipTestCase):
     def test_message_embedded_bot_with_invalid_service(self) -> None:
         user_profile = self.example_user("othello")
         self.create_test_bot(
-            short_name='embedded',
+            short_name="embedded",
             user_profile=user_profile,
             bot_type=UserProfile.EMBEDDED_BOT,
-            service_name='helloworld',
+            service_name="helloworld",
         )
-        bot_profile = get_user("embedded-bot@zulip.testserver", get_realm('zulip'))
-        service_profile = get_service_profile(bot_profile.id, 'helloworld')
-        service_profile.name = 'invalid'
+        bot_profile = get_user("embedded-bot@zulip.testserver", get_realm("zulip"))
+        service_profile = get_service_profile(bot_profile.id, "helloworld")
+        service_profile.name = "invalid"
         service_profile.save()
-        with self.assertLogs(level='ERROR') as m:
+        with self.assertLogs(level="ERROR") as m:
             self.send_stream_message(
                 user_profile,
                 "Denmark",
@@ -108,5 +108,5 @@ class TestEmbeddedBotFailures(ZulipTestCase):
             )
             self.assertRegexpMatches(
                 m.output[0],
-                r'ERROR:root:Error: User [0-9]* has bot with invalid embedded bot service invalid',
+                r"ERROR:root:Error: User [0-9]* has bot with invalid embedded bot service invalid",
             )

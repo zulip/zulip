@@ -29,7 +29,7 @@ ALLOWED_HOSTS: List[str] = []
 NOREPLY_EMAIL_ADDRESS = "noreply@" + EXTERNAL_HOST_WITHOUT_PORT
 ADD_TOKENS_TO_NOREPLY_ADDRESS = True
 TOKENIZED_NOREPLY_EMAIL_ADDRESS = "noreply-{token}@" + EXTERNAL_HOST_WITHOUT_PORT
-PHYSICAL_ADDRESS = ''
+PHYSICAL_ADDRESS = ""
 FAKE_EMAIL_DOMAIN = EXTERNAL_HOST_WITHOUT_PORT
 
 # SMTP settings
@@ -66,17 +66,17 @@ FAKE_LDAP_NUM_USERS = 8
 
 # Social auth; we support providing values for some of these
 # settings in zulip-secrets.conf instead of settings.py in development.
-SOCIAL_AUTH_GITHUB_KEY = get_secret('social_auth_github_key', development_only=True)
+SOCIAL_AUTH_GITHUB_KEY = get_secret("social_auth_github_key", development_only=True)
 SOCIAL_AUTH_GITHUB_ORG_NAME: Optional[str] = None
 SOCIAL_AUTH_GITHUB_TEAM_ID: Optional[str] = None
-SOCIAL_AUTH_GITLAB_KEY = get_secret('social_auth_gitlab_key', development_only=True)
+SOCIAL_AUTH_GITLAB_KEY = get_secret("social_auth_gitlab_key", development_only=True)
 SOCIAL_AUTH_SUBDOMAIN: Optional[str] = None
-SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret('azure_oauth2_secret')
-SOCIAL_AUTH_GOOGLE_KEY = get_secret('social_auth_google_key', development_only=True)
+SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret("azure_oauth2_secret")
+SOCIAL_AUTH_GOOGLE_KEY = get_secret("social_auth_google_key", development_only=True)
 # SAML:
 SOCIAL_AUTH_SAML_SP_ENTITY_ID: Optional[str] = None
-SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ''
-SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ''
+SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
+SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ""
 SOCIAL_AUTH_SAML_ORG_INFO: Optional[Dict[str, Dict[str, str]]] = None
 SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: Optional[Dict[str, str]] = None
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT: Optional[Dict[str, str]] = None
@@ -89,21 +89,21 @@ SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
 GOOGLE_OAUTH2_CLIENT_ID: Optional[str] = None
 
 # Apple:
-SOCIAL_AUTH_APPLE_SERVICES_ID = get_secret('social_auth_apple_services_id', development_only=True)
-SOCIAL_AUTH_APPLE_APP_ID = get_secret('social_auth_apple_app_id', development_only=True)
-SOCIAL_AUTH_APPLE_KEY = get_secret('social_auth_apple_key', development_only=True)
-SOCIAL_AUTH_APPLE_TEAM = get_secret('social_auth_apple_team', development_only=True)
-SOCIAL_AUTH_APPLE_SCOPE = ['name', 'email']
+SOCIAL_AUTH_APPLE_SERVICES_ID = get_secret("social_auth_apple_services_id", development_only=True)
+SOCIAL_AUTH_APPLE_APP_ID = get_secret("social_auth_apple_app_id", development_only=True)
+SOCIAL_AUTH_APPLE_KEY = get_secret("social_auth_apple_key", development_only=True)
+SOCIAL_AUTH_APPLE_TEAM = get_secret("social_auth_apple_team", development_only=True)
+SOCIAL_AUTH_APPLE_SCOPE = ["name", "email"]
 SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
 
-VIDEO_ZOOM_CLIENT_ID = get_secret('video_zoom_client_id', development_only=True)
-VIDEO_ZOOM_CLIENT_SECRET = get_secret('video_zoom_client_secret')
+VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
+VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
 
 # Email gateway
-EMAIL_GATEWAY_PATTERN = ''
+EMAIL_GATEWAY_PATTERN = ""
 EMAIL_GATEWAY_LOGIN: Optional[str] = None
 EMAIL_GATEWAY_IMAP_SERVER: Optional[str] = None
 EMAIL_GATEWAY_IMAP_PORT: Optional[int] = None
@@ -121,21 +121,21 @@ LOGGING_SHOW_PID = False
 SENTRY_DSN: Optional[str] = None
 
 # File uploads and avatars
-DEFAULT_AVATAR_URI = '/static/images/default-avatar.png'
-DEFAULT_LOGO_URI = '/static/images/logo/zulip-org-logo.svg'
-S3_AVATAR_BUCKET = ''
-S3_AUTH_UPLOADS_BUCKET = ''
+DEFAULT_AVATAR_URI = "/static/images/default-avatar.png"
+DEFAULT_LOGO_URI = "/static/images/logo/zulip-org-logo.svg"
+S3_AVATAR_BUCKET = ""
+S3_AUTH_UPLOADS_BUCKET = ""
 S3_REGION = None
 S3_ENDPOINT_URL = None
 LOCAL_UPLOADS_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
-JITSI_SERVER_URL = 'https://meet.jit.si'
+JITSI_SERVER_URL = "https://meet.jit.si"
 
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
-BIG_BLUE_BUTTON_URL = get_secret('big_blue_button_url', development_only=True)
+BIG_BLUE_BUTTON_URL = get_secret("big_blue_button_url", development_only=True)
 
 # Max state storage per user
 # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
@@ -144,17 +144,17 @@ USER_STATE_SIZE_LIMIT = 10000000
 BOT_CONFIG_SIZE_LIMIT = 10000
 
 # External service configuration
-CAMO_URI = ''
-MEMCACHED_LOCATION = '127.0.0.1:11211'
+CAMO_URI = ""
+MEMCACHED_LOCATION = "127.0.0.1:11211"
 MEMCACHED_USERNAME = None if get_secret("memcached_password") is None else "zulip@localhost"
-RABBITMQ_HOST = '127.0.0.1'
-RABBITMQ_USERNAME = 'zulip'
-REDIS_HOST = '127.0.0.1'
+RABBITMQ_HOST = "127.0.0.1"
+RABBITMQ_USERNAME = "zulip"
+REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
-REMOTE_POSTGRES_HOST = ''
-REMOTE_POSTGRES_PORT = ''
-REMOTE_POSTGRES_SSLMODE = ''
-THUMBOR_URL = ''
+REMOTE_POSTGRES_HOST = ""
+REMOTE_POSTGRES_PORT = ""
+REMOTE_POSTGRES_SSLMODE = ""
+THUMBOR_URL = ""
 THUMBOR_SERVES_CAMO = False
 THUMBNAIL_IMAGES = False
 SENDFILE_BACKEND: Optional[str] = None
@@ -209,12 +209,12 @@ DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 #    one or a handful of realms, though they might on an installation
 #    like Zulip Cloud or to work around a problem on another server.
 
-NOTIFICATION_BOT = 'notification-bot@zulip.com'
-EMAIL_GATEWAY_BOT = 'emailgateway@zulip.com'
-NAGIOS_SEND_BOT = 'nagios-send-bot@zulip.com'
-NAGIOS_RECEIVE_BOT = 'nagios-receive-bot@zulip.com'
-WELCOME_BOT = 'welcome-bot@zulip.com'
-REMINDER_BOT = 'reminder-bot@zulip.com'
+NOTIFICATION_BOT = "notification-bot@zulip.com"
+EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
+NAGIOS_SEND_BOT = "nagios-send-bot@zulip.com"
+NAGIOS_RECEIVE_BOT = "nagios-receive-bot@zulip.com"
+WELCOME_BOT = "welcome-bot@zulip.com"
+REMINDER_BOT = "reminder-bot@zulip.com"
 
 # The following bots are optional system bots not enabled by
 # default.  The default ones are defined in INTERNAL_BOTS, in settings.py.
@@ -224,20 +224,20 @@ REMINDER_BOT = 'reminder-bot@zulip.com'
 ERROR_BOT: Optional[str] = None
 # These are extra bot users for our end-to-end Nagios message
 # sending tests.
-NAGIOS_STAGING_SEND_BOT = 'nagios-staging-send-bot@zulip.com' if PRODUCTION else None
-NAGIOS_STAGING_RECEIVE_BOT = 'nagios-staging-receive-bot@zulip.com' if PRODUCTION else None
+NAGIOS_STAGING_SEND_BOT = "nagios-staging-send-bot@zulip.com" if PRODUCTION else None
+NAGIOS_STAGING_RECEIVE_BOT = "nagios-staging-receive-bot@zulip.com" if PRODUCTION else None
 # SYSTEM_BOT_REALM would be a constant always set to 'zulip',
 # except that it isn't that on Zulip Cloud.  We will likely do a
 # migration and eliminate this parameter in the future.
-SYSTEM_BOT_REALM = 'zulipinternal'
+SYSTEM_BOT_REALM = "zulipinternal"
 
 # Structurally, we will probably eventually merge
 # analytics into part of the main server, rather
 # than a separate app.
-EXTRA_INSTALLED_APPS = ['analytics']
+EXTRA_INSTALLED_APPS = ["analytics"]
 
 # Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
-GOOGLE_CLIENT_ID = '835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com'
+GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
 
 # Used to construct URLs to point to the Zulip server.  Since we
 # only support HTTPS in production, this is just for development.
@@ -294,8 +294,8 @@ POST_MIGRATION_CACHE_FLUSHING = False
 # server.
 APNS_CERT_FILE: Optional[str] = None
 APNS_SANDBOX = True
-APNS_TOPIC = 'org.zulip.Zulip'
-ZULIP_IOS_APP_ID = 'org.zulip.Zulip'
+APNS_TOPIC = "org.zulip.Zulip"
+ZULIP_IOS_APP_ID = "org.zulip.Zulip"
 
 # Limits related to the size of file uploads; last few in MB.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
@@ -352,7 +352,7 @@ TOS_VERSION: Optional[str] = None
 FIRST_TIME_TOS_TEMPLATE: Optional[str] = None
 
 # Hostname used for Zulip's statsd logging integration.
-STATSD_HOST = ''
+STATSD_HOST = ""
 
 # Configuration for JWT auth.
 if TYPE_CHECKING:
@@ -414,7 +414,7 @@ ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 7
 # are available to all realms.
 BILLING_ENABLED = False
 
-FREE_TRIAL_DAYS: Optional[int] = int(get_secret('free_trial_days', "0"))
+FREE_TRIAL_DAYS: Optional[int] = int(get_secret("free_trial_days", "0"))
 
 # Custom message (supports HTML) to be shown in the navbar of landing pages. Used mainly for
 # making announcements.

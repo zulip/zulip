@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0298_fix_realmauditlog_format'),
+        ("zerver", "0298_fix_realmauditlog_format"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subscription',
-            name='role',
+            model_name="subscription",
+            name="role",
             field=models.PositiveSmallIntegerField(db_index=True, default=50),
         ),
     ]

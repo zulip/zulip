@@ -42,9 +42,9 @@ except Exception:
     import logging
 
     logging.basicConfig(
-        filename='/var/log/zulip/errors.log',
+        filename="/var/log/zulip/errors.log",
         level=logging.INFO,
-        format='%(asctime)s %(levelname)s %(name)s %(message)s',
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
     logger = logging.getLogger(__name__)
     logger.exception("get_wsgi_application() failed:")

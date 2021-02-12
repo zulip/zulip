@@ -58,8 +58,8 @@ def relative_to_full_url(base_url: str, content: str) -> str:
             link = re.sub(r"^/?#narrow/", base_url + "/#narrow/", link)
             elem.set(attrib, link)
             # Only manually linked narrow URLs have title attribute set.
-            if elem.get('title') is not None:
-                elem.set('title', link)
+            if elem.get("title") is not None:
+                elem.set("title", link)
 
     # Inline images can't be displayed in the emails as the request
     # from the mail server can't be authenticated because it has no
@@ -74,14 +74,14 @@ def relative_to_full_url(base_url: str, content: str) -> str:
     # (i.e. the entire body is a message_inline_image object), the
     # entire message body will be that image element; here, we need a
     # more drastic edit to the content.
-    if fragment.get('class') == 'message_inline_image':
-        image_link = fragment.find('a').get('href')
-        image_title = fragment.find('a').get('title')
-        fragment = lxml.html.Element('p')
-        a = lxml.html.Element('a')
-        a.set('href', image_link)
-        a.set('target', '_blank')
-        a.set('title', image_title)
+    if fragment.get("class") == "message_inline_image":
+        image_link = fragment.find("a").get("href")
+        image_title = fragment.find("a").get("title")
+        fragment = lxml.html.Element("p")
+        a = lxml.html.Element("a")
+        a.set("href", image_link)
+        a.set("target", "_blank")
+        a.set("title", image_title)
         a.text = image_link
         fragment.append(a)
 
@@ -94,32 +94,32 @@ def relative_to_full_url(base_url: str, content: str) -> str:
 def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
     def make_emoji_img_elem(emoji_span_elem: CSSSelector) -> Dict[str, Any]:
         # Convert the emoji spans to img tags.
-        classes = emoji_span_elem.get('class')
-        match = re.search(r'emoji-(?P<emoji_code>\S+)', classes)
+        classes = emoji_span_elem.get("class")
+        match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
         # re.search is capable of returning None,
         # but since the parent function should only be called with a valid css element
         # we assert that it does not.
         assert match is not None
-        emoji_code = match.group('emoji_code')
-        emoji_name = emoji_span_elem.get('title')
+        emoji_code = match.group("emoji_code")
+        emoji_name = emoji_span_elem.get("title")
         alt_code = emoji_span_elem.text
-        image_url = base_url + f'/static/generated/emoji/images-{emojiset}-64/{emoji_code}.png'
+        image_url = base_url + f"/static/generated/emoji/images-{emojiset}-64/{emoji_code}.png"
         img_elem = lxml.html.fromstring(
             f'<img alt="{alt_code}" src="{image_url}" title="{emoji_name}">'
         )
-        img_elem.set('style', 'height: 20px;')
+        img_elem.set("style", "height: 20px;")
         img_elem.tail = emoji_span_elem.tail
         return img_elem
 
     fragment = lxml.html.fromstring(content)
-    for elem in fragment.cssselect('span.emoji'):
+    for elem in fragment.cssselect("span.emoji"):
         parent = elem.getparent()
         img_elem = make_emoji_img_elem(elem)
         parent.replace(elem, img_elem)
 
-    for realm_emoji in fragment.cssselect('.emoji'):
-        del realm_emoji.attrib['class']
-        realm_emoji.set('style', 'height: 20px;')
+    for realm_emoji in fragment.cssselect(".emoji"):
+        del realm_emoji.attrib["class"]
+        realm_emoji.set("style", "height: 20px;")
 
     content = lxml.html.tostring(fragment, encoding="unicode")
     return content
@@ -156,15 +156,15 @@ def fix_spoilers_in_html(content: str, language: str) -> str:
 def fix_spoilers_in_text(content: str, language: str) -> str:
     with override_language(language):
         spoiler_title: str = _("Open Zulip to see the spoiler content")
-    lines = content.split('\n')
+    lines = content.split("\n")
     output = []
     open_fence = None
     for line in lines:
         m = FENCE_RE.match(line)
         if m:
-            fence = m.group('fence')
-            lang = m.group('lang')
-            if lang == 'spoiler':
+            fence = m.group("fence")
+            lang = m.group("lang")
+            if lang == "spoiler":
                 open_fence = fence
                 output.append(line)
                 output.append(f"({spoiler_title})")
@@ -173,7 +173,7 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
                 output.append(line)
         elif not open_fence:
             output.append(line)
-    return '\n'.join(output)
+    return "\n".join(output)
 
 
 def build_message_list(
@@ -192,7 +192,7 @@ def build_message_list(
         if message.recipient.type in (Recipient.STREAM, Recipient.HUDDLE):
             return message.sender.full_name
         else:
-            return ''
+            return ""
 
     def fix_plaintext_image_urls(content: str) -> str:
         # Replace image URLs in plaintext content of the form
@@ -231,11 +231,11 @@ def build_message_list(
         html = fix_spoilers_in_html(html, user.default_language)
         if sender:
             plain, html = append_sender_to_message(plain, html, sender)
-        return {'plain': plain, 'html': html}
+        return {"plain": plain, "html": html}
 
     def build_sender_payload(message: Message) -> Dict[str, Any]:
         sender = sender_string(message)
-        return {'sender': sender, 'content': [build_message_payload(message, sender)]}
+        return {"sender": sender, "content": [build_message_payload(message, sender)]}
 
     def message_header(message: Message) -> Dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
@@ -246,7 +246,7 @@ def build_message_list(
             display_recipient = get_display_recipient(message.recipient)
             assert not isinstance(display_recipient, str)
             narrow_link = get_narrow_url(user, message, display_recipient=display_recipient)
-            other_recipients = [r['full_name'] for r in display_recipient if r['id'] != user.id]
+            other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user.id]
             header = "You and {}".format(", ".join(other_recipients))
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         else:
@@ -255,7 +255,7 @@ def build_message_list(
             if stream is None:
                 # Some of our callers don't populate stream_map, so
                 # we just populate the stream from the database.
-                stream = Stream.objects.only('id', 'name').get(id=stream_id)
+                stream = Stream.objects.only("id", "name").get(id=stream_id)
             narrow_link = get_narrow_url(user, message, stream=stream)
             header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user.realm, stream)
@@ -297,19 +297,19 @@ def build_message_list(
         header = message_header(message)
 
         # If we want to collapse into the previous recipient block
-        if len(messages_to_render) > 0 and messages_to_render[-1]['header'] == header:
+        if len(messages_to_render) > 0 and messages_to_render[-1]["header"] == header:
             sender = sender_string(message)
-            sender_block = messages_to_render[-1]['senders']
+            sender_block = messages_to_render[-1]["senders"]
 
             # Same message sender, collapse again
-            if sender_block[-1]['sender'] == sender:
-                sender_block[-1]['content'].append(build_message_payload(message))
+            if sender_block[-1]["sender"] == sender:
+                sender_block[-1]["content"].append(build_message_payload(message))
             else:
                 # Start a new sender block
                 sender_block.append(build_sender_payload(message))
         else:
             # New recipient and sender block
-            recipient_block = {'header': header, 'senders': [build_sender_payload(message)]}
+            recipient_block = {"header": header, "senders": [build_sender_payload(message)]}
 
             messages_to_render.append(recipient_block)
 
@@ -340,7 +340,7 @@ def get_narrow_url(
             display_recipient = get_display_recipient(message.recipient)
         assert display_recipient is not None
         assert not isinstance(display_recipient, str)
-        other_user_ids = [r['id'] for r in display_recipient if r['id'] != user_profile.id]
+        other_user_ids = [r["id"] for r in display_recipient if r["id"] != user_profile.id]
         return huddle_narrow_url(
             realm=user_profile.realm,
             other_user_ids=other_user_ids,
@@ -348,7 +348,7 @@ def get_narrow_url(
     else:
         assert display_recipient is None
         if stream is None:
-            stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
+            stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
         return topic_narrow_url(user_profile.realm, stream, message.topic_name())
 
 
@@ -382,11 +382,11 @@ def do_send_missedmessage_events_reply_in_zulip(
         return
 
     recipients = {
-        (msg['message'].recipient_id, msg['message'].topic_name()) for msg in missed_messages
+        (msg["message"].recipient_id, msg["message"].topic_name()) for msg in missed_messages
     }
     if len(recipients) != 1:
         raise ValueError(
-            f'All missed_messages must have the same recipient and topic {recipients!r}',
+            f"All missed_messages must have the same recipient and topic {recipients!r}",
         )
 
     # This link is no longer a part of the email, but keeping the code in case
@@ -400,12 +400,12 @@ def do_send_missedmessage_events_reply_in_zulip(
         realm_name_in_notifications=user_profile.realm_name_in_notifications,
     )
 
-    triggers = [message['trigger'] for message in missed_messages]
+    triggers = [message["trigger"] for message in missed_messages]
     unique_triggers = set(triggers)
     context.update(
-        mention='mentioned' in unique_triggers or 'wildcard_mentioned' in unique_triggers,
-        stream_email_notify='stream_email_notify' in unique_triggers,
-        mention_count=triggers.count('mentioned') + triggers.count("wildcard_mentioned"),
+        mention="mentioned" in unique_triggers or "wildcard_mentioned" in unique_triggers,
+        stream_email_notify="stream_email_notify" in unique_triggers,
+        mention_count=triggers.count("mentioned") + triggers.count("wildcard_mentioned"),
     )
 
     # If this setting (email mirroring integration) is enabled, only then
@@ -422,23 +422,23 @@ def do_send_missedmessage_events_reply_in_zulip(
 
     from zerver.lib.email_mirror import create_missed_message_address
 
-    reply_to_address = create_missed_message_address(user_profile, missed_messages[0]['message'])
+    reply_to_address = create_missed_message_address(user_profile, missed_messages[0]["message"])
     if reply_to_address == FromAddress.NOREPLY:
         reply_to_name = ""
     else:
         reply_to_name = "Zulip"
 
-    narrow_url = get_narrow_url(user_profile, missed_messages[0]['message'])
+    narrow_url = get_narrow_url(user_profile, missed_messages[0]["message"])
     context.update(
         narrow_url=narrow_url,
     )
 
-    senders = list({m['message'].sender for m in missed_messages})
-    if missed_messages[0]['message'].recipient.type == Recipient.HUDDLE:
-        display_recipient = get_display_recipient(missed_messages[0]['message'].recipient)
+    senders = list({m["message"].sender for m in missed_messages})
+    if missed_messages[0]["message"].recipient.type == Recipient.HUDDLE:
+        display_recipient = get_display_recipient(missed_messages[0]["message"].recipient)
         # Make sure that this is a list of strings, not a string.
         assert not isinstance(display_recipient, str)
-        other_recipients = [r['full_name'] for r in display_recipient if r['id'] != user_profile.id]
+        other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user_profile.id]
         context.update(group_pm=True)
         if len(other_recipients) == 2:
             huddle_display_name = " and ".join(other_recipients)
@@ -450,23 +450,23 @@ def do_send_missedmessage_events_reply_in_zulip(
             context.update(huddle_display_name=huddle_display_name)
         else:
             huddle_display_name = "{}, and {} others".format(
-                ', '.join(other_recipients[:2]), len(other_recipients) - 2
+                ", ".join(other_recipients[:2]), len(other_recipients) - 2
             )
             context.update(huddle_display_name=huddle_display_name)
-    elif missed_messages[0]['message'].recipient.type == Recipient.PERSONAL:
+    elif missed_messages[0]["message"].recipient.type == Recipient.PERSONAL:
         context.update(private_message=True)
-    elif context['mention'] or context['stream_email_notify']:
+    elif context["mention"] or context["stream_email_notify"]:
         # Keep only the senders who actually mentioned the user
-        if context['mention']:
+        if context["mention"]:
             senders = list(
                 {
-                    m['message'].sender
+                    m["message"].sender
                     for m in missed_messages
-                    if m['trigger'] == 'mentioned' or m['trigger'] == 'wildcard_mentioned'
+                    if m["trigger"] == "mentioned" or m["trigger"] == "wildcard_mentioned"
                 }
             )
-        message = missed_messages[0]['message']
-        stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
+        message = missed_messages[0]["message"]
+        stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
         stream_header = f"{stream.name} > {message.topic_name()}"
         context.update(
             stream_header=stream_header,
@@ -491,7 +491,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         context.update(
             messages=build_message_list(
                 user=user_profile,
-                messages=[m['message'] for m in missed_messages],
+                messages=[m["message"] for m in missed_messages],
                 stream_map={},
             ),
             sender_str=", ".join(sender.full_name for sender in senders),
@@ -518,23 +518,23 @@ def do_send_missedmessage_events_reply_in_zulip(
         )
 
     email_dict = {
-        'template_prefix': 'zerver/emails/missed_message',
-        'to_user_ids': [user_profile.id],
-        'from_name': from_name,
-        'from_address': from_address,
-        'reply_to_email': str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
-        'context': context,
+        "template_prefix": "zerver/emails/missed_message",
+        "to_user_ids": [user_profile.id],
+        "from_name": from_name,
+        "from_address": from_address,
+        "reply_to_email": str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
+        "context": context,
     }
     queue_json_publish("email_senders", email_dict)
 
     user_profile.last_reminder = timezone_now()
-    user_profile.save(update_fields=['last_reminder'])
+    user_profile.save(update_fields=["last_reminder"])
 
 
 def handle_missedmessage_emails(
     user_profile_id: int, missed_email_events: Iterable[Dict[str, Any]]
 ) -> None:
-    message_ids = {event.get('message_id'): event.get('trigger') for event in missed_email_events}
+    message_ids = {event.get("message_id"): event.get("trigger") for event in missed_email_events}
 
     user_profile = get_user_profile_by_id(user_profile_id)
     if not receives_offline_email_notifications(user_profile):
@@ -603,8 +603,8 @@ def handle_missedmessage_emails(
 def followup_day2_email_delay(user: UserProfile) -> timedelta:
     days_to_delay = 2
     user_tz = user.timezone
-    if user_tz == '':
-        user_tz = 'UTC'
+    if user_tz == "":
+        user_tz = "UTC"
     signup_day = user.date_joined.astimezone(pytz.timezone(user_tz)).isoweekday()
     if signup_day == 5:
         # If the day is Friday then delay should be till Monday
@@ -625,8 +625,8 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
 
     if settings.WELCOME_EMAIL_SENDER is not None:
         # line break to avoid triggering lint rule
-        from_name = settings.WELCOME_EMAIL_SENDER['name']
-        from_address = settings.WELCOME_EMAIL_SENDER['email']
+        from_name = settings.WELCOME_EMAIL_SENDER["name"]
+        from_address = settings.WELCOME_EMAIL_SENDER["email"]
     else:
         from_name = None
         from_address = FromAddress.support_placeholder
@@ -640,18 +640,18 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
     context = common_context(user)
     context.update(
         unsubscribe_link=unsubscribe_link,
-        keyboard_shortcuts_link=user.realm.uri + '/help/keyboard-shortcuts',
+        keyboard_shortcuts_link=user.realm.uri + "/help/keyboard-shortcuts",
         realm_name=user.realm.name,
         realm_creation=realm_creation,
         email=user.delivery_email,
         is_realm_admin=user.role == UserProfile.ROLE_REALM_ADMINISTRATOR,
     )
     if user.is_realm_admin:
-        context['getting_started_link'] = (
-            user.realm.uri + '/help/getting-your-organization-started-with-zulip'
+        context["getting_started_link"] = (
+            user.realm.uri + "/help/getting-your-organization-started-with-zulip"
         )
     else:
-        context['getting_started_link'] = "https://zulip.com"
+        context["getting_started_link"] = "https://zulip.com"
 
     # Imported here to avoid import cycles.
     from zproject.backends import ZulipLDAPAuthBackend, email_belongs_to_ldap

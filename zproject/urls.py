@@ -245,251 +245,251 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 # e.g. `PATCH /json/realm` or `PATCH /api/v1/realm`.
 v1_api_and_json_patterns = [
     # realm-level calls
-    rest_path('realm', PATCH=update_realm),
+    rest_path("realm", PATCH=update_realm),
     # Returns a 204, used by desktop app to verify connectivity status
-    path('generate_204', generate_204),
-    path('realm/subdomain/<subdomain>', check_subdomain_available),
+    path("generate_204", generate_204),
+    path("realm/subdomain/<subdomain>", check_subdomain_available),
     # realm/domains -> zerver.views.realm_domains
-    rest_path('realm/domains', GET=list_realm_domains, POST=create_realm_domain),
-    rest_path('realm/domains/<domain>', PATCH=patch_realm_domain, DELETE=delete_realm_domain),
+    rest_path("realm/domains", GET=list_realm_domains, POST=create_realm_domain),
+    rest_path("realm/domains/<domain>", PATCH=patch_realm_domain, DELETE=delete_realm_domain),
     # realm/emoji -> zerver.views.realm_emoji
-    rest_path('realm/emoji', GET=list_emoji),
+    rest_path("realm/emoji", GET=list_emoji),
     rest_path(
-        'realm/emoji/<emoji_name>',
+        "realm/emoji/<emoji_name>",
         POST=upload_emoji,
         DELETE=(delete_emoji, {"intentionally_undocumented"}),
     ),
     # this endpoint throws a status code 400 JsonableError when it should be a 404.
     # realm/icon -> zerver.views.realm_icon
-    rest_path('realm/icon', POST=upload_icon, DELETE=delete_icon_backend, GET=get_icon_backend),
+    rest_path("realm/icon", POST=upload_icon, DELETE=delete_icon_backend, GET=get_icon_backend),
     # realm/logo -> zerver.views.realm_logo
-    rest_path('realm/logo', POST=upload_logo, DELETE=delete_logo_backend, GET=get_logo_backend),
+    rest_path("realm/logo", POST=upload_logo, DELETE=delete_logo_backend, GET=get_logo_backend),
     # realm/filters -> zerver.views.realm_filters
-    rest_path('realm/filters', GET=list_filters, POST=create_filter),
-    rest_path('realm/filters/<int:filter_id>', DELETE=delete_filter),
+    rest_path("realm/filters", GET=list_filters, POST=create_filter),
+    rest_path("realm/filters/<int:filter_id>", DELETE=delete_filter),
     # realm/profile_fields -> zerver.views.custom_profile_fields
     rest_path(
-        'realm/profile_fields',
+        "realm/profile_fields",
         GET=list_realm_custom_profile_fields,
         PATCH=reorder_realm_custom_profile_fields,
         POST=create_realm_custom_profile_field,
     ),
     rest_path(
-        'realm/profile_fields/<int:field_id>',
+        "realm/profile_fields/<int:field_id>",
         PATCH=update_realm_custom_profile_field,
         DELETE=delete_realm_custom_profile_field,
     ),
     # realm/deactivate -> zerver.views.deactivate_realm
-    rest_path('realm/deactivate', POST=deactivate_realm),
+    rest_path("realm/deactivate", POST=deactivate_realm),
     # users -> zerver.views.users
-    rest_path('users', GET=get_members_backend, POST=create_user_backend),
-    rest_path('users/me', GET=get_profile_backend, DELETE=deactivate_user_own_backend),
-    rest_path('users/<int:user_id>/reactivate', POST=reactivate_user_backend),
+    rest_path("users", GET=get_members_backend, POST=create_user_backend),
+    rest_path("users/me", GET=get_profile_backend, DELETE=deactivate_user_own_backend),
+    rest_path("users/<int:user_id>/reactivate", POST=reactivate_user_backend),
     rest_path(
-        'users/<int:user_id>',
+        "users/<int:user_id>",
         GET=get_members_backend,
         PATCH=update_user_backend,
         DELETE=deactivate_user_backend,
     ),
-    rest_path('users/<int:user_id>/subscriptions/<int:stream_id>', GET=get_subscription_backend),
-    rest_path('bots', GET=get_bots_backend, POST=add_bot_backend),
-    rest_path('bots/<int:bot_id>/api_key/regenerate', POST=regenerate_bot_api_key),
-    rest_path('bots/<int:bot_id>', PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
+    rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
+    rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
+    rest_path("bots/<int:bot_id>/api_key/regenerate", POST=regenerate_bot_api_key),
+    rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
     # invites -> zerver.views.invite
-    rest_path('invites', GET=get_user_invites, POST=invite_users_backend),
-    rest_path('invites/<int:prereg_id>', DELETE=revoke_user_invite),
-    rest_path('invites/<int:prereg_id>/resend', POST=resend_user_invite_email),
+    rest_path("invites", GET=get_user_invites, POST=invite_users_backend),
+    rest_path("invites/<int:prereg_id>", DELETE=revoke_user_invite),
+    rest_path("invites/<int:prereg_id>/resend", POST=resend_user_invite_email),
     # invites/multiuse -> zerver.views.invite
-    rest_path('invites/multiuse', POST=generate_multiuse_invite_backend),
+    rest_path("invites/multiuse", POST=generate_multiuse_invite_backend),
     # invites/multiuse -> zerver.views.invite
-    rest_path('invites/multiuse/<int:invite_id>', DELETE=revoke_multiuse_invite),
+    rest_path("invites/multiuse/<int:invite_id>", DELETE=revoke_multiuse_invite),
     # mark messages as read (in bulk)
-    rest_path('mark_all_as_read', POST=mark_all_as_read),
-    rest_path('mark_stream_as_read', POST=mark_stream_as_read),
-    rest_path('mark_topic_as_read', POST=mark_topic_as_read),
-    rest_path('zcommand', POST=zcommand_backend),
+    rest_path("mark_all_as_read", POST=mark_all_as_read),
+    rest_path("mark_stream_as_read", POST=mark_stream_as_read),
+    rest_path("mark_topic_as_read", POST=mark_topic_as_read),
+    rest_path("zcommand", POST=zcommand_backend),
     # Endpoints for syncing drafts.
     rest_path(
-        'drafts',
-        GET=(fetch_drafts, {'intentionally_undocumented'}),
-        POST=(create_drafts, {'intentionally_undocumented'}),
+        "drafts",
+        GET=(fetch_drafts, {"intentionally_undocumented"}),
+        POST=(create_drafts, {"intentionally_undocumented"}),
     ),
     rest_path(
-        'drafts/<int:draft_id>',
-        PATCH=(edit_draft, {'intentionally_undocumented'}),
-        DELETE=(delete_draft, {'intentionally_undocumented'}),
+        "drafts/<int:draft_id>",
+        PATCH=(edit_draft, {"intentionally_undocumented"}),
+        DELETE=(delete_draft, {"intentionally_undocumented"}),
     ),
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
     rest_path(
-        'messages',
-        GET=(get_messages_backend, {'allow_anonymous_user_web'}),
-        POST=(send_message_backend, {'allow_incoming_webhooks'}),
+        "messages",
+        GET=(get_messages_backend, {"allow_anonymous_user_web"}),
+        POST=(send_message_backend, {"allow_incoming_webhooks"}),
     ),
     rest_path(
-        'messages/<int:message_id>',
+        "messages/<int:message_id>",
         GET=json_fetch_raw_message,
         PATCH=update_message_backend,
         DELETE=delete_message_backend,
     ),
-    rest_path('messages/render', POST=render_message_backend),
-    rest_path('messages/flags', POST=update_message_flags),
-    rest_path('messages/<int:message_id>/history', GET=get_message_edit_history),
-    rest_path('messages/matches_narrow', GET=messages_in_narrow_backend),
-    rest_path('users/me/subscriptions/properties', POST=update_subscription_properties_backend),
-    rest_path('users/me/subscriptions/<int:stream_id>', PATCH=update_subscriptions_property),
-    rest_path('submessage', POST=process_submessage),
+    rest_path("messages/render", POST=render_message_backend),
+    rest_path("messages/flags", POST=update_message_flags),
+    rest_path("messages/<int:message_id>/history", GET=get_message_edit_history),
+    rest_path("messages/matches_narrow", GET=messages_in_narrow_backend),
+    rest_path("users/me/subscriptions/properties", POST=update_subscription_properties_backend),
+    rest_path("users/me/subscriptions/<int:stream_id>", PATCH=update_subscriptions_property),
+    rest_path("submessage", POST=process_submessage),
     # New endpoint for handling reactions.
     # reactions -> zerver.view.reactions
     # POST adds a reaction to a message
     # DELETE removes a reaction from a message
-    rest_path('messages/<int:message_id>/reactions', POST=add_reaction, DELETE=remove_reaction),
+    rest_path("messages/<int:message_id>/reactions", POST=add_reaction, DELETE=remove_reaction),
     # attachments -> zerver.views.attachments
-    rest_path('attachments', GET=list_by_user),
-    rest_path('attachments/<int:attachment_id>', DELETE=remove),
+    rest_path("attachments", GET=list_by_user),
+    rest_path("attachments/<int:attachment_id>", DELETE=remove),
     # typing -> zerver.views.typing
     # POST sends a typing notification event to recipients
-    rest_path('typing', POST=send_notification_backend),
+    rest_path("typing", POST=send_notification_backend),
     # user_uploads -> zerver.views.upload
-    rest_path('user_uploads', POST=upload_file_backend),
+    rest_path("user_uploads", POST=upload_file_backend),
     rest_path(
-        'user_uploads/<realm_id_str>/<path:filename>',
-        GET=(serve_file_url_backend, {'override_api_url_scheme'}),
+        "user_uploads/<realm_id_str>/<path:filename>",
+        GET=(serve_file_url_backend, {"override_api_url_scheme"}),
     ),
     # bot_storage -> zerver.views.storage
-    rest_path('bot_storage', PUT=update_storage, GET=get_storage, DELETE=remove_storage),
+    rest_path("bot_storage", PUT=update_storage, GET=get_storage, DELETE=remove_storage),
     # Endpoint used by mobile devices to register their push
     # notification credentials
     rest_path(
-        'users/me/apns_device_token', POST=add_apns_device_token, DELETE=remove_apns_device_token
+        "users/me/apns_device_token", POST=add_apns_device_token, DELETE=remove_apns_device_token
     ),
-    rest_path('users/me/android_gcm_reg_id', POST=add_android_reg_id, DELETE=remove_android_reg_id),
+    rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
     # users/*/presnece => zerver.views.presence.
-    rest_path('users/me/presence', POST=update_active_status_backend),
+    rest_path("users/me/presence", POST=update_active_status_backend),
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the
     # /users/me/presence endpoint.
-    rest_path('users/<email>/presence', GET=get_presence_backend),
-    rest_path('realm/presence', GET=get_statuses_for_realm),
-    rest_path('users/me/status', POST=update_user_status_backend),
+    rest_path("users/<email>/presence", GET=get_presence_backend),
+    rest_path("realm/presence", GET=get_statuses_for_realm),
+    rest_path("users/me/status", POST=update_user_status_backend),
     # user_groups -> zerver.views.user_groups
-    rest_path('user_groups', GET=get_user_group),
-    rest_path('user_groups/create', POST=add_user_group),
-    rest_path('user_groups/<int:user_group_id>', PATCH=edit_user_group, DELETE=delete_user_group),
-    rest_path('user_groups/<int:user_group_id>/members', POST=update_user_group_backend),
+    rest_path("user_groups", GET=get_user_group),
+    rest_path("user_groups/create", POST=add_user_group),
+    rest_path("user_groups/<int:user_group_id>", PATCH=edit_user_group, DELETE=delete_user_group),
+    rest_path("user_groups/<int:user_group_id>/members", POST=update_user_group_backend),
     # users/me -> zerver.views.user_settings
-    rest_path('users/me/api_key/regenerate', POST=regenerate_api_key),
+    rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
     rest_path(
-        'users/me/enter-sends',
+        "users/me/enter-sends",
         POST=(
             change_enter_sends,
             # This endpoint should be folded into user settings
-            {'intentionally_undocumented'},
+            {"intentionally_undocumented"},
         ),
     ),
-    rest_path('users/me/avatar', POST=set_avatar_backend, DELETE=delete_avatar_backend),
+    rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
     # users/me/hotspots -> zerver.views.hotspots
     rest_path(
-        'users/me/hotspots',
+        "users/me/hotspots",
         POST=(
             mark_hotspot_as_read,
             # This endpoint is low priority for documentation as
             # it is part of the webapp-specific tutorial.
-            {'intentionally_undocumented'},
+            {"intentionally_undocumented"},
         ),
     ),
     # users/me/tutorial_status -> zerver.views.tutorial
     rest_path(
-        'users/me/tutorial_status',
+        "users/me/tutorial_status",
         POST=(
             set_tutorial_status,
             # This is a relic of an old Zulip tutorial model and
             # should be deleted.
-            {'intentionally_undocumented'},
+            {"intentionally_undocumented"},
         ),
     ),
     # settings -> zerver.views.user_settings
-    rest_path('settings', PATCH=json_change_settings),
-    rest_path('settings/display', PATCH=update_display_settings_backend),
-    rest_path('settings/notifications', PATCH=json_change_notify_settings),
+    rest_path("settings", PATCH=json_change_settings),
+    rest_path("settings/display", PATCH=update_display_settings_backend),
+    rest_path("settings/notifications", PATCH=json_change_notify_settings),
     # users/me/alert_words -> zerver.views.alert_words
     rest_path(
-        'users/me/alert_words',
+        "users/me/alert_words",
         GET=list_alert_words,
         POST=add_alert_words,
         DELETE=remove_alert_words,
     ),
     # users/me/custom_profile_data -> zerver.views.custom_profile_data
     rest_path(
-        'users/me/profile_data',
+        "users/me/profile_data",
         PATCH=update_user_custom_profile_data,
         DELETE=remove_user_custom_profile_data,
     ),
     rest_path(
-        'users/me/<int:stream_id>/topics', GET=(get_topics_backend, {'allow_anonymous_user_web'})
+        "users/me/<int:stream_id>/topics", GET=(get_topics_backend, {"allow_anonymous_user_web"})
     ),
     # streams -> zerver.views.streams
     # (this API is only used externally)
-    rest_path('streams', GET=get_streams_backend),
+    rest_path("streams", GET=get_streams_backend),
     # GET returns `stream_id`, stream name should be encoded in the URL query (in `stream` param)
-    rest_path('get_stream_id', GET=json_get_stream_id),
+    rest_path("get_stream_id", GET=json_get_stream_id),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
-    rest_path('streams/<int:stream_id>/members', GET=get_subscribers_backend),
+    rest_path("streams/<int:stream_id>/members", GET=get_subscribers_backend),
     rest_path(
-        'streams/<int:stream_id>', PATCH=update_stream_backend, DELETE=deactivate_stream_backend
+        "streams/<int:stream_id>", PATCH=update_stream_backend, DELETE=deactivate_stream_backend
     ),
     # Delete topic in stream
-    rest_path('streams/<int:stream_id>/delete_topic', POST=delete_in_topic),
-    rest_path('default_streams', POST=add_default_stream, DELETE=remove_default_stream),
-    rest_path('default_stream_groups/create', POST=create_default_stream_group),
+    rest_path("streams/<int:stream_id>/delete_topic", POST=delete_in_topic),
+    rest_path("default_streams", POST=add_default_stream, DELETE=remove_default_stream),
+    rest_path("default_stream_groups/create", POST=create_default_stream_group),
     rest_path(
-        'default_stream_groups/<int:group_id>',
+        "default_stream_groups/<int:group_id>",
         PATCH=update_default_stream_group_info,
         DELETE=remove_default_stream_group,
     ),
     rest_path(
-        'default_stream_groups/<int:group_id>/streams', PATCH=update_default_stream_group_streams
+        "default_stream_groups/<int:group_id>/streams", PATCH=update_default_stream_group_streams
     ),
     # GET lists your streams, POST bulk adds, PATCH bulk modifies/removes
     rest_path(
-        'users/me/subscriptions',
+        "users/me/subscriptions",
         GET=list_subscriptions_backend,
         POST=add_subscriptions_backend,
         PATCH=update_subscriptions_backend,
         DELETE=remove_subscriptions_backend,
     ),
     # muting -> zerver.views.muting
-    rest_path('users/me/subscriptions/muted_topics', PATCH=update_muted_topic),
+    rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
     # used to register for an event queue in tornado
-    rest_path('register', POST=events_register_backend),
+    rest_path("register", POST=events_register_backend),
     # events -> zerver.tornado.views
-    rest_path('events', GET=get_events, DELETE=cleanup_event_queue),
+    rest_path("events", GET=get_events, DELETE=cleanup_event_queue),
     # report -> zerver.views.report
     #
     # These endpoints are for internal error/performance reporting
     # from the browser to the webapp, and we don't expect to ever
     # include in our API documentation.
     rest_path(
-        'report/error',
+        "report/error",
         # Logged-out browsers can hit this endpoint, for portico page JS exceptions.
-        POST=(report_error, {'allow_anonymous_user_web', 'intentionally_undocumented'}),
+        POST=(report_error, {"allow_anonymous_user_web", "intentionally_undocumented"}),
     ),
-    rest_path('report/send_times', POST=(report_send_times, {'intentionally_undocumented'})),
+    rest_path("report/send_times", POST=(report_send_times, {"intentionally_undocumented"})),
     rest_path(
-        'report/narrow_times',
-        POST=(report_narrow_times, {'allow_anonymous_user_web', 'intentionally_undocumented'}),
+        "report/narrow_times",
+        POST=(report_narrow_times, {"allow_anonymous_user_web", "intentionally_undocumented"}),
     ),
     rest_path(
-        'report/unnarrow_times',
-        POST=(report_unnarrow_times, {'allow_anonymous_user_web', 'intentionally_undocumented'}),
+        "report/unnarrow_times",
+        POST=(report_unnarrow_times, {"allow_anonymous_user_web", "intentionally_undocumented"}),
     ),
     # Used to generate a Zoom video call URL
-    rest_path('calls/zoom/create', POST=make_zoom_video_call),
+    rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a Big Blue Button video call URL
-    rest_path('calls/bigbluebutton/create', GET=get_bigbluebutton_url),
+    rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
     # export/realm -> zerver.views.realm_export
-    rest_path('export/realm', POST=export_realm, GET=get_realm_exports),
-    rest_path('export/realm/<int:export_id>', DELETE=delete_realm_export),
+    rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
+    rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
 ]
 
 integrations_view = IntegrationView.as_view()
@@ -500,138 +500,138 @@ integrations_view = IntegrationView.as_view()
 # If you're adding a new page to the website (as opposed to a new
 # endpoint for use by code), you should add it here.
 i18n_urls = [
-    path('', home, name='home'),
+    path("", home, name="home"),
     # We have a desktop-specific landing page in case we change our /
     # to not log in in the future. We don't want to require a new
     # desktop app build for everyone in that case
-    path('desktop_home/', desktop_home),
+    path("desktop_home/", desktop_home),
     # Backwards-compatibility (legacy) Google auth URL for the mobile
     # apps; see https://github.com/zulip/zulip/issues/13081 for
     # background.  We can remove this once older versions of the
     # mobile app are no longer present in the wild.
-    path('accounts/login/google/', start_social_login, {"backend": "google"}),
-    path('accounts/login/start/sso/', start_remote_user_sso, name='start-login-sso'),
-    path('accounts/login/sso/', remote_user_sso, name='login-sso'),
-    path('accounts/login/jwt/', remote_user_jwt),
-    path('accounts/login/social/<backend>', start_social_login, name='login-social'),
-    path('accounts/login/social/<backend>/<extra_arg>', start_social_login, name='login-social'),
-    path('accounts/register/social/<backend>', start_social_signup, name='signup-social'),
+    path("accounts/login/google/", start_social_login, {"backend": "google"}),
+    path("accounts/login/start/sso/", start_remote_user_sso, name="start-login-sso"),
+    path("accounts/login/sso/", remote_user_sso, name="login-sso"),
+    path("accounts/login/jwt/", remote_user_jwt),
+    path("accounts/login/social/<backend>", start_social_login, name="login-social"),
+    path("accounts/login/social/<backend>/<extra_arg>", start_social_login, name="login-social"),
+    path("accounts/register/social/<backend>", start_social_signup, name="signup-social"),
     path(
-        'accounts/register/social/<backend>/<extra_arg>', start_social_signup, name='signup-social'
+        "accounts/register/social/<backend>/<extra_arg>", start_social_signup, name="signup-social"
     ),
-    path('accounts/login/subdomain/<token>', log_into_subdomain),
-    path('accounts/login/local/', dev_direct_login, name='login-local'),
+    path("accounts/login/subdomain/<token>", log_into_subdomain),
+    path("accounts/login/local/", dev_direct_login, name="login-local"),
     # We have two entries for accounts/login; only the first one is
     # used for URL resolution.  The second here is to allow
     # reverse("login") in templates to
     # return `/accounts/login/`.
-    path('accounts/login/', login_page, {'template_name': 'zerver/login.html'}, name='login_page'),
-    path('accounts/login/', LoginView.as_view(template_name='zerver/login.html'), name='login'),
-    path('accounts/logout/', logout_then_login),
-    path('accounts/webathena_kerberos_login/', webathena_kerberos_login),
-    path('accounts/password/reset/', password_reset, name='password_reset'),
+    path("accounts/login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
+    path("accounts/login/", LoginView.as_view(template_name="zerver/login.html"), name="login"),
+    path("accounts/logout/", logout_then_login),
+    path("accounts/webathena_kerberos_login/", webathena_kerberos_login),
+    path("accounts/password/reset/", password_reset, name="password_reset"),
     path(
-        'accounts/password/reset/done/',
-        PasswordResetDoneView.as_view(template_name='zerver/reset_emailed.html'),
+        "accounts/password/reset/done/",
+        PasswordResetDoneView.as_view(template_name="zerver/reset_emailed.html"),
     ),
     path(
-        'accounts/password/reset/<uidb64>/<token>/',
+        "accounts/password/reset/<uidb64>/<token>/",
         PasswordResetConfirmView.as_view(
-            success_url='/accounts/password/done/',
-            template_name='zerver/reset_confirm.html',
+            success_url="/accounts/password/done/",
+            template_name="zerver/reset_confirm.html",
             form_class=LoggingSetPasswordForm,
         ),
-        name='password_reset_confirm',
+        name="password_reset_confirm",
     ),
     path(
-        'accounts/password/done/',
-        PasswordResetCompleteView.as_view(template_name='zerver/reset_done.html'),
+        "accounts/password/done/",
+        PasswordResetCompleteView.as_view(template_name="zerver/reset_done.html"),
     ),
-    path('accounts/deactivated/', show_deactivation_notice),
+    path("accounts/deactivated/", show_deactivation_notice),
     # Displays digest email content in browser.
-    path('digest/', digest_page),
+    path("digest/", digest_page),
     # Registration views, require a confirmation ID.
-    path('accounts/home/', accounts_home),
+    path("accounts/home/", accounts_home),
     path(
-        'accounts/send_confirm/<email>',
-        TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'),
-        name='signup_send_confirm',
+        "accounts/send_confirm/<email>",
+        TemplateView.as_view(template_name="zerver/accounts_send_confirm.html"),
+        name="signup_send_confirm",
     ),
     path(
-        'accounts/new/send_confirm/<email>',
-        TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'),
-        {'realm_creation': True},
-        name='new_realm_send_confirm',
+        "accounts/new/send_confirm/<email>",
+        TemplateView.as_view(template_name="zerver/accounts_send_confirm.html"),
+        {"realm_creation": True},
+        name="new_realm_send_confirm",
     ),
-    path('accounts/register/', accounts_register, name='accounts_register'),
+    path("accounts/register/", accounts_register, name="accounts_register"),
     path(
-        'accounts/do_confirm/<confirmation_key>',
+        "accounts/do_confirm/<confirmation_key>",
         check_prereg_key_and_redirect,
-        name='check_prereg_key_and_redirect',
+        name="check_prereg_key_and_redirect",
     ),
     path(
-        'accounts/confirm_new_email/<confirmation_key>',
+        "accounts/confirm_new_email/<confirmation_key>",
         confirm_email_change,
-        name='confirm_email_change',
+        name="confirm_email_change",
     ),
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including the welcome emails (day 1 & 2), missed PMs, etc.
     path(
-        'accounts/unsubscribe/<email_type>/<confirmation_key>',
+        "accounts/unsubscribe/<email_type>/<confirmation_key>",
         email_unsubscribe,
-        name='unsubscribe',
+        name="unsubscribe",
     ),
     # Portico-styled page used to provide email confirmation of terms acceptance.
-    path('accounts/accept_terms/', accounts_accept_terms, name='accept_terms'),
+    path("accounts/accept_terms/", accounts_accept_terms, name="accept_terms"),
     # Find your account
-    path('accounts/find/', find_account, name='find_account'),
+    path("accounts/find/", find_account, name="find_account"),
     # Go to organization subdomain
-    path('accounts/go/', realm_redirect, name='realm_redirect'),
+    path("accounts/go/", realm_redirect, name="realm_redirect"),
     # Realm creation
-    path('new/', create_realm),
-    path('new/<creation_key>', create_realm, name='create_realm'),
+    path("new/", create_realm),
+    path("new/<creation_key>", create_realm, name="create_realm"),
     # Realm reactivation
-    path('reactivate/<confirmation_key>', realm_reactivation, name='realm_reactivation'),
+    path("reactivate/<confirmation_key>", realm_reactivation, name="realm_reactivation"),
     # Global public streams (Zulip's way of doing archives)
-    path('archive/streams/<int:stream_id>/topics/<topic_name>', archive),
-    path('archive/streams/<int:stream_id>/topics', get_web_public_topics_backend),
+    path("archive/streams/<int:stream_id>/topics/<topic_name>", archive),
+    path("archive/streams/<int:stream_id>/topics", get_web_public_topics_backend),
     # Login/registration
-    path('register/', accounts_home, name='register'),
-    path('login/', login_page, {'template_name': 'zerver/login.html'}, name='login_page'),
-    path('join/<confirmation_key>/', accounts_home_from_multiuse_invite, name='join'),
+    path("register/", accounts_home, name="register"),
+    path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
+    path("join/<confirmation_key>/", accounts_home_from_multiuse_invite, name="join"),
     # Used to generate a Zoom video call URL
-    path('calls/zoom/register', register_zoom_user),
-    path('calls/zoom/complete', complete_zoom_user),
-    path('calls/zoom/deauthorize', deauthorize_zoom_user),
+    path("calls/zoom/register", register_zoom_user),
+    path("calls/zoom/complete", complete_zoom_user),
+    path("calls/zoom/deauthorize", deauthorize_zoom_user),
     # Used to join a Big Blue Button video call
-    path('calls/bigbluebutton/join', join_bigbluebutton),
+    path("calls/bigbluebutton/join", join_bigbluebutton),
     # API and integrations documentation
-    path('integrations/doc-html/<integration_name>', integration_doc),
-    path('integrations/', integrations_view),
-    path('integrations/<path:path>', integrations_view),
+    path("integrations/doc-html/<integration_name>", integration_doc),
+    path("integrations/", integrations_view),
+    path("integrations/<path:path>", integrations_view),
     # Landing page, features pages, signup form, etc.
-    path('hello/', hello_view),
-    path('new-user/', RedirectView.as_view(url='/hello', permanent=True)),
-    path('features/', landing_view, {'template_name': 'zerver/features.html'}),
-    path('plans/', plans_view, name='plans'),
-    path('apps/', apps_view),
-    path('apps/download/<platform>', app_download_link_redirect),
-    path('apps/<platform>', apps_view),
-    path('team/', team_view),
-    path('history/', landing_view, {'template_name': 'zerver/history.html'}),
-    path('why-zulip/', landing_view, {'template_name': 'zerver/why-zulip.html'}),
-    path('for/open-source/', landing_view, {'template_name': 'zerver/for-open-source.html'}),
-    path('for/research/', landing_view, {'template_name': 'zerver/for-research.html'}),
-    path('for/companies/', landing_view, {'template_name': 'zerver/for-companies.html'}),
+    path("hello/", hello_view),
+    path("new-user/", RedirectView.as_view(url="/hello", permanent=True)),
+    path("features/", landing_view, {"template_name": "zerver/features.html"}),
+    path("plans/", plans_view, name="plans"),
+    path("apps/", apps_view),
+    path("apps/download/<platform>", app_download_link_redirect),
+    path("apps/<platform>", apps_view),
+    path("team/", team_view),
+    path("history/", landing_view, {"template_name": "zerver/history.html"}),
+    path("why-zulip/", landing_view, {"template_name": "zerver/why-zulip.html"}),
+    path("for/open-source/", landing_view, {"template_name": "zerver/for-open-source.html"}),
+    path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
+    path("for/companies/", landing_view, {"template_name": "zerver/for-companies.html"}),
     path(
-        'for/working-groups-and-communities/',
+        "for/working-groups-and-communities/",
         landing_view,
-        {'template_name': 'zerver/for-working-groups-and-communities.html'},
+        {"template_name": "zerver/for-working-groups-and-communities.html"},
     ),
-    path('security/', landing_view, {'template_name': 'zerver/security.html'}),
+    path("security/", landing_view, {"template_name": "zerver/security.html"}),
     # Terms of Service and privacy pages.
-    path('terms/', terms_view),
-    path('privacy/', privacy_view),
+    path("terms/", terms_view),
+    path("privacy/", privacy_view),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -639,8 +639,8 @@ urls = list(i18n_urls)
 
 # Include the dual-use patterns twice
 urls += [
-    path('api/v1/', include(v1_api_and_json_patterns)),
-    path('json/', include(v1_api_and_json_patterns)),
+    path("api/v1/", include(v1_api_and_json_patterns)),
+    path("json/", include(v1_api_and_json_patterns)),
 ]
 
 # user_uploads -> zerver.views.upload.serve_file_backend
@@ -653,29 +653,29 @@ urls += [
 # 'override_api_url_scheme' flag passed to rest_dispatch
 urls += [
     path(
-        'user_uploads/temporary/<token>/<filename>',
+        "user_uploads/temporary/<token>/<filename>",
         serve_local_file_unauthed,
-        name='local_file_unauthed',
+        name="local_file_unauthed",
     ),
     rest_path(
-        'user_uploads/<realm_id_str>/<path:filename>',
-        GET=(serve_file_backend, {'override_api_url_scheme'}),
+        "user_uploads/<realm_id_str>/<path:filename>",
+        GET=(serve_file_backend, {"override_api_url_scheme"}),
     ),
     # This endpoint serves thumbnailed versions of images using thumbor;
     # it requires an exception for the same reason.
-    rest_path('thumbnail', GET=(backend_serve_thumbnail, {'override_api_url_scheme'})),
+    rest_path("thumbnail", GET=(backend_serve_thumbnail, {"override_api_url_scheme"})),
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
-    rest_path('avatar/<email_or_id>', GET=(avatar, {'override_api_url_scheme'})),
+    rest_path("avatar/<email_or_id>", GET=(avatar, {"override_api_url_scheme"})),
     rest_path(
-        'avatar/<email_or_id>/medium', {'medium': True}, GET=(avatar, {'override_api_url_scheme'})
+        "avatar/<email_or_id>/medium", {"medium": True}, GET=(avatar, {"override_api_url_scheme"})
     ),
 ]
 
 # This URL serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
 urls += [
-    path('report/csp_violations', report_csp_violations),
+    path("report/csp_violations", report_csp_violations),
 ]
 
 # This URL serves as a way to provide backward compatibility to messages
@@ -683,7 +683,7 @@ urls += [
 # such links with images previews. Now thumbor can be used for serving such
 # images.
 urls += [
-    path('external_content/<digest>/<received_url>', handle_camo_url),
+    path("external_content/<digest>/<received_url>", handle_camo_url),
 ]
 
 # Incoming webhook URLs
@@ -695,7 +695,7 @@ for incoming_webhook in WEBHOOK_INTEGRATIONS:
 
 # Desktop-specific authentication URLs
 urls += [
-    rest_path('json/fetch_api_key', POST=json_fetch_api_key),
+    rest_path("json/fetch_api_key", POST=json_fetch_api_key),
 ]
 
 # Mobile-specific authentication URLs
@@ -703,7 +703,7 @@ urls += [
     # Used as a global check by all mobile clients, which currently send
     # requests to https://zulip.com/compatibility almost immediately after
     # starting up.
-    path('compatibility', check_global_compatibility),
+    path("compatibility", check_global_compatibility),
 ]
 
 v1_api_mobile_patterns = [
@@ -711,32 +711,32 @@ v1_api_mobile_patterns = [
     # authentication backends the server allows as well as details
     # like the requested subdomains'd realm icon (if known) and
     # server-specific compatibility.
-    path('server_settings', api_get_server_settings),
+    path("server_settings", api_get_server_settings),
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
-    path('fetch_api_key', api_fetch_api_key),
+    path("fetch_api_key", api_fetch_api_key),
     # This is for the signing in through the devAuthBackEnd on mobile apps.
-    path('dev_fetch_api_key', api_dev_fetch_api_key),
+    path("dev_fetch_api_key", api_dev_fetch_api_key),
     # This is for fetching the emails of the admins and the users.
-    path('dev_list_users', api_dev_list_users),
+    path("dev_list_users", api_dev_list_users),
     # Used to present the GOOGLE_CLIENT_ID to mobile apps
-    path('fetch_google_client_id', api_fetch_google_client_id),
+    path("fetch_google_client_id", api_fetch_google_client_id),
 ]
 urls += [
-    path('api/v1/', include(v1_api_mobile_patterns)),
+    path("api/v1/", include(v1_api_mobile_patterns)),
 ]
 
 # View for uploading messages from email mirror
 urls += [
-    path('email_mirror_message', email_mirror_message),
+    path("email_mirror_message", email_mirror_message),
 ]
 
 # Include URL configuration files for site-specified extra installed
 # Django apps
 for app_name in settings.EXTRA_INSTALLED_APPS:
     app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
-    if os.path.exists(os.path.join(app_dir, 'urls.py')):
-        urls += [path('', include(f'{app_name}.urls'))]
+    if os.path.exists(os.path.join(app_dir, "urls.py")):
+        urls += [path("", include(f"{app_name}.urls"))]
         i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
 # Tornado views
@@ -745,32 +745,32 @@ urls += [
     #
     # Since these views don't use rest_dispatch, they cannot have
     # asynchronous Tornado behavior.
-    path('notify_tornado', notify),
-    path('api/v1/events/internal', get_events_internal),
+    path("notify_tornado", notify),
+    path("api/v1/events/internal", get_events_internal),
 ]
 
 # Python Social Auth
 
-urls += [path('', include('social_django.urls', namespace='social'))]
-urls += [path('saml/metadata.xml', saml_sp_metadata)]
+urls += [path("", include("social_django.urls", namespace="social"))]
+urls += [path("saml/metadata.xml", saml_sp_metadata)]
 
 # User documentation site
 help_documentation_view = MarkdownDirectoryView.as_view(
-    template_name='zerver/documentation_main.html', path_template='/zerver/help/%s.md'
+    template_name="zerver/documentation_main.html", path_template="/zerver/help/%s.md"
 )
 api_documentation_view = MarkdownDirectoryView.as_view(
-    template_name='zerver/documentation_main.html', path_template='/zerver/api/%s.md'
+    template_name="zerver/documentation_main.html", path_template="/zerver/api/%s.md"
 )
 urls += [
-    path('help/', help_documentation_view),
-    path('help/<path:article>', help_documentation_view),
-    path('api/', api_documentation_view),
-    path('api/<slug:article>', api_documentation_view),
+    path("help/", help_documentation_view),
+    path("help/<path:article>", help_documentation_view),
+    path("api/", api_documentation_view),
+    path("api/<slug:article>", api_documentation_view),
 ]
 
 # Two-factor URLs
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
-    urls += [path('', include(tf_urls)), path('', include(tf_twilio_urls))]
+    urls += [path("", include(tf_urls)), path("", include(tf_twilio_urls))]
 
 if settings.DEVELOPMENT:
     urls += dev_urls.urls

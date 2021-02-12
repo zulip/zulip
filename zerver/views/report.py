@@ -30,7 +30,7 @@ def get_js_source_map() -> Optional[SourceMap]:
     if not js_source_map and not (settings.DEVELOPMENT or settings.TEST_SUITE):
         js_source_map = SourceMap(
             [
-                static_path('webpack-bundles'),
+                static_path("webpack-bundles"),
             ]
         )
     return js_source_map
@@ -65,9 +65,9 @@ def report_send_times(
     if displayed > 0:
         statsd.timing(f"endtoend.displayed_time.{base_key}", displayed)
     if locally_echoed:
-        statsd.incr('locally_echoed')
+        statsd.incr("locally_echoed")
     if rendered_content_disparity:
-        statsd.incr('render_disparity')
+        statsd.incr("render_disparity")
     return json_success()
 
 
@@ -134,13 +134,13 @@ def report_error(
         version = None
 
     # Get the IP address of the request
-    remote_ip = request.META['REMOTE_ADDR']
+    remote_ip = request.META["REMOTE_ADDR"]
 
     # For the privacy of our users, we remove any actual text content
     # in draft_content (from drafts rendering exceptions).  See the
     # comment on privacy_clean_markdown for more details.
-    if more_info.get('draft_content'):
-        more_info['draft_content'] = privacy_clean_markdown(more_info['draft_content'])
+    if more_info.get("draft_content"):
+        more_info["draft_content"] = privacy_clean_markdown(more_info["draft_content"])
 
     if user_profile.is_authenticated:
         email = user_profile.delivery_email
@@ -150,7 +150,7 @@ def report_error(
         full_name = "Anonymous User"
 
     queue_json_publish(
-        'error_reports',
+        "error_reports",
         dict(
             type="browser",
             report=dict(
@@ -178,10 +178,10 @@ def report_error(
 @require_POST
 @has_request_variables
 def report_csp_violations(
-    request: HttpRequest, csp_report: Dict[str, Any] = REQ(argument_type='body')
+    request: HttpRequest, csp_report: Dict[str, Any] = REQ(argument_type="body")
 ) -> HttpResponse:
     def get_attr(csp_report_attr: str) -> str:
-        return csp_report.get(csp_report_attr, '')
+        return csp_report.get(csp_report_attr, "")
 
     logging.warning(
         "CSP Violation in Document('%s'). "
@@ -189,15 +189,15 @@ def report_csp_violations(
         "Violated Directive('%s'), Effective Directive('%s'), "
         "Disposition('%s'), Referrer('%s'), "
         "Status Code('%s'), Script Sample('%s')",
-        get_attr('document-uri'),
-        get_attr('blocked-uri'),
-        get_attr('original-policy'),
-        get_attr('violated-directive'),
-        get_attr('effective-directive'),
-        get_attr('disposition'),
-        get_attr('referrer'),
-        get_attr('status-code'),
-        get_attr('script-sample'),
+        get_attr("document-uri"),
+        get_attr("blocked-uri"),
+        get_attr("original-policy"),
+        get_attr("violated-directive"),
+        get_attr("effective-directive"),
+        get_attr("disposition"),
+        get_attr("referrer"),
+        get_attr("status-code"),
+        get_attr("script-sample"),
     )
 
     return json_success()

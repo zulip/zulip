@@ -16,7 +16,7 @@ from scripts.lib.zulip_tools import (
 )
 
 ENV = get_environment()
-VENV_CACHE_DIR = '/srv/zulip-venv-cache'
+VENV_CACHE_DIR = "/srv/zulip-venv-cache"
 
 
 def get_caches_in_use(threshold_days: int) -> Set[str]:

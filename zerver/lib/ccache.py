@@ -36,17 +36,17 @@ from typing import Any, Dict, List, Optional
 # ourselves. To that end, here's the laziest DER encoder ever.
 def der_encode_length(length: int) -> bytes:
     if length <= 127:
-        return struct.pack('!B', length)
+        return struct.pack("!B", length)
     out = b""
     while length > 0:
-        out = struct.pack('!B', length & 0xFF) + out
+        out = struct.pack("!B", length & 0xFF) + out
         length >>= 8
-    out = struct.pack('!B', len(out) | 0x80) + out
+    out = struct.pack("!B", len(out) | 0x80) + out
     return out
 
 
 def der_encode_tlv(tag: int, value: bytes) -> bytes:
-    return struct.pack('!B', tag) + der_encode_length(len(value)) + value
+    return struct.pack("!B", tag) + der_encode_length(len(value)) + value
 
 
 def der_encode_integer_value(val: int) -> bytes:
@@ -66,7 +66,7 @@ def der_encode_integer_value(val: int) -> bytes:
     # We can stop once sign-extension matches the remaining value.
     while val != sign:
         byte = val & 0xFF
-        out = struct.pack('!B', byte) + out
+        out = struct.pack("!B", byte) + out
         sign = -1 if byte & 0x80 == 0x80 else 0
         val >>= 8
     return out

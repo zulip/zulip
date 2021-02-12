@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FlockHookTests(WebhookTestCase):
-    STREAM_NAME = 'test'
+    STREAM_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/flock?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = "flock"
 

@@ -5,7 +5,7 @@ from django.db.migrations.state import StateApps
 
 
 def fix_realm_string_ids(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    Realm = apps.get_model('zerver', 'Realm')
+    Realm = apps.get_model("zerver", "Realm")
     if Realm.objects.filter(deactivated=False).count() != 2:
         return
 
@@ -22,7 +22,7 @@ def fix_realm_string_ids(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0107_multiuseinvite'),
+        ("zerver", "0107_multiuseinvite"),
     ]
 
     operations = [

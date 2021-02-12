@@ -21,23 +21,23 @@ from urllib.parse import SplitResult
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
-TIMESTAMP_FORMAT = '%Y-%m-%d-%H-%M-%S'
+TIMESTAMP_FORMAT = "%Y-%m-%d-%H-%M-%S"
 
 # Color codes
-OKBLUE = '\033[94m'
-OKGREEN = '\033[92m'
-WARNING = '\033[93m'
-FAIL = '\033[91m'
-ENDC = '\033[0m'
-BLACKONYELLOW = '\x1b[0;30;43m'
-WHITEONRED = '\x1b[0;37;41m'
-BOLDRED = '\x1B[1;31m'
+OKBLUE = "\033[94m"
+OKGREEN = "\033[92m"
+WARNING = "\033[93m"
+FAIL = "\033[91m"
+ENDC = "\033[0m"
+BLACKONYELLOW = "\x1b[0;30;43m"
+WHITEONRED = "\x1b[0;37;41m"
+BOLDRED = "\x1B[1;31m"
 
-GREEN = '\x1b[32m'
-YELLOW = '\x1b[33m'
-BLUE = '\x1b[34m'
-MAGENTA = '\x1b[35m'
-CYAN = '\x1b[36m'
+GREEN = "\x1b[32m"
+YELLOW = "\x1b[33m"
+BLUE = "\x1b[34m"
+MAGENTA = "\x1b[35m"
+CYAN = "\x1b[36m"
 
 
 def overwrite_symlink(src: str, dst: str) -> None:
@@ -106,11 +106,11 @@ def get_deploy_root() -> str:
 
 
 def get_deployment_version(extract_path: str) -> str:
-    version = '0.0.0'
+    version = "0.0.0"
     for item in os.listdir(extract_path):
         item_path = os.path.join(extract_path, item)
-        if item.startswith('zulip-server') and os.path.isdir(item_path):
-            with open(os.path.join(item_path, 'version.py')) as f:
+        if item.startswith("zulip-server") and os.path.isdir(item_path):
+            with open(os.path.join(item_path, "version.py")) as f:
                 result = re.search('ZULIP_VERSION = "(.*)"', f.read())
                 if result:
                     version = result.groups()[0]
@@ -119,7 +119,7 @@ def get_deployment_version(extract_path: str) -> str:
 
 
 def is_invalid_upgrade(current_version: str, new_version: str) -> bool:
-    if new_version > '1.4.3' and current_version <= '1.3.10':
+    if new_version > "1.4.3" and current_version <= "1.3.10":
         return True
     return False
 
@@ -154,7 +154,7 @@ def su_to_zulip(save_suid: bool = False) -> None:
         os.setresuid(pwent.pw_uid, pwent.pw_uid, os.getuid())
     else:
         os.setuid(pwent.pw_uid)
-    os.environ['HOME'] = pwent.pw_dir
+    os.environ["HOME"] = pwent.pw_dir
 
 
 def make_deploy_path() -> str:
@@ -341,26 +341,26 @@ def generate_sha1sum_emoji(zulip_path: str) -> str:
     sha = hashlib.sha1()
 
     filenames = [
-        'static/assets/zulip-emoji/zulip.png',
-        'tools/setup/emoji/emoji_map.json',
-        'tools/setup/emoji/build_emoji',
-        'tools/setup/emoji/emoji_setup_utils.py',
-        'tools/setup/emoji/emoji_names.py',
+        "static/assets/zulip-emoji/zulip.png",
+        "tools/setup/emoji/emoji_map.json",
+        "tools/setup/emoji/build_emoji",
+        "tools/setup/emoji/emoji_setup_utils.py",
+        "tools/setup/emoji/emoji_names.py",
     ]
 
     for filename in filenames:
         file_path = os.path.join(zulip_path, filename)
-        with open(file_path, 'rb') as reader:
+        with open(file_path, "rb") as reader:
             sha.update(reader.read())
 
     # Take into account the version of `emoji-datasource-google` package
     # while generating success stamp.
-    PACKAGE_FILE_PATH = os.path.join(zulip_path, 'package.json')
+    PACKAGE_FILE_PATH = os.path.join(zulip_path, "package.json")
     with open(PACKAGE_FILE_PATH) as fp:
         parsed_package_file = json.load(fp)
-    dependency_data = parsed_package_file['dependencies']
+    dependency_data = parsed_package_file["dependencies"]
 
-    if 'emoji-datasource-google' in dependency_data:
+    if "emoji-datasource-google" in dependency_data:
         with open(os.path.join(zulip_path, "yarn.lock")) as fp:
             (emoji_datasource_version,) = re.findall(
                 r"^emoji-datasource-google@"
@@ -416,14 +416,14 @@ def parse_os_release() -> Dict[str, str]:
     we avoid using it, as it is not available on RHEL-based platforms.
     """
     distro_info = {}  # type: Dict[str, str]
-    with open('/etc/os-release') as fp:
+    with open("/etc/os-release") as fp:
         for line in fp:
             line = line.strip()
-            if not line or line.startswith('#'):
+            if not line or line.startswith("#"):
                 # The line may be blank or a comment, see:
                 # https://www.freedesktop.org/software/systemd/man/os-release.html
                 continue
-            k, v = line.split('=', 1)
+            k, v = line.split("=", 1)
             [distro_info[k]] = shlex.split(v)
     return distro_info
 
@@ -446,7 +446,7 @@ def files_and_string_digest(filenames: Sequence[str], extra_strings: Sequence[st
     # see is_digest_obsolete for more context
     sha1sum = hashlib.sha1()
     for fn in filenames:
-        with open(fn, 'rb') as file_to_hash:
+        with open(fn, "rb") as file_to_hash:
             sha1sum.update(file_to_hash.read())
 
     for extra_string in extra_strings:
@@ -495,24 +495,24 @@ def write_new_digest(
 ) -> None:
     hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
     new_hash = files_and_string_digest(filenames, extra_strings)
-    with open(hash_path, 'w') as f:
+    with open(hash_path, "w") as f:
         f.write(new_hash)
 
     # Be a little verbose here--our callers ensure we
     # only write new digests when things have changed, and
     # making this system more transparent to developers
     # can help them troubleshoot provisioning glitches.
-    print('New digest written to: ' + hash_path)
+    print("New digest written to: " + hash_path)
 
 
 def is_root() -> bool:
-    if 'posix' in os.name and os.geteuid() == 0:
+    if "posix" in os.name and os.geteuid() == 0:
         return True
     return False
 
 
 def run_as_root(args: List[str], **kwargs: Any) -> None:
-    sudo_args = kwargs.pop('sudo_args', [])
+    sudo_args = kwargs.pop("sudo_args", [])
     if not is_root():
         args = ["sudo", *sudo_args, "--", *args]
     run(args, **kwargs)
@@ -572,7 +572,7 @@ def get_config_file() -> configparser.RawConfigParser:
 
 
 def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
-    return get_config(config_file, 'deployment', 'deploy_options', "").strip().split()
+    return get_config(config_file, "deployment", "deploy_options", "").strip().split()
 
 
 def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
@@ -585,13 +585,13 @@ def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
 
 
 def get_or_create_dev_uuid_var_path(path: str) -> str:
-    absolute_path = '{}/{}'.format(get_dev_uuid_var_path(), path)
+    absolute_path = "{}/{}".format(get_dev_uuid_var_path(), path)
     os.makedirs(absolute_path, exist_ok=True)
     return absolute_path
 
 
 def is_vagrant_env_host(path: str) -> bool:
-    return '.vagrant' in os.listdir(path)
+    return ".vagrant" in os.listdir(path)
 
 
 def deport(netloc: str) -> str:
@@ -602,9 +602,9 @@ def deport(netloc: str) -> str:
     return "[" + r.hostname + "]" if ":" in r.hostname else r.hostname
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cmd = sys.argv[1]
-    if cmd == 'make_deploy_path':
+    if cmd == "make_deploy_path":
         print(make_deploy_path())
-    elif cmd == 'get_dev_uuid':
+    elif cmd == "get_dev_uuid":
         print(get_dev_uuid_var_path())

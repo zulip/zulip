@@ -29,37 +29,37 @@ TOPIC_TEMPLATE = """{policy_name} ({incident_id})""".strip()
 def api_newrelic_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     info = {
-        "condition_name": payload.get('condition_name', 'Unknown condition'),
-        "details": payload.get('details', 'No details.'),
-        "incident_url": payload.get('incident_url', 'https://alerts.newrelic.com'),
+        "condition_name": payload.get("condition_name", "Unknown condition"),
+        "details": payload.get("details", "No details."),
+        "incident_url": payload.get("incident_url", "https://alerts.newrelic.com"),
         "incident_acknowledge_url": payload.get(
-            'incident_acknowledge_url', 'https://alerts.newrelic.com'
+            "incident_acknowledge_url", "https://alerts.newrelic.com"
         ),
-        "status": payload.get('current_state', 'None'),
-        "iso_timestamp": '',
-        "owner": payload.get('owner', ''),
+        "status": payload.get("current_state", "None"),
+        "iso_timestamp": "",
+        "owner": payload.get("owner", ""),
     }
 
-    unix_time = payload.get('timestamp', None)
+    unix_time = payload.get("timestamp", None)
     if unix_time is None:
         return json_error(_("The newrelic webhook requires timestamp in milliseconds"))
 
-    info['iso_timestamp'] = unix_milliseconds_to_timestamp(unix_time, "newrelic")
+    info["iso_timestamp"] = unix_milliseconds_to_timestamp(unix_time, "newrelic")
 
     # Add formatting to the owner field if owner is present
-    if info['owner'] != '':
-        info['owner'] = 'by **{}** '.format(info['owner'])
+    if info["owner"] != "":
+        info["owner"] = "by **{}** ".format(info["owner"])
 
     # These are the three promised current_state values
-    if 'open' in info['status']:
+    if "open" in info["status"]:
         content = OPEN_TEMPLATE.format(**info)
-    elif 'acknowledged' in info['status']:
+    elif "acknowledged" in info["status"]:
         content = DEFAULT_TEMPLATE.format(**info)
-    elif 'closed' in info['status']:
+    elif "closed" in info["status"]:
         content = DEFAULT_TEMPLATE.format(**info)
     else:
         return json_error(
@@ -67,8 +67,8 @@ def api_newrelic_webhook(
         )
 
     topic_info = {
-        "policy_name": payload.get('policy_name', 'Unknown Policy'),
-        "incident_id": payload.get('incident_id', 'Unknown ID'),
+        "policy_name": payload.get("policy_name", "Unknown Policy"),
+        "incident_id": payload.get("incident_id", "Unknown ID"),
     }
     topic = TOPIC_TEMPLATE.format(**topic_info)
 

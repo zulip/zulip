@@ -33,7 +33,7 @@ def and_n_others(values: List[str], limit: int) -> str:
     )
 
 
-@register.filter(name='display_list', is_safe=True)
+@register.filter(name="display_list", is_safe=True)
 def display_list(values: List[str], display_limit: int) -> str:
     """
     Given a list of values, return a string nicely formatting those values,
@@ -76,7 +76,7 @@ docs_without_macros = [
 @dict_to_items_tuple
 @ignore_unhashable_lru_cache(512)
 @items_tuple_to_dict
-@register.filter(name='render_markdown_path', is_safe=True)
+@register.filter(name="render_markdown_path", is_safe=True)
 def render_markdown_path(
     markdown_file_path: str, context: Mapping[str, Any] = {}, pure_markdown: bool = False
 ) -> str:
@@ -89,10 +89,10 @@ def render_markdown_path(
     # We set this global hackishly
     from zerver.lib.markdown.help_settings_links import set_relative_settings_links
 
-    set_relative_settings_links(bool(context.get('html_settings_links')))
+    set_relative_settings_links(bool(context.get("html_settings_links")))
     from zerver.lib.markdown.help_relative_links import set_relative_help_links
 
-    set_relative_help_links(bool(context.get('html_settings_links')))
+    set_relative_help_links(bool(context.get("html_settings_links")))
 
     global md_extensions
     global md_macro_extension
@@ -106,13 +106,13 @@ def render_markdown_path(
                 guess_lang=False,
             ),
             zerver.lib.markdown.fenced_code.makeExtension(
-                run_content_validators=context.get('run_content_validators', False),
+                run_content_validators=context.get("run_content_validators", False),
             ),
             zerver.lib.markdown.api_arguments_table_generator.makeExtension(
-                base_path='templates/zerver/api/'
+                base_path="templates/zerver/api/"
             ),
             zerver.lib.markdown.api_return_values_table_generator.makeExtension(
-                base_path='templates/zerver/api/'
+                base_path="templates/zerver/api/"
             ),
             zerver.lib.markdown.nested_code_blocks.makeExtension(),
             zerver.lib.markdown.tabbed_sections.makeExtension(),
@@ -122,10 +122,10 @@ def render_markdown_path(
         ]
     if md_macro_extension is None:
         md_macro_extension = zerver.lib.markdown.include.makeExtension(
-            base_path='templates/zerver/help/include/'
+            base_path="templates/zerver/help/include/"
         )
     extensions = md_extensions
-    if 'api_url' in context:
+    if "api_url" in context:
         # We need to generate the API code examples extension each
         # time so the `api_url` config parameter can be set dynamically.
         #
@@ -143,7 +143,7 @@ def render_markdown_path(
     md_engine = markdown.Markdown(extensions=extensions)
     md_engine.reset()
 
-    jinja = engines['Jinja2']
+    jinja = engines["Jinja2"]
 
     try:
         # By default, we do both Jinja2 templating and Markdown

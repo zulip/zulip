@@ -6,7 +6,7 @@ from analytics.models import BaseCount
 from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog
 
 
-def get_remote_server_by_uuid(uuid: str) -> 'RemoteZulipServer':
+def get_remote_server_by_uuid(uuid: str) -> "RemoteZulipServer":
     return RemoteZulipServer.objects.get(uuid=uuid)
 
 
@@ -20,7 +20,7 @@ class RemoteZulipServer(models.Model):
 
     hostname: str = models.CharField(max_length=HOSTNAME_MAX_LENGTH)
     contact_email: str = models.EmailField(blank=True, null=False)
-    last_updated: datetime.datetime = models.DateTimeField('last updated', auto_now=True)
+    last_updated: datetime.datetime = models.DateTimeField("last updated", auto_now=True)
 
     def __str__(self) -> str:
         return f"<RemoteZulipServer {self.hostname} {self.uuid[0:12]}>"

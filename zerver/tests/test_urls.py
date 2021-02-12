@@ -34,7 +34,7 @@ class PublicURLTest(ZulipTestCase):
         # FIXME: We should also test the Tornado URLs -- this codepath
         # can't do so because this Django test mechanism doesn't go
         # through Tornado.
-        denmark_stream_id = Stream.objects.get(name='Denmark').id
+        denmark_stream_id = Stream.objects.get(name="Denmark").id
         get_urls = {
             200: [
                 "/accounts/home/",
@@ -62,11 +62,11 @@ class PublicURLTest(ZulipTestCase):
 
         # Add all files in 'templates/zerver/help' directory (except for 'main.html' and
         # 'index.md') to `get_urls['200']` list.
-        for doc in os.listdir('./templates/zerver/help'):
-            if doc.startswith(".") or '~' in doc or '#' in doc:
+        for doc in os.listdir("./templates/zerver/help"):
+            if doc.startswith(".") or "~" in doc or "#" in doc:
                 continue  # nocoverage -- just here for convenience
-            if doc not in {'main.html', 'index.md', 'include', 'missing.md'}:
-                get_urls[200].append('/help/' + os.path.splitext(doc)[0])  # Strip the extension.
+            if doc not in {"main.html", "index.md", "include", "missing.md"}:
+                get_urls[200].append("/help/" + os.path.splitext(doc)[0])  # Strip the extension.
 
         post_urls = {
             200: ["/accounts/login/"],
@@ -105,7 +105,7 @@ class PublicURLTest(ZulipTestCase):
                 resp.status_code,
                 msg=f"Expected 400, received {resp.status_code} for GET /api/v1/fetch_google_client_id",
             )
-            self.assertEqual('error', resp.json()['result'])
+            self.assertEqual("error", resp.json()["result"])
 
     def test_get_gcid_when_configured(self) -> None:
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
@@ -116,8 +116,8 @@ class PublicURLTest(ZulipTestCase):
                 msg=f"Expected 200, received {resp.status_code} for GET /api/v1/fetch_google_client_id",
             )
             data = orjson.loads(resp.content)
-            self.assertEqual('success', data['result'])
-            self.assertEqual('ABCD', data['google_client_id'])
+            self.assertEqual("success", data["result"])
+            self.assertEqual("ABCD", data["google_client_id"])
 
     def test_config_error_endpoints_dev_env(self) -> None:
         """
@@ -127,28 +127,28 @@ class PublicURLTest(ZulipTestCase):
         """
         auth_types = [auth.lower() for auth in Realm.AUTHENTICATION_FLAGS]
         for auth in [
-            'azuread',
-            'email',
-            'remoteuser',
+            "azuread",
+            "email",
+            "remoteuser",
         ]:  # We do not have configerror pages for AzureAD and Email.
             auth_types.remove(auth)
 
         auth_types += [
-            'smtp',
-            'remoteuser/remote_user_backend_disabled',
-            'remoteuser/remote_user_header_missing',
+            "smtp",
+            "remoteuser/remote_user_backend_disabled",
+            "remoteuser/remote_user_header_missing",
         ]
-        urls = [f'/config-error/{auth_type}' for auth_type in auth_types]
+        urls = [f"/config-error/{auth_type}" for auth_type in auth_types]
         with self.settings(DEVELOPMENT=True):
             for url in urls:
                 response = self.client_get(url)
-                self.assert_in_success_response(['Configuration error'], response)
+                self.assert_in_success_response(["Configuration error"], response)
 
 
 class URLResolutionTest(ZulipTestCase):
     def get_callback_string(self, pattern: django.urls.resolvers.URLPattern) -> Optional[str]:
-        callback_str = hasattr(pattern, 'lookup_str') and 'lookup_str'
-        callback_str = callback_str or '_callback_str'
+        callback_str = hasattr(pattern, "lookup_str") and "lookup_str"
+        callback_str = callback_str or "_callback_str"
         return getattr(pattern, callback_str, None)
 
     def check_function_exists(self, module_name: str, view: str) -> None:
@@ -175,6 +175,6 @@ class ErrorPageTest(ZulipTestCase):
         # when presented with an HTTP_HOST that's not a valid DNS name.
         client = Client(enforce_csrf_checks=True)
         result = client.post(
-            '/json/users', secure=True, HTTP_REFERER='https://somewhere', HTTP_HOST='$nonsense'
+            "/json/users", secure=True, HTTP_REFERER="https://somewhere", HTTP_HOST="$nonsense"
         )
         self.assertEqual(result.status_code, 400)

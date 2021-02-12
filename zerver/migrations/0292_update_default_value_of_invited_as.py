@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0291_realm_retention_days_not_null'),
+        ("zerver", "0291_realm_retention_days_not_null"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='multiuseinvite',
-            name='invited_as',
+            model_name="multiuseinvite",
+            name="invited_as",
             field=models.PositiveSmallIntegerField(default=400),
         ),
         migrations.AlterField(
-            model_name='preregistrationuser',
-            name='invited_as',
+            model_name="preregistrationuser",
+            name="invited_as",
             field=models.PositiveSmallIntegerField(default=400),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0208_add_realm_night_logo_fields'),
+        ("zerver", "0208_add_realm_night_logo_fields"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='stream',
-            name='first_message_id',
+            model_name="stream",
+            name="first_message_id",
             field=models.IntegerField(db_index=True, null=True),
         ),
     ]

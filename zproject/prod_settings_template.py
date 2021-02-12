@@ -27,7 +27,7 @@ from typing import Any, Dict, Tuple
 ## support@example.com is totally reasonable, as is admin@example.com.
 ## Do not put a display name; e.g. 'support@example.com', not
 ## 'Zulip Support <support@example.com>'.
-ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
+ZULIP_ADMINISTRATOR = "zulip-admin@example.com"
 
 ## The user-accessible Zulip hostname for this installation, e.g.
 ## zulip.example.com.  This should match what users will put in their
@@ -36,7 +36,7 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 ##
 ## If you need to access the server on a specific port, you should set
 ## EXTERNAL_HOST to e.g. zulip.example.com:1234 here.
-EXTERNAL_HOST = 'zulip.example.com'
+EXTERNAL_HOST = "zulip.example.com"
 
 ## Alternative hostnames.  A comma-separated list of strings
 ## representing the host/domain names that your users can enter in
@@ -116,7 +116,7 @@ EXTERNAL_HOST = 'zulip.example.com'
 ## enabled.  If you want to disable it, do so after creating the
 ## initial realm and user.
 AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
-    'zproject.backends.EmailAuthBackend',  # Email and password; just requires SMTP setup
+    "zproject.backends.EmailAuthBackend",  # Email and password; just requires SMTP setup
     # 'zproject.backends.GoogleAuthBackend',  # Google auth, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
     # 'zproject.backends.GitLabAuthBackend',  # GitLab auth, setup below
@@ -319,7 +319,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
     "en-US": {
         "displayname": "Example, Inc. Zulip",
         "name": "zulip",
-        "url": "{}{}".format('https://', EXTERNAL_HOST),
+        "url": "{}{}".format("https://", EXTERNAL_HOST),
     },
 }
 SOCIAL_AUTH_SAML_ENABLED_IDPS = {
@@ -373,7 +373,7 @@ SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {
 }
 
 ## These SAML settings you likely won't need to modify.
-SOCIAL_AUTH_SAML_SP_ENTITY_ID = 'https://' + EXTERNAL_HOST
+SOCIAL_AUTH_SAML_SP_ENTITY_ID = "https://" + EXTERNAL_HOST
 SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
     "givenName": "Technical team",
     "emailAddress": ZULIP_ADMINISTRATOR,
@@ -547,7 +547,7 @@ ENABLE_GRAVATAR = True
 ## The default CAMO_URI of '/external_content/' is served by the camo
 ## setup in the default Zulip nginx configuration.  Setting CAMO_URI
 ## to '' will disable the Camo integration.
-CAMO_URI = '/external_content/'
+CAMO_URI = "/external_content/"
 
 ## RabbitMQ configuration
 ##

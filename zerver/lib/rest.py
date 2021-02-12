@@ -17,8 +17,8 @@ from zerver.lib.exceptions import MissingAuthenticationError
 from zerver.lib.response import json_method_not_allowed
 from zerver.lib.types import ViewFuncT
 
-METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
-FLAGS = 'override_api_url_scheme'
+METHODS = ("GET", "HEAD", "POST", "PUT", "DELETE", "PATCH")
+FLAGS = "override_api_url_scheme"
 
 
 def default_never_cache_responses(view_func: ViewFuncT) -> ViewFuncT:
@@ -78,18 +78,18 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             supported_methods[arg] = kwargs[arg]
             del kwargs[arg]
 
-    if 'GET' in supported_methods:
-        supported_methods.setdefault('HEAD', supported_methods['GET'])
+    if "GET" in supported_methods:
+        supported_methods.setdefault("HEAD", supported_methods["GET"])
 
-    if request.method == 'OPTIONS':
+    if request.method == "OPTIONS":
         response = HttpResponse(status=204)  # No content
-        response['Allow'] = ', '.join(sorted(supported_methods.keys()))
+        response["Allow"] = ", ".join(sorted(supported_methods.keys()))
         return response
 
     # Override requested method if magic method=??? parameter exists
     method_to_use = request.method
-    if request.POST and 'method' in request.POST:
-        method_to_use = request.POST['method']
+    if request.POST and "method" in request.POST:
+        method_to_use = request.POST["method"]
 
     if method_to_use in supported_methods:
         entry = supported_methods[method_to_use]
@@ -114,8 +114,8 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         # for some special views (e.g. serving a file that has been
         # uploaded), we support using the same URL for web and API clients.
         if (
-            'override_api_url_scheme' in view_flags
-            and request.META.get('HTTP_AUTHORIZATION', None) is not None
+            "override_api_url_scheme" in view_flags
+            and request.META.get("HTTP_AUTHORIZATION", None) is not None
         ):
             # This request uses standard API based authentication.
             # For override_api_url_scheme views, we skip our normal
@@ -123,7 +123,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             # might need to (e.g.) request a large number of uploaded
             # files or avatars in quick succession.
             target_function = authenticated_rest_api_view(skip_rate_limiting=True)(target_function)
-        elif 'override_api_url_scheme' in view_flags and request.GET.get('api_key') is not None:
+        elif "override_api_url_scheme" in view_flags and request.GET.get("api_key") is not None:
             # This request uses legacy API authentication.  We
             # unfortunately need that in the React Native mobile apps,
             # because there's no way to set HTTP_AUTHORIZATION in
@@ -135,19 +135,19 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         elif not request.path.startswith("/api") and request.user.is_authenticated:
             # Authenticated via sessions framework, only CSRF check needed
             auth_kwargs = {}
-            if 'override_api_url_scheme' in view_flags:
+            if "override_api_url_scheme" in view_flags:
                 auth_kwargs["skip_rate_limiting"] = True
             target_function = csrf_protect(authenticated_json_view(target_function, **auth_kwargs))
 
         # most clients (mobile, bots, etc) use HTTP basic auth and REST calls, where instead of
         # username:password, we use email:apiKey
-        elif request.META.get('HTTP_AUTHORIZATION', None):
+        elif request.META.get("HTTP_AUTHORIZATION", None):
             # Wrap function with decorator to authenticate the user before
             # proceeding
             target_function = authenticated_rest_api_view(
-                allow_webhook_access='allow_incoming_webhooks' in view_flags,
+                allow_webhook_access="allow_incoming_webhooks" in view_flags,
             )(target_function)
-        elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
+        elif request.path.startswith("/json") and "allow_anonymous_user_web" in view_flags:
             # For endpoints that support anonymous web access, we do that.
             # TODO: Allow /api calls when this is stable enough.
             auth_kwargs = dict(allow_unauthenticated=True)

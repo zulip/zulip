@@ -14,14 +14,14 @@ from zerver.models import PushDeviceToken, UserProfile
 
 
 def validate_token(token_str: str, kind: int) -> None:
-    if token_str == '' or len(token_str) > 4096:
-        raise JsonableError(_('Empty or invalid length token'))
+    if token_str == "" or len(token_str) > 4096:
+        raise JsonableError(_("Empty or invalid length token"))
     if kind == PushDeviceToken.APNS:
         # Validate that we can actually decode the token.
         try:
             b64_to_hex(token_str)
         except Exception:
-            raise JsonableError(_('Invalid APNS token'))
+            raise JsonableError(_("Invalid APNS token"))
 
 
 @human_users_only

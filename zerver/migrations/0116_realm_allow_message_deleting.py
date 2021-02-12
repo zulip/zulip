@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0115_user_groups'),
+        ("zerver", "0115_user_groups"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='allow_message_deleting',
+            model_name="realm",
+            name="allow_message_deleting",
             field=models.BooleanField(default=False),
         ),
     ]

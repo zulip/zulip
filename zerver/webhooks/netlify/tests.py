@@ -2,13 +2,13 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class NetlifyHookTests(WebhookTestCase):
-    STREAM_NAME = 'netlify'
+    STREAM_NAME = "netlify"
     URL_TEMPLATE = "/api/v1/external/netlify?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = "netlify"
 
     def test_building_message(self) -> None:
         expected_topic = "master"
-        expected_message = 'The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) on branch master is now building.'
+        expected_message = "The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) on branch master is now building."
 
         self.check_webhook(
             "deploy_building", expected_topic, expected_message, content_type="application/json"
@@ -16,7 +16,7 @@ class NetlifyHookTests(WebhookTestCase):
 
     def test_created_message(self) -> None:
         expected_topic = "master"
-        expected_message = 'The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) on branch master is now ready.'
+        expected_message = "The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) on branch master is now ready."
 
         self.check_webhook(
             "deploy_created", expected_topic, expected_message, content_type="application/json"

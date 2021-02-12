@@ -10,12 +10,12 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@webhook_view('Mention')
+@webhook_view("Mention")
 @has_request_variables
 def api_mention_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type='body'),
+    payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type="body"),
 ) -> HttpResponse:
     title = payload["title"]
     source_url = payload["url"]
@@ -29,7 +29,7 @@ def api_mention_webhook(
 ```
 """.strip()
     body = template.format(title=title, url=source_url, description=description)
-    topic = 'news'
+    topic = "news"
 
     # send the message
     check_send_webhook_message(request, user_profile, topic, body)

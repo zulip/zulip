@@ -17,20 +17,20 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0289_tighten_attachment_size'),
+        ("zerver", "0289_tighten_attachment_size"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='color_scheme',
+            model_name="userprofile",
+            name="color_scheme",
             field=models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC),
         ),
         migrations.RunPython(
             set_color_scheme_to_night_mode, reverse_code=migrations.RunPython.noop, elidable=True
         ),
         migrations.RemoveField(
-            model_name='userprofile',
-            name='night_mode',
+            model_name="userprofile",
+            name="night_mode",
         ),
     ]

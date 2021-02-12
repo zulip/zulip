@@ -15,14 +15,14 @@ def nagios_from_file(results_file: str) -> Tuple[int, str]:
         with open(results_file) as f:
             data = f.read().strip()
     except FileNotFoundError:
-        state = 'UNKNOWN'
+        state = "UNKNOWN"
         ret = 3
         data = "Results file is missing"
     else:
-        pieces = data.split('|')
+        pieces = data.split("|")
 
         if not len(pieces) == 4:
-            state = 'UNKNOWN'
+            state = "UNKNOWN"
             ret = 3
             data = "Results file malformed"
         else:
@@ -31,7 +31,7 @@ def nagios_from_file(results_file: str) -> Tuple[int, str]:
             time_diff = time.time() - timestamp
             if time_diff > 60 * 2:
                 ret = 3
-                state = 'UNKNOWN'
+                state = "UNKNOWN"
                 data = "Results file is stale"
             else:
                 ret = int(pieces[1])

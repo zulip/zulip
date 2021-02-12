@@ -27,10 +27,10 @@ def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> T
         except AttributeError:
             return ""
 
-    event_type = payload.find('event_type').text
-    description = payload.find('description').text
-    project_id = payload.find('project_id').text
-    story_id = get_text(['stories', 'story', 'id'])
+    event_type = payload.find("event_type").text
+    description = payload.find("description").text
+    project_id = payload.find("project_id").text
+    story_id = get_text(["stories", "story", "id"])
     # Ugh, the URL in the XML data is not a clickable URL that works for the user
     # so we try to build one that the user can actually click on
     url = f"https://www.pivotaltracker.com/s/projects/{project_id}/stories/{story_id}"
@@ -45,18 +45,18 @@ def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> T
         name = "Story changed"  # Failed for an unknown reason, show something
     more_info = f" [(view)]({url})."
 
-    if event_type == 'story_update':
+    if event_type == "story_update":
         subject = name
         content = description + more_info
-    elif event_type == 'note_create':
+    elif event_type == "note_create":
         subject = "Comment added"
         content = description + more_info
-    elif event_type == 'story_create':
-        issue_desc = get_text(['stories', 'story', 'description'])
-        issue_type = get_text(['stories', 'story', 'story_type'])
-        issue_status = get_text(['stories', 'story', 'current_state'])
-        estimate = get_text(['stories', 'story', 'estimate'])
-        if estimate != '':
+    elif event_type == "story_create":
+        issue_desc = get_text(["stories", "story", "description"])
+        issue_type = get_text(["stories", "story", "story_type"])
+        issue_status = get_text(["stories", "story", "current_state"])
+        estimate = get_text(["stories", "story", "estimate"])
+        if estimate != "":
             estimate = f" worth {estimate} story points"
         subject = name
         content = f"{description} ({issue_status} {issue_type}{estimate}):\n\n~~~ quote\n{issue_desc}\n~~~\n\n{more_info}"

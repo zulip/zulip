@@ -21,11 +21,11 @@ import zerver.openapi.python_examples
 from zerver.openapi.openapi import get_openapi_description, get_openapi_fixture, openapi_spec
 
 MACRO_REGEXP = re.compile(
-    r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}'
+    r"\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}"
 )
-PYTHON_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
-JS_EXAMPLE_REGEX = re.compile(r'\/\/ \{code_example\|\s*(.+?)\s*\}')
-MACRO_REGEXP_DESC = re.compile(r'\{generate_api_description(\(\s*(.+?)\s*\))}')
+PYTHON_EXAMPLE_REGEX = re.compile(r"\# \{code_example\|\s*(.+?)\s*\}")
+JS_EXAMPLE_REGEX = re.compile(r"\/\/ \{code_example\|\s*(.+?)\s*\}")
+MACRO_REGEXP_DESC = re.compile(r"\{generate_api_description(\(\s*(.+?)\s*\))}")
 
 PYTHON_CLIENT_CONFIG = """
 #!/usr/bin/env python3
@@ -99,9 +99,9 @@ def extract_code_example(
     for line in source:
         match = example_regex.search(line)
         if match:
-            if match.group(1) == 'start':
+            if match.group(1) == "start":
                 start = source.index(line)
-            elif match.group(1) == 'end':
+            elif match.group(1) == "end":
                 end = source.index(line)
                 break
 
@@ -127,7 +127,7 @@ def render_python_code_example(
     snippets = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
 
     code_example = []
-    code_example.append('```python')
+    code_example.append("```python")
     code_example.extend(config)
 
     for snippet in snippets:
@@ -135,9 +135,9 @@ def render_python_code_example(
             # Remove one level of indentation and strip newlines
             code_example.append(line[4:].rstrip())
 
-    code_example.append('print(result)')
-    code_example.append('\n')
-    code_example.append('```')
+    code_example.append("print(result)")
+    code_example.append("\n")
+    code_example.append("```")
 
     return code_example
 
@@ -146,7 +146,7 @@ def render_javascript_code_example(
     function: str, admin_config: bool = False, **kwargs: Any
 ) -> List[str]:
     pattern = fr'^add_example\(\s*"[^"]*",\s*{re.escape(json.dumps(function))},\s*\d+,\s*async \(client, console\) => \{{\n(.*?)^(?:\}}| *\}},\n)\);$'
-    with open('zerver/openapi/javascript_examples.js') as f:
+    with open("zerver/openapi/javascript_examples.js") as f:
         m = re.search(pattern, f.read(), re.M | re.S)
     assert m is not None
     function_source_lines = dedent(m.group(1)).splitlines()
@@ -159,7 +159,7 @@ def render_javascript_code_example(
         config = JS_CLIENT_CONFIG.splitlines()
 
     code_example = []
-    code_example.append('```js')
+    code_example.append("```js")
     code_example.extend(config)
     code_example.append("(async () => {")
     code_example.append("    const client = await zulipInit(config);")
@@ -170,7 +170,7 @@ def render_javascript_code_example(
             code_example.append("    " + line.rstrip())
     code_example.append("})();")
 
-    code_example.append('```')
+    code_example.append("```")
 
     return code_example
 
@@ -247,8 +247,8 @@ def generate_curl_example(
 
     lines = ["```curl"]
     operation = endpoint + ":" + method.lower()
-    operation_entry = openapi_spec.openapi()['paths'][endpoint][method.lower()]
-    global_security = openapi_spec.openapi()['security']
+    operation_entry = openapi_spec.openapi()["paths"][endpoint][method.lower()]
+    global_security = openapi_spec.openapi()["security"]
 
     operation_params = operation_entry.get("parameters", [])
     operation_request_body = operation_entry.get("requestBody", None)
@@ -272,9 +272,9 @@ def generate_curl_example(
     curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method, api_url)]
     lines.append(" ".join(map(shlex.quote, curl_first_line_parts)))
 
-    insecure_operations = ['/dev_fetch_api_key:post', '/fetch_api_key:post']
+    insecure_operations = ["/dev_fetch_api_key:post", "/fetch_api_key:post"]
     if operation_security is None:
-        if global_security == [{'basicAuth': []}]:
+        if global_security == [{"basicAuth": []}]:
             authentication_required = True
         else:
             raise AssertionError(
@@ -318,7 +318,7 @@ def generate_curl_example(
             "properties"
         ]
         for key, property in properties.items():
-            lines.append('    -F ' + shlex.quote('{}=@{}'.format(key, property["example"])))
+            lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
 
     for i in range(1, len(lines) - 1):
         lines[i] = lines[i] + " \\"
@@ -350,18 +350,18 @@ def render_curl_example(
 
 
 SUPPORTED_LANGUAGES: Dict[str, Any] = {
-    'python': {
-        'client_config': PYTHON_CLIENT_CONFIG,
-        'admin_config': PYTHON_CLIENT_ADMIN_CONFIG,
-        'render': render_python_code_example,
+    "python": {
+        "client_config": PYTHON_CLIENT_CONFIG,
+        "admin_config": PYTHON_CLIENT_ADMIN_CONFIG,
+        "render": render_python_code_example,
     },
-    'curl': {
-        'render': render_curl_example,
+    "curl": {
+        "render": render_curl_example,
     },
-    'javascript': {
-        'client_config': JS_CLIENT_CONFIG,
-        'admin_config': JS_CLIENT_ADMIN_CONFIG,
-        'render': render_javascript_code_example,
+    "javascript": {
+        "client_config": JS_CLIENT_CONFIG,
+        "admin_config": JS_CLIENT_ADMIN_CONFIG,
+        "render": render_javascript_code_example,
     },
 }
 
@@ -369,25 +369,25 @@ SUPPORTED_LANGUAGES: Dict[str, Any] = {
 class APIMarkdownExtension(Extension):
     def __init__(self, api_url: Optional[str]) -> None:
         self.config = {
-            'api_url': [
+            "api_url": [
                 api_url,
-                'API URL to use when rendering curl examples',
+                "API URL to use when rendering curl examples",
             ],
         }
 
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
-            APICodeExamplesPreprocessor(md, self.getConfigs()), 'generate_code_example', 525
+            APICodeExamplesPreprocessor(md, self.getConfigs()), "generate_code_example", 525
         )
         md.preprocessors.register(
-            APIDescriptionPreprocessor(md, self.getConfigs()), 'generate_api_description', 530
+            APIDescriptionPreprocessor(md, self.getConfigs()), "generate_api_description", 530
         )
 
 
 class APICodeExamplesPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
-        self.api_url = config['api_url']
+        self.api_url = config["api_url"]
 
     def run(self, lines: List[str]) -> List[str]:
         done = False
@@ -403,18 +403,18 @@ class APICodeExamplesPreprocessor(Preprocessor):
                     argument = match.group(6)
                     if self.api_url is None:
                         raise AssertionError("Cannot render curl API examples without API URL set.")
-                    options['api_url'] = self.api_url
+                    options["api_url"] = self.api_url
 
-                    if key == 'fixture':
+                    if key == "fixture":
                         if argument:
                             text = self.render_fixture(function, name=argument)
-                    elif key == 'example':
-                        if argument == 'admin_config=True':
-                            text = SUPPORTED_LANGUAGES[language]['render'](
+                    elif key == "example":
+                        if argument == "admin_config=True":
+                            text = SUPPORTED_LANGUAGES[language]["render"](
                                 function, admin_config=True
                             )
                         else:
-                            text = SUPPORTED_LANGUAGES[language]['render'](function, **options)
+                            text = SUPPORTED_LANGUAGES[language]["render"](function, **options)
 
                     # The line that contains the directive to include the macro
                     # may be preceded or followed by text or tags, in that case
@@ -433,13 +433,13 @@ class APICodeExamplesPreprocessor(Preprocessor):
     def render_fixture(self, function: str, name: Optional[str] = None) -> List[str]:
         fixture = []
 
-        path, method = function.rsplit(':', 1)
+        path, method = function.rsplit(":", 1)
         fixture_dict = get_openapi_fixture(path, method, name)
-        fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True, separators=(',', ': '))
+        fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True, separators=(",", ": "))
 
-        fixture.append('``` json')
+        fixture.append("``` json")
         fixture.extend(fixture_json.splitlines())
-        fixture.append('```')
+        fixture.append("```")
 
         return fixture
 
@@ -447,7 +447,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
 class APIDescriptionPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
-        self.api_url = config['api_url']
+        self.api_url = config["api_url"]
 
     def run(self, lines: List[str]) -> List[str]:
         done = False
@@ -475,9 +475,9 @@ class APIDescriptionPreprocessor(Preprocessor):
 
     def render_description(self, function: str) -> List[str]:
         description: List[str] = []
-        path, method = function.rsplit(':', 1)
+        path, method = function.rsplit(":", 1)
         description_dict = get_openapi_description(path, method)
-        description_dict = description_dict.replace('{{api_url}}', self.api_url)
+        description_dict = description_dict.replace("{{api_url}}", self.api_url)
         description.extend(description_dict.splitlines())
         return description
 

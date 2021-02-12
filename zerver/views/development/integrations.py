@@ -13,7 +13,7 @@ from zerver.lib.validator import check_bool
 from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 from zerver.models import UserProfile, get_realm
 
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
 
 
 def get_webhook_integrations() -> List[str]:
@@ -54,12 +54,12 @@ def send_webhook_fixture_message(
 def get_fixtures(request: HttpResponse, integration_name: str = REQ()) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:
-        return json_error(f"\"{integration_name}\" is not a valid webhook integration.", status=404)
+        return json_error(f'"{integration_name}" is not a valid webhook integration.', status=404)
 
     fixtures = {}
     fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")
     if not os.path.exists(fixtures_dir):
-        msg = ("The integration \"{valid_integration_name}\" does not have fixtures.").format(
+        msg = ('The integration "{valid_integration_name}" does not have fixtures.').format(
             valid_integration_name=valid_integration_name
         )
         return json_error(msg, status=404)
@@ -115,11 +115,11 @@ def send_all_webhook_fixture_messages(
 ) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:
-        return json_error(f"\"{integration_name}\" is not a valid webhook integration.", status=404)
+        return json_error(f'"{integration_name}" is not a valid webhook integration.', status=404)
 
     fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")
     if not os.path.exists(fixtures_dir):
-        msg = ("The integration \"{valid_integration_name}\" does not have fixtures.").format(
+        msg = ('The integration "{valid_integration_name}" does not have fixtures.').format(
             valid_integration_name=valid_integration_name
         )
         return json_error(msg, status=404)

@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0058_realm_email_changes_disabled'),
+        ("zerver", "0058_realm_email_changes_disabled"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='quota',
+            model_name="userprofile",
+            name="quota",
             field=models.IntegerField(default=1073741824),
         ),
     ]

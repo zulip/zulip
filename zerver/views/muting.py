@@ -70,7 +70,7 @@ def update_muted_topic(
 
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
 
-    if op == 'add':
+    if op == "add":
         return mute_topic(
             user_profile=user_profile,
             stream_id=stream_id,
@@ -78,7 +78,7 @@ def update_muted_topic(
             topic_name=topic,
             date_muted=timezone_now(),
         )
-    elif op == 'remove':
+    elif op == "remove":
         return unmute_topic(
             user_profile=user_profile,
             stream_id=stream_id,

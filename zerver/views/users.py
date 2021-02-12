@@ -95,7 +95,7 @@ def deactivate_user_backend(
     if target.is_realm_owner and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
     if check_last_owner(target):
-        return json_error(_('Cannot deactivate the only organization owner'))
+        return json_error(_("Cannot deactivate the only organization owner"))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 
@@ -139,9 +139,9 @@ def reactivate_user_backend(
 check_profile_data: Validator[List[Dict[str, Optional[Union[int, str, List[int]]]]]] = check_list(
     check_dict_only(
         [
-            ('id', check_int),
+            ("id", check_int),
             (
-                'value',
+                "value",
                 check_none_or(
                     check_union([check_int, check_string, check_list(check_int)]),
                 ),
@@ -182,7 +182,7 @@ def update_user_backend(
 
         if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(user_profile):
             return json_error(
-                _('The owner permission cannot be removed from the only organization owner.')
+                _("The owner permission cannot be removed from the only organization owner.")
             )
         do_change_user_role(target, role, acting_user=user_profile)
 
@@ -242,7 +242,7 @@ def avatar(
     # add query parameters to our url, get_avatar_url does '?x=x'
     # hacks to prevent us from having to jump through decode/encode hoops.
     assert url is not None
-    url = add_query_arg_to_redirect_url(url, request.META['QUERY_STRING'])
+    url = add_query_arg_to_redirect_url(url, request.META["QUERY_STRING"])
     return redirect(url)
 
 
@@ -277,9 +277,9 @@ def patch_bot_backend(
         try:
             owner = get_user_profile_by_id_in_realm(bot_owner_id, user_profile.realm)
         except UserProfile.DoesNotExist:
-            return json_error(_('Failed to change owner, no such user'))
+            return json_error(_("Failed to change owner, no such user"))
         if not owner.is_active:
-            return json_error(_('Failed to change owner, user is deactivated'))
+            return json_error(_("Failed to change owner, user is deactivated"))
         if owner.is_bot:
             return json_error(_("Failed to change owner, bots can't own other bots"))
 
@@ -336,7 +336,7 @@ def patch_bot_backend(
     # Don't include the bot owner in case it is not set.
     # Default bots have no owner.
     if bot.bot_owner is not None:
-        json_result['bot_owner'] = bot.bot_owner.email
+        json_result["bot_owner"] = bot.bot_owner.email
 
     return json_success(json_result)
 
@@ -369,9 +369,9 @@ def add_bot_backend(
         default={}, validator=check_dict(value_validator=check_string)
     ),
     interface_type: int = REQ(validator=check_int, default=Service.GENERIC),
-    default_sending_stream_name: Optional[str] = REQ('default_sending_stream', default=None),
+    default_sending_stream_name: Optional[str] = REQ("default_sending_stream", default=None),
     default_events_register_stream_name: Optional[str] = REQ(
-        'default_events_register_stream', default=None
+        "default_events_register_stream", default=None
     ),
     default_all_public_streams: Optional[bool] = REQ(validator=check_bool, default=None),
 ) -> HttpResponse:
@@ -381,7 +381,7 @@ def add_bot_backend(
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
     try:
-        email = f'{short_name}@{user_profile.realm.get_bot_domain()}'
+        email = f"{short_name}@{user_profile.realm.get_bot_domain()}"
     except InvalidFakeEmailDomain:
         return json_error(
             _(
@@ -389,7 +389,7 @@ def add_bot_backend(
                 "Please contact your server administrator."
             )
         )
-    form = CreateUserForm({'full_name': full_name, 'email': email})
+    form = CreateUserForm({"full_name": full_name, "email": email})
 
     if bot_type == UserProfile.EMBEDDED_BOT:
         if not settings.EMBEDDED_BOTS_ENABLED:
@@ -399,7 +399,7 @@ def add_bot_backend(
 
     if not form.is_valid():
         # We validate client-side as well
-        return json_error(_('Bad name or username'))
+        return json_error(_("Bad name or username"))
     try:
         get_user_by_delivery_email(email, user_profile.realm)
         return json_error(_("Username already in use"))
@@ -490,9 +490,9 @@ def add_bot_backend(
 def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
     bot_profiles = bot_profiles.select_related(
-        'default_sending_stream', 'default_events_register_stream'
+        "default_sending_stream", "default_events_register_stream"
     )
-    bot_profiles = bot_profiles.order_by('date_joined')
+    bot_profiles = bot_profiles.order_by("date_joined")
 
     def bot_info(bot_profile: UserProfile) -> Dict[str, Any]:
         default_sending_stream = get_stream_name(bot_profile.default_sending_stream)
@@ -513,7 +513,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
             default_all_public_streams=bot_profile.default_all_public_streams,
         )
 
-    return json_success({'bots': list(map(bot_info, bot_profiles))})
+    return json_success({"bots": list(map(bot_info, bot_profiles))})
 
 
 @has_request_variables
@@ -571,9 +571,9 @@ def create_user_backend(
         return json_error(_("User not authorized for this query"))
 
     full_name = check_full_name(full_name_raw)
-    form = CreateUserForm({'full_name': full_name, 'email': email})
+    form = CreateUserForm({"full_name": full_name, "email": email})
     if not form.is_valid():
-        return json_error(_('Bad name or username'))
+        return json_error(_("Bad name or username"))
 
     # Check that the new user's email address belongs to the admin's realm
     # (Since this is an admin API, we don't require the user to have been
@@ -602,7 +602,7 @@ def create_user_backend(
         return json_error(PASSWORD_TOO_WEAK_ERROR)
 
     target_user = do_create_user(email, password, realm, full_name, acting_user=user_profile)
-    return json_success({'user_id': target_user.id})
+    return json_success({"user_id": target_user.id})
 
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -615,11 +615,11 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     )
     result: Dict[str, Any] = raw_user_data[user_profile.id]
 
-    result['max_message_id'] = -1
+    result["max_message_id"] = -1
 
-    messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
+    messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by("-id")[:1]
     if messages:
-        result['max_message_id'] = messages[0].id
+        result["max_message_id"] = messages[0].id
 
     return json_success(result)
 
@@ -634,6 +634,6 @@ def get_subscription_backend(
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
-    subscription_status = {'is_subscribed': subscribed_to_stream(target_user, stream_id)}
+    subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 
     return json_success(subscription_status)

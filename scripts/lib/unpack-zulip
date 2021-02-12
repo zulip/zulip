@@ -8,7 +8,7 @@ import tempfile
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import version
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,

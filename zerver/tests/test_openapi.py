@@ -46,25 +46,25 @@ from zerver.openapi.openapi import (
 )
 from zerver.tornado.views import get_events, get_events_backend
 
-TEST_ENDPOINT = '/messages/{message_id}'
-TEST_METHOD = 'patch'
-TEST_RESPONSE_BAD_REQ = '400'
-TEST_RESPONSE_SUCCESS = '200'
+TEST_ENDPOINT = "/messages/{message_id}"
+TEST_METHOD = "patch"
+TEST_RESPONSE_BAD_REQ = "400"
+TEST_RESPONSE_SUCCESS = "200"
 
 VARMAP = {
-    'integer': int,
-    'string': str,
-    'boolean': bool,
-    'object': dict,
-    'NoneType': type(None),
+    "integer": int,
+    "string": str,
+    "boolean": bool,
+    "object": dict,
+    "NoneType": type(None),
 }
 
 
 def schema_type(schema: Dict[str, Any]) -> Union[type, Tuple[type, object]]:
-    if 'oneOf' in schema:
+    if "oneOf" in schema:
         # Hack: Just use the type of the first value
         # Ideally, we'd turn this into a Union type.
-        return schema_type(schema['oneOf'][0])
+        return schema_type(schema["oneOf"][0])
     elif schema["type"] == "array":
         return (list, schema_type(schema["items"]))
     else:
@@ -82,21 +82,21 @@ class OpenAPIToolsTest(ZulipTestCase):
     def test_get_openapi_fixture(self) -> None:
         actual = get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_BAD_REQ)
         expected = {
-            'code': 'BAD_REQUEST',
-            'msg': 'You don\'t have permission to edit this message',
-            'result': 'error',
+            "code": "BAD_REQUEST",
+            "msg": "You don't have permission to edit this message",
+            "result": "error",
         }
         self.assertEqual(actual, expected)
 
     def test_get_openapi_parameters(self) -> None:
         actual = get_openapi_parameters(TEST_ENDPOINT, TEST_METHOD)
         expected_item = {
-            'name': 'message_id',
-            'in': 'path',
-            'description': 'The target message\'s ID.\n',
-            'example': 42,
-            'required': True,
-            'schema': {'type': 'integer'},
+            "name": "message_id",
+            "in": "path",
+            "description": "The target message's ID.\n",
+            "example": 42,
+            "required": True,
+            "schema": {"type": "integer"},
         }
         assert expected_item in actual
 
@@ -105,9 +105,9 @@ class OpenAPIToolsTest(ZulipTestCase):
             ValidationError, msg="Additional properties are not allowed ('foo' was unexpected)"
         ):
             bad_content: Dict[str, object] = {
-                'msg': '',
-                'result': 'success',
-                'foo': 'bar',
+                "msg": "",
+                "result": "success",
+                "foo": "bar",
             }
             validate_against_openapi_schema(
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
@@ -115,8 +115,8 @@ class OpenAPIToolsTest(ZulipTestCase):
 
         with self.assertRaises(ValidationError, msg=("42 is not of type string")):
             bad_content = {
-                'msg': 42,
-                'result': 'success',
+                "msg": 42,
+                "result": "success",
             }
             validate_against_openapi_schema(
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
@@ -124,7 +124,7 @@ class OpenAPIToolsTest(ZulipTestCase):
 
         with self.assertRaises(ValidationError, msg='Expected to find the "msg" required key'):
             bad_content = {
-                'result': 'success',
+                "result": "success",
             }
             validate_against_openapi_schema(
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
@@ -132,8 +132,8 @@ class OpenAPIToolsTest(ZulipTestCase):
 
         # No exceptions should be raised here.
         good_content = {
-            'msg': '',
-            'result': 'success',
+            "msg": "",
+            "result": "success",
         }
         validate_against_openapi_schema(
             good_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
@@ -150,47 +150,47 @@ class OpenAPIToolsTest(ZulipTestCase):
         # correctly gets to the the deeply nested objects.
         with open(os.path.join(os.path.dirname(OPENAPI_SPEC_PATH), "testing.yaml")) as test_file:
             test_dict = yaml.safe_load(test_file)
-        openapi_spec.openapi()['paths']['testing'] = test_dict
+        openapi_spec.openapi()["paths"]["testing"] = test_dict
         try:
             validate_against_openapi_schema(
-                (test_dict['test1']['responses']['200']['content']['application/json']['example']),
-                'testing',
-                'test1',
-                '200',
+                (test_dict["test1"]["responses"]["200"]["content"]["application/json"]["example"]),
+                "testing",
+                "test1",
+                "200",
             )
             with self.assertRaises(
                 ValidationError, msg='Extraneous key "str4" in response\'s content'
             ):
                 validate_against_openapi_schema(
                     (
-                        test_dict['test2']['responses']['200']['content']['application/json'][
-                            'example'
+                        test_dict["test2"]["responses"]["200"]["content"]["application/json"][
+                            "example"
                         ]
                     ),
-                    'testing',
-                    'test2',
-                    '200',
+                    "testing",
+                    "test2",
+                    "200",
                 )
             with self.assertRaises(SchemaError, msg='Opaque object "obj"'):
                 # Checks for opaque objects
                 validate_schema(
                     (
-                        test_dict['test3']['responses']['200']['content']['application/json'][
-                            'schema'
+                        test_dict["test3"]["responses"]["200"]["content"]["application/json"][
+                            "schema"
                         ]
                     )
                 )
         finally:
-            openapi_spec.openapi()['paths'].pop('testing', None)
+            openapi_spec.openapi()["paths"].pop("testing", None)
 
     def test_to_python_type(self) -> None:
         TYPES = {
-            'string': str,
-            'number': float,
-            'integer': int,
-            'boolean': bool,
-            'array': list,
-            'object': dict,
+            "string": str,
+            "number": float,
+            "integer": int,
+            "boolean": bool,
+            "array": list,
+            "object": dict,
         }
 
         for oa_type, py_type in TYPES.items():
@@ -218,82 +218,82 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     checked_endpoints: Set[str] = set()
     pending_endpoints = {
         #### TODO: These endpoints are a priority to document:
-        '/realm/presence',
-        '/streams/{stream_id}/members',
-        '/streams/{stream_id}/delete_topic',
-        '/users/me/presence',
-        '/users/me/alert_words',
-        '/users/me/status',
+        "/realm/presence",
+        "/streams/{stream_id}/members",
+        "/streams/{stream_id}/delete_topic",
+        "/users/me/presence",
+        "/users/me/alert_words",
+        "/users/me/status",
         #### These realm administration settings are valuable to document:
         # Delete a file uploaded by current user.
-        '/attachments/{attachment_id}',
+        "/attachments/{attachment_id}",
         # List data exports for organization (GET) or request one (POST)
-        '/export/realm',
+        "/export/realm",
         # Delete a data export.
-        '/export/realm/{export_id}',
+        "/export/realm/{export_id}",
         # Manage default streams and default stream groups
-        '/default_streams',
-        '/default_stream_groups/create',
-        '/default_stream_groups/{group_id}',
-        '/default_stream_groups/{group_id}/streams',
+        "/default_streams",
+        "/default_stream_groups/create",
+        "/default_stream_groups/{group_id}",
+        "/default_stream_groups/{group_id}/streams",
         # Administer invitations
-        '/invites',
-        '/invites/multiuse',
-        '/invites/{prereg_id}',
-        '/invites/{prereg_id}/resend',
-        '/invites/multiuse/{invite_id}',
+        "/invites",
+        "/invites/multiuse",
+        "/invites/{prereg_id}",
+        "/invites/{prereg_id}/resend",
+        "/invites/multiuse/{invite_id}",
         # Single-stream settings alternative to the bulk endpoint
         # users/me/subscriptions/properties; probably should just be a
         # section of the same page.
-        '/users/me/subscriptions/{stream_id}',
+        "/users/me/subscriptions/{stream_id}",
         # Real-time-events endpoint
-        '/real-time',
+        "/real-time",
         # Rest error handling endpoint
-        '/rest-error-handling',
+        "/rest-error-handling",
         # Zulip outgoing webhook payload
-        '/zulip-outgoing-webhook',
+        "/zulip-outgoing-webhook",
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for fetching API keys
-        '/fetch_api_key',
+        "/fetch_api_key",
         # Already documented; need to fix tracking bug
-        '/dev_fetch_api_key',
+        "/dev_fetch_api_key",
         # Mobile interface for development environment login
-        '/dev_list_users',
+        "/dev_list_users",
         # Registration for iOS/Android mobile push notifications.
-        '/users/me/android_gcm_reg_id',
-        '/users/me/apns_device_token',
+        "/users/me/android_gcm_reg_id",
+        "/users/me/apns_device_token",
         #### These personal settings endpoints have modest value to document:
-        '/settings',
-        '/users/me/avatar',
-        '/users/me/api_key/regenerate',
+        "/settings",
+        "/users/me/avatar",
+        "/users/me/api_key/regenerate",
         # Not very useful outside the UI
-        '/settings/display',
+        "/settings/display",
         # Much more valuable would be an org admin bulk-upload feature.
-        '/users/me/profile_data',
+        "/users/me/profile_data",
         #### Should be documented as part of interactive bots documentation
-        '/bot_storage',
-        '/submessage',
-        '/zcommand',
+        "/bot_storage",
+        "/submessage",
+        "/zcommand",
         #### These "organization settings" endpoint have modest value to document:
-        '/realm',
-        '/realm/domains',
-        '/realm/domains/{domain}',
-        '/bots',
-        '/bots/{bot_id}',
-        '/bots/{bot_id}/api_key/regenerate',
+        "/realm",
+        "/realm/domains",
+        "/realm/domains/{domain}",
+        "/bots",
+        "/bots/{bot_id}",
+        "/bots/{bot_id}/api_key/regenerate",
         #### These "organization settings" endpoints have low value to document:
-        '/realm/profile_fields/{field_id}',
-        '/realm/icon',
-        '/realm/logo',
-        '/realm/deactivate',
-        '/realm/subdomain/{subdomain}',
+        "/realm/profile_fields/{field_id}",
+        "/realm/icon",
+        "/realm/logo",
+        "/realm/deactivate",
+        "/realm/subdomain/{subdomain}",
         #### Other low value endpoints
         # Used for dead desktop app to test connectivity.  To delete.
-        '/generate_204',
+        "/generate_204",
         # Used for failed approach with dead Android app.
-        '/fetch_google_client_id',
+        "/fetch_google_client_id",
         # API for video calls we're planning to remove/replace.
-        '/calls/zoom/create',
+        "/calls/zoom/create",
     }
 
     # Endpoints where the documentation is currently failing our
@@ -311,13 +311,13 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         """
 
         # Handle the presence-email code which has a non-slashes syntax.
-        regex_pattern = regex_pattern.replace('[^/]*', '.*').replace('[^/]+', '.*')
+        regex_pattern = regex_pattern.replace("[^/]*", ".*").replace("[^/]+", ".*")
 
         self.assertTrue(regex_pattern.startswith("^"))
         self.assertTrue(regex_pattern.endswith("$"))
-        url_pattern = '/' + regex_pattern[1:][:-1]
+        url_pattern = "/" + regex_pattern[1:][:-1]
         url_pattern = re.sub(r"\(\?P<(\w+)>[^/]+\)", r"{\1}", url_pattern)
-        url_pattern = url_pattern.replace('\\', '')
+        url_pattern = url_pattern.replace("\\", "")
         return url_pattern
 
     def ensure_no_documentation_if_intentionally_undocumented(
@@ -414,11 +414,11 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         msg = f"""
 The types for the request parameters in zerver/openapi/zulip.yaml
 do not match the types declared in the implementation of {function.__name__}.\n"""
-        msg += '=' * 65 + '\n'
+        msg += "=" * 65 + "\n"
         msg += "{:<10s}{:^30s}{:>10s}\n".format(
             "Parameter", "OpenAPI Type", "Function Declaration Type"
         )
-        msg += '=' * 65 + '\n'
+        msg += "=" * 65 + "\n"
         opvtype = None
         fdvtype = None
         for element in diff:
@@ -635,7 +635,7 @@ so maybe we shouldn't include it in pending_endpoints.
                 # argument list matches what actually appears in the
                 # codebase.
 
-                openapi_parameter_names = {parameter['name'] for parameter in openapi_parameters}
+                openapi_parameter_names = {parameter["name"] for parameter in openapi_parameters}
 
                 if len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
                     print("Undocumented parameters for", url_pattern, method, function_name)
@@ -667,7 +667,7 @@ class ModifyExampleGenerationTestCase(ZulipTestCase):
         res = parse_language_and_options("curl, mod='somevalue'")
         self.assertEqual(res, ("curl", {"mod": "somevalue"}))
 
-        res = parse_language_and_options("curl, mod=\"somevalue\"")
+        res = parse_language_and_options('curl, mod="somevalue"')
         self.assertEqual(res, ("curl", {"mod": "somevalue"}))
 
     def test_multiple_simple_mod_argument(self) -> None:
@@ -681,7 +681,7 @@ class ModifyExampleGenerationTestCase(ZulipTestCase):
         res = parse_language_and_options("curl, exclude=['param1', 'param2']")
         self.assertEqual(res, ("curl", {"exclude": ["param1", "param2"]}))
 
-        res = parse_language_and_options("curl, exclude=[\"param1\", \"param2\"]")
+        res = parse_language_and_options('curl, exclude=["param1", "param2"]')
         self.assertEqual(res, ("curl", {"exclude": ["param1", "param2"]}))
 
         res = parse_language_and_options("curl, exclude=['param1', \"param2\"]")
@@ -693,7 +693,7 @@ class ModifyExampleGenerationTestCase(ZulipTestCase):
 
     def test_multiple_mixed_mod_arguments(self) -> None:
         res = parse_language_and_options(
-            "curl, exclude=[\"asdf\", 'sdfg'], other_key='asdf', more_things=\"asdf\", another_list=[1, \"2\"]"
+            'curl, exclude=["asdf", \'sdfg\'], other_key=\'asdf\', more_things="asdf", another_list=[1, "2"]'
         )
         self.assertEqual(
             res,
@@ -912,9 +912,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
     def test_generate_and_render_curl_with_array_example(self) -> None:
         generated_curl_example = self.curl_example("/messages", "GET")
         expected_curl_example = [
-            '```curl',
-            'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
-            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
+            "```curl",
+            "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
+            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    --data-urlencode anchor=42 \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
@@ -922,7 +922,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    --data-urlencode client_gravatar=true \\",
             "    --data-urlencode apply_markdown=false \\",
             "    --data-urlencode use_first_unread_anchor=true",
-            '```',
+            "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -931,11 +931,11 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_using_object
         generated_curl_example = self.curl_example("/endpoint", "GET")
         expected_curl_example = [
-            '```curl',
-            'curl -sSX GET -G http://localhost:9991/api/v1/endpoint \\',
-            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
+            "```curl",
+            "curl -sSX GET -G http://localhost:9991/api/v1/endpoint \\",
+            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             '    --data-urlencode \'param1={"key": "value"}\'',
-            '```',
+            "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -960,11 +960,11 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_using_param_in_path
         generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")
         expected_curl_example = [
-            '```curl',
-            'curl -sSX GET -G http://localhost:9991/api/v1/endpoint/35 \\',
-            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
+            "```curl",
+            "curl -sSX GET -G http://localhost:9991/api/v1/endpoint/35 \\",
+            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             '    --data-urlencode \'param2={"key": "value"}\'',
-            '```',
+            "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -986,15 +986,15 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "/messages", "GET", exclude=["client_gravatar", "apply_markdown"]
         )
         expected_curl_example = [
-            '```curl',
-            'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
-            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
+            "```curl",
+            "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
+            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    --data-urlencode anchor=42 \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
             "    --data-urlencode use_first_unread_anchor=true",
-            '```',
+            "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -1028,21 +1028,21 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 assert "tags" in operation
                 tag = operation["tags"][0]
                 assert tag in VALID_TAGS
-                for status_code, response in operation['responses'].items():
-                    schema = response['content']['application/json']['schema']
-                    if 'oneOf' in schema:
-                        for subschema_index, subschema in enumerate(schema['oneOf']):
+                for status_code, response in operation["responses"].items():
+                    schema = response["content"]["application/json"]["schema"]
+                    if "oneOf" in schema:
+                        for subschema_index, subschema in enumerate(schema["oneOf"]):
                             validate_schema(subschema)
                             assert validate_against_openapi_schema(
-                                subschema['example'],
+                                subschema["example"],
                                 path,
                                 method,
-                                status_code + '_' + str(subschema_index),
+                                status_code + "_" + str(subschema_index),
                             )
                         continue
                     validate_schema(schema)
                     assert validate_against_openapi_schema(
-                        schema['example'], path, method, status_code
+                        schema["example"], path, method, status_code
                     )
 
 
@@ -1054,18 +1054,18 @@ class OpenAPIRegexTest(ZulipTestCase):
         """
         # Some of the undocumentd endpoints which are very similar to
         # some of the documented endpoints.
-        assert find_openapi_endpoint('/users/me/presence') is None
-        assert find_openapi_endpoint('/users/me/subscriptions/23') is None
-        assert find_openapi_endpoint('/users/iago/subscriptions/23') is None
-        assert find_openapi_endpoint('/messages/matches_narrow') is None
+        assert find_openapi_endpoint("/users/me/presence") is None
+        assert find_openapi_endpoint("/users/me/subscriptions/23") is None
+        assert find_openapi_endpoint("/users/iago/subscriptions/23") is None
+        assert find_openapi_endpoint("/messages/matches_narrow") is None
         # Making sure documented endpoints are matched correctly.
         assert (
-            find_openapi_endpoint('/users/23/subscriptions/21')
-            == '/users/{user_id}/subscriptions/{stream_id}'
+            find_openapi_endpoint("/users/23/subscriptions/21")
+            == "/users/{user_id}/subscriptions/{stream_id}"
         )
-        assert find_openapi_endpoint('/users/iago@zulip.com/presence') == '/users/{email}/presence'
-        assert find_openapi_endpoint('/messages/23') == '/messages/{message_id}'
-        assert find_openapi_endpoint('/realm/emoji/realm_emoji_1') == '/realm/emoji/{emoji_name}'
+        assert find_openapi_endpoint("/users/iago@zulip.com/presence") == "/users/{email}/presence"
+        assert find_openapi_endpoint("/messages/23") == "/messages/{message_id}"
+        assert find_openapi_endpoint("/realm/emoji/realm_emoji_1") == "/realm/emoji/{emoji_name}"
 
 
 class OpenAPIRequestValidatorTest(ZulipTestCase):
@@ -1076,14 +1076,14 @@ class OpenAPIRequestValidatorTest(ZulipTestCase):
         as invalid and making sure invalid requests are markded properly
         """
         # `/users/me/subscriptions` doesn't require any parameters
-        validate_request('/users/me/subscriptions', 'get', {}, {}, False, '200')
+        validate_request("/users/me/subscriptions", "get", {}, {}, False, "200")
         with self.assertRaises(SchemaError):
             # `/messages` POST does not work on an empty response
-            validate_request('/messages', 'post', {}, {}, False, '200')
+            validate_request("/messages", "post", {}, {}, False, "200")
         # 400 responses are allowed to fail validation.
-        validate_request('/messages', 'post', {}, {}, False, '400')
+        validate_request("/messages", "post", {}, {}, False, "400")
         # `intentionally_undocumented` allows validation errors on
         # 200 responses.
         validate_request(
-            '/dev_fetch_api_key', 'post', {}, {}, False, '200', intentionally_undocumented=True
+            "/dev_fetch_api_key", "post", {}, {}, False, "200", intentionally_undocumented=True
         )

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0190_cleanup_pushdevicetoken'),
+        ("zerver", "0190_cleanup_pushdevicetoken"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='seat_limit',
+            model_name="realm",
+            name="seat_limit",
             field=models.PositiveIntegerField(null=True),
         ),
     ]

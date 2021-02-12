@@ -15,7 +15,7 @@ class UserHandler:
         self.id_to_user_map: Dict[int, Dict[str, Any]] = {}
 
     def add_user(self, user: Dict[str, Any]) -> None:
-        user_id = user['id']
+        user_id = user["id"]
         self.id_to_user_map[user_id] = user
 
     def get_user(self, user_id: int) -> Dict[str, Any]:

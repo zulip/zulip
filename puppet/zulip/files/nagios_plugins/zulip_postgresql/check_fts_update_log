@@ -5,7 +5,7 @@ Nagios plugin to check the length of the FTS update log.
 """
 import sys
 
-sys.path.append('/home/zulip/deployments/current')
+sys.path.append("/home/zulip/deployments/current")
 try:
     from scripts.lib.setup_path import setup_path
 
@@ -35,6 +35,6 @@ cursor.execute("SELECT count(*) FROM fts_update_log")
 num = cursor.fetchall()[0][0]
 
 if num > 5:
-    report('CRITICAL', num)
+    report("CRITICAL", num)
 
-report('OK', num)
+report("OK", num)

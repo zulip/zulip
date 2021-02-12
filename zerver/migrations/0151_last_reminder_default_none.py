@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0150_realm_allow_community_topic_editing'),
+        ("zerver", "0150_realm_allow_community_topic_editing"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='last_reminder',
+            model_name="userprofile",
+            name="last_reminder",
             field=models.DateTimeField(default=None, null=True),
         ),
     ]

@@ -27,7 +27,7 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
         "hint": "Enter your Twitter username",
     },
     "github": {
-        "text": 'GitHub',
+        "text": "GitHub",
         "url_pattern": "https://github.com/%(username)s",
         "name": "GitHub",
         "hint": "Enter your GitHub username",
@@ -37,15 +37,15 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
 
 def validate_external_account_field_data(field_data: ProfileFieldData) -> ProfileFieldData:
     field_validator = check_dict_only(
-        [('subtype', check_required_string)],
-        [('url_pattern', check_external_account_url_pattern)],
+        [("subtype", check_required_string)],
+        [("url_pattern", check_external_account_url_pattern)],
     )
-    field_validator('field_data', field_data)
+    field_validator("field_data", field_data)
 
-    field_subtype = field_data.get('subtype')
+    field_subtype = field_data.get("subtype")
     if field_subtype not in DEFAULT_EXTERNAL_ACCOUNTS.keys():
         if field_subtype == "custom":
-            if 'url_pattern' not in field_data.keys():
+            if "url_pattern" not in field_data.keys():
                 raise ValidationError(_("Custom external account must define URL pattern"))
         else:
             raise ValidationError(_("Invalid external account type"))

@@ -32,7 +32,7 @@ from zerver.models import (
 
 ## Logging setup ##
 
-logger = logging.getLogger('zulip.management')
+logger = logging.getLogger("zulip.management")
 log_to_file(logger, settings.ANALYTICS_LOG_PATH)
 
 # You can't subtract timedelta.max from a datetime, so use this instead
@@ -42,8 +42,8 @@ TIMEDELTA_MAX = timedelta(days=365 * 1000)
 
 
 class CountStat:
-    HOUR = 'hour'
-    DAY = 'day'
+    HOUR = "hour"
+    DAY = "day"
     FREQUENCIES = frozenset([HOUR, DAY])
 
     @property
@@ -55,7 +55,7 @@ class CountStat:
     def __init__(
         self,
         property: str,
-        data_collector: 'DataCollector',
+        data_collector: "DataCollector",
         frequency: str,
         interval: Optional[timedelta] = None,
     ) -> None:
@@ -91,7 +91,7 @@ class DependentCountStat(CountStat):
     def __init__(
         self,
         property: str,
-        data_collector: 'DataCollector',
+        data_collector: "DataCollector",
         frequency: str,
         interval: Optional[timedelta] = None,
         dependencies: Sequence[str] = [],
@@ -244,8 +244,8 @@ def do_aggregate_to_summary_table(
         cursor.execute(
             realmcount_query,
             {
-                'property': stat.property,
-                'end_time': end_time,
+                "property": stat.property,
+                "end_time": end_time,
             },
         )
         end = time.time()
@@ -279,8 +279,8 @@ def do_aggregate_to_summary_table(
         cursor.execute(
             installationcount_query,
             {
-                'property': stat.property,
-                'end_time': end_time,
+                "property": stat.property,
+                "end_time": end_time,
             },
         )
         end = time.time()
@@ -309,11 +309,11 @@ def do_increment_logging_stat(
 
     table = stat.data_collector.output_table
     if table == RealmCount:
-        id_args = {'realm': zerver_object}
+        id_args = {"realm": zerver_object}
     elif table == UserCount:
-        id_args = {'realm': zerver_object.realm, 'user': zerver_object}
+        id_args = {"realm": zerver_object.realm, "user": zerver_object}
     else:  # StreamCount
-        id_args = {'realm': zerver_object.realm, 'stream': zerver_object}
+        id_args = {"realm": zerver_object.realm, "stream": zerver_object}
 
     if stat.frequency == CountStat.DAY:
         end_time = ceiling_to_day(event_time)
@@ -324,12 +324,12 @@ def do_increment_logging_stat(
         property=stat.property,
         subgroup=subgroup,
         end_time=end_time,
-        defaults={'value': increment},
+        defaults={"value": increment},
         **id_args,
     )
     if not created:
-        row.value = F('value') + increment
-        row.save(update_fields=['value'])
+        row.value = F("value") + increment
+        row.save(update_fields=["value"])
 
 
 def do_drop_all_analytics_tables() -> None:
@@ -361,11 +361,11 @@ def do_pull_by_sql_query(
     group_by: Optional[Tuple[models.Model, str]],
 ) -> int:
     if group_by is None:
-        subgroup = SQL('NULL')
-        group_by_clause = SQL('')
+        subgroup = SQL("NULL")
+        group_by_clause = SQL("")
     else:
         subgroup = Identifier(group_by[0]._meta.db_table, group_by[1])
-        group_by_clause = SQL(', {}').format(subgroup)
+        group_by_clause = SQL(", {}").format(subgroup)
 
     # We do string replacement here because cursor.execute will reject a
     # group_by_clause given as a param.
@@ -373,17 +373,17 @@ def do_pull_by_sql_query(
     # think about how to convert python datetimes to SQL datetimes.
     query_ = query(
         {
-            'subgroup': subgroup,
-            'group_by_clause': group_by_clause,
+            "subgroup": subgroup,
+            "group_by_clause": group_by_clause,
         }
     )
     cursor = connection.cursor()
     cursor.execute(
         query_,
         {
-            'property': property,
-            'time_start': start_time,
-            'time_end': end_time,
+            "property": property,
+            "time_start": start_time,
+            "time_end": end_time,
         },
     )
     rowcount = cursor.rowcount
@@ -419,9 +419,9 @@ def do_pull_minutes_active(
             start__lt=end_time,
         )
         .select_related(
-            'user_profile',
+            "user_profile",
         )
-        .values_list('user_profile_id', 'user_profile__realm_id', 'start', 'end')
+        .values_list("user_profile_id", "user_profile__realm_id", "start", "end")
     )
 
     seconds_active: Dict[Tuple[int, int], float] = defaultdict(float)
@@ -713,28 +713,28 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
         # Stats that count the number of messages sent in various ways.
         # These are also the set of stats that read from the Message table.
         CountStat(
-            'messages_sent:is_bot:hour',
+            "messages_sent:is_bot:hour",
             sql_data_collector(
-                UserCount, count_message_by_user_query(realm), (UserProfile, 'is_bot')
+                UserCount, count_message_by_user_query(realm), (UserProfile, "is_bot")
             ),
             CountStat.HOUR,
         ),
         CountStat(
-            'messages_sent:message_type:day',
+            "messages_sent:message_type:day",
             sql_data_collector(UserCount, count_message_type_by_user_query(realm), None),
             CountStat.DAY,
         ),
         CountStat(
-            'messages_sent:client:day',
+            "messages_sent:client:day",
             sql_data_collector(
-                UserCount, count_message_by_user_query(realm), (Message, 'sending_client_id')
+                UserCount, count_message_by_user_query(realm), (Message, "sending_client_id")
             ),
             CountStat.DAY,
         ),
         CountStat(
-            'messages_in_stream:is_bot:day',
+            "messages_in_stream:is_bot:day",
             sql_data_collector(
-                StreamCount, count_message_by_stream_query(realm), (UserProfile, 'is_bot')
+                StreamCount, count_message_by_stream_query(realm), (UserProfile, "is_bot")
             ),
             CountStat.DAY,
         ),
@@ -744,9 +744,9 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
         # active on which days (in the UserProfile.is_active sense).
         # Important that this stay a daily stat, so that 'realm_active_humans::day' works as expected.
         CountStat(
-            'active_users_audit:is_bot:day',
+            "active_users_audit:is_bot:day",
             sql_data_collector(
-                UserCount, check_realmauditlog_by_user_query(realm), (UserProfile, 'is_bot')
+                UserCount, check_realmauditlog_by_user_query(realm), (UserProfile, "is_bot")
             ),
             CountStat.DAY,
         ),
@@ -759,15 +759,15 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
         # In RealmCount, 'active_users_audit:is_bot:day' should be the partial
         # sum sequence of 'active_users_log:is_bot:day', for any realm that
         # started after the latter stat was introduced.
-        LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
+        LoggingCountStat("active_users_log:is_bot:day", RealmCount, CountStat.DAY),
         # Another sanity check on 'active_users_audit:is_bot:day'. Is only an
         # approximation, e.g. if a user is deactivated between the end of the
         # day and when this stat is run, they won't be counted. However, is the
         # simplest of the three to inspect by hand.
         CountStat(
-            'active_users:is_bot:day',
+            "active_users:is_bot:day",
             sql_data_collector(
-                RealmCount, count_user_by_realm_query(realm), (UserProfile, 'is_bot')
+                RealmCount, count_user_by_realm_query(realm), (UserProfile, "is_bot")
             ),
             CountStat.DAY,
             interval=TIMEDELTA_MAX,
@@ -779,42 +779,42 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
         # as read (imperfect because of batching of some request
         # types, but less likely to be overwhelmed by a single bulk
         # operation).
-        LoggingCountStat('messages_read::hour', UserCount, CountStat.HOUR),
-        LoggingCountStat('messages_read_interactions::hour', UserCount, CountStat.HOUR),
+        LoggingCountStat("messages_read::hour", UserCount, CountStat.HOUR),
+        LoggingCountStat("messages_read_interactions::hour", UserCount, CountStat.HOUR),
         # User activity stats
         # Stats that measure user activity in the UserActivityInterval sense.
         CountStat(
-            '1day_actives::day',
+            "1day_actives::day",
             sql_data_collector(UserCount, check_useractivityinterval_by_user_query(realm), None),
             CountStat.DAY,
             interval=timedelta(days=1) - UserActivityInterval.MIN_INTERVAL_LENGTH,
         ),
         CountStat(
-            '7day_actives::day',
+            "7day_actives::day",
             sql_data_collector(UserCount, check_useractivityinterval_by_user_query(realm), None),
             CountStat.DAY,
             interval=timedelta(days=7) - UserActivityInterval.MIN_INTERVAL_LENGTH,
         ),
         CountStat(
-            '15day_actives::day',
+            "15day_actives::day",
             sql_data_collector(UserCount, check_useractivityinterval_by_user_query(realm), None),
             CountStat.DAY,
             interval=timedelta(days=15) - UserActivityInterval.MIN_INTERVAL_LENGTH,
         ),
         CountStat(
-            'minutes_active::day', DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY
+            "minutes_active::day", DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY
         ),
         # Rate limiting stats
         # Used to limit the number of invitation emails sent by a realm
-        LoggingCountStat('invites_sent::day', RealmCount, CountStat.DAY),
+        LoggingCountStat("invites_sent::day", RealmCount, CountStat.DAY),
         # Dependent stats
         # Must come after their dependencies.
         # Canonical account of the number of active humans in a realm on each day.
         DependentCountStat(
-            'realm_active_humans::day',
+            "realm_active_humans::day",
             sql_data_collector(RealmCount, count_realm_active_humans_query(realm), None),
             CountStat.DAY,
-            dependencies=['active_users_audit:is_bot:day', '15day_actives::day'],
+            dependencies=["active_users_audit:is_bot:day", "15day_actives::day"],
         ),
     ]
 

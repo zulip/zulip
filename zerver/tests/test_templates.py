@@ -10,11 +10,11 @@ class TemplateTestCase(ZulipTestCase):
     def test_markdown_in_template(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
-            'markdown_test_file': "zerver/tests/markdown/test_markdown.md",
+            "markdown_test_file": "zerver/tests/markdown/test_markdown.md",
         }
         content = template.render(context)
 
-        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        content_sans_whitespace = content.replace(" ", "").replace("\n", "")
         self.assertEqual(
             content_sans_whitespace,
             'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer',
@@ -23,10 +23,10 @@ class TemplateTestCase(ZulipTestCase):
     def test_markdown_tabbed_sections_extension(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
-            'markdown_test_file': "zerver/tests/markdown/test_tabbed_sections.md",
+            "markdown_test_file": "zerver/tests/markdown/test_tabbed_sections.md",
         }
         content = template.render(context)
-        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        content_sans_whitespace = content.replace(" ", "").replace("\n", "")
 
         # Note that the expected HTML has a lot of stray <p> tags. This is a
         # consequence of how the Markdown renderer converts newlines to HTML
@@ -89,31 +89,31 @@ header
 footer
 """
 
-        expected_html_sans_whitespace = expected_html.replace(" ", "").replace('\n', '')
+        expected_html_sans_whitespace = expected_html.replace(" ", "").replace("\n", "")
         self.assertEqual(content_sans_whitespace, expected_html_sans_whitespace)
 
     def test_markdown_nested_code_blocks(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
-            'markdown_test_file': "zerver/tests/markdown/test_nested_code_blocks.md",
+            "markdown_test_file": "zerver/tests/markdown/test_nested_code_blocks.md",
         }
         content = template.render(context)
 
-        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        content_sans_whitespace = content.replace(" ", "").replace("\n", "")
         expected = (
             'header<h1id="this-is-a-heading">Thisisaheading.</h1><ol>'
             '<li><p>Alistitemwithanindentedcodeblock:</p><divclass="codehilite">'
-            '<pre>indentedcodeblockwithmultiplelines</pre></div></li></ol>'
+            "<pre>indentedcodeblockwithmultiplelines</pre></div></li></ol>"
             '<divclass="codehilite"><pre><span></span><code>'
-            'non-indentedcodeblockwithmultiplelines</code></pre></div>footer'
+            "non-indentedcodeblockwithmultiplelines</code></pre></div>footer"
         )
         self.assertEqual(content_sans_whitespace, expected)
 
-    @patch('builtins.print')
+    @patch("builtins.print")
     def test_custom_markdown_include_extension(self, mock_print: MagicMock) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
-            'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension.md",
+            "markdown_test_file": "zerver/tests/markdown/test_custom_include_extension.md",
         }
 
         with self.assertRaisesRegex(
@@ -132,9 +132,9 @@ footer
     def test_custom_markdown_include_extension_empty_macro(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
-            'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension_empty.md",
+            "markdown_test_file": "zerver/tests/markdown/test_custom_include_extension_empty.md",
         }
         content = template.render(context)
-        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
-        expected = 'headerfooter'
+        content_sans_whitespace = content.replace(" ", "").replace("\n", "")
+        expected = "headerfooter"
         self.assertEqual(content_sans_whitespace, expected)

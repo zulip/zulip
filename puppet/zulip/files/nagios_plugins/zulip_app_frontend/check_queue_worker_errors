@@ -9,10 +9,10 @@ import sys
 
 # settings.QUEUE_ERROR_DIR; not importing Django so that this can run
 # as the nagios user.
-wildcard = os.path.join("/var/log/zulip/queue_error", '*.errors')
+wildcard = os.path.join("/var/log/zulip/queue_error", "*.errors")
 clean = True
 for fn in glob.glob(wildcard):
-    print(f'WARNING: Queue errors logged in {fn}')
+    print(f"WARNING: Queue errors logged in {fn}")
     clean = False
 
 if not clean:

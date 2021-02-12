@@ -11,7 +11,7 @@ from zerver.openapi.openapi import get_openapi_return_values, likely_deprecated_
 
 from .api_arguments_table_generator import generate_data_type
 
-REGEXP = re.compile(r'\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
+REGEXP = re.compile(r"\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}")
 
 
 class MarkdownReturnValuesTableGenerator(Extension):
@@ -20,7 +20,7 @@ class MarkdownReturnValuesTableGenerator(Extension):
 
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
-            APIReturnValuesTablePreprocessor(md, self.getConfigs()), 'generate_return_values', 510
+            APIReturnValuesTablePreprocessor(md, self.getConfigs()), "generate_return_values", 510
         )
 
 
@@ -39,18 +39,18 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                     continue
 
                 doc_name = match.group(2)
-                endpoint, method = doc_name.rsplit(':', 1)
+                endpoint, method = doc_name.rsplit(":", 1)
                 return_values: Dict[str, Any] = {}
                 return_values = get_openapi_return_values(endpoint, method)
                 text: List[str] = []
-                if endpoint != '/events':
+                if endpoint != "/events":
                     text = self.render_table(return_values, 0)
                 else:
                     return_values = copy.deepcopy(return_values)
-                    events = return_values['events'].pop('items', None)
+                    events = return_values["events"].pop("items", None)
                     text = self.render_table(return_values, 0)
                     # Another heading for the events documentation
-                    text.append('\n\n## Events\n\n')
+                    text.append("\n\n## Events\n\n")
                     text += self.render_events(events)
                 line_split = REGEXP.split(line, maxsplit=0)
                 preceding = line_split[0]
@@ -65,7 +65,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
     def render_desc(
         self, description: str, spacing: int, data_type: str, return_value: Optional[str] = None
     ) -> str:
-        description = description.replace('\n', '\n' + ((spacing + 4) * ' '))
+        description = description.replace("\n", "\n" + ((spacing + 4) * " "))
         if return_value is None:
             # HACK: It's not clear how to use OpenAPI data to identify
             # the `key` fields for objects where e.g. the keys are
@@ -79,7 +79,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             # More correctly, we should be doing something that looks at the types;
             # print statements and test_api_doc_endpoint is useful for testing.
             arr = description.split(": ", 1)
-            if len(arr) == 1 or '\n' in arr[0]:
+            if len(arr) == 1 or "\n" in arr[0]:
                 return (spacing * " ") + "* " + description
             (key_name, key_description) = arr
             return (
@@ -109,7 +109,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         for return_value in return_values:
             if return_value in IGNORE:
                 continue
-            if 'oneOf' in return_values[return_value]:
+            if "oneOf" in return_values[return_value]:
                 # For elements using oneOf there are two descriptions. The first description
                 # should be at level with the oneOf and should contain the basic non-specific
                 # description of the endpoint. Then for each element of oneOf there is a
@@ -118,48 +118,48 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 data_type = generate_data_type(return_values[return_value])
                 ans.append(
                     self.render_desc(
-                        return_values[return_value]['description'], spacing, data_type, return_value
+                        return_values[return_value]["description"], spacing, data_type, return_value
                     )
                 )
-                for element in return_values[return_value]['oneOf']:
-                    if 'description' not in element:
+                for element in return_values[return_value]["oneOf"]:
+                    if "description" not in element:
                         continue
                     # Add the specialized description of the oneOf element.
                     data_type = generate_data_type(element)
-                    ans.append(self.render_desc(element['description'], spacing + 4, data_type))
+                    ans.append(self.render_desc(element["description"], spacing + 4, data_type))
                     # If the oneOf element is an object schema then render the documentation
                     # of its keys.
-                    if 'properties' in element:
-                        ans += self.render_table(element['properties'], spacing + 8)
+                    if "properties" in element:
+                        ans += self.render_table(element["properties"], spacing + 8)
                 continue
-            description = return_values[return_value]['description']
+            description = return_values[return_value]["description"]
             data_type = generate_data_type(return_values[return_value])
             # Test to make sure deprecated keys are marked appropriately.
             if likely_deprecated_parameter(description):
-                assert return_values[return_value]['deprecated']
+                assert return_values[return_value]["deprecated"]
             ans.append(self.render_desc(description, spacing, data_type, return_value))
-            if 'properties' in return_values[return_value]:
-                ans += self.render_table(return_values[return_value]['properties'], spacing + 4)
-            if return_values[return_value].get('additionalProperties', False):
-                data_type = generate_data_type(return_values[return_value]['additionalProperties'])
+            if "properties" in return_values[return_value]:
+                ans += self.render_table(return_values[return_value]["properties"], spacing + 4)
+            if return_values[return_value].get("additionalProperties", False):
+                data_type = generate_data_type(return_values[return_value]["additionalProperties"])
                 ans.append(
                     self.render_desc(
-                        return_values[return_value]['additionalProperties']['description'],
+                        return_values[return_value]["additionalProperties"]["description"],
                         spacing + 4,
                         data_type,
                     )
                 )
-                if 'properties' in return_values[return_value]['additionalProperties']:
+                if "properties" in return_values[return_value]["additionalProperties"]:
                     ans += self.render_table(
-                        return_values[return_value]['additionalProperties']['properties'],
+                        return_values[return_value]["additionalProperties"]["properties"],
                         spacing + 8,
                     )
             if (
-                'items' in return_values[return_value]
-                and 'properties' in return_values[return_value]['items']
+                "items" in return_values[return_value]
+                and "properties" in return_values[return_value]["items"]
             ):
                 ans += self.render_table(
-                    return_values[return_value]['items']['properties'], spacing + 4
+                    return_values[return_value]["items"]["properties"], spacing + 4
                 )
         return ans
 
@@ -169,36 +169,36 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         # Directly using `###` for subheading causes errors so use h3 with made up id.
         argument_template = (
             '<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">'
-            + ' {event_type} {op}</h3></p></div> \n{description}\n\n\n'
+            + " {event_type} {op}</h3></p></div> \n{description}\n\n\n"
         )
-        for events in events_dict['oneOf']:
+        for events in events_dict["oneOf"]:
             # `id` is present in every event so it will be redundant to display
             # it every time. So remove it from the dictionary.
-            events['properties'].pop('id')
-            event_type: Dict[str, Any] = events['properties'].pop('type')
-            event_type_str: str = event_type['enum'][0]
+            events["properties"].pop("id")
+            event_type: Dict[str, Any] = events["properties"].pop("type")
+            event_type_str: str = event_type["enum"][0]
             # Internal hyperlink name
             h3_id: str = event_type_str
             event_type_str = f'<span class="api-argument-required"> {event_type_str}</span>'
-            op: Optional[Dict[str, Any]] = events['properties'].pop('op', None)
-            op_str: str = ''
+            op: Optional[Dict[str, Any]] = events["properties"].pop("op", None)
+            op_str: str = ""
             if op is not None:
-                op_str = op['enum'][0]
-                h3_id += '-' + op_str
+                op_str = op["enum"][0]
+                h3_id += "-" + op_str
                 op_str = f'<span class="api-argument-deprecated">op: {op_str}</span>'
-            description = events['description']
+            description = events["description"]
             text.append(
                 argument_template.format(
                     event_type=event_type_str, op=op_str, description=description, h3_id=h3_id
                 )
             )
-            text += self.render_table(events['properties'], 0)
+            text += self.render_table(events["properties"], 0)
             # This part is for adding examples of individual events
-            text.append('**Example**')
-            text.append('\n```json\n')
-            example = json.dumps(events['example'], indent=4)
+            text.append("**Example**")
+            text.append("\n```json\n")
+            example = json.dumps(events["example"], indent=4)
             text.append(example)
-            text.append('```\n\n')
+            text.append("```\n\n")
         return text
 
 

@@ -12,13 +12,13 @@ class Migration(migrations.Migration):
     """
 
     dependencies = [
-        ('zerver', '0309_userprofile_can_create_users'),
+        ("zerver", "0309_userprofile_can_create_users"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='zoom_token',
+            model_name="userprofile",
+            name="zoom_token",
             field=models.JSONField(default=None, null=True),
         ),
     ]

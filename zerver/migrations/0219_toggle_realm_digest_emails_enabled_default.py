@@ -16,13 +16,13 @@ def disable_realm_digest_emails_enabled(
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0218_remove_create_stream_by_admins_only'),
+        ("zerver", "0218_remove_create_stream_by_admins_only"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realm',
-            name='digest_emails_enabled',
+            model_name="realm",
+            name="digest_emails_enabled",
             field=models.BooleanField(default=False),
         ),
         migrations.RunPython(

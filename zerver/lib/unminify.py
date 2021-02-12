@@ -8,7 +8,7 @@ from zerver.lib.pysa import mark_sanitized
 
 
 class SourceMap:
-    '''Map (line, column) pairs from generated to source file.'''
+    """Map (line, column) pairs from generated to source file."""
 
     def __init__(self, sourcemap_dirs: List[str]) -> None:
         self._dirs = sourcemap_dirs
@@ -23,7 +23,7 @@ class SourceMap:
 
         if minified_src not in self._indices:
             for source_dir in self._dirs:
-                filename = os.path.join(source_dir, minified_src + '.map')
+                filename = os.path.join(source_dir, minified_src + ".map")
                 if os.path.isfile(filename):
                     # Use 'mark_sanitized' to force Pysa to ignore the fact that
                     # 'filename' is user controlled. While putting user
@@ -42,10 +42,10 @@ class SourceMap:
         return self._indices[minified_src]
 
     def annotate_stacktrace(self, stacktrace: str) -> str:
-        out: str = ''
+        out: str = ""
         for ln in stacktrace.splitlines():
-            out += ln + '\n'
-            match = re.search(r'/static/webpack-bundles/([^:]+):(\d+):(\d+)', ln)
+            out += ln + "\n"
+            match = re.search(r"/static/webpack-bundles/([^:]+):(\d+):(\d+)", ln)
             if match:
                 # Get the appropriate source map for the minified file.
                 minified_src = match.groups()[0]
@@ -60,10 +60,10 @@ class SourceMap:
                         webpack_prefix = "webpack:///"
                         if display_src.startswith(webpack_prefix):
                             display_src = display_src[len(webpack_prefix) :]
-                        out += f'       = {display_src} line {result.src_line+1} column {result.src_col+1}\n'
+                        out += f"       = {display_src} line {result.src_line+1} column {result.src_col+1}\n"
                 except IndexError:
-                    out += '       [Unable to look up in source map]\n'
+                    out += "       [Unable to look up in source map]\n"
 
-            if ln.startswith('    at'):
-                out += '\n'
+            if ln.startswith("    at"):
+                out += "\n"
         return out

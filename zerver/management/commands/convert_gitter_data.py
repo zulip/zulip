@@ -14,17 +14,17 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            'gitter_data', nargs='+', metavar='<gitter data>', help="Gitter data in json format"
+            "gitter_data", nargs="+", metavar="<gitter data>", help="Gitter data in json format"
         )
 
         parser.add_argument(
-            '--output', dest='output_dir', help='Directory to write exported data to.'
+            "--output", dest="output_dir", help="Directory to write exported data to."
         )
 
         parser.add_argument(
-            '--threads',
+            "--threads",
             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-            help='Threads to download avatars and attachments faster',
+            help="Threads to download avatars and attachments faster",
         )
 
         parser.formatter_class = argparse.RawTextHelpFormatter
@@ -36,11 +36,11 @@ class Command(BaseCommand):
         else:
             output_dir = os.path.realpath(output_dir)
 
-        num_threads = int(options['threads'])
+        num_threads = int(options["threads"])
         if num_threads < 1:
-            raise CommandError('You must have at least one thread.')
+            raise CommandError("You must have at least one thread.")
 
-        for path in options['gitter_data']:
+        for path in options["gitter_data"]:
             if not os.path.exists(path):
                 raise CommandError(f"Gitter data file not found: '{path}'")
             # TODO add json check

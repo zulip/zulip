@@ -26,10 +26,10 @@ LEGACY_PREV_TOPIC = "prev_subject"
 # database, but it's the JSON field.
 EXPORT_TOPIC_NAME = "subject"
 
-'''
+"""
 The following functions are for user-facing APIs
 where we'll want to support "subject" for a while.
-'''
+"""
 
 
 def get_topic_from_message_info(message_info: Dict[str, Any]) -> str:
@@ -41,35 +41,35 @@ def get_topic_from_message_info(message_info: Dict[str, Any]) -> str:
     We prefer 'topic' to 'subject' here.  We expect at least one field
     to be present (or the caller must know how to handle KeyError).
     """
-    if 'topic' in message_info:
-        return message_info['topic']
+    if "topic" in message_info:
+        return message_info["topic"]
 
-    return message_info['subject']
+    return message_info["subject"]
 
 
 def REQ_topic() -> Optional[str]:
     # REQ handlers really return a REQ, but we
     # lie to make the rest of the type matching work.
     return REQ(
-        whence='topic',
-        aliases=['subject'],
+        whence="topic",
+        aliases=["subject"],
         converter=lambda x: x.strip(),
         default=None,
     )
 
 
-'''
+"""
 TRY TO KEEP THIS DIVIDING LINE.
 
 Below this line we want to make it so that functions are only
 using "subject" in the DB sense, and nothing customer facing.
 
-'''
+"""
 
 # This is used in low-level message functions in
 # zerver/lib/message.py, and it's not user facing.
 DB_TOPIC_NAME = "subject"
-MESSAGE__TOPIC = 'message__subject'
+MESSAGE__TOPIC = "message__subject"
 
 
 def topic_match_sa(topic_name: str) -> "ColumnElement[bool]":
@@ -144,14 +144,14 @@ def update_messages_for_topic_edit(
         recipient_id = message.recipient_id
 
     propagate_query = Q(recipient_id=recipient_id, subject__iexact=orig_topic_name)
-    if propagate_mode == 'change_all':
+    if propagate_mode == "change_all":
         propagate_query = propagate_query & ~Q(id=message.id)
-    if propagate_mode == 'change_later':
+    if propagate_mode == "change_later":
         propagate_query = propagate_query & Q(id__gt=message.id)
 
     messages = Message.objects.filter(propagate_query).select_related()
 
-    update_fields = ['edit_history', 'last_edit_time']
+    update_fields = ["edit_history", "last_edit_time"]
 
     # Evaluate the query before running the update
     messages_list = list(messages)
@@ -200,12 +200,12 @@ def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dic
         history.append(
             dict(name=topic_name, max_id=max_message_id),
         )
-    return sorted(history, key=lambda x: -x['max_id'])
+    return sorted(history, key=lambda x: -x["max_id"])
 
 
 def get_topic_history_for_public_stream(recipient_id: int) -> List[Dict[str, Any]]:
     cursor = connection.cursor()
-    query = '''
+    query = """
     SELECT
         "zerver_message"."subject" as topic,
         max("zerver_message".id) as max_message_id
@@ -217,7 +217,7 @@ def get_topic_history_for_public_stream(recipient_id: int) -> List[Dict[str, Any
         "zerver_message"."subject"
     )
     ORDER BY max("zerver_message".id) DESC
-    '''
+    """
     cursor.execute(query, [recipient_id])
     rows = cursor.fetchall()
     cursor.close()
@@ -232,7 +232,7 @@ def get_topic_history_for_stream(
         return get_topic_history_for_public_stream(recipient_id)
 
     cursor = connection.cursor()
-    query = '''
+    query = """
     SELECT
         "zerver_message"."subject" as topic,
         max("zerver_message".id) as max_message_id
@@ -248,7 +248,7 @@ def get_topic_history_for_stream(
         "zerver_message"."subject"
     )
     ORDER BY max("zerver_message".id) DESC
-    '''
+    """
     cursor.execute(query, [user_profile.id, recipient_id])
     rows = cursor.fetchall()
     cursor.close()

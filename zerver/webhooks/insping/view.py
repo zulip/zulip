@@ -16,20 +16,20 @@ State changed to **{state}**:
 """.strip()
 
 
-@webhook_view('Insping')
+@webhook_view("Insping")
 @has_request_variables
 def api_insping_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Dict[str, Any]] = REQ(argument_type='body'),
+    payload: Dict[str, Dict[str, Any]] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
-    data = payload['webhook_event_data']
+    data = payload["webhook_event_data"]
 
-    state_name = data['check_state_name']
-    url_tested = data['request_url']
-    response_time = data['response_time']
-    timestamp = data['request_start_time']
+    state_name = data["check_state_name"]
+    url_tested = data["request_url"]
+    response_time = data["response_time"]
+    timestamp = data["request_start_time"]
 
     time_formatted = time.strftime("%c", time.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00"))
 
@@ -40,7 +40,7 @@ def api_insping_webhook(
         timestamp=time_formatted,
     )
 
-    topic = 'insping'
+    topic = "insping"
 
     check_send_webhook_message(request, user_profile, topic, body)
 

@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0295_case_insensitive_email_indexes'),
+        ("zerver", "0295_case_insensitive_email_indexes"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='userprofile',
-            name='short_name',
+            model_name="userprofile",
+            name="short_name",
         ),
     ]

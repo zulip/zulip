@@ -7,13 +7,13 @@ DEMOTE_STREAMS_AUTOMATIC = 1
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0227_inline_url_embed_preview_default_off'),
+        ("zerver", "0227_inline_url_embed_preview_default_off"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='demote_inactive_streams',
+            model_name="userprofile",
+            name="demote_inactive_streams",
             field=models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC),
         ),
     ]

@@ -6,7 +6,7 @@ from zerver.lib.users import get_api_key
 
 
 class JiraHookTests(WebhookTestCase):
-    STREAM_NAME = 'jira'
+    STREAM_NAME = "jira"
     URL_TEMPLATE = "/api/v1/external/jira?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = "jira"
 
@@ -65,12 +65,12 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
             self.assert_json_success(result)
 
     def test_created_with_stream_with_spaces_escaped(self) -> None:
-        self.STREAM_NAME = quote('jira alerts')
+        self.STREAM_NAME = quote("jira alerts")
         self.url = self.build_webhook_url()
         self.subscribe(self.test_user, unquote(self.STREAM_NAME))
 
-        payload = self.get_body('created_v1')
-        result = self.client_post(self.url, payload, content_type='application/json')
+        payload = self.get_body("created_v1")
+        result = self.client_post(self.url, payload, content_type="application/json")
 
         self.assert_json_success(result)
 
@@ -86,12 +86,12 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
         self.assertEqual(msg.topic_name(), expected_topic)
 
     def test_created_with_stream_with_spaces_double_escaped(self) -> None:
-        self.STREAM_NAME = quote(quote('jira alerts'))
+        self.STREAM_NAME = quote(quote("jira alerts"))
         self.url = self.build_webhook_url()
         self.subscribe(self.test_user, unquote(unquote(self.STREAM_NAME)))
 
-        payload = self.get_body('created_v1')
-        result = self.client_post(self.url, payload, content_type='application/json')
+        payload = self.get_body("created_v1")
+        result = self.client_post(self.url, payload, content_type="application/json")
 
         self.assert_json_success(result)
 
@@ -107,7 +107,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
         self.assertEqual(msg.topic_name(), expected_topic)
 
     def test_created_with_topic_with_spaces_double_escaped(self) -> None:
-        self.url = self.build_webhook_url(topic=quote(quote('alerts test')))
+        self.url = self.build_webhook_url(topic=quote(quote("alerts test")))
         expected_topic = "alerts test"
         expected_message = """
 Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):

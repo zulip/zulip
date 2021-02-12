@@ -124,11 +124,11 @@ def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) ->
 
 
 def ldap_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(['LDAP'], realm)
+    return auth_enabled_helper(["LDAP"], realm)
 
 
 def email_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(['Email'], realm)
+    return auth_enabled_helper(["Email"], realm)
 
 
 def password_auth_enabled(realm: Optional[Realm] = None) -> bool:
@@ -136,27 +136,27 @@ def password_auth_enabled(realm: Optional[Realm] = None) -> bool:
 
 
 def dev_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(['Dev'], realm)
+    return auth_enabled_helper(["Dev"], realm)
 
 
 def google_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(['Google'], realm)
+    return auth_enabled_helper(["Google"], realm)
 
 
 def github_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(['GitHub'], realm)
+    return auth_enabled_helper(["GitHub"], realm)
 
 
 def gitlab_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(['GitLab'], realm)
+    return auth_enabled_helper(["GitLab"], realm)
 
 
 def apple_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(['Apple'], realm)
+    return auth_enabled_helper(["Apple"], realm)
 
 
 def saml_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(['SAML'], realm)
+    return auth_enabled_helper(["SAML"], realm)
 
 
 def any_social_backend_enabled(realm: Optional[Realm] = None) -> bool:
@@ -180,13 +180,13 @@ def is_user_active(user_profile: UserProfile, return_data: Optional[Dict[str, An
         if return_data is not None:
             if user_profile.is_mirror_dummy:
                 # Record whether it's a mirror dummy account
-                return_data['is_mirror_dummy'] = True
-            return_data['inactive_user'] = True
-            return_data['inactive_user_id'] = user_profile.id
+                return_data["is_mirror_dummy"] = True
+            return_data["inactive_user"] = True
+            return_data["inactive_user_id"] = user_profile.id
         return False
     if user_profile.realm.deactivated:
         if return_data is not None:
-            return_data['inactive_realm'] = True
+            return_data["inactive_realm"] = True
         return False
 
     return True
@@ -210,7 +210,7 @@ def common_get_active_user(
         if not UserProfile.objects.filter(delivery_email__iexact=email).exists():
             return None
         if return_data is not None:
-            return_data['invalid_subdomain'] = True
+            return_data["invalid_subdomain"] = True
         return None
     if not is_user_active(user_profile, return_data):
         return None
@@ -237,8 +237,8 @@ def is_subdomain_in_allowed_subdomains_list(subdomain: str, allowed_subdomains: 
     return False
 
 
-AuthFuncT = TypeVar('AuthFuncT', bound=Callable[..., Optional[UserProfile]])
-rate_limiting_rules = settings.RATE_LIMITING_RULES['authenticate_by_username']
+AuthFuncT = TypeVar("AuthFuncT", bound=Callable[..., Optional[UserProfile]])
+rate_limiting_rules = settings.RATE_LIMITING_RULES["authenticate_by_username"]
 
 
 class RateLimitedAuthenticationByUsername(RateLimitedObject):
@@ -258,7 +258,7 @@ def rate_limit_authentication_by_username(request: HttpRequest, username: str) -
 
 
 def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
-    if not hasattr(request, '_ratelimits_applied'):
+    if not hasattr(request, "_ratelimits_applied"):
         return False
 
     return any(
@@ -277,8 +277,8 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
         return auth_func(*args, **kwargs)
 
     request = args[1]
-    username = kwargs['username']
-    if not hasattr(request, 'client') or not client_is_exempt_from_rate_limiting(request):
+    username = kwargs["username"]
+    if not hasattr(request, "client") or not client_is_exempt_from_rate_limiting(request):
         # Django cycles through enabled authentication backends until one succeeds,
         # or all of them fail. If multiple backends are tried like this, we only want
         # to execute rate_limit_authentication_* once, on the first attempt:
@@ -355,12 +355,12 @@ def check_password_strength(password: str) -> bool:
     if len(password) < settings.PASSWORD_MIN_LENGTH:
         return False
 
-    if password == '':
+    if password == "":
         # zxcvbn throws an exception when passed the empty string, so
         # we need a special case for the empty string password here.
         return False
 
-    if int(zxcvbn(password)['guesses']) < settings.PASSWORD_MIN_GUESSES:
+    if int(zxcvbn(password)["guesses"]) < settings.PASSWORD_MIN_GUESSES:
         return False
 
     return True
@@ -373,7 +373,7 @@ class EmailAuthBackend(ZulipAuthMixin):
     Allows a user to sign in using an email/password pair.
     """
 
-    name = 'email'
+    name = "email"
 
     @rate_limit_auth
     def authenticate(
@@ -388,11 +388,11 @@ class EmailAuthBackend(ZulipAuthMixin):
         """ Authenticate a user based on email address as the user name. """
         if not password_auth_enabled(realm):
             if return_data is not None:
-                return_data['password_auth_disabled'] = True
+                return_data["password_auth_disabled"] = True
             return None
         if not email_auth_enabled(realm):
             if return_data is not None:
-                return_data['email_auth_disabled'] = True
+                return_data["email_auth_disabled"] = True
             return None
         if password == "":
             # Never allow an empty password.  This is defensive code;
@@ -556,7 +556,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return result
 
     def user_email_from_ldapuser(self, username: str, ldap_user: _LDAPUser) -> str:
-        if hasattr(ldap_user, '_username'):
+        if hasattr(ldap_user, "_username"):
             # In tests, we sometimes pass a simplified _LDAPUser without _username attr,
             # and with the intended username in the username argument.
             username = ldap_user._username
@@ -588,14 +588,14 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return username
 
     def sync_avatar_from_ldap(self, user: UserProfile, ldap_user: _LDAPUser) -> None:
-        if 'avatar' in settings.AUTH_LDAP_USER_ATTR_MAP:
+        if "avatar" in settings.AUTH_LDAP_USER_ATTR_MAP:
             # We do local imports here to avoid import loops
             from io import BytesIO
 
             from zerver.lib.actions import do_change_avatar_fields
             from zerver.lib.upload import upload_avatar_image
 
-            avatar_attr_name = settings.AUTH_LDAP_USER_ATTR_MAP['avatar']
+            avatar_attr_name = settings.AUTH_LDAP_USER_ATTR_MAP["avatar"]
             if avatar_attr_name not in ldap_user.attrs:  # nocoverage
                 # If this specific user doesn't have e.g. a
                 # thumbnailPhoto set in LDAP, just skip that user.
@@ -626,7 +626,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         disabled in an Active Directory server being integrated with
         Zulip via LDAP."""
         account_control_value = ldap_user.attrs[
-            settings.AUTH_LDAP_USER_ATTR_MAP['userAccountControl']
+            settings.AUTH_LDAP_USER_ATTR_MAP["userAccountControl"]
         ][0]
         ldap_disabled = bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
         return ldap_disabled
@@ -664,9 +664,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     ) -> None:
         values_by_var_name: Dict[str, Union[int, str, List[int]]] = {}
         for attr, ldap_attr in settings.AUTH_LDAP_USER_ATTR_MAP.items():
-            if not attr.startswith('custom_profile_field__'):
+            if not attr.startswith("custom_profile_field__"):
                 continue
-            var_name = attr.split('custom_profile_field__')[1]
+            var_name = attr.split("custom_profile_field__")[1]
             try:
                 value = ldap_user.attrs[ldap_attr][0]
             except KeyError:
@@ -679,30 +679,30 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         fields_by_var_name: Dict[str, CustomProfileField] = {}
         custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
         for field in custom_profile_fields:
-            var_name = '_'.join(field.name.lower().split(' '))
+            var_name = "_".join(field.name.lower().split(" "))
             fields_by_var_name[var_name] = field
 
         existing_values = {}
         for data in user_profile.profile_data:
-            var_name = '_'.join(data['name'].lower().split(' '))
-            existing_values[var_name] = data['value']
+            var_name = "_".join(data["name"].lower().split(" "))
+            existing_values[var_name] = data["value"]
 
         profile_data: List[Dict[str, Union[int, str, List[int]]]] = []
         for var_name, value in values_by_var_name.items():
             try:
                 field = fields_by_var_name[var_name]
             except KeyError:
-                raise ZulipLDAPException(f'Custom profile field with name {var_name} not found.')
+                raise ZulipLDAPException(f"Custom profile field with name {var_name} not found.")
             if existing_values.get(var_name) == value:
                 continue
             try:
                 validate_user_custom_profile_field(user_profile.realm.id, field, value)
             except ValidationError as error:
-                raise ZulipLDAPException(f'Invalid data for {var_name} field: {error.message}')
+                raise ZulipLDAPException(f"Invalid data for {var_name} field: {error.message}")
             profile_data.append(
                 {
-                    'id': field.id,
-                    'value': value,
+                    "id": field.id,
+                    "value": value,
                 }
             )
         do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
@@ -738,7 +738,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         except ZulipLDAPExceptionNoMatchingLDAPUser as e:
             ldap_logger.debug("%s: %s", self.__class__.__name__, e)
             if return_data is not None:
-                return_data['no_matching_ldap_user'] = True
+                return_data["no_matching_ldap_user"] = True
             return None
 
         # Call into (ultimately) the django-auth-ldap authenticate
@@ -767,7 +767,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         username = self.user_email_from_ldapuser(username, ldap_user)
 
-        if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:  # nocoverage
+        if "userAccountControl" in settings.AUTH_LDAP_USER_ATTR_MAP:  # nocoverage
             ldap_disabled = self.is_account_control_disabled_user(ldap_user)
             if ldap_disabled:
                 # Treat disabled users as deactivated in Zulip.
@@ -817,13 +817,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         if self._prereg_user:
             invited_as = self._prereg_user.invited_as
             realm_creation = self._prereg_user.realm_creation
-            opts['prereg_user'] = self._prereg_user
-            opts['role'] = get_role_for_new_user(invited_as, realm_creation)
-            opts['realm_creation'] = realm_creation
+            opts["prereg_user"] = self._prereg_user
+            opts["role"] = get_role_for_new_user(invited_as, realm_creation)
+            opts["realm_creation"] = realm_creation
             # TODO: Ideally, we should add a mechanism for the user
             # entering which default stream groups they've selected in
             # the LDAP flow.
-            opts['default_stream_groups'] = []
+            opts["default_stream_groups"] = []
 
         user_profile = do_create_user(
             username, None, self._realm, full_name, acting_user=None, **opts
@@ -844,8 +844,8 @@ class ZulipLDAPUser(_LDAPUser):
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        self.realm: Realm = kwargs['realm']
-        del kwargs['realm']
+        self.realm: Realm = kwargs["realm"]
+        del kwargs["realm"]
 
         super().__init__(*args, **kwargs)
 
@@ -884,7 +884,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
         user = get_user_by_delivery_email(username, ldap_user.realm)
         built = False
         # Synchronise the UserProfile with its LDAP attributes:
-        if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:
+        if "userAccountControl" in settings.AUTH_LDAP_USER_ATTR_MAP:
             user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
             if user_disabled_in_ldap:
                 if user.is_active:
@@ -922,10 +922,10 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
     we essentially convert the signal to a normal exception that will properly
     propagate out of django_auth_ldap internals.
     """
-    if kwargs['context'] == 'populate_user':
+    if kwargs["context"] == "populate_user":
         # The exception message can contain the password (if it was invalid),
         # so it seems better not to log that, and only use the original exception's name here.
-        raise PopulateUserLDAPError(kwargs['exception'].__class__.__name__)
+        raise PopulateUserLDAPError(kwargs["exception"].__class__.__name__)
 
 
 def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
@@ -990,7 +990,7 @@ def query_ldap(email: str) -> List[str]:
                     value = "(An avatar image file)"
             values.append(f"{django_field}: {value}")
         if settings.LDAP_EMAIL_ATTR is not None:
-            values.append("{}: {}".format('email', ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
+            values.append("{}: {}".format("email", ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
     else:
         values.append("LDAP backend not configured on this server.")
     return values
@@ -1000,7 +1000,7 @@ class DevAuthBackend(ZulipAuthMixin):
     """Allow logging in as any user without a password.  This is used for
     convenience when developing Zulip, and is disabled in production."""
 
-    name = 'dev'
+    name = "dev"
 
     def authenticate(
         self,
@@ -1106,25 +1106,25 @@ class ExternalAuthResult:
         if self.user_profile is not None:
             # Ensure data inconsistent with the user_profile wasn't passed in inside the data_dict argument.
             assert (
-                'full_name' not in data_dict
-                or data_dict['full_name'] == self.user_profile.full_name
+                "full_name" not in data_dict
+                or data_dict["full_name"] == self.user_profile.full_name
             )
             assert (
-                'email' not in data_dict
-                or data_dict['email'].lower() == self.user_profile.delivery_email.lower()
+                "email" not in data_dict
+                or data_dict["email"].lower() == self.user_profile.delivery_email.lower()
             )
             # Update these data_dict fields to ensure consistency with self.user_profile. This is mostly
             # defensive code, but is useful in these scenarios:
             # 1. user_profile argument was passed in, and no full_name or email_data in the data_dict arg.
             # 2. We're instantiating from the login_token and the user has changed their full_name since
             #    the data was stored under the token.
-            self.data_dict['full_name'] = self.user_profile.full_name
-            self.data_dict['email'] = self.user_profile.delivery_email
+            self.data_dict["full_name"] = self.user_profile.full_name
+            self.data_dict["email"] = self.user_profile.delivery_email
 
-            if 'subdomain' not in self.data_dict:
-                self.data_dict['subdomain'] = self.user_profile.realm.subdomain
+            if "subdomain" not in self.data_dict:
+                self.data_dict["subdomain"] = self.user_profile.realm.subdomain
             if not self.user_profile.is_mirror_dummy:
-                self.data_dict['is_signup'] = False
+                self.data_dict["is_signup"] = False
 
     def store_data(self) -> str:
         key = put_dict_in_redis(
@@ -1156,9 +1156,9 @@ class ExternalAuthResult:
         # In theory, we should return_data here so the caller can do
         # more customized error messages for those unlikely races, but
         # it's likely not worth implementing.
-        realm = get_realm(data['subdomain'])
+        realm = get_realm(data["subdomain"])
         self.user_profile = authenticate(
-            username=data['email'], realm=realm, use_dummy_backend=True
+            username=data["email"], realm=realm, use_dummy_backend=True
         )
 
     class InvalidTokenError(Exception):
@@ -1206,8 +1206,8 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
                 display_name="SSO",
                 display_icon=cls.display_icon,
                 # The user goes to the same URL for both login and signup:
-                login_url=reverse('start-login-sso'),
-                signup_url=reverse('start-login-sso'),
+                login_url=reverse("start-login-sso"),
+                signup_url=reverse("start-login-sso"),
             )
         ]
 
@@ -1215,8 +1215,8 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
 def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
-    login_url = reverse('login_page', kwargs={'template_name': 'zerver/login.html'})
-    redirect_url = login_url + '?is_deactivated=true'
+    login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
+    redirect_url = login_url + "?is_deactivated=true"
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1229,7 +1229,7 @@ def social_associate_user_helper(
 
     Returns a UserProfile object for successful authentication, and None otherwise.
     """
-    subdomain = backend.strategy.session_get('subdomain')
+    subdomain = backend.strategy.session_get("subdomain")
     try:
         realm = get_realm(subdomain)
     except Realm.DoesNotExist:
@@ -1242,10 +1242,10 @@ def social_associate_user_helper(
         return_data["auth_backend_disabled"] = True
         return None
 
-    if 'auth_failed_reason' in kwargs.get('response', {}):
-        return_data["social_auth_failed_reason"] = kwargs['response']["auth_failed_reason"]
+    if "auth_failed_reason" in kwargs.get("response", {}):
+        return_data["social_auth_failed_reason"] = kwargs["response"]["auth_failed_reason"]
         return None
-    elif hasattr(backend, 'get_verified_emails'):
+    elif hasattr(backend, "get_verified_emails"):
         # Some social backends, like GitHubAuthBackend, don't
         # guarantee that the `details` data is validated (i.e., it's
         # possible users can put any string they want in the "email"
@@ -1267,7 +1267,7 @@ def social_associate_user_helper(
         if verified_emails_length == 1:
             chosen_email = verified_emails[0]
         else:
-            chosen_email = backend.strategy.request_data().get('email')
+            chosen_email = backend.strategy.request_data().get("email")
 
         if not chosen_email:
             avatars = {}  # Dict[str, str]
@@ -1280,20 +1280,20 @@ def social_associate_user_helper(
 
             if (
                 len(existing_account_emails) != 1
-                or backend.strategy.session_get('is_signup') == '1'
+                or backend.strategy.session_get("is_signup") == "1"
             ):
                 unverified_emails = []
-                if hasattr(backend, 'get_unverified_emails'):
+                if hasattr(backend, "get_unverified_emails"):
                     unverified_emails = backend.get_unverified_emails(realm, *args, **kwargs)
                 return render(
                     backend.strategy.request,
-                    'zerver/social_auth_select_email.html',
+                    "zerver/social_auth_select_email.html",
                     context={
-                        'primary_email': verified_emails[0],
-                        'verified_non_primary_emails': verified_emails[1:],
-                        'unverified_emails': unverified_emails,
-                        'backend': 'github',
-                        'avatar_urls': avatars,
+                        "primary_email": verified_emails[0],
+                        "verified_non_primary_emails": verified_emails[1:],
+                        "unverified_emails": unverified_emails,
+                        "backend": "github",
+                        "avatar_urls": avatars,
                     },
                 )
             else:
@@ -1302,7 +1302,7 @@ def social_associate_user_helper(
         try:
             validate_email(chosen_email)
         except ValidationError:
-            return_data['invalid_email'] = True
+            return_data["invalid_email"] = True
             return None
 
         if chosen_email not in verified_emails:
@@ -1322,23 +1322,23 @@ def social_associate_user_helper(
         try:
             validate_email(kwargs["details"].get("email"))
         except ValidationError:
-            return_data['invalid_email'] = True
+            return_data["invalid_email"] = True
             return None
         validated_email = kwargs["details"].get("email")
 
     if not validated_email:  # nocoverage
         # This code path isn't used with GitHubAuthBackend, but may be relevant for other
         # social auth backends.
-        return_data['invalid_email'] = True
+        return_data["invalid_email"] = True
         return None
 
     return_data["valid_attestation"] = True
-    return_data['validated_email'] = validated_email
+    return_data["validated_email"] = validated_email
     user_profile = common_get_active_user(validated_email, realm, return_data)
 
-    full_name = kwargs['details'].get('fullname')
-    first_name = kwargs['details'].get('first_name')
-    last_name = kwargs['details'].get('last_name')
+    full_name = kwargs["details"].get("fullname")
+    first_name = kwargs["details"].get("first_name")
+    last_name = kwargs["details"].get("last_name")
     if all(name is None for name in [full_name, first_name, last_name]) and backend.name != "apple":
         # Apple authentication provides the user's name only the very first time a user tries to log in.
         # So if the user aborts login or otherwise is doing this the second time,
@@ -1371,7 +1371,7 @@ def social_auth_associate_user(
     later stages of settings.SOCIAL_AUTH_PIPELINE, such as
     social_auth_finish, as kwargs.
     """
-    partial_token = backend.strategy.request_data().get('partial_token')
+    partial_token = backend.strategy.request_data().get("partial_token")
     return_data: Dict[str, Any] = {}
     user_profile = social_associate_user_helper(backend, return_data, *args, **kwargs)
 
@@ -1379,10 +1379,10 @@ def social_auth_associate_user(
         return user_profile
     else:
         return {
-            'user_profile': user_profile,
-            'return_data': return_data,
-            'partial_token': partial_token,
-            'partial_backend_name': backend,
+            "user_profile": user_profile,
+            "return_data": return_data,
+            "partial_token": partial_token,
+            "partial_backend_name": backend,
         }
 
 
@@ -1398,15 +1398,15 @@ def social_auth_finish(
     """
     from zerver.views.auth import login_or_register_remote_user, redirect_and_log_into_subdomain
 
-    user_profile = kwargs['user_profile']
-    return_data = kwargs['return_data']
+    user_profile = kwargs["user_profile"]
+    return_data = kwargs["return_data"]
 
     no_verified_email = return_data.get("email_not_verified")
-    auth_backend_disabled = return_data.get('auth_backend_disabled')
-    inactive_user = return_data.get('inactive_user')
-    inactive_realm = return_data.get('inactive_realm')
-    invalid_realm = return_data.get('invalid_realm')
-    invalid_email = return_data.get('invalid_email')
+    auth_backend_disabled = return_data.get("auth_backend_disabled")
+    inactive_user = return_data.get("inactive_user")
+    inactive_realm = return_data.get("inactive_realm")
+    invalid_realm = return_data.get("invalid_realm")
+    invalid_email = return_data.get("invalid_email")
     auth_failed_reason = return_data.get("social_auth_failed_reason")
     email_not_associated = return_data.get("email_not_associated")
 
@@ -1415,13 +1415,13 @@ def social_auth_finish(
         # unless the user manually edits the param. In any case, it's most appropriate to just take
         # them to find_account, as there isn't even an appropriate subdomain to take them to the login
         # form on.
-        return HttpResponseRedirect(reverse('find_account'))
+        return HttpResponseRedirect(reverse("find_account"))
 
     if inactive_user:
         backend.logger.info(
             "Failed login attempt for deactivated account: %s@%s",
-            return_data['inactive_user_id'],
-            return_data['realm_string_id'],
+            return_data["inactive_user_id"],
+            return_data["realm_string_id"],
         )
         return redirect_deactivated_user_to_login()
 
@@ -1447,22 +1447,22 @@ def social_auth_finish(
     # email for the user should be handled above; this assertion helps
     # prevent any violations of that contract from resulting in a user
     # being incorrectly authenticated.
-    assert return_data.get('valid_attestation') is True
+    assert return_data.get("valid_attestation") is True
 
     strategy = backend.strategy
     full_name_validated = backend.full_name_validated
-    email_address = return_data['validated_email']
-    full_name = return_data['full_name']
-    redirect_to = strategy.session_get('next')
+    email_address = return_data["validated_email"]
+    full_name = return_data["full_name"]
+    redirect_to = strategy.session_get("next")
     realm = Realm.objects.get(id=return_data["realm_id"])
-    multiuse_object_key = strategy.session_get('multiuse_object_key', '')
+    multiuse_object_key = strategy.session_get("multiuse_object_key", "")
 
-    mobile_flow_otp = strategy.session_get('mobile_flow_otp')
-    desktop_flow_otp = strategy.session_get('desktop_flow_otp')
+    mobile_flow_otp = strategy.session_get("mobile_flow_otp")
+    desktop_flow_otp = strategy.session_get("desktop_flow_otp")
     validate_otp_params(mobile_flow_otp, desktop_flow_otp)
 
     if user_profile is None or user_profile.is_mirror_dummy:
-        is_signup = strategy.session_get('is_signup') == '1'
+        is_signup = strategy.session_get("is_signup") == "1"
     else:
         is_signup = False
 
@@ -1529,7 +1529,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     # it should be False.
     full_name_validated = False
 
-    standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION, 'next']
+    standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION, "next"]
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """This is a small wrapper around the core `auth_complete` method of
@@ -1562,8 +1562,8 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
                 name=cls.name,
                 display_name=cls.auth_backend_name,
                 display_icon=cls.display_icon,
-                login_url=reverse('login-social', args=(cls.name,)),
-                signup_url=reverse('signup-social', args=(cls.name,)),
+                login_url=reverse("login-social", args=(cls.name,)),
+                signup_url=reverse("signup-social", args=(cls.name,)),
             )
         ]
 
@@ -1578,7 +1578,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     def get_all_associated_email_objects(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
         access_token = kwargs["response"]["access_token"]
         try:
-            emails = self._user_data(access_token, '/emails')
+            emails = self._user_data(access_token, "/emails")
         except (HTTPError, json.JSONDecodeError):  # nocoverage
             # We don't really need an explicit test for this code
             # path, since the outcome will be the same as any other
@@ -1588,9 +1588,9 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
     def get_unverified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> List[str]:
         return [
-            email_obj['email']
+            email_obj["email"]
             for email_obj in self.get_usable_email_objects(realm, *args, **kwargs)
-            if not email_obj.get('verified')
+            if not email_obj.get("verified")
         ]
 
     def get_verified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> List[str]:
@@ -1601,7 +1601,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         for email_obj in [
             obj
             for obj in self.get_usable_email_objects(realm, *args, **kwargs)
-            if obj.get('verified')
+            if obj.get("verified")
         ]:
             # social_associate_user_helper assumes that the first email in
             # verified_emails is primary.
@@ -1748,7 +1748,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         return True
 
     def is_native_flow(self) -> bool:
-        return self.strategy.request_data().get('native_flow', False)
+        return self.strategy.request_data().get("native_flow", False)
 
     # This method replaces a method from python-social-auth; it is adapted to store
     # the state_token data in Redis.
@@ -1780,7 +1780,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         state = self.state_token()
         put_dict_in_redis(
             redis_client,
-            'apple_auth_{token}',
+            "apple_auth_{token}",
             data_to_store,
             self.REDIS_EXPIRATION_SECONDS,
             token=state,
@@ -1797,7 +1797,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
         if not request_state:
             self.logger.info("Sign in with Apple failed: missing state parameter.")
-            raise AuthMissingParameter(self, 'state')
+            raise AuthMissingParameter(self, "state")
 
         formatted_request_state = "apple_auth_" + request_state
         redis_data = get_dict_from_redis(
@@ -1820,20 +1820,20 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         Taken from https://github.com/python-social-auth/social-core/pull/483
         TODO: Remove this when the PR is merged.
         """
-        name = response.get('name') or {}
-        name = json.loads(self.data.get('user', '{}')).get('name', {})
+        name = response.get("name") or {}
+        name = json.loads(self.data.get("user", "{}")).get("name", {})
         fullname, first_name, last_name = self.get_user_names(
-            fullname='', first_name=name.get('firstName', ''), last_name=name.get('lastName', '')
+            fullname="", first_name=name.get("firstName", ""), last_name=name.get("lastName", "")
         )
-        email = response.get('email', '')
+        email = response.get("email", "")
         # prevent updating User with empty strings
         user_details = {
-            'fullname': fullname or None,
-            'first_name': first_name or None,
-            'last_name': last_name or None,
-            'email': email,
+            "fullname": fullname or None,
+            "first_name": first_name or None,
+            "last_name": last_name or None,
+            "email": email,
         }
-        user_details['username'] = email
+        user_details["username"] = email
 
         return user_details
 
@@ -1857,19 +1857,19 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         # Thus, we need to set those session variables here, before
         # processing the id_token we received using the common do_auth.
         request_data = self.strategy.request_data()
-        if 'id_token' not in request_data:
+        if "id_token" not in request_data:
             raise JsonableError(_("Missing id_token parameter"))
 
         for param in self.standard_relay_params:
             self.strategy.session_set(param, request_data.get(param))
 
         # We should get the subdomain from the hostname of the request.
-        self.strategy.session_set('subdomain', get_subdomain(self.strategy.request))
+        self.strategy.session_set("subdomain", get_subdomain(self.strategy.request))
 
         try:
             # Things are now ready to be handled by the superclass code. It will
             # validate the id_token and push appropriate user data to the social pipeline.
-            result = self.do_auth(request_data['id_token'], *args, **kwargs)
+            result = self.do_auth(request_data["id_token"], *args, **kwargs)
             return result
         except (AuthFailed, AuthCanceled) as e:
             # AuthFailed is a general "failure" exception from
@@ -1909,7 +1909,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             idps_without_limit_to_subdomains = [
                 idp_name
                 for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items()
-                if 'limit_to_subdomains' not in idp_dict
+                if "limit_to_subdomains" not in idp_dict
             ]
             if idps_without_limit_to_subdomains:
                 self.logger.error(
@@ -1926,13 +1926,13 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         authenticate the user. Overriding the original SAMLAuth.auth_url.
         Runs when someone accesses the /login/saml/ endpoint."""
         try:
-            idp_name = self.strategy.request_data()['idp']
+            idp_name = self.strategy.request_data()["idp"]
             auth = self._create_saml_auth(idp=self.get_idp(idp_name))
         except KeyError as e:
             # If the above raise KeyError, it means invalid or no idp was specified,
             # we should log that and redirect to the login page.
             self.logger.info("/login/saml/ : Bad idp param: KeyError: %s.", str(e))
-            return reverse('login_page', kwargs={'template_name': 'zerver/login.html'})
+            return reverse("login_page", kwargs={"template_name": "zerver/login.html"})
 
         # This where we change things.  We need to pass some params
         # (`mobile_flow_otp`, `next`, etc.) through RelayState, which
@@ -1964,7 +1964,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     @classmethod
     def get_data_from_redis(cls, key: str) -> Optional[Dict[str, Any]]:
         data = None
-        if key.startswith('saml_token_'):
+        if key.startswith("saml_token_"):
             # Safety if statement, to not allow someone to poke around arbitrary Redis keys here.
             data = get_dict_from_redis(redis_client, "saml_token_{token}", key)
 
@@ -1990,27 +1990,27 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             return None
 
         for idp_name, idp_config in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
-            if idp_config['entity_id'] in issuers:
+            if idp_config["entity_id"] in issuers:
                 return idp_name
 
         return None
 
     def get_relayed_params(self) -> Dict[str, Any]:
         request_data = self.strategy.request_data()
-        if 'RelayState' not in request_data:
+        if "RelayState" not in request_data:
             return {}
 
-        relay_state = request_data['RelayState']
+        relay_state = request_data["RelayState"]
         try:
             data = orjson.loads(relay_state)
-            if 'state_token' in data:
+            if "state_token" in data:
                 # SP-initiated sign in. We stored relevant information in the first
                 # step of the flow
-                return self.get_data_from_redis(data['state_token']) or {}
+                return self.get_data_from_redis(data["state_token"]) or {}
             else:
                 # IdP-initiated sign in. Right now we only support transporting subdomain through json in
                 # RelayState, but this format is nice in that it allows easy extensibility here.
-                return {'subdomain': data.get('subdomain')}
+                return {"subdomain": data.get("subdomain")}
         except orjson.JSONDecodeError:
             return {}
 
@@ -2052,11 +2052,11 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         be authenticated, or do nothing to allow the login pipeline to
         continue.
         """
-        org_membership_attribute = idp.conf.get('attr_org_membership', None)
+        org_membership_attribute = idp.conf.get("attr_org_membership", None)
         if org_membership_attribute is None:
             return
 
-        subdomain = self.strategy.session_get('subdomain')
+        subdomain = self.strategy.session_get("subdomain")
         entitlements: Union[str, List[str]] = attributes.get(org_membership_attribute, [])
         if isinstance(entitlements, str):  # nocoverage
             # This shouldn't happen as we'd always expect a list from this attribute even
@@ -2089,7 +2089,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             and then change the RelayState param to the idp_name, because that's what
             SAMLAuth.auth_complete() expects.
         """
-        SAMLResponse = self.strategy.request_data().get('SAMLResponse')
+        SAMLResponse = self.strategy.request_data().get("SAMLResponse")
         if SAMLResponse is None:
             self.logger.info("/complete/saml/: No SAMLResponse in request.")
             return None
@@ -2122,7 +2122,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         result = None
         try:
             params = relayed_params.copy()
-            params['subdomain'] = subdomain
+            params["subdomain"] = subdomain
             for param, value in params.items():
                 if param in self.standard_relay_params:
                     self.strategy.session_set(param, value)
@@ -2130,7 +2130,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             # super().auth_complete expects to have RelayState set to the idp_name,
             # so we need to replace this param.
             post_params = self.strategy.request.POST.copy()
-            post_params['RelayState'] = idp_name
+            post_params["RelayState"] = idp_name
             self.strategy.request.POST = post_params
 
             # Call the auth_complete method of SocialAuthMixIn
@@ -2155,7 +2155,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         idp_dict = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.get(idp_name)
         if idp_dict is None:
             raise AssertionError(f"IdP: {idp_name} not found")
-        if 'limit_to_subdomains' in idp_dict and subdomain not in idp_dict['limit_to_subdomains']:
+        if "limit_to_subdomains" in idp_dict and subdomain not in idp_dict["limit_to_subdomains"]:
             return False
 
         return True
@@ -2180,16 +2180,16 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
             if realm and not cls.validate_idp_for_subdomain(idp_name, realm.subdomain):
                 continue
-            if realm is None and 'limit_to_subdomains' in idp_dict:
+            if realm is None and "limit_to_subdomains" in idp_dict:
                 # If queried without a realm, only return IdPs that can be used on all realms.
                 continue
 
             saml_dict: ExternalAuthMethodDictT = dict(
-                name=f'saml:{idp_name}',
-                display_name=idp_dict.get('display_name', cls.auth_backend_name),
-                display_icon=idp_dict.get('display_icon', cls.display_icon),
-                login_url=reverse('login-social', args=('saml', idp_name)),
-                signup_url=reverse('signup-social', args=('saml', idp_name)),
+                name=f"saml:{idp_name}",
+                display_name=idp_dict.get("display_name", cls.auth_backend_name),
+                display_icon=idp_dict.get("display_icon", cls.display_icon),
+                login_url=reverse("login-social", args=("saml", idp_name)),
+                signup_url=reverse("signup-social", args=("saml", idp_name)),
             )
             result.append(saml_dict)
 
@@ -2223,9 +2223,9 @@ def get_external_method_dicts(realm: Optional[Realm] = None) -> List[ExternalAut
 
 
 AUTH_BACKEND_NAME_MAP: Dict[str, Any] = {
-    'Dev': DevAuthBackend,
-    'Email': EmailAuthBackend,
-    'LDAP': ZulipLDAPAuthBackend,
+    "Dev": DevAuthBackend,
+    "Email": EmailAuthBackend,
+    "LDAP": ZulipLDAPAuthBackend,
 }
 
 for external_method in EXTERNAL_AUTH_METHODS:

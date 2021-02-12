@@ -17,25 +17,25 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            '--entire-server', action="store_true", help="Send to every user on the server."
+            "--entire-server", action="store_true", help="Send to every user on the server."
         )
         parser.add_argument(
-            '--markdown-template-path',
-            '--path',
+            "--markdown-template-path",
+            "--path",
             required=True,
-            help='Path to a Markdown-format body for the email.',
+            help="Path to a Markdown-format body for the email.",
         )
         parser.add_argument(
-            '--subject',
-            help='Subject for the email. It can be declared in Markdown file in headers',
+            "--subject",
+            help="Subject for the email. It can be declared in Markdown file in headers",
         )
         parser.add_argument(
-            '--from-name',
-            help='From line for the email. It can be declared in Markdown file in headers',
+            "--from-name",
+            help="From line for the email. It can be declared in Markdown file in headers",
         )
-        parser.add_argument('--reply-to', help='Optional reply-to line for the email')
+        parser.add_argument("--reply-to", help="Optional reply-to line for the email")
         parser.add_argument(
-            '--admins-only', help='Send only to organization administrators', action='store_true'
+            "--admins-only", help="Send only to organization administrators", action="store_true"
         )
 
         self.add_user_list_args(

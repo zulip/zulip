@@ -8,7 +8,7 @@ config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether this instance of Zulip is running in a production environment.
-PRODUCTION = config_file.has_option('machine', 'deploy_type')
+PRODUCTION = config_file.has_option("machine", "deploy_type")
 DEVELOPMENT = not PRODUCTION
 
 secrets_file = configparser.RawConfigParser()
@@ -35,7 +35,7 @@ def get_secret(
 ) -> Optional[str]:
     if development_only and PRODUCTION:
         return default_value
-    return secrets_file.get('secrets', key, fallback=default_value)
+    return secrets_file.get("secrets", key, fallback=default_value)
 
 
 @overload
@@ -57,4 +57,4 @@ def get_from_file_if_exists(path: str) -> str:
         with open(path) as f:
             return f.read()
     else:
-        return ''
+        return ""

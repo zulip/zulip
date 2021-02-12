@@ -80,14 +80,14 @@ MAX_MESSAGES_PER_FETCH = 5000
 
 class BadNarrowOperator(JsonableError):
     code = ErrorCode.BAD_NARROW
-    data_fields = ['desc']
+    data_fields = ["desc"]
 
     def __init__(self, desc: str) -> None:
         self.desc: str = desc
 
     @staticmethod
     def msg_format() -> str:
-        return _('Invalid narrow operator: {desc}')
+        return _("Invalid narrow operator: {desc}")
 
 
 ConditionTransform = Callable[[ClauseElement], ClauseElement]
@@ -175,15 +175,15 @@ class NarrowBuilder:
         # We have to be careful here because we're letting users call a method
         # by name! The prefix 'by_' prevents it from colliding with builtin
         # Python __magic__ stuff.
-        operator = term['operator']
-        operand = term['operand']
+        operator = term["operator"]
+        operand = term["operand"]
 
-        negated = term.get('negated', False)
+        negated = term.get("negated", False)
 
-        method_name = 'by_' + operator.replace('-', '_')
+        method_name = "by_" + operator.replace("-", "_")
         method = getattr(self, method_name, None)
         if method is None:
-            raise BadNarrowOperator('unknown operator ' + operator)
+            raise BadNarrowOperator("unknown operator " + operator)
 
         if negated:
             maybe_negate = not_
@@ -193,9 +193,9 @@ class NarrowBuilder:
         return method(query, operand, maybe_negate)
 
     def by_has(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        if operand not in ['attachment', 'image', 'link']:
+        if operand not in ["attachment", "image", "link"]:
             raise BadNarrowOperator("unknown 'has' operand " + operand)
-        col_name = 'has_' + operand
+        col_name = "has_" + operand
         cond = column(col_name, Boolean)
         return query.where(maybe_negate(cond))
 
@@ -204,10 +204,10 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        if operand == 'home':
+        if operand == "home":
             conditions = exclude_muting_conditions(self.user_profile, [])
             return query.where(and_(*conditions))
-        elif operand == 'all':
+        elif operand == "all":
             return query
 
         raise BadNarrowOperator("unknown 'in' operand " + operand)
@@ -217,26 +217,26 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        if operand == 'private':
+        if operand == "private":
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
-        elif operand == 'starred':
+        elif operand == "starred":
             cond = column("flags", Integer).op("&")(UserMessage.flags.starred.mask) != 0
             return query.where(maybe_negate(cond))
-        elif operand == 'unread':
+        elif operand == "unread":
             cond = column("flags", Integer).op("&")(UserMessage.flags.read.mask) == 0
             return query.where(maybe_negate(cond))
-        elif operand == 'mentioned':
+        elif operand == "mentioned":
             cond1 = column("flags", Integer).op("&")(UserMessage.flags.mentioned.mask) != 0
             cond2 = column("flags", Integer).op("&")(UserMessage.flags.wildcard_mentioned.mask) != 0
             cond = or_(cond1, cond2)
             return query.where(maybe_negate(cond))
-        elif operand == 'alerted':
+        elif operand == "alerted":
             cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0
             return query.where(maybe_negate(cond))
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
-    _alphanum = frozenset('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+    _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
     def _pg_re_escape(self, pattern: str) -> str:
         """
@@ -252,10 +252,10 @@ class NarrowBuilder:
                 if ord(c) >= 128:
                     # convert the character to hex PostgreSQL regex will take
                     # \uXXXX
-                    s[i] = f'\\u{ord(c):0>4x}'
+                    s[i] = f"\\u{ord(c):0>4x}"
                 else:
-                    s[i] = '\\' + c
-        return ''.join(s)
+                    s[i] = "\\" + c
+        return "".join(s)
 
     def by_stream(
         self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
@@ -267,9 +267,9 @@ class NarrowBuilder:
             stream = get_stream_by_narrow_operand_access_unchecked(operand, self.realm)
 
             if self.is_web_public_query and not stream.is_web_public:
-                raise BadNarrowOperator('unknown web-public stream ' + str(operand))
+                raise BadNarrowOperator("unknown web-public stream " + str(operand))
         except Stream.DoesNotExist:
-            raise BadNarrowOperator('unknown stream ' + str(operand))
+            raise BadNarrowOperator("unknown stream " + str(operand))
 
         if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to "social" to also show messages to
@@ -282,14 +282,14 @@ class NarrowBuilder:
             # a Zephyr realm are private, so that doesn't happen.
             assert not stream.is_public()
 
-            m = re.search(r'^(?:un)*(.+?)(?:\.d)*$', stream.name, re.IGNORECASE)
+            m = re.search(r"^(?:un)*(.+?)(?:\.d)*$", stream.name, re.IGNORECASE)
             # Since the regex has a `.+` in it and "" is invalid as a
             # stream name, this will always match
             assert m is not None
             base_stream_name = m.group(1)
 
             matching_streams = get_active_streams(self.realm).filter(
-                name__iregex=fr'^(un)*{self._pg_re_escape(base_stream_name)}(\.d)*$'
+                name__iregex=fr"^(un)*{self._pg_re_escape(base_stream_name)}(\.d)*$"
             )
             recipient_ids = [matching_stream.recipient_id for matching_stream in matching_streams]
             cond = column("recipient_id", Integer).in_(recipient_ids)
@@ -300,16 +300,16 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_streams(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        if operand == 'public':
+        if operand == "public":
             # Get all both subscribed and non subscribed public streams
             # but exclude any private subscribed streams.
             recipient_queryset = get_public_streams_queryset(self.realm)
-        elif operand == 'web-public':
+        elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
         else:
-            raise BadNarrowOperator('unknown streams operand ' + operand)
+            raise BadNarrowOperator("unknown streams operand " + operand)
 
-        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by('id')
+        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
         cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
@@ -317,14 +317,14 @@ class NarrowBuilder:
         if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
-            m = re.search(r'^(.*?)(?:\.d)*$', operand, re.IGNORECASE)
+            m = re.search(r"^(.*?)(?:\.d)*$", operand, re.IGNORECASE)
             # Since the regex has a `.*` in it, this will always match
             assert m is not None
             base_topic = m.group(1)
 
             # Additionally, MIT users expect the empty instance and
             # instance "personal" to be the same.
-            if base_topic in ('', 'personal', '(instance "")'):
+            if base_topic in ("", "personal", '(instance "")'):
                 cond: ClauseElement = or_(
                     topic_match_sa(""),
                     topic_match_sa(".d"),
@@ -367,7 +367,7 @@ class NarrowBuilder:
             else:
                 sender = get_user_by_id_in_realm_including_cross_realm(operand, self.realm)
         except UserProfile.DoesNotExist:
-            raise BadNarrowOperator('unknown user ' + str(operand))
+            raise BadNarrowOperator("unknown user " + str(operand))
 
         cond = column("sender_id", Integer) == literal(sender.id)
         return query.where(maybe_negate(cond))
@@ -415,7 +415,7 @@ class NarrowBuilder:
                 allow_deactivated=True,
             )
         except (JsonableError, ValidationError):
-            raise BadNarrowOperator('unknown user in ' + str(operand))
+            raise BadNarrowOperator("unknown user in " + str(operand))
 
         # Group DM
         if recipient.type == Recipient.HUDDLE:
@@ -471,17 +471,17 @@ class NarrowBuilder:
             else:
                 narrow_profile = get_user_by_id_in_realm_including_cross_realm(operand, self.realm)
         except UserProfile.DoesNotExist:
-            raise BadNarrowOperator('unknown user ' + str(operand))
+            raise BadNarrowOperator("unknown user " + str(operand))
 
         self_recipient_ids = [
-            recipient_tuple['recipient_id']
+            recipient_tuple["recipient_id"]
             for recipient_tuple in Subscription.objects.filter(
                 user_profile=self.user_profile,
                 recipient__type=Recipient.HUDDLE,
             ).values("recipient_id")
         ]
         narrow_recipient_ids = [
-            recipient_tuple['recipient_id']
+            recipient_tuple["recipient_id"]
             for recipient_tuple in Subscription.objects.filter(
                 user_profile=narrow_profile,
                 recipient__type=Recipient.HUDDLE,
@@ -541,7 +541,7 @@ class NarrowBuilder:
         for term in re.findall(r'"[^"]+"|\S+', operand):
             if term[0] == '"' and term[-1] == '"':
                 term = term[1:-1]
-                term = '%' + connection.ops.prep_for_like_query(term) + '%'
+                term = "%" + connection.ops.prep_for_like_query(term) + "%"
                 cond = or_(column("content", Text).ilike(term), topic_column_sa().ilike(term))
                 query = query.where(maybe_negate(cond))
 
@@ -551,9 +551,9 @@ class NarrowBuilder:
 
 def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
     highlight_start = '<span class="highlight">'
-    highlight_stop = '</span>'
+    highlight_stop = "</span>"
     pos = 0
-    result = ''
+    result = ""
     in_tag = False
 
     for loc in locs:
@@ -568,9 +568,9 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
         match = text[match_start:match_end]
 
         for character in prefix + match:
-            if character == '<':
+            if character == "<":
                 in_tag = True
-            elif character == '>':
+            elif character == ">":
                 in_tag = False
         if in_tag:
             result += prefix
@@ -593,7 +593,7 @@ def get_search_fields(
     topic_matches: Iterable[Tuple[int, int]],
 ) -> Dict[str, str]:
     return {
-        'match_content': highlight_string(rendered_content, content_matches),
+        "match_content": highlight_string(rendered_content, content_matches),
         MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
     }
 
@@ -620,11 +620,11 @@ def narrow_parameter(json: str) -> OptionalNarrowListT:
             # that supports user IDs. Relevant code is located in static/js/message_fetch.js
             # in handle_operators_supporting_id_based_api function where you will need to update
             # operators_supporting_id, or operators_supporting_ids array.
-            operators_supporting_id = ['sender', 'group-pm-with', 'stream']
-            operators_supporting_ids = ['pm-with']
-            operators_non_empty_operand = {'search'}
+            operators_supporting_id = ["sender", "group-pm-with", "stream"]
+            operators_supporting_ids = ["pm-with"]
+            operators_non_empty_operand = {"search"}
 
-            operator = elem.get('operator', '')
+            operator = elem.get("operator", "")
             if operator in operators_supporting_id:
                 operand_validator: Validator[object] = check_string_or_int
             elif operator in operators_supporting_ids:
@@ -636,24 +636,24 @@ def narrow_parameter(json: str) -> OptionalNarrowListT:
 
             validator = check_dict(
                 required_keys=[
-                    ('operator', check_string),
-                    ('operand', operand_validator),
+                    ("operator", check_string),
+                    ("operand", operand_validator),
                 ],
                 optional_keys=[
-                    ('negated', check_bool),
+                    ("negated", check_bool),
                 ],
             )
 
             try:
-                validator('elem', elem)
+                validator("elem", elem)
             except ValidationError as error:
                 raise JsonableError(error.message)
 
             # whitelist the fields we care about for now
             return dict(
-                operator=elem['operator'],
-                operand=elem['operand'],
-                negated=elem.get('negated', False),
+                operator=elem["operator"],
+                operand=elem["operand"],
+                negated=elem.get("negated", False),
             )
 
         raise ValueError("element is not a dictionary")
@@ -688,16 +688,16 @@ def ok_to_include_history(
     include_history = False
     if narrow is not None:
         for term in narrow:
-            if term['operator'] == "stream" and not term.get('negated', False):
-                operand: Union[str, int] = term['operand']
+            if term["operator"] == "stream" and not term.get("negated", False):
+                operand: Union[str, int] = term["operand"]
                 if isinstance(operand, str):
                     include_history = can_access_stream_history_by_name(user_profile, operand)
                 else:
                     include_history = can_access_stream_history_by_id(user_profile, operand)
             elif (
-                term['operator'] == "streams"
-                and term['operand'] == "public"
-                and not term.get('negated', False)
+                term["operator"] == "streams"
+                and term["operand"] == "public"
+                and not term.get("negated", False)
                 and user_profile.can_access_public_streams()
             ):
                 include_history = True
@@ -705,7 +705,7 @@ def ok_to_include_history(
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.
         for term in narrow:
-            if term['operator'] == "is":
+            if term["operator"] == "is":
                 include_history = False
 
     return include_history
@@ -716,8 +716,8 @@ def get_stream_from_narrow_access_unchecked(
 ) -> Optional[Stream]:
     if narrow is not None:
         for term in narrow:
-            if term['operator'] == 'stream':
-                return get_stream_by_narrow_operand_access_unchecked(term['operand'], realm)
+            if term["operator"] == "stream":
+                return get_stream_by_narrow_operand_access_unchecked(term["operand"], realm)
     return None
 
 
@@ -742,8 +742,8 @@ def exclude_muting_conditions(
             active=True,
             is_muted=True,
             recipient__type=Recipient.STREAM,
-        ).values('recipient_id')
-        muted_recipient_ids = [row['recipient_id'] for row in rows]
+        ).values("recipient_id")
+        muted_recipient_ids = [row["recipient_id"] for row in rows]
         if len(muted_recipient_ids) > 0:
             # Only add the condition if we have muted streams to simplify/avoid warnings.
             condition = not_(column("recipient_id", Integer).in_(muted_recipient_ids))
@@ -810,8 +810,8 @@ def add_narrow_conditions(
     # our query, but we need to collect the search operands and handle
     # them after the loop.
     for term in narrow:
-        if term['operator'] == 'search':
-            search_operands.append(term['operand'])
+        if term["operator"] == "search":
+            search_operands.append(term["operand"])
         else:
             query = builder.add_term(query, term)
 
@@ -819,8 +819,8 @@ def add_narrow_conditions(
         is_search = True
         query = query.column(topic_column_sa()).column(column("rendered_content", Text))
         search_term = dict(
-            operator='search',
-            operand=' '.join(search_operands),
+            operator="search",
+            operand=" ".join(search_operands),
         )
         query = builder.add_term(query, search_term)
 
@@ -922,12 +922,12 @@ def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool)
 def get_messages_backend(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
-    anchor_val: Optional[str] = REQ('anchor', str_validator=check_string, default=None),
+    anchor_val: Optional[str] = REQ("anchor", str_validator=check_string, default=None),
     num_before: int = REQ(converter=to_non_negative_int),
     num_after: int = REQ(converter=to_non_negative_int),
-    narrow: OptionalNarrowListT = REQ('narrow', converter=narrow_parameter, default=None),
+    narrow: OptionalNarrowListT = REQ("narrow", converter=narrow_parameter, default=None),
     use_first_unread_anchor_val: bool = REQ(
-        'use_first_unread_anchor', validator=check_bool, default=False
+        "use_first_unread_anchor", validator=check_bool, default=False
     ),
     client_gravatar: bool = REQ(validator=check_bool, default=False),
     apply_markdown: bool = REQ(validator=check_bool, default=True),
@@ -1018,11 +1018,11 @@ def get_messages_backend(
         # Add some metadata to our logging data for narrows
         verbose_operators = []
         for term in narrow:
-            if term['operator'] == "is":
-                verbose_operators.append("is:" + term['operand'])
+            if term["operator"] == "is":
+                verbose_operators.append("is:" + term["operand"])
             else:
-                verbose_operators.append(term['operator'])
-        request._log_data['extra'] = "[{}]".format(",".join(verbose_operators))
+                verbose_operators.append(term["operator"])
+        request._log_data["extra"] = "[{}]".format(",".join(verbose_operators))
 
     sa_conn = get_sqlalchemy_connection()
 
@@ -1071,7 +1071,7 @@ def get_messages_backend(
         first_visible_message_id=first_visible_message_id,
     )
 
-    rows = query_info['rows']
+    rows = query_info["rows"]
 
     # The following is a little messy, but ensures that the code paths
     # are similar regardless of the value of include_history.  The
@@ -1131,16 +1131,16 @@ def get_messages_backend(
         allow_edit_history=realm.allow_edit_history,
     )
 
-    statsd.incr('loaded_old_messages', len(message_list))
+    statsd.incr("loaded_old_messages", len(message_list))
 
     ret = dict(
         messages=message_list,
-        result='success',
-        msg='',
-        found_anchor=query_info['found_anchor'],
-        found_oldest=query_info['found_oldest'],
-        found_newest=query_info['found_newest'],
-        history_limited=query_info['history_limited'],
+        result="success",
+        msg="",
+        found_anchor=query_info["found_anchor"],
+        found_oldest=query_info["found_oldest"],
+        found_newest=query_info["found_newest"],
+        history_limited=query_info["history_limited"],
         anchor=anchor,
     )
     return json_success(ret)
@@ -1332,12 +1332,12 @@ def messages_in_narrow_backend(
 
     search_fields = {}
     for row in query_result:
-        message_id = row['message_id']
+        message_id = row["message_id"]
         topic_name = row[DB_TOPIC_NAME]
-        rendered_content = row['rendered_content']
-        if 'content_matches' in row:
-            content_matches = row['content_matches']
-            topic_matches = row['topic_matches']
+        rendered_content = row["rendered_content"]
+        if "content_matches" in row:
+            content_matches = row["content_matches"]
+            topic_matches = row["topic_matches"]
         else:
             content_matches = topic_matches = []
         search_fields[str(message_id)] = get_search_fields(

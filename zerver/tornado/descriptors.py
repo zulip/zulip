@@ -6,11 +6,11 @@ if TYPE_CHECKING:
 descriptors_by_handler_id: Dict[int, "ClientDescriptor"] = {}
 
 
-def get_descriptor_by_handler_id(handler_id: int) -> Optional['ClientDescriptor']:
+def get_descriptor_by_handler_id(handler_id: int) -> Optional["ClientDescriptor"]:
     return descriptors_by_handler_id.get(handler_id)
 
 
-def set_descriptor_by_handler_id(handler_id: int, client_descriptor: 'ClientDescriptor') -> None:
+def set_descriptor_by_handler_id(handler_id: int, client_descriptor: "ClientDescriptor") -> None:
     descriptors_by_handler_id[handler_id] = client_descriptor
 
 

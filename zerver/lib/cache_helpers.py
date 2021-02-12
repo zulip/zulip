@@ -39,11 +39,11 @@ MESSAGE_CACHE_SIZE = 75000
 
 def message_fetch_objects() -> List[Any]:
     try:
-        max_id = Message.objects.only('id').order_by("-id")[0].id
+        max_id = Message.objects.only("id").order_by("-id")[0].id
     except IndexError:
         return []
     return Message.objects.select_related().filter(
-        ~Q(sender__email='tabbott/extra@mit.edu'), id__gt=max_id - MESSAGE_CACHE_SIZE
+        ~Q(sender__email="tabbott/extra@mit.edu"), id__gt=max_id - MESSAGE_CACHE_SIZE
     )
 
 
@@ -134,25 +134,25 @@ def get_users() -> List[UserProfile]:
 cache_fillers: Dict[
     str, Tuple[Callable[[], List[Any]], Callable[[Dict[str, Any], Any], None], int, int]
 ] = {
-    'user': (get_users, user_cache_items, 3600 * 24 * 7, 10000),
-    'client': (
+    "user": (get_users, user_cache_items, 3600 * 24 * 7, 10000),
+    "client": (
         lambda: Client.objects.select_related().all(),
         client_cache_items,
         3600 * 24 * 7,
         10000,
     ),
-    'stream': (get_streams, stream_cache_items, 3600 * 24 * 7, 10000),
+    "stream": (get_streams, stream_cache_items, 3600 * 24 * 7, 10000),
     # Message cache fetching disabled until we can fix the fact that it
     # does a bunch of inefficient memcached queries as part of filling
     # the display_recipient cache
     #    'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
-    'huddle': (
+    "huddle": (
         lambda: Huddle.objects.select_related().all(),
         huddle_cache_items,
         3600 * 24 * 7,
         10000,
     ),
-    'session': (lambda: Session.objects.all(), session_cache_items, 3600 * 24 * 7, 10000),
+    "session": (lambda: Session.objects.all(), session_cache_items, 3600 * 24 * 7, 10000),
 }
 
 

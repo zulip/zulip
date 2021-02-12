@@ -80,23 +80,23 @@ DEFAULT_TEMPLATE = """
 TOPIC_TEMPLATE = "{project}/{branch}"
 
 GITHUB_URL_TEMPLATES = {
-    'commit': '{repo_url}/commit/{commit_id}',
-    'pull_request': '{repo_url}/pull/{pr_number}',
-    'tag': '{repo_url}/tree/{tag_name}',
-    'user': 'https://github.com/{username}',
+    "commit": "{repo_url}/commit/{commit_id}",
+    "pull_request": "{repo_url}/pull/{pr_number}",
+    "tag": "{repo_url}/tree/{tag_name}",
+    "user": "https://github.com/{username}",
 }
 
 
-@webhook_view('Semaphore')
+@webhook_view("Semaphore")
 @has_request_variables
 def api_semaphore_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type='body'),
+    payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     content, project_name, branch_name = (
-        semaphore_classic(payload) if 'event' in payload else semaphore_2(payload)
+        semaphore_classic(payload) if "event" in payload else semaphore_2(payload)
     )
     subject = (
         TOPIC_TEMPLATE.format(project=project_name, branch=branch_name)
@@ -162,13 +162,13 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
     project_name = payload["project"]["name"]
     organization_name = payload["organization"]["name"]
     author_name = payload["revision"]["sender"]["login"]
-    workflow_id = payload['workflow']['id']
+    workflow_id = payload["workflow"]["id"]
     context = dict(
         author_name=author_name,
-        author_url=GITHUB_URL_TEMPLATES['user'].format(repo_url=repo_url, username=author_name),
+        author_url=GITHUB_URL_TEMPLATES["user"].format(repo_url=repo_url, username=author_name),
         pipeline_name=payload["pipeline"]["name"],
         pipeline_result=payload["pipeline"]["result"],
-        workflow_url=f'https://{organization_name}.semaphoreci.com/workflows/{workflow_id}',
+        workflow_url=f"https://{organization_name}.semaphoreci.com/workflows/{workflow_id}",
     )
 
     if payload["revision"]["reference_type"] == "branch":  # push event
@@ -179,7 +179,7 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
             commit_id=commit_id,
             commit_hash=commit_id[:7],
             commit_message=summary_line(payload["revision"]["commit_message"]),
-            commit_url=GITHUB_URL_TEMPLATES['commit'].format(
+            commit_url=GITHUB_URL_TEMPLATES["commit"].format(
                 repo_url=repo_url, commit_id=commit_id
             ),
         )
@@ -190,7 +190,7 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         branch_name = pull_request["branch_name"]
         pull_request_title = pull_request["name"]
         pull_request_number = pull_request["number"]
-        pull_request_url = GITHUB_URL_TEMPLATES['pull_request'].format(
+        pull_request_url = GITHUB_URL_TEMPLATES["pull_request"].format(
             repo_url=repo_url, pr_number=pull_request_number
         )
         context.update(
@@ -202,9 +202,9 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         template = GH_PULL_REQUEST_TEMPLATE if is_github_repo(repo_url) else PULL_REQUEST_TEMPLATE
         content = template.format(**context)
     elif payload["revision"]["reference_type"] == "tag":
-        branch_name = ''
+        branch_name = ""
         tag_name = payload["revision"]["tag"]["name"]
-        tag_url = GITHUB_URL_TEMPLATES['tag'].format(repo_url=repo_url, tag_name=tag_name)
+        tag_url = GITHUB_URL_TEMPLATES["tag"].format(repo_url=repo_url, tag_name=tag_name)
         context.update(
             tag_name=tag_name,
             tag_url=tag_url,
@@ -212,14 +212,14 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         template = GH_TAG_TEMPLATE if is_github_repo(repo_url) else TAG_TEMPLATE
         content = template.format(**context)
     else:  # should never get here: unknown event
-        branch_name = ''
+        branch_name = ""
         context.update(event_name=payload["revision"]["reference_type"])
         content = DEFAULT_TEMPLATE.format(**context)
     return content, project_name, branch_name
 
 
 def is_github_repo(repo_url: str) -> bool:
-    return urlparse(repo_url).hostname == 'github.com'
+    return urlparse(repo_url).hostname == "github.com"
 
 
 def summary_line(message: str) -> str:

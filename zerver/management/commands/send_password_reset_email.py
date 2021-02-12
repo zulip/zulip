@@ -14,7 +14,7 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            '--entire-server', action="store_true", help="Send to every user on the server. "
+            "--entire-server", action="store_true", help="Send to every user on the server. "
         )
         self.add_user_list_args(
             parser,
@@ -43,14 +43,14 @@ class Command(ZulipBaseCommand):
         """Sends one-use only links for resetting password to target users"""
         for user_profile in users:
             context = {
-                'email': user_profile.delivery_email,
-                'reset_url': generate_password_reset_url(user_profile, default_token_generator),
-                'realm_uri': user_profile.realm.uri,
-                'realm_name': user_profile.realm.name,
-                'active_account_in_realm': True,
+                "email": user_profile.delivery_email,
+                "reset_url": generate_password_reset_url(user_profile, default_token_generator),
+                "realm_uri": user_profile.realm.uri,
+                "realm_name": user_profile.realm.name,
+                "active_account_in_realm": True,
             }
             send_email(
-                'zerver/emails/password_reset',
+                "zerver/emails/password_reset",
                 to_user_ids=[user_profile.id],
                 from_address=FromAddress.tokenized_no_reply_address(),
                 from_name=FromAddress.security_email_from_name(user_profile=user_profile),

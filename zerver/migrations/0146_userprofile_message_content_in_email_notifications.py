@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0145_reactions_realm_emoji_name_to_id'),
+        ("zerver", "0145_reactions_realm_emoji_name_to_id"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='message_content_in_email_notifications',
+            model_name="userprofile",
+            name="message_content_in_email_notifications",
             field=models.BooleanField(default=True),
         ),
     ]

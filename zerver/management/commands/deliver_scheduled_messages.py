@@ -48,9 +48,9 @@ Usage: ./manage.py deliver_scheduled_messages
             )
 
         message_dict = {
-            'message': message,
-            'stream': scheduled_message.stream,
-            'realm': scheduled_message.realm,
+            "message": message,
+            "stream": scheduled_message.stream,
+            "realm": scheduled_message.realm,
         }
         return build_message_send_dict(message_dict)
 
@@ -71,7 +71,7 @@ Usage: ./manage.py deliver_scheduled_messages
                 for message in messages_to_deliver:
                     do_send_messages([self.construct_message(message)])
                     message.delivered = True
-                    message.save(update_fields=['delivered'])
+                    message.save(update_fields=["delivered"])
 
                 cur_time = timezone_now()
                 time_next_min = (cur_time + timedelta(minutes=1)).replace(second=0, microsecond=0)

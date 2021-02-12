@@ -7,51 +7,51 @@ from tools.lib.capitalization import check_capitalization, get_safe_text, is_cap
 
 class GetSafeTextTestCase(TestCase):
     def test_get_safe_text(self) -> None:
-        string = 'Messages in __page_params.product_name__ go to a stream and have a topic.'
+        string = "Messages in __page_params.product_name__ go to a stream and have a topic."
         safe_text = get_safe_text(string)
         self.assertEqual(
-            safe_text, 'Messages in __page_params_product_name__ go to a stream and have a topic.'
+            safe_text, "Messages in __page_params_product_name__ go to a stream and have a topic."
         )
 
         string = "Zulip Zulip. Zulip some text!"
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'Zulip zulip. Zulip some text!')
+        self.assertEqual(safe_text, "Zulip zulip. Zulip some text!")
 
         string = "Zulip Zulip? Zulip some text!"
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'Zulip zulip? Zulip some text!')
+        self.assertEqual(safe_text, "Zulip zulip? Zulip some text!")
 
         string = "Zulip Zulip! Zulip some text!"
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'Zulip zulip! Zulip some text!')
+        self.assertEqual(safe_text, "Zulip zulip! Zulip some text!")
 
         string = "Zulip Zulip, Zulip some text!"
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'Zulip zulip, zulip some text!')
+        self.assertEqual(safe_text, "Zulip zulip, zulip some text!")
 
         string = "Some text 25MiB"
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'Some text 25mib')
+        self.assertEqual(safe_text, "Some text 25mib")
 
         string = "Not Ignored Phrase"
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'Not Ignored Phrase')
+        self.assertEqual(safe_text, "Not Ignored Phrase")
 
         string = "Not ignored phrase"
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'Not ignored phrase')
+        self.assertEqual(safe_text, "Not ignored phrase")
 
         string = ""
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, '')
+        self.assertEqual(safe_text, "")
 
         string = """
         <p>Please re-enter your password to confirm your identity.
                 (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)</p>
                 """
         safe_text = get_safe_text(string)
-        soup = BeautifulSoup(safe_text, 'lxml')
-        rendered_text = ' '.join(soup.text.split())
+        soup = BeautifulSoup(safe_text, "lxml")
+        rendered_text = " ".join(soup.text.split())
         self.assertEqual(safe_text, rendered_text)
 
         string = "Edited (__last_edit_timestr__)"
@@ -60,15 +60,15 @@ class GetSafeTextTestCase(TestCase):
 
         string = "iPhone application"
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'Iphone application')
+        self.assertEqual(safe_text, "Iphone application")
 
         string = "One two etc. three"
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'One two etc_ three')
+        self.assertEqual(safe_text, "One two etc_ three")
 
         string = "One two etc. three.      four"
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'One two etc_ three. four')
+        self.assertEqual(safe_text, "One two etc_ three. four")
 
 
 class IsCapitalizedTestCase(TestCase):
@@ -138,11 +138,11 @@ class CheckCapitalizationTestCase(TestCase):
                 '<p class="bot-settings-note padded-container"> Looking for our '
                 '<a href="/integrations" target="_blank">Integrations</a> or '
                 '<a href="/api" target="_blank">API</a> '
-                'documentation? </p>'
+                "documentation? </p>"
             ),
         ]
         errored, ignored, banned = check_capitalization(strings)
-        self.assertEqual(errored, ['Not Ignored Phrase'])
+        self.assertEqual(errored, ["Not Ignored Phrase"])
         self.assertEqual(
             ignored,
             sorted(

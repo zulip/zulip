@@ -51,17 +51,17 @@ class ZulipBaseCommand(BaseCommand):
             help = """The numeric or string ID (subdomain) of the Zulip organization to modify.
 You can use the command list_realms to find ID of the realms in this server."""
 
-        parser.add_argument('-r', '--realm', dest='realm_id', required=required, help=help)
+        parser.add_argument("-r", "--realm", dest="realm_id", required=required, help=help)
 
     def add_user_list_args(
         self,
         parser: ArgumentParser,
-        help: str = 'A comma-separated list of email addresses.',
+        help: str = "A comma-separated list of email addresses.",
         all_users_help: str = "All users in realm.",
     ) -> None:
-        parser.add_argument('-u', '--users', help=help)
+        parser.add_argument("-u", "--users", help=help)
 
-        parser.add_argument('-a', '--all-users', action="store_true", help=all_users_help)
+        parser.add_argument("-a", "--all-users", action="store_true", help=all_users_help)
 
     def get_realm(self, options: Dict[str, Any]) -> Optional[Realm]:
         val = options["realm_id"]

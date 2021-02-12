@@ -10,36 +10,36 @@ from zerver.lib.redis_utils import get_redis_client
 
 
 def generate_missed_message_token() -> str:
-    return 'mm' + secrets.token_hex(16)
+    return "mm" + secrets.token_hex(16)
 
 
 def move_missed_message_addresses_to_database(
     apps: StateApps, schema_editor: DatabaseSchemaEditor
 ) -> None:
     redis_client = get_redis_client()
-    MissedMessageEmailAddress = apps.get_model('zerver', 'MissedMessageEmailAddress')
-    UserProfile = apps.get_model('zerver', 'UserProfile')
-    Message = apps.get_model('zerver', 'Message')
-    Recipient = apps.get_model('zerver', 'Recipient')
+    MissedMessageEmailAddress = apps.get_model("zerver", "MissedMessageEmailAddress")
+    UserProfile = apps.get_model("zerver", "UserProfile")
+    Message = apps.get_model("zerver", "Message")
+    Recipient = apps.get_model("zerver", "Recipient")
     RECIPIENT_PERSONAL = 1
     RECIPIENT_STREAM = 2
 
-    all_mm_keys = redis_client.keys('missed_message:*')
+    all_mm_keys = redis_client.keys("missed_message:*")
     for key in all_mm_keys:
         # Don't migrate mm addresses that have already been used.
-        if redis_client.hincrby(key, 'uses_left', -1) < 0:
+        if redis_client.hincrby(key, "uses_left", -1) < 0:
             redis_client.delete(key)
             continue
 
         user_profile_id, recipient_id, subject_b = redis_client.hmget(
-            key, 'user_profile_id', 'recipient_id', 'subject'
+            key, "user_profile_id", "recipient_id", "subject"
         )
         if user_profile_id is None or recipient_id is None or subject_b is None:
             # Missing data, skip this key; this should never happen
             redis_client.delete(key)
             continue
 
-        topic_name = subject_b.decode('utf-8')
+        topic_name = subject_b.decode("utf-8")
 
         # The data model for missed-message emails has changed in two
         # key ways: We're moving it from Redis to the database for
@@ -55,7 +55,7 @@ def move_missed_message_addresses_to_database(
             if recipient.type == RECIPIENT_STREAM:
                 message = Message.objects.filter(
                     subject__iexact=topic_name, recipient_id=recipient.id
-                ).latest('id')
+                ).latest("id")
             elif recipient.type == RECIPIENT_PERSONAL:
                 # Tie to the latest PM from the sender to this user;
                 # we expect at least one existed because it generated
@@ -64,9 +64,9 @@ def move_missed_message_addresses_to_database(
                 # ourselves sent to the target user.
                 message = Message.objects.filter(
                     recipient_id=user_profile.recipient_id, sender_id=recipient.type_id
-                ).latest('id')
+                ).latest("id")
             else:
-                message = Message.objects.filter(recipient_id=recipient.id).latest('id')
+                message = Message.objects.filter(recipient_id=recipient.id).latest("id")
         except ObjectDoesNotExist:
             # If all messages in the original thread were deleted or
             # had their topics edited, we can't find an appropriate
@@ -95,7 +95,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0259_missedmessageemailaddress'),
+        ("zerver", "0259_missedmessageemailaddress"),
     ]
 
     operations = [

@@ -19,12 +19,12 @@ def process_unsubscribe(
     try:
         user_profile = get_object_from_key(confirmation_key, Confirmation.UNSUBSCRIBE)
     except ConfirmationKeyException:
-        return render(request, 'zerver/unsubscribe_link_error.html')
+        return render(request, "zerver/unsubscribe_link_error.html")
 
     unsubscribe_function(user_profile)
     context = common_context(user_profile)
     context.update(subscription_type=subscription_type)
-    return render(request, 'zerver/unsubscribe_success.html', context=context)
+    return render(request, "zerver/unsubscribe_success.html", context=context)
 
 
 # Email unsubscribe functions. All have the function signature
@@ -33,7 +33,7 @@ def process_unsubscribe(
 
 def do_missedmessage_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(
-        user_profile, 'enable_offline_email_notifications', False, acting_user=user_profile
+        user_profile, "enable_offline_email_notifications", False, acting_user=user_profile
     )
 
 
@@ -43,13 +43,13 @@ def do_welcome_unsubscribe(user_profile: UserProfile) -> None:
 
 def do_digest_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(
-        user_profile, 'enable_digest_emails', False, acting_user=user_profile
+        user_profile, "enable_digest_emails", False, acting_user=user_profile
     )
 
 
 def do_login_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(
-        user_profile, 'enable_login_emails', False, acting_user=user_profile
+        user_profile, "enable_login_emails", False, acting_user=user_profile
     )
 
 
@@ -70,4 +70,4 @@ def email_unsubscribe(request: HttpRequest, email_type: str, confirmation_key: s
         display_name, unsubscribe_function = email_unsubscribers[email_type]
         return process_unsubscribe(request, confirmation_key, display_name, unsubscribe_function)
 
-    return render(request, 'zerver/unsubscribe_link_error.html')
+    return render(request, "zerver/unsubscribe_link_error.html")

@@ -6,7 +6,7 @@ from django.db import migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-NAME_INVALID_CHARS = ['*', '`', "\\", '>', '"', '@']
+NAME_INVALID_CHARS = ["*", "`", "\\", ">", '"', "@"]
 
 
 def remove_name_illegal_chars(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
@@ -23,7 +23,7 @@ def remove_name_illegal_chars(apps: StateApps, schema_editor: DatabaseSchemaEdit
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0235_userprofile_desktop_icon_count_display'),
+        ("zerver", "0235_userprofile_desktop_icon_count_display"),
     ]
 
     operations = [
