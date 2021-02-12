@@ -115,7 +115,6 @@ zrequire("recent_senders");
 const unread = zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
 zrequire("recent_topics");
-zrequire("overlays");
 
 // And finally require the module that we will test directly:
 const message_store = zrequire("message_store");
@@ -426,6 +425,7 @@ const home_msg_list = set_global("home_msg_list", {});
 const message_list = set_global("message_list", {});
 const message_util = set_global("message_util", {});
 const notifications = set_global("notifications", {});
+const overlays = set_global("overlays", {});
 const resize = set_global("resize", {});
 let stream_list = set_global("stream_list", {});
 let unread_ops = set_global("unread_ops", {});
@@ -436,6 +436,7 @@ const message_events = zrequire("message_events");
 
 run_test("insert_message", (override) => {
     override(pm_list, "update_private_messages", noop);
+    override(overlays, "recent_topics_open", () => false);
 
     const helper = test_helper();
 
@@ -522,7 +523,7 @@ zrequire("message_flags");
 
 unread_ops = zrequire("unread_ops");
 
-run_test("unread_ops", () => {
+run_test("unread_ops", (override) => {
     (function set_up() {
         const test_messages = [
             {
@@ -566,6 +567,10 @@ run_test("unread_ops", () => {
     channel.post = (opts) => {
         channel_post_opts = opts;
     };
+
+    // Let the real code skip over details related to active overlays.
+    override(overlays, "is_active", () => false);
+    override(overlays, "recent_topics_open", () => false);
 
     // First, test for a message list that cannot read messages
     current_msg_list.can_mark_messages_read = () => false;
