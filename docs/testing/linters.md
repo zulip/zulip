@@ -17,7 +17,9 @@ prevent common coding errors.
 We borrow some open source tools for much of our linting, and the links
 below will direct you to the official documentation for these projects.
 
+- [Black](https://github.com/psf/black)
 - [ESLint](https://eslint.org)
+- [isort](https://pycqa.github.io/isort/)
 - [mypy](http://mypy-lang.org/)
 - [Prettier](https://prettier.io/)
 - [Puppet](https://puppet.com/) (puppet provides its own mechanism for
@@ -100,6 +102,7 @@ Most of our lint checks get performed by `./tools/lint`.  These include the
 following checks:
 
 - Check Python code with pyflakes.
+- Check Python formatting with Black and isort.
 - Check JavaScript and TypeScript code with ESLint.
 - Check CSS, JavaScript, TypeScript, and YAML formatting with Prettier.
 - Check Python code for custom Zulip rules.
@@ -165,6 +168,11 @@ this to other parts of the codebase soon).  You can use
 sense (e.g. a link in a comment to an extremely long URL).
 
 #### Python code
+
+Our Python code is formatted using Black (using the options in the
+`[tool.black]` section of `pyproject.toml`) and isort (using the
+options in `.isort.cfg`).  The `lint` script enforces this by running
+Black and isort in check mode, or in write mode with `--fix`.
 
 The bulk of our Python linting gets outsourced to the "pyflakes" tool.  We
 call "pyflakes" in a fairly vanilla fashion, and then we post-process its

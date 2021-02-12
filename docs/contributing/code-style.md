@@ -44,8 +44,12 @@ The Vagrant setup process runs this for you.
 
 `lint` runs many lint checks in parallel, including
 
--   JavaScript ([ESLint](https://eslint.org/))
--   Python ([Pyflakes](https://pypi.python.org/pypi/pyflakes))
+-   JavaScript ([ESLint](https://eslint.org/),
+    [Prettier](https://prettier.io/))
+-   Python ([mypy](http://mypy-lang.org/),
+    [Pyflakes](https://pypi.python.org/pypi/pyflakes),
+    [Black](https://github.com/psf/black),
+    [isort](https://pycqa.github.io/isort/))
 -   templates
 -   Puppet configuration
 -   custom checks (e.g. trailing whitespace and spaces-not-tabs)
@@ -304,6 +308,16 @@ type changes in the future.
 
 ### Python
 
+-   Our Python code is formatted with
+    [Black](https://github.com/psf/black) and
+    [isort](https://pycqa.github.io/isort/).  The [linter
+    tool](../testing/linters.md) enforces this by running Black and
+    isort in check mode, or in write mode with `tools/lint
+    --only=black,isort --fix`.  You may find it helpful to [integrate
+    Black](https://black.readthedocs.io/en/stable/editor_integration.html)
+    and
+    [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)
+    with your editor.
 -   Don't put a shebang line on a Python file unless it's meaningful to
     run it as a script. (Some libraries can also be run as scripts, e.g.
     to run a test suite.)
