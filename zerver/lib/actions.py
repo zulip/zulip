@@ -499,23 +499,10 @@ def process_new_human_user(
                     user=f"{user_profile.full_name} <`{user_profile.email}`>"
                 ),
             )
-    # Mark any other PreregistrationUsers in the realm that are STATUS_ACTIVE as
-    # inactive so we can keep track of the PreregistrationUser we
-    # actually used for analytics.
-    # In the special case of realm creation, there can be no additional PreregistrationUser
-    # for us to want to modify.
-    if prereg_user is not None and not realm_creation:
-        PreregistrationUser.objects.filter(
-            email__iexact=user_profile.delivery_email, realm=user_profile.realm
-        ).exclude(id=prereg_user.id).update(status=confirmation_settings.STATUS_REVOKED)
 
-        if prereg_user.referred_by is not None:
-            notify_invites_changed(user_profile)
-    elif prereg_user is None:
-        assert not realm_creation
-        PreregistrationUser.objects.filter(
-            email__iexact=user_profile.delivery_email, realm=user_profile.realm
-        ).update(status=confirmation_settings.STATUS_REVOKED)
+    revoke_preregistration_users(user_profile, prereg_user, realm_creation)
+    if not realm_creation and prereg_user is not None and prereg_user.referred_by is not None:
+        notify_invites_changed(user_profile)
 
     notify_new_user(user_profile)
     # Clear any scheduled invitation emails to prevent them
@@ -529,6 +516,32 @@ def process_new_human_user(
     from zerver.lib.onboarding import send_initial_pms
 
     send_initial_pms(user_profile)
+
+
+def revoke_preregistration_users(
+    created_user_profile: UserProfile,
+    used_preregistration_user: Optional[PreregistrationUser],
+    realm_creation: bool,
+) -> None:
+    if realm_creation and used_preregistration_user is None:
+        raise AssertionError("realm_creation should only happen with a PreregistrationUser")
+
+    # Mark any other PreregistrationUsers in the realm that are STATUS_ACTIVE as
+    # inactive so we can keep track of the PreregistrationUser we
+    # actually used for analytics.
+    # In the special case of realm creation, there can be no additional PreregistrationUser
+    # for us to want to modify.
+    if used_preregistration_user is not None and not realm_creation:
+        PreregistrationUser.objects.filter(
+            email__iexact=created_user_profile.delivery_email, realm=created_user_profile.realm
+        ).exclude(id=used_preregistration_user.id).update(
+            status=confirmation_settings.STATUS_REVOKED
+        )
+    elif used_preregistration_user is None:
+        assert not realm_creation
+        PreregistrationUser.objects.filter(
+            email__iexact=created_user_profile.delivery_email, realm=created_user_profile.realm
+        ).update(status=confirmation_settings.STATUS_REVOKED)
 
 
 def notify_created_user(user_profile: UserProfile) -> None:
