@@ -19,7 +19,7 @@ class OpenGraphParser(BaseParser):
             if tag['property'] not in self.allowed_og_properties:
                 continue
 
-            og_property_name = tag['property'][len('og:'):]
+            og_property_name = tag['property'][len('og:') :]
             if not tag.has_attr('content'):
                 continue
 

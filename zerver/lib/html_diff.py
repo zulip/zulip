@@ -7,7 +7,8 @@ from lxml.html.diff import htmldiff
 def highlight_with_class(text: str, klass: str) -> str:
     return f'<span class="{klass}">{text}</span>'
 
-def highlight_html_differences(s1: str, s2: str, msg_id: Optional[int]=None) -> str:
+
+def highlight_html_differences(s1: str, s2: str, msg_id: Optional[int] = None) -> str:
     retval = htmldiff(s1, s2)
     fragment = lxml.html.fromstring(retval)
 

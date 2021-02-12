@@ -20,29 +20,48 @@ from zerver.models import UserProfile
 
 class MITNameTest(ZulipTestCase):
     def test_valid_hesiod(self) -> None:
-        with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
-            self.assertEqual(compute_mit_user_fullname(self.mit_email("starnine")), "Athena Consulting Exchange User")
-        with mock.patch('DNS.dnslookup', return_value=[['sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash']]):
+        with mock.patch(
+            'DNS.dnslookup',
+            return_value=[
+                ['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']
+            ],
+        ):
+            self.assertEqual(
+                compute_mit_user_fullname(self.mit_email("starnine")),
+                "Athena Consulting Exchange User",
+            )
+        with mock.patch(
+            'DNS.dnslookup',
+            return_value=[['sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash']],
+        ):
             self.assertEqual(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
 
     def test_invalid_hesiod(self) -> None:
-        with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
+        with mock.patch(
+            'DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)
+        ):
             self.assertEqual(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
-        with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
+        with mock.patch(
+            'DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)
+        ):
             self.assertEqual(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
 
     def test_mailinglist(self) -> None:
-        with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
+        with mock.patch(
+            'DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)
+        ):
             self.assertRaises(ValidationError, email_is_not_mit_mailing_list, "1234567890@mit.edu")
-        with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
+        with mock.patch(
+            'DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)
+        ):
             self.assertRaises(ValidationError, email_is_not_mit_mailing_list, "ec-discuss@mit.edu")
 
     def test_notmailinglist(self) -> None:
         with mock.patch('DNS.dnslookup', return_value=[['POP IMAP.EXCHANGE.MIT.EDU starnine']]):
             email_is_not_mit_mailing_list("sipbexch@mit.edu")
 
-class RateLimitTests(ZulipTestCase):
 
+class RateLimitTests(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
 
@@ -68,11 +87,17 @@ class RateLimitTests(ZulipTestCase):
         super().tearDown()
 
     def send_api_message(self, user: UserProfile, content: str) -> HttpResponse:
-        return self.api_post(user, "/api/v1/messages", {"type": "stream",
-                                                        "to": "Verona",
-                                                        "client": "test suite",
-                                                        "content": content,
-                                                        "topic": "whatever"})
+        return self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "stream",
+                "to": "Verona",
+                "client": "test suite",
+                "content": content,
+                "topic": "whatever",
+            },
+        )
 
     def test_headers(self) -> None:
         user = self.example_user('hamlet')
@@ -122,13 +147,18 @@ class RateLimitTests(ZulipTestCase):
         user = self.example_user('cordelia')
         RateLimitedUser(user).clear_history()
 
-        with mock.patch('zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit',
-                        side_effect=RateLimiterLockingException):
+        with mock.patch(
+            'zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit',
+            side_effect=RateLimiterLockingException,
+        ):
             with self.assertLogs("zerver.lib.rate_limiter", level="WARNING") as m:
                 result = self.send_api_message(user, "some stuff")
                 self.assertEqual(result.status_code, 429)
             self.assertEqual(
                 m.output,
-                ["WARNING:zerver.lib.rate_limiter:Deadlock trying to incr_ratelimit for {}".format(
-                    f"RateLimitedUser:{user.id}:api_by_user")]
+                [
+                    "WARNING:zerver.lib.rate_limiter:Deadlock trying to incr_ratelimit for {}".format(
+                        f"RateLimitedUser:{user.id}:api_by_user"
+                    )
+                ],
             )

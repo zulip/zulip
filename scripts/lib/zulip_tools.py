@@ -39,6 +39,7 @@ BLUE = '\x1b[34m'
 MAGENTA = '\x1b[35m'
 CYAN = '\x1b[36m'
 
+
 def overwrite_symlink(src: str, dst: str) -> None:
     dir, base = os.path.split(dst)
     while True:
@@ -57,37 +58,52 @@ def overwrite_symlink(src: str, dst: str) -> None:
         os.remove(tmp)
         raise
 
+
 def parse_cache_script_args(description: str) -> argparse.Namespace:
     # Keep this in sync with clean_unused_caches in provision_inner.py
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument(
-        "--threshold", dest="threshold_days", type=int, default=14,
-        metavar="<days>", help="Any cache which is not in "
+        "--threshold",
+        dest="threshold_days",
+        type=int,
+        default=14,
+        metavar="<days>",
+        help="Any cache which is not in "
         "use by a deployment not older than threshold days(current "
         "installation in dev) and older than threshold days will be "
-        "deleted. (defaults to 14)")
+        "deleted. (defaults to 14)",
+    )
     parser.add_argument(
-        "--dry-run", action="store_true",
+        "--dry-run",
+        action="store_true",
         help="If specified then script will only print the caches "
-        "that it will delete/keep back. It will not delete any cache.")
+        "that it will delete/keep back. It will not delete any cache.",
+    )
     parser.add_argument(
-        "--verbose", action="store_true",
+        "--verbose",
+        action="store_true",
         help="If specified then script will print a detailed report "
-        "of what is being will deleted/kept back.")
+        "of what is being will deleted/kept back.",
+    )
     parser.add_argument(
-        "--no-print-headings", dest="no_headings", action="store_true",
+        "--no-print-headings",
+        dest="no_headings",
+        action="store_true",
         help="If specified then script will not print headings for "
-        "what will be deleted/kept back.")
+        "what will be deleted/kept back.",
+    )
 
     args = parser.parse_args()
-    args.verbose |= args.dry_run    # Always print a detailed report in case of dry run.
+    args.verbose |= args.dry_run  # Always print a detailed report in case of dry run.
     return args
+
 
 def get_deploy_root() -> str:
     return os.path.realpath(
         os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..")),
     )
+
 
 def get_deployment_version(extract_path: str) -> str:
     version = '0.0.0'
@@ -101,10 +117,12 @@ def get_deployment_version(extract_path: str) -> str:
             break
     return version
 
+
 def is_invalid_upgrade(current_version: str, new_version: str) -> bool:
     if new_version > '1.4.3' and current_version <= '1.3.10':
         return True
     return False
+
 
 def get_zulip_pwent() -> pwd.struct_passwd:
     deploy_root_uid = os.stat(get_deploy_root()).st_uid
@@ -116,11 +134,13 @@ def get_zulip_pwent() -> pwd.struct_passwd:
     # `zulip` user as that's the correct value in production.
     return pwd.getpwnam("zulip")
 
+
 def get_postgres_pwent() -> pwd.struct_passwd:
     try:
         return pwd.getpwnam("postgres")
     except KeyError:
         return get_zulip_pwent()
+
 
 def su_to_zulip(save_suid: bool = False) -> None:
     """Warning: su_to_zulip assumes that the zulip checkout is owned by
@@ -136,11 +156,15 @@ def su_to_zulip(save_suid: bool = False) -> None:
         os.setuid(pwent.pw_uid)
     os.environ['HOME'] = pwent.pw_dir
 
+
 def make_deploy_path() -> str:
     timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
     return os.path.join(DEPLOYMENTS_DIR, timestamp)
 
+
 TEMPLATE_DATABASE_DIR = "test-backend/databases"
+
+
 def get_dev_uuid_var_path(create_if_missing: bool = False) -> str:
     zulip_path = get_deploy_root()
     uuid_path = os.path.join(os.path.realpath(os.path.dirname(zulip_path)), ".zulip-dev-uuid")
@@ -152,14 +176,14 @@ def get_dev_uuid_var_path(create_if_missing: bool = False) -> str:
             zulip_uuid = str(uuid.uuid4())
             # We need root access here, since the path will be under /srv/ in the
             # development environment.
-            run_as_root(["sh", "-c", 'echo "$1" > "$2"', "-",
-                         zulip_uuid, uuid_path])
+            run_as_root(["sh", "-c", 'echo "$1" > "$2"', "-", zulip_uuid, uuid_path])
         else:
             raise AssertionError("Missing UUID file; please run tools/provision!")
 
     result_path = os.path.join(zulip_path, "var", zulip_uuid)
     os.makedirs(result_path, exist_ok=True)
     return result_path
+
 
 def get_deployment_lock(error_rerun_script: str) -> None:
     start_time = time.time()
@@ -170,22 +194,31 @@ def get_deployment_lock(error_rerun_script: str) -> None:
             got_lock = True
             break
         except OSError:
-            print(WARNING + "Another deployment in progress; waiting for lock... " +
-                  "(If no deployment is running, rmdir {})".format(LOCK_DIR) + ENDC)
+            print(
+                WARNING
+                + "Another deployment in progress; waiting for lock... "
+                + "(If no deployment is running, rmdir {})".format(LOCK_DIR)
+                + ENDC
+            )
             sys.stdout.flush()
             time.sleep(3)
 
     if not got_lock:
-        print(FAIL + "Deployment already in progress.  Please run\n" +
-              "  {}\n".format(error_rerun_script) +
-              "manually when the previous deployment finishes, or run\n" +
-              "  rmdir {}\n".format(LOCK_DIR) +
-              "if the previous deployment crashed." +
-              ENDC)
+        print(
+            FAIL
+            + "Deployment already in progress.  Please run\n"
+            + "  {}\n".format(error_rerun_script)
+            + "manually when the previous deployment finishes, or run\n"
+            + "  rmdir {}\n".format(LOCK_DIR)
+            + "if the previous deployment crashed."
+            + ENDC
+        )
         sys.exit(1)
+
 
 def release_deployment_lock() -> None:
     shutil.rmtree(LOCK_DIR)
+
 
 def run(args: Sequence[str], **kwargs: Any) -> None:
     # Output what we're doing in the `set -x` style
@@ -195,13 +228,18 @@ def run(args: Sequence[str], **kwargs: Any) -> None:
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
         print()
-        print(WHITEONRED + "Error running a subcommand of {}: {}".format(
-            sys.argv[0], " ".join(map(shlex.quote, args)),
-        ) + ENDC)
-        print(WHITEONRED + "Actual error output for the subcommand is just above this." +
-              ENDC)
+        print(
+            WHITEONRED
+            + "Error running a subcommand of {}: {}".format(
+                sys.argv[0],
+                " ".join(map(shlex.quote, args)),
+            )
+            + ENDC
+        )
+        print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
         print()
         raise
+
 
 def log_management_command(cmd: Sequence[str], log_path: str) -> None:
     log_dir = os.path.dirname(log_path)
@@ -217,10 +255,12 @@ def log_management_command(cmd: Sequence[str], log_path: str) -> None:
 
     logger.info("Ran %s", " ".join(map(shlex.quote, cmd)))
 
+
 def get_environment() -> str:
     if os.path.exists(DEPLOYMENTS_DIR):
         return "prod"
     return "dev"
+
 
 def get_recent_deployments(threshold_days: int) -> Set[str]:
     # Returns a list of deployments not older than threshold days
@@ -249,6 +289,7 @@ def get_recent_deployments(threshold_days: int) -> Set[str]:
         recent.add("/root/zulip")
     return recent
 
+
 def get_threshold_timestamp(threshold_days: int) -> int:
     # Given number of days, this function returns timestamp corresponding
     # to the time prior to given number of days.
@@ -256,7 +297,10 @@ def get_threshold_timestamp(threshold_days: int) -> int:
     threshold_timestamp = int(time.mktime(threshold.utctimetuple()))
     return threshold_timestamp
 
-def get_caches_to_be_purged(caches_dir: str, caches_in_use: Set[str], threshold_days: int) -> Set[str]:
+
+def get_caches_to_be_purged(
+    caches_dir: str, caches_in_use: Set[str], threshold_days: int
+) -> Set[str]:
     # Given a directory containing caches, a list of caches in use
     # and threshold days, this function return a list of caches
     # which can be purged. Remove the cache only if it is:
@@ -275,17 +319,23 @@ def get_caches_to_be_purged(caches_dir: str, caches_in_use: Set[str], threshold_
             caches_to_purge.add(cache_dir)
     return caches_to_purge
 
+
 def purge_unused_caches(
-    caches_dir: str, caches_in_use: Set[str], cache_type: str, args: argparse.Namespace,
+    caches_dir: str,
+    caches_in_use: Set[str],
+    cache_type: str,
+    args: argparse.Namespace,
 ) -> None:
     all_caches = {os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)}
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
     caches_to_keep = all_caches - caches_to_purge
 
     may_be_perform_purging(
-        caches_to_purge, caches_to_keep, cache_type, args.dry_run, args.verbose, args.no_headings)
+        caches_to_purge, caches_to_keep, cache_type, args.dry_run, args.verbose, args.no_headings
+    )
     if args.verbose:
         print("Done!")
+
 
 def generate_sha1sum_emoji(zulip_path: str) -> str:
     sha = hashlib.sha1()
@@ -325,6 +375,7 @@ def generate_sha1sum_emoji(zulip_path: str) -> str:
 
     return sha.hexdigest()
 
+
 def may_be_perform_purging(
     dirs_to_purge: Set[str],
     dirs_to_keep: Set[str],
@@ -347,6 +398,7 @@ def may_be_perform_purging(
     for directory in dirs_to_keep:
         if verbose:
             print("Keeping used {}: {}".format(dir_type, directory))
+
 
 @functools.lru_cache(None)
 def parse_os_release() -> Dict[str, str]:
@@ -375,6 +427,7 @@ def parse_os_release() -> Dict[str, str]:
             [distro_info[k]] = shlex.split(v)
     return distro_info
 
+
 @functools.lru_cache(None)
 def os_families() -> Set[str]:
     """
@@ -388,8 +441,8 @@ def os_families() -> Set[str]:
     distro_info = parse_os_release()
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
-def files_and_string_digest(filenames: Sequence[str],
-                            extra_strings: Sequence[str]) -> str:
+
+def files_and_string_digest(filenames: Sequence[str], extra_strings: Sequence[str]) -> str:
     # see is_digest_obsolete for more context
     sha1sum = hashlib.sha1()
     for fn in filenames:
@@ -401,10 +454,11 @@ def files_and_string_digest(filenames: Sequence[str],
 
     return sha1sum.hexdigest()
 
-def is_digest_obsolete(hash_name: str,
-                       filenames: Sequence[str],
-                       extra_strings: Sequence[str] = []) -> bool:
-    '''
+
+def is_digest_obsolete(
+    hash_name: str, filenames: Sequence[str], extra_strings: Sequence[str] = []
+) -> bool:
+    """
     In order to determine if we need to run some
     process, we calculate a digest of the important
     files and strings whose respective contents
@@ -421,7 +475,7 @@ def is_digest_obsolete(hash_name: str,
         - package versions (that we import)
         - settings values (that we stringify with
           json, deterministically)
-    '''
+    """
     last_hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
     try:
         with open(last_hash_path) as f:
@@ -435,9 +489,10 @@ def is_digest_obsolete(hash_name: str,
 
     return new_hash != old_hash
 
-def write_new_digest(hash_name: str,
-                     filenames: Sequence[str],
-                     extra_strings: Sequence[str] = []) -> None:
+
+def write_new_digest(
+    hash_name: str, filenames: Sequence[str], extra_strings: Sequence[str] = []
+) -> None:
     hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
     new_hash = files_and_string_digest(filenames, extra_strings)
     with open(hash_path, 'w') as f:
@@ -449,10 +504,12 @@ def write_new_digest(hash_name: str,
     # can help them troubleshoot provisioning glitches.
     print('New digest written to: ' + hash_path)
 
+
 def is_root() -> bool:
     if 'posix' in os.name and os.geteuid() == 0:
         return True
     return False
+
 
 def run_as_root(args: List[str], **kwargs: Any) -> None:
     sudo_args = kwargs.pop('sudo_args', [])
@@ -460,20 +517,21 @@ def run_as_root(args: List[str], **kwargs: Any) -> None:
         args = ["sudo", *sudo_args, "--", *args]
     run(args, **kwargs)
 
+
 def assert_not_running_as_root() -> None:
     script_name = os.path.abspath(sys.argv[0])
     if is_root():
         pwent = get_zulip_pwent()
-        msg = ("{shortname} should not be run as root. Use `su {user}` to switch to the 'zulip'\n"
-               "user before rerunning this, or use \n  su {user} -c '{name} ...'\n"
-               "to switch users and run this as a single command.").format(
-            name=script_name,
-            shortname=os.path.basename(script_name),
-            user=pwent.pw_name)
+        msg = (
+            "{shortname} should not be run as root. Use `su {user}` to switch to the 'zulip'\n"
+            "user before rerunning this, or use \n  su {user} -c '{name} ...'\n"
+            "to switch users and run this as a single command."
+        ).format(name=script_name, shortname=os.path.basename(script_name), user=pwent.pw_name)
         print(msg)
         sys.exit(1)
 
-def assert_running_as_root(strip_lib_from_paths: bool=False) -> None:
+
+def assert_running_as_root(strip_lib_from_paths: bool = False) -> None:
     script_name = os.path.abspath(sys.argv[0])
     # Since these Python scripts are run inside a thin shell wrapper,
     # we need to replace the paths in order to ensure we instruct
@@ -483,6 +541,7 @@ def assert_running_as_root(strip_lib_from_paths: bool=False) -> None:
     if not is_root():
         print("{} must be run as root.".format(script_name))
         sys.exit(1)
+
 
 def get_config(
     config_file: configparser.RawConfigParser,
@@ -494,6 +553,7 @@ def get_config(
         return config_file.get(section, key)
     return default_value
 
+
 def set_config(
     config_file: configparser.RawConfigParser,
     section: str,
@@ -504,13 +564,16 @@ def set_config(
         config_file.add_section(section)
     config_file.set(section, key, value)
 
+
 def get_config_file() -> configparser.RawConfigParser:
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
     return config_file
 
+
 def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
     return get_config(config_file, 'deployment', 'deploy_options', "").strip().split()
+
 
 def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
     ports = []
@@ -520,13 +583,16 @@ def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
         ports = [9800]
     return ports
 
+
 def get_or_create_dev_uuid_var_path(path: str) -> str:
     absolute_path = '{}/{}'.format(get_dev_uuid_var_path(), path)
     os.makedirs(absolute_path, exist_ok=True)
     return absolute_path
 
+
 def is_vagrant_env_host(path: str) -> bool:
     return '.vagrant' in os.listdir(path)
+
 
 def deport(netloc: str) -> str:
     """Remove the port from a hostname:port string.  Brackets on a literal
@@ -534,6 +600,7 @@ def deport(netloc: str) -> str:
     r = SplitResult("", netloc, "", "", "")
     assert r.hostname is not None
     return "[" + r.hostname + "]" if ":" in r.hostname else r.hostname
+
 
 if __name__ == '__main__':
     cmd = sys.argv[1]

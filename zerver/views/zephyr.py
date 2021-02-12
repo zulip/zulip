@@ -24,10 +24,12 @@ kerberos_alter_egos = {
     'golem': 'ctl',
 }
 
+
 @authenticated_json_view
 @has_request_variables
-def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
-                             cred: Optional[str]=REQ(default=None)) -> HttpResponse:
+def webathena_kerberos_login(
+    request: HttpRequest, user_profile: UserProfile, cred: Optional[str] = REQ(default=None)
+) -> HttpResponse:
     global kerberos_alter_egos
     if cred is None:
         return json_error(_("Could not find Kerberos credential"))
@@ -39,10 +41,10 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
         user = parsed_cred["cname"]["nameString"][0]
         if user in kerberos_alter_egos:
             user = kerberos_alter_egos[user]
-        assert(user == user_profile.email.split("@")[0])
+        assert user == user_profile.email.split("@")[0]
         # Limit characters in usernames to valid MIT usernames
         # This is important for security since DNS is not secure.
-        assert(re.match(r'^[a-z0-9_.-]+$', user) is not None)
+        assert re.match(r'^[a-z0-9_.-]+$', user) is not None
         ccache = make_ccache(parsed_cred)
 
         # 'user' has been verified to contain only benign characters that won't
@@ -64,8 +66,9 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
             api_key,
             base64.b64encode(ccache).decode("utf-8"),
         ]
-        subprocess.check_call(["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--",
-                               " ".join(map(shlex.quote, command))])
+        subprocess.check_call(
+            ["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--", " ".join(map(shlex.quote, command))]
+        )
     except subprocess.CalledProcessError:
         logging.exception("Error updating the user's ccache", stack_info=True)
         return json_error(_("We were unable to setup mirroring for you"))

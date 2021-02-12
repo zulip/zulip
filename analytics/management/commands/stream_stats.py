@@ -11,8 +11,9 @@ class Command(BaseCommand):
     help = "Generate statistics on the streams for a realm."
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('realms', metavar='<realm>', nargs='*',
-                            help="realm to generate statistics for")
+        parser.add_argument(
+            'realms', metavar='<realm>', nargs='*', help="realm to generate statistics for"
+        )
 
     def handle(self, *args: Any, **options: str) -> None:
         if options['realms']:
@@ -48,8 +49,12 @@ class Command(BaseCommand):
                     stream_type = 'public'
                 print(f"{stream.name:>25}", end=' ')
                 recipient = Recipient.objects.filter(type=Recipient.STREAM, type_id=stream.id)
-                print("{:10}".format(len(Subscription.objects.filter(recipient=recipient,
-                                                                     active=True))), end=' ')
+                print(
+                    "{:10}".format(
+                        len(Subscription.objects.filter(recipient=recipient, active=True))
+                    ),
+                    end=' ',
+                )
                 num_messages = len(Message.objects.filter(recipient=recipient))
                 print(f"{num_messages:12}", end=' ')
                 print(f"{stream_type:>15}")

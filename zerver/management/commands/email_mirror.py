@@ -69,10 +69,17 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: str) -> None:
         # We're probably running from cron, try to batch-process mail
-        if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
-            not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or
-                not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER):
-            raise CommandError("Please configure the email mirror gateway in /etc/zulip/, "
-                               "or specify $ORIGINAL_RECIPIENT if piping a single mail.")
+        if (
+            not settings.EMAIL_GATEWAY_BOT
+            or not settings.EMAIL_GATEWAY_LOGIN
+            or not settings.EMAIL_GATEWAY_PASSWORD
+            or not settings.EMAIL_GATEWAY_IMAP_SERVER
+            or not settings.EMAIL_GATEWAY_IMAP_PORT
+            or not settings.EMAIL_GATEWAY_IMAP_FOLDER
+        ):
+            raise CommandError(
+                "Please configure the email mirror gateway in /etc/zulip/, "
+                "or specify $ORIGINAL_RECIPIENT if piping a single mail."
+            )
         for message in get_imap_messages():
             process_message(message)

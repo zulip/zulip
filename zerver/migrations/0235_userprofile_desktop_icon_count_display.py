@@ -2,6 +2,8 @@
 from django.db import migrations, models
 
 DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
+
+
 class Migration(migrations.Migration):
 
     dependencies = [

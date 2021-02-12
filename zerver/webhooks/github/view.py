@@ -29,6 +29,7 @@ from zerver.models import UserProfile
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
+
 class Helper:
     def __init__(
         self,
@@ -44,6 +45,7 @@ class Helper:
             summary=summary,
             unsupported_event=True,
         )
+
 
 def get_opened_or_update_pull_request_body(helper: Helper) -> str:
     payload = helper.payload
@@ -72,6 +74,7 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
         title=pull_request['title'] if include_title else None,
     )
 
+
 def get_assigned_or_unassigned_pull_request_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
@@ -91,6 +94,7 @@ def get_assigned_or_unassigned_pull_request_body(helper: Helper) -> str:
         return f"{base_message[:-1]} to {assignee}."
     return base_message
 
+
 def get_closed_pull_request_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
@@ -103,6 +107,7 @@ def get_closed_pull_request_body(helper: Helper) -> str:
         number=pull_request['number'],
         title=pull_request['title'] if include_title else None,
     )
+
 
 def get_membership_body(helper: Helper) -> str:
     payload = helper.payload
@@ -119,6 +124,7 @@ def get_membership_body(helper: Helper) -> str:
         team_name=team_name,
     )
 
+
 def get_member_body(helper: Helper) -> str:
     payload = helper.payload
     return "{} {} [{}]({}) to [{}]({}).".format(
@@ -129,6 +135,7 @@ def get_member_body(helper: Helper) -> str:
         get_repository_name(payload),
         payload['repository']['html_url'],
     )
+
 
 def get_issue_body(helper: Helper) -> str:
     payload = helper.payload
@@ -145,6 +152,7 @@ def get_issue_body(helper: Helper) -> str:
         assignee=assignee['login'] if assignee else None,
         title=issue['title'] if include_title else None,
     )
+
 
 def get_issue_comment_body(helper: Helper) -> str:
     payload = helper.payload
@@ -168,6 +176,7 @@ def get_issue_comment_body(helper: Helper) -> str:
         title=issue['title'] if include_title else None,
     )
 
+
 def get_fork_body(helper: Helper) -> str:
     payload = helper.payload
     forkee = payload['forkee']
@@ -177,15 +186,18 @@ def get_fork_body(helper: Helper) -> str:
         forkee['html_url'],
     )
 
+
 def get_deployment_body(helper: Helper) -> str:
     payload = helper.payload
     return f'{get_sender_name(payload)} created new deployment.'
+
 
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
     return 'Deployment changed status to {}.'.format(
         payload['deployment_status']['state'],
     )
+
 
 def get_create_or_delete_body(helper: Helper, action: str) -> str:
     payload = helper.payload
@@ -196,6 +208,7 @@ def get_create_or_delete_body(helper: Helper, action: str) -> str:
         ref_type,
         payload['ref'],
     ).rstrip()
+
 
 def get_commit_comment_body(helper: Helper) -> str:
     payload = helper.payload
@@ -211,6 +224,7 @@ def get_commit_comment_body(helper: Helper) -> str:
         comment['body'],
     )
 
+
 def get_push_tags_body(helper: Helper) -> str:
     payload = helper.payload
     return get_push_tag_event_message(
@@ -219,15 +233,18 @@ def get_push_tags_body(helper: Helper) -> str:
         action='pushed' if payload.get('created') else 'removed',
     )
 
+
 def get_push_commits_body(helper: Helper) -> str:
     payload = helper.payload
-    commits_data = [{
-        'name': (commit.get('author').get('username') or
-                 commit.get('author').get('name')),
-        'sha': commit['id'],
-        'url': commit['url'],
-        'message': commit['message'],
-    } for commit in payload['commits']]
+    commits_data = [
+        {
+            'name': (commit.get('author').get('username') or commit.get('author').get('name')),
+            'sha': commit['id'],
+            'url': commit['url'],
+            'message': commit['message'],
+        }
+        for commit in payload['commits']
+    ]
     return get_push_commits_event_message(
         get_sender_name(payload),
         payload['compare'],
@@ -236,6 +253,7 @@ def get_push_commits_body(helper: Helper) -> str:
         deleted=payload['deleted'],
     )
 
+
 def get_public_body(helper: Helper) -> str:
     payload = helper.payload
     return "{} made the repository [{}]({}) public.".format(
@@ -243,6 +261,7 @@ def get_public_body(helper: Helper) -> str:
         get_repository_full_name(payload),
         payload['repository']['html_url'],
     )
+
 
 def get_wiki_pages_body(helper: Helper) -> str:
     payload = helper.payload
@@ -256,6 +275,7 @@ def get_wiki_pages_body(helper: Helper) -> str:
         )
     return f"{get_sender_name(payload)}:\n{wiki_info.rstrip()}"
 
+
 def get_watch_body(helper: Helper) -> str:
     payload = helper.payload
     return "{} starred the repository [{}]({}).".format(
@@ -263,6 +283,7 @@ def get_watch_body(helper: Helper) -> str:
         get_repository_full_name(payload),
         payload['repository']['html_url'],
     )
+
 
 def get_repository_body(helper: Helper) -> str:
     payload = helper.payload
@@ -273,6 +294,7 @@ def get_repository_body(helper: Helper) -> str:
         payload['repository']['html_url'],
     )
 
+
 def get_add_team_body(helper: Helper) -> str:
     payload = helper.payload
     return "The repository [{}]({}) was added to team {}.".format(
@@ -280,6 +302,7 @@ def get_add_team_body(helper: Helper) -> str:
         payload['repository']['html_url'],
         payload['team']['name'],
     )
+
 
 def get_team_body(helper: Helper) -> str:
     payload = helper.payload
@@ -305,6 +328,7 @@ def get_team_body(helper: Helper) -> str:
     # from GitHub.
     return f"Team has changes to `{missing_keys}` data."
 
+
 def get_release_body(helper: Helper) -> str:
     payload = helper.payload
     data = {
@@ -317,6 +341,7 @@ def get_release_body(helper: Helper) -> str:
     }
 
     return get_release_event_message(**data)
+
 
 def get_page_build_body(helper: Helper) -> str:
     payload = helper.payload
@@ -339,6 +364,7 @@ def get_page_build_body(helper: Helper) -> str:
         action,
     )
 
+
 def get_status_body(helper: Helper) -> str:
     payload = helper.payload
     if payload['target_url']:
@@ -354,15 +380,17 @@ def get_status_body(helper: Helper) -> str:
         status,
     )
 
+
 def get_pull_request_ready_for_review_body(helper: Helper) -> str:
     payload = helper.payload
 
     message = "**{sender}** has marked [PR #{pr_number}]({pr_url}) as ready for review."
     return message.format(
-        sender = get_sender_name(payload),
-        pr_number = payload['pull_request']['number'],
-        pr_url = payload['pull_request']['html_url'],
+        sender=get_sender_name(payload),
+        pr_number=payload['pull_request']['number'],
+        pr_url=payload['pull_request']['html_url'],
     )
+
 
 def get_pull_request_review_body(helper: Helper) -> str:
     payload = helper.payload
@@ -378,6 +406,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         type='PR Review',
         title=title if include_title else None,
     )
+
 
 def get_pull_request_review_comment_body(helper: Helper) -> str:
     payload = helper.payload
@@ -401,20 +430,23 @@ def get_pull_request_review_comment_body(helper: Helper) -> str:
         title=title if include_title else None,
     )
 
+
 def get_pull_request_review_requested_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
     requested_reviewer = [payload['requested_reviewer']] if 'requested_reviewer' in payload else []
-    requested_reviewers = (payload['pull_request']['requested_reviewers'] or requested_reviewer)
+    requested_reviewers = payload['pull_request']['requested_reviewers'] or requested_reviewer
 
     requested_team = [payload['requested_team']] if 'requested_team' in payload else []
-    requested_team_reviewers = (payload['pull_request']['requested_teams'] or requested_team)
+    requested_team_reviewers = payload['pull_request']['requested_teams'] or requested_team
 
     sender = get_sender_name(payload)
     pr_number = payload['pull_request']['number']
     pr_url = payload['pull_request']['html_url']
     message = "**{sender}** requested {reviewers} for a review on [PR #{pr_number}]({pr_url})."
-    message_with_title = "**{sender}** requested {reviewers} for a review on [PR #{pr_number} {title}]({pr_url})."
+    message_with_title = (
+        "**{sender}** requested {reviewers} for a review on [PR #{pr_number} {title}]({pr_url})."
+    )
     body = message_with_title if include_title else message
 
     all_reviewers = []
@@ -439,6 +471,7 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
         title=payload['pull_request']['title'] if include_title else None,
     )
 
+
 def get_check_run_body(helper: Helper) -> str:
     payload = helper.payload
     template = """
@@ -459,6 +492,7 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
 
     return template.format(**kwargs)
 
+
 def get_star_body(helper: Helper) -> str:
     payload = helper.payload
     template = "{user} {action} the repository [{repo}]({url})."
@@ -469,30 +503,39 @@ def get_star_body(helper: Helper) -> str:
         url=payload['repository']['html_url'],
     )
 
+
 def get_ping_body(helper: Helper) -> str:
     payload = helper.payload
     return get_setup_webhook_message('GitHub', get_sender_name(payload))
 
+
 def get_repository_name(payload: Dict[str, Any]) -> str:
     return payload['repository']['name']
+
 
 def get_repository_full_name(payload: Dict[str, Any]) -> str:
     return payload['repository']['full_name']
 
+
 def get_organization_name(payload: Dict[str, Any]) -> str:
     return payload['organization']['login']
+
 
 def get_sender_name(payload: Dict[str, Any]) -> str:
     return payload['sender']['login']
 
+
 def get_branch_name_from_ref(ref_string: str) -> str:
     return re.sub(r'^refs/heads/', '', ref_string)
+
 
 def get_tag_name_from_ref(ref_string: str) -> str:
     return re.sub(r'^refs/tags/', '', ref_string)
 
+
 def is_commit_push_event(payload: Dict[str, Any]) -> bool:
     return bool(re.match(r'^refs/heads/', payload['ref']))
+
 
 def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     if 'pull_request' in event:
@@ -535,6 +578,7 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
         return f"{get_repository_name(payload)} / checks"
 
     return get_repository_name(payload)
+
 
 EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     'commit_comment': get_commit_comment_body,
@@ -600,13 +644,16 @@ IGNORED_TEAM_ACTIONS = [
     "removed_from_repository",
 ]
 
+
 @webhook_view('GitHub', notify_bot_owner_on_invalid_json=True)
 @has_request_variables
 def api_github_webhook(
-        request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Any]=REQ(argument_type='body'),
-        branches: Optional[str]=REQ(default=None),
-        user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+    branches: Optional[str] = REQ(default=None),
+    user_specified_topic: Optional[str] = REQ("topic", default=None),
+) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
     own Zulip-specific concept of an event that often maps
@@ -636,6 +683,7 @@ def api_github_webhook(
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
+
 
 def get_zulip_event_name(
     header_event: str,

@@ -16,6 +16,7 @@ def clear_analytics_tables(apps: StateApps, schema_editor: DatabaseSchemaEditor)
     InstallationCount.objects.all().delete()
     FillState.objects.all().delete()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

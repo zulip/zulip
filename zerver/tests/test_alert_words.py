@@ -86,8 +86,7 @@ class AlertWordTests(ZulipTestCase):
             do_remove_alert_words(user, [alert_word])
             expected_remaining_alerts.remove(alert_word)
             actual_remaining_alerts = user_alert_words(user)
-            self.assertEqual(set(actual_remaining_alerts),
-                             expected_remaining_alerts)
+            self.assertEqual(set(actual_remaining_alerts), expected_remaining_alerts)
 
     def test_realm_words(self) -> None:
         """
@@ -109,8 +108,7 @@ class AlertWordTests(ZulipTestCase):
         realm_words = alert_words_in_realm(user2.realm)
         self.assertEqual(len(realm_words), 2)
         self.assertEqual(set(realm_words.keys()), {user1.id, user2.id})
-        self.assertEqual(set(realm_words[user1.id]),
-                         set(self.interesting_alert_word_list))
+        self.assertEqual(set(realm_words[user1.id]), set(self.interesting_alert_word_list))
         self.assertEqual(set(realm_words[user2.id]), {'another'})
 
     def test_json_list_default(self) -> None:
@@ -134,8 +132,10 @@ class AlertWordTests(ZulipTestCase):
         user = self.get_user()
         self.login_user(user)
 
-        result = self.client_post('/json/users/me/alert_words',
-                                  {'alert_words': orjson.dumps(['one ', '\n two', 'three']).decode()})
+        result = self.client_post(
+            '/json/users/me/alert_words',
+            {'alert_words': orjson.dumps(['one ', '\n two', 'three']).decode()},
+        )
         self.assert_json_success(result)
         self.assertEqual(set(result.json()['alert_words']), {'one', 'two', 'three'})
 
@@ -143,13 +143,16 @@ class AlertWordTests(ZulipTestCase):
         user = self.get_user()
         self.login_user(user)
 
-        result = self.client_post('/json/users/me/alert_words',
-                                  {'alert_words': orjson.dumps(['one', 'two', 'three']).decode()})
+        result = self.client_post(
+            '/json/users/me/alert_words',
+            {'alert_words': orjson.dumps(['one', 'two', 'three']).decode()},
+        )
         self.assert_json_success(result)
         self.assertEqual(set(result.json()['alert_words']), {'one', 'two', 'three'})
 
-        result = self.client_delete('/json/users/me/alert_words',
-                                    {'alert_words': orjson.dumps(['one']).decode()})
+        result = self.client_delete(
+            '/json/users/me/alert_words', {'alert_words': orjson.dumps(['one']).decode()}
+        )
         self.assert_json_success(result)
         self.assertEqual(set(result.json()['alert_words']), {'two', 'three'})
 
@@ -163,8 +166,10 @@ class AlertWordTests(ZulipTestCase):
         user = self.get_user()
         self.login_user(user)
 
-        result = self.client_post('/json/users/me/alert_words',
-                                  {'alert_words': orjson.dumps(['one', 'two', 'three']).decode()})
+        result = self.client_post(
+            '/json/users/me/alert_words',
+            {'alert_words': orjson.dumps(['one', 'two', 'three']).decode()},
+        )
         self.assert_json_success(result)
         self.assertEqual(set(result.json()['alert_words']), {'one', 'two', 'three'})
 
@@ -191,8 +196,9 @@ class AlertWordTests(ZulipTestCase):
         user = self.get_user()
         self.login_user(user)
 
-        result = self.client_post('/json/users/me/alert_words',
-                                  {'alert_words': orjson.dumps(['ALERT']).decode()})
+        result = self.client_post(
+            '/json/users/me/alert_words', {'alert_words': orjson.dumps(['ALERT']).decode()}
+        )
 
         content = 'this is an ALERT for you'
         self.send_stream_message(user, "Denmark", content)
@@ -203,20 +209,26 @@ class AlertWordTests(ZulipTestCase):
         user_message = most_recent_usermessage(user)
         self.assertIn('has_alert_word', user_message.flags_list())
 
-        result = self.client_patch("/json/messages/" + str(original_message.id), {
-            'message_id': original_message.id,
-            'content': 'new ALERT for you',
-        })
+        result = self.client_patch(
+            "/json/messages/" + str(original_message.id),
+            {
+                'message_id': original_message.id,
+                'content': 'new ALERT for you',
+            },
+        )
         self.assert_json_success(result)
 
         user_message = most_recent_usermessage(user)
         self.assertEqual(user_message.message.content, 'new ALERT for you')
         self.assertIn('has_alert_word', user_message.flags_list())
 
-        result = self.client_patch("/json/messages/" + str(original_message.id), {
-            'message_id': original_message.id,
-            'content': 'sorry false alarm',
-        })
+        result = self.client_patch(
+            "/json/messages/" + str(original_message.id),
+            {
+                'message_id': original_message.id,
+                'content': 'sorry false alarm',
+            },
+        )
         self.assert_json_success(result)
 
         user_message = most_recent_usermessage(user)

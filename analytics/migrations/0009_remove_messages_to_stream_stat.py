@@ -3,7 +3,9 @@ from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def delete_messages_sent_to_stream_stat(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def delete_messages_sent_to_stream_stat(
+    apps: StateApps, schema_editor: DatabaseSchemaEditor
+) -> None:
     UserCount = apps.get_model('analytics', 'UserCount')
     StreamCount = apps.get_model('analytics', 'StreamCount')
     RealmCount = apps.get_model('analytics', 'RealmCount')
@@ -16,6 +18,7 @@ def delete_messages_sent_to_stream_stat(apps: StateApps, schema_editor: Database
     RealmCount.objects.filter(property=property).delete()
     InstallationCount.objects.filter(property=property).delete()
     FillState.objects.filter(property=property).delete()
+
 
 class Migration(migrations.Migration):
 

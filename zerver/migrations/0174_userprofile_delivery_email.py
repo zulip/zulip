@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
             field=models.EmailField(db_index=True, default='', max_length=254),
             preserve_default=False,
         ),
-        migrations.RunPython(copy_email_field,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            copy_email_field, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

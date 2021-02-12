@@ -27,14 +27,11 @@ usage = """test-js-with-puppeteer [options]
     test-js-with-puppeteer 01 03 # Run a few test files, 01-login.js and 03-narrow.js here"""
 parser = argparse.ArgumentParser(usage)
 
-parser.add_argument('--interactive',
-                    action="store_true",
-                    help='Run tests interactively')
-parser.add_argument('--force',
-                    action="store_true",
-                    help='Run tests despite possible problems.')
-parser.add_argument('tests', nargs=argparse.REMAINDER,
-                    help='Specific tests to run; by default, runs all tests')
+parser.add_argument('--interactive', action="store_true", help='Run tests interactively')
+parser.add_argument('--force', action="store_true", help='Run tests despite possible problems.')
+parser.add_argument(
+    'tests', nargs=argparse.REMAINDER, help='Specific tests to run; by default, runs all tests'
+)
 
 options = parser.parse_args()
 
@@ -59,13 +56,18 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
     test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/puppeteer_tests')
     test_files = find_js_test_files(test_dir, files)
 
-    def run_tests(test_number: int=0) -> Tuple[int, int]:
+    def run_tests(test_number: int = 0) -> Tuple[int, int]:
         ret = 1
         current_test_num = test_number
         for test_file in test_files[test_number:]:
             test_name = os.path.basename(test_file)
             cmd = ["node", test_file]
-            print("\n\n===================== {}\nRunning {}\n\n".format(test_name, " ".join(map(shlex.quote, cmd))), flush=True)
+            print(
+                "\n\n===================== {}\nRunning {}\n\n".format(
+                    test_name, " ".join(map(shlex.quote, cmd))
+                ),
+                flush=True,
+            )
             ret = subprocess.call(cmd)
             if ret != 0:
                 return ret, current_test_num
@@ -88,18 +90,27 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
             ret = 1
             ret = run_tests()[0]
     if ret != 0:
-        print(f"""
+        print(
+            f"""
 {FAIL}The Puppeteer frontend tests failed!{ENDC}
 For help debugging, read:
   https://zulip.readthedocs.io/en/latest/testing/testing-with-puppeteer.html
-or report and ask for help in chat.zulip.org""", file=sys.stderr)
+or report and ask for help in chat.zulip.org""",
+            file=sys.stderr,
+        )
         if os.environ.get("CIRCLECI"):
             print("", file=sys.stderr)
-            print("In CircleCI, the Artifacts tab contains screenshots of the failure.", file=sys.stderr)
+            print(
+                "In CircleCI, the Artifacts tab contains screenshots of the failure.",
+                file=sys.stderr,
+            )
             print("", file=sys.stderr)
         else:
-            print("It's also worthy to see screenshots generated on failure stored under var/puppeteer/*.png")
+            print(
+                "It's also worthy to see screenshots generated on failure stored under var/puppeteer/*.png"
+            )
         sys.exit(ret)
+
 
 external_host = "zulipdev.com:9981"
 assert_provisioning_status_ok(options.force)

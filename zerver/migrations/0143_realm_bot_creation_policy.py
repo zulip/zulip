@@ -4,7 +4,11 @@ from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 BOT_CREATION_EVERYONE = 1
-def set_initial_value_for_bot_creation_policy(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+
+
+def set_initial_value_for_bot_creation_policy(
+    apps: StateApps, schema_editor: DatabaseSchemaEditor
+) -> None:
     Realm = apps.get_model("zerver", "Realm")
     Realm.BOT_CREATION_EVERYONE = 1
     Realm.BOT_CREATION_LIMIT_GENERIC_BOTS = 2
@@ -15,6 +19,7 @@ def set_initial_value_for_bot_creation_policy(apps: StateApps, schema_editor: Da
             realm.bot_creation_policy = Realm.BOT_CREATION_EVERYONE
         realm.save(update_fields=["bot_creation_policy"])
 
+
 def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
     Realm.BOT_CREATION_EVERYONE = 1
@@ -24,6 +29,7 @@ def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
         else:
             realm.create_generic_bot_by_admins_only = True
         realm.save(update_fields=["create_generic_bot_by_admins_only"])
+
 
 class Migration(migrations.Migration):
 
@@ -37,7 +43,7 @@ class Migration(migrations.Migration):
             name='bot_creation_policy',
             field=models.PositiveSmallIntegerField(default=BOT_CREATION_EVERYONE),
         ),
-        migrations.RunPython(set_initial_value_for_bot_creation_policy,
-                             reverse_code=reverse_code,
-                             elidable=True),
+        migrations.RunPython(
+            set_initial_value_for_bot_creation_policy, reverse_code=reverse_code, elidable=True
+        ),
     ]

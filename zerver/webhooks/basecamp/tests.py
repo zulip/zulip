@@ -2,6 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 TOPIC = "Zulip HQ"
 
+
 class BasecampHookTests(WebhookTestCase):
     STREAM_NAME = 'basecamp'
     URL_TEMPLATE = "/api/v1/external/basecamp?stream={stream}&api_key={api_key}"

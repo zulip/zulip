@@ -16,13 +16,24 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ArchivedAttachment',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('file_name', models.TextField(db_index=True)),
                 ('path_id', models.TextField(db_index=True)),
                 ('is_realm_public', models.BooleanField(default=False)),
-                ('create_time', models.DateTimeField(db_index=True, default=django.utils.timezone.now)),
+                (
+                    'create_time',
+                    models.DateTimeField(db_index=True, default=django.utils.timezone.now),
+                ),
                 ('size', models.IntegerField(null=True)),
-                ('archive_timestamp', models.DateTimeField(db_index=True, default=django.utils.timezone.now)),
+                (
+                    'archive_timestamp',
+                    models.DateTimeField(db_index=True, default=django.utils.timezone.now),
+                ),
             ],
             options={
                 'abstract': False,
@@ -32,7 +43,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ArchivedMessage',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('subject', models.CharField(db_index=True, max_length=60)),
                 ('content', models.TextField()),
                 ('rendered_content', models.TextField(null=True)),
@@ -43,10 +59,28 @@ class Migration(migrations.Migration):
                 ('has_attachment', models.BooleanField(db_index=True, default=False)),
                 ('has_image', models.BooleanField(db_index=True, default=False)),
                 ('has_link', models.BooleanField(db_index=True, default=False)),
-                ('archive_timestamp', models.DateTimeField(db_index=True, default=django.utils.timezone.now)),
-                ('recipient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Recipient')),
-                ('sender', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('sending_client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Client')),
+                (
+                    'archive_timestamp',
+                    models.DateTimeField(db_index=True, default=django.utils.timezone.now),
+                ),
+                (
+                    'recipient',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Recipient'
+                    ),
+                ),
+                (
+                    'sender',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+                (
+                    'sending_client',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Client'
+                    ),
+                ),
             ],
             options={
                 'abstract': False,
@@ -56,11 +90,48 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ArchivedUserMessage',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('flags', bitfield.models.BitField(['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned', 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse', 'has_alert_word', 'historical', 'is_me_message'], default=0)),
-                ('archive_timestamp', models.DateTimeField(db_index=True, default=django.utils.timezone.now)),
-                ('message', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.ArchivedMessage')),
-                ('user_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
+                (
+                    'flags',
+                    bitfield.models.BitField(
+                        [
+                            'read',
+                            'starred',
+                            'collapsed',
+                            'mentioned',
+                            'wildcard_mentioned',
+                            'summarize_in_home',
+                            'summarize_in_stream',
+                            'force_expand',
+                            'force_collapse',
+                            'has_alert_word',
+                            'historical',
+                            'is_me_message',
+                        ],
+                        default=0,
+                    ),
+                ),
+                (
+                    'archive_timestamp',
+                    models.DateTimeField(db_index=True, default=django.utils.timezone.now),
+                ),
+                (
+                    'message',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to='zerver.ArchivedMessage'
+                    ),
+                ),
+                (
+                    'user_profile',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
             ],
             options={
                 'abstract': False,
@@ -75,12 +146,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='archivedattachment',
             name='owner',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
             model_name='archivedattachment',
             name='realm',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to='zerver.Realm',
+            ),
         ),
         migrations.AlterUniqueTogether(
             name='archivedusermessage',

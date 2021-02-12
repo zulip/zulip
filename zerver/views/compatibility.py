@@ -18,8 +18,9 @@ def pop_numerals(ver: str) -> Tuple[List[int], str]:
     numbers = [int(n) for n in numerals.split('.')]
     return numbers, rest
 
+
 def version_lt(ver1: str, ver2: str) -> Optional[bool]:
-    '''
+    """
     Compare two Zulip-style version strings.
 
     Versions are dot-separated sequences of decimal integers,
@@ -32,7 +33,7 @@ def version_lt(ver1: str, ver2: str) -> Optional[bool]:
       True if ver1 < ver2
       False if ver1 >= ver2
       None if can't tell.
-    '''
+    """
     num1, rest1 = pop_numerals(ver1)
     num2, rest2 = pop_numerals(ver2)
     if not num1 or not num2:
@@ -74,6 +75,7 @@ def find_mobile_os(user_agent: str) -> Optional[str]:
 # enabled on the user's Zulip server.
 android_min_app_version = '16.2.96'
 
+
 def check_global_compatibility(request: HttpRequest) -> HttpResponse:
     if request.META.get('HTTP_USER_AGENT') is None:
         return json_error(_('User-Agent header missing from request'))
@@ -86,10 +88,10 @@ def check_global_compatibility(request: HttpRequest) -> HttpResponse:
         return json_error(legacy_compatibility_error_message)
     if user_agent['name'] == "ZulipMobile":
         user_os = find_mobile_os(request.META["HTTP_USER_AGENT"])
-        if (user_os == 'android'
-                and version_lt(user_agent['version'], android_min_app_version)):
+        if user_os == 'android' and version_lt(user_agent['version'], android_min_app_version):
             return json_error(legacy_compatibility_error_message)
     return json_success()
+
 
 def is_outdated_desktop_app(user_agent_str: str) -> Tuple[bool, bool, bool]:
     # Returns (insecure, banned, auto_update_broken)
@@ -117,6 +119,7 @@ def is_outdated_desktop_app(user_agent_str: str) -> Tuple[bool, bool, bool]:
         return (True, False, False)
 
     return (False, False, False)
+
 
 def is_unsupported_browser(user_agent: str) -> Tuple[bool, Optional[str]]:
     browser_name = get_device_browser(user_agent)

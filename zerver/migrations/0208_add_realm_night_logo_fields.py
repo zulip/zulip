@@ -13,7 +13,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='realm',
             name='night_logo_source',
-            field=models.CharField(choices=[('D', 'Default to Zulip'), ('U', 'Uploaded by administrator')], default='D', max_length=1),
+            field=models.CharField(
+                choices=[('D', 'Default to Zulip'), ('U', 'Uploaded by administrator')],
+                default='D',
+                max_length=1,
+            ),
         ),
         migrations.AddField(
             model_name='realm',

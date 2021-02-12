@@ -19,27 +19,37 @@ This command should be used only on a newly created, empty Zulip instance to
 import a database dump from one or more JSON files."""
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('--destroy-rebuild-database',
-                            action="store_true",
-                            help='Destroys and rebuilds the databases prior to import.')
+        parser.add_argument(
+            '--destroy-rebuild-database',
+            action="store_true",
+            help='Destroys and rebuilds the databases prior to import.',
+        )
 
-        parser.add_argument('--import-into-nonempty',
-                            action="store_true",
-                            help='Import into an existing nonempty database.')
+        parser.add_argument(
+            '--import-into-nonempty',
+            action="store_true",
+            help='Import into an existing nonempty database.',
+        )
 
-        parser.add_argument('--allow-reserved-subdomain',
-                            action="store_true",
-                            help='Allow use of reserved subdomains')
+        parser.add_argument(
+            '--allow-reserved-subdomain',
+            action="store_true",
+            help='Allow use of reserved subdomains',
+        )
 
-        parser.add_argument('subdomain', metavar='<subdomain>',
-                            help="Subdomain")
+        parser.add_argument('subdomain', metavar='<subdomain>', help="Subdomain")
 
-        parser.add_argument('export_paths', nargs='+',
-                            metavar='<export path>',
-                            help="list of export directories to import")
-        parser.add_argument('--processes',
-                            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-                            help='Number of processes to use for uploading Avatars to S3 in parallel')
+        parser.add_argument(
+            'export_paths',
+            nargs='+',
+            metavar='<export path>',
+            help="list of export directories to import",
+        )
+        parser.add_argument(
+            '--processes',
+            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
+            help='Number of processes to use for uploading Avatars to S3 in parallel',
+        )
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def do_destroy_and_rebuild_database(self, db_name: str) -> None:
@@ -76,7 +86,9 @@ import a database dump from one or more JSON files."""
             if not os.path.exists(path):
                 raise CommandError(f"Directory not found: '{path}'")
             if not os.path.isdir(path):
-                raise CommandError("Export file should be folder; if it's a tarball, please unpack it first.")
+                raise CommandError(
+                    "Export file should be folder; if it's a tarball, please unpack it first."
+                )
             paths.append(path)
 
         for path in paths:

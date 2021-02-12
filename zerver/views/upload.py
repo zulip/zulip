@@ -27,6 +27,7 @@ def serve_s3(request: HttpRequest, url_path: str, url_only: bool) -> HttpRespons
 
     return redirect(url)
 
+
 def serve_local(request: HttpRequest, path_id: str, url_only: bool) -> HttpResponse:
     local_path = get_local_file_path(path_id)
     if local_path is None:
@@ -56,17 +57,22 @@ def serve_local(request: HttpRequest, path_id: str, url_only: bool) -> HttpRespo
     mimetype, encoding = guess_type(local_path)
     attachment = mimetype not in INLINE_MIME_TYPES
 
-    response = sendfile(request, local_path, attachment=attachment,
-                        mimetype=mimetype, encoding=encoding)
+    response = sendfile(
+        request, local_path, attachment=attachment, mimetype=mimetype, encoding=encoding
+    )
     patch_cache_control(response, private=True, immutable=True)
     return response
 
-def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
-                       realm_id_str: str, filename: str) -> HttpResponse:
+
+def serve_file_backend(
+    request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
+) -> HttpResponse:
     return serve_file(request, user_profile, realm_id_str, filename, url_only=False)
 
-def serve_file_url_backend(request: HttpRequest, user_profile: UserProfile,
-                           realm_id_str: str, filename: str) -> HttpResponse:
+
+def serve_file_url_backend(
+    request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
+) -> HttpResponse:
     """
     We should return a signed, short-lived URL
     that the client can use for native mobile download, rather than serving a redirect.
@@ -74,9 +80,14 @@ def serve_file_url_backend(request: HttpRequest, user_profile: UserProfile,
 
     return serve_file(request, user_profile, realm_id_str, filename, url_only=True)
 
-def serve_file(request: HttpRequest, user_profile: UserProfile,
-               realm_id_str: str, filename: str,
-               url_only: bool=False) -> HttpResponse:
+
+def serve_file(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    realm_id_str: str,
+    filename: str,
+    url_only: bool = False,
+) -> HttpResponse:
     path_id = f"{realm_id_str}/{filename}"
     is_authorized = validate_attachment_request(user_profile, path_id)
 
@@ -89,6 +100,7 @@ def serve_file(request: HttpRequest, user_profile: UserProfile,
 
     return serve_s3(request, path_id, url_only)
 
+
 def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -> HttpResponse:
     path_id = get_local_file_path_id_from_token(token)
     if path_id is None:
@@ -97,6 +109,7 @@ def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -
         return json_error(_("Invalid filename"))
 
     return serve_local(request, path_id, url_only=False)
+
 
 def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if len(request.FILES) == 0:
@@ -107,9 +120,11 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     user_file = list(request.FILES.values())[0]
     file_size = user_file.size
     if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
-        return json_error(_("Uploaded file is larger than the allowed limit of {} MiB").format(
-            settings.MAX_FILE_UPLOAD_SIZE,
-        ))
+        return json_error(
+            _("Uploaded file is larger than the allowed limit of {} MiB").format(
+                settings.MAX_FILE_UPLOAD_SIZE,
+            )
+        )
     check_upload_within_quota(user_profile.realm, file_size)
 
     uri = upload_message_image_from_request(request, user_file, user_profile)

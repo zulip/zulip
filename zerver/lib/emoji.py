@@ -30,9 +30,11 @@ EMOTICON_CONVERSIONS = emoji_codes["emoticon_conversions"]
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
 possible_emoticon_regexes = (re.escape(emoticon) for emoticon in possible_emoticons)
 terminal_symbols = ',.;?!()\\[\\] "\'\\n\\t'  # from composebox_typeahead.js
-emoticon_regex = (f'(?<![^{terminal_symbols}])(?P<emoticon>('
-                  + ')|('.join(possible_emoticon_regexes)
-                  + f'))(?![^{terminal_symbols}])')
+emoticon_regex = (
+    f'(?<![^{terminal_symbols}])(?P<emoticon>('
+    + ')|('.join(possible_emoticon_regexes)
+    + f'))(?![^{terminal_symbols}])'
+)
 
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
 def translate_emoticons(text: str) -> str:
@@ -42,6 +44,7 @@ def translate_emoticons(text: str) -> str:
         translated = re.sub(re.escape(emoticon), EMOTICON_CONVERSIONS[emoticon], translated)
 
     return translated
+
 
 def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
     realm_emojis = realm.get_active_emoji()
@@ -54,8 +57,8 @@ def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
         return name_to_codepoint[emoji_name], Reaction.UNICODE_EMOJI
     raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
 
-def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
-                        emoji_type: str) -> None:
+
+def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str, emoji_type: str) -> None:
     # For a given realm and emoji type, checks whether an emoji
     # code is valid for new reactions, or not.
     if emoji_type == "realm_emoji":
@@ -81,7 +84,8 @@ def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
         # The above are the only valid emoji types
         raise JsonableError(_("Invalid emoji type."))
 
-def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str]=None) -> None:
+
+def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str] = None) -> None:
     """Raises an exception if the user cannot administer the target realm
     emoji name in their organization."""
 
@@ -96,14 +100,15 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str]=None)
         return
 
     # Additionally, normal users can remove emoji they themselves added
-    emoji = RealmEmoji.objects.filter(realm=user_profile.realm,
-                                      name=emoji_name,
-                                      deactivated=False).first()
-    current_user_is_author = (emoji is not None and
-                              emoji.author is not None and
-                              emoji.author.id == user_profile.id)
+    emoji = RealmEmoji.objects.filter(
+        realm=user_profile.realm, name=emoji_name, deactivated=False
+    ).first()
+    current_user_is_author = (
+        emoji is not None and emoji.author is not None and emoji.author.id == user_profile.id
+    )
     if not user_profile.is_realm_admin and not current_user_is_author:
         raise JsonableError(_("Must be an organization administrator or emoji author"))
+
 
 def check_valid_emoji_name(emoji_name: str) -> None:
     if emoji_name:
@@ -111,6 +116,7 @@ def check_valid_emoji_name(emoji_name: str) -> None:
             return
         raise JsonableError(_("Invalid characters in emoji name"))
     raise JsonableError(_("Emoji name is missing"))
+
 
 def get_emoji_url(emoji_file_name: str, realm_id: int) -> str:
     return upload_backend.get_emoji_url(emoji_file_name, realm_id)

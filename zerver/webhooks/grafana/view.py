@@ -12,11 +12,13 @@ GRAFANA_TOPIC_TEMPLATE = '{alert_title}'
 
 GRAFANA_MESSAGE_TEMPLATE = '[{rule_name}]({rule_url})\n\n{alert_message}{eval_matches}'
 
+
 @webhook_view('Grafana')
 @has_request_variables
 def api_grafana_webhook(
-        request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Any]=REQ(argument_type='body'),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
 ) -> HttpResponse:
 
     topic = GRAFANA_TOPIC_TEMPLATE.format(alert_title=payload['title'])
@@ -31,13 +33,17 @@ def api_grafana_webhook(
     if payload.get('message') is not None:
         message_text = payload['message'] + "\n\n"
 
-    body = GRAFANA_MESSAGE_TEMPLATE.format(alert_message=message_text,
-                                           rule_name=payload['ruleName'],
-                                           rule_url=payload['ruleUrl'],
-                                           eval_matches=eval_matches_text)
+    body = GRAFANA_MESSAGE_TEMPLATE.format(
+        alert_message=message_text,
+        rule_name=payload['ruleName'],
+        rule_url=payload['ruleUrl'],
+        eval_matches=eval_matches_text,
+    )
 
     if payload.get('imageUrl') is not None:
-        body += "\n[Click to view visualization]({visualization})".format(visualization=payload['imageUrl'])
+        body += "\n[Click to view visualization]({visualization})".format(
+            visualization=payload['imageUrl']
+        )
 
     body = body.strip()
 

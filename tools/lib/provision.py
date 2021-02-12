@@ -52,8 +52,11 @@ with open("/proc/meminfo") as meminfo:
     ram_size = meminfo.readlines()[0].strip().split(" ")[-2]
 ram_gb = float(ram_size) / 1024.0 / 1024.0
 if ram_gb < 1.5:
-    print("You have insufficient RAM ({} GB) to run the Zulip development environment.".format(
-        round(ram_gb, 2)))
+    print(
+        "You have insufficient RAM ({} GB) to run the Zulip development environment.".format(
+            round(ram_gb, 2)
+        )
+    )
     print("We recommend at least 2 GB of RAM, and require at least 1.5 GB.")
     sys.exit(1)
 
@@ -68,10 +71,14 @@ try:
     )
     os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
 except OSError:
-    print(FAIL + "Error: Unable to create symlinks."
-          "Make sure you have permission to create symbolic links." + ENDC)
+    print(
+        FAIL + "Error: Unable to create symlinks."
+        "Make sure you have permission to create symbolic links." + ENDC
+    )
     print("See this page for more information:")
-    print("  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error")
+    print(
+        "  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error"
+    )
     sys.exit(1)
 
 if platform.architecture()[0] == '64bit':
@@ -79,7 +86,9 @@ if platform.architecture()[0] == '64bit':
 elif platform.architecture()[0] == '32bit':
     arch = "i386"
 else:
-    logging.critical("Only x86 is supported; ask on chat.zulip.org if you want another architecture.")
+    logging.critical(
+        "Only x86 is supported; ask on chat.zulip.org if you want another architecture."
+    )
     # Note: It's probably actually not hard to add additional
     # architectures.
     sys.exit(1)
@@ -117,15 +126,14 @@ COMMON_DEPENDENCIES = [
     "supervisor",
     "git",
     "wget",
-    "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
-    "puppet",               # Used by lint (`puppet parser validate`)
-    "gettext",              # Used by makemessages i18n
-    "transifex-client",     # Needed to sync translations from transifex
-    "curl",                 # Used for testing our API documentation
-    "moreutils",            # Used for sponge command
-    "unzip",                # Needed for Slack import
-    "crudini",              # Used for shell tooling w/ zulip.conf
-
+    "ca-certificates",  # Explicit dependency in case e.g. wget is already installed
+    "puppet",  # Used by lint (`puppet parser validate`)
+    "gettext",  # Used by makemessages i18n
+    "transifex-client",  # Needed to sync translations from transifex
+    "curl",  # Used for testing our API documentation
+    "moreutils",  # Used for sponge command
+    "unzip",  # Needed for Slack import
+    "crudini",  # Used for shell tooling w/ zulip.conf
     # Puppeteer dependencies from here
     "gconf-service",
     "libgconf-2-4",
@@ -218,6 +226,7 @@ REPO_STOPWORDS_PATH = os.path.join(
     "zulip_english.stop",
 )
 
+
 def install_system_deps() -> None:
 
     # By doing list -> set -> list conversion, we remove duplicates.
@@ -235,6 +244,7 @@ def install_system_deps() -> None:
     if BUILD_PGROONGA_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-pgroonga"])
 
+
 def install_apt_deps(deps_to_install: List[str]) -> None:
     # setup-apt-repo does an `apt-get update` if the sources.list files changed.
     run_as_root(["./scripts/lib/setup-apt-repo"])
@@ -246,10 +256,16 @@ def install_apt_deps(deps_to_install: List[str]) -> None:
     run_as_root(["apt-get", "update"])
     run_as_root(
         [
-            "env", "DEBIAN_FRONTEND=noninteractive",
-            "apt-get", "-y", "install", "--no-install-recommends", *deps_to_install,
+            "env",
+            "DEBIAN_FRONTEND=noninteractive",
+            "apt-get",
+            "-y",
+            "install",
+            "--no-install-recommends",
+            *deps_to_install,
         ]
     )
+
 
 def install_yum_deps(deps_to_install: List[str]) -> None:
     print(WARNING + "RedHat support is still experimental.")
@@ -285,8 +301,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         # Our tooling expects these PostgreSQL scripts to be at
         # well-known paths.  There's an argument for eventually
         # making our tooling auto-detect, but this is simpler.
-        run_as_root(["ln", "-nsf", f"/usr/{postgresql_dir}/bin/{cmd}",
-                     f"/usr/bin/{cmd}"])
+        run_as_root(["ln", "-nsf", f"/usr/{postgresql_dir}/bin/{cmd}", f"/usr/bin/{cmd}"])
 
     # From here, we do the first-time setup/initialization for the PostgreSQL database.
     pg_datadir = f"/var/lib/pgsql/{POSTGRESQL_VERSION}/data"
@@ -299,8 +314,10 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         # Skip setup if it has been applied previously
         return
 
-    run_as_root([f"/usr/{postgresql_dir}/bin/postgresql-{POSTGRESQL_VERSION}-setup", "initdb"],
-                sudo_args = ['-H'])
+    run_as_root(
+        [f"/usr/{postgresql_dir}/bin/postgresql-{POSTGRESQL_VERSION}-setup", "initdb"],
+        sudo_args=['-H'],
+    )
     # Use vendored pg_hba.conf, which enables password authentication.
     run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
     # Later steps will ensure PostgreSQL is started
@@ -314,6 +331,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         "/usr/share/myspell/en_US.aff",
         f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.affix",
     )
+
 
 def main(options: argparse.Namespace) -> "NoReturn":
 
@@ -346,7 +364,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
         hash_file.seek(0)
         last_apt_dependencies_hash = hash_file.read()
 
-    if (new_apt_dependencies_hash != last_apt_dependencies_hash):
+    if new_apt_dependencies_hash != last_apt_dependencies_hash:
         try:
             install_system_deps()
         except subprocess.CalledProcessError:
@@ -365,7 +383,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
         "https_proxy=" + os.environ.get("https_proxy", ""),
         "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
-    run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args = ['-H'])
+    run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=['-H'])
 
     if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
         run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
@@ -380,9 +398,11 @@ def main(options: argparse.Namespace) -> "NoReturn":
         try:
             setup_node_modules()
         except subprocess.CalledProcessError:
-            print(FAIL +
-                  "`yarn install` is failing; check your network connection (and proxy settings)."
-                  + ENDC)
+            print(
+                FAIL
+                + "`yarn install` is failing; check your network connection (and proxy settings)."
+                + ENDC
+            )
             sys.exit(1)
 
     # Install shellcheck.
@@ -402,9 +422,14 @@ def main(options: argparse.Namespace) -> "NoReturn":
     elif "fedora" in os_families():
         # These platforms don't enable and start services on
         # installing their package, so we do that here.
-        for service in [f"postgresql-{POSTGRESQL_VERSION}", "rabbitmq-server", "memcached", "redis"]:
-            run_as_root(["systemctl", "enable", service], sudo_args = ['-H'])
-            run_as_root(["systemctl", "start", service], sudo_args = ['-H'])
+        for service in [
+            f"postgresql-{POSTGRESQL_VERSION}",
+            "rabbitmq-server",
+            "memcached",
+            "redis",
+        ]:
+            run_as_root(["systemctl", "enable", service], sudo_args=['-H'])
+            run_as_root(["systemctl", "start", service], sudo_args=['-H'])
 
     # If we imported modules after activating the virtualenv in this
     # Python process, they could end up mismatching with modules we’ve
@@ -426,18 +451,27 @@ def main(options: argparse.Namespace) -> "NoReturn":
         ],
     )
 
+
 if __name__ == "__main__":
-    description = ("Provision script to install Zulip")
+    description = "Provision script to install Zulip"
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('--force', action='store_true', dest='is_force',
-                        help="Ignore all provisioning optimizations.")
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        dest='is_force',
+        help="Ignore all provisioning optimizations.",
+    )
 
-    parser.add_argument('--build-release-tarball-only', action='store_true',
-                        dest='is_build_release_tarball_only',
-                        help="Provision needed to build release tarball.")
+    parser.add_argument(
+        '--build-release-tarball-only',
+        action='store_true',
+        dest='is_build_release_tarball_only',
+        help="Provision needed to build release tarball.",
+    )
 
-    parser.add_argument('--skip-dev-db-build', action='store_true',
-                        help="Don't run migrations on dev database.")
+    parser.add_argument(
+        '--skip-dev-db-build', action='store_true', help="Don't run migrations on dev database."
+    )
 
     options = parser.parse_args()
     main(options)

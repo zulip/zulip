@@ -16,20 +16,15 @@ class WidgetContentTestCase(ZulipTestCase):
             with self.assertRaisesRegex(ValidationError, re.escape(msg)):
                 check_widget_content(obj)
 
-        assert_error(5,
-                     'widget_content is not a dict')
+        assert_error(5, 'widget_content is not a dict')
 
-        assert_error({},
-                     'widget_type is not in widget_content')
+        assert_error({}, 'widget_type is not in widget_content')
 
-        assert_error(dict(widget_type='whatever'),
-                     'extra_data is not in widget_content')
+        assert_error(dict(widget_type='whatever'), 'extra_data is not in widget_content')
 
-        assert_error(dict(widget_type='zform', extra_data=4),
-                     'extra_data is not a dict')
+        assert_error(dict(widget_type='zform', extra_data=4), 'extra_data is not a dict')
 
-        assert_error(dict(widget_type='bogus', extra_data={}),
-                     'unknown widget type: bogus')
+        assert_error(dict(widget_type='bogus', extra_data={}), 'unknown widget type: bogus')
 
         extra_data: Dict[str, Any] = {}
         obj = dict(widget_type='zform', extra_data=extra_data)

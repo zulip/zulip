@@ -13,9 +13,15 @@ except ImportError:
     print('ERROR!!! You need to run this via tools/test-tools.')
     sys.exit(1)
 
+
 class ParserTest(unittest.TestCase):
-    def _assert_validate_error(self, error: str, fn: Optional[str]=None,
-                               text: Optional[str]=None, check_indent: bool=True) -> None:
+    def _assert_validate_error(
+        self,
+        error: str,
+        fn: Optional[str] = None,
+        text: Optional[str] = None,
+        check_indent: bool = True,
+    ) -> None:
         with self.assertRaisesRegex(TemplateParserException, error):
             validate(fn=fn, text=text, check_indent=check_indent)
 
@@ -24,10 +30,10 @@ class ParserTest(unittest.TestCase):
         self.assertFalse(is_django_block_tag('not a django tag'))
 
     def test_validate_vanilla_html(self) -> None:
-        '''
+        """
         Verify that validate() does not raise errors for
         well-formed HTML.
-        '''
+        """
         my_html = '''
             <table>
                 <tr>
@@ -99,8 +105,11 @@ class ParserTest(unittest.TestCase):
         my_html = '''
             {{# foo
         '''
-        self._assert_validate_error('''Tag missing "}}" at Line 2 Col 13:"{{# foo
-        "''', text=my_html)
+        self._assert_validate_error(
+            '''Tag missing "}}" at Line 2 Col 13:"{{# foo
+        "''',
+            text=my_html,
+        )
 
     def test_validate_incomplete_handlebars_tag_2(self) -> None:
         my_html = '''
@@ -112,8 +121,11 @@ class ParserTest(unittest.TestCase):
         my_html = '''
             {% foo
         '''
-        self._assert_validate_error('''Tag missing "%}" at Line 2 Col 13:"{% foo
-        "''', text=my_html)
+        self._assert_validate_error(
+            '''Tag missing "%}" at Line 2 Col 13:"{% foo
+        "''',
+            text=my_html,
+        )
 
     def test_validate_incomplete_django_tag_2(self) -> None:
         my_html = '''
@@ -125,8 +137,11 @@ class ParserTest(unittest.TestCase):
         my_html = '''
             <b
         '''
-        self._assert_validate_error('''Tag missing ">" at Line 2 Col 13:"<b
-        "''', text=my_html)
+        self._assert_validate_error(
+            '''Tag missing ">" at Line 2 Col 13:"<b
+        "''',
+            text=my_html,
+        )
 
     def test_validate_incomplete_html_tag_2(self) -> None:
         my_html = '''
@@ -135,10 +150,16 @@ class ParserTest(unittest.TestCase):
         my_html1 = '''
             <a href=""
         '''
-        self._assert_validate_error('''Tag missing ">" at Line 2 Col 13:"<a href=""
-        "''', text=my_html1)
-        self._assert_validate_error('''Unbalanced Quotes at Line 2 Col 13:"<a href="
-        "''', text=my_html)
+        self._assert_validate_error(
+            '''Tag missing ">" at Line 2 Col 13:"<a href=""
+        "''',
+            text=my_html1,
+        )
+        self._assert_validate_error(
+            '''Unbalanced Quotes at Line 2 Col 13:"<a href="
+        "''',
+            text=my_html,
+        )
 
     def test_validate_empty_html_tag(self) -> None:
         my_html = '''

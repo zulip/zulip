@@ -44,5 +44,6 @@ def generate_zulip_bots_static_files() -> None:
     docs = glob.glob(doc_glob_pattern)
     copyfiles(docs)
 
+
 if __name__ == "__main__":
     generate_zulip_bots_static_files()

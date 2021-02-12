@@ -32,11 +32,10 @@ GitterDataT = List[Dict[str, Any]]
 
 realm_id = 0
 
-def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
-                              realm_subdomain: str) -> Tuple[ZerverFieldsT,
-                                                             List[ZerverFieldsT],
-                                                             Dict[str, int],
-                                                             Dict[str, int]]:
+
+def gitter_workspace_to_realm(
+    domain_name: str, gitter_data: GitterDataT, realm_subdomain: str
+) -> Tuple[ZerverFieldsT, List[ZerverFieldsT], Dict[str, int], Dict[str, int]]:
     """
     Returns:
     1. realm, converted realm data
@@ -51,7 +50,8 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
     zerver_userprofile, avatars, user_map = build_userprofile(int(NOW), domain_name, gitter_data)
     zerver_stream, zerver_defaultstream, stream_map = build_stream_map(int(NOW), gitter_data)
     zerver_recipient, zerver_subscription = build_recipient_and_subscription(
-        zerver_userprofile, zerver_stream)
+        zerver_userprofile, zerver_stream
+    )
 
     realm['zerver_userprofile'] = zerver_userprofile
     realm['zerver_stream'] = zerver_stream
@@ -61,10 +61,10 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
 
     return realm, avatars, user_map, stream_map
 
-def build_userprofile(timestamp: Any, domain_name: str,
-                      gitter_data: GitterDataT) -> Tuple[List[ZerverFieldsT],
-                                                         List[ZerverFieldsT],
-                                                         Dict[str, int]]:
+
+def build_userprofile(
+    timestamp: Any, domain_name: str, gitter_data: GitterDataT
+) -> Tuple[List[ZerverFieldsT], List[ZerverFieldsT], Dict[str, int]]:
     """
     Returns:
     1. zerver_userprofile, which is a list of user profile
@@ -83,8 +83,7 @@ def build_userprofile(timestamp: Any, domain_name: str,
             user_map[user_data['id']] = user_id
 
             email = get_user_email(user_data, domain_name)
-            build_avatar(user_id, realm_id, email, user_data['avatarUrl'],
-                         timestamp, avatar_list)
+            build_avatar(user_id, realm_id, email, user_data['avatarUrl'], timestamp, avatar_list)
 
             # Build userprofile object
             userprofile = UserProfile(
@@ -94,7 +93,8 @@ def build_userprofile(timestamp: Any, domain_name: str,
                 delivery_email=email,
                 avatar_source='U',
                 date_joined=timestamp,
-                last_login=timestamp)
+                last_login=timestamp,
+            )
             userprofile_dict = model_to_dict(userprofile)
             # Set realm id separately as the corresponding realm is not yet a Realm model
             # instance
@@ -109,15 +109,16 @@ def build_userprofile(timestamp: Any, domain_name: str,
     logging.info('######### IMPORTING USERS FINISHED #########\n')
     return zerver_userprofile, avatar_list, user_map
 
+
 def get_user_email(user_data: ZerverFieldsT, domain_name: str) -> str:
     # TODO Get user email from github
-    email = ("{}@users.noreply.github.com".format(user_data['username']))
+    email = "{}@users.noreply.github.com".format(user_data['username'])
     return email
 
-def build_stream_map(timestamp: Any,
-                     gitter_data: GitterDataT) -> Tuple[List[ZerverFieldsT],
-                                                        List[ZerverFieldsT],
-                                                        Dict[str, int]]:
+
+def build_stream_map(
+    timestamp: Any, gitter_data: GitterDataT
+) -> Tuple[List[ZerverFieldsT], List[ZerverFieldsT], Dict[str, int]]:
     """
     Returns:
     1. stream, which is the list of streams
@@ -129,28 +130,31 @@ def build_stream_map(timestamp: Any,
     stream: List[ZerverFieldsT] = []
 
     # Default stream when no "room" field is present
-    stream.append(build_stream(timestamp, realm_id, 'from gitter',
-                               "Imported from Gitter", stream_id))
-    defaultstream = build_defaultstream(realm_id=realm_id, stream_id=stream_id,
-                                        defaultstream_id=0)
+    stream.append(
+        build_stream(timestamp, realm_id, 'from gitter', "Imported from Gitter", stream_id)
+    )
+    defaultstream = build_defaultstream(realm_id=realm_id, stream_id=stream_id, defaultstream_id=0)
     stream_id += 1
 
     # Gathering streams from gitter_data
     stream_map: Dict[str, int] = {}
     for data in gitter_data:
         if 'room' in data and data['room'] not in stream_map:
-            stream.append(build_stream(timestamp, realm_id, data['room'],
-                                       f'Gitter room {data["room"]}', stream_id))
+            stream.append(
+                build_stream(
+                    timestamp, realm_id, data['room'], f'Gitter room {data["room"]}', stream_id
+                )
+            )
             stream_map[data['room']] = stream_id
             stream_id += 1
     logging.info('######### IMPORTING STREAMS FINISHED #########\n')
 
     return stream, [defaultstream], stream_map
 
+
 def build_recipient_and_subscription(
-    zerver_userprofile: List[ZerverFieldsT],
-    zerver_stream: List[ZerverFieldsT]) -> Tuple[List[ZerverFieldsT],
-                                                 List[ZerverFieldsT]]:
+    zerver_userprofile: List[ZerverFieldsT], zerver_stream: List[ZerverFieldsT]
+) -> Tuple[List[ZerverFieldsT], List[ZerverFieldsT]]:
     """
     Assumes that there is at least one stream with 'stream_id' = 0,
       and that this stream is the only defaultstream, with 'defaultstream_id' = 0
@@ -185,17 +189,23 @@ def build_recipient_and_subscription(
     # based either on Gitter API data or who sent messages where.
     for user in zerver_userprofile:
         for stream in zerver_stream:
-            zerver_subscription.append(build_subscription(stream['id'], user['id'], subscription_id))
+            zerver_subscription.append(
+                build_subscription(stream['id'], user['id'], subscription_id)
+            )
             subscription_id += 1
 
     return zerver_recipient, zerver_subscription
 
-def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
-                                      subscriber_map: Dict[int, Set[int]],
-                                      user_map: Dict[str, int],
-                                      stream_map: Dict[str, int],
-                                      user_short_name_to_full_name: Dict[str, str],
-                                      chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> None:
+
+def convert_gitter_workspace_messages(
+    gitter_data: GitterDataT,
+    output_dir: str,
+    subscriber_map: Dict[int, Set[int]],
+    user_map: Dict[str, int],
+    stream_map: Dict[str, int],
+    user_short_name_to_full_name: Dict[str, str],
+    chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
+) -> None:
     """
     Messages are stored in batches
     """
@@ -210,19 +220,27 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
         message_json = {}
         zerver_message = []
         zerver_usermessage: List[ZerverFieldsT] = []
-        message_data = gitter_data[low_index: upper_index]
+        message_data = gitter_data[low_index:upper_index]
         if len(message_data) == 0:
             break
         for message in message_data:
             message_time = dateutil.parser.parse(message['sent']).timestamp()
-            mentioned_user_ids = get_usermentions(message, user_map,
-                                                  user_short_name_to_full_name)
+            mentioned_user_ids = get_usermentions(message, user_map, user_short_name_to_full_name)
             rendered_content = None
-            topic_name = 'imported from Gitter' + (f' room {message["room"]}' if 'room' in message else '')
+            topic_name = 'imported from Gitter' + (
+                f' room {message["room"]}' if 'room' in message else ''
+            )
             user_id = user_map[message['fromUser']['id']]
             recipient_id = stream_map[message['room']] if 'room' in message else 0
-            zulip_message = build_message(topic_name, float(message_time), message_id, message['text'],
-                                          rendered_content, user_id, recipient_id)
+            zulip_message = build_message(
+                topic_name,
+                float(message_time),
+                message_id,
+                message['text'],
+                rendered_content,
+                user_id,
+                recipient_id,
+            )
             zerver_message.append(zulip_message)
 
             build_usermessages(
@@ -248,26 +266,31 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
 
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
 
-def get_usermentions(message: Dict[str, Any], user_map: Dict[str, int],
-                     user_short_name_to_full_name: Dict[str, str]) -> List[int]:
+
+def get_usermentions(
+    message: Dict[str, Any], user_map: Dict[str, int], user_short_name_to_full_name: Dict[str, str]
+) -> List[int]:
     mentioned_user_ids = []
     if 'mentions' in message:
         for mention in message['mentions']:
             if mention.get('userId') in user_map:
                 gitter_mention = '@{}'.format(mention['screenName'])
                 if mention['screenName'] not in user_short_name_to_full_name:
-                    logging.info("Mentioned user %s never sent any messages, so has no full name data",
-                                 mention['screenName'])
+                    logging.info(
+                        "Mentioned user %s never sent any messages, so has no full name data",
+                        mention['screenName'],
+                    )
                     full_name = mention['screenName']
                 else:
                     full_name = user_short_name_to_full_name[mention['screenName']]
-                zulip_mention = (f'@**{full_name}**')
+                zulip_mention = f'@**{full_name}**'
                 message['text'] = message['text'].replace(gitter_mention, zulip_mention)
 
                 mentioned_user_ids.append(user_map[mention['userId']])
     return mentioned_user_ids
 
-def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> None:
+
+def do_convert_data(gitter_data_file: str, output_dir: str, threads: int = 6) -> None:
     #  Subdomain is set by the user while running the import commands
     realm_subdomain = ""
     domain_name = settings.EXTERNAL_HOST
@@ -282,7 +305,8 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
         gitter_data = orjson.loads(fp.read())
 
     realm, avatar_list, user_map, stream_map = gitter_workspace_to_realm(
-        domain_name, gitter_data, realm_subdomain)
+        domain_name, gitter_data, realm_subdomain
+    )
 
     subscriber_map = make_subscriber_map(
         zerver_subscription=realm['zerver_subscription'],
@@ -294,8 +318,8 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
         user_short_name_to_full_name[userprofile['short_name']] = userprofile['full_name']
 
     convert_gitter_workspace_messages(
-        gitter_data, output_dir, subscriber_map, user_map, stream_map,
-        user_short_name_to_full_name)
+        gitter_data, output_dir, subscriber_map, user_map, stream_map, user_short_name_to_full_name
+    )
 
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
@@ -319,6 +343,7 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
     logging.info("Zulip data dump created at %s", output_dir)
+
 
 def write_data_to_file(output_file: str, data: Any) -> None:
     with open(output_file, "wb") as f:

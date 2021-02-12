@@ -11,12 +11,13 @@ from zerver.models import UserProfile
 
 
 @has_request_variables
-def process_submessage(request: HttpRequest,
-                       user_profile: UserProfile,
-                       message_id: int=REQ(validator=check_int),
-                       msg_type: str=REQ(),
-                       content: str=REQ(),
-                       ) -> HttpResponse:
+def process_submessage(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message_id: int = REQ(validator=check_int),
+    msg_type: str = REQ(),
+    content: str = REQ(),
+) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id)
 
     try:

@@ -5,10 +5,10 @@ from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def remove_prereg_users_without_realm(
-        apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def remove_prereg_users_without_realm(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     prereg_model = apps.get_model("zerver", "PreregistrationUser")
     prereg_model.objects.filter(realm=None, realm_creation=False).delete()
+
 
 class Migration(migrations.Migration):
 
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(remove_prereg_users_without_realm,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            remove_prereg_users_without_realm, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

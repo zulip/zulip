@@ -18,6 +18,7 @@ class MarkdownIncludeCustom(MarkdownInclude):
             500,
         )
 
+
 class IncludeCustomPreprocessor(IncludePreprocessor):
     """
     This is a custom implementation of the markdown_include
@@ -56,12 +57,13 @@ class IncludeCustomPreprocessor(IncludePreprocessor):
                         text[i] = text[i].rstrip('\r\n')
                     text[0] = line_split[0] + text[0]
                     text[-1] = text[-1] + line_split[2]
-                    lines = lines[:loc] + text + lines[loc+1:]
+                    lines = lines[:loc] + text + lines[loc + 1 :]
                     break
             else:
                 done = True
 
         return lines
+
 
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownIncludeCustom:
     return MarkdownIncludeCustom(kwargs)

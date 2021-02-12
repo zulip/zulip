@@ -9,6 +9,7 @@ def change_emojiset_choice(apps: StateApps, schema_editor: DatabaseSchemaEditor)
     UserProfile = apps.get_model('zerver', 'UserProfile')
     UserProfile.objects.filter(emojiset='google').update(emojiset='google-blob')
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -19,10 +20,18 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='userprofile',
             name='emojiset',
-            field=models.CharField(choices=[('google', 'Google modern'), ('google-blob', 'Google classic'), ('twitter', 'Twitter'), ('text', 'Plain text')], default='google-blob', max_length=20),
+            field=models.CharField(
+                choices=[
+                    ('google', 'Google modern'),
+                    ('google-blob', 'Google classic'),
+                    ('twitter', 'Twitter'),
+                    ('text', 'Plain text'),
+                ],
+                default='google-blob',
+                max_length=20,
+            ),
         ),
         migrations.RunPython(
-            change_emojiset_choice,
-            reverse_code=migrations.RunPython.noop,
-            elidable=True),
+            change_emojiset_choice, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

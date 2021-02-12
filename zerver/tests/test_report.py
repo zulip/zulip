@@ -15,6 +15,7 @@ def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:
     # individual parameters serialized as JSON.
     return {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
 
+
 class StatsMock:
     def __init__(self, settings: Callable[..., Any]) -> None:
         self.settings = settings
@@ -28,6 +29,7 @@ class StatsMock:
             self.func_calls.append((name, args))
 
         return f
+
 
 class TestReport(ZulipTestCase):
     def test_send_time(self) -> None:
@@ -137,15 +139,17 @@ class TestReport(ZulipTestCase):
         self.login_user(user)
         self.make_stream('errors', user.realm)
 
-        params = fix_params(dict(
-            message='hello',
-            stacktrace='trace',
-            ui_message=True,
-            user_agent='agent',
-            href='href',
-            log='log',
-            more_info=dict(foo='bar', draft_content="**draft**"),
-        ))
+        params = fix_params(
+            dict(
+                message='hello',
+                stacktrace='trace',
+                ui_message=True,
+                user_agent='agent',
+                href='href',
+                log='log',
+                more_info=dict(foo='bar', draft_content="**draft**"),
+            )
+        )
 
         subprocess_mock = mock.patch(
             'zerver.views.report.subprocess.check_output',
@@ -175,35 +179,38 @@ class TestReport(ZulipTestCase):
         # If js_source_map is present, then the stack trace should be annotated.
         # DEVELOPMENT=False and TEST_SUITE=False are necessary to ensure that
         # js_source_map actually gets instantiated.
-        with \
-                self.settings(DEVELOPMENT=False, TEST_SUITE=False), \
-                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate, \
-                self.assertLogs(level='INFO') as info_logs:
+        with self.settings(DEVELOPMENT=False, TEST_SUITE=False), mock.patch(
+            'zerver.lib.unminify.SourceMap.annotate_stacktrace'
+        ) as annotate, self.assertLogs(level='INFO') as info_logs:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
         # fix_params (see above) adds quotes when JSON encoding.
         annotate.assert_called_once_with('"trace"')
-        self.assertEqual(info_logs.output, [
-            'INFO:root:Processing traceback with type browser for None'
-        ])
+        self.assertEqual(
+            info_logs.output, ['INFO:root:Processing traceback with type browser for None']
+        )
 
         # Now test without authentication.
         self.logout()
-        with \
-                self.settings(DEVELOPMENT=False, TEST_SUITE=False), \
-                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate, \
-                self.assertLogs(level='INFO') as info_logs:
+        with self.settings(DEVELOPMENT=False, TEST_SUITE=False), mock.patch(
+            'zerver.lib.unminify.SourceMap.annotate_stacktrace'
+        ) as annotate, self.assertLogs(level='INFO') as info_logs:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
-        self.assertEqual(info_logs.output, [
-            'INFO:root:Processing traceback with type browser for None'
-        ])
+        self.assertEqual(
+            info_logs.output, ['INFO:root:Processing traceback with type browser for None']
+        )
 
     def test_report_csp_violations(self) -> None:
         fixture_data = self.fixture_data('csp_report.json')
         with self.assertLogs(level='WARNING') as warn_logs:
-            result = self.client_post("/report/csp_violations", fixture_data, content_type="application/json")
+            result = self.client_post(
+                "/report/csp_violations", fixture_data, content_type="application/json"
+            )
         self.assert_json_success(result)
-        self.assertEqual(warn_logs.output, [
-            "WARNING:root:CSP Violation in Document(''). Blocked URI(''), Original Policy(''), Violated Directive(''), Effective Directive(''), Disposition(''), Referrer(''), Status Code(''), Script Sample('')"
-        ])
+        self.assertEqual(
+            warn_logs.output,
+            [
+                "WARNING:root:CSP Violation in Document(''). Blocked URI(''), Original Policy(''), Violated Directive(''), Effective Directive(''), Disposition(''), Referrer(''), Status Code(''), Script Sample('')"
+            ],
+        )

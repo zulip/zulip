@@ -22,6 +22,7 @@ def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
         user_profiles.append(user_profile)
     return user_profiles
 
+
 def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[UserProfile]:
     user_profiles: List[UserProfile] = []
     for user_id in user_ids:
@@ -32,6 +33,7 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
         user_profiles.append(user_profile)
     return user_profiles
 
+
 def validate_topic(topic: str) -> str:
     assert topic is not None
     topic = topic.strip()
@@ -39,6 +41,7 @@ def validate_topic(topic: str) -> str:
         raise JsonableError(_("Topic can't be empty"))
 
     return topic
+
 
 class Addressee:
     # This is really just a holder for vars that tended to be passed
@@ -52,13 +55,16 @@ class Addressee:
     # in memory.
     #
     # This should be treated as an immutable class.
-    def __init__(self, msg_type: str,
-                 user_profiles: Optional[Sequence[UserProfile]]=None,
-                 stream: Optional[Stream]=None,
-                 stream_name: Optional[str]=None,
-                 stream_id: Optional[int]=None,
-                 topic: Optional[str]=None) -> None:
-        assert(msg_type in ['stream', 'private'])
+    def __init__(
+        self,
+        msg_type: str,
+        user_profiles: Optional[Sequence[UserProfile]] = None,
+        stream: Optional[Stream] = None,
+        stream_name: Optional[str] = None,
+        stream_id: Optional[int] = None,
+        topic: Optional[str] = None,
+    ) -> None:
+        assert msg_type in ['stream', 'private']
         if msg_type == 'stream' and topic is None:
             raise JsonableError(_("Missing topic"))
         self._msg_type = msg_type
@@ -75,33 +81,35 @@ class Addressee:
         return self._msg_type == 'private'
 
     def user_profiles(self) -> Sequence[UserProfile]:
-        assert(self.is_private())
+        assert self.is_private()
         assert self._user_profiles is not None
         return self._user_profiles
 
     def stream(self) -> Optional[Stream]:
-        assert(self.is_stream())
+        assert self.is_stream()
         return self._stream
 
     def stream_name(self) -> Optional[str]:
-        assert(self.is_stream())
+        assert self.is_stream()
         return self._stream_name
 
     def stream_id(self) -> Optional[int]:
-        assert(self.is_stream())
+        assert self.is_stream()
         return self._stream_id
 
     def topic(self) -> str:
-        assert(self.is_stream())
-        assert(self._topic is not None)
+        assert self.is_stream()
+        assert self._topic is not None
         return self._topic
 
     @staticmethod
-    def legacy_build(sender: UserProfile,
-                     message_type_name: str,
-                     message_to: Union[Sequence[int], Sequence[str]],
-                     topic_name: Optional[str],
-                     realm: Optional[Realm]=None) -> 'Addressee':
+    def legacy_build(
+        sender: UserProfile,
+        message_type_name: str,
+        message_to: Union[Sequence[int], Sequence[str]],
+        topic_name: Optional[str],
+        realm: Optional[Realm] = None,
+    ) -> 'Addressee':
 
         # For legacy reason message_to used to be either a list of
         # emails or a list of streams.  We haven't fixed all of our

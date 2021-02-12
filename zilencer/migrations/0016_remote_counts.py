@@ -14,26 +14,46 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='RemoteInstallationCount',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('property', models.CharField(max_length=32)),
                 ('subgroup', models.CharField(max_length=16, null=True)),
                 ('end_time', models.DateTimeField()),
                 ('value', models.BigIntegerField()),
                 ('remote_id', models.IntegerField(db_index=True)),
-                ('server', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zilencer.RemoteZulipServer')),
+                (
+                    'server',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to='zilencer.RemoteZulipServer'
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
             name='RemoteRealmCount',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('property', models.CharField(max_length=32)),
                 ('subgroup', models.CharField(max_length=16, null=True)),
                 ('end_time', models.DateTimeField()),
                 ('value', models.BigIntegerField()),
                 ('realm_id', models.IntegerField(db_index=True)),
                 ('remote_id', models.IntegerField(db_index=True)),
-                ('server', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zilencer.RemoteZulipServer')),
+                (
+                    'server',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to='zilencer.RemoteZulipServer'
+                    ),
+                ),
             ],
         ),
         migrations.AlterUniqueTogether(

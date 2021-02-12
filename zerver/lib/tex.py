@@ -8,7 +8,7 @@ from django.conf import settings
 from zerver.lib.storage import static_path
 
 
-def render_tex(tex: str, is_inline: bool=True) -> Optional[str]:
+def render_tex(tex: str, is_inline: bool = True) -> Optional[str]:
     r"""Render a TeX string into HTML using KaTeX
 
     Returns the HTML string, or None if there was some error in the TeX syntax

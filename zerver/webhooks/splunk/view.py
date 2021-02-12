@@ -17,10 +17,14 @@ Splunk alert from saved search:
 * **Raw**: `{raw}`
 """.strip()
 
+
 @webhook_view('Splunk')
 @has_request_variables
-def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_splunk_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
 
     # use default values if expected data is not provided
     search_name = payload.get('search_name', 'Missing search_name')
@@ -37,8 +41,11 @@ def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
 
     # construct the message body
     body = MESSAGE_TEMPLATE.format(
-        search=search_name, link=results_link,
-        host=host, source=source, raw=raw,
+        search=search_name,
+        link=results_link,
+        host=host,
+        source=source,
+        raw=raw,
     )
 
     # send the message

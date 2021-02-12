@@ -6,6 +6,7 @@ import subprocess
 class DiffException(Exception):
     pass
 
+
 def diff_strings(output: str, expected_output: str) -> str:
 
     mdiff_path = "frontend_tests/zjsunit/mdiff.js"

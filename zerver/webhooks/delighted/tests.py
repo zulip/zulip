@@ -25,10 +25,12 @@ Your service is fast and flawless!
 
     def test_feedback_message_non_promoter(self) -> None:
         expected_topic = "Survey Response"
-        expected_message = ("Great! You have new feedback.\n"
-                            ">Score of 5/10 from paul_gravis@example.com"
-                            "\n>Your service is slow, but nearly flawless! "
-                            "Keep up the good work!")
+        expected_message = (
+            "Great! You have new feedback.\n"
+            ">Score of 5/10 from paul_gravis@example.com"
+            "\n>Your service is slow, but nearly flawless! "
+            "Keep up the good work!"
+        )
         expected_message = """
 Great! You have new feedback. Score of 5/10 from paul_gravis@example.com:
 

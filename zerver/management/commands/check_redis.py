@@ -16,12 +16,14 @@ class Command(BaseCommand):
     Usage: ./manage.py [--trim] check_redis"""
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('-t', '--trim',
-                            action='store_true',
-                            help="Actually trim excess")
+        parser.add_argument('-t', '--trim', action='store_true', help="Actually trim excess")
 
-    def _check_within_range(self, key: str, count_func: Callable[[], int],
-                            trim_func: Optional[Callable[[str, int], object]]=None) -> None:
+    def _check_within_range(
+        self,
+        key: str,
+        count_func: Callable[[], int],
+        trim_func: Optional[Callable[[str, int], object]] = None,
+    ) -> None:
         user_id = int(key.split(':')[1])
         user = get_user_profile_by_id(user_id)
         entity = RateLimitedUser(user)
@@ -33,8 +35,12 @@ class Command(BaseCommand):
 
         count = count_func()
         if count > max_calls:
-            logging.error("Redis health check found key with more elements \
-than max_api_calls! (trying to trim) %s %s", key, count)
+            logging.error(
+                "Redis health check found key with more elements \
+than max_api_calls! (trying to trim) %s %s",
+                key,
+                count,
+            )
             if trim_func is not None:
                 client.expire(key, entity.max_api_window())
                 trim_func(key, max_calls)
@@ -47,17 +53,15 @@ than max_api_calls! (trying to trim) %s %s", key, count)
         wildcard_list = "ratelimit:*:*:list"
         wildcard_zset = "ratelimit:*:*:zset"
 
-        trim_func: Optional[
-            Callable[[str, int], object]
-        ] = lambda key, max_calls: client.ltrim(key, 0, max_calls - 1)
+        trim_func: Optional[Callable[[str, int], object]] = lambda key, max_calls: client.ltrim(
+            key, 0, max_calls - 1
+        )
         if not options['trim']:
             trim_func = None
 
         lists = client.keys(wildcard_list)
         for list_name in lists:
-            self._check_within_range(list_name,
-                                     lambda: client.llen(list_name),
-                                     trim_func)
+            self._check_within_range(list_name, lambda: client.llen(list_name), trim_func)
 
         zsets = client.keys(wildcard_zset)
         for zset in zsets:
@@ -65,6 +69,6 @@ than max_api_calls! (trying to trim) %s %s", key, count)
             # We can warn on our zset being too large, but we don't know what
             # elements to trim. We'd have to go through every list item and take
             # the intersection. The best we can do is expire it
-            self._check_within_range(zset,
-                                     lambda: client.zcount(zset, 0, now),
-                                     lambda key, max_calls: None)
+            self._check_within_range(
+                zset, lambda: client.zcount(zset, 0, now), lambda key, max_calls: None
+            )

@@ -51,20 +51,20 @@ class EventsEndpointTest(ZulipTestCase):
         # We choose realm_emoji somewhat randomly--we want
         # a "boring" event type for the purpose of this test.
         event_type = 'realm_emoji'
-        test_event = dict(
-            id=6,
-            type=event_type,
-            realm_emoji=[]
-        )
+        test_event = dict(id=6, type=event_type, realm_emoji=[])
 
         # Test that call is made to deal with a returning soft deactivated user.
         with mock.patch('zerver.lib.events.reactivate_user_if_soft_deactivated') as fa:
             with stub_event_queue_user_events(return_event_queue, return_user_events):
-                result = self.api_post(user, '/json/register', dict(event_types=orjson.dumps([event_type]).decode()))
+                result = self.api_post(
+                    user, '/json/register', dict(event_types=orjson.dumps([event_type]).decode())
+                )
                 self.assertEqual(fa.call_count, 1)
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.api_post(user, '/json/register', dict(event_types=orjson.dumps([event_type]).decode()))
+            result = self.api_post(
+                user, '/json/register', dict(event_types=orjson.dumps([event_type]).decode())
+            )
 
         self.assert_json_success(result)
         result_dict = result.json()
@@ -76,7 +76,9 @@ class EventsEndpointTest(ZulipTestCase):
         return_user_events = [test_event]
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.api_post(user, '/json/register', dict(event_types=orjson.dumps([event_type]).decode()))
+            result = self.api_post(
+                user, '/json/register', dict(event_types=orjson.dumps([event_type]).decode())
+            )
 
         self.assert_json_success(result)
         result_dict = result.json()
@@ -89,9 +91,14 @@ class EventsEndpointTest(ZulipTestCase):
         # Now test with `fetch_event_types` not matching the event
         return_event_queue = '15:13'
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.api_post(user, '/json/register',
-                                   dict(event_types=orjson.dumps([event_type]).decode(),
-                                        fetch_event_types=orjson.dumps(['message']).decode()))
+            result = self.api_post(
+                user,
+                '/json/register',
+                dict(
+                    event_types=orjson.dumps([event_type]).decode(),
+                    fetch_event_types=orjson.dumps(['message']).decode(),
+                ),
+            )
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
@@ -104,9 +111,14 @@ class EventsEndpointTest(ZulipTestCase):
 
         # Now test with `fetch_event_types` matching the event
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.api_post(user, '/json/register',
-                                   dict(fetch_event_types=orjson.dumps([event_type]).decode(),
-                                        event_types=orjson.dumps(['message']).decode()))
+            result = self.api_post(
+                user,
+                '/json/register',
+                dict(
+                    fetch_event_types=orjson.dumps([event_type]).decode(),
+                    event_types=orjson.dumps(['message']).decode(),
+                ),
+            )
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
@@ -144,10 +156,14 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post_request('/notify_tornado', req)
         self.assert_json_success(result)
 
+
 class GetEventsTest(ZulipTestCase):
-    def tornado_call(self, view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
-                     user_profile: UserProfile,
-                     post_data: Dict[str, Any]) -> HttpResponse:
+    def tornado_call(
+        self,
+        view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
+        user_profile: UserProfile,
+        post_data: Dict[str, Any],
+    ) -> HttpResponse:
         request = POSTRequestMock(post_data, user_profile)
         return view_func(request, user_profile)
 
@@ -158,32 +174,44 @@ class GetEventsTest(ZulipTestCase):
         recipient_email = recipient_user_profile.email
         self.login_user(user_profile)
 
-        result = self.tornado_call(get_events, user_profile,
-                                   {"apply_markdown": orjson.dumps(True).decode(),
-                                    "client_gravatar": orjson.dumps(True).decode(),
-                                    "event_types": orjson.dumps(["message"]).decode(),
-                                    "user_client": "website",
-                                    "dont_block": orjson.dumps(True).decode(),
-                                    })
+        result = self.tornado_call(
+            get_events,
+            user_profile,
+            {
+                "apply_markdown": orjson.dumps(True).decode(),
+                "client_gravatar": orjson.dumps(True).decode(),
+                "event_types": orjson.dumps(["message"]).decode(),
+                "user_client": "website",
+                "dont_block": orjson.dumps(True).decode(),
+            },
+        )
         self.assert_json_success(result)
         queue_id = orjson.loads(result.content)["queue_id"]
 
-        recipient_result = self.tornado_call(get_events, recipient_user_profile,
-                                             {"apply_markdown": orjson.dumps(True).decode(),
-                                              "client_gravatar": orjson.dumps(True).decode(),
-                                              "event_types": orjson.dumps(["message"]).decode(),
-                                              "user_client": "website",
-                                              "dont_block": orjson.dumps(True).decode(),
-                                              })
+        recipient_result = self.tornado_call(
+            get_events,
+            recipient_user_profile,
+            {
+                "apply_markdown": orjson.dumps(True).decode(),
+                "client_gravatar": orjson.dumps(True).decode(),
+                "event_types": orjson.dumps(["message"]).decode(),
+                "user_client": "website",
+                "dont_block": orjson.dumps(True).decode(),
+            },
+        )
         self.assert_json_success(recipient_result)
         recipient_queue_id = orjson.loads(recipient_result.content)["queue_id"]
 
-        result = self.tornado_call(get_events, user_profile,
-                                   {"queue_id": queue_id,
-                                    "user_client": "website",
-                                    "last_event_id": -1,
-                                    "dont_block": orjson.dumps(True).decode(),
-                                    })
+        result = self.tornado_call(
+            get_events,
+            user_profile,
+            {
+                "queue_id": queue_id,
+                "user_client": "website",
+                "last_event_id": -1,
+                "dont_block": orjson.dumps(True).decode(),
+            },
+        )
         events = orjson.loads(result.content)["events"]
         self.assert_json_success(result)
         self.assert_length(events, 0)
@@ -200,12 +228,16 @@ class GetEventsTest(ZulipTestCase):
             sender_queue_id=queue_id,
         )
 
-        result = self.tornado_call(get_events, user_profile,
-                                   {"queue_id": queue_id,
-                                    "user_client": "website",
-                                    "last_event_id": -1,
-                                    "dont_block": orjson.dumps(True).decode(),
-                                    })
+        result = self.tornado_call(
+            get_events,
+            user_profile,
+            {
+                "queue_id": queue_id,
+                "user_client": "website",
+                "last_event_id": -1,
+                "dont_block": orjson.dumps(True).decode(),
+            },
+        )
         events = orjson.loads(result.content)["events"]
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -229,12 +261,16 @@ class GetEventsTest(ZulipTestCase):
             sender_queue_id=queue_id,
         )
 
-        result = self.tornado_call(get_events, user_profile,
-                                   {"queue_id": queue_id,
-                                    "user_client": "website",
-                                    "last_event_id": last_event_id,
-                                    "dont_block": orjson.dumps(True).decode(),
-                                    })
+        result = self.tornado_call(
+            get_events,
+            user_profile,
+            {
+                "queue_id": queue_id,
+                "user_client": "website",
+                "last_event_id": last_event_id,
+                "dont_block": orjson.dumps(True).decode(),
+            },
+        )
         events = orjson.loads(result.content)["events"]
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -244,12 +280,16 @@ class GetEventsTest(ZulipTestCase):
 
         # Test that the received message in the receiver's event queue
         # exists and does not contain a local id
-        recipient_result = self.tornado_call(get_events, recipient_user_profile,
-                                             {"queue_id": recipient_queue_id,
-                                              "user_client": "website",
-                                              "last_event_id": -1,
-                                              "dont_block": orjson.dumps(True).decode(),
-                                              })
+        recipient_result = self.tornado_call(
+            get_events,
+            recipient_user_profile,
+            {
+                "queue_id": recipient_queue_id,
+                "user_client": "website",
+                "last_event_id": -1,
+                "dont_block": orjson.dumps(True).decode(),
+            },
+        )
         recipient_events = orjson.loads(recipient_result.content)["events"]
         self.assert_json_success(recipient_result)
         self.assertEqual(len(recipient_events), 2)
@@ -281,12 +321,16 @@ class GetEventsTest(ZulipTestCase):
             self.assert_json_success(result)
             queue_id = orjson.loads(result.content)["queue_id"]
 
-            result = self.tornado_call(get_events, user_profile,
-                                       {"queue_id": queue_id,
-                                        "user_client": "website",
-                                        "last_event_id": -1,
-                                        "dont_block": orjson.dumps(True).decode(),
-                                        })
+            result = self.tornado_call(
+                get_events,
+                user_profile,
+                {
+                    "queue_id": queue_id,
+                    "user_client": "website",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
             events = orjson.loads(result.content)["events"]
             self.assert_json_success(result)
             self.assert_length(events, 0)
@@ -294,12 +338,16 @@ class GetEventsTest(ZulipTestCase):
             self.send_personal_message(user_profile, self.example_user("othello"), "hello")
             self.send_stream_message(user_profile, "Denmark", "**hello**")
 
-            result = self.tornado_call(get_events, user_profile,
-                                       {"queue_id": queue_id,
-                                        "user_client": "website",
-                                        "last_event_id": -1,
-                                        "dont_block": orjson.dumps(True).decode(),
-                                        })
+            result = self.tornado_call(
+                get_events,
+                user_profile,
+                {
+                    "queue_id": queue_id,
+                    "user_client": "website",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
             events = orjson.loads(result.content)["events"]
             self.assert_json_success(result)
             self.assert_length(events, 1)
@@ -325,6 +373,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertEqual(message["avatar_url"], None)
+
 
 class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots
@@ -357,15 +406,17 @@ class FetchInitialStateDataTest(ZulipTestCase):
         user_profile = self.example_user('aaron')
         self.assertFalse(user_profile.is_realm_admin)
 
-        do_set_realm_property(user_profile.realm, "email_address_visibility",
-                              Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+        do_set_realm_property(
+            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        )
         result = fetch_initial_state_data(user_profile)
 
         for key, value in result['raw_users'].items():
             self.assertNotIn('delivery_email', value)
 
-        do_set_realm_property(user_profile.realm, "email_address_visibility",
-                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        do_set_realm_property(
+            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
         result = fetch_initial_state_data(user_profile)
 
         for key, value in result['raw_users'].items():
@@ -375,14 +426,16 @@ class FetchInitialStateDataTest(ZulipTestCase):
         user_profile = self.example_user('iago')
         self.assertTrue(user_profile.is_realm_admin)
 
-        do_set_realm_property(user_profile.realm, "email_address_visibility",
-                              Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+        do_set_realm_property(
+            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        )
         result = fetch_initial_state_data(user_profile)
         for key, value in result['raw_users'].items():
             self.assertNotIn('delivery_email', value)
 
-        do_set_realm_property(user_profile.realm, "email_address_visibility",
-                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        do_set_realm_property(
+            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
         result = fetch_initial_state_data(user_profile)
         for key, value in result['raw_users'].items():
             self.assertIn('delivery_email', value)
@@ -415,8 +468,11 @@ class FetchInitialStateDataTest(ZulipTestCase):
             else:
                 self.assertIsNotNone(user_dict['avatar_url'])
 
-        gravatar_users_id = [user_dict['user_id'] for user_dict in raw_users.values()
-                             if 'avatar_url' in user_dict and 'gravatar.com' in user_dict['avatar_url']]
+        gravatar_users_id = [
+            user_dict['user_id']
+            for user_dict in raw_users.values()
+            if 'avatar_url' in user_dict and 'gravatar.com' in user_dict['avatar_url']
+        ]
 
         # Test again with client_gravatar = True
         result = fetch_initial_state_data(
@@ -432,6 +488,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
                 self.assertIsNone(user_dict['avatar_url'])
             else:
                 self.assertFalse('avatar_url' in user_dict)
+
 
 class ClientDescriptorsTest(ZulipTestCase):
     def test_get_client_info_for_all_public_streams(self) -> None:
@@ -545,9 +602,9 @@ class ClientDescriptorsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         class MockClient:
-            def __init__(self, user_profile_id: int,
-                         apply_markdown: bool,
-                         client_gravatar: bool) -> None:
+            def __init__(
+                self, user_profile_id: int, apply_markdown: bool, client_gravatar: bool
+            ) -> None:
                 self.user_profile_id = user_profile_id
                 self.apply_markdown = apply_markdown
                 self.client_gravatar = client_gravatar
@@ -558,7 +615,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 return True
 
             def accepts_event(self, event: Dict[str, Any]) -> bool:
-                assert(event['type'] == 'message')
+                assert event['type'] == 'message'
                 return True
 
             def add_event(self, event: Dict[str, Any]) -> None:
@@ -617,7 +674,6 @@ class ClientDescriptorsTest(ZulipTestCase):
                 sender_id=sender.id,
                 type='stream',
                 client='website',
-
                 # NOTE: Some of these fields are clutter, but some
                 #       will be useful when we let clients specify
                 #       that they can compute their own gravatar URLs.
@@ -637,8 +693,9 @@ class ClientDescriptorsTest(ZulipTestCase):
         # and we are interested in how messages are put on event queue.
         users: List[Dict[str, Any]] = []
 
-        with mock.patch('zerver.tornado.event_queue.get_client_info_for_message_event',
-                        return_value=client_info):
+        with mock.patch(
+            'zerver.tornado.event_queue.get_client_info_for_message_event', return_value=client_info
+        ):
             process_message_event(message_event, users)
 
         # We are not closely examining avatar_url at this point, so
@@ -649,71 +706,84 @@ class ClientDescriptorsTest(ZulipTestCase):
             self.assertIn('gravatar.com', message['avatar_url'])
             message.pop('avatar_url')
 
-        self.assertEqual(client1.events, [
-            dict(
-                type='message',
-                message=dict(
-                    type='stream',
-                    sender_id=sender.id,
-                    sender_email=sender.email,
-                    id=999,
-                    content='<b>hello</b>',
-                    content_type='text/html',
-                    client='website',
+        self.assertEqual(
+            client1.events,
+            [
+                dict(
+                    type='message',
+                    message=dict(
+                        type='stream',
+                        sender_id=sender.id,
+                        sender_email=sender.email,
+                        id=999,
+                        content='<b>hello</b>',
+                        content_type='text/html',
+                        client='website',
+                    ),
+                    flags=['starred'],
                 ),
-                flags=['starred'],
-            ),
-        ])
+            ],
+        )
 
-        self.assertEqual(client2.events, [
-            dict(
-                type='message',
-                message=dict(
-                    type='stream',
-                    sender_id=sender.id,
-                    sender_email=sender.email,
-                    id=999,
-                    content='**hello**',
-                    content_type='text/x-markdown',
-                    client='website',
+        self.assertEqual(
+            client2.events,
+            [
+                dict(
+                    type='message',
+                    message=dict(
+                        type='stream',
+                        sender_id=sender.id,
+                        sender_email=sender.email,
+                        id=999,
+                        content='**hello**',
+                        content_type='text/x-markdown',
+                        client='website',
+                    ),
+                    flags=['has_alert_word'],
                 ),
-                flags=['has_alert_word'],
-            ),
-        ])
+            ],
+        )
 
-        self.assertEqual(client3.events, [
-            dict(
-                type='message',
-                message=dict(
-                    type='stream',
-                    sender_id=sender.id,
-                    sender_email=sender.email,
-                    avatar_url=None,
-                    id=999,
-                    content='<b>hello</b>',
-                    content_type='text/html',
-                    client='website',
+        self.assertEqual(
+            client3.events,
+            [
+                dict(
+                    type='message',
+                    message=dict(
+                        type='stream',
+                        sender_id=sender.id,
+                        sender_email=sender.email,
+                        avatar_url=None,
+                        id=999,
+                        content='<b>hello</b>',
+                        content_type='text/html',
+                        client='website',
+                    ),
+                    flags=[],
                 ),
-                flags=[],
-            ),
-        ])
+            ],
+        )
 
-        self.assertEqual(client4.events, [
-            dict(
-                type='message',
-                message=dict(
-                    type='stream',
-                    sender_id=sender.id,
-                    sender_email=sender.email,
-                    avatar_url=None,
-                    id=999,
-                    content='**hello**',
-                    content_type='text/x-markdown',
-                    client='website',
+        self.assertEqual(
+            client4.events,
+            [
+                dict(
+                    type='message',
+                    message=dict(
+                        type='stream',
+                        sender_id=sender.id,
+                        sender_email=sender.email,
+                        avatar_url=None,
+                        id=999,
+                        content='**hello**',
+                        content_type='text/x-markdown',
+                        client='website',
+                    ),
+                    flags=[],
                 ),
-                flags=[],
-            ),
-        ])
+            ],
+        )
+
 
 class FetchQueriesTest(ZulipTestCase):
     def test_queries(self) -> None:
@@ -758,10 +828,7 @@ class FetchQueriesTest(ZulipTestCase):
             video_calls=0,
         )
 
-        wanted_event_types = {
-            item[0][0] for item
-            in want_mock.call_args_list
-        }
+        wanted_event_types = {item[0][0] for item in want_mock.call_args_list}
 
         self.assertEqual(wanted_event_types, set(expected_counts))
 
@@ -820,6 +887,7 @@ class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
         result = _default_all_public_streams(self.user_profile, None)
         self.assertFalse(result)
 
+
 class TestEventsRegisterNarrowDefaults(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -851,10 +919,15 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
         result = _default_narrow(self.user_profile, [])
         self.assertEqual(result, [])
 
+
 class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
     def test_get_raw_user_data_on_system_bot_realm(self) -> None:
-        result = get_raw_user_data(get_realm("zulipinternal"), self.example_user('hamlet'),
-                                   client_gravatar=True, user_avatar_url_field_optional=True)
+        result = get_raw_user_data(
+            get_realm("zulipinternal"),
+            self.example_user('hamlet'),
+            client_gravatar=True,
+            user_avatar_url_field_optional=True,
+        )
 
         for bot_email in settings.CROSS_REALM_BOT_EMAILS:
             bot_profile = get_system_bot(bot_email)

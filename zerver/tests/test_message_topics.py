@@ -13,8 +13,7 @@ class TopicHistoryTest(ZulipTestCase):
         # Send a message to this new stream from another user
         self.subscribe(self.mit_user("starnine"), stream_name)
         stream = get_stream(stream_name, user_profile.realm)
-        self.send_stream_message(self.mit_user("starnine"), stream_name,
-                                 topic_name="secret topic")
+        self.send_stream_message(self.mit_user("starnine"), stream_name, topic_name="secret topic")
 
         # Now subscribe this MIT user to the new stream and verify
         # that the new topic is not accessible
@@ -83,17 +82,23 @@ class TopicHistoryTest(ZulipTestCase):
         # the prior fixture data may be unreliable.
         history = history[:3]
 
-        self.assertEqual([topic['name'] for topic in history], [
-            'topic0',
-            'topic1',
-            'topic2',
-        ])
+        self.assertEqual(
+            [topic['name'] for topic in history],
+            [
+                'topic0',
+                'topic1',
+                'topic2',
+            ],
+        )
 
-        self.assertEqual([topic['max_id'] for topic in history], [
-            topic0_msg_id,
-            topic1_msg_id,
-            topic2_msg_id,
-        ])
+        self.assertEqual(
+            [topic['max_id'] for topic in history],
+            [
+                topic0_msg_id,
+                topic1_msg_id,
+                topic2_msg_id,
+            ],
+        )
 
         # Now try as cordelia, who we imagine as a totally new user in
         # that she doesn't have UserMessage rows.  We should see the
@@ -107,18 +112,24 @@ class TopicHistoryTest(ZulipTestCase):
         # the prior fixture data may be unreliable.
         history = history[:3]
 
-        self.assertEqual([topic['name'] for topic in history], [
-            'topic0',
-            'topic1',
-            'topic2',
-        ])
+        self.assertEqual(
+            [topic['name'] for topic in history],
+            [
+                'topic0',
+                'topic1',
+                'topic2',
+            ],
+        )
         self.assertIn('topic0', [topic['name'] for topic in history])
 
-        self.assertEqual([topic['max_id'] for topic in history], [
-            topic0_msg_id,
-            topic1_msg_id,
-            topic2_msg_id,
-        ])
+        self.assertEqual(
+            [topic['max_id'] for topic in history],
+            [
+                topic0_msg_id,
+                topic1_msg_id,
+                topic2_msg_id,
+            ],
+        )
 
         # Now make stream private, but subscribe cordelia
         do_change_stream_invite_only(stream, True)
@@ -164,18 +175,22 @@ class TopicHistoryTest(ZulipTestCase):
     def test_get_topics_web_public_stream_web_public_request(self) -> None:
         stream = self.make_stream('web-public-steram', is_web_public=True)
         for i in range(3):
-            self.send_stream_message(self.example_user('iago'),
-                                     stream.name, topic_name='topic' + str(i))
+            self.send_stream_message(
+                self.example_user('iago'), stream.name, topic_name='topic' + str(i)
+            )
 
         endpoint = f'/json/users/me/{stream.id}/topics'
         result = self.client_get(endpoint)
         self.assert_json_success(result)
         history = result.json()['topics']
-        self.assertEqual([topic['name'] for topic in history], [
-            'topic2',
-            'topic1',
-            'topic0',
-        ])
+        self.assertEqual(
+            [topic['name'] for topic in history],
+            [
+                'topic2',
+                'topic1',
+                'topic0',
+            ],
+        )
 
     def test_get_topics_non_web_public_stream_web_public_request(self) -> None:
         stream = get_stream('Verona', self.example_user('iago').realm)
@@ -188,6 +203,7 @@ class TopicHistoryTest(ZulipTestCase):
         endpoint = f'/json/users/me/{non_existant_stream_id}/topics'
         result = self.client_get(endpoint)
         self.assert_json_error(result, 'Invalid stream id', 400)
+
 
 class TopicDeleteTest(ZulipTestCase):
     def test_topic_delete(self) -> None:
@@ -207,15 +223,17 @@ class TopicDeleteTest(ZulipTestCase):
         # Deleting the topic
         self.login_user(user_profile)
         endpoint = '/json/streams/' + str(stream.id) + '/delete_topic'
-        result = self.client_post(endpoint, {
-            "topic_name": topic_name,
-        })
+        result = self.client_post(
+            endpoint,
+            {
+                "topic_name": topic_name,
+            },
+        )
         self.assert_json_error(result, "Must be an organization administrator")
         self.assertEqual(self.get_last_message().id, last_msg_id)
 
         # Make stream private with limited history
-        do_change_stream_invite_only(stream, invite_only=True,
-                                     history_public_to_subscribers=False)
+        do_change_stream_invite_only(stream, invite_only=True, history_public_to_subscribers=False)
 
         # ADMIN USER subscribed now
         user_profile = self.example_user('iago')
@@ -226,33 +244,44 @@ class TopicDeleteTest(ZulipTestCase):
         # Now admin deletes all messages in topic -- which should only
         # delete new_last_msg_id, i.e. the one sent since they joined.
         self.assertEqual(self.get_last_message().id, new_last_msg_id)
-        result = self.client_post(endpoint, {
-            "topic_name": topic_name,
-        })
+        result = self.client_post(
+            endpoint,
+            {
+                "topic_name": topic_name,
+            },
+        )
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, last_msg_id)
 
         # Try to delete all messages in the topic again. There are no messages accessible
         # to the administrator, so this should do nothing.
-        result = self.client_post(endpoint, {
-            "topic_name": topic_name,
-        })
+        result = self.client_post(
+            endpoint,
+            {
+                "topic_name": topic_name,
+            },
+        )
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, last_msg_id)
 
         # Make the stream's history public to subscribers
-        do_change_stream_invite_only(stream, invite_only=True,
-                                     history_public_to_subscribers=True)
+        do_change_stream_invite_only(stream, invite_only=True, history_public_to_subscribers=True)
         # Delete the topic should now remove all messages
-        result = self.client_post(endpoint, {
-            "topic_name": topic_name,
-        })
+        result = self.client_post(
+            endpoint,
+            {
+                "topic_name": topic_name,
+            },
+        )
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, initial_last_msg_id)
 
         # Delete again, to test the edge case of deleting an empty topic.
-        result = self.client_post(endpoint, {
-            "topic_name": topic_name,
-        })
+        result = self.client_post(
+            endpoint,
+            {
+                "topic_name": topic_name,
+            },
+        )
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, initial_last_msg_id)

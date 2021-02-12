@@ -6,14 +6,10 @@ from zerver.models import RealmFilter, get_realm
 
 
 class RealmFilterTest(ZulipTestCase):
-
     def test_list(self) -> None:
         self.login('iago')
         realm = get_realm('zulip')
-        do_add_realm_filter(
-            realm,
-            "#(?P<id>[123])",
-            "https://realm.com/my_realm_filter/%(id)s")
+        do_add_realm_filter(realm, "#(?P<id>[123])", "https://realm.com/my_realm_filter/%(id)s")
         result = self.client_get("/json/realm/filters")
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
@@ -27,11 +23,15 @@ class RealmFilterTest(ZulipTestCase):
 
         data['pattern'] = '$a'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].')
+        self.assert_json_error(
+            result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].'
+        )
 
         data['pattern'] = r'ZUL-(?P<id>\d++)'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].')
+        self.assert_json_error(
+            result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].'
+        )
 
         data['pattern'] = r'ZUL-(?P<id>\d+)'
         data['url_format_string'] = '$fgfg'
@@ -61,7 +61,9 @@ class RealmFilterTest(ZulipTestCase):
         self.assertIsNotNone(re.match(data['pattern'], '_code=123abcdZ'))
 
         data['pattern'] = r'PR (?P<id>[0-9]+)'
-        data['url_format_string'] = 'https://example.com/~user/web#view_type=type&model=model&action=12345&id=%(id)s'
+        data[
+            'url_format_string'
+        ] = 'https://example.com/~user/web#view_type=type&model=model&action=12345&id=%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], 'PR 123'))
@@ -79,7 +81,9 @@ class RealmFilterTest(ZulipTestCase):
         self.assertIsNotNone(re.match(data['pattern'], 'lp:123'))
 
         data['pattern'] = r'!(?P<id>[0-9]+)'
-        data['url_format_string'] = 'https://realm.com/index.pl?Action=AgentTicketZoom;TicketNumber=%(id)s'
+        data[
+            'url_format_string'
+        ] = 'https://realm.com/index.pl?Action=AgentTicketZoom;TicketNumber=%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], '!123'))
@@ -104,9 +108,8 @@ class RealmFilterTest(ZulipTestCase):
         self.login('iago')
         realm = get_realm('zulip')
         filter_id = do_add_realm_filter(
-            realm,
-            "#(?P<id>[123])",
-            "https://realm.com/my_realm_filter/%(id)s")
+            realm, "#(?P<id>[123])", "https://realm.com/my_realm_filter/%(id)s"
+        )
         filters_count = RealmFilter.objects.count()
         result = self.client_delete(f"/json/realm/filters/{filter_id + 1}")
         self.assert_json_error(result, 'Filter not found')

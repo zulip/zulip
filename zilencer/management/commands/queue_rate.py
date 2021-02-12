@@ -14,12 +14,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--count", help="Number of messages to enqueue", default=10000, type=int
         )
-        parser.add_argument(
-            "--reps", help="Iterations of enqueue/dequeue", default=1, type=int
-        )
-        parser.add_argument(
-            "--batch", help="Enables batch dequeuing", action="store_true"
-        )
+        parser.add_argument("--reps", help="Iterations of enqueue/dequeue", default=1, type=int)
+        parser.add_argument("--batch", help="Enables batch dequeuing", action="store_true")
         parser.add_argument(
             "--prefetch",
             help="Limits the prefetch size; RabbitMQ defaults to unbounded (0)",
@@ -66,7 +62,7 @@ class Command(BaseCommand):
                 number=1,
             )
 
-        rate = lambda time, iterations: int(iterations/time)
+        rate = lambda time, iterations: int(iterations / time)
 
         total_reps_time = timeit(one_rep, number=reps)
         if reps > 1:

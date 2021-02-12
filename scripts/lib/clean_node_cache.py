@@ -16,6 +16,7 @@ from scripts.lib.zulip_tools import (
 ENV = get_environment()
 NODE_MODULES_CACHE_PATH = "/srv/zulip-npm-cache"
 
+
 def get_caches_in_use(threshold_days: int) -> Set[str]:
     setups_to_check = {ZULIP_PATH}
     caches_in_use = set()
@@ -40,10 +41,11 @@ def get_caches_in_use(threshold_days: int) -> Set[str]:
 
     return caches_in_use
 
+
 def main(args: argparse.Namespace) -> None:
     caches_in_use = get_caches_in_use(args.threshold_days)
-    purge_unused_caches(
-        NODE_MODULES_CACHE_PATH, caches_in_use, "node modules cache", args)
+    purge_unused_caches(NODE_MODULES_CACHE_PATH, caches_in_use, "node modules cache", args)
+
 
 if __name__ == "__main__":
     args = parse_cache_script_args("This script cleans unused Zulip npm caches.")

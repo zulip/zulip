@@ -10,25 +10,37 @@ from django.conf import settings
 # so we want to stay limited to 1024 characters.
 MAX_KEY_LENGTH = 1024
 
+
 class ZulipRedisError(Exception):
     pass
+
 
 class ZulipRedisKeyTooLongError(ZulipRedisError):
     pass
 
+
 class ZulipRedisKeyOfWrongFormatError(ZulipRedisError):
     pass
 
-def get_redis_client() -> "redis.StrictRedis[bytes]":
-    return redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT,
-                             password=settings.REDIS_PASSWORD, db=0,
-                             decode_responses=False)
 
-def put_dict_in_redis(redis_client: "redis.StrictRedis[bytes]", key_format: str,
-                      data_to_store: Mapping[str, Any],
-                      expiration_seconds: int,
-                      token_length: int=64,
-                      token: Optional[str]=None) -> str:
+def get_redis_client() -> "redis.StrictRedis[bytes]":
+    return redis.StrictRedis(
+        host=settings.REDIS_HOST,
+        port=settings.REDIS_PORT,
+        password=settings.REDIS_PASSWORD,
+        db=0,
+        decode_responses=False,
+    )
+
+
+def put_dict_in_redis(
+    redis_client: "redis.StrictRedis[bytes]",
+    key_format: str,
+    data_to_store: Mapping[str, Any],
+    expiration_seconds: int,
+    token_length: int = 64,
+    token: Optional[str] = None,
+) -> str:
     key_length = len(key_format) - len('{token}') + token_length
     if key_length > MAX_KEY_LENGTH:
         raise ZulipRedisKeyTooLongError(
@@ -44,8 +56,12 @@ def put_dict_in_redis(redis_client: "redis.StrictRedis[bytes]", key_format: str,
 
     return key
 
-def get_dict_from_redis(redis_client: "redis.StrictRedis[bytes]", key_format: str, key: str,
-                        ) -> Optional[Dict[str, Any]]:
+
+def get_dict_from_redis(
+    redis_client: "redis.StrictRedis[bytes]",
+    key_format: str,
+    key: str,
+) -> Optional[Dict[str, Any]]:
     # This function requires inputting the intended key_format to validate
     # that the key fits it, as an additionally security measure. This protects
     # against bugs where a caller requests a key based on user input and doesn't
@@ -60,6 +76,7 @@ def get_dict_from_redis(redis_client: "redis.StrictRedis[bytes]", key_format: st
     if data is None:
         return None
     return orjson.loads(data)
+
 
 def validate_key_fits_format(key: str, key_format: str) -> None:
     assert "{token}" in key_format

@@ -15,5 +15,6 @@ def main() -> None:
     clean_node_cache.main(args)
     clean_emoji_cache.main(args)
 
+
 if __name__ == "__main__":
     main()

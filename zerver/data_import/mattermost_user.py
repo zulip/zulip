@@ -2,14 +2,14 @@ from typing import Any, Dict, List
 
 
 class UserHandler:
-    '''
+    """
     Our UserHandler class is a glorified wrapper
     around the data that eventually goes into
     zerver_userprofile.
 
     The class helps us do things like map ids
     to names for mentions.
-    '''
+    """
 
     def __init__(self) -> None:
         self.id_to_user_map: Dict[int, Dict[str, Any]] = {}

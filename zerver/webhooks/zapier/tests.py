@@ -18,8 +18,11 @@ class ZapierHookTests(WebhookTestCase):
 
     def test_zapier_weather_update(self) -> None:
         expected_topic = "Here is your weather update for the day:"
-        expected_message = "Foggy in the morning.\nMaximum temperature to be 24.\nMinimum temperature to be 12"
+        expected_message = (
+            "Foggy in the morning.\nMaximum temperature to be 24.\nMinimum temperature to be 12"
+        )
         self.check_webhook("weather_update", expected_topic, expected_message)
+
 
 class ZapierZulipAppTests(WebhookTestCase):
     STREAM_NAME = 'zapier'
@@ -28,8 +31,7 @@ class ZapierZulipAppTests(WebhookTestCase):
 
     def test_auth(self) -> None:
         payload = self.get_body('zapier_zulip_app_auth')
-        result = self.client_post(self.url, payload,
-                                  content_type='application/json')
+        result = self.client_post(self.url, payload, content_type='application/json')
         json_result = self.assert_json_success(result)
         self.assertEqual(json_result['full_name'], 'Zulip Webhook Bot')
         self.assertEqual(json_result['email'], 'webhook-bot@zulip.com')

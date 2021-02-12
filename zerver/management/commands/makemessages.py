@@ -43,31 +43,39 @@ from django.core.management.commands import makemessages
 from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
 from django.utils.translation import template
 
-strip_whitespace_right = re.compile(f"({BLOCK_TAG_START}-?\\s*(trans|pluralize).*?-{BLOCK_TAG_END})\\s+", re.U)
-strip_whitespace_left = re.compile(f"\\s+({BLOCK_TAG_START}-\\s*(endtrans|pluralize).*?-?{BLOCK_TAG_END})", re.U)
+strip_whitespace_right = re.compile(
+    f"({BLOCK_TAG_START}-?\\s*(trans|pluralize).*?-{BLOCK_TAG_END})\\s+", re.U
+)
+strip_whitespace_left = re.compile(
+    f"\\s+({BLOCK_TAG_START}-\\s*(endtrans|pluralize).*?-?{BLOCK_TAG_END})", re.U
+)
 
-regexes = [r'{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
-           r'{{\s*t "(.*?)"\W*}}',
-           r"{{\s*t '(.*?)'\W*}}",
-           r'\(t "(.*?)"\)',
-           r'=\(t "(.*?)"\)(?=[^{]*}})',
-           r"=\(t '(.*?)'\)(?=[^{]*}})",
-           r"i18n\.t\('([^']*?)'\)",
-           r"i18n\.t\('(.*?)',\s*.*?[^,]\)",
-           r'i18n\.t\("([^"]*?)"\)',
-           r'i18n\.t\("(.*?)",\s*.*?[^,]\)',
-           ]
-tags = [('err_', "error"),
-        ]
+regexes = [
+    r'{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
+    r'{{\s*t "(.*?)"\W*}}',
+    r"{{\s*t '(.*?)'\W*}}",
+    r'\(t "(.*?)"\)',
+    r'=\(t "(.*?)"\)(?=[^{]*}})',
+    r"=\(t '(.*?)'\)(?=[^{]*}})",
+    r"i18n\.t\('([^']*?)'\)",
+    r"i18n\.t\('(.*?)',\s*.*?[^,]\)",
+    r'i18n\.t\("([^"]*?)"\)',
+    r'i18n\.t\("(.*?)",\s*.*?[^,]\)',
+]
+tags = [
+    ('err_', "error"),
+]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
 multiline_js_comment = re.compile(r"/\*.*?\*/", re.DOTALL)
 singleline_js_comment = re.compile("//.*?\n")
 
+
 def strip_whitespaces(src: str) -> str:
     src = strip_whitespace_left.sub('\\1', src)
     src = strip_whitespace_right.sub('\\1', src)
     return src
+
 
 class Command(makemessages.Command):
 
@@ -77,28 +85,37 @@ class Command(makemessages.Command):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         super().add_arguments(parser)
-        parser.add_argument('--frontend-source',
-                            default='static/templates',
-                            help='Name of the Handlebars template directory')
-        parser.add_argument('--frontend-output',
-                            default='locale',
-                            help='Name of the frontend messages output directory')
-        parser.add_argument('--frontend-namespace',
-                            default='translations.json',
-                            help='Namespace of the frontend locale file')
+        parser.add_argument(
+            '--frontend-source',
+            default='static/templates',
+            help='Name of the Handlebars template directory',
+        )
+        parser.add_argument(
+            '--frontend-output',
+            default='locale',
+            help='Name of the frontend messages output directory',
+        )
+        parser.add_argument(
+            '--frontend-namespace',
+            default='translations.json',
+            help='Namespace of the frontend locale file',
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         self.handle_django_locales(*args, **options)
         self.handle_frontend_locales(**options)
 
-    def handle_frontend_locales(self, *,
-                                frontend_source: str,
-                                frontend_output: str,
-                                frontend_namespace: str,
-                                locale: List[str],
-                                exclude: List[str],
-                                all: bool,
-                                **options: Any) -> None:
+    def handle_frontend_locales(
+        self,
+        *,
+        frontend_source: str,
+        frontend_output: str,
+        frontend_namespace: str,
+        locale: List[str],
+        exclude: List[str],
+        all: bool,
+        **options: Any,
+    ) -> None:
         self.frontend_source = frontend_source
         self.frontend_output = frontend_output
         self.frontend_namespace = frontend_namespace
@@ -118,11 +135,14 @@ class Command(makemessages.Command):
         # Extend the regular expressions that are used to detect
         # translation blocks with an "OR jinja-syntax" clause.
         template.endblock_re = re.compile(
-            template.endblock_re.pattern + '|' + r"""^-?\s*endtrans\s*-?$""")
+            template.endblock_re.pattern + '|' + r"""^-?\s*endtrans\s*-?$"""
+        )
         template.block_re = re.compile(
-            template.block_re.pattern + '|' + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)""")
+            template.block_re.pattern + '|' + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)"""
+        )
         template.plural_re = re.compile(
-            template.plural_re.pattern + '|' + r"""^-?\s*pluralize(?:\s+.+|-?$)""")
+            template.plural_re.pattern + '|' + r"""^-?\s*pluralize(?:\s+.+|-?$)"""
+        )
         template.constant_re = re.compile(r"""_\(((?:".*?")|(?:'.*?')).*\)""")
 
         def my_templatize(src: str, *args: Any, **kwargs: Any) -> str:
@@ -172,8 +192,9 @@ class Command(makemessages.Command):
                 with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
                     translation_strings.extend(self.extract_strings(data))
-        for dirpath, dirnames, filenames in itertools.chain(os.walk("static/js"),
-                                                            os.walk("static/shared/js")):
+        for dirpath, dirnames, filenames in itertools.chain(
+            os.walk("static/js"), os.walk("static/shared/js")
+        ):
             for filename in [f for f in filenames if f.endswith(".js") or f.endswith(".ts")]:
                 if filename.startswith('.'):
                     continue
@@ -217,8 +238,9 @@ class Command(makemessages.Command):
 
             yield os.path.join(path, self.get_namespace())
 
-    def get_new_strings(self, old_strings: Mapping[str, str],
-                        translation_strings: List[str], locale: str) -> Dict[str, str]:
+    def get_new_strings(
+        self, old_strings: Mapping[str, str], translation_strings: List[str], locale: str
+    ) -> Dict[str, str]:
         """
         Missing strings are removed, new strings are added and already
         translated strings are not touched.
@@ -252,9 +274,7 @@ class Command(makemessages.Command):
 
             new_strings = {
                 k: v
-                for k, v in self.get_new_strings(old_strings,
-                                                 translation_strings,
-                                                 locale).items()
+                for k, v in self.get_new_strings(old_strings, translation_strings, locale).items()
             }
             with open(output_path, 'w') as writer:
                 json.dump(new_strings, writer, indent=2, sort_keys=True)

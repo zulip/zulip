@@ -17,25 +17,30 @@ EVENTS = ['deploy_failed', 'deploy_locked', 'deploy_unlocked', 'deploy_building'
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_NETLIFY_EVENT")
 
+
 @webhook_view('Netlify')
 @has_request_variables
 def api_netlify_webhook(
-        request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type='body'),
 ) -> HttpResponse:
 
     message_template = get_template(request, payload)
 
-    body = message_template.format(build_name=payload['name'],
-                                   build_url=payload['url'],
-                                   branch_name=payload['branch'],
-                                   state=payload['state'])
+    body = message_template.format(
+        build_name=payload['name'],
+        build_url=payload['url'],
+        branch_name=payload['branch'],
+        state=payload['state'],
+    )
 
     topic = "{topic}".format(topic=payload['branch'])
 
     check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()
+
 
 def get_template(request: HttpRequest, payload: Dict[str, Any]) -> str:
 

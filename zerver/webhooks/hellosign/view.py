@@ -13,6 +13,7 @@ IS_AWAITING_SIGNATURE = "is awaiting the signature of {awaiting_recipients}"
 WAS_JUST_SIGNED_BY = "was just signed by {signed_recipients}"
 BODY = "The `{contract_title}` document {actions}."
 
+
 def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
     contract_title = payload['signature_request']['title']
     recipients: Dict[str, List[str]] = {}
@@ -38,8 +39,8 @@ def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
         else:
             recipients_text = text
 
-    return BODY.format(contract_title=contract_title,
-                       actions=recipients_text).strip()
+    return BODY.format(contract_title=contract_title, actions=recipients_text).strip()
+
 
 def get_recipients_text(recipients: List[str]) -> str:
     recipients_text = ""
@@ -52,11 +53,14 @@ def get_recipients_text(recipients: List[str]) -> str:
 
     return recipients_text
 
+
 @webhook_view('HelloSign')
 @has_request_variables
-def api_hellosign_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Dict[str, Dict[str, Any]]=REQ(
-                              whence='json', converter=orjson.loads)) -> HttpResponse:
+def api_hellosign_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Dict[str, Any]] = REQ(whence='json', converter=orjson.loads),
+) -> HttpResponse:
     if "signature_request" in payload:
         body = get_message_body(payload)
         topic = payload['signature_request']['title']

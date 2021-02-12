@@ -80,8 +80,10 @@ class TaigaHookTests(WebhookTestCase):
         self.check_webhook("userstory_changed_comment_added", self.TOPIC, message)
 
     def test_taiga_userstory_changed_due_date(self) -> None:
-        message = ('[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of user story ' +
-                   '[Nice Issue](https://tree.taiga.io/project/orientor-sd/us/54) from 2020-02-15 to 2020-02-22.')
+        message = (
+            '[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of user story '
+            + '[Nice Issue](https://tree.taiga.io/project/orientor-sd/us/54) from 2020-02-15 to 2020-02-22.'
+        )
         self.check_webhook("userstory_changed_due_date", self.TOPIC, message)
 
     def test_taiga_userstory_changed_new_due_date(self) -> None:
@@ -109,7 +111,9 @@ class TaigaHookTests(WebhookTestCase):
         self.check_webhook("task_changed_blocked_link", self.TOPIC, message)
 
     def test_taiga_task_changed_unblocked(self) -> None:
-        message = '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) unblocked task **New Task**.'
+        message = (
+            '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) unblocked task **New Task**.'
+        )
         self.check_webhook("task_changed_unblocked", self.TOPIC, message)
 
     def test_taiga_task_changed_assigned(self) -> None:
@@ -133,12 +137,16 @@ class TaigaHookTests(WebhookTestCase):
         self.check_webhook("task_deleted", self.TOPIC, message)
 
     def test_taiga_task_changed_comment_added(self) -> None:
-        message = '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) commented on task **New Task**.'
+        message = (
+            '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) commented on task **New Task**.'
+        )
         self.check_webhook("task_changed_comment_added", self.TOPIC, message)
 
     def test_taiga_task_changed_due_date(self) -> None:
-        message = ('[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of task' +
-                   ' [nice task](https://tree.taiga.io/project/orientor-sd/task/56) from 2020-02-22 to 2020-02-15.')
+        message = (
+            '[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of task'
+            + ' [nice task](https://tree.taiga.io/project/orientor-sd/task/56) from 2020-02-22 to 2020-02-15.'
+        )
         self.check_webhook("task_changed_due_date", self.TOPIC, message)
 
     def test_taiga_task_changed_new_due_date(self) -> None:
@@ -146,11 +154,15 @@ class TaigaHookTests(WebhookTestCase):
         self.check_webhook("task_changed_new_due_date", self.TOPIC, message)
 
     def test_taiga_sprint_created(self) -> None:
-        message = '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) created sprint **New sprint**.'
+        message = (
+            '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) created sprint **New sprint**.'
+        )
         self.check_webhook("sprint_created", self.TOPIC, message)
 
     def test_taiga_sprint_deleted(self) -> None:
-        message = '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) deleted sprint **New name**.'
+        message = (
+            '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) deleted sprint **New name**.'
+        )
         self.check_webhook("sprint_deleted", self.TOPIC, message)
 
     def test_taiga_sprint_changed_time(self) -> None:
@@ -162,7 +174,9 @@ class TaigaHookTests(WebhookTestCase):
         self.check_webhook("sprint_changed_name", self.TOPIC, message)
 
     def test_taiga_issue_created(self) -> None:
-        message = '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) created issue **New issue**.'
+        message = (
+            '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) created issue **New issue**.'
+        )
         self.check_webhook("issue_created", self.TOPIC, message)
 
     def test_taiga_issue_created_link(self) -> None:
@@ -170,7 +184,9 @@ class TaigaHookTests(WebhookTestCase):
         self.check_webhook("issue_created_link", self.TOPIC, message)
 
     def test_taiga_issue_deleted(self) -> None:
-        message = '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) deleted issue **New issue**.'
+        message = (
+            '[TomaszKolek](https://tree.taiga.io/profile/kolaszek) deleted issue **New issue**.'
+        )
         self.check_webhook("issue_deleted", self.TOPIC, message)
 
     def test_taiga_issue_changed_assigned(self) -> None:
@@ -218,8 +234,10 @@ class TaigaHookTests(WebhookTestCase):
         self.check_webhook("issue_changed_unblocked", self.TOPIC, message)
 
     def test_taiga_issue_changed_due_date(self) -> None:
-        message = ('[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of issue [Issues](https://tree.taiga.io/project/orientor-sd/issue/49) ' +
-                   'from 2020-03-08 to 2020-02-22.')
+        message = (
+            '[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of issue [Issues](https://tree.taiga.io/project/orientor-sd/issue/49) '
+            + 'from 2020-03-08 to 2020-02-22.'
+        )
         self.check_webhook("issue_changed_due_date", self.TOPIC, message)
 
     def test_taiga_issue_changed_new_due_date(self) -> None:
@@ -283,8 +301,10 @@ class TaigaHookTests(WebhookTestCase):
         self.check_webhook("relateduserstory_created", self.TOPIC, message)
 
     def test_taiga_relateduserstory_created_link(self) -> None:
-        message = ('[Aditya Verma](https://tree.taiga.io/profile/orientor) added a related user story [Nice Issue](https://tree.taiga.io/project/orientor-sd/us/54) ' +
-                   'to the epic [ASAS](https://tree.taiga.io/project/orientor-sd/epic/42).')
+        message = (
+            '[Aditya Verma](https://tree.taiga.io/profile/orientor) added a related user story [Nice Issue](https://tree.taiga.io/project/orientor-sd/us/54) '
+            + 'to the epic [ASAS](https://tree.taiga.io/project/orientor-sd/epic/42).'
+        )
         self.check_webhook("relateduserstory_created_link", self.TOPIC, message)
 
     def test_taiga_relateduserstory_deleted(self) -> None:
@@ -292,5 +312,7 @@ class TaigaHookTests(WebhookTestCase):
         self.check_webhook("relateduserstory_deleted", self.TOPIC, message)
 
     def test_taiga_webhook_test(self) -> None:
-        message = '[Jan](https://tree.taiga.io/profile/kostek) triggered a test of the Taiga integration.'
+        message = (
+            '[Jan](https://tree.taiga.io/profile/kostek) triggered a test of the Taiga integration.'
+        )
         self.check_webhook("webhook_test", self.TOPIC, message)

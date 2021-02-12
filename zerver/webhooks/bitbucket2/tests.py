@@ -8,6 +8,7 @@ TOPIC_PR_EVENTS = "Repository name / PR #1 new commit"
 TOPIC_ISSUE_EVENTS = "Repository name / Issue #1 Bug"
 TOPIC_BRANCH_EVENTS = "Repository name / master"
 
+
 class Bitbucket2HookTests(WebhookTestCase):
     STREAM_NAME = 'bitbucket2'
     URL_TEMPLATE = "/api/v1/external/bitbucket2?stream={stream}&api_key={api_key}"
@@ -36,7 +37,9 @@ class Bitbucket2HookTests(WebhookTestCase):
         expected_message = f"""Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 3 commits to branch master. Commits by Ben (2) and Tomasz (1).\n\n{commit_info*2}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
         self.check_webhook("push_multiple_committers", TOPIC_BRANCH_EVENTS, expected_message)
 
-    def test_bitbucket2_on_push_commits_multiple_committers_with_others_filtered_by_branches(self) -> None:
+    def test_bitbucket2_on_push_commits_multiple_committers_with_others_filtered_by_branches(
+        self,
+    ) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         commit_info = '* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n'
         expected_message = f"""Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by Tomasz (4), James (3), Brendon (2) and others (1).\n\n{commit_info*9}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
@@ -129,7 +132,7 @@ class Bitbucket2HookTests(WebhookTestCase):
             "pull_request_created_or_updated_without_username",
             TOPIC_PR_EVENTS,
             expected_message,
-            **kwargs
+            **kwargs,
         )
 
     def test_bitbucket2_on_pull_request_created_with_custom_topic_in_url(self) -> None:
@@ -191,7 +194,9 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
 
     def test_bitbucket2_on_pull_request_fulfilled_event(self) -> None:
-        expected_message = "Tomasz merged [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
+        expected_message = (
+            "Tomasz merged [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
+        )
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:fulfilled',
         }
@@ -255,14 +260,18 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.check_webhook("repo_updated", expected_topic, expected_message, **kwargs)
 
     def test_bitbucket2_on_push_one_tag_event(self) -> None:
-        expected_message = "Tomasz pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
+        expected_message = (
+            "Tomasz pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
+        )
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
         self.check_webhook("push_one_tag", TOPIC, expected_message, **kwargs)
 
     def test_bitbucket2_on_push_remove_tag_event(self) -> None:
-        expected_message = "Tomasz removed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
+        expected_message = (
+            "Tomasz removed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
+        )
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
@@ -322,7 +331,7 @@ class Bitbucket2HookTests(WebhookTestCase):
             message=msg,
             stream_name=self.STREAM_NAME,
             topic_name=TOPIC_BRANCH_EVENTS,
-            content="Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"
+            content="Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))",
         )
 
         msg = self.get_last_message()
@@ -371,12 +380,15 @@ class Bitbucket2HookTests(WebhookTestCase):
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
-        expected_message = "Tomasz pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
+        expected_message = (
+            "Tomasz pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
+        )
         self.check_webhook("more_than_one_push_event", TOPIC, expected_message, **kwargs)
 
     @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_push_event_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
         self.url = self.build_webhook_url(branches='changes,devlopment')
         payload = self.get_body('push')
         result = self.client_post(self.url, payload, content_type="application/json")
@@ -385,7 +397,8 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_push_commits_above_limit_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
         self.url = self.build_webhook_url(branches='changes,devlopment')
         payload = self.get_body('push_commits_above_limit')
         result = self.client_post(self.url, payload, content_type="application/json")
@@ -394,7 +407,8 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_force_push_event_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
         self.url = self.build_webhook_url(branches='changes,devlopment')
         payload = self.get_body('force_push')
         result = self.client_post(self.url, payload, content_type="application/json")
@@ -403,7 +417,8 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_push_multiple_committers_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
         self.url = self.build_webhook_url(branches='changes,devlopment')
         payload = self.get_body('push_multiple_committers')
         result = self.client_post(self.url, payload, content_type="application/json")
@@ -412,7 +427,8 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_push_multiple_committers_with_others_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
         self.url = self.build_webhook_url(branches='changes,devlopment')
         payload = self.get_body('push_multiple_committers_with_others')
         result = self.client_post(self.url, payload, content_type="application/json")
@@ -421,7 +437,8 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_push_without_changes_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
         payload = self.get_body('push_without_changes')
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
@@ -431,7 +448,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.assertEqual(get_user_info({}), "Unknown user")
 
         dct = dict(
-            nickname= "alice",
+            nickname="alice",
             noisy_field="whatever",
             display_name="Alice Smith",
         )

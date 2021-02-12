@@ -11,7 +11,6 @@ from zerver.models import Message, UserProfile, get_realm
 
 
 class GitterImporter(ZulipTestCase):
-
     @mock.patch('zerver.data_import.gitter.process_avatars', return_value=[])
     def test_gitter_import_data_conversion(self, mock_process_avatars: mock.Mock) -> None:
         output_dir = self.make_import_output_dir("gitter")
@@ -31,8 +30,9 @@ class GitterImporter(ZulipTestCase):
         realm = read_file('realm.json')
 
         # test realm
-        self.assertEqual('Organization imported from Gitter!',
-                         realm['zerver_realm'][0]['description'])
+        self.assertEqual(
+            'Organization imported from Gitter!', realm['zerver_realm'][0]['description']
+        )
 
         # test users
         exported_user_ids = self.get_set(realm['zerver_userprofile'], 'id')
@@ -47,7 +47,9 @@ class GitterImporter(ZulipTestCase):
         self.assertEqual(realm['zerver_stream'][0]['deactivated'], False)
         self.assertEqual(realm['zerver_stream'][0]['realm'], realm['zerver_realm'][0]['id'])
 
-        self.assertEqual(realm['zerver_defaultstream'][0]['stream'], realm['zerver_stream'][0]['id'])
+        self.assertEqual(
+            realm['zerver_defaultstream'][0]['stream'], realm['zerver_stream'][0]['id']
+        )
 
         # test recipient
         exported_recipient_id = self.get_set(realm['zerver_recipient'], 'id')
@@ -55,7 +57,9 @@ class GitterImporter(ZulipTestCase):
         self.assertEqual({1, 2}, exported_recipient_type)
 
         # test subscription
-        exported_subscription_userprofile = self.get_set(realm['zerver_subscription'], 'user_profile')
+        exported_subscription_userprofile = self.get_set(
+            realm['zerver_subscription'], 'user_profile'
+        )
         self.assertEqual({0, 1}, exported_subscription_userprofile)
         exported_subscription_recipient = self.get_set(realm['zerver_subscription'], 'recipient')
         self.assertEqual(len(exported_subscription_recipient), 3)
@@ -70,7 +74,9 @@ class GitterImporter(ZulipTestCase):
         self.assertIn(messages['zerver_message'][0]['content'], 'test message')
 
         # test usermessages
-        exported_usermessage_userprofile = self.get_set(messages['zerver_usermessage'], 'user_profile')
+        exported_usermessage_userprofile = self.get_set(
+            messages['zerver_usermessage'], 'user_profile'
+        )
         self.assertEqual(exported_user_ids, exported_usermessage_userprofile)
         exported_usermessage_message = self.get_set(messages['zerver_usermessage'], 'message')
         self.assertEqual(exported_usermessage_message, exported_messages_id)
@@ -95,21 +101,30 @@ class GitterImporter(ZulipTestCase):
 
     def test_get_usermentions(self) -> None:
         user_map = {'57124a4': 3, '57124b4': 5, '57124c4': 8}
-        user_short_name_to_full_name = {'user': 'user name', 'user2': 'user2',
-                                        'user3': 'user name 3', 'user4': 'user 4'}
-        messages = [{'text': 'hi @user',
-                     'mentions': [{'screenName': 'user', 'userId': '57124a4'}]},
-                    {'text': 'hi @user2 @user3',
-                     'mentions': [{'screenName': 'user2', 'userId': '57124b4'},
-                                  {'screenName': 'user3', 'userId': '57124c4'}]},
-                    {'text': 'hi @user4',
-                     'mentions': [{'screenName': 'user4'}]},
-                    {'text': 'hi @user5',
-                     'mentions': [{'screenName': 'user', 'userId': '5712ds4'}]}]
+        user_short_name_to_full_name = {
+            'user': 'user name',
+            'user2': 'user2',
+            'user3': 'user name 3',
+            'user4': 'user 4',
+        }
+        messages = [
+            {'text': 'hi @user', 'mentions': [{'screenName': 'user', 'userId': '57124a4'}]},
+            {
+                'text': 'hi @user2 @user3',
+                'mentions': [
+                    {'screenName': 'user2', 'userId': '57124b4'},
+                    {'screenName': 'user3', 'userId': '57124c4'},
+                ],
+            },
+            {'text': 'hi @user4', 'mentions': [{'screenName': 'user4'}]},
+            {'text': 'hi @user5', 'mentions': [{'screenName': 'user', 'userId': '5712ds4'}]},
+        ]
 
         self.assertEqual(get_usermentions(messages[0], user_map, user_short_name_to_full_name), [3])
         self.assertEqual(messages[0]['text'], 'hi @**user name**')
-        self.assertEqual(get_usermentions(messages[1], user_map, user_short_name_to_full_name), [5, 8])
+        self.assertEqual(
+            get_usermentions(messages[1], user_map, user_short_name_to_full_name), [5, 8]
+        )
         self.assertEqual(messages[1]['text'], 'hi @**user2** @**user name 3**')
         self.assertEqual(get_usermentions(messages[2], user_map, user_short_name_to_full_name), [])
         self.assertEqual(messages[2]['text'], 'hi @user4')

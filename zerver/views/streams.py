@@ -115,6 +115,7 @@ class PrincipalError(JsonableError):
     def msg_format() -> str:
         return _("User not authorized to execute queries on behalf of '{principal}'")
 
+
 def principal_to_user_profile(agent: UserProfile, principal: Union[str, int]) -> UserProfile:
     try:
         if isinstance(principal, str):
@@ -128,8 +129,10 @@ def principal_to_user_profile(agent: UserProfile, principal: Union[str, int]) ->
         # principal to maybe give a better error message
         raise PrincipalError(principal)
 
-def check_if_removing_someone_else(user_profile: UserProfile,
-                                   principals: Optional[Union[List[str], List[int]]]) -> bool:
+
+def check_if_removing_someone_else(
+    user_profile: UserProfile, principals: Optional[Union[List[str], List[int]]]
+) -> bool:
     if principals is None or len(principals) == 0:
         return False
 
@@ -141,29 +144,36 @@ def check_if_removing_someone_else(user_profile: UserProfile,
     else:
         return principals[0] != user_profile.email
 
-def deactivate_stream_backend(request: HttpRequest,
-                              user_profile: UserProfile,
-                              stream_id: int) -> HttpResponse:
+
+def deactivate_stream_backend(
+    request: HttpRequest, user_profile: UserProfile, stream_id: int
+) -> HttpResponse:
     (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
     do_deactivate_stream(stream, acting_user=user_profile)
     return json_success()
 
+
 @require_realm_admin
 @has_request_variables
-def add_default_stream(request: HttpRequest,
-                       user_profile: UserProfile,
-                       stream_id: int=REQ(validator=check_int)) -> HttpResponse:
+def add_default_stream(
+    request: HttpRequest, user_profile: UserProfile, stream_id: int = REQ(validator=check_int)
+) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
     if stream.invite_only:
         return json_error(_("Private streams cannot be made default."))
     do_add_default_stream(stream)
     return json_success()
 
+
 @require_realm_admin
 @has_request_variables
-def create_default_stream_group(request: HttpRequest, user_profile: UserProfile,
-                                group_name: str=REQ(), description: str=REQ(),
-                                stream_names: List[str]=REQ(validator=check_list(check_string))) -> None:
+def create_default_stream_group(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    group_name: str = REQ(),
+    description: str = REQ(),
+    stream_names: List[str] = REQ(validator=check_list(check_string)),
+) -> None:
     streams = []
     for stream_name in stream_names:
         (stream, sub) = access_stream_by_name(user_profile, stream_name)
@@ -171,12 +181,16 @@ def create_default_stream_group(request: HttpRequest, user_profile: UserProfile,
     do_create_default_stream_group(user_profile.realm, group_name, description, streams)
     return json_success()
 
+
 @require_realm_admin
 @has_request_variables
-def update_default_stream_group_info(request: HttpRequest, user_profile: UserProfile, group_id: int,
-                                     new_group_name: Optional[str]=REQ(validator=check_string, default=None),
-                                     new_description: Optional[str]=REQ(validator=check_string,
-                                                                        default=None)) -> None:
+def update_default_stream_group_info(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    group_id: int,
+    new_group_name: Optional[str] = REQ(validator=check_string, default=None),
+    new_description: Optional[str] = REQ(validator=check_string, default=None),
+) -> None:
     if not new_group_name and not new_description:
         return json_error(_('You must pass "new_description" or "new_group_name".'))
 
@@ -187,12 +201,16 @@ def update_default_stream_group_info(request: HttpRequest, user_profile: UserPro
         do_change_default_stream_group_description(user_profile.realm, group, new_description)
     return json_success()
 
+
 @require_realm_admin
 @has_request_variables
-def update_default_stream_group_streams(request: HttpRequest, user_profile: UserProfile,
-                                        group_id: int, op: str=REQ(),
-                                        stream_names: List[str]=REQ(
-                                            validator=check_list(check_string))) -> None:
+def update_default_stream_group_streams(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    group_id: int,
+    op: str = REQ(),
+    stream_names: List[str] = REQ(validator=check_list(check_string)),
+) -> None:
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     streams = []
     for stream_name in stream_names:
@@ -207,19 +225,22 @@ def update_default_stream_group_streams(request: HttpRequest, user_profile: User
         return json_error(_('Invalid value for "op". Specify one of "add" or "remove".'))
     return json_success()
 
+
 @require_realm_admin
 @has_request_variables
-def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile,
-                                group_id: int) -> None:
+def remove_default_stream_group(
+    request: HttpRequest, user_profile: UserProfile, group_id: int
+) -> None:
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     do_remove_default_stream_group(user_profile.realm, group)
     return json_success()
 
+
 @require_realm_admin
 @has_request_variables
-def remove_default_stream(request: HttpRequest,
-                          user_profile: UserProfile,
-                          stream_id: int=REQ(validator=check_int)) -> HttpResponse:
+def remove_default_stream(
+    request: HttpRequest, user_profile: UserProfile, stream_id: int = REQ(validator=check_int)
+) -> HttpResponse:
     (stream, sub) = access_stream_by_id(
         user_profile,
         stream_id,
@@ -228,19 +249,25 @@ def remove_default_stream(request: HttpRequest,
     do_remove_default_stream(stream)
     return json_success()
 
+
 @has_request_variables
 def update_stream_backend(
-        request: HttpRequest, user_profile: UserProfile,
-        stream_id: int,
-        description: Optional[str]=REQ(validator=check_capped_string(
-            Stream.MAX_DESCRIPTION_LENGTH), default=None),
-        is_private: Optional[bool]=REQ(validator=check_bool, default=None),
-        is_announcement_only: Optional[bool]=REQ(validator=check_bool, default=None),
-        stream_post_policy: Optional[int]=REQ(validator=check_int_in(
-            Stream.STREAM_POST_POLICY_TYPES), default=None),
-        history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
-        new_name: Optional[str]=REQ(validator=check_string, default=None),
-        message_retention_days: Optional[Union[int, str]]=REQ(validator=check_string_or_int, default=None),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: int,
+    description: Optional[str] = REQ(
+        validator=check_capped_string(Stream.MAX_DESCRIPTION_LENGTH), default=None
+    ),
+    is_private: Optional[bool] = REQ(validator=check_bool, default=None),
+    is_announcement_only: Optional[bool] = REQ(validator=check_bool, default=None),
+    stream_post_policy: Optional[int] = REQ(
+        validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES), default=None
+    ),
+    history_public_to_subscribers: Optional[bool] = REQ(validator=check_bool, default=None),
+    new_name: Optional[str] = REQ(validator=check_string, default=None),
+    message_retention_days: Optional[Union[int, str]] = REQ(
+        validator=check_string_or_int, default=None
+    ),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
@@ -251,7 +278,8 @@ def update_stream_backend(
             raise OrganizationOwnerRequired()
         user_profile.realm.ensure_not_on_limited_plan()
         message_retention_days_value = parse_message_retention_days(
-            message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP)
+            message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
+        )
         do_change_stream_message_retention_days(stream, message_retention_days_value)
 
     if description is not None:
@@ -289,24 +317,25 @@ def update_stream_backend(
         do_change_stream_invite_only(stream, is_private, history_public_to_subscribers)
     return json_success()
 
+
 @has_request_variables
 def list_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    include_subscribers: bool=REQ(validator=check_bool, default=False),
+    include_subscribers: bool = REQ(validator=check_bool, default=False),
 ) -> HttpResponse:
     subscribed, _ = gather_subscriptions(
-        user_profile, include_subscribers=include_subscribers,
+        user_profile,
+        include_subscribers=include_subscribers,
     )
     return json_success({"subscriptions": subscribed})
+
 
 FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Union[int, Iterable[Any]]]]
 
 add_subscriptions_schema = check_list(
     check_dict_only(
-        required_keys=[
-            ('name', check_string)
-        ],
+        required_keys=[('name', check_string)],
         optional_keys=[
             ('color', check_color),
             ('description', check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
@@ -316,11 +345,13 @@ add_subscriptions_schema = check_list(
 
 remove_subscriptions_schema = check_list(check_string)
 
+
 @has_request_variables
 def update_subscriptions_backend(
-        request: HttpRequest, user_profile: UserProfile,
-        delete: Iterable[str]=REQ(validator=remove_subscriptions_schema, default=[]),
-        add: Iterable[Mapping[str, Any]]=REQ(validator=add_subscriptions_schema, default=[]),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    delete: Iterable[str] = REQ(validator=remove_subscriptions_schema, default=[]),
+    add: Iterable[Mapping[str, Any]] = REQ(validator=add_subscriptions_schema, default=[]),
 ) -> HttpResponse:
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
@@ -331,12 +362,13 @@ def update_subscriptions_backend(
     ]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
+
 def compose_views(
     request: HttpRequest,
     user_profile: UserProfile,
     method_kwarg_pairs: "List[FuncKwargPair]",
 ) -> HttpResponse:
-    '''
+    """
     This takes a series of view methods from method_kwarg_pairs and calls
     them in sequence, and it smushes all the json results into a single
     response when everything goes right.  (This helps clients avoid extra
@@ -344,7 +376,7 @@ def compose_views(
     any one of the composed methods.
 
     TODO: Move this a utils-like module if we end up using it more widely.
-    '''
+    """
 
     json_dict: Dict[str, Any] = {}
     with transaction.atomic():
@@ -355,15 +387,20 @@ def compose_views(
             json_dict.update(orjson.loads(response.content))
     return json_success(json_dict)
 
+
 check_principals: Validator[Union[List[str], List[int]]] = check_union(
     [check_list(check_string), check_list(check_int)],
 )
 
+
 @has_request_variables
 def remove_subscriptions_backend(
-        request: HttpRequest, user_profile: UserProfile,
-        streams_raw: Iterable[str]=REQ("subscriptions", validator=remove_subscriptions_schema),
-        principals: Optional[Union[List[str], List[int]]]=REQ(validator=check_principals, default=None),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    streams_raw: Iterable[str] = REQ("subscriptions", validator=remove_subscriptions_schema),
+    principals: Optional[Union[List[str], List[int]]] = REQ(
+        validator=check_principals, default=None
+    ),
 ) -> HttpResponse:
 
     removing_someone_else = check_if_removing_someone_else(user_profile, principals)
@@ -372,19 +409,21 @@ def remove_subscriptions_backend(
     for stream_name in streams_raw:
         streams_as_dict.append({"name": stream_name.strip()})
 
-    streams, __ = list_to_streams(streams_as_dict, user_profile,
-                                  admin_access_required=removing_someone_else)
+    streams, __ = list_to_streams(
+        streams_as_dict, user_profile, admin_access_required=removing_someone_else
+    )
 
     if principals:
-        people_to_unsub = {principal_to_user_profile(
-            user_profile, principal) for principal in principals}
+        people_to_unsub = {
+            principal_to_user_profile(user_profile, principal) for principal in principals
+        }
     else:
         people_to_unsub = {user_profile}
 
     result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
-    (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
-                                                          request.client,
-                                                          acting_user=user_profile)
+    (removed, not_subscribed) = bulk_remove_subscriptions(
+        people_to_unsub, streams, request.client, acting_user=user_profile
+    )
 
     for (subscriber, removed_stream) in removed:
         result["removed"].append(removed_stream.name)
@@ -393,9 +432,10 @@ def remove_subscriptions_backend(
 
     return json_success(result)
 
-def you_were_just_subscribed_message(acting_user: UserProfile,
-                                     recipient_user: UserProfile,
-                                     stream_names: Set[str]) -> str:
+
+def you_were_just_subscribed_message(
+    acting_user: UserProfile, recipient_user: UserProfile, stream_names: Set[str]
+) -> str:
     subscriptions = sorted(stream_names)
     if len(subscriptions) == 1:
         with override_language(recipient_user.default_language):
@@ -413,26 +453,34 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
         message += f"* #**{stream_name}**\n"
     return message
 
+
 RETENTION_DEFAULT: Union[str, int] = "realm_default"
 EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
+
 
 @require_non_guest_user
 @has_request_variables
 def add_subscriptions_backend(
-        request: HttpRequest,
-        user_profile: UserProfile,
-        streams_raw: Iterable[Dict[str, str]]=REQ("subscriptions", validator=add_subscriptions_schema),
-        invite_only: bool=REQ(validator=check_bool, default=False),
-        stream_post_policy: int=REQ(validator=check_int_in(
-            Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
-        history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
-        message_retention_days: Union[str, int]=REQ(validator=check_string_or_int,
-                                                    default=RETENTION_DEFAULT),
-        announce: bool=REQ(validator=check_bool, default=False),
-        principals: Union[Sequence[str], Sequence[int]]=REQ(
-            validator=check_principals, default=EMPTY_PRINCIPALS,
-        ),
-        authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    streams_raw: Iterable[Dict[str, str]] = REQ(
+        "subscriptions", validator=add_subscriptions_schema
+    ),
+    invite_only: bool = REQ(validator=check_bool, default=False),
+    stream_post_policy: int = REQ(
+        validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES),
+        default=Stream.STREAM_POST_POLICY_EVERYONE,
+    ),
+    history_public_to_subscribers: Optional[bool] = REQ(validator=check_bool, default=None),
+    message_retention_days: Union[str, int] = REQ(
+        validator=check_string_or_int, default=RETENTION_DEFAULT
+    ),
+    announce: bool = REQ(validator=check_bool, default=False),
+    principals: Union[Sequence[str], Sequence[int]] = REQ(
+        validator=check_principals,
+        default=EMPTY_PRINCIPALS,
+    ),
+    authorization_errors_fatal: bool = REQ(validator=check_bool, default=True),
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -454,47 +502,56 @@ def add_subscriptions_backend(
         stream_dict_copy["stream_post_policy"] = stream_post_policy
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
-            message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP)
+            message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
+        )
 
         stream_dicts.append(stream_dict_copy)
 
     # Validation of the streams arguments, including enforcement of
     # can_create_streams policy and check_stream_name policy is inside
     # list_to_streams.
-    existing_streams, created_streams = \
-        list_to_streams(stream_dicts, user_profile, autocreate=True)
-    authorized_streams, unauthorized_streams = \
-        filter_stream_authorization(user_profile, existing_streams)
+    existing_streams, created_streams = list_to_streams(stream_dicts, user_profile, autocreate=True)
+    authorized_streams, unauthorized_streams = filter_stream_authorization(
+        user_profile, existing_streams
+    )
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        return json_error(_("Unable to access stream ({stream_name}).").format(
-            stream_name=unauthorized_streams[0].name,
-        ))
+        return json_error(
+            _("Unable to access stream ({stream_name}).").format(
+                stream_name=unauthorized_streams[0].name,
+            )
+        )
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
     if len(principals) > 0:
         if realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
-            return json_error(_("You can only invite other Zephyr mirroring users to private streams."))
+            return json_error(
+                _("You can only invite other Zephyr mirroring users to private streams.")
+            )
         if not user_profile.can_subscribe_other_users():
             if user_profile.realm.invite_to_stream_policy == Realm.POLICY_ADMINS_ONLY:
                 return json_error(_("Only administrators can modify other users' subscriptions."))
             # Realm.POLICY_MEMBERS_ONLY only fails if the
             # user is a guest, which happens in the decorator above.
-            assert user_profile.realm.invite_to_stream_policy == \
-                Realm.POLICY_FULL_MEMBERS_ONLY
+            assert user_profile.realm.invite_to_stream_policy == Realm.POLICY_FULL_MEMBERS_ONLY
             return json_error(_("Your account is too new to modify other users' subscriptions."))
-        subscribers = {principal_to_user_profile(user_profile, principal) for principal in principals}
+        subscribers = {
+            principal_to_user_profile(user_profile, principal) for principal in principals
+        }
     else:
         subscribers = {user_profile}
 
-    (subscribed, already_subscribed) = bulk_add_subscriptions(realm, streams, subscribers,
-                                                              acting_user=user_profile, color_map=color_map)
+    (subscribed, already_subscribed) = bulk_add_subscriptions(
+        realm, streams, subscribers, acting_user=user_profile, color_map=color_map
+    )
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
     email_to_user_profile: Dict[str, UserProfile] = {}
 
-    result: Dict[str, Any] = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
+    result: Dict[str, Any] = dict(
+        subscribed=defaultdict(list), already_subscribed=defaultdict(list)
+    )
     for sub_info in subscribed:
         subscriber = sub_info.user
         stream = sub_info.stream
@@ -522,6 +579,7 @@ def add_subscriptions_backend(
     if not authorization_errors_fatal:
         result["unauthorized"] = [s.name for s in unauthorized_streams]
     return json_success(result)
+
 
 def send_messages_for_new_subscribers(
     user_profile: UserProfile,
@@ -576,7 +634,9 @@ def send_messages_for_new_subscribers(
                     realm=user_profile.realm,
                     sender=sender,
                     recipient_user=recipient_user,
-                    content=msg))
+                    content=msg,
+                )
+            )
 
     if announce and len(created_streams) > 0:
         notifications_stream = user_profile.realm.get_notifications_stream()
@@ -590,7 +650,7 @@ def send_messages_for_new_subscribers(
 
             content = content.format(
                 user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
-                stream_str=", ".join(f'#**{s.name}**' for s in created_streams)
+                stream_str=", ".join(f'#**{s.name}**' for s in created_streams),
             )
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
@@ -624,9 +684,13 @@ def send_messages_for_new_subscribers(
     if len(notifications) > 0:
         do_send_messages(notifications, mark_as_read=[user_profile.id])
 
+
 @has_request_variables
-def get_subscribers_backend(request: HttpRequest, user_profile: UserProfile,
-                            stream_id: int=REQ('stream', converter=to_non_negative_int)) -> HttpResponse:
+def get_subscribers_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: int = REQ('stream', converter=to_non_negative_int),
+) -> HttpResponse:
     (stream, sub) = access_stream_by_id(
         user_profile,
         stream_id,
@@ -636,32 +700,39 @@ def get_subscribers_backend(request: HttpRequest, user_profile: UserProfile,
 
     return json_success({'subscribers': subscribers})
 
+
 # By default, lists all streams that the user has access to --
 # i.e. public streams plus invite-only streams that the user is on
 @has_request_variables
 def get_streams_backend(
-        request: HttpRequest, user_profile: UserProfile,
-        include_public: bool=REQ(validator=check_bool, default=True),
-        include_web_public: bool=REQ(validator=check_bool, default=False),
-        include_subscribed: bool=REQ(validator=check_bool, default=True),
-        include_all_active: bool=REQ(validator=check_bool, default=False),
-        include_default: bool=REQ(validator=check_bool, default=False),
-        include_owner_subscribed: bool=REQ(validator=check_bool, default=False),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    include_public: bool = REQ(validator=check_bool, default=True),
+    include_web_public: bool = REQ(validator=check_bool, default=False),
+    include_subscribed: bool = REQ(validator=check_bool, default=True),
+    include_all_active: bool = REQ(validator=check_bool, default=False),
+    include_default: bool = REQ(validator=check_bool, default=False),
+    include_owner_subscribed: bool = REQ(validator=check_bool, default=False),
 ) -> HttpResponse:
 
-    streams = do_get_streams(user_profile, include_public=include_public,
-                             include_web_public=include_web_public,
-                             include_subscribed=include_subscribed,
-                             include_all_active=include_all_active,
-                             include_default=include_default,
-                             include_owner_subscribed=include_owner_subscribed)
+    streams = do_get_streams(
+        user_profile,
+        include_public=include_public,
+        include_web_public=include_web_public,
+        include_subscribed=include_subscribed,
+        include_all_active=include_all_active,
+        include_default=include_default,
+        include_owner_subscribed=include_owner_subscribed,
+    )
     return json_success({"streams": streams})
+
 
 @has_request_variables
 def get_topics_backend(
-        request: HttpRequest, maybe_user_profile: Union[UserProfile, AnonymousUser],
-        stream_id: int=REQ(converter=to_non_negative_int,
-                           path_only=True)) -> HttpResponse:
+    request: HttpRequest,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    stream_id: int = REQ(converter=to_non_negative_int, path_only=True),
+) -> HttpResponse:
 
     if not maybe_user_profile.is_authenticated:
         is_web_public_query = True
@@ -690,30 +761,39 @@ def get_topics_backend(
 
     return json_success(dict(topics=result))
 
+
 @require_realm_admin
 @has_request_variables
-def delete_in_topic(request: HttpRequest, user_profile: UserProfile,
-                    stream_id: int=REQ(converter=to_non_negative_int),
-                    topic_name: str=REQ("topic_name")) -> HttpResponse:
+def delete_in_topic(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: int = REQ(converter=to_non_negative_int),
+    topic_name: str = REQ("topic_name"),
+) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
     messages = messages_for_topic(stream.recipient_id, topic_name)
     if not stream.is_history_public_to_subscribers():
         # Don't allow the user to delete messages that they don't have access to.
         deletable_message_ids = UserMessage.objects.filter(
-            user_profile=user_profile, message_id__in=messages).values_list("message_id", flat=True)
-        messages = [message for message in messages if message.id in
-                    deletable_message_ids]
+            user_profile=user_profile, message_id__in=messages
+        ).values_list("message_id", flat=True)
+        messages = [message for message in messages if message.id in deletable_message_ids]
 
     do_delete_messages(user_profile.realm, messages)
 
     return json_success()
 
+
 @require_post
 @authenticated_json_view
 @has_request_variables
-def json_stream_exists(request: HttpRequest, user_profile: UserProfile, stream_name: str=REQ("stream"),
-                       autosubscribe: bool=REQ(validator=check_bool, default=False)) -> HttpResponse:
+def json_stream_exists(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_name: str = REQ("stream"),
+    autosubscribe: bool = REQ(validator=check_bool, default=False),
+) -> HttpResponse:
     check_stream_name(stream_name)
 
     try:
@@ -729,40 +809,51 @@ def json_stream_exists(request: HttpRequest, user_profile: UserProfile, stream_n
     # So if we're not yet subscribed and autosubscribe is enabled, we
     # should join.
     if sub is None and autosubscribe:
-        bulk_add_subscriptions(user_profile.realm, [stream], [user_profile], acting_user=user_profile)
+        bulk_add_subscriptions(
+            user_profile.realm, [stream], [user_profile], acting_user=user_profile
+        )
         result["subscribed"] = True
 
     return json_success(result)  # results are ignored for HEAD requests
 
+
 @has_request_variables
-def json_get_stream_id(request: HttpRequest,
-                       user_profile: UserProfile,
-                       stream_name: str=REQ('stream')) -> HttpResponse:
+def json_get_stream_id(
+    request: HttpRequest, user_profile: UserProfile, stream_name: str = REQ('stream')
+) -> HttpResponse:
     (stream, sub) = access_stream_by_name(user_profile, stream_name)
     return json_success({'stream_id': stream.id})
 
+
 @has_request_variables
-def update_subscriptions_property(request: HttpRequest,
-                                  user_profile: UserProfile,
-                                  stream_id: int=REQ(validator=check_int),
-                                  property: str=REQ(),
-                                  value: str=REQ()) -> HttpResponse:
-    subscription_data = [{"property": property,
-                          "stream_id": stream_id,
-                          "value": value}]
-    return update_subscription_properties_backend(request, user_profile,
-                                                  subscription_data=subscription_data)
+def update_subscriptions_property(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: int = REQ(validator=check_int),
+    property: str = REQ(),
+    value: str = REQ(),
+) -> HttpResponse:
+    subscription_data = [{"property": property, "stream_id": stream_id, "value": value}]
+    return update_subscription_properties_backend(
+        request, user_profile, subscription_data=subscription_data
+    )
+
 
 @has_request_variables
 def update_subscription_properties_backend(
-        request: HttpRequest, user_profile: UserProfile,
-        subscription_data: List[Dict[str, Any]]=REQ(
-            validator=check_list(
-                check_dict([("stream_id", check_int),
-                            ("property", check_string),
-                            ("value", check_union([check_string, check_bool]))]),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    subscription_data: List[Dict[str, Any]] = REQ(
+        validator=check_list(
+            check_dict(
+                [
+                    ("stream_id", check_int),
+                    ("property", check_string),
+                    ("value", check_union([check_string, check_bool])),
+                ]
             ),
         ),
+    ),
 ) -> HttpResponse:
     """
     This is the entry point to changing subscription properties. This
@@ -774,14 +865,17 @@ def update_subscription_properties_backend(
     [{"stream_id": "1", "property": "is_muted", "value": False},
      {"stream_id": "1", "property": "color", "value": "#c2c2c2"}]
     """
-    property_converters = {"color": check_color, "in_home_view": check_bool,
-                           "is_muted": check_bool,
-                           "desktop_notifications": check_bool,
-                           "audible_notifications": check_bool,
-                           "push_notifications": check_bool,
-                           "email_notifications": check_bool,
-                           "pin_to_top": check_bool,
-                           "wildcard_mentions_notify": check_bool}
+    property_converters = {
+        "color": check_color,
+        "in_home_view": check_bool,
+        "is_muted": check_bool,
+        "desktop_notifications": check_bool,
+        "audible_notifications": check_bool,
+        "push_notifications": check_bool,
+        "email_notifications": check_bool,
+        "pin_to_top": check_bool,
+        "wildcard_mentions_notify": check_bool,
+    }
     response_data = []
 
     for change in subscription_data:
@@ -801,11 +895,10 @@ def update_subscription_properties_backend(
         except ValidationError as error:
             return json_error(error.message)
 
-        do_change_subscription_property(user_profile, sub, stream,
-                                        property, value, acting_user=user_profile)
+        do_change_subscription_property(
+            user_profile, sub, stream, property, value, acting_user=user_profile
+        )
 
-        response_data.append({'stream_id': stream_id,
-                              'property': property,
-                              'value': value})
+        response_data.append({'stream_id': stream_id, 'property': property, 'value': value})
 
     return json_success({"subscription_data": response_data})

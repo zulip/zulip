@@ -9,8 +9,9 @@ class Command(ZulipBaseCommand):
     help = """Script to deactivate a realm."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--redirect_url', metavar='<redirect_url>',
-                            help="URL to which the realm has moved")
+        parser.add_argument(
+            '--redirect_url', metavar='<redirect_url>', help="URL to which the realm has moved"
+        )
         self.add_realm_args(parser, True)
 
     def handle(self, *args: Any, **options: str) -> None:

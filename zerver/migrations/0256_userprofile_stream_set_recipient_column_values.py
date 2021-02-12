@@ -16,7 +16,8 @@ class Migration(migrations.Migration):
             WHERE zerver_recipient.type_id = zerver_userprofile.id AND zerver_recipient.type = 1;
             """,
             reverse_sql='UPDATE zerver_userprofile SET recipient_id = NULL',
-            elidable=True),
+            elidable=True,
+        ),
         migrations.RunSQL(
             """
             UPDATE zerver_stream
@@ -25,5 +26,6 @@ class Migration(migrations.Migration):
             WHERE zerver_recipient.type_id = zerver_stream.id AND zerver_recipient.type = 2;
             """,
             reverse_sql='UPDATE zerver_stream SET recipient_id = NULL',
-            elidable=True),
+            elidable=True,
+        ),
     ]

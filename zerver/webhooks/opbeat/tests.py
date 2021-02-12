@@ -45,7 +45,10 @@ App foo created
 **test title**
 test summary'''
         self.check_webhook(
-            "unsupported_object", expected_topic, expected_message, content_type="application/json",
+            "unsupported_object",
+            expected_topic,
+            expected_message,
+            content_type="application/json",
         )
 
     def test_error_fixed(self) -> None:

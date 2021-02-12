@@ -15,11 +15,24 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ArchiveTransaction',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timestamp', models.DateTimeField(db_index=True, default=django.utils.timezone.now)),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
+                (
+                    'timestamp',
+                    models.DateTimeField(db_index=True, default=django.utils.timezone.now),
+                ),
                 ('restored', models.BooleanField(db_index=True, default=False)),
                 ('type', models.PositiveSmallIntegerField(db_index=True)),
-                ('realm', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm')),
+                (
+                    'realm',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'
+                    ),
+                ),
             ],
         ),
         migrations.RemoveField(
@@ -45,6 +58,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='archivedmessage',
             name='archive_transaction',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.ArchiveTransaction'),
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to='zerver.ArchiveTransaction',
+            ),
         ),
     ]

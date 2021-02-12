@@ -3,7 +3,6 @@ from zerver.models import UserProfile
 
 
 class ZcommandTest(ZulipTestCase):
-
     def test_invalid_zcommand(self) -> None:
         self.login('hamlet')
 

@@ -10,9 +10,11 @@ class Command(BaseCommand):
     help = """Transfer uploads to S3 """
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('--processes',
-                            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-                            help='Processes to use for exporting uploads in parallel')
+        parser.add_argument(
+            '--processes',
+            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
+            help='Processes to use for exporting uploads in parallel',
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         num_processes = int(options['processes'])

@@ -16,20 +16,26 @@ from zerver.models import UserProfile
 class SuppressedEvent(Exception):
     pass
 
+
 class NotImplementedEventType(SuppressedEvent):
     pass
 
+
 @webhook_view('Stripe')
 @has_request_variables
-def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any]=REQ(argument_type='body'),
-                       stream: str=REQ(default='test')) -> HttpResponse:
+def api_stripe_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+    stream: str = REQ(default='test'),
+) -> HttpResponse:
     try:
         topic, body = topic_and_body(payload)
     except SuppressedEvent:  # nocoverage
         return json_success()
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
+
 
 def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
     event_type = payload["type"]  # invoice.created, customer.subscription.created, etc
@@ -51,19 +57,24 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
     body = None
 
     def update_string(blacklist: Sequence[str] = []) -> str:
-        assert('previous_attributes' in payload['data'])
+        assert 'previous_attributes' in payload['data']
         previous_attributes = payload['data']['previous_attributes']
         for attribute in blacklist:
             previous_attributes.pop(attribute, None)
         if not previous_attributes:  # nocoverage
             raise SuppressedEvent()
-        return ''.join('\n* ' + attribute.replace('_', ' ').capitalize() +
-                       ' is now ' + stringify(object_[attribute])
-                       for attribute in sorted(previous_attributes.keys()))
+        return ''.join(
+            '\n* '
+            + attribute.replace('_', ' ').capitalize()
+            + ' is now '
+            + stringify(object_[attribute])
+            for attribute in sorted(previous_attributes.keys())
+        )
 
     def default_body(update_blacklist: Sequence[str] = []) -> str:
         body = '{resource} {verbed}'.format(
-            resource=linkified_id(object_['id']), verbed=event.replace('_', ' '))
+            resource=linkified_id(object_['id']), verbed=event.replace('_', ' ')
+        )
         if event == 'updated':
             return body + update_string(blacklist=update_blacklist)
         return body
@@ -90,13 +101,16 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                 topic = 'charges'
             body = "{resource} for {amount} {verbed}".format(
                 resource=linkified_id(object_['id']),
-                amount=amount_string(object_['amount'], object_['currency']), verbed=event)
+                amount=amount_string(object_['amount'], object_['currency']),
+                verbed=event,
+            )
             if object_['failure_code']:  # nocoverage
                 body += '. Failure code: {}'.format(object_['failure_code'])
         if resource == 'dispute':
             topic = 'disputes'
             body = default_body() + '. Current status: {status}.'.format(
-                status=object_['status'].replace('_', ' '))
+                status=object_['status'].replace('_', ' ')
+            )
         if resource == 'refund':
             topic = 'refunds'
             body = 'A {resource} for a {charge} of {amount} was updated.'.format(
@@ -126,7 +140,9 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
             body = 'Discount {verbed} ([{coupon_name}]({coupon_url})).'.format(
                 verbed=event.replace('_', ' '),
                 coupon_name=object_['coupon']['name'],
-                coupon_url='https://dashboard.stripe.com/{}/{}'.format('coupons', object_['coupon']['id']),
+                coupon_url='https://dashboard.stripe.com/{}/{}'.format(
+                    'coupons', object_['coupon']['id']
+                ),
             )
         if resource == 'source':  # nocoverage
             body = default_body()
@@ -136,11 +152,13 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                 DAY = 60 * 60 * 24  # seconds in a day
                 # Basically always three: https://stripe.com/docs/api/python#event_types
                 body += ' in {days} days'.format(
-                    days=int((object_["trial_end"] - time.time() + DAY//2) // DAY))
+                    days=int((object_["trial_end"] - time.time() + DAY // 2) // DAY)
+                )
             if event == 'created':
                 if object_['plan']:
                     body += '\nPlan: [{plan_nickname}](https://dashboard.stripe.com/plans/{plan_id})'.format(
-                        plan_nickname=object_['plan']['nickname'], plan_id=object_['plan']['id'])
+                        plan_nickname=object_['plan']['nickname'], plan_id=object_['plan']['id']
+                    )
                 if object_['quantity']:
                     body += '\nQuantity: {}'.format(object_['quantity'])
                 if 'billing' in object_:  # nocoverage
@@ -148,42 +166,68 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
     if category == 'file':  # nocoverage
         topic = 'files'
         body = default_body() + ' ({purpose}). \nTitle: {title}'.format(
-            purpose=object_['purpose'].replace('_', ' '), title=object_['title'])
+            purpose=object_['purpose'].replace('_', ' '), title=object_['title']
+        )
     if category == 'invoice':
         if event == 'upcoming':  # nocoverage
             body = 'Upcoming invoice created'
-        elif (event == 'updated' and
-              payload['data']['previous_attributes'].get('paid', None) is False and
-              object_['paid'] is True and
-              object_["amount_paid"] != 0 and
-              object_["amount_remaining"] == 0):
+        elif (
+            event == 'updated'
+            and payload['data']['previous_attributes'].get('paid', None) is False
+            and object_['paid'] is True
+            and object_["amount_paid"] != 0
+            and object_["amount_remaining"] == 0
+        ):
             # We are taking advantage of logical AND short circuiting here since we need the else
             # statement below.
             object_id = object_['id']
             invoice_link = f'https://dashboard.stripe.com/invoices/{object_id}'
             body = f'[Invoice]({invoice_link}) is now paid'
         else:
-            body = default_body(update_blacklist=['lines', 'description', 'number', 'finalized_at',
-                                                  'status_transitions', 'payment_intent'])
+            body = default_body(
+                update_blacklist=[
+                    'lines',
+                    'description',
+                    'number',
+                    'finalized_at',
+                    'status_transitions',
+                    'payment_intent',
+                ]
+            )
         if event == 'created':
             # Could potentially add link to invoice PDF here
             body += ' ({reason})\nTotal: {total}\nAmount due: {due}'.format(
                 reason=object_['billing_reason'].replace('_', ' '),
                 total=amount_string(object_['total'], object_['currency']),
-                due=amount_string(object_['amount_due'], object_['currency']))
+                due=amount_string(object_['amount_due'], object_['currency']),
+            )
     if category == 'invoiceitem':
         body = default_body(update_blacklist=['description', 'invoice'])
         if event == 'created':
-            body += ' for {amount}'.format(amount=amount_string(object_['amount'], object_['currency']))
+            body += ' for {amount}'.format(
+                amount=amount_string(object_['amount'], object_['currency'])
+            )
     if category.startswith('issuing'):  # nocoverage
         # Not implemented
         raise NotImplementedEventType()
     if category.startswith('order'):  # nocoverage
         # Not implemented
         raise NotImplementedEventType()
-    if category in ['payment_intent', 'payout', 'plan', 'product', 'recipient',
-                    'reporting', 'review', 'sigma', 'sku', 'source', 'subscription_schedule',
-                    'topup', 'transfer']:  # nocoverage
+    if category in [
+        'payment_intent',
+        'payout',
+        'plan',
+        'product',
+        'recipient',
+        'reporting',
+        'review',
+        'sigma',
+        'sku',
+        'source',
+        'subscription_schedule',
+        'topup',
+        'transfer',
+    ]:  # nocoverage
         # Not implemented. In theory doing something like
         #   body = default_body()
         # may not be hard for some of these
@@ -193,9 +237,25 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         raise UnsupportedWebhookEventType(event_type)
     return (topic, body)
 
+
 def amount_string(amount: int, currency: str) -> str:
-    zero_decimal_currencies = ["bif", "djf", "jpy", "krw", "pyg", "vnd", "xaf",
-                               "xpf", "clp", "gnf", "kmf", "mga", "rwf", "vuv", "xof"]
+    zero_decimal_currencies = [
+        "bif",
+        "djf",
+        "jpy",
+        "krw",
+        "pyg",
+        "vnd",
+        "xaf",
+        "xpf",
+        "clp",
+        "gnf",
+        "kmf",
+        "mga",
+        "rwf",
+        "vuv",
+        "xof",
+    ]
     if currency in zero_decimal_currencies:
         decimal_amount = str(amount)  # nocoverage
     else:
@@ -205,7 +265,8 @@ def amount_string(amount: int, currency: str) -> str:
         return '$' + decimal_amount
     return decimal_amount + f' {currency.upper()}'
 
-def linkified_id(object_id: str, lower: bool=False) -> str:
+
+def linkified_id(object_id: str, lower: bool = False) -> str:
     names_and_urls: Dict[str, Tuple[str, Optional[str]]] = {
         # Core resources
         'ch': ('Charge', 'charges'),
@@ -219,13 +280,11 @@ def linkified_id(object_id: str, lower: bool=False) -> str:
         'prod': ('Product', 'products'),
         're': ('Refund', 'refunds'),
         'tok': ('Token', 'tokens'),
-
         # Payment methods
         # payment methods have URL prefixes like /customers/cus_id/sources
         'ba': ('Bank account', None),
         'card': ('Card', None),
         'src': ('Source', None),
-
         # Billing
         # coupons have a configurable id, but the URL prefix is /coupons
         # discounts don't have a URL, I think
@@ -238,11 +297,9 @@ def linkified_id(object_id: str, lower: bool=False) -> str:
         'si': ('Subscription item', 'subscription_items'),
         # I think usage records have URL prefixes like /subscription_items/si_id/usage_record_summaries
         'mbur': ('Usage record', None),
-
         # Undocumented :|
         'py': ('Payment', 'payments'),
         'pyr': ('Refund', 'refunds'),  # Pseudo refunds. Not fully tested.
-
         # Connect, Fraud, Orders, etc not implemented
     }
     name, url_prefix = names_and_urls[object_id.split('_')[0]]
@@ -251,6 +308,7 @@ def linkified_id(object_id: str, lower: bool=False) -> str:
     if url_prefix is None:  # nocoverage
         return name
     return f'[{name}](https://dashboard.stripe.com/{url_prefix}/{object_id})'
+
 
 def stringify(value: Any) -> str:
     if isinstance(value, int) and value > 1500000000 and value < 2000000000:

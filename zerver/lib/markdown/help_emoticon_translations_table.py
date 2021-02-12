@@ -36,6 +36,7 @@ ROW_HTML = """\
 </tr>
 """
 
+
 class EmoticonTranslationsHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
         """ Add SettingHelpExtension to the Markdown instance. """
@@ -49,19 +50,22 @@ class EmoticonTranslation(Preprocessor):
             match = REGEXP.search(line)
             if match:
                 text = self.handleMatch(match)
-                lines = lines[:loc] + text + lines[loc+1:]
+                lines = lines[:loc] + text + lines[loc + 1 :]
                 break
         return lines
 
     def handleMatch(self, match: Match[str]) -> List[str]:
         rows = [
-            ROW_HTML.format(emoticon=emoticon,
-                            name=name.strip(':'),
-                            codepoint=name_to_codepoint[name.strip(':')])
+            ROW_HTML.format(
+                emoticon=emoticon,
+                name=name.strip(':'),
+                codepoint=name_to_codepoint[name.strip(':')],
+            )
             for emoticon, name in EMOTICON_CONVERSIONS.items()
         ]
         body = ''.join(rows).strip()
         return TABLE_HTML.format(body=body).strip().splitlines()
+
 
 def makeExtension(*args: Any, **kwargs: Any) -> EmoticonTranslationsHelpExtension:
     return EmoticonTranslationsHelpExtension(*args, **kwargs)

@@ -21,9 +21,11 @@ states: Dict[str, int] = {
     "UNKNOWN": 3,
 }
 
+
 def report(state: str, output: str) -> None:
     print(f"{state}\n{output}")
     exit(states[state])
+
 
 output = ""
 down_count = 0

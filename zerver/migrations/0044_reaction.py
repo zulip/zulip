@@ -13,9 +13,24 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Reaction',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('user_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('message', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Message')),
+                (
+                    'id',
+                    models.AutoField(
+                        verbose_name='ID', serialize=False, auto_created=True, primary_key=True
+                    ),
+                ),
+                (
+                    'user_profile',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+                (
+                    'message',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to='zerver.Message'
+                    ),
+                ),
                 ('emoji_name', models.TextField()),
             ],
             bases=(models.Model,),

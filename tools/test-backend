@@ -143,6 +143,7 @@ enforce_fully_covered = sorted(
 
 FAILED_TEST_PATH = 'var/last_test_failure.json'
 
+
 def get_failed_tests() -> List[str]:
     try:
         with open(FAILED_TEST_PATH, "rb") as f:
@@ -151,10 +152,12 @@ def get_failed_tests() -> List[str]:
         print("var/last_test_failure.json doesn't exist; running all tests.")
         return []
 
+
 def write_failed_tests(failed_tests: List[str]) -> None:
     if failed_tests:
         with open(FAILED_TEST_PATH, 'wb') as f:
             f.write(orjson.dumps(failed_tests))
+
 
 @contextlib.contextmanager
 def block_internet() -> Iterator[None]:
@@ -166,6 +169,7 @@ def block_internet() -> Iterator[None]:
         with responses.RequestsMock():
             yield
 
+
 class ZulipInternetBlockedError(Exception):
     def __init__(self, original_msg: str) -> None:
         zulip_msg = (
@@ -175,6 +179,7 @@ class ZulipInternetBlockedError(Exception):
         )
         msg = f"{zulip_msg}\nResponses library error message: {original_msg}"
         super().__init__(msg)
+
 
 def main() -> None:
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -207,55 +212,65 @@ def main() -> None:
     test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube # run a single test
     test-backend MarkdownTest.test_inline_youtube # run a single test"""
 
-    parser = argparse.ArgumentParser(description=usage,
-                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=usage, formatter_class=argparse.RawTextHelpFormatter
+    )
 
-    parser.add_argument('--nonfatal-errors', action="store_false",
-                        dest="fatal_errors", help="Continue past test failures to run all tests")
-    parser.add_argument('--coverage',
-                        action="store_true",
-                        help='Compute test coverage.')
-    parser.add_argument('--verbose-coverage',
-                        action="store_true",
-                        help='Enable verbose print of coverage report.')
-    parser.add_argument('--no-cov-cleanup',
-                        action='store_true',
-                        help="Do not clean generated coverage files.")
+    parser.add_argument(
+        '--nonfatal-errors',
+        action="store_false",
+        dest="fatal_errors",
+        help="Continue past test failures to run all tests",
+    )
+    parser.add_argument('--coverage', action="store_true", help='Compute test coverage.')
+    parser.add_argument(
+        '--verbose-coverage', action="store_true", help='Enable verbose print of coverage report.'
+    )
+    parser.add_argument(
+        '--no-cov-cleanup', action='store_true', help="Do not clean generated coverage files."
+    )
 
-    parser.add_argument('--parallel', dest='processes',
-                        type=int,
-                        default=default_parallel,
-                        help='Specify the number of processes to run the '
-                             'tests in. Default is the number of logical CPUs')
-    parser.add_argument('--profile',
-                        action="store_true",
-                        help='Profile test runtime.')
-    parser.add_argument('--force',
-                        action="store_true",
-                        help='Run tests despite possible problems.')
-    parser.add_argument('--no-shallow',
-                        action="store_true",
-                        help="Don't allow shallow testing of templates (deprecated)")
-    parser.add_argument('--verbose',
-                        action="store_true",
-                        help="Show detailed output")
-    parser.add_argument('--reverse',
-                        action="store_true",
-                        help="Run tests in reverse order.")
-    parser.add_argument('--rerun',
-                        action="store_true",
-                        help=("Run the tests which failed the last time "
-                              "test-backend was run.  Implies --nonfatal-errors."))
-    parser.add_argument('--include-webhooks',
-                        action="store_true",
-                        help=("Include webhook tests.  By default, they are skipped for performance."))
-    parser.add_argument('--generate-stripe-fixtures',
-                        action="store_true",
-                        help=("Generate Stripe test fixtures by making requests to Stripe test network"))
+    parser.add_argument(
+        '--parallel',
+        dest='processes',
+        type=int,
+        default=default_parallel,
+        help='Specify the number of processes to run the '
+        'tests in. Default is the number of logical CPUs',
+    )
+    parser.add_argument('--profile', action="store_true", help='Profile test runtime.')
+    parser.add_argument('--force', action="store_true", help='Run tests despite possible problems.')
+    parser.add_argument(
+        '--no-shallow',
+        action="store_true",
+        help="Don't allow shallow testing of templates (deprecated)",
+    )
+    parser.add_argument('--verbose', action="store_true", help="Show detailed output")
+    parser.add_argument('--reverse', action="store_true", help="Run tests in reverse order.")
+    parser.add_argument(
+        '--rerun',
+        action="store_true",
+        help=(
+            "Run the tests which failed the last time "
+            "test-backend was run.  Implies --nonfatal-errors."
+        ),
+    )
+    parser.add_argument(
+        '--include-webhooks',
+        action="store_true",
+        help=("Include webhook tests.  By default, they are skipped for performance."),
+    )
+    parser.add_argument(
+        '--generate-stripe-fixtures',
+        action="store_true",
+        help=("Generate Stripe test fixtures by making requests to Stripe test network"),
+    )
     parser.add_argument('args', nargs='*')
-    parser.add_argument('--ban-console-output',
-                        action="store_true",
-                        help='Require stdout and stderr to be clean of unexpected output.')
+    parser.add_argument(
+        '--ban-console-output',
+        action="store_true",
+        help='Require stdout and stderr to be clean of unexpected output.',
+    )
 
     options = parser.parse_args()
     if options.ban_console_output:
@@ -266,8 +281,7 @@ def main() -> None:
     include_webhooks = options.coverage or options.include_webhooks
 
     if parallel < 1:
-        raise argparse.ArgumentTypeError(
-            "option processes: Only positive integers are allowed.")
+        raise argparse.ArgumentTypeError("option processes: Only positive integers are allowed.")
 
     zerver_test_dir = 'zerver/tests/'
 
@@ -355,14 +369,19 @@ def main() -> None:
 
     if options.coverage:
         import coverage
-        cov = coverage.Coverage(data_suffix="", config_file="tools/coveragerc", concurrency='multiprocessing')
+
+        cov = coverage.Coverage(
+            data_suffix="", config_file="tools/coveragerc", concurrency='multiprocessing'
+        )
         # Do not clean .coverage file in CircleCi job so that coverage data can be uploaded.
         if not options.no_cov_cleanup:
             import atexit
+
             atexit.register(lambda: cov.erase())  # Ensure the data file gets cleaned up at the end.
         cov.start()
     if options.profile:
         import cProfile
+
         prof = cProfile.Profile()
         prof.enable()
 
@@ -387,11 +406,16 @@ def main() -> None:
         print("-- Running tests in serial mode.", flush=True)
 
     with block_internet():
-        test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
-                                 parallel=parallel, reverse=options.reverse,
-                                 keepdb=True)
-        failures, failed_tests = test_runner.run_tests(suites, full_suite=full_suite,
-                                                       include_webhooks=include_webhooks)
+        test_runner = TestRunner(
+            failfast=options.fatal_errors,
+            verbosity=2,
+            parallel=parallel,
+            reverse=options.reverse,
+            keepdb=True,
+        )
+        failures, failed_tests = test_runner.run_tests(
+            suites, full_suite=full_suite, include_webhooks=include_webhooks
+        )
     write_failed_tests(failed_tests)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
@@ -434,13 +458,17 @@ def main() -> None:
             try:
                 missing_lines = cov.analysis2(path)[3]
                 if len(missing_lines) == 0 and path != "zerver/lib/migrate.py":
-                    print(f"ERROR: {path} has complete backend test coverage but is still in not_yet_fully_covered.")
+                    print(
+                        f"ERROR: {path} has complete backend test coverage but is still in not_yet_fully_covered."
+                    )
                     ok = False
             except coverage.misc.NoSource:
                 continue
         if not ok:
             print()
-            print("There are one or more fully covered files that are still in not_yet_fully_covered.")
+            print(
+                "There are one or more fully covered files that are still in not_yet_fully_covered."
+            )
             print("Remove the file(s) from not_yet_fully_covered in `tools/test-backend`.")
             failures = True
     if options.profile:
@@ -464,6 +492,7 @@ def main() -> None:
 
     # We'll have printed whether tests passed or failed above
     sys.exit(bool(failures))
+
 
 if __name__ == "__main__":
     main()

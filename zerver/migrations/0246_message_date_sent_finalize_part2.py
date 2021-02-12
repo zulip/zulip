@@ -33,9 +33,11 @@ class Migration(migrations.Migration):
         # Django doesn't rename the index when renaming a column, which can be confusing
         # for someone inspecting the table in the future who's not aware of the old name.
         # We should rename appropriately here.
-        migrations.RunSQL("""
+        migrations.RunSQL(
+            """
         ALTER INDEX IF EXISTS zerver_archivedmessage_pub_date_509062c8 RENAME TO zerver_archivedmessage_date_sent_509062c8
-        """),
+        """
+        ),
         migrations.RemoveField(
             model_name='message',
             name='pub_date',

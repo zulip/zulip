@@ -47,38 +47,34 @@ TAB_DISPLAY_NAMES = {
     'js': 'JavaScript',
     'curl': 'curl',
     'zulip-send': 'zulip-send',
-
     'web': 'Web',
     'desktop': 'Desktop',
     'mobile': 'Mobile',
-
     'mm-default': 'Default installation',
     'mm-docker': 'Docker',
     'mm-gitlab-omnibus': 'GitLab Omnibus',
-
     'send-email-invitations': 'Send email invitations',
     'share-an-invite-link': 'Share an invite link',
     'allow-anyone-to-join': 'Allow anyone to join',
     'restrict-by-email-domain': 'Restrict by email domain',
-
     'zoom': 'Zoom',
     'jitsi-meet': 'Jitsi Meet',
     'bigbluebutton': 'Big Blue Button',
     'disable': 'Disabled',
-
     'chrome': 'Chrome',
     'firefox': 'Firefox',
     'desktop-app': 'Desktop app',
-
     'system-proxy-settings': 'System proxy settings',
     'custom-proxy-settings': 'Custom proxy settings',
 }
+
 
 class TabbedSectionsGenerator(Extension):
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
             TabbedSectionsPreprocessor(md, self.getConfigs()), 'tabbed_sections', -500
         )
+
 
 class TabbedSectionsPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
@@ -91,12 +87,14 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 tab_class = 'has-tabs'
             else:
                 tab_class = 'no-tabs'
-                tab_section['tabs'] = [{'tab_name': 'null_tab',
-                                        'start': tab_section['start_tabs_index']}]
+                tab_section['tabs'] = [
+                    {'tab_name': 'null_tab', 'start': tab_section['start_tabs_index']}
+                ]
             nav_bar = self.generate_nav_bar(tab_section)
             content_blocks = self.generate_content_blocks(tab_section, lines)
             rendered_tabs = CODE_SECTION_TEMPLATE.format(
-                tab_class=tab_class, nav_bar=nav_bar, blocks=content_blocks)
+                tab_class=tab_class, nav_bar=nav_bar, blocks=content_blocks
+            )
 
             start = tab_section['start_tabs_index']
             end = tab_section['end_tabs_index'] + 1
@@ -122,7 +120,8 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 # Wrapping the content in two newlines is necessary here.
                 # If we don't do this, the inner Markdown does not get
                 # rendered properly.
-                content=f'\n{content}\n')
+                content=f'\n{content}\n',
+            )
             tab_content_blocks.append(tab_content_block)
         return '\n'.join(tab_content_blocks)
 
@@ -130,8 +129,8 @@ class TabbedSectionsPreprocessor(Preprocessor):
         li_elements = []
         for tab in tab_section['tabs']:
             li = NAV_LIST_ITEM_TEMPLATE.format(
-                data_language=tab.get('tab_name'),
-                name=TAB_DISPLAY_NAMES.get(tab.get('tab_name')))
+                data_language=tab.get('tab_name'), name=TAB_DISPLAY_NAMES.get(tab.get('tab_name'))
+            )
             li_elements.append(li)
         return NAV_BAR_TEMPLATE.format(tabs='\n'.join(li_elements))
 
@@ -145,8 +144,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
             tab_content_match = TAB_CONTENT_REGEX.search(line)
             if tab_content_match:
                 block.setdefault('tabs', [])
-                tab = {'start': index,
-                       'tab_name': tab_content_match.group(1)}
+                tab = {'start': index, 'tab_name': tab_content_match.group(1)}
                 block['tabs'].append(tab)
 
             end_match = END_TABBED_SECTION_REGEX.search(line)
@@ -154,6 +152,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 block['end_tabs_index'] = index
                 break
         return block
+
 
 def makeExtension(*args: Any, **kwargs: str) -> TabbedSectionsGenerator:
     return TabbedSectionsGenerator(**kwargs)

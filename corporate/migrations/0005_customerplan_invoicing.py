@@ -23,7 +23,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customerplan',
             name='invoiced_through',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='corporate.LicenseLedger'),
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='+',
+                to='corporate.LicenseLedger',
+            ),
         ),
         migrations.AddField(
             model_name='customerplan',

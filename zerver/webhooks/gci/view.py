@@ -15,8 +15,10 @@ GCI_TOPIC_TEMPLATE = '{student_name}'
 def build_instance_url(instance_id: str) -> str:
     return f"https://codein.withgoogle.com/dashboard/task-instances/{instance_id}/"
 
+
 class UnknownEventType(Exception):
     pass
+
 
 def get_abandon_event_body(payload: Dict[str, Any]) -> str:
     return GCI_MESSAGE_TEMPLATE.format(
@@ -26,6 +28,7 @@ def get_abandon_event_body(payload: Dict[str, Any]) -> str:
         task_url=build_instance_url(payload['task_instance']),
     )
 
+
 def get_submit_event_body(payload: Dict[str, Any]) -> str:
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['task_claimed_by'],
@@ -33,6 +36,7 @@ def get_submit_event_body(payload: Dict[str, Any]) -> str:
         task_name=payload['task_definition_name'],
         task_url=build_instance_url(payload['task_instance']),
     )
+
 
 def get_comment_event_body(payload: Dict[str, Any]) -> str:
     return GCI_MESSAGE_TEMPLATE.format(
@@ -42,6 +46,7 @@ def get_comment_event_body(payload: Dict[str, Any]) -> str:
         task_url=build_instance_url(payload['task_instance']),
     )
 
+
 def get_claim_event_body(payload: Dict[str, Any]) -> str:
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['task_claimed_by'],
@@ -50,6 +55,7 @@ def get_claim_event_body(payload: Dict[str, Any]) -> str:
         task_url=build_instance_url(payload['task_instance']),
     )
 
+
 def get_approve_event_body(payload: Dict[str, Any]) -> str:
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['author'],
@@ -57,6 +63,7 @@ def get_approve_event_body(payload: Dict[str, Any]) -> str:
         task_name=payload['task_definition_name'],
         task_url=build_instance_url(payload['task_instance']),
     )
+
 
 def get_approve_pending_pc_event_body(payload: Dict[str, Any]) -> str:
     template = "{} (pending parental consent).".format(GCI_MESSAGE_TEMPLATE.rstrip('.'))
@@ -67,6 +74,7 @@ def get_approve_pending_pc_event_body(payload: Dict[str, Any]) -> str:
         task_url=build_instance_url(payload['task_instance']),
     )
 
+
 def get_needswork_event_body(payload: Dict[str, Any]) -> str:
     template = "{} for more work.".format(GCI_MESSAGE_TEMPLATE.rstrip('.'))
     return template.format(
@@ -76,15 +84,18 @@ def get_needswork_event_body(payload: Dict[str, Any]) -> str:
         task_url=build_instance_url(payload['task_instance']),
     )
 
+
 def get_extend_event_body(payload: Dict[str, Any]) -> str:
-    template = "{} by {days} day(s).".format(GCI_MESSAGE_TEMPLATE.rstrip('.'),
-                                             days=payload['extension_days'])
+    template = "{} by {days} day(s).".format(
+        GCI_MESSAGE_TEMPLATE.rstrip('.'), days=payload['extension_days']
+    )
     return template.format(
         actor=payload['author'],
         action='extended the deadline for',
         task_name=payload['task_definition_name'],
         task_url=build_instance_url(payload['task_instance']),
     )
+
 
 def get_unassign_event_body(payload: Dict[str, Any]) -> str:
     return GCI_MESSAGE_TEMPLATE.format(
@@ -94,16 +105,21 @@ def get_unassign_event_body(payload: Dict[str, Any]) -> str:
         task_url=build_instance_url(payload['task_instance']),
     )
 
+
 def get_outoftime_event_body(payload: Dict[str, Any]) -> str:
     return 'The deadline for the task [{task_name}]({task_url}) has passed.'.format(
         task_name=payload['task_definition_name'],
         task_url=build_instance_url(payload['task_instance']),
     )
 
+
 @webhook_view("GoogleCodeIn")
 @has_request_variables
-def api_gci_webhook(request: HttpRequest, user_profile: UserProfile,
-                    payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_gci_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     event = get_event(payload)
     if event is not None:
         body = get_body_based_on_event(event)(payload)
@@ -113,6 +129,7 @@ def api_gci_webhook(request: HttpRequest, user_profile: UserProfile,
         check_send_webhook_message(request, user_profile, subject, body)
 
     return json_success()
+
 
 EVENTS_FUNCTION_MAPPER = {
     'abandon': get_abandon_event_body,
@@ -127,12 +144,14 @@ EVENTS_FUNCTION_MAPPER = {
     'unassign': get_unassign_event_body,
 }
 
+
 def get_event(payload: Dict[str, Any]) -> Optional[str]:
     event = payload['event_type']
     if event in EVENTS_FUNCTION_MAPPER:
         return event
 
     raise UnknownEventType(f"Event '{event}' is unknown and cannot be handled")  # nocoverage
+
 
 def get_body_based_on_event(event: str) -> Any:
     return EVENTS_FUNCTION_MAPPER[event]

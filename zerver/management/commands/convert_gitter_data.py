@@ -13,16 +13,19 @@ class Command(BaseCommand):
     help = """Convert the Gitter data into Zulip data format."""
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('gitter_data', nargs='+',
-                            metavar='<gitter data>',
-                            help="Gitter data in json format")
+        parser.add_argument(
+            'gitter_data', nargs='+', metavar='<gitter data>', help="Gitter data in json format"
+        )
 
-        parser.add_argument('--output', dest='output_dir',
-                            help='Directory to write exported data to.')
+        parser.add_argument(
+            '--output', dest='output_dir', help='Directory to write exported data to.'
+        )
 
-        parser.add_argument('--threads',
-                            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-                            help='Threads to download avatars and attachments faster')
+        parser.add_argument(
+            '--threads',
+            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
+            help='Threads to download avatars and attachments faster',
+        )
 
         parser.formatter_class = argparse.RawTextHelpFormatter
 

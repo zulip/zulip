@@ -22,8 +22,7 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     context.update(zulip_default_context(request))
 
     subdomain = get_subdomain(request)
-    if (subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
-            or not settings.ROOT_DOMAIN_LANDING_PAGE):
+    if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN or not settings.ROOT_DOMAIN_LANDING_PAGE:
         display_subdomain = subdomain
         html_settings_links = True
     else:
@@ -49,6 +48,7 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
         subscriptions_html = 'streams page'
     context['settings_html'] = settings_html
     context['subscriptions_html'] = subscriptions_html
+
 
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, str]:
@@ -111,7 +111,8 @@ class MarkdownDirectoryView(ApiURLView):
             else:
                 context["OPEN_GRAPH_TITLE"] = title_base
             self.request.placeholder_open_graph_description = (
-                f"REPLACMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}")
+                f"REPLACMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}"
+            )
             context["OPEN_GRAPH_DESCRIPTION"] = self.request.placeholder_open_graph_description
 
         context["sidebar_index"] = sidebar_index
@@ -123,12 +124,13 @@ class MarkdownDirectoryView(ApiURLView):
         add_google_analytics_context(context)
         return context
 
-    def get(self, request: HttpRequest, article: str="") -> HttpResponse:
+    def get(self, request: HttpRequest, article: str = "") -> HttpResponse:
         (path, http_status) = self.get_path(article)
         result = super().get(self, article=article)
         if http_status != 200:
             result.status_code = http_status
         return result
+
 
 def add_integrations_context(context: Dict[str, Any]) -> None:
     alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
@@ -141,11 +143,14 @@ def add_integrations_context(context: Dict[str, Any]) -> None:
     context['integrations_dict'] = alphabetical_sorted_integration
     context['integrations_count_display'] = integrations_count_display
 
+
 def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRequest) -> None:
     path_name = request.path.rstrip('/').split('/')[-1]
-    description = ('Zulip comes with over a hundred native integrations out of the box, '
-                   'and integrates with Zapier, IFTTT, and Hubot to provide hundreds more. '
-                   'Connect the apps you use everyday to Zulip.')
+    description = (
+        'Zulip comes with over a hundred native integrations out of the box, '
+        'and integrates with Zapier, IFTTT, and Hubot to provide hundreds more. '
+        'Connect the apps you use everyday to Zulip.'
+    )
 
     if path_name in INTEGRATIONS:
         integration = INTEGRATIONS[path_name]
@@ -161,6 +166,7 @@ def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRe
         context['OPEN_GRAPH_TITLE'] = 'Connect the tools you use to Zulip'
         context['OPEN_GRAPH_DESCRIPTION'] = description
 
+
 class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations/index.html'
 
@@ -173,7 +179,7 @@ class IntegrationView(ApiURLView):
 
 
 @has_request_variables
-def integration_doc(request: HttpRequest, integration_name: str=REQ()) -> HttpResponse:
+def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> HttpResponse:
     if not request.is_ajax():
         return HttpResponseNotFound()
     try:

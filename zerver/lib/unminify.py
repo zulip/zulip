@@ -15,8 +15,8 @@ class SourceMap:
         self._indices: Dict[str, sourcemap.SourceMapDecoder] = {}
 
     def _index_for(self, minified_src: str) -> sourcemap.SourceMapDecoder:
-        '''Return the source map index for minified_src, loading it if not
-           already loaded.'''
+        """Return the source map index for minified_src, loading it if not
+        already loaded."""
 
         # Prevent path traversal
         assert ".." not in minified_src and "/" not in minified_src
@@ -54,12 +54,12 @@ class SourceMap:
                 gen_line, gen_col = list(map(int, match.groups()[1:3]))
                 # The sourcemap lib is 0-based, so subtract 1 from line and col.
                 try:
-                    result = index.lookup(line=gen_line-1, column=gen_col-1)
+                    result = index.lookup(line=gen_line - 1, column=gen_col - 1)
                     display_src = result.src
                     if display_src is not None:
                         webpack_prefix = "webpack:///"
                         if display_src.startswith(webpack_prefix):
-                            display_src = display_src[len(webpack_prefix):]
+                            display_src = display_src[len(webpack_prefix) :]
                         out += f'       = {display_src} line {result.src_line+1} column {result.src_col+1}\n'
                 except IndexError:
                     out += '       [Unable to look up in source map]\n'

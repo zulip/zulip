@@ -18,11 +18,14 @@ and will otherwise fall back to the zulip realm."""
     def handle(self, **options: Any) -> None:
         realm = self.get_realm(options)
         if realm is None:
-            realm = Realm.objects.filter(string_id__startswith='realm') \
-                                 .order_by('-string_id').first()
+            realm = (
+                Realm.objects.filter(string_id__startswith='realm').order_by('-string_id').first()
+            )
         if realm is None:
-            print('Warning: Using default zulip realm, which has an unusual configuration.\n'
-                  'Try running `manage.py add_new_realm`, and then running this again.')
+            print(
+                'Warning: Using default zulip realm, which has an unusual configuration.\n'
+                'Try running `manage.py add_new_realm`, and then running this again.'
+            )
             valid_realm = Realm.objects.get(string_id='zulip')
             domain = 'zulip.com'
         else:

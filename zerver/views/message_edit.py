@@ -44,8 +44,7 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
     # message's last edit time
     if len(message_history) > 0:
         assert message.last_edit_time is not None
-        assert(datetime_to_timestamp(message.last_edit_time) ==
-               message_history[0]['timestamp'])
+        assert datetime_to_timestamp(message.last_edit_time) == message_history[0]['timestamp']
 
     for entry in message_history:
         entry['topic'] = prev_topic
@@ -62,22 +61,26 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
             prev_rendered_content = entry['prev_rendered_content']
             assert prev_rendered_content is not None
             entry['content_html_diff'] = highlight_html_differences(
-                prev_rendered_content,
-                entry['rendered_content'],
-                message.id)
+                prev_rendered_content, entry['rendered_content'], message.id
+            )
 
-    message_history.append(dict(
-        topic = prev_topic,
-        content = prev_content,
-        rendered_content = prev_rendered_content,
-        timestamp = datetime_to_timestamp(message.date_sent),
-        user_id = message.sender_id,
-    ))
+    message_history.append(
+        dict(
+            topic=prev_topic,
+            content=prev_content,
+            rendered_content=prev_rendered_content,
+            timestamp=datetime_to_timestamp(message.date_sent),
+            user_id=message.sender_id,
+        )
+    )
+
 
 @has_request_variables
-def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
-                             message_id: int=REQ(converter=to_non_negative_int,
-                                                 path_only=True)) -> HttpResponse:
+def get_message_edit_history(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message_id: int = REQ(converter=to_non_negative_int, path_only=True),
+) -> HttpResponse:
     if not user_profile.realm.allow_edit_history:
         return json_error(_("Message edit history is disabled in this organization"))
     message, ignored_user_message = access_message(user_profile, message_id)
@@ -92,18 +95,24 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
     fill_edit_history_entries(message_edit_history, message)
     return json_success({"message_history": list(reversed(message_edit_history))})
 
+
 PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
+
+
 @has_request_variables
-def update_message_backend(request: HttpRequest, user_profile: UserMessage,
-                           message_id: int=REQ(converter=to_non_negative_int, path_only=True),
-                           stream_id: Optional[int]=REQ(converter=to_non_negative_int, default=None),
-                           topic_name: Optional[str]=REQ_topic(),
-                           propagate_mode: Optional[str]=REQ(
-                               default="change_one",
-                               str_validator=check_string_in(PROPAGATE_MODE_VALUES)),
-                           send_notification_to_old_thread: bool=REQ(default=True, validator=check_bool),
-                           send_notification_to_new_thread: bool=REQ(default=True, validator=check_bool),
-                           content: Optional[str]=REQ(default=None)) -> HttpResponse:
+def update_message_backend(
+    request: HttpRequest,
+    user_profile: UserMessage,
+    message_id: int = REQ(converter=to_non_negative_int, path_only=True),
+    stream_id: Optional[int] = REQ(converter=to_non_negative_int, default=None),
+    topic_name: Optional[str] = REQ_topic(),
+    propagate_mode: Optional[str] = REQ(
+        default="change_one", str_validator=check_string_in(PROPAGATE_MODE_VALUES)
+    ),
+    send_notification_to_old_thread: bool = REQ(default=True, validator=check_bool),
+    send_notification_to_new_thread: bool = REQ(default=True, validator=check_bool),
+    content: Optional[str] = REQ(default=None),
+) -> HttpResponse:
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
 
@@ -111,7 +120,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         return json_error(_("Invalid propagate_mode without topic edit"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
-    is_no_topic_msg = (message.topic_name() == "(no topic)")
+    is_no_topic_msg = message.topic_name() == "(no topic)"
 
     # You only have permission to edit a message if:
     # you change this value also change those two parameters in message_edit.js.
@@ -121,9 +130,11 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # 4. This is a topic-only edit and your realm allows users to edit topics.
     if message.sender == user_profile:
         pass
-    elif (content is None) and (is_no_topic_msg or
-                                user_profile.is_realm_admin or
-                                user_profile.realm.allow_community_topic_editing):
+    elif (content is None) and (
+        is_no_topic_msg
+        or user_profile.is_realm_admin
+        or user_profile.realm.allow_community_topic_editing
+    ):
         pass
     else:
         raise JsonableError(_("You don't have permission to edit this message"))
@@ -143,8 +154,12 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # edit it and that it has not been too long. If this is not the user who
     # sent the message, they are not the admin, and the time limit for editing
     # topics is passed, raise an error.
-    if content is None and message.sender != user_profile and not user_profile.is_realm_admin and \
-            not is_no_topic_msg:
+    if (
+        content is None
+        and message.sender != user_profile
+        and not user_profile.is_realm_admin
+        and not is_no_topic_msg
+    ):
         deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
@@ -176,11 +191,13 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         # the cross-realm bots never edit messages, this should be
         # always correct.
         # Note: If rendering fails, the called code will raise a JsonableError.
-        rendered_content = render_incoming_message(message,
-                                                   content,
-                                                   user_info['message_user_ids'],
-                                                   user_profile.realm,
-                                                   mention_data=mention_data)
+        rendered_content = render_incoming_message(
+            message,
+            content,
+            user_info['message_user_ids'],
+            user_profile.realm,
+            mention_data=mention_data,
+        )
         links_for_embed |= message.links_for_preview
 
         mention_user_ids = message.mentions_user_ids
@@ -196,13 +213,20 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
 
         new_stream = get_stream_by_id(stream_id)
 
-    number_changed = do_update_message(user_profile, message, new_stream,
-                                       topic_name, propagate_mode,
-                                       send_notification_to_old_thread,
-                                       send_notification_to_new_thread,
-                                       content, rendered_content,
-                                       prior_mention_user_ids,
-                                       mention_user_ids, mention_data)
+    number_changed = do_update_message(
+        user_profile,
+        message,
+        new_stream,
+        topic_name,
+        propagate_mode,
+        send_notification_to_old_thread,
+        send_notification_to_new_thread,
+        content,
+        rendered_content,
+        prior_mention_user_ids,
+        mention_user_ids,
+        mention_data,
+    )
 
     # Include the number of messages changed in the logs
     request._log_data['extra'] = f"[{number_changed}]"
@@ -214,7 +238,8 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
             # `sender.realm_id` must match the decision made in the
             # `render_incoming_message` call earlier in this function.
             'message_realm_id': user_profile.realm_id,
-            'urls': list(links_for_embed)}
+            'urls': list(links_for_embed),
+        }
         queue_json_publish('embed_links', event_data)
     return json_success()
 
@@ -239,10 +264,13 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
         raise JsonableError(_("The time limit for deleting this message has passed"))
     return
 
+
 @has_request_variables
-def delete_message_backend(request: HttpRequest, user_profile: UserProfile,
-                           message_id: int=REQ(converter=to_non_negative_int,
-                                               path_only=True)) -> HttpResponse:
+def delete_message_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message_id: int = REQ(converter=to_non_negative_int, path_only=True),
+) -> HttpResponse:
     message, ignored_user_message = access_message(user_profile, message_id)
     validate_can_delete_message(user_profile, message)
     try:
@@ -251,9 +279,12 @@ def delete_message_backend(request: HttpRequest, user_profile: UserProfile,
         raise JsonableError(_("Message already deleted"))
     return json_success()
 
+
 @has_request_variables
-def json_fetch_raw_message(request: HttpRequest, user_profile: UserProfile,
-                           message_id: int=REQ(converter=to_non_negative_int,
-                                               path_only=True)) -> HttpResponse:
+def json_fetch_raw_message(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message_id: int = REQ(converter=to_non_negative_int, path_only=True),
+) -> HttpResponse:
     (message, user_message) = access_message(user_profile, message_id)
     return json_success({"raw_content": message.content})

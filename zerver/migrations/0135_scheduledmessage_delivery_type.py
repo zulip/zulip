@@ -13,6 +13,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='scheduledmessage',
             name='delivery_type',
-            field=models.PositiveSmallIntegerField(choices=[(1, 'send_later'), (2, 'remind')], default=1),
+            field=models.PositiveSmallIntegerField(
+                choices=[(1, 'send_later'), (2, 'remind')], default=1
+            ),
         ),
     ]

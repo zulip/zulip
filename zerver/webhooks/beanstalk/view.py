@@ -16,11 +16,19 @@ from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits
 from zerver.models import UserProfile
 
 
-def build_message_from_gitlog(user_profile: UserProfile, name: str, ref: str,
-                              commits: List[Dict[str, str]], before: str, after: str,
-                              url: str, pusher: str, forced: Optional[str]=None,
-                              created: Optional[str]=None, deleted: bool=False,
-                              ) -> Tuple[str, str]:
+def build_message_from_gitlog(
+    user_profile: UserProfile,
+    name: str,
+    ref: str,
+    commits: List[Dict[str, str]],
+    before: str,
+    after: str,
+    url: str,
+    pusher: str,
+    forced: Optional[str] = None,
+    created: Optional[str] = None,
+    deleted: bool = False,
+) -> Tuple[str, str]:
     short_ref = re.sub(r'^refs/heads/', '', ref)
     subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 
@@ -29,16 +37,20 @@ def build_message_from_gitlog(user_profile: UserProfile, name: str, ref: str,
 
     return subject, content
 
+
 def _transform_commits_list_to_common_format(commits: List[Dict[str, Any]]) -> List[Dict[str, str]]:
     new_commits_list = []
     for commit in commits:
-        new_commits_list.append({
-            'name': commit['author'].get('username'),
-            'sha': commit.get('id'),
-            'url': commit.get('url'),
-            'message': commit.get('message'),
-        })
+        new_commits_list.append(
+            {
+                'name': commit['author'].get('username'),
+                'sha': commit.get('id'),
+                'url': commit.get('url'),
+                'message': commit.get('message'),
+            }
+        )
     return new_commits_list
+
 
 # Beanstalk's web hook UI rejects URL with a @ in the username section
 # So we ask the user to replace them with %40
@@ -60,12 +72,16 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
 
+
 @beanstalk_decoder
 @authenticated_rest_api_view(webhook_client_name="Beanstalk")
 @has_request_variables
-def api_beanstalk_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Dict[str, Any]=REQ(validator=check_dict([])),
-                          branches: Optional[str]=REQ(default=None)) -> HttpResponse:
+def api_beanstalk_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(validator=check_dict([])),
+    branches: Optional[str] = REQ(default=None),
+) -> HttpResponse:
     # Beanstalk supports both SVN and Git repositories
     # We distinguish between the two by checking for a
     # 'uri' key that is only present for Git repos
@@ -77,11 +93,16 @@ def api_beanstalk_webhook(request: HttpRequest, user_profile: UserProfile,
         for commit in payload['commits']:
             commit['author'] = {'username': commit['author']['name']}
 
-        subject, content = build_message_from_gitlog(user_profile, payload['repository']['name'],
-                                                     payload['ref'], payload['commits'],
-                                                     payload['before'], payload['after'],
-                                                     payload['repository']['url'],
-                                                     payload['pusher_name'])
+        subject, content = build_message_from_gitlog(
+            user_profile,
+            payload['repository']['name'],
+            payload['ref'],
+            payload['commits'],
+            payload['before'],
+            payload['after'],
+            payload['repository']['url'],
+            payload['pusher_name'],
+        )
     else:
         author = payload.get('author_full_name')
         url = payload.get('changeset_url')

@@ -8,6 +8,7 @@ class BaseParser:
         # processes in production, and bs4 is big enough that
         # importing it adds 10s of milliseconds to manage.py startup.
         from bs4 import BeautifulSoup
+
         charset = None
         if content_type is not None:
             charset = cgi.parse_header(content_type)[1].get("charset")

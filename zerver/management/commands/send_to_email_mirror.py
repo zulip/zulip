@@ -27,6 +27,7 @@ from zerver.models import Realm, get_realm, get_stream
 # Value of the TO: header doesn't matter, as it is overridden
 # by the command in order for the email to be sent to the correct stream.
 
+
 class Command(ZulipBaseCommand):
     help = """
 Send specified email from a fixture file to the email mirror
@@ -36,14 +37,20 @@ Example:
 """
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('-f', '--fixture',
-                            help='The path to the email message you\'d like to send '
-                                 'to the email mirror.\n'
-                                 'Accepted formats: json or raw email file. '
-                                 'See zerver/tests/fixtures/email/ for examples')
-        parser.add_argument('-s', '--stream',
-                            help='The name of the stream to which you\'d like to send '
-                            'the message. Default: Denmark')
+        parser.add_argument(
+            '-f',
+            '--fixture',
+            help='The path to the email message you\'d like to send '
+            'to the email mirror.\n'
+            'Accepted formats: json or raw email file. '
+            'See zerver/tests/fixtures/email/ for examples',
+        )
+        parser.add_argument(
+            '-s',
+            '--stream',
+            help='The name of the stream to which you\'d like to send '
+            'the message. Default: Denmark',
+        )
 
         self.add_realm_args(parser, help="Specify which realm to connect to; default is zulip")
 
@@ -103,8 +110,14 @@ Example:
 
         # The block below ensures that the imported email message doesn't have any recipient-like
         # headers that are inconsistent with the recipient we want (the stream address).
-        recipient_headers = ["X-Gm-Original-To", "Delivered-To", "Envelope-To",
-                             "Resent-To", "Resent-CC", "CC"]
+        recipient_headers = [
+            "X-Gm-Original-To",
+            "Delivered-To",
+            "Envelope-To",
+            "Resent-To",
+            "Resent-CC",
+            "CC",
+        ]
         for header in recipient_headers:
             if header in message:
                 del message[header]

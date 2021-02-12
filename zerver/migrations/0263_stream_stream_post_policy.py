@@ -2,6 +2,8 @@
 from django.db import migrations, models
 
 STREAM_POST_POLICY_EVERYONE = 1
+
+
 class Migration(migrations.Migration):
 
     dependencies = [

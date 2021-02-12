@@ -16,10 +16,14 @@ Build update (see [build log]({build_log_url})):
 * **Status**: {status} {emoji}
 """.strip()
 
+
 @webhook_view('SolanoLabs')
 @has_request_variables
-def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_solano_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     event = payload.get('event')
     topic = 'build update'
     if event == 'test':
@@ -34,7 +38,7 @@ def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
     commit_id = payload['commit_id']
 
     good_status = ['passed']
-    bad_status  = ['failed', 'error']
+    bad_status = ['failed', 'error']
     neutral_status = ['running']
     emoji = ''
     if status in good_status:
@@ -55,16 +59,19 @@ def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
         commit_url += f'/pipelines/{commit_id}'
 
     body = MESSAGE_TEMPLATE.format(
-        author=author, build_log_url=build_log,
-        commit_id=commit_id[:7], commit_url=commit_url,
-        status=status, emoji=emoji,
+        author=author,
+        build_log_url=build_log,
+        commit_id=commit_id[:7],
+        commit_url=commit_url,
+        status=status,
+        emoji=emoji,
     )
 
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
 
-def handle_test_event(request: HttpRequest, user_profile: UserProfile,
-                      topic: str) -> HttpResponse:
+
+def handle_test_event(request: HttpRequest, user_profile: UserProfile, topic: str) -> HttpResponse:
     body = 'Solano webhook set up correctly.'
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()

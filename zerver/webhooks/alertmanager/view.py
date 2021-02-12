@@ -12,8 +12,11 @@ from zerver.models import UserProfile
 
 @webhook_view('Alertmanager')
 @has_request_variables
-def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
-                             payload: Dict[str, Any] = REQ(argument_type='body')) -> HttpResponse:
+def api_alertmanager_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     name_field = request.GET.get("name", "instance")
     desc_field = request.GET.get("desc", "alertname")
     topics: Dict[str, Dict[str, List[str]]] = {}
@@ -22,10 +25,8 @@ def api_alertmanager_webhook(request: HttpRequest, user_profile: UserProfile,
         labels = alert.get("labels", {})
         annotations = alert.get("annotations", {})
 
-        name = labels.get(
-            name_field, annotations.get(name_field, "(unknown)"))
-        desc = labels.get(
-            desc_field, annotations.get(desc_field, f"<missing field: {desc_field}>"))
+        name = labels.get(name_field, annotations.get(name_field, "(unknown)"))
+        desc = labels.get(desc_field, annotations.get(desc_field, f"<missing field: {desc_field}>"))
 
         url = alert.get("generatorURL").replace("tab=1", "tab=0")
 

@@ -16,6 +16,7 @@ from scripts.lib.zulip_tools import (
 ENV = get_environment()
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 
+
 def get_caches_in_use(threshold_days: int) -> Set[str]:
     setups_to_check = {ZULIP_PATH}
     caches_in_use = set()
@@ -37,10 +38,11 @@ def get_caches_in_use(threshold_days: int) -> Set[str]:
         caches_in_use.add(os.path.dirname(os.readlink(emoji_link_path)))
     return caches_in_use
 
+
 def main(args: argparse.Namespace) -> None:
     caches_in_use = get_caches_in_use(args.threshold_days)
-    purge_unused_caches(
-        EMOJI_CACHE_PATH, caches_in_use, "emoji cache", args)
+    purge_unused_caches(EMOJI_CACHE_PATH, caches_in_use, "emoji cache", args)
+
 
 if __name__ == "__main__":
     args = parse_cache_script_args("This script cleans unused Zulip emoji caches.")

@@ -14,12 +14,22 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='LicenseLedger',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name='ID'
+                    ),
+                ),
                 ('is_renewal', models.BooleanField(default=False)),
                 ('event_time', models.DateTimeField()),
                 ('licenses', models.IntegerField()),
                 ('licenses_at_next_renewal', models.IntegerField(null=True)),
-                ('plan', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='corporate.CustomerPlan')),
+                (
+                    'plan',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to='corporate.CustomerPlan'
+                    ),
+                ),
             ],
         ),
     ]

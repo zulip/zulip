@@ -26,11 +26,11 @@ from zerver.lib.test_fixtures import update_test_databases_if_required
 def set_up_django(external_host: str) -> None:
     os.environ['FULL_STACK_ZULIP_TEST'] = '1'
     os.environ['TEST_EXTERNAL_HOST'] = external_host
-    os.environ["LOCAL_UPLOADS_DIR"] = get_or_create_dev_uuid_var_path(
-        'test-backend/test_uploads')
+    os.environ["LOCAL_UPLOADS_DIR"] = get_or_create_dev_uuid_var_path('test-backend/test_uploads')
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
     django.setup()
     os.environ['PYTHONUNBUFFERED'] = 'y'
+
 
 def assert_server_running(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> None:
     """Get the exit code of the server, or None if it is still running."""
@@ -39,6 +39,7 @@ def assert_server_running(server: "subprocess.Popen[bytes]", log_file: Optional[
         if log_file:
             message += f'\nSee {log_file}\n'
         raise RuntimeError(message)
+
 
 def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> bool:
     assert_server_running(server, log_file)
@@ -49,10 +50,14 @@ def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> 
     except requests.RequestException:
         return False
 
+
 @contextmanager
-def test_server_running(force: bool=False, external_host: str='testserver',
-                        log_file: Optional[str]=None, dots: bool=False,
-                        ) -> Iterator[None]:
+def test_server_running(
+    force: bool = False,
+    external_host: str = 'testserver',
+    log_file: Optional[str] = None,
+    dots: bool = False,
+) -> Iterator[None]:
     log = sys.stdout
     if log_file:
         if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:
@@ -69,8 +74,7 @@ def test_server_running(force: bool=False, external_host: str='testserver',
     run_dev_server_command = ['tools/run-dev.py', '--test', '--streamlined']
     if force:
         run_dev_server_command.append('--force')
-    server = subprocess.Popen(run_dev_server_command,
-                              stdout=log, stderr=log)
+    server = subprocess.Popen(run_dev_server_command, stdout=log, stderr=log)
 
     try:
         # Wait for the server to start up.
@@ -94,6 +98,7 @@ def test_server_running(force: bool=False, external_host: str='testserver',
         assert_server_running(server, log_file)
         server.terminate()
         server.wait()
+
 
 if __name__ == '__main__':
     # The code below is for testing this module works

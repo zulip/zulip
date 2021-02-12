@@ -36,8 +36,7 @@ import psycopg2.extensions
 BATCH_SIZE = 1000
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--quiet',
-                    action='store_true')
+parser.add_argument('--quiet', action='store_true')
 options = parser.parse_args()
 
 logging.Formatter.converter = time.gmtime
@@ -48,6 +47,7 @@ if options.quiet:
 else:
     logger.setLevel(logging.DEBUG)
 
+
 def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
     cursor.execute(
         "SELECT id, message_id FROM fts_update_log LIMIT %s;",
@@ -56,21 +56,29 @@ def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
     ids = []
     for (id, message_id) in cursor.fetchall():
         if USING_PGROONGA:
-            cursor.execute("UPDATE zerver_message SET "
-                           "search_pgroonga = "
-                           "escape_html(subject) || ' ' || rendered_content "
-                           "WHERE id = %s", (message_id,))
-        cursor.execute("UPDATE zerver_message SET "
-                       "search_tsvector = to_tsvector('zulip.english_us_search', "
-                       "subject || rendered_content) "
-                       "WHERE id = %s", (message_id,))
+            cursor.execute(
+                "UPDATE zerver_message SET "
+                "search_pgroonga = "
+                "escape_html(subject) || ' ' || rendered_content "
+                "WHERE id = %s",
+                (message_id,),
+            )
+        cursor.execute(
+            "UPDATE zerver_message SET "
+            "search_tsvector = to_tsvector('zulip.english_us_search', "
+            "subject || rendered_content) "
+            "WHERE id = %s",
+            (message_id,),
+        )
         ids.append(id)
     cursor.execute("DELETE FROM fts_update_log WHERE id = ANY(%s)", (ids,))
     return len(ids)
 
+
 def am_master(cursor: psycopg2.extensions.cursor) -> bool:
     cursor.execute("SELECT pg_is_in_recovery()")
     return not cursor.fetchall()[0][0]
+
 
 pg_args = {}
 
@@ -81,6 +89,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 try:
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
     from django.conf import settings
+
     if settings.REMOTE_POSTGRES_HOST != '':
         pg_args['host'] = settings.REMOTE_POSTGRES_HOST
     if settings.REMOTE_POSTGRES_PORT != '':

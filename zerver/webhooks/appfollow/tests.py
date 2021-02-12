@@ -56,6 +56,7 @@ Acme enables me to manage the flow of information quite well. I only wish I coul
         )
         self.URL_TEMPLATE = original_url_template
 
+
 class ConvertMarkdownTest(ZulipTestCase):
     def test_convert_bold(self) -> None:
         self.assertEqual(convert_markdown("*test message*"), "**test message**")

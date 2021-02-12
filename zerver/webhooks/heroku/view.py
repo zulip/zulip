@@ -15,13 +15,19 @@ TEMPLATE = """
 ```
 """.strip()
 
+
 @webhook_view("Heroku", notify_bot_owner_on_invalid_json=False)
 @has_request_variables
-def api_heroku_webhook(request: HttpRequest, user_profile: UserProfile,
-                       head: str=REQ(), app: str=REQ(), user: str=REQ(),
-                       url: str=REQ(), git_log: str=REQ()) -> HttpResponse:
-    content = TEMPLATE.format(user=user, head=head, app=app,
-                              url=url, git_log=git_log)
+def api_heroku_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    head: str = REQ(),
+    app: str = REQ(),
+    user: str = REQ(),
+    url: str = REQ(),
+    git_log: str = REQ(),
+) -> HttpResponse:
+    content = TEMPLATE.format(user=user, head=head, app=app, url=url, git_log=git_log)
 
     check_send_webhook_message(request, user_profile, app, content)
     return json_success()

@@ -12,6 +12,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='realm',
             name='authentication_methods',
-            field=bitfield.models.BitField(['Google', 'Email', 'GitHub', 'LDAP', 'Dev', 'RemoteUser'], default=2147483647),
+            field=bitfield.models.BitField(
+                ['Google', 'Email', 'GitHub', 'LDAP', 'Dev', 'RemoteUser'], default=2147483647
+            ),
         ),
     ]

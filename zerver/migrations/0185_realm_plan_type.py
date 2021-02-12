@@ -2,6 +2,8 @@
 from django.db import migrations, models
 
 SELF_HOSTED = 1
+
+
 class Migration(migrations.Migration):
 
     dependencies = [

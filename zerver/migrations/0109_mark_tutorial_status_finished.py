@@ -7,6 +7,7 @@ def set_tutorial_status_to_finished(apps: StateApps, schema_editor: DatabaseSche
     UserProfile = apps.get_model('zerver', 'UserProfile')
     UserProfile.objects.update(tutorial_status='F')
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

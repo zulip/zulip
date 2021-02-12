@@ -37,12 +37,15 @@ EXCEPTION_EVENT_TEMPLATE = """
 ```
 """
 
-EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK = EXCEPTION_EVENT_TEMPLATE + """
+EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK = (
+    EXCEPTION_EVENT_TEMPLATE
+    + """
 Traceback:
 ```{syntax_highlight_as}
 {pre_context}---> {context_line}{post_context}\
 ```
 """
+)
 # Because of the \n added at the end of each context element,
 # this will actually look better in the traceback.
 
@@ -81,7 +84,7 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
     traceback = ""
     if lines is not None:
         for line in lines:
-            if (line == ""):
+            if line == "":
                 traceback += "\n"
             else:
                 traceback += f"     {line}\n"
@@ -161,7 +164,9 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     return (subject, body)
 
 
-def handle_issue_payload(action: str, issue: Dict[str, Any], actor: Dict[str, Any]) -> Tuple[str, str]:
+def handle_issue_payload(
+    action: str, issue: Dict[str, Any], actor: Dict[str, Any]
+) -> Tuple[str, str]:
     """ Handle either an issue type event. """
     subject = issue["title"]
     datetime = issue["lastSeen"].split(".")[0].replace("T", " ")
@@ -244,8 +249,11 @@ def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any
 
 @webhook_view('Sentry')
 @has_request_variables
-def api_sentry_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any] = REQ(argument_type="body")) -> HttpResponse:
+def api_sentry_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type="body"),
+) -> HttpResponse:
     data = payload.get("data", None)
 
     if data is None:

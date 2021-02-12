@@ -4,9 +4,9 @@ from typing import Any, Dict, Optional
 from pyoembed import PyOembedException, oEmbed
 
 
-def get_oembed_data(url: str,
-                    maxwidth: int=640,
-                    maxheight: int=480) -> Optional[Dict[str, Any]]:
+def get_oembed_data(
+    url: str, maxwidth: int = 640, maxheight: int = 480
+) -> Optional[Dict[str, Any]]:
     try:
         data = oEmbed(url, maxwidth=maxwidth, maxheight=maxheight)
     except (PyOembedException, json.decoder.JSONDecodeError):
@@ -41,6 +41,7 @@ def get_oembed_data(url: str,
         title=data.get('title'),
         description=data.get('description'),
     )
+
 
 def strip_cdata(html: str) -> str:
     # Work around a bug in SoundCloud's XML generation:

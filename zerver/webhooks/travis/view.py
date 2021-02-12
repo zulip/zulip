@@ -19,15 +19,24 @@ Author: {}
 Build status: {} {}
 Details: [changes]({}), [build log]({})"""
 
+
 @webhook_view('Travis')
 @has_request_variables
-def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
-                       ignore_pull_requests: bool = REQ(validator=check_bool, default=True),
-                       message: Dict[str, object]=REQ('payload', validator=check_dict([
-                           ('author_name', check_string),
-                           ('status_message', check_string),
-                           ('compare_url', check_string),
-                       ]))) -> HttpResponse:
+def api_travis_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    ignore_pull_requests: bool = REQ(validator=check_bool, default=True),
+    message: Dict[str, object] = REQ(
+        'payload',
+        validator=check_dict(
+            [
+                ('author_name', check_string),
+                ('status_message', check_string),
+                ('compare_url', check_string),
+            ]
+        ),
+    ),
+) -> HttpResponse:
 
     message_status = message['status_message']
     if ignore_pull_requests and message['type'] == 'pull_request':

@@ -31,7 +31,9 @@ class StripeHookTests(WebhookTestCase):
 
     def test_charge_failed(self) -> None:
         expected_topic = "charges"
-        expected_message = "[Charge](https://dashboard.stripe.com/charges/ch_00000000000000) for 1.00 AUD failed"
+        expected_message = (
+            "[Charge](https://dashboard.stripe.com/charges/ch_00000000000000) for 1.00 AUD failed"
+        )
         self.check_webhook(
             "charge_failed",
             expected_topic,
@@ -63,7 +65,9 @@ class StripeHookTests(WebhookTestCase):
 
     def test_customer_created(self) -> None:
         expected_topic = "cus_00000000000000"
-        expected_message = "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) created"
+        expected_message = (
+            "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) created"
+        )
         self.check_webhook(
             "customer_created",
             expected_topic,
@@ -83,7 +87,9 @@ class StripeHookTests(WebhookTestCase):
 
     def test_customer_deleted(self) -> None:
         expected_topic = "cus_00000000000000"
-        expected_message = "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) deleted"
+        expected_message = (
+            "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) deleted"
+        )
         self.check_webhook(
             "customer_deleted",
             expected_topic,
@@ -107,7 +113,9 @@ Billing method: send invoice"""
 
     def test_customer_subscription_deleted(self) -> None:
         expected_topic = "cus_00000000000000"
-        expected_message = "[Subscription](https://dashboard.stripe.com/subscriptions/sub_00000000000000) deleted"
+        expected_message = (
+            "[Subscription](https://dashboard.stripe.com/subscriptions/sub_00000000000000) deleted"
+        )
         self.check_webhook(
             "customer_subscription_deleted",
             expected_topic,
@@ -137,7 +145,7 @@ Billing method: send invoice"""
         expected_topic = "cus_00000000000000"
         expected_message = "[Subscription](https://dashboard.stripe.com/subscriptions/sub_00000000000000) trial will end in 3 days"
         # 3 days before the end of the trial, plus a little bit to make sure the rounding is working
-        with mock.patch('time.time', return_value=1480892861 - 3*3600*24 + 100):
+        with mock.patch('time.time', return_value=1480892861 - 3 * 3600 * 24 + 100):
             # use fixture named stripe_customer_subscription_trial_will_end
             self.check_webhook(
                 "customer_subscription_trial_will_end",
@@ -148,8 +156,10 @@ Billing method: send invoice"""
 
     def test_customer_updated__account_balance(self) -> None:
         expected_topic = "cus_00000000000000"
-        expected_message = "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) updated" + \
-                           "\n* Account balance is now 100"
+        expected_message = (
+            "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) updated"
+            + "\n* Account balance is now 100"
+        )
         self.check_webhook(
             "customer_updated__account_balance",
             expected_topic,
@@ -169,7 +179,9 @@ Billing method: send invoice"""
 
     def test_invoice_payment_failed(self) -> None:
         expected_topic = "cus_00000000000000"
-        expected_message = "[Invoice](https://dashboard.stripe.com/invoices/in_00000000000000) payment failed"
+        expected_message = (
+            "[Invoice](https://dashboard.stripe.com/invoices/in_00000000000000) payment failed"
+        )
         self.check_webhook(
             "invoice_payment_failed",
             expected_topic,
@@ -218,7 +230,8 @@ Amount due: 0.00 INR
 
     @patch('zerver.webhooks.stripe.view.check_send_webhook_message')
     def test_account_updated_without_previous_attributes_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
         self.url = self.build_webhook_url()
         payload = self.get_body('account_updated_without_previous_attributes')
         result = self.client_post(self.url, payload, content_type="application/json")

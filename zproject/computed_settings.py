@@ -114,14 +114,15 @@ BAN_CONSOLE_OUTPUT = False
 # These are the settings that we will check that the user has filled in for
 # production deployments before starting the app.  It consists of a series
 # of pairs of (setting name, default value that it must be changed from)
-REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
-                     ("ZULIP_ADMINISTRATOR", "zulip-admin@example.com"),
-                     # SECRET_KEY doesn't really need to be here, in
-                     # that we set it automatically, but just in
-                     # case, it seems worth having in this list
-                     ("SECRET_KEY", ""),
-                     ("AUTHENTICATION_BACKENDS", ()),
-                     ]
+REQUIRED_SETTINGS = [
+    ("EXTERNAL_HOST", "zulip.example.com"),
+    ("ZULIP_ADMINISTRATOR", "zulip-admin@example.com"),
+    # SECRET_KEY doesn't really need to be here, in
+    # that we set it automatically, but just in
+    # case, it seems worth having in this list
+    ("SECRET_KEY", ""),
+    ("AUTHENTICATION_BACKENDS", ()),
+]
 
 MANAGERS = ADMINS
 
@@ -167,6 +168,7 @@ class TwoFactorLoader(app_directories.Loader):
     def get_dirs(self) -> List[PosixPath]:
         dirs = super().get_dirs()
         return [d for d in dirs if d.match("two_factor/*")]
+
 
 MIDDLEWARE = (
     # With the exception of it's dependencies,
@@ -274,20 +276,22 @@ SILENCED_SYSTEM_CHECKS = [
 # We implement these options with a default DATABASES configuration
 # supporting peer authentication, with logic to override it as
 # appropriate if DEVELOPMENT or REMOTE_POSTGRES_HOST is set.
-DATABASES: Dict[str, Dict[str, Any]] = {"default": {
-    'ENGINE': 'django.db.backends.postgresql',
-    'NAME': 'zulip',
-    'USER': 'zulip',
-    # Password = '' => peer/certificate authentication (no password)
-    'PASSWORD': '',
-    # Host = '' => connect to localhost by default
-    'HOST': '',
-    'SCHEMA': 'zulip',
-    'CONN_MAX_AGE': 600,
-    'OPTIONS': {
-        'connection_factory': TimeTrackingConnection,
-    },
-}}
+DATABASES: Dict[str, Dict[str, Any]] = {
+    "default": {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'zulip',
+        'USER': 'zulip',
+        # Password = '' => peer/certificate authentication (no password)
+        'PASSWORD': '',
+        # Host = '' => connect to localhost by default
+        'HOST': '',
+        'SCHEMA': 'zulip',
+        'CONN_MAX_AGE': 600,
+        'OPTIONS': {
+            'connection_factory': TimeTrackingConnection,
+        },
+    }
+}
 
 if DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
@@ -422,8 +426,10 @@ if DEVELOPMENT:
 else:
     # For production, use the best password hashing algorithm: Argon2
     # Zulip was originally on PBKDF2 so we need it for compatibility
-    PASSWORD_HASHERS = ('django.contrib.auth.hashers.Argon2PasswordHasher',
-                        'django.contrib.auth.hashers.PBKDF2PasswordHasher')
+    PASSWORD_HASHERS = (
+        'django.contrib.auth.hashers.Argon2PasswordHasher',
+        'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    )
 
 ########################################################################
 # API/BOT SETTINGS
@@ -458,48 +464,58 @@ TWITTER_ACCESS_TOKEN_KEY = get_secret("twitter_access_token_key")
 TWITTER_ACCESS_TOKEN_SECRET = get_secret("twitter_access_token_secret")
 
 # These are the bots that Zulip sends automated messages as.
-INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
-                  'email_template': 'notification-bot@%s',
-                  'name': 'Notification Bot',
-                  },
-                 {'var_name': 'EMAIL_GATEWAY_BOT',
-                  'email_template': 'emailgateway@%s',
-                  'name': 'Email Gateway',
-                  },
-                 {'var_name': 'NAGIOS_SEND_BOT',
-                  'email_template': 'nagios-send-bot@%s',
-                  'name': 'Nagios Send Bot',
-                  },
-                 {'var_name': 'NAGIOS_RECEIVE_BOT',
-                  'email_template': 'nagios-receive-bot@%s',
-                  'name': 'Nagios Receive Bot',
-                  },
-                 {'var_name': 'WELCOME_BOT',
-                  'email_template': 'welcome-bot@%s',
-                  'name': 'Welcome Bot',
-                  }]
+INTERNAL_BOTS = [
+    {
+        'var_name': 'NOTIFICATION_BOT',
+        'email_template': 'notification-bot@%s',
+        'name': 'Notification Bot',
+    },
+    {
+        'var_name': 'EMAIL_GATEWAY_BOT',
+        'email_template': 'emailgateway@%s',
+        'name': 'Email Gateway',
+    },
+    {
+        'var_name': 'NAGIOS_SEND_BOT',
+        'email_template': 'nagios-send-bot@%s',
+        'name': 'Nagios Send Bot',
+    },
+    {
+        'var_name': 'NAGIOS_RECEIVE_BOT',
+        'email_template': 'nagios-receive-bot@%s',
+        'name': 'Nagios Receive Bot',
+    },
+    {
+        'var_name': 'WELCOME_BOT',
+        'email_template': 'welcome-bot@%s',
+        'name': 'Welcome Bot',
+    },
+]
 
 # Bots that are created for each realm like the reminder-bot goes here.
 REALM_INTERNAL_BOTS: List[Dict[str, str]] = []
 # These are realm-internal bots that may exist in some organizations,
 # so configure power the setting, but should not be auto-created at this time.
 DISABLED_REALM_INTERNAL_BOTS = [
-    {'var_name': 'REMINDER_BOT',
-     'email_template': 'reminder-bot@%s',
-     'name': 'Reminder Bot',
-     },
+    {
+        'var_name': 'REMINDER_BOT',
+        'email_template': 'reminder-bot@%s',
+        'name': 'Reminder Bot',
+    },
 ]
 
 if PRODUCTION:
     INTERNAL_BOTS += [
-        {'var_name': 'NAGIOS_STAGING_SEND_BOT',
-         'email_template': 'nagios-staging-send-bot@%s',
-         'name': 'Nagios Staging Send Bot',
-         },
-        {'var_name': 'NAGIOS_STAGING_RECEIVE_BOT',
-         'email_template': 'nagios-staging-receive-bot@%s',
-         'name': 'Nagios Staging Receive Bot',
-         },
+        {
+            'var_name': 'NAGIOS_STAGING_SEND_BOT',
+            'email_template': 'nagios-staging-send-bot@%s',
+            'name': 'Nagios Staging Send Bot',
+        },
+        {
+            'var_name': 'NAGIOS_STAGING_RECEIVE_BOT',
+            'email_template': 'nagios-staging-receive-bot@%s',
+            'name': 'Nagios Staging Receive Bot',
+        },
     ]
 
 INTERNAL_BOT_DOMAIN = "zulip.com"
@@ -649,6 +665,7 @@ TEMPLATES = [
 # LOGGING SETTINGS
 ########################################################################
 
+
 def zulip_path(path: str) -> str:
     if DEVELOPMENT:
         # if DEVELOPMENT, store these files in the Zulip checkout
@@ -657,6 +674,7 @@ def zulip_path(path: str) -> str:
         else:
             path = os.path.join(os.path.join(DEPLOY_ROOT, 'var'), os.path.basename(path))
     return path
+
 
 SERVER_LOG_PATH = zulip_path("/var/log/zulip/server.log")
 ERROR_FILE_LOG_PATH = zulip_path("/var/log/zulip/errors.log")
@@ -696,7 +714,9 @@ LOGGING_ENABLED = True
 
 DEFAULT_ZULIP_HANDLERS = [
     *(['zulip_admins'] if ERROR_REPORTING else []),
-    'console', 'file', 'errors_file',
+    'console',
+    'file',
+    'errors_file',
 ]
 
 LOGGING: Dict[str, Any] = {
@@ -745,8 +765,11 @@ LOGGING: Dict[str, Any] = {
         'zulip_admins': {
             'level': 'ERROR',
             'class': 'zerver.logging_handlers.AdminNotifyHandler',
-            'filters': (['ZulipLimiter', 'require_debug_false', 'require_really_deployed']
-                        if not DEBUG_ERROR_REPORTING else []),
+            'filters': (
+                ['ZulipLimiter', 'require_debug_false', 'require_really_deployed']
+                if not DEBUG_ERROR_REPORTING
+                else []
+            ),
             'formatter': 'default',
         },
         'auth_file': {
@@ -820,14 +843,12 @@ LOGGING: Dict[str, Any] = {
         #  * Setting `level` equal to the parent is redundant; don't.
         #  * Setting `handlers` equal to the parent is redundant; don't.
         #  * Always write in order: level, filters, handlers, propagate.
-
         # root logger
         '': {
             'level': 'INFO',
             'filters': ['require_logging_enabled'],
             'handlers': DEFAULT_ZULIP_HANDLERS,
         },
-
         # Django, alphabetized
         'django': {
             # Django's default logging config has already set some
@@ -864,14 +885,12 @@ LOGGING: Dict[str, Any] = {
             'handlers': ['console'],
             'propagate': False,
         },
-
         ## Uncomment the following to get all database queries logged to the console
         # 'django.db': {
         #     'level': 'DEBUG',
         #     'handlers': ['console'],
         #     'propagate': False,
         # },
-
         # other libraries, alphabetized
         'django_auth_ldap': {
             'level': 'DEBUG',
@@ -890,7 +909,6 @@ LOGGING: Dict[str, Any] = {
         'requests': {
             'level': 'WARNING',
         },
-
         # our own loggers, alphabetized
         'zerver.lib.digest': {
             'level': 'DEBUG',
@@ -973,7 +991,7 @@ POLL_TIMEOUT = 90 * 1000
 
 USING_LDAP = "zproject.backends.ZulipLDAPAuthBackend" in AUTHENTICATION_BACKENDS
 ONLY_LDAP = AUTHENTICATION_BACKENDS == ("zproject.backends.ZulipLDAPAuthBackend",)
-USING_APACHE_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS)
+USING_APACHE_SSO = 'zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS
 ONLY_SSO = AUTHENTICATION_BACKENDS == ("zproject.backends.ZulipRemoteUserBackend",)
 
 if ONLY_SSO:
@@ -997,7 +1015,8 @@ else:
 
 if POPULATE_PROFILE_VIA_LDAP:
     import ldap
-    if (AUTH_LDAP_BIND_DN and ldap.OPT_REFERRALS not in AUTH_LDAP_CONNECTION_OPTIONS):
+
+    if AUTH_LDAP_BIND_DN and ldap.OPT_REFERRALS not in AUTH_LDAP_CONNECTION_OPTIONS:
         # The default behavior of python-ldap (without setting option
         # `ldap.OPT_REFERRALS`) is to follow referrals, but anonymously.
         # If our original query was non-anonymous, that's unlikely to
@@ -1019,15 +1038,22 @@ if REGISTER_LINK_DISABLED is None:
 # SOCIAL AUTHENTICATION SETTINGS
 ########################################################################
 
-SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['subdomain', 'is_signup', 'mobile_flow_otp', 'desktop_flow_otp',
-                                        'multiuse_object_key']
+SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = [
+    'subdomain',
+    'is_signup',
+    'mobile_flow_otp',
+    'desktop_flow_otp',
+    'multiuse_object_key',
+]
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
 
 # CLIENT is required by PSA's internal implementation. We name it
 # SERVICES_ID to make things more readable in the configuration
 # and our own custom backend code.
 SOCIAL_AUTH_APPLE_CLIENT = SOCIAL_AUTH_APPLE_SERVICES_ID
-SOCIAL_AUTH_APPLE_AUDIENCE = [id for id in [SOCIAL_AUTH_APPLE_CLIENT, SOCIAL_AUTH_APPLE_APP_ID] if id is not None]
+SOCIAL_AUTH_APPLE_AUDIENCE = [
+    id for id in [SOCIAL_AUTH_APPLE_CLIENT, SOCIAL_AUTH_APPLE_APP_ID] if id is not None
+]
 
 if PRODUCTION:
     SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("/etc/zulip/apple-auth-key.p8")
@@ -1054,7 +1080,9 @@ SOCIAL_AUTH_GOOGLE_SECRET = SOCIAL_AUTH_GOOGLE_SECRET or GOOGLE_OAUTH2_CLIENT_SE
 
 if PRODUCTION:
     SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = get_from_file_if_exists("/etc/zulip/saml/zulip-cert.crt")
-    SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists("/etc/zulip/saml/zulip-private-key.key")
+    SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists(
+        "/etc/zulip/saml/zulip-private-key.key"
+    )
 
 if "signatureAlgorithm" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
     # If the configuration doesn't explicitly specify the algorithm,
@@ -1142,4 +1170,5 @@ TWO_FACTOR_PATCH_ADMIN = False
 SENTRY_DSN = os.environ.get("SENTRY_DSN", SENTRY_DSN)
 if SENTRY_DSN:
     from .sentry import setup_sentry
+
     setup_sentry(SENTRY_DSN)

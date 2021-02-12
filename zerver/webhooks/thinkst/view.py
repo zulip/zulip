@@ -39,8 +39,7 @@ def canary_kind(message: Dict[str, Any]) -> str:
         return 'canary'
 
 
-def source_ip_and_reverse_dns(
-        message: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+def source_ip_and_reverse_dns(message: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
     """
     Extract the source IP and reverse DNS information from a canary request.
     """
@@ -107,9 +106,10 @@ def body(message: Dict[str, Any]) -> str:
 @webhook_view('Thinkst')
 @has_request_variables
 def api_thinkst_webhook(
-        request: HttpRequest, user_profile: UserProfile,
-        message: Dict[str, Any] = REQ(argument_type='body'),
-        user_specified_topic: Optional[str] = REQ('topic', default=None)
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message: Dict[str, Any] = REQ(argument_type='body'),
+    user_specified_topic: Optional[str] = REQ('topic', default=None),
 ) -> HttpResponse:
     """
     Construct a response to a webhook event from a Thinkst canary or canarytoken.

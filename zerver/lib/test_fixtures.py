@@ -57,11 +57,13 @@ VERBOSE_MESSAGE_ABOUT_HASH_TRANSITION = '''
 
 '''
 
+
 def migration_paths() -> List[str]:
     return [
         *glob.glob('*/migrations/*.py'),
         'requirements/dev.txt',
     ]
+
 
 class Database:
     def __init__(self, platform: str, database_name: str, settings: str):
@@ -101,13 +103,9 @@ class Database:
             './manage.py',
         ]
 
-        run([
-            *manage_py, 'migrate', '--no-input'
-        ])
+        run([*manage_py, 'migrate', '--no-input'])
 
-        run([
-            *manage_py, 'get_migration_status', '--output='+self.migration_status_file
-        ])
+        run([*manage_py, 'get_migration_status', '--output=' + self.migration_status_file])
 
     def what_to_do_with_migrations(self) -> str:
         status_fn = self.migration_status_path
@@ -141,7 +139,8 @@ class Database:
 
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT 1 from pg_database WHERE datname=%s;", [self.database_name],
+                    "SELECT 1 from pg_database WHERE datname=%s;",
+                    [self.database_name],
                 )
                 return_value = bool(cursor.fetchone())
             connections.close_all()
@@ -239,6 +238,7 @@ class Database:
             self.important_settings(),
         )
 
+
 DEV_DATABASE = Database(
     platform='dev',
     database_name='zulip',
@@ -251,7 +251,8 @@ TEST_DATABASE = Database(
     settings='zproject.test_settings',
 )
 
-def update_test_databases_if_required(rebuild_test_database: bool=False) -> None:
+
+def update_test_databases_if_required(rebuild_test_database: bool = False) -> None:
     """Checks whether the zulip_test_template database template, is
     consistent with our database migrations; if not, it updates it
     in the fastest way possible:
@@ -284,6 +285,7 @@ def update_test_databases_if_required(rebuild_test_database: bool=False) -> None
     if rebuild_test_database:
         run(['tools/setup/generate-fixtures'])
 
+
 def get_migration_status(**options: Any) -> str:
     verbosity = options.get('verbosity', 1)
 
@@ -313,9 +315,11 @@ def get_migration_status(**options: Any) -> str:
     output = out.read()
     return re.sub(r'\x1b\[(1|0)m', '', output)
 
+
 def extract_migrations_as_list(migration_status: str) -> List[str]:
     MIGRATIONS_RE = re.compile(r'\[[X| ]\] (\d+_.+)\n')
     return MIGRATIONS_RE.findall(migration_status)
+
 
 def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     """The logic in zerver/lib/test_runner.py tries to delete all the
@@ -362,10 +366,14 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
         return 0
 
     commands = "\n".join(f"DROP DATABASE IF EXISTS {db};" for db in databases_to_drop)
-    subprocess.run(["psql", "-q", "-v", "ON_ERROR_STOP=1", "-h", "localhost",
-                    "postgres", "zulip_test"],
-                   input=commands, check=True, universal_newlines=True)
+    subprocess.run(
+        ["psql", "-q", "-v", "ON_ERROR_STOP=1", "-h", "localhost", "postgres", "zulip_test"],
+        input=commands,
+        check=True,
+        universal_newlines=True,
+    )
     return len(databases_to_drop)
+
 
 def remove_test_run_directories(expiry_time: int = 60 * 60) -> int:
     removed = 0

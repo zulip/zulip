@@ -12,5 +12,4 @@ class Migration(migrations.Migration):
         ('zerver', '0209_user_profile_no_empty_password'),
     ]
 
-    operations: List[Any] = [
-    ]
+    operations: List[Any] = []

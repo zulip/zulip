@@ -3,6 +3,8 @@
 from django.db import migrations, models
 
 EMAIL_ADDRESS_VISIBILITY_EVERYONE = 1
+
+
 class Migration(migrations.Migration):
 
     dependencies = [

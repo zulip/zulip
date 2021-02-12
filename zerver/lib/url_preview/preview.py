@@ -23,7 +23,9 @@ link_regex = re.compile(
     r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
     r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
     r'(?::\d+)?'  # optional port
-    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    r'(?:/?|[/?]\S+)$',
+    re.IGNORECASE,
+)
 
 # Use Chrome User-Agent, since some sites refuse to work on old browsers
 ZULIP_URL_PREVIEW_USER_AGENT = (
@@ -38,6 +40,7 @@ TIMEOUT = 15
 def is_link(url: str) -> Match[str]:
     return link_regex.match(smart_text(url))
 
+
 def guess_mimetype_from_content(response: requests.Response) -> str:
     mime_magic = magic.Magic(mime=True)
     try:
@@ -45,6 +48,7 @@ def guess_mimetype_from_content(response: requests.Response) -> str:
     except StopIteration:
         content = ''
     return mime_magic.from_buffer(content)
+
 
 def valid_content_type(url: str) -> bool:
     try:
@@ -62,19 +66,22 @@ def valid_content_type(url: str) -> bool:
         content_type = guess_mimetype_from_content(response)
     return content_type.startswith('text/html')
 
+
 def catch_network_errors(func: Callable[..., Any]) -> Callable[..., Any]:
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except requests.exceptions.RequestException:
             pass
+
     return wrapper
+
 
 @catch_network_errors
 @cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
-def get_link_embed_data(url: str,
-                        maxwidth: int=640,
-                        maxheight: int=480) -> Optional[Dict[str, Any]]:
+def get_link_embed_data(
+    url: str, maxwidth: int = 640, maxheight: int = 480
+) -> Optional[Dict[str, Any]]:
     if not is_link(url):
         return None
 
@@ -97,14 +104,16 @@ def get_link_embed_data(url: str,
             if not data.get(key) and og_data.get(key):
                 data[key] = og_data[key]
 
-        generic_data = GenericParser(
-            response.content, response.headers.get("Content-Type")
-        ).extract_data() or {}
+        generic_data = (
+            GenericParser(response.content, response.headers.get("Content-Type")).extract_data()
+            or {}
+        )
         for key in ['title', 'description', 'image']:
             if not data.get(key) and generic_data.get(key):
                 data[key] = generic_data[key]
     return data
 
+
 @get_cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME)
-def link_embed_data_from_cache(url: str, maxwidth: int=640, maxheight: int=480) -> Any:
+def link_embed_data_from_cache(url: str, maxwidth: int = 640, maxheight: int = 480) -> Any:
     return

@@ -54,24 +54,36 @@ from urllib.request import Request, urlopen
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-r', '--recipient', default='',
-                    help="Original recipient.")
+parser.add_argument('-r', '--recipient', default='', help="Original recipient.")
 
-parser.add_argument('-s', '--shared-secret', default='',
-                    help="Secret access key.")
+parser.add_argument('-s', '--shared-secret', default='', help="Secret access key.")
 
-parser.add_argument('-d', '--dst-host', dest="host", default='https://127.0.0.1',
-                    help="Destination server address for uploading email from email mirror. "
-                         "Address must contain a HTTP protocol.")
+parser.add_argument(
+    '-d',
+    '--dst-host',
+    dest="host",
+    default='https://127.0.0.1',
+    help="Destination server address for uploading email from email mirror. "
+    "Address must contain a HTTP protocol.",
+)
 
-parser.add_argument('-u', '--dst-url', dest="url", default='/email_mirror_message',
-                    help="Destination relative URL for uploading email from email mirror.")
+parser.add_argument(
+    '-u',
+    '--dst-url',
+    dest="url",
+    default='/email_mirror_message',
+    help="Destination relative URL for uploading email from email mirror.",
+)
 
-parser.add_argument('-n', '--not-verify-ssl', dest="verify_ssl", action='store_false',
-                    help="Disable ssl certificate verifying for self-signed certificates")
+parser.add_argument(
+    '-n',
+    '--not-verify-ssl',
+    dest="verify_ssl",
+    action='store_false',
+    help="Disable ssl certificate verifying for self-signed certificates",
+)
 
-parser.add_argument('-t', '--test', action='store_true',
-                    help="Test mode.")
+parser.add_argument('-t', '--test', action='store_true', help="Test mode.")
 
 options = parser.parse_args()
 
@@ -90,7 +102,12 @@ def process_response_error(e: HTTPError) -> None:
 
 
 def send_email_mirror(
-    rcpt_to: str, shared_secret: str, host: str, url: str, test: bool, verify_ssl: bool,
+    rcpt_to: str,
+    shared_secret: str,
+    host: str,
+    url: str,
+    test: bool,
+    verify_ssl: bool,
 ) -> None:
     if not rcpt_to:
         print("5.1.1 Bad destination mailbox address: No missed message email address.")
@@ -136,5 +153,6 @@ def send_email_mirror(
 
 
 recipient = str(os.environ.get("ORIGINAL_RECIPIENT", options.recipient))
-send_email_mirror(recipient, options.shared_secret, options.host, options.url, options.test,
-                  options.verify_ssl)
+send_email_mirror(
+    recipient, options.shared_secret, options.host, options.url, options.test, options.verify_ssl
+)

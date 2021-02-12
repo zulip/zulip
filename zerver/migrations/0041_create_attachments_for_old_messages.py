@@ -7,13 +7,14 @@ from django.db.migrations.state import StateApps
 
 attachment_url_re = re.compile(r'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
 
+
 def attachment_url_to_path_id(attachment_url: str) -> str:
     path_id_raw = re.sub(r'[/\-]user[\-_]uploads[/\.-]', '', attachment_url)
     # Remove any extra '.' after file extension. These are probably added by the user
     return re.sub('[.]+$', '', path_id_raw, re.M)
 
-def check_and_create_attachments(apps: StateApps,
-                                 schema_editor: DatabaseSchemaEditor) -> None:
+
+def check_and_create_attachments(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     STREAM = 2
     Message = apps.get_model('zerver', 'Message')
     Attachment = apps.get_model('zerver', 'Attachment')
@@ -26,12 +27,18 @@ def check_and_create_attachments(apps: StateApps,
             is_message_realm_public = False
             if message.recipient.type == STREAM:
                 stream = Stream.objects.get(id=message.recipient.type_id)
-                is_message_realm_public = not stream.invite_only and stream.realm.domain != "mit.edu"
+                is_message_realm_public = (
+                    not stream.invite_only and stream.realm.domain != "mit.edu"
+                )
 
             if path_id is not None:
                 attachment = Attachment.objects.create(
-                    file_name=os.path.basename(path_id), path_id=path_id, owner=user_profile,
-                    realm=user_profile.realm, is_realm_public=is_message_realm_public)
+                    file_name=os.path.basename(path_id),
+                    path_id=path_id,
+                    owner=user_profile,
+                    realm=user_profile.realm,
+                    is_realm_public=is_message_realm_public,
+                )
                 attachment.messages.add(message)
 
 

@@ -11,15 +11,13 @@ from zerver.models import UserProfile, UserStatus, get_client
 def get_away_user_ids(realm_id: int) -> Set[int]:
     user_dict = get_user_info_dict(realm_id)
 
-    return {
-        int(user_id)
-        for user_id in user_dict
-        if user_dict[user_id].get('away')
-    }
+    return {int(user_id) for user_id in user_dict if user_dict[user_id].get('away')}
+
 
 def user_info(user: UserProfile) -> Dict[str, Any]:
     user_dict = get_user_info_dict(user.realm_id)
     return user_dict.get(str(user.id), {})
+
 
 class UserStatusTest(ZulipTestCase):
     def test_basics(self) -> None:

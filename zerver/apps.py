@@ -22,6 +22,7 @@ class ZerverConfig(AppConfig):
         # running that code too early in Django's setup process, but
         # in any case, this is an intentionally unused import.
         import zerver.signals
+
         zerver.signals
 
         if settings.POST_MIGRATION_CACHE_FLUSHING:

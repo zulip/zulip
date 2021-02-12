@@ -43,10 +43,10 @@ class RealmExportTest(ZulipTestCase):
         tarball_path = create_dummy_file('test-export.tar.gz')
 
         # Test the export logic.
-        with patch('zerver.lib.export.do_export_realm',
-                   return_value=tarball_path) as mock_export:
-            with self.settings(LOCAL_UPLOADS_DIR=None), stdout_suppressed(), \
-                    self.assertLogs(level='INFO') as info_logs:
+        with patch('zerver.lib.export.do_export_realm', return_value=tarball_path) as mock_export:
+            with self.settings(LOCAL_UPLOADS_DIR=None), stdout_suppressed(), self.assertLogs(
+                level='INFO'
+            ) as info_logs:
                 result = self.client_post('/json/export/realm')
             self.assertTrue('INFO:root:Completed data export for zulip in ' in info_logs.output[0])
         self.assert_json_success(result)
@@ -59,7 +59,8 @@ class RealmExportTest(ZulipTestCase):
 
         # Get the entry and test that iago initiated it.
         audit_log_entry = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_EXPORTED).first()
+            event_type=RealmAuditLog.REALM_EXPORTED
+        ).first()
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.
@@ -74,13 +75,17 @@ class RealmExportTest(ZulipTestCase):
         # Test that the export we have is the export we created.
         export_dict = result.json()['exports']
         self.assertEqual(export_dict[0]['id'], audit_log_entry.id)
-        self.assertEqual(export_dict[0]['export_url'],
-                         'https://test-avatar-bucket.s3.amazonaws.com' + export_path)
+        self.assertEqual(
+            export_dict[0]['export_url'],
+            'https://test-avatar-bucket.s3.amazonaws.com' + export_path,
+        )
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
-        self.assert_length(export_dict,
-                           RealmAuditLog.objects.filter(
-                               realm=admin.realm,
-                               event_type=RealmAuditLog.REALM_EXPORTED).count())
+        self.assert_length(
+            export_dict,
+            RealmAuditLog.objects.filter(
+                realm=admin.realm, event_type=RealmAuditLog.REALM_EXPORTED
+            ).count(),
+        )
 
         # Finally, delete the file.
         result = self.client_delete(f'/json/export/realm/{audit_log_entry.id}')
@@ -105,8 +110,7 @@ class RealmExportTest(ZulipTestCase):
         tarball_path = create_dummy_file('test-export.tar.gz')
 
         # Test the export logic.
-        with patch('zerver.lib.export.do_export_realm',
-                   return_value=tarball_path) as mock_export:
+        with patch('zerver.lib.export.do_export_realm', return_value=tarball_path) as mock_export:
             with stdout_suppressed(), self.assertLogs(level='INFO') as info_logs:
                 result = self.client_post('/json/export/realm')
             self.assertTrue('INFO:root:Completed data export for zulip in ' in info_logs.output[0])
@@ -120,7 +124,8 @@ class RealmExportTest(ZulipTestCase):
 
         # Get the entry and test that iago initiated it.
         audit_log_entry = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_EXPORTED).first()
+            event_type=RealmAuditLog.REALM_EXPORTED
+        ).first()
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.
@@ -137,10 +142,12 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(export_dict[0]['id'], audit_log_entry.id)
         self.assertEqual(export_dict[0]['export_url'], admin.realm.uri + export_path)
         self.assertEqual(export_dict[0]['acting_user_id'], admin.id)
-        self.assert_length(export_dict,
-                           RealmAuditLog.objects.filter(
-                               realm=admin.realm,
-                               event_type=RealmAuditLog.REALM_EXPORTED).count())
+        self.assert_length(
+            export_dict,
+            RealmAuditLog.objects.filter(
+                realm=admin.realm, event_type=RealmAuditLog.REALM_EXPORTED
+            ).count(),
+        )
 
         # Finally, delete the file.
         result = self.client_delete(f'/json/export/realm/{audit_log_entry.id}')
@@ -163,15 +170,18 @@ class RealmExportTest(ZulipTestCase):
         admin = self.example_user('iago')
         self.login_user(admin)
 
-        current_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_EXPORTED)
+        current_log = RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_EXPORTED)
         self.assertEqual(len(current_log), 0)
 
         exports = []
         for i in range(0, 5):
-            exports.append(RealmAuditLog(realm=admin.realm,
-                                         event_type=RealmAuditLog.REALM_EXPORTED,
-                                         event_time=timezone_now()))
+            exports.append(
+                RealmAuditLog(
+                    realm=admin.realm,
+                    event_type=RealmAuditLog.REALM_EXPORTED,
+                    event_time=timezone_now(),
+                )
+            )
         RealmAuditLog.objects.bulk_create(exports)
 
         result = export_realm(self.client_post, admin)
@@ -180,15 +190,19 @@ class RealmExportTest(ZulipTestCase):
     def test_upload_and_message_limit(self) -> None:
         admin = self.example_user('iago')
         self.login_user(admin)
-        realm_count = RealmCount.objects.create(realm_id=admin.realm.id,
-                                                end_time=timezone_now(),
-                                                subgroup=1,
-                                                value=0,
-                                                property='messages_sent:client:day')
+        realm_count = RealmCount.objects.create(
+            realm_id=admin.realm.id,
+            end_time=timezone_now(),
+            subgroup=1,
+            value=0,
+            property='messages_sent:client:day',
+        )
 
         # Space limit is set as 10 GiB
-        with patch('zerver.models.Realm.currently_used_upload_space_bytes',
-                   return_value=11 * 1024 * 1024 * 1024):
+        with patch(
+            'zerver.models.Realm.currently_used_upload_space_bytes',
+            return_value=11 * 1024 * 1024 * 1024,
+        ):
             result = self.client_post('/json/export/realm')
         self.assert_json_error(
             result,

@@ -24,10 +24,12 @@ class FrontHookTests(WebhookTestCase):
 
     def test_outbound_message(self) -> None:
         expected_topic = 'cnv_keo696'
-        expected_message = "[Outbound message](https://app.frontapp.com/open/msg_1176ie2) " \
-                           "from **support@planet-express.com** " \
-                           "to **calculon@momsbot.com**:\n" \
-                           "```quote\n*Subject*: Your next delivery is on Epsilon 96Z\n```"
+        expected_message = (
+            "[Outbound message](https://app.frontapp.com/open/msg_1176ie2) "
+            "from **support@planet-express.com** "
+            "to **calculon@momsbot.com**:\n"
+            "```quote\n*Subject*: Your next delivery is on Epsilon 96Z\n```"
+        )
 
         self.check_webhook(
             "outbound_message",
@@ -93,8 +95,10 @@ class FrontHookTests(WebhookTestCase):
 
     def test_mention_all(self) -> None:
         expected_topic = 'cnv_keo696'
-        expected_message = "**Leela Turanga** left a comment:\n" \
-                           "```quote\n@all Could someone else take this?\n```"
+        expected_message = (
+            "**Leela Turanga** left a comment:\n"
+            "```quote\n@all Could someone else take this?\n```"
+        )
 
         self.check_webhook(
             "mention_all",
@@ -107,10 +111,12 @@ class FrontHookTests(WebhookTestCase):
 
     def test_inbound_message(self) -> None:
         expected_topic = 'cnv_keocka'
-        expected_message = "[Inbound message](https://app.frontapp.com/open/msg_1176r8y) " \
-                           "from **calculon@momsbot.com** " \
-                           "to **support@planet-express.com**:\n" \
-                           "```quote\n*Subject*: Being a robot is great, but...\n```"
+        expected_message = (
+            "[Inbound message](https://app.frontapp.com/open/msg_1176r8y) "
+            "from **calculon@momsbot.com** "
+            "to **support@planet-express.com**:\n"
+            "```quote\n*Subject*: Being a robot is great, but...\n```"
+        )
 
         self.check_webhook(
             "inbound_message",
@@ -144,9 +150,11 @@ class FrontHookTests(WebhookTestCase):
 
     def test_outbound_reply(self) -> None:
         expected_topic = 'cnv_keocka'
-        expected_message = "[Outbound reply](https://app.frontapp.com/open/msg_1176ryy) " \
-                           "from **support@planet-express.com** " \
-                           "to **calculon@momsbot.com**."
+        expected_message = (
+            "[Outbound reply](https://app.frontapp.com/open/msg_1176ryy) "
+            "from **support@planet-express.com** "
+            "to **calculon@momsbot.com**."
+        )
 
         self.check_webhook(
             "outbound_reply",
@@ -168,8 +176,10 @@ class FrontHookTests(WebhookTestCase):
 
     def test_mention(self) -> None:
         expected_topic = 'cnv_keocka'
-        expected_message = "**Leela Turanga** left a comment:\n" \
-                           "```quote\n@bender Could you take it from here?\n```"
+        expected_message = (
+            "**Leela Turanga** left a comment:\n"
+            "```quote\n@bender Could you take it from here?\n```"
+        )
 
         self.check_webhook(
             "mention",
@@ -205,7 +215,8 @@ class FrontHookTests(WebhookTestCase):
         payload = self.get_body('conversation_assigned')
         payload_json = orjson.loads(payload)
         payload_json['type'] = 'qwerty'
-        result = self.client_post(self.url, orjson.dumps(payload_json),
-                                  content_type="application/x-www-form-urlencoded")
+        result = self.client_post(
+            self.url, orjson.dumps(payload_json), content_type="application/x-www-form-urlencoded"
+        )
 
         self.assert_json_error(result, "Unknown webhook request")

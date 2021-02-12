@@ -12,7 +12,9 @@ class LibratoHookTests(WebhookTestCase):
     def get_body(self, fixture_name: str) -> str:
         if self.IS_ATTACHMENT:
             return self.webhook_fixture_data("librato", fixture_name, file_type='json')
-        return urllib.parse.urlencode({'payload': self.webhook_fixture_data("librato", fixture_name, file_type='json')})
+        return urllib.parse.urlencode(
+            {'payload': self.webhook_fixture_data("librato", fixture_name, file_type='json')}
+        )
 
     def test_alert_message_with_default_topic(self) -> None:
         expected_topic = 'Alert alert.name'

@@ -166,8 +166,9 @@ from django_auth_ldap.config import LDAPSearch
 ## name they type into the Zulip login form.
 ##
 ## For more details and alternatives, see the documentation linked above.
-AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                   ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    "ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"
+)
 
 ## Configuration to lookup a user's LDAP data given their email address
 ## (For Zulip reverse mapping).  If users log in as e.g. "sam" when

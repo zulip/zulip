@@ -16,5 +16,6 @@ class Migration(migrations.Migration):
             WHERE zerver_recipient.type_id = zerver_huddle.id AND zerver_recipient.type = 3;
             """,
             reverse_sql='UPDATE zerver_huddle SET recipient_id = NULL',
-            elidable=True),
+            elidable=True,
+        ),
     ]

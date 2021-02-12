@@ -33,8 +33,8 @@ os.chdir(ZULIP_PATH)
 
 venv_name = "zulip-py3-venv"
 cached_venv_path = setup_virtualenv(
-    os.path.join(args.deploy_path, venv_name),
-    os.path.join(ZULIP_PATH, "requirements", "prod.txt"))
+    os.path.join(args.deploy_path, venv_name), os.path.join(ZULIP_PATH, "requirements", "prod.txt")
+)
 
 current_venv_path = os.path.join(args.deploy_path, 'zulip-current-venv')
 overwrite_symlink(venv_name, current_venv_path)

@@ -13,5 +13,7 @@ class CrashlyticsHookTests(WebhookTestCase):
 
     def test_crashlytics_build_in_success_status(self) -> None:
         expected_topic = "123: Issue Title"
-        expected_message = "[Issue](http://crashlytics.com/full/url/to/issue) impacts at least 16 device(s)."
+        expected_message = (
+            "[Issue](http://crashlytics.com/full/url/to/issue) impacts at least 16 device(s)."
+        )
         self.check_webhook("issue_message", expected_topic, expected_message)

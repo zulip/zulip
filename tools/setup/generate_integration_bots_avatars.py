@@ -38,10 +38,12 @@ def create_square_image(png: bytes) -> bytes:
     new_img.save(out, format='png')
     return out.getvalue()
 
+
 def create_integration_bot_avatar(logo_path: str, bot_avatar_path: str) -> None:
     if logo_path.endswith('.svg'):
         avatar = cairosvg.svg2png(
-            url=logo_path, output_width=DEFAULT_AVATAR_SIZE, output_height=DEFAULT_AVATAR_SIZE)
+            url=logo_path, output_width=DEFAULT_AVATAR_SIZE, output_height=DEFAULT_AVATAR_SIZE
+        )
     else:
         with open(logo_path, 'rb') as f:
             image = f.read()
@@ -52,7 +54,8 @@ def create_integration_bot_avatar(logo_path: str, bot_avatar_path: str) -> None:
     with open(bot_avatar_path, 'wb') as f:
         f.write(avatar)
 
-def generate_integration_bots_avatars(check_missing: bool=False) -> None:
+
+def generate_integration_bots_avatars(check_missing: bool = False) -> None:
     missing = set()
     for webhook in WEBHOOK_INTEGRATIONS:
         if not webhook.logo_path:
@@ -70,11 +73,14 @@ def generate_integration_bots_avatars(check_missing: bool=False) -> None:
             create_integration_bot_avatar(static_path(webhook.logo_path), bot_avatar_path)
 
     if missing:
-        print('ERROR: Bot avatars are missing for these webhooks: {}.\n'
-              'ERROR: Run ./tools/setup/generate_integration_bots_avatars.py '
-              'to generate them.\nERROR: Commit the newly generated avatars to '
-              'the repository.'.format(', '.join(missing)))
+        print(
+            'ERROR: Bot avatars are missing for these webhooks: {}.\n'
+            'ERROR: Run ./tools/setup/generate_integration_bots_avatars.py '
+            'to generate them.\nERROR: Commit the newly generated avatars to '
+            'the repository.'.format(', '.join(missing))
+        )
         sys.exit(1)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

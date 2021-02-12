@@ -8,20 +8,26 @@ from zerver.lib.request import JsonableError
 from zerver.lib.topic import get_topic_from_message_info
 
 stop_words_list: Optional[List[str]] = None
+
+
 def read_stop_words() -> List[str]:
     global stop_words_list
     if stop_words_list is None:
-        file_path = os.path.join(settings.DEPLOY_ROOT, "puppet/zulip/files/postgresql/zulip_english.stop")
+        file_path = os.path.join(
+            settings.DEPLOY_ROOT, "puppet/zulip/files/postgresql/zulip_english.stop"
+        )
         with open(file_path) as f:
             stop_words_list = f.read().splitlines()
 
     return stop_words_list
+
 
 def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> None:
     for element in narrow:
         operator = element[0]
         if operator not in ["stream", "topic", "sender", "is"]:
             raise JsonableError(_("Operator {} not supported.").format(operator))
+
 
 def is_web_public_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
     for element in narrow:
@@ -32,6 +38,7 @@ def is_web_public_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
             return False
     return True
 
+
 def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
     if narrow is None:
         return False
@@ -39,10 +46,15 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
     for term in narrow:
         # Web public queries are only allowed for limited types of narrows.
         # term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
-        if term['operator'] == 'streams' and term['operand'] == 'web-public' and term['negated'] is False:
+        if (
+            term['operator'] == 'streams'
+            and term['operand'] == 'web-public'
+            and term['negated'] is False
+        ):
             return True
 
     return False
+
 
 def build_narrow_filter(narrow: Iterable[Sequence[str]]) -> Callable[[Mapping[str, Any]], bool]:
     """Changes to this function should come with corresponding changes to
@@ -83,4 +95,5 @@ def build_narrow_filter(narrow: Iterable[Sequence[str]]) -> Callable[[Mapping[st
                     return False
 
         return True
+
     return narrow_filter

@@ -21,7 +21,8 @@ import zerver.openapi.python_examples
 from zerver.openapi.openapi import get_openapi_description, get_openapi_fixture, openapi_spec
 
 MACRO_REGEXP = re.compile(
-    r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
+    r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}'
+)
 PYTHON_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
 JS_EXAMPLE_REGEX = re.compile(r'\/\/ \{code_example\|\s*(.+?)\s*\}')
 MACRO_REGEXP_DESC = re.compile(r'\{generate_api_description(\(\s*(.+?)\s*\))}')
@@ -70,14 +71,17 @@ DEFAULT_EXAMPLE = {
     "boolean": False,
 }
 
+
 def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str, Any]]:
     if not input_str:
         return ("", {})
-    language_and_options = re.match(r"(?P<language>\w+)(,\s*(?P<options>[\"\'\w\d\[\],= ]+))?", input_str)
-    assert(language_and_options is not None)
+    language_and_options = re.match(
+        r"(?P<language>\w+)(,\s*(?P<options>[\"\'\w\d\[\],= ]+))?", input_str
+    )
+    assert language_and_options is not None
     kwargs_pattern = re.compile(r"(?P<key>\w+)\s*=\s*(?P<value>[\'\"\w\d]+|\[[\'\",\w\d ]+\])")
     language = language_and_options.group("language")
-    assert(language is not None)
+    assert language is not None
     if language_and_options.group("options"):
         _options = kwargs_pattern.finditer(language_and_options.group("options"))
         options = {}
@@ -86,8 +90,10 @@ def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str,
         return (language, options)
     return (language, {})
 
-def extract_code_example(source: List[str], snippet: List[Any],
-                         example_regex: Pattern[str]) -> List[Any]:
+
+def extract_code_example(
+    source: List[str], snippet: List[Any], example_regex: Pattern[str]
+) -> List[Any]:
     start = -1
     end = -1
     for line in source:
@@ -99,15 +105,17 @@ def extract_code_example(source: List[str], snippet: List[Any],
                 end = source.index(line)
                 break
 
-    if (start == -1 and end == -1):
+    if start == -1 and end == -1:
         return snippet
 
-    snippet.append(source[start + 1: end])
-    source = source[end + 1:]
+    snippet.append(source[start + 1 : end])
+    source = source[end + 1 :]
     return extract_code_example(source, snippet, example_regex)
 
-def render_python_code_example(function: str, admin_config: bool=False,
-                               **kwargs: Any) -> List[str]:
+
+def render_python_code_example(
+    function: str, admin_config: bool = False, **kwargs: Any
+) -> List[str]:
     method = zerver.openapi.python_examples.TEST_FUNCTIONS[function]
     function_source_lines = inspect.getsourcelines(method)[0]
 
@@ -133,8 +141,10 @@ def render_python_code_example(function: str, admin_config: bool=False,
 
     return code_example
 
-def render_javascript_code_example(function: str, admin_config: bool=False,
-                                   **kwargs: Any) -> List[str]:
+
+def render_javascript_code_example(
+    function: str, admin_config: bool = False, **kwargs: Any
+) -> List[str]:
     pattern = fr'^add_example\(\s*"[^"]*",\s*{re.escape(json.dumps(function))},\s*\d+,\s*async \(client, console\) => \{{\n(.*?)^(?:\}}| *\}},\n)\);$'
     with open('zerver/openapi/javascript_examples.js') as f:
         m = re.search(pattern, f.read(), re.M | re.S)
@@ -164,8 +174,8 @@ def render_javascript_code_example(function: str, admin_config: bool=False,
 
     return code_example
 
-def curl_method_arguments(endpoint: str, method: str,
-                          api_url: str) -> List[str]:
+
+def curl_method_arguments(endpoint: str, method: str, api_url: str) -> List[str]:
     # We also include the -sS verbosity arguments here.
     method = method.upper()
     url = f"{api_url}/v1{endpoint}"
@@ -181,8 +191,10 @@ def curl_method_arguments(endpoint: str, method: str,
         msg = f"The request method {method} is not one of {valid_methods}"
         raise ValueError(msg)
 
-def get_openapi_param_example_value_as_string(endpoint: str, method: str, param: Dict[str, Any],
-                                              curl_argument: bool=False) -> str:
+
+def get_openapi_param_example_value_as_string(
+    endpoint: str, method: str, param: Dict[str, Any], curl_argument: bool = False
+) -> str:
     jsonify = False
     param_name = param["name"]
     if "content" in param:
@@ -206,7 +218,7 @@ cURL example."""
             raise ValueError(msg)
         ordered_ex_val_str = json.dumps(example_value, sort_keys=True)
         # We currently don't have any non-JSON encoded arrays.
-        assert(jsonify)
+        assert jsonify
         if curl_argument:
             return "    --data-urlencode " + shlex.quote(f"{param_name}={ordered_ex_val_str}")
         return ordered_ex_val_str  # nocoverage
@@ -220,12 +232,16 @@ cURL example."""
             return "    --data-urlencode " + shlex.quote(f"{param_name}={example_value}")
         return example_value
 
-def generate_curl_example(endpoint: str, method: str,
-                          api_url: str,
-                          auth_email: str=DEFAULT_AUTH_EMAIL,
-                          auth_api_key: str=DEFAULT_AUTH_API_KEY,
-                          exclude: Optional[List[str]]=None,
-                          include: Optional[List[str]]=None) -> List[str]:
+
+def generate_curl_example(
+    endpoint: str,
+    method: str,
+    api_url: str,
+    auth_email: str = DEFAULT_AUTH_EMAIL,
+    auth_api_key: str = DEFAULT_AUTH_API_KEY,
+    exclude: Optional[List[str]] = None,
+    include: Optional[List[str]] = None,
+) -> List[str]:
     if exclude is not None and include is not None:
         raise AssertionError("exclude and include cannot be set at the same time.")
 
@@ -240,8 +256,10 @@ def generate_curl_example(endpoint: str, method: str,
 
     if settings.RUNNING_OPENAPI_CURL_TEST:  # nocoverage
         from zerver.openapi.curl_param_value_generators import patch_openapi_example_values
-        operation_params, operation_request_body = patch_openapi_example_values(operation, operation_params,
-                                                                                operation_request_body)
+
+        operation_params, operation_request_body = patch_openapi_example_values(
+            operation, operation_params, operation_request_body
+        )
 
     format_dict = {}
     for param in operation_params:
@@ -251,8 +269,7 @@ def generate_curl_example(endpoint: str, method: str,
         format_dict[param["name"]] = example_value
     example_endpoint = endpoint.format_map(format_dict)
 
-    curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method,
-                                                            api_url)]
+    curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method, api_url)]
     lines.append(" ".join(map(shlex.quote, curl_first_line_parts)))
 
     insecure_operations = ['/dev_fetch_api_key:post', '/fetch_api_key:post']
@@ -260,16 +277,22 @@ def generate_curl_example(endpoint: str, method: str,
         if global_security == [{'basicAuth': []}]:
             authentication_required = True
         else:
-            raise AssertionError("Unhandled global securityScheme."
-                                 + " Please update the code to handle this scheme.")
+            raise AssertionError(
+                "Unhandled global securityScheme."
+                + " Please update the code to handle this scheme."
+            )
     elif operation_security == []:
         if operation in insecure_operations:
             authentication_required = False
         else:
-            raise AssertionError("Unknown operation without a securityScheme. "
-                                 + "Please update insecure_operations.")
+            raise AssertionError(
+                "Unknown operation without a securityScheme. "
+                + "Please update insecure_operations."
+            )
     else:
-        raise AssertionError("Unhandled securityScheme. Please update the code to handle this scheme.")
+        raise AssertionError(
+            "Unhandled securityScheme. Please update the code to handle this scheme."
+        )
 
     if authentication_required:
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
@@ -285,25 +308,32 @@ def generate_curl_example(endpoint: str, method: str,
         if exclude is not None and param_name in exclude:
             continue
 
-        example_value = get_openapi_param_example_value_as_string(endpoint, method, param,
-                                                                  curl_argument=True)
+        example_value = get_openapi_param_example_value_as_string(
+            endpoint, method, param, curl_argument=True
+        )
         lines.append(example_value)
 
     if "requestBody" in operation_entry:
-        properties = operation_entry["requestBody"]["content"]["multipart/form-data"]["schema"]["properties"]
+        properties = operation_entry["requestBody"]["content"]["multipart/form-data"]["schema"][
+            "properties"
+        ]
         for key, property in properties.items():
             lines.append('    -F ' + shlex.quote('{}=@{}'.format(key, property["example"])))
 
-    for i in range(1, len(lines)-1):
+    for i in range(1, len(lines) - 1):
         lines[i] = lines[i] + " \\"
 
     lines.append("```")
 
     return lines
 
-def render_curl_example(function: str, api_url: str,
-                        exclude: Optional[List[str]]=None,
-                        include: Optional[List[str]]=None) -> List[str]:
+
+def render_curl_example(
+    function: str,
+    api_url: str,
+    exclude: Optional[List[str]] = None,
+    include: Optional[List[str]] = None,
+) -> List[str]:
     """ A simple wrapper around generate_curl_example. """
     parts = function.split(":")
     endpoint = parts[0]
@@ -317,6 +347,7 @@ def render_curl_example(function: str, api_url: str,
     kwargs["exclude"] = exclude
     kwargs["include"] = include
     return generate_curl_example(endpoint, method, **kwargs)
+
 
 SUPPORTED_LANGUAGES: Dict[str, Any] = {
     'python': {
@@ -334,6 +365,7 @@ SUPPORTED_LANGUAGES: Dict[str, Any] = {
     },
 }
 
+
 class APIMarkdownExtension(Extension):
     def __init__(self, api_url: Optional[str]) -> None:
         self.config = {
@@ -350,6 +382,7 @@ class APIMarkdownExtension(Extension):
         md.preprocessors.register(
             APIDescriptionPreprocessor(md, self.getConfigs()), 'generate_api_description', 530
         )
+
 
 class APICodeExamplesPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
@@ -377,7 +410,9 @@ class APICodeExamplesPreprocessor(Preprocessor):
                             text = self.render_fixture(function, name=argument)
                     elif key == 'example':
                         if argument == 'admin_config=True':
-                            text = SUPPORTED_LANGUAGES[language]['render'](function, admin_config=True)
+                            text = SUPPORTED_LANGUAGES[language]['render'](
+                                function, admin_config=True
+                            )
                         else:
                             text = SUPPORTED_LANGUAGES[language]['render'](function, **options)
 
@@ -389,25 +424,25 @@ class APICodeExamplesPreprocessor(Preprocessor):
                     preceding = line_split[0]
                     following = line_split[-1]
                     text = [preceding, *text, following]
-                    lines = lines[:loc] + text + lines[loc+1:]
+                    lines = lines[:loc] + text + lines[loc + 1 :]
                     break
             else:
                 done = True
         return lines
 
-    def render_fixture(self, function: str, name: Optional[str]=None) -> List[str]:
+    def render_fixture(self, function: str, name: Optional[str] = None) -> List[str]:
         fixture = []
 
         path, method = function.rsplit(':', 1)
         fixture_dict = get_openapi_fixture(path, method, name)
-        fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True,
-                                  separators=(',', ': '))
+        fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True, separators=(',', ': '))
 
         fixture.append('``` json')
         fixture.extend(fixture_json.splitlines())
         fixture.append('```')
 
         return fixture
+
 
 class APIDescriptionPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
@@ -432,7 +467,7 @@ class APIDescriptionPreprocessor(Preprocessor):
                     preceding = line_split[0]
                     following = line_split[-1]
                     text = [preceding, *text, following]
-                    lines = lines[:loc] + text + lines[loc+1:]
+                    lines = lines[:loc] + text + lines[loc + 1 :]
                     break
             else:
                 done = True
@@ -445,6 +480,7 @@ class APIDescriptionPreprocessor(Preprocessor):
         description_dict = description_dict.replace('{{api_url}}', self.api_url)
         description.extend(description_dict.splitlines())
         return description
+
 
 def makeExtension(*args: Any, **kwargs: str) -> APIMarkdownExtension:
     return APIMarkdownExtension(*args, **kwargs)

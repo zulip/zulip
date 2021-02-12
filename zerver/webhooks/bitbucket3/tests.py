@@ -3,6 +3,7 @@ from zerver.lib.test_classes import WebhookTestCase
 TOPIC = "sandbox"
 TOPIC_BRANCH_EVENTS = "sandbox / {branch}"
 
+
 class Bitbucket3HookTests(WebhookTestCase):
     STREAM_NAME = "bitbucket3"
     URL_TEMPLATE = "/api/v1/external/bitbucket3?stream={stream}&api_key={api_key}"
@@ -10,12 +11,16 @@ class Bitbucket3HookTests(WebhookTestCase):
 
     # Diagnostics events:
     def test_ping(self) -> None:
-        expected_message = "Congratulations! The Bitbucket Server webhook was configured successfully!"
+        expected_message = (
+            "Congratulations! The Bitbucket Server webhook was configured successfully!"
+        )
         self.check_webhook("diagnostics_ping", "Bitbucket Server Ping", expected_message)
 
     def test_ping_with_user_defined_topic(self) -> None:
         self.url = self.build_webhook_url(topic="my topic")
-        expected_message = "Congratulations! The Bitbucket Server webhook was configured successfully!"
+        expected_message = (
+            "Congratulations! The Bitbucket Server webhook was configured successfully!"
+        )
         self.check_webhook("diagnostics_ping", "my topic", expected_message)
 
     # Core repo events:
@@ -42,21 +47,29 @@ class Bitbucket3HookTests(WebhookTestCase):
 
     # Repo push events:
     def test_push_add_branch(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) created branch2 branch."""
+        expected_message = (
+            """[hypro999](http://139.59.64.214:7990/users/hypro999) created branch2 branch."""
+        )
         expected_topic = TOPIC_BRANCH_EVENTS.format(branch="branch2")
         self.check_webhook("repo_push_add_branch", expected_topic, expected_message)
 
     def test_push_add_tag(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed tag newtag."""
+        expected_message = (
+            """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed tag newtag."""
+        )
         self.check_webhook("repo_push_add_tag", TOPIC, expected_message)
 
     def test_push_delete_branch(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted branch branch2."""
+        expected_message = (
+            """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted branch branch2."""
+        )
         expected_topic = TOPIC_BRANCH_EVENTS.format(branch="branch2")
         self.check_webhook("repo_push_delete_branch", expected_topic, expected_message)
 
     def test_push_delete_tag(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) removed tag test-tag."""
+        expected_message = (
+            """[hypro999](http://139.59.64.214:7990/users/hypro999) removed tag test-tag."""
+        )
         self.check_webhook("repo_push_delete_tag", TOPIC, expected_message)
 
     def test_push_update_single_branch(self) -> None:

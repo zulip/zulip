@@ -15,15 +15,14 @@ from zerver.openapi.openapi import validate_against_openapi_schema
 
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
-
     def setUp(self) -> None:
         super().setUp()
 
         bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         service_class = get_service_interface_class('whatever')  # GenericOutgoingWebhookService
-        self.handler = service_class(service_name='test-service',
-                                     token='abcdef',
-                                     user_profile=bot_user)
+        self.handler = service_class(
+            service_name='test-service', token='abcdef', user_profile=bot_user
+        )
 
     def test_process_success_response(self) -> None:
         class Stub:
@@ -141,8 +140,8 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 
-class TestSlackOutgoingWebhookService(ZulipTestCase):
 
+class TestSlackOutgoingWebhookService(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.stream_message_event = {
@@ -182,9 +181,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         }
 
         service_class = get_service_interface_class(SLACK_INTERFACE)
-        self.handler = service_class(token="abcdef",
-                                     user_profile=None,
-                                     service_name='test-service')
+        self.handler = service_class(token="abcdef", user_profile=None, service_name='test-service')
 
     def test_build_bot_request_stream_message(self) -> None:
         request_data = self.handler.build_bot_request(self.stream_message_event)

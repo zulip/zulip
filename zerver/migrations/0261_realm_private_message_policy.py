@@ -2,6 +2,8 @@
 from django.db import migrations, models
 
 PRIVATE_MESSAGE_POLICY_UNLIMITED = 1
+
+
 class Migration(migrations.Migration):
 
     dependencies = [

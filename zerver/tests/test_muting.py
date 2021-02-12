@@ -18,7 +18,7 @@ from zerver.models import MutedTopic, UserProfile, get_stream
 class MutedTopicsTests(ZulipTestCase):
     def test_user_ids_muting_topic(self) -> None:
         hamlet = self.example_user('hamlet')
-        cordelia  = self.example_user('cordelia')
+        cordelia = self.example_user('cordelia')
         realm = hamlet.realm
         stream = get_stream('Verona', realm)
         recipient = stream.recipient
@@ -68,8 +68,10 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
         for data in payloads:
-            with mock.patch('zerver.views.muting.timezone_now',
-                            return_value=datetime(2020, 1, 1, tzinfo=timezone.utc)):
+            with mock.patch(
+                'zerver.views.muting.timezone_now',
+                return_value=datetime(2020, 1, 1, tzinfo=timezone.utc),
+            ):
                 result = self.api_patch(user, url, data)
                 self.assert_json_success(result)
 

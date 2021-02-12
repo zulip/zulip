@@ -12,9 +12,7 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser, True)
 
-        parser.add_argument(
-            '-s', '--streams',
-            help='A comma-separated list of stream names.')
+        parser.add_argument('-s', '--streams', help='A comma-separated list of stream names.')
 
         parser.add_argument(
             '--referred-by',

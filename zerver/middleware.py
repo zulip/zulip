@@ -37,6 +37,7 @@ from zerver.models import Realm, flush_per_request_caches, get_realm
 logger = logging.getLogger('zulip.requests')
 slow_query_logger = logging.getLogger('zulip.slow_queries')
 
+
 def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['time_stopped'] = time.time()
     log_data['remote_cache_time_stopped'] = get_remote_cache_time()
@@ -46,8 +47,10 @@ def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
 
+
 def async_request_timer_stop(request: HttpRequest) -> None:
     record_request_stop_data(request._log_data)
+
 
 def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
     if settings.PROFILE_ALL_REQUESTS:
@@ -58,12 +61,14 @@ def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['markdown_time_restarted'] = get_markdown_time()
     log_data['markdown_requests_restarted'] = get_markdown_requests()
 
+
 def async_request_timer_restart(request: HttpRequest) -> None:
     if "time_restarted" in request._log_data:
         # Don't destroy data when being called from
         # finish_current_handler
         return
     record_request_restart_data(request._log_data)
+
 
 def record_request_start_data(log_data: MutableMapping[str, Any]) -> None:
     if settings.PROFILE_ALL_REQUESTS:
@@ -77,40 +82,66 @@ def record_request_start_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['markdown_time_start'] = get_markdown_time()
     log_data['markdown_requests_start'] = get_markdown_requests()
 
+
 def timedelta_ms(timedelta: float) -> float:
     return timedelta * 1000
 
+
 def format_timedelta(timedelta: float) -> str:
-    if (timedelta >= 1):
+    if timedelta >= 1:
         return f"{timedelta:.1f}s"
     return f"{timedelta_ms(timedelta):.0f}ms"
+
 
 def is_slow_query(time_delta: float, path: str) -> bool:
     if time_delta < 1.2:
         return False
-    is_exempt = \
-        path in ["/activity", "/json/report/error",
-                 "/api/v1/deployments/report_error"] \
-        or path.startswith("/realm_activity/") \
+    is_exempt = (
+        path in ["/activity", "/json/report/error", "/api/v1/deployments/report_error"]
+        or path.startswith("/realm_activity/")
         or path.startswith("/user_activity/")
+    )
     if is_exempt:
         return time_delta >= 5
     if 'webathena_kerberos' in path:
         return time_delta >= 10
     return True
 
+
 statsd_blacklisted_requests = [
-    'do_confirm', 'signup_send_confirm', 'new_realm_send_confirm',
-    'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
-    'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
-    'accounts.unsubscribe', 'apple-touch-icon', 'emoji', 'json.bots',
-    'upload_file', 'realm_activity', 'user_activity',
+    'do_confirm',
+    'signup_send_confirm',
+    'new_realm_send_confirm',
+    'eventslast_event_id',
+    'webreq.content',
+    'avatar',
+    'user_uploads',
+    'password.reset',
+    'static',
+    'json.bots',
+    'json.users',
+    'json.streams',
+    'accounts.unsubscribe',
+    'apple-touch-icon',
+    'emoji',
+    'json.bots',
+    'upload_file',
+    'realm_activity',
+    'user_activity',
 ]
 
-def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str,
-                   requestor_for_logs: str, client_name: str, status_code: int=200,
-                   error_content: Optional[AnyStr]=None,
-                   error_content_iter: Optional[Iterable[AnyStr]]=None) -> None:
+
+def write_log_line(
+    log_data: MutableMapping[str, Any],
+    path: str,
+    method: str,
+    remote_ip: str,
+    requestor_for_logs: str,
+    client_name: str,
+    status_code: int = 200,
+    error_content: Optional[AnyStr] = None,
+    error_content_iter: Optional[Iterable[AnyStr]] = None,
+) -> None:
     assert error_content is None or error_content_iter is None
     if error_content is not None:
         error_content_iter = (error_content,)
@@ -126,7 +157,9 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
             # statsd sad when it sends the key name over the socket
             statsd_path = statsd_path.encode('ascii', errors='ignore').decode("ascii")
         # TODO: This could probably be optimized to use a regular expression rather than a loop.
-        suppress_statsd = any(blacklisted in statsd_path for blacklisted in statsd_blacklisted_requests)
+        suppress_statsd = any(
+            blacklisted in statsd_path for blacklisted in statsd_blacklisted_requests
+        )
     else:
         suppress_statsd = True
         statsd_path = ''
@@ -139,22 +172,30 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         time_delta = time.time() - log_data['time_started']
     if 'time_stopped' in log_data:
         orig_time_delta = time_delta
-        time_delta = ((log_data['time_stopped'] - log_data['time_started']) +
-                      (time.time() - log_data['time_restarted']))
+        time_delta = (log_data['time_stopped'] - log_data['time_started']) + (
+            time.time() - log_data['time_restarted']
+        )
         optional_orig_delta = f" (lp: {format_timedelta(orig_time_delta)})"
     remote_cache_output = ""
     if 'remote_cache_time_start' in log_data:
         remote_cache_time_delta = get_remote_cache_time() - log_data['remote_cache_time_start']
-        remote_cache_count_delta = get_remote_cache_requests() - log_data['remote_cache_requests_start']
+        remote_cache_count_delta = (
+            get_remote_cache_requests() - log_data['remote_cache_requests_start']
+        )
         if 'remote_cache_requests_stopped' in log_data:
             # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
-            remote_cache_time_delta += (log_data['remote_cache_time_stopped'] -
-                                        log_data['remote_cache_time_restarted'])
-            remote_cache_count_delta += (log_data['remote_cache_requests_stopped'] -
-                                         log_data['remote_cache_requests_restarted'])
+            remote_cache_time_delta += (
+                log_data['remote_cache_time_stopped'] - log_data['remote_cache_time_restarted']
+            )
+            remote_cache_count_delta += (
+                log_data['remote_cache_requests_stopped']
+                - log_data['remote_cache_requests_restarted']
+            )
 
-        if (remote_cache_time_delta > 0.005):
-            remote_cache_output = f" (mem: {format_timedelta(remote_cache_time_delta)}/{remote_cache_count_delta})"
+        if remote_cache_time_delta > 0.005:
+            remote_cache_output = (
+                f" (mem: {format_timedelta(remote_cache_time_delta)}/{remote_cache_count_delta})"
+            )
 
         if not suppress_statsd:
             statsd.timing(f"{statsd_path}.remote_cache.time", timedelta_ms(remote_cache_time_delta))
@@ -170,13 +211,17 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         markdown_count_delta = get_markdown_requests() - log_data['markdown_requests_start']
         if 'markdown_requests_stopped' in log_data:
             # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
-            markdown_time_delta += (log_data['markdown_time_stopped'] -
-                                    log_data['markdown_time_restarted'])
-            markdown_count_delta += (log_data['markdown_requests_stopped'] -
-                                     log_data['markdown_requests_restarted'])
+            markdown_time_delta += (
+                log_data['markdown_time_stopped'] - log_data['markdown_time_restarted']
+            )
+            markdown_count_delta += (
+                log_data['markdown_requests_stopped'] - log_data['markdown_requests_restarted']
+            )
 
-        if (markdown_time_delta > 0.005):
-            markdown_output = f" (md: {format_timedelta(markdown_time_delta)}/{markdown_count_delta})"
+        if markdown_time_delta > 0.005:
+            markdown_output = (
+                f" (md: {format_timedelta(markdown_time_delta)}/{markdown_count_delta})"
+            )
 
             if not suppress_statsd:
                 statsd.timing(f"{statsd_path}.markdown.time", timedelta_ms(markdown_time_delta))
@@ -202,12 +247,12 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
     logger_client = f"({requestor_for_logs} via {client_name})"
     logger_timing = f'{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{markdown_output}{db_time_output}{startup_output} {path}'
     logger_line = f'{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}'
-    if (status_code in [200, 304] and method == "GET" and path.startswith("/static")):
+    if status_code in [200, 304] and method == "GET" and path.startswith("/static"):
         logger.debug(logger_line)
     else:
         logger.info(logger_line)
 
-    if (is_slow_query(time_delta, path)):
+    if is_slow_query(time_delta, path):
         slow_query_logger.info(logger_line)
 
     if settings.PROFILE_ALL_REQUESTS:
@@ -229,6 +274,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
             error_data = "[content more than 200 characters]"
         logger.info('status=%3d, data=%s, uid=%s', status_code, error_data, requestor_for_logs)
 
+
 class RequestContext(MiddlewareMixin):
     def __call__(self, request: HttpRequest) -> HttpResponse:
         set_request(request)
@@ -236,6 +282,7 @@ class RequestContext(MiddlewareMixin):
             return self.get_response(request)
         finally:
             unset_request()
+
 
 class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
@@ -255,8 +302,9 @@ class LogRequests(MiddlewareMixin):
         request._log_data = {}
         record_request_start_data(request._log_data)
 
-    def process_view(self, request: HttpRequest, view_func: ViewFuncT,
-                     args: List[str], kwargs: Dict[str, Any]) -> None:
+    def process_view(
+        self, request: HttpRequest, view_func: ViewFuncT, args: List[str], kwargs: Dict[str, Any]
+    ) -> None:
         if hasattr(request, "saved_response"):
             # The below logging adjustments are unnecessary (because
             # we've already imported everything) and incorrect
@@ -273,8 +321,9 @@ class LogRequests(MiddlewareMixin):
         # done as part of this request
         record_request_start_data(request._log_data)
 
-    def process_response(self, request: HttpRequest,
-                         response: StreamingHttpResponse) -> StreamingHttpResponse:
+    def process_response(
+        self, request: HttpRequest, response: StreamingHttpResponse
+    ) -> StreamingHttpResponse:
         if getattr(response, "asynchronous", False):
             # This special Tornado "asynchronous" response is
             # discarded after going through this code path as Tornado
@@ -303,17 +352,30 @@ class LogRequests(MiddlewareMixin):
             content = response.content
             content_iter = None
 
-        write_log_line(request._log_data, request.path, request.method,
-                       remote_ip, requestor_for_logs, client, status_code=response.status_code,
-                       error_content=content, error_content_iter=content_iter)
+        write_log_line(
+            request._log_data,
+            request.path,
+            request.method,
+            remote_ip,
+            requestor_for_logs,
+            client,
+            status_code=response.status_code,
+            error_content=content,
+            error_content_iter=content_iter,
+        )
         return response
 
+
 class JsonErrorHandler(MiddlewareMixin):
-    def __init__(self, get_response: Callable[[Any, WSGIRequest], Union[HttpResponse, BaseException]]) -> None:
+    def __init__(
+        self, get_response: Callable[[Any, WSGIRequest], Union[HttpResponse, BaseException]]
+    ) -> None:
         super().__init__(get_response)
         ignore_logger("zerver.middleware.json_error_handler")
 
-    def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
+    def process_exception(
+        self, request: HttpRequest, exception: Exception
+    ) -> Optional[HttpResponse]:
         if isinstance(exception, MissingAuthenticationError):
             if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
                 # If this looks like a request from a top-level page in a
@@ -340,9 +402,11 @@ class JsonErrorHandler(MiddlewareMixin):
             return json_error(_("Internal server error"), status=500)
         return None
 
+
 class TagRequests(MiddlewareMixin):
-    def process_view(self, request: HttpRequest, view_func: ViewFuncT,
-                     args: List[str], kwargs: Dict[str, Any]) -> None:
+    def process_view(
+        self, request: HttpRequest, view_func: ViewFuncT, args: List[str], kwargs: Dict[str, Any]
+    ) -> None:
         self.process_request(request)
 
     def process_request(self, request: HttpRequest) -> None:
@@ -350,6 +414,7 @@ class TagRequests(MiddlewareMixin):
             request.error_format = "JSON"
         else:
             request.error_format = "HTML"
+
 
 class CsrfFailureError(JsonableError):
     http_status_code = 403
@@ -363,11 +428,13 @@ class CsrfFailureError(JsonableError):
     def msg_format() -> str:
         return _("CSRF Error: {reason}")
 
-def csrf_failure(request: HttpRequest, reason: str="") -> HttpResponse:
+
+def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
     if request.error_format == "JSON":
         return json_response_from_error(CsrfFailureError(reason))
     else:
         return html_csrf_failure(request, reason)
+
 
 class LocaleMiddleware(DjangoLocaleMiddleware):
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
@@ -392,9 +459,11 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
 
         return response
 
+
 class RateLimitMiddleware(MiddlewareMixin):
-    def set_response_headers(self, response: HttpResponse,
-                             rate_limit_results: List[RateLimitResult]) -> None:
+    def set_response_headers(
+        self, response: HttpResponse, rate_limit_results: List[RateLimitResult]
+    ) -> None:
         # The limit on the action that was requested is the minimum of the limits that get applied:
         limit = min(result.entity.max_api_calls() for result in rate_limit_results)
         response['X-RateLimit-Limit'] = str(limit)
@@ -416,12 +485,14 @@ class RateLimitMiddleware(MiddlewareMixin):
 
         return response
 
+
 class FlushDisplayRecipientCache(MiddlewareMixin):
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         # We flush the per-request caches after every request, so they
         # are not shared at all between requests.
         flush_per_request_caches()
         return response
+
 
 class HostDomainMiddleware(MiddlewareMixin):
     def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
@@ -447,6 +518,7 @@ class HostDomainMiddleware(MiddlewareMixin):
                 return render(request, "zerver/invalid_realm.html", status=404)
         return None
 
+
 class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
     """
     Middleware that sets REMOTE_ADDR based on the HTTP_X_FORWARDED_FOR.
@@ -468,19 +540,25 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
             real_ip = real_ip.split(",")[0].strip()
             request.META['REMOTE_ADDR'] = real_ip
 
+
 def alter_content(request: HttpRequest, content: bytes) -> bytes:
     first_paragraph_text = get_content_description(content, request)
-    return content.replace(request.placeholder_open_graph_description.encode("utf-8"),
-                           first_paragraph_text.encode("utf-8"))
+    return content.replace(
+        request.placeholder_open_graph_description.encode("utf-8"),
+        first_paragraph_text.encode("utf-8"),
+    )
+
 
 class FinalizeOpenGraphDescription(MiddlewareMixin):
-    def process_response(self, request: HttpRequest,
-                         response: StreamingHttpResponse) -> StreamingHttpResponse:
+    def process_response(
+        self, request: HttpRequest, response: StreamingHttpResponse
+    ) -> StreamingHttpResponse:
 
         if getattr(request, "placeholder_open_graph_description", None) is not None:
             assert not response.streaming
             response.content = alter_content(request, response.content)
         return response
+
 
 class ZulipCommonMiddleware(CommonMiddleware):
     """

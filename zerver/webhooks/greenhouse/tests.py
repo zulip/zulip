@@ -65,8 +65,7 @@ New Prospect Application Trisha Troy (ID: 968190), applying for:
         )
 
     @patch('zerver.webhooks.greenhouse.view.check_send_webhook_message')
-    def test_ping_message_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    def test_ping_message_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url()
         payload = self.get_body('ping_event')
         result = self.client_post(self.url, payload, content_type=self.CONTENT_TYPE)

@@ -56,6 +56,7 @@ BRANCH_TEMPLATE = "**Branch**: {branch_name}"
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_REVIEWBOARD_EVENT")
 
+
 def get_target_people_string(payload: Dict[str, Any]) -> str:
     result = ""
     target_people = payload['review_request']['target_people']
@@ -67,6 +68,7 @@ def get_target_people_string(payload: Dict[str, Any]) -> str:
         result += "and **{title}**".format(**target_people[-1])
 
     return result
+
 
 def get_review_published_body(payload: Dict[str, Any]) -> str:
     kwargs = {
@@ -80,6 +82,7 @@ def get_review_published_body(payload: Dict[str, Any]) -> str:
 
     return REVIEW_PUBLISHED.format(**kwargs).strip()
 
+
 def get_reply_published_body(payload: Dict[str, Any]) -> str:
     kwargs = {
         'reply_url': payload['reply']['links']['self']['href'],
@@ -92,6 +95,7 @@ def get_reply_published_body(payload: Dict[str, Any]) -> str:
     }
 
     return REPLY_PUBLISHED.format(**kwargs).strip()
+
 
 def get_review_request_published_body(payload: Dict[str, Any]) -> str:
     kwargs = {
@@ -113,6 +117,7 @@ def get_review_request_published_body(payload: Dict[str, Any]) -> str:
 
     return message.format(**kwargs).strip()
 
+
 def get_review_request_reopened_body(payload: Dict[str, Any]) -> str:
     kwargs = {
         'id': payload['review_request']['id'],
@@ -132,6 +137,7 @@ def get_review_request_reopened_body(payload: Dict[str, Any]) -> str:
         kwargs['extra_info'] = branch_info
 
     return message.format(**kwargs).strip()
+
 
 def get_review_request_closed_body(payload: Dict[str, Any]) -> str:
     kwargs = {
@@ -153,8 +159,10 @@ def get_review_request_closed_body(payload: Dict[str, Any]) -> str:
 
     return message.format(**kwargs).strip()
 
+
 def get_review_request_repo_title(payload: Dict[str, Any]) -> str:
     return payload['review_request']['links']['repository']['title']
+
 
 RB_MESSAGE_FUNCTIONS = {
     'review_request_published': get_review_request_published_body,
@@ -164,14 +172,15 @@ RB_MESSAGE_FUNCTIONS = {
     'reply_published': get_reply_published_body,
 }
 
+
 @webhook_view('ReviewBoard')
 @has_request_variables
 def api_reviewboard_webhook(
-        request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type='body'),
 ) -> HttpResponse:
-    event_type = validate_extract_webhook_http_header(
-        request, 'X_REVIEWBOARD_EVENT', 'ReviewBoard')
+    event_type = validate_extract_webhook_http_header(request, 'X_REVIEWBOARD_EVENT', 'ReviewBoard')
     assert event_type is not None
 
     body_function = RB_MESSAGE_FUNCTIONS.get(event_type)

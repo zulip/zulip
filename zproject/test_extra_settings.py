@@ -77,12 +77,13 @@ GOOGLE_OAUTH2_CLIENT_ID = "test_client_id"
 
 # Makes testing LDAP backend require less mocking
 AUTH_LDAP_ALWAYS_UPDATE_USER = False
-AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
-                                   ldap.SCOPE_ONELEVEL, "(uid=%(user)s)")
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    "ou=users,dc=zulip,dc=com", ldap.SCOPE_ONELEVEL, "(uid=%(user)s)"
+)
 AUTH_LDAP_USERNAME_ATTR = "uid"
-AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
-                                            ldap.SCOPE_ONELEVEL,
-                                            "(mail=%(email)s)")
+AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch(
+    "ou=users,dc=zulip,dc=com", ldap.SCOPE_ONELEVEL, "(mail=%(email)s)"
+)
 
 TEST_SUITE = True
 RATE_LIMITING = False
@@ -136,6 +137,7 @@ if not PUPPETEER_TESTS:
     # Here we set various loggers to be less noisy for unit tests.
     def set_loglevel(logger_name: str, level: str) -> None:
         LOGGING['loggers'].setdefault(logger_name, {})['level'] = level
+
     set_loglevel('zulip.requests', 'CRITICAL')
     set_loglevel('zulip.management', 'CRITICAL')
     set_loglevel('django.request', 'ERROR')
@@ -192,7 +194,9 @@ SOCIAL_AUTH_APPLE_TEAM = 'TEAMSTRING'
 SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zerver/tests/fixtures/apple/private_key.pem")
 
 APPLE_JWK = get_from_file_if_exists("zerver/tests/fixtures/apple/jwk")
-APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists("zerver/tests/fixtures/apple/token_gen_private_key")
+APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists(
+    "zerver/tests/fixtures/apple/token_gen_private_key"
+)
 
 VIDEO_ZOOM_CLIENT_ID = "client_id"
 VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
@@ -214,7 +218,7 @@ THUMBOR_SERVES_CAMO = True
 DEVELOPMENT_LOG_EMAILS = False
 
 SOCIAL_AUTH_SAML_SP_ENTITY_ID = 'http://' + EXTERNAL_HOST
-SOCIAL_AUTH_SAML_SP_PUBLIC_CERT  = get_from_file_if_exists("zerver/tests/fixtures/saml/zulip.crt")
+SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = get_from_file_if_exists("zerver/tests/fixtures/saml/zulip.crt")
 SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists("zerver/tests/fixtures/saml/zulip.key")
 
 SOCIAL_AUTH_SAML_ORG_INFO = {

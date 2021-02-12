@@ -19,8 +19,11 @@ from zerver.models import UserProfile
 
 @webhook_view('Taiga')
 @has_request_variables
-def api_taiga_webhook(request: HttpRequest, user_profile: UserProfile,
-                      message: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_taiga_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message: Dict[str, Any] = REQ(argument_type='body'),
+) -> HttpResponse:
     parsed_events = parse_message(message)
     content_lines = []
     for event in parsed_events:
@@ -33,6 +36,7 @@ def api_taiga_webhook(request: HttpRequest, user_profile: UserProfile,
     check_send_webhook_message(request, user_profile, topic, content)
 
     return json_success()
+
 
 templates = {
     'epic': {
@@ -51,10 +55,14 @@ templates = {
         'delete': '[{user}]({user_link}) deleted epic {subject}.',
     },
     'relateduserstory': {
-        'create': ('[{user}]({user_link}) added a related user story '
-                   '{userstory_subject} to the epic {epic_subject}.'),
-        'delete': ('[{user}]({user_link}) removed a related user story ' +
-                   '{userstory_subject} from the epic {epic_subject}.'),
+        'create': (
+            '[{user}]({user_link}) added a related user story '
+            '{userstory_subject} to the epic {epic_subject}.'
+        ),
+        'delete': (
+            '[{user}]({user_link}) removed a related user story '
+            + '{userstory_subject} from the epic {epic_subject}.'
+        ),
     },
     'userstory': {
         'create': '[{user}]({user_link}) created user story {subject}.',
@@ -79,8 +87,7 @@ templates = {
         'delete': '[{user}]({user_link}) deleted user story {subject}.',
         'due_date': '[{user}]({user_link}) changed due date of user story {subject}'
         ' from {old} to {new}.',
-        'set_due_date': '[{user}]({user_link}) set due date of user story {subject}'
-        ' to {new}.',
+        'set_due_date': '[{user}]({user_link}) set due date of user story {subject}' ' to {new}.',
     },
     'milestone': {
         'create': '[{user}]({user_link}) created sprint {subject}.',
@@ -113,8 +120,7 @@ templates = {
         'changed_us': '[{user}]({user_link}) moved task {subject} from user story {old} to {new}.',
         'due_date': '[{user}]({user_link}) changed due date of task {subject}'
         ' from {old} to {new}.',
-        'set_due_date': '[{user}]({user_link}) set due date of task {subject}'
-        ' to {new}.',
+        'set_due_date': '[{user}]({user_link}) set due date of task {subject}' ' to {new}.',
     },
     'issue': {
         'create': '[{user}]({user_link}) created issue {subject}.',
@@ -125,11 +131,11 @@ templates = {
         'set_milestone': '[{user}]({user_link}) added issue {subject} to sprint {new}.',
         'unset_milestone': '[{user}]({user_link}) detached issue {subject} from sprint {old}.',
         'changed_priority': '[{user}]({user_link}) changed priority of issue '
-                            '{subject} from {old} to {new}.',
+        '{subject} from {old} to {new}.',
         'changed_severity': '[{user}]({user_link}) changed severity of issue '
-                            '{subject} from {old} to {new}.',
+        '{subject} from {old} to {new}.',
         'changed_status': '[{user}]({user_link}) changed status of issue {subject}'
-                           ' from {old} to {new}.',
+        ' from {old} to {new}.',
         'changed_type': '[{user}]({user_link}) changed type of issue {subject} from {old} to {new}.',
         'renamed': '[{user}]({user_link}) renamed issue {old} to **{new}**.',
         'description_diff': '[{user}]({user_link}) updated description of issue {subject}.',
@@ -137,8 +143,7 @@ templates = {
         'delete': '[{user}]({user_link}) deleted issue {subject}.',
         'due_date': '[{user}]({user_link}) changed due date of issue {subject}'
         ' from {old} to {new}.',
-        'set_due_date': '[{user}]({user_link}) set due date of issue {subject}'
-        ' to {new}.',
+        'set_due_date': '[{user}]({user_link}) set due date of issue {subject}' ' to {new}.',
         'blocked': '[{user}]({user_link}) blocked issue {subject}.',
         'unblocked': '[{user}]({user_link}) unblocked issue {subject}.',
     },
@@ -149,8 +154,9 @@ templates = {
 
 
 return_type = Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
-def get_old_and_new_values(change_type: str,
-                           message: Mapping[str, Any]) -> return_type:
+
+
+def get_old_and_new_values(change_type: str, message: Mapping[str, Any]) -> return_type:
     """ Parses the payload and finds previous and current value of change_type."""
     old = message["change"]["diff"][change_type].get("from")
     new = message["change"]["diff"][change_type].get("to")
@@ -168,6 +174,7 @@ def parse_comment(message: Mapping[str, Any]) -> Dict[str, Any]:
             'subject': get_subject(message),
         },
     }
+
 
 def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
     """ Parses create or delete event. """
@@ -264,6 +271,7 @@ def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional
     evt.update(type=message["type"], event=event_type, values=values)
     return evt
 
+
 def parse_webhook_test(message: Mapping[str, Any]) -> Dict[str, Any]:
     return {
         "type": "webhook_test",
@@ -294,17 +302,21 @@ def parse_message(message: Mapping[str, Any]) -> List[Dict[str, Any]]:
 
     return events
 
+
 def generate_content(data: Mapping[str, Any]) -> str:
     """ Gets the template string and formats it with parsed data. """
     template = templates[data['type']][data['event']]
     content = template.format(**data['values'])
     return content
 
+
 def get_owner_name(message: Mapping[str, Any]) -> str:
     return message["by"]["full_name"]
 
+
 def get_owner_link(message: Mapping[str, Any]) -> str:
     return message['by']['permalink']
+
 
 def get_subject(message: Mapping[str, Any]) -> str:
     data = message["data"]
@@ -312,11 +324,19 @@ def get_subject(message: Mapping[str, Any]) -> str:
         return '[' + data.get('subject', data.get('name')) + ']' + '(' + data['permalink'] + ')'
     return '**' + data.get('subject', data.get('name')) + '**'
 
+
 def get_epic_subject(message: Mapping[str, Any]) -> str:
     if 'permalink' in message['data']['epic']:
-        return ('[' + message['data']['epic']['subject'] + ']' +
-                '(' + message['data']['epic']['permalink'] + ')')
+        return (
+            '['
+            + message['data']['epic']['subject']
+            + ']'
+            + '('
+            + message['data']['epic']['permalink']
+            + ')'
+        )
     return '**' + message['data']['epic']['subject'] + '**'
+
 
 def get_userstory_subject(message: Mapping[str, Any]) -> str:
     if 'permalink' in message['data']['user_story']:

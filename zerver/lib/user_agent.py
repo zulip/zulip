@@ -8,7 +8,10 @@ pattern = re.compile(
     """^ (?P<name> [^/ ]* [^0-9/(]* )
     (/ (?P<version> [^/ ]* ))?
     ([ /] .*)?
-    $""", re.X)
+    $""",
+    re.X,
+)
+
 
 def parse_user_agent(user_agent: str) -> Dict[str, str]:
     match = pattern.match(user_agent)

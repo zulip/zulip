@@ -13,12 +13,15 @@ from zerver.models import UserProfile
 
 TOPIC_TEMPLATE = "{service_url}"
 
-def send_message_for_event(request: HttpRequest, user_profile: UserProfile,
-                           event: Dict[str, Any]) -> None:
+
+def send_message_for_event(
+    request: HttpRequest, user_profile: UserProfile, event: Dict[str, Any]
+) -> None:
     event_type = get_event_type(event)
     subject = TOPIC_TEMPLATE.format(service_url=event['check']['url'])
     body = EVENT_TYPE_BODY_MAPPER[event_type](event)
     check_send_webhook_message(request, user_profile, subject, body)
+
 
 def get_body_for_up_event(event: Dict[str, Any]) -> str:
     body = "Service is `up`"
@@ -29,6 +32,7 @@ def get_body_for_up_event(event: Dict[str, Any]) -> str:
         if string_date:
             body = f"{body} after {string_date}"
     return f"{body}."
+
 
 def get_time_string_based_on_duration(duration: int) -> str:
     days, reminder = divmod(duration, 86400)
@@ -42,6 +46,7 @@ def get_time_string_based_on_duration(duration: int) -> str:
     string_date += add_time_part_to_string_date_if_needed(seconds, 'second')
     return string_date.rstrip()
 
+
 def add_time_part_to_string_date_if_needed(value: int, text_name: str) -> str:
     if value == 1:
         return f"1 {text_name} "
@@ -49,25 +54,31 @@ def add_time_part_to_string_date_if_needed(value: int, text_name: str) -> str:
         return f"{value} {text_name}s "
     return ''
 
+
 def get_body_for_down_event(event: Dict[str, Any]) -> str:
     return "Service is `down`. It returned a {} error at {}.".format(
         event['downtime']['error'],
-        event['downtime']['started_at'].replace('T', ' ').replace('Z', ' UTC'))
+        event['downtime']['started_at'].replace('T', ' ').replace('Z', ' UTC'),
+    )
+
 
 @webhook_view('Updown')
 @has_request_variables
 def api_updown_webhook(
-        request: HttpRequest, user_profile: UserProfile,
-        payload: List[Dict[str, Any]]=REQ(argument_type='body'),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: List[Dict[str, Any]] = REQ(argument_type='body'),
 ) -> HttpResponse:
     for event in payload:
         send_message_for_event(request, user_profile, event)
     return json_success()
 
+
 EVENT_TYPE_BODY_MAPPER = {
     'up': get_body_for_up_event,
     'down': get_body_for_down_event,
 }
+
 
 def get_event_type(event: Dict[str, Any]) -> str:
     event_type_match = re.match('check.(.*)', event['event'])

@@ -9,7 +9,9 @@ from django.db.migrations.state import StateApps
 
 def populate_new_fields(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     # Open the JSON file which contains the data to be used for migration.
-    MIGRATION_DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "management", "data")
+    MIGRATION_DATA_PATH = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "management", "data"
+    )
     path_to_unified_reactions = os.path.join(MIGRATION_DATA_PATH, "unified_reactions.json")
     with open(path_to_unified_reactions, "rb") as f:
         unified_reactions = orjson.loads(f.read())
@@ -27,6 +29,7 @@ def populate_new_fields(apps: StateApps, schema_editor: DatabaseSchemaEditor) ->
                 reaction.reaction_type = 'realm_emoji'
         reaction.save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -43,9 +46,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='reaction',
             name='reaction_type',
-            field=models.CharField(choices=[('unicode_emoji', 'Unicode emoji'), ('realm_emoji', 'Custom emoji'), ('zulip_extra_emoji', 'Zulip extra emoji')], default='unicode_emoji', max_length=30),
+            field=models.CharField(
+                choices=[
+                    ('unicode_emoji', 'Unicode emoji'),
+                    ('realm_emoji', 'Custom emoji'),
+                    ('zulip_extra_emoji', 'Zulip extra emoji'),
+                ],
+                default='unicode_emoji',
+                max_length=30,
+            ),
         ),
-        migrations.RunPython(populate_new_fields,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            populate_new_fields, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

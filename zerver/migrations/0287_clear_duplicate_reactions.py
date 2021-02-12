@@ -13,14 +13,18 @@ def clear_duplicate_reactions(apps: StateApps, schema_editor: DatabaseSchemaEdit
     """
     Reaction = apps.get_model('zerver', 'Reaction')
 
-    duplicate_reactions = Reaction.objects.all().values(
-        "user_profile_id", "message_id", "reaction_type", "emoji_code").annotate(
-            Count('id')).filter(id__count__gt=1)
+    duplicate_reactions = (
+        Reaction.objects.all()
+        .values("user_profile_id", "message_id", "reaction_type", "emoji_code")
+        .annotate(Count('id'))
+        .filter(id__count__gt=1)
+    )
     for duplicate_reaction in duplicate_reactions:
         duplicate_reaction.pop('id__count')
         to_cleanup = Reaction.objects.filter(**duplicate_reaction)[1:]
         for reaction in to_cleanup:
             reaction.delete()
+
 
 class Migration(migrations.Migration):
 
@@ -29,7 +33,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(clear_duplicate_reactions,
-                             reverse_code=migrations.RunPython.noop,
-                             elidable=True),
+        migrations.RunPython(
+            clear_duplicate_reactions, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

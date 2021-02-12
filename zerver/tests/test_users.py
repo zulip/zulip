@@ -69,11 +69,14 @@ from zerver.models import (
 
 K = TypeVar('K')
 V = TypeVar('V')
+
+
 def find_dict(lst: Iterable[Dict[K, V]], k: K, v: V) -> Dict[K, V]:
     for dct in lst:
         if dct[k] == v:
             return dct
     raise AssertionError(f'Cannot find element in list where key {k} == {v}')
+
 
 class PermissionTest(ZulipTestCase):
     def test_role_setters(self) -> None:
@@ -189,7 +192,9 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person['role'], UserProfile.ROLE_MEMBER)
         with tornado_redirected_to_list([]):
             result = self.client_patch(f'/json/users/{desdemona.id}', req)
-        self.assert_json_error(result, 'The owner permission cannot be removed from the only organization owner.')
+        self.assert_json_error(
+            result, 'The owner permission cannot be removed from the only organization owner.'
+        )
 
         do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login('iago')
@@ -262,19 +267,19 @@ class PermissionTest(ZulipTestCase):
 
         # Also verify the /events code path.  This is a bit hacky, but
         # we need to verify client_gravatar is not being overridden.
-        with mock.patch('zerver.lib.events.request_event_queue',
-                        return_value=None) as mock_request_event_queue:
+        with mock.patch(
+            'zerver.lib.events.request_event_queue', return_value=None
+        ) as mock_request_event_queue:
             with self.assertRaises(JsonableError):
-                result = do_events_register(user, get_client("website"),
-                                            client_gravatar=True)
-            self.assertEqual(mock_request_event_queue.call_args_list[0][0][3],
-                             True)
+                result = do_events_register(user, get_client("website"), client_gravatar=True)
+            self.assertEqual(mock_request_event_queue.call_args_list[0][0][3], True)
 
         #############################################################
         # Now, switch email address visibility, check client_gravatar
         # is automatically disabled for the user.
-        do_set_realm_property(user.realm, "email_address_visibility",
-                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        do_set_realm_property(
+            user.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()['members']
@@ -289,13 +294,12 @@ class PermissionTest(ZulipTestCase):
         # Also verify the /events code path.  This is a bit hacky, but
         # basically we want to verify client_gravatar is being
         # overridden.
-        with mock.patch('zerver.lib.events.request_event_queue',
-                        return_value=None) as mock_request_event_queue:
+        with mock.patch(
+            'zerver.lib.events.request_event_queue', return_value=None
+        ) as mock_request_event_queue:
             with self.assertRaises(JsonableError):
-                result = do_events_register(user, get_client("website"),
-                                            client_gravatar=True)
-            self.assertEqual(mock_request_event_queue.call_args_list[0][0][3],
-                             False)
+                result = do_events_register(user, get_client("website"), client_gravatar=True)
+            self.assertEqual(mock_request_event_queue.call_args_list[0][0][3], False)
 
         # client_gravatar is still turned off for admins.  In theory,
         # it doesn't need to be, but client-side changes would be
@@ -403,9 +407,13 @@ class PermissionTest(ZulipTestCase):
 
         # Non-admin user can't admin another user
         with self.assertRaises(JsonableError):
-            access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True)
+            access_user_by_id(
+                self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True
+            )
         # But does have read-only access to it.
-        access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False)
+        access_user_by_id(
+            self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
+        )
 
     def test_change_regular_member_to_guest(self) -> None:
         iago = self.example_user("iago")
@@ -608,13 +616,16 @@ class PermissionTest(ZulipTestCase):
 
         for field_name in fields:
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
-            new_profile_data.append({
-                'id': field.id,
-                'value': fields[field_name],
-            })
+            new_profile_data.append(
+                {
+                    'id': field.id,
+                    'value': fields[field_name],
+                }
+            )
 
-        result = self.client_patch(f'/json/users/{cordelia.id}',
-                                   {'profile_data': orjson.dumps(new_profile_data).decode()})
+        result = self.client_patch(
+            f'/json/users/{cordelia.id}', {'profile_data': orjson.dumps(new_profile_data).decode()}
+        )
         self.assert_json_success(result)
 
         cordelia = self.example_user("cordelia")
@@ -624,7 +635,11 @@ class PermissionTest(ZulipTestCase):
 
         # Test admin user cannot set invalid profile data
         invalid_fields = [
-            ('Favorite editor', 'invalid choice', "'invalid choice' is not a valid choice for 'Favorite editor'."),
+            (
+                'Favorite editor',
+                'invalid choice',
+                "'invalid choice' is not a valid choice for 'Favorite editor'.",
+            ),
             ('Birthday', '1909-34-55', "Birthday is not a date"),
             ('Favorite website', 'not url', "Favorite website is not a URL"),
             ('Mentor', "not list of user ids", "User IDs is not a list"),
@@ -633,31 +648,43 @@ class PermissionTest(ZulipTestCase):
         for field_name, field_value, error_msg in invalid_fields:
             new_profile_data = []
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
-            new_profile_data.append({
-                'id': field.id,
-                'value': field_value,
-            })
+            new_profile_data.append(
+                {
+                    'id': field.id,
+                    'value': field_value,
+                }
+            )
 
-            result = self.client_patch(f'/json/users/{cordelia.id}',
-                                       {'profile_data': orjson.dumps(new_profile_data).decode()})
+            result = self.client_patch(
+                f'/json/users/{cordelia.id}',
+                {'profile_data': orjson.dumps(new_profile_data).decode()},
+            )
             self.assert_json_error(result, error_msg)
 
         # non-existent field and no data
-        invalid_profile_data = [{
-            'id': 9001,
-            'value': '',
-        }]
-        result = self.client_patch(f'/json/users/{cordelia.id}',
-                                   {'profile_data': orjson.dumps(invalid_profile_data).decode()})
+        invalid_profile_data = [
+            {
+                'id': 9001,
+                'value': '',
+            }
+        ]
+        result = self.client_patch(
+            f'/json/users/{cordelia.id}',
+            {'profile_data': orjson.dumps(invalid_profile_data).decode()},
+        )
         self.assert_json_error(result, 'Field id 9001 not found.')
 
         # non-existent field and data
-        invalid_profile_data = [{
-            'id': 9001,
-            'value': 'some data',
-        }]
-        result = self.client_patch(f'/json/users/{cordelia.id}',
-                                   {'profile_data': orjson.dumps(invalid_profile_data).decode()})
+        invalid_profile_data = [
+            {
+                'id': 9001,
+                'value': 'some data',
+            }
+        ]
+        result = self.client_patch(
+            f'/json/users/{cordelia.id}',
+            {'profile_data': orjson.dumps(invalid_profile_data).decode()},
+        )
         self.assert_json_error(result, 'Field id 9001 not found.')
 
         # Test for clearing/resetting field values.
@@ -667,12 +694,16 @@ class PermissionTest(ZulipTestCase):
             value: Union[str, None, List[Any]] = ''
             if field.field_type == CustomProfileField.USER:
                 value = []
-            empty_profile_data.append({
-                'id': field.id,
-                'value': value,
-            })
-        result = self.client_patch(f'/json/users/{cordelia.id}',
-                                   {'profile_data': orjson.dumps(empty_profile_data).decode()})
+            empty_profile_data.append(
+                {
+                    'id': field.id,
+                    'value': value,
+                }
+            )
+        result = self.client_patch(
+            f'/json/users/{cordelia.id}',
+            {'profile_data': orjson.dumps(empty_profile_data).decode()},
+        )
         self.assert_json_success(result)
         for field_dict in cordelia.profile_data:
             with self.subTest(field_name=field_dict['name']):
@@ -696,12 +727,15 @@ class PermissionTest(ZulipTestCase):
             value = None
             if new_fields[field_name]:
                 value = new_fields[field_name]
-            new_profile_data.append({
-                'id': field.id,
-                'value': value,
-            })
-        result = self.client_patch(f'/json/users/{cordelia.id}',
-                                   {'profile_data': orjson.dumps(new_profile_data).decode()})
+            new_profile_data.append(
+                {
+                    'id': field.id,
+                    'value': value,
+                }
+            )
+        result = self.client_patch(
+            f'/json/users/{cordelia.id}', {'profile_data': orjson.dumps(new_profile_data).decode()}
+        )
         self.assert_json_success(result)
         for field_dict in cordelia.profile_data:
             with self.subTest(field_name=field_dict['name']):
@@ -714,17 +748,23 @@ class PermissionTest(ZulipTestCase):
 
         new_profile_data = []
         field = CustomProfileField.objects.get(name="Biography", realm=realm)
-        new_profile_data.append({
-            'id': field.id,
-            'value': "New hamlet Biography",
-        })
-        result = self.client_patch(f'/json/users/{hamlet.id}',
-                                   {'profile_data': orjson.dumps(new_profile_data).decode()})
+        new_profile_data.append(
+            {
+                'id': field.id,
+                'value': "New hamlet Biography",
+            }
+        )
+        result = self.client_patch(
+            f'/json/users/{hamlet.id}', {'profile_data': orjson.dumps(new_profile_data).decode()}
+        )
         self.assert_json_error(result, 'Insufficient permission')
 
-        result = self.client_patch('/json/users/{}'.format(self.example_user("cordelia").id),
-                                   {'profile_data': orjson.dumps(new_profile_data).decode()})
+        result = self.client_patch(
+            '/json/users/{}'.format(self.example_user("cordelia").id),
+            {'profile_data': orjson.dumps(new_profile_data).decode()},
+        )
         self.assert_json_error(result, 'Insufficient permission')
+
 
 class QueryCountTest(ZulipTestCase):
     def test_create_user_with_multiple_streams(self) -> None:
@@ -747,10 +787,7 @@ class QueryCountTest(ZulipTestCase):
             "private_stream1",
             "private_stream2",
         ]
-        streams = [
-            get_stream(stream_name, realm)
-            for stream_name in stream_names
-        ]
+        streams = [get_stream(stream_name, realm) for stream_name in stream_names]
 
         do_invite_users(
             user_profile=self.example_user("hamlet"),
@@ -782,14 +819,14 @@ class QueryCountTest(ZulipTestCase):
         notifications = set()
         for event in peer_add_events:
             stream_ids = event["event"]["stream_ids"]
-            stream_names = sorted(
-                Stream.objects.get(id=stream_id).name
-                for stream_id in stream_ids
-            )
+            stream_names = sorted(Stream.objects.get(id=stream_id).name for stream_id in stream_ids)
             self.assertTrue(event["event"]["user_ids"], {fred.id})
             notifications.add(",".join(stream_names))
 
-        self.assertEqual(notifications, {"Denmark,Scotland,Verona", "private_stream1", "private_stream2"})
+        self.assertEqual(
+            notifications, {"Denmark,Scotland,Verona", "private_stream1", "private_stream2"}
+        )
+
 
 class BulkCreateUserTest(ZulipTestCase):
     def test_create_users(self) -> None:
@@ -831,6 +868,7 @@ class BulkCreateUserTest(ZulipTestCase):
         cher = get_user_by_delivery_email('cher@zulip.com', realm)
         self.assertEqual(cher.full_name, 'Cher')
 
+
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self) -> None:
 
@@ -864,41 +902,57 @@ class AdminCreateUserTest(ZulipTestCase):
         result = self.client_post("/json/users", {})
         self.assert_json_error(result, "Missing 'email' argument")
 
-        result = self.client_post("/json/users", dict(
-            email='romeo@not-zulip.com',
-        ))
+        result = self.client_post(
+            "/json/users",
+            dict(
+                email='romeo@not-zulip.com',
+            ),
+        )
         self.assert_json_error(result, "Missing 'password' argument")
 
-        result = self.client_post("/json/users", dict(
-            email='romeo@not-zulip.com',
-            password='xxxx',
-        ))
+        result = self.client_post(
+            "/json/users",
+            dict(
+                email='romeo@not-zulip.com',
+                password='xxxx',
+            ),
+        )
         self.assert_json_error(result, "Missing 'full_name' argument")
 
         # Test short_name gets properly ignored
-        result = self.client_post("/json/users", dict(
-            email='romeo@zulip.com',
-            password='xxxx',
-            full_name='Romeo Montague',
-            short_name='DEPRECATED'
-        ))
+        result = self.client_post(
+            "/json/users",
+            dict(
+                email='romeo@zulip.com',
+                password='xxxx',
+                full_name='Romeo Montague',
+                short_name='DEPRECATED',
+            ),
+        )
         self.assert_json_success(result)
 
-        result = self.client_post("/json/users", dict(
-            email='broken',
-            password='xxxx',
-            full_name='Romeo Montague',
-        ))
+        result = self.client_post(
+            "/json/users",
+            dict(
+                email='broken',
+                password='xxxx',
+                full_name='Romeo Montague',
+            ),
+        )
         self.assert_json_error(result, "Bad name or username")
 
         do_set_realm_property(realm, 'emails_restricted_to_domains', True)
-        result = self.client_post("/json/users", dict(
-            email='romeo@not-zulip.com',
-            password='xxxx',
-            full_name='Romeo Montague',
-        ))
-        self.assert_json_error(result,
-                               "Email 'romeo@not-zulip.com' not allowed in this organization")
+        result = self.client_post(
+            "/json/users",
+            dict(
+                email='romeo@not-zulip.com',
+                password='xxxx',
+                full_name='Romeo Montague',
+            ),
+        )
+        self.assert_json_error(
+            result, "Email 'romeo@not-zulip.com' not allowed in this organization"
+        )
 
         RealmDomain.objects.create(realm=get_realm('zulip'), domain='zulip.net')
         # Check can't use a bad password with zxcvbn enabled
@@ -916,13 +970,13 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assertEqual(new_user.id, result['user_id'])
 
         # Make sure the recipient field is set correctly.
-        self.assertEqual(new_user.recipient, Recipient.objects.get(type=Recipient.PERSONAL,
-                                                                   type_id=new_user.id))
+        self.assertEqual(
+            new_user.recipient, Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user.id)
+        )
 
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result,
-                               "Email 'romeo@zulip.net' already in use")
+        self.assert_json_error(result, "Email 'romeo@zulip.net' already in use")
 
         # Don't allow user to sign up with disposable email.
         realm.emails_restricted_to_domains = False
@@ -931,7 +985,9 @@ class AdminCreateUserTest(ZulipTestCase):
 
         valid_params["email"] = "abc@mailnator.com"
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "Disposable email addresses are not allowed in this organization")
+        self.assert_json_error(
+            result, "Disposable email addresses are not allowed in this organization"
+        )
 
         # Don't allow creating a user with + in their email address when realm
         # is restricted to a domain.
@@ -950,6 +1006,7 @@ class AdminCreateUserTest(ZulipTestCase):
         valid_params["email"] = "iago+label@zulip.com"
         result = self.client_post("/json/users", valid_params)
         self.assert_json_success(result)
+
 
 class UserProfileTest(ZulipTestCase):
     def test_get_emails_from_user_ids(self) -> None:
@@ -1019,8 +1076,13 @@ class UserProfileTest(ZulipTestCase):
         ]
 
         self.assertEqual(user_ids_to_users([], get_realm("zulip")), [])
-        self.assertEqual({user_profile.id for user_profile in user_ids_to_users(real_user_ids, get_realm("zulip"))},
-                         set(real_user_ids))
+        self.assertEqual(
+            {
+                user_profile.id
+                for user_profile in user_ids_to_users(real_user_ids, get_realm("zulip"))
+            },
+            set(real_user_ids),
+        )
         with self.assertRaises(JsonableError):
             user_ids_to_users([1234], get_realm("zephyr"))
         with self.assertRaises(JsonableError):
@@ -1028,6 +1090,7 @@ class UserProfileTest(ZulipTestCase):
 
     def test_bulk_get_users(self) -> None:
         from zerver.lib.users import bulk_get_users
+
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         webhook_bot = self.example_user("webhook_bot")
@@ -1050,11 +1113,17 @@ class UserProfileTest(ZulipTestCase):
     def test_get_accounts_for_email(self) -> None:
         reset_emails_in_zulip_realm()
 
-        def check_account_present_in_accounts(user: UserProfile, accounts: List[Dict[str, Optional[str]]]) -> None:
+        def check_account_present_in_accounts(
+            user: UserProfile, accounts: List[Dict[str, Optional[str]]]
+        ) -> None:
             for account in accounts:
                 realm = user.realm
-                if account["avatar"] == avatar_url(user) and account["full_name"] == user.full_name \
-                        and account["realm_name"] == realm.name and account["string_id"] == realm.string_id:
+                if (
+                    account["avatar"] == avatar_url(user)
+                    and account["full_name"] == user.full_name
+                    and account["realm_name"] == realm.name
+                    and account["string_id"] == realm.string_id
+                ):
                     return
             raise AssertionError("Account not found")
 
@@ -1185,29 +1254,25 @@ class UserProfileTest(ZulipTestCase):
         bot = get_system_bot(settings.WELCOME_BOT)
 
         # Pass in the ID of a cross-realm bot and a valid realm
-        cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(
-            bot.id, realm)
+        cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(bot.id, realm)
         self.assertEqual(cross_realm_bot.email, bot.email)
         self.assertEqual(cross_realm_bot.id, bot.id)
 
         # Pass in the ID of a cross-realm bot but with a invalid realm,
         # note that the realm should be irrelevant here
-        cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(
-            bot.id, None)
+        cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(bot.id, None)
         self.assertEqual(cross_realm_bot.email, bot.email)
         self.assertEqual(cross_realm_bot.id, bot.id)
 
         # Pass in the ID of a non-cross-realm user with a realm
-        user_profile = get_user_by_id_in_realm_including_cross_realm(
-            othello.id, realm)
+        user_profile = get_user_by_id_in_realm_including_cross_realm(othello.id, realm)
         self.assertEqual(user_profile.email, othello.email)
         self.assertEqual(user_profile.id, othello.id)
 
         # If the realm doesn't match, or if the ID is not that of a
         # cross-realm bot, UserProfile.DoesNotExist is raised
         with self.assertRaises(UserProfile.DoesNotExist):
-            get_user_by_id_in_realm_including_cross_realm(
-                hamlet.id, None)
+            get_user_by_id_in_realm_including_cross_realm(hamlet.id, None)
 
     def test_get_user_subscription_status(self) -> None:
         self.login('hamlet')
@@ -1222,13 +1287,17 @@ class UserProfileTest(ZulipTestCase):
         result = self.client_get(f"/json/users/{iago.id}/subscriptions/25")
         self.assert_json_error(result, "Invalid stream id")
 
-        result = orjson.loads(self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content)
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
         self.assertFalse(result['is_subscribed'])
 
         # Subscribe to the stream.
         self.subscribe(iago, stream.name)
         with queries_captured() as queries:
-            result = orjson.loads(self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content)
+            result = orjson.loads(
+                self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+            )
 
         self.assert_length(queries, 6)
         self.assertTrue(result['is_subscribed'])
@@ -1239,8 +1308,11 @@ class UserProfileTest(ZulipTestCase):
         self.assertTrue(polonius.is_guest)
         self.assertTrue(stream.is_web_public)
 
-        result = orjson.loads(self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content)
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
         self.assertTrue(result['is_subscribed'])
+
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
@@ -1312,13 +1384,19 @@ class ActivateTest(ZulipTestCase):
         self.assert_json_error(result, 'Insufficient permission')
 
         # Cannot reactivate a user
-        result = self.client_post('/json/users/{}/reactivate'.format(self.example_user("hamlet").id))
+        result = self.client_post(
+            '/json/users/{}/reactivate'.format(self.example_user("hamlet").id)
+        )
         self.assert_json_error(result, 'Insufficient permission')
 
     def test_clear_scheduled_jobs(self) -> None:
         user = self.example_user('hamlet')
-        send_future_email('zerver/emails/followup_day1', user.realm,
-                          to_user_ids=[user.id], delay=datetime.timedelta(hours=1))
+        send_future_email(
+            'zerver/emails/followup_day1',
+            user.realm,
+            to_user_ids=[user.id],
+            delay=datetime.timedelta(hours=1),
+        )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_user(user)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
@@ -1326,17 +1404,27 @@ class ActivateTest(ZulipTestCase):
     def test_send_future_email_with_multiple_recipients(self) -> None:
         hamlet = self.example_user('hamlet')
         iago = self.example_user('iago')
-        send_future_email('zerver/emails/followup_day1', iago.realm,
-                          to_user_ids=[hamlet.id, iago.id], delay=datetime.timedelta(hours=1))
-        self.assertEqual(ScheduledEmail.objects.filter(users__in=[hamlet, iago]).distinct().count(), 1)
+        send_future_email(
+            'zerver/emails/followup_day1',
+            iago.realm,
+            to_user_ids=[hamlet.id, iago.id],
+            delay=datetime.timedelta(hours=1),
+        )
+        self.assertEqual(
+            ScheduledEmail.objects.filter(users__in=[hamlet, iago]).distinct().count(), 1
+        )
         email = ScheduledEmail.objects.all().first()
         self.assertEqual(email.users.count(), 2)
 
     def test_clear_scheduled_emails_with_multiple_user_ids(self) -> None:
         hamlet = self.example_user('hamlet')
         iago = self.example_user('iago')
-        send_future_email('zerver/emails/followup_day1', iago.realm,
-                          to_user_ids=[hamlet.id, iago.id], delay=datetime.timedelta(hours=1))
+        send_future_email(
+            'zerver/emails/followup_day1',
+            iago.realm,
+            to_user_ids=[hamlet.id, iago.id],
+            delay=datetime.timedelta(hours=1),
+        )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         clear_scheduled_emails([hamlet.id, iago.id])
         self.assertEqual(ScheduledEmail.objects.count(), 0)
@@ -1344,8 +1432,12 @@ class ActivateTest(ZulipTestCase):
     def test_clear_schedule_emails_with_one_user_id(self) -> None:
         hamlet = self.example_user('hamlet')
         iago = self.example_user('iago')
-        send_future_email('zerver/emails/followup_day1', iago.realm,
-                          to_user_ids=[hamlet.id, iago.id], delay=datetime.timedelta(hours=1))
+        send_future_email(
+            'zerver/emails/followup_day1',
+            iago.realm,
+            to_user_ids=[hamlet.id, iago.id],
+            delay=datetime.timedelta(hours=1),
+        )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         clear_scheduled_emails([hamlet.id])
         self.assertEqual(ScheduledEmail.objects.count(), 1)
@@ -1355,12 +1447,17 @@ class ActivateTest(ZulipTestCase):
     def test_deliver_email(self) -> None:
         iago = self.example_user('iago')
         hamlet = self.example_user('hamlet')
-        send_future_email('zerver/emails/followup_day1', iago.realm,
-                          to_user_ids=[hamlet.id, iago.id], delay=datetime.timedelta(hours=1))
+        send_future_email(
+            'zerver/emails/followup_day1',
+            iago.realm,
+            to_user_ids=[hamlet.id, iago.id],
+            delay=datetime.timedelta(hours=1),
+        )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
         deliver_email(email)
         from django.core.mail import outbox
+
         self.assertEqual(len(outbox), 1)
         for message in outbox:
             self.assertEqual(
@@ -1376,8 +1473,12 @@ class ActivateTest(ZulipTestCase):
         iago = self.example_user('iago')
         hamlet = self.example_user('hamlet')
         to_user_ids = [hamlet.id, iago.id]
-        send_future_email('zerver/emails/followup_day1', iago.realm,
-                          to_user_ids=to_user_ids, delay=datetime.timedelta(hours=1))
+        send_future_email(
+            'zerver/emails/followup_day1',
+            iago.realm,
+            to_user_ids=to_user_ids,
+            delay=datetime.timedelta(hours=1),
+        )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
         email.users.remove(*to_user_ids)
@@ -1385,11 +1486,16 @@ class ActivateTest(ZulipTestCase):
         with self.assertLogs('zulip.send_email', level='INFO') as info_log:
             deliver_email(email)
         from django.core.mail import outbox
+
         self.assertEqual(len(outbox), 0)
         self.assertEqual(ScheduledEmail.objects.count(), 1)
-        self.assertEqual(info_log.output, [
-            f'WARNING:zulip.send_email:ScheduledEmail id {email.id} has empty users and address attributes.'
-        ])
+        self.assertEqual(
+            info_log.output,
+            [
+                f'WARNING:zulip.send_email:ScheduledEmail id {email.id} has empty users and address attributes.'
+            ],
+        )
+
 
 class RecipientInfoTest(ZulipTestCase):
     def test_stream_recipient_info(self) -> None:
@@ -1560,9 +1666,12 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possibly_mentioned_user_ids={service_bot.id},
         )
-        self.assertEqual(info['service_bot_tuples'], [
-            (service_bot.id, UserProfile.EMBEDDED_BOT),
-        ])
+        self.assertEqual(
+            info['service_bot_tuples'],
+            [
+                (service_bot.id, UserProfile.EMBEDDED_BOT),
+            ],
+        )
 
         # Add a normal bot.
         normal_bot = do_create_user(
@@ -1600,6 +1709,7 @@ class RecipientInfoTest(ZulipTestCase):
                 stream_topic=stream_topic,
             )
 
+
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self) -> None:
         reset_emails_in_zulip_realm()
@@ -1612,10 +1722,7 @@ class BulkUsersTest(ZulipTestCase):
             result = self.client_get('/json/users', data)
             self.assert_json_success(result)
             rows = result.json()['members']
-            hamlet_data = [
-                row for row in rows
-                if row['user_id'] == hamlet.id
-            ][0]
+            hamlet_data = [row for row in rows if row['user_id'] == hamlet.id][0]
             return hamlet_data['avatar_url']
 
         self.assertEqual(
@@ -1635,8 +1742,8 @@ class BulkUsersTest(ZulipTestCase):
             get_hamlet_avatar(client_gravatar=False),
         )
 
-class GetProfileTest(ZulipTestCase):
 
+class GetProfileTest(ZulipTestCase):
     def test_cache_behavior(self) -> None:
         """Tests whether fetching a user object the normal way, with
         `get_user`, makes 1 cache query and 1 database query.
@@ -1693,7 +1800,11 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['user']['is_admin'])
         self.assertFalse(result['user']['is_owner'])
 
-        result = orjson.loads(self.client_get(f"/json/users/{user.id}", {"include_custom_profile_fields": "true"}).content)
+        result = orjson.loads(
+            self.client_get(
+                f"/json/users/{user.id}", {"include_custom_profile_fields": "true"}
+            ).content
+        )
 
         self.assertIn('profile_data', result['user'])
         result = self.client_get("/json/users/30")
@@ -1709,15 +1820,13 @@ class GetProfileTest(ZulipTestCase):
         result = self.api_get(hamlet, "/api/v1/users")
         self.assert_json_success(result)
 
-        (my_user,) = [
-            user for user in result.json()['members']
-            if user['email'] == hamlet.email
-        ]
+        (my_user,) = [user for user in result.json()['members'] if user['email'] == hamlet.email]
 
         self.assertEqual(
             my_user['avatar_url'],
             avatar_url(hamlet),
         )
+
 
 class DeleteUserTest(ZulipTestCase):
     def test_do_delete_user(self) -> None:
@@ -1731,29 +1840,23 @@ class DeleteUserTest(ZulipTestCase):
         self.send_personal_message(cordelia, hamlet)
         self.send_personal_message(hamlet, cordelia)
 
-        personal_message_ids_to_hamlet = Message.objects.filter(recipient=hamlet_personal_recipient) \
-            .values_list('id', flat=True)
+        personal_message_ids_to_hamlet = Message.objects.filter(
+            recipient=hamlet_personal_recipient
+        ).values_list('id', flat=True)
         self.assertTrue(len(personal_message_ids_to_hamlet) > 0)
         self.assertTrue(Message.objects.filter(sender=hamlet).exists())
 
         huddle_message_ids_from_cordelia = [
-            self.send_huddle_message(
-                cordelia,
-                [hamlet, othello]
-            )
-            for i in range(3)
+            self.send_huddle_message(cordelia, [hamlet, othello]) for i in range(3)
         ]
         huddle_message_ids_from_hamlet = [
-            self.send_huddle_message(
-                hamlet,
-                [cordelia, othello]
-            )
-            for i in range(3)
+            self.send_huddle_message(hamlet, [cordelia, othello]) for i in range(3)
         ]
 
         huddle_with_hamlet_recipient_ids = list(
-            Subscription.objects.filter(user_profile=hamlet, recipient__type=Recipient.HUDDLE)
-            .values_list('recipient_id', flat=True)
+            Subscription.objects.filter(
+                user_profile=hamlet, recipient__type=Recipient.HUDDLE
+            ).values_list('recipient_id', flat=True)
         )
         self.assertTrue(len(huddle_with_hamlet_recipient_ids) > 0)
 
@@ -1761,7 +1864,9 @@ class DeleteUserTest(ZulipTestCase):
 
         replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
 
-        self.assertEqual(replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@{realm.uri}")
+        self.assertEqual(
+            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@{realm.uri}"
+        )
         self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
 
         self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 0)
@@ -1775,8 +1880,12 @@ class DeleteUserTest(ZulipTestCase):
         # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
         # in a correct state.
         for recipient_id in huddle_with_hamlet_recipient_ids:
-            self.assertTrue(Subscription.objects.filter(user_profile=replacement_dummy_user,
-                                                        recipient_id=recipient_id).exists())
+            self.assertTrue(
+                Subscription.objects.filter(
+                    user_profile=replacement_dummy_user, recipient_id=recipient_id
+                ).exists()
+            )
+
 
 class FakeEmailDomainTest(ZulipTestCase):
     def test_get_fake_email_domain(self) -> None:

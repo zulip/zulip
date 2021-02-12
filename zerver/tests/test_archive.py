@@ -84,6 +84,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
         self.assert_length(info.unsubscribed, 0)
         self.assert_length(info.never_subscribed, 0)
 
+
 class WebPublicTopicHistoryTest(ZulipTestCase):
     def test_non_existant_stream_id(self) -> None:
         result = self.client_get("/archive/streams/100000000/topics")

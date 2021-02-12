@@ -12,6 +12,7 @@ def fix_unreads(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     for user_profile in user_profiles:
         fix(user_profile)
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

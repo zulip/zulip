@@ -17,8 +17,12 @@ def list_filters(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
 
 @require_realm_admin
 @has_request_variables
-def create_filter(request: HttpRequest, user_profile: UserProfile, pattern: str=REQ(),
-                  url_format_string: str=REQ()) -> HttpResponse:
+def create_filter(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    pattern: str = REQ(),
+    url_format_string: str = REQ(),
+) -> HttpResponse:
     try:
         filter_id = do_add_realm_filter(
             realm=user_profile.realm,
@@ -31,8 +35,7 @@ def create_filter(request: HttpRequest, user_profile: UserProfile, pattern: str=
 
 
 @require_realm_admin
-def delete_filter(request: HttpRequest, user_profile: UserProfile,
-                  filter_id: int) -> HttpResponse:
+def delete_filter(request: HttpRequest, user_profile: UserProfile, filter_id: int) -> HttpResponse:
     try:
         do_remove_realm_filter(realm=user_profile.realm, id=filter_id)
     except RealmFilter.DoesNotExist:

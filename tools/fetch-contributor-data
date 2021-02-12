@@ -36,13 +36,16 @@ from zproject.config import get_secret
 duplicate_commits_file = os.path.join(os.path.dirname(__file__), 'duplicate_commits.json')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--max-retries', type=int, default=10,
-                    help='Number of times to retry fetching data from GitHub')
+parser.add_argument(
+    '--max-retries', type=int, default=10, help='Number of times to retry fetching data from GitHub'
+)
 args = parser.parse_args()
+
 
 class ContributorsJSON(TypedDict):
     date: str
     contributors: List[Dict[str, Union[int, str]]]
+
 
 class Contributor(TypedDict):
     avatar_url: Optional[str]
@@ -51,7 +54,9 @@ class Contributor(TypedDict):
     email: Optional[str]
     name: Optional[str]
 
+
 logger = logging.getLogger('zulip.fetch_contributors_json')
+
 
 def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
     contributors: List[Contributor] = []
@@ -68,7 +73,9 @@ def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
         headers = {"Authorization": f"token {personal_access_token}"}
 
     while True:
-        response: requests.Response = requests.get(api_link, {**api_data, "page": f"{page_index}"}, verify=certificates, headers=headers)
+        response: requests.Response = requests.get(
+            api_link, {**api_data, "page": f"{page_index}"}, verify=certificates, headers=headers
+        )
         if response.status_code == 200:
             data = response.json()
             if len(data) == 0:
@@ -82,20 +89,31 @@ def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
                 logger.warning("Failed retries fetching contributors data from GitHub.")
                 sys.exit(1)
 
-            sleep_time = randrange(0, min(64, 2**retry_attempts))
+            sleep_time = randrange(0, min(64, 2 ** retry_attempts))
             sleep(sleep_time)
+
 
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
     with open(out_file, 'w') as f:
         json.dump(json_data, f, indent=2, sort_keys=True)
         f.write("\n")
 
+
 def update_contributor_data_file() -> None:
     # This list should hold all repositories that should be included in
     # the total count, including those that should *not* have tabs on the team
     # page (e.g. if they are deprecated).
-    repo_names = ['zulip', 'zulip-desktop', 'zulip-mobile', 'python-zulip-api', 'zulip-js', 'zulipbot',
-                  'zulip-terminal', 'zulip-ios-legacy', 'zulip-android']
+    repo_names = [
+        'zulip',
+        'zulip-desktop',
+        'zulip-mobile',
+        'python-zulip-api',
+        'zulip-js',
+        'zulipbot',
+        'zulip-terminal',
+        'zulip-ios-legacy',
+        'zulip-android',
+    ]
 
     data: ContributorsJSON = dict(date=str(date.today()), contributors=[])
     contributor_username_to_data: Dict[str, Dict[str, Union[str, int]]] = {}
@@ -104,13 +122,11 @@ def update_contributor_data_file() -> None:
         contributors = fetch_contributors(repo_name, args.max_retries)
         for contributor in contributors:
             username = contributor.get('login') or contributor.get('email')
-            assert(username is not None)
+            assert username is not None
             if username in contributor_username_to_data:
                 contributor_username_to_data[username][repo_name] = contributor['contributions']
             else:
-                contributor_username_to_data[username] = {
-                    repo_name: contributor['contributions']
-                }
+                contributor_username_to_data[username] = {repo_name: contributor['contributions']}
 
                 avatar_url = contributor.get('avatar_url')
                 if avatar_url is not None:
@@ -136,7 +152,9 @@ def update_contributor_data_file() -> None:
     with open(duplicate_commits_file) as f:
         duplicate_commits = json.load(f)
         for committer in duplicate_commits:
-            if committer in contributor_username_to_data and contributor_username_to_data[committer].get('zulip'):
+            if committer in contributor_username_to_data and contributor_username_to_data[
+                committer
+            ].get('zulip'):
                 total_commits = contributor_username_to_data[committer]['zulip']
                 assert isinstance(total_commits, int)
                 duplicate_commits_count = duplicate_commits[committer]
@@ -145,6 +163,7 @@ def update_contributor_data_file() -> None:
 
     data['contributors'] = list(contributor_username_to_data.values())
     write_to_disk(data, settings.CONTRIBUTOR_DATA_FILE_PATH)
+
 
 if __name__ == "__main__":
     update_contributor_data_file()

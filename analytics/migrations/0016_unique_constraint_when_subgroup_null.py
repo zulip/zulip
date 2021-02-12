@@ -28,34 +28,66 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='installationcount',
-            constraint=models.UniqueConstraint(condition=models.Q(subgroup__isnull=False), fields=('property', 'subgroup', 'end_time'), name='unique_installation_count'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(subgroup__isnull=False),
+                fields=('property', 'subgroup', 'end_time'),
+                name='unique_installation_count',
+            ),
         ),
         migrations.AddConstraint(
             model_name='installationcount',
-            constraint=models.UniqueConstraint(condition=models.Q(subgroup__isnull=True), fields=('property', 'end_time'), name='unique_installation_count_null_subgroup'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(subgroup__isnull=True),
+                fields=('property', 'end_time'),
+                name='unique_installation_count_null_subgroup',
+            ),
         ),
         migrations.AddConstraint(
             model_name='realmcount',
-            constraint=models.UniqueConstraint(condition=models.Q(subgroup__isnull=False), fields=('realm', 'property', 'subgroup', 'end_time'), name='unique_realm_count'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(subgroup__isnull=False),
+                fields=('realm', 'property', 'subgroup', 'end_time'),
+                name='unique_realm_count',
+            ),
         ),
         migrations.AddConstraint(
             model_name='realmcount',
-            constraint=models.UniqueConstraint(condition=models.Q(subgroup__isnull=True), fields=('realm', 'property', 'end_time'), name='unique_realm_count_null_subgroup'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(subgroup__isnull=True),
+                fields=('realm', 'property', 'end_time'),
+                name='unique_realm_count_null_subgroup',
+            ),
         ),
         migrations.AddConstraint(
             model_name='streamcount',
-            constraint=models.UniqueConstraint(condition=models.Q(subgroup__isnull=False), fields=('stream', 'property', 'subgroup', 'end_time'), name='unique_stream_count'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(subgroup__isnull=False),
+                fields=('stream', 'property', 'subgroup', 'end_time'),
+                name='unique_stream_count',
+            ),
         ),
         migrations.AddConstraint(
             model_name='streamcount',
-            constraint=models.UniqueConstraint(condition=models.Q(subgroup__isnull=True), fields=('stream', 'property', 'end_time'), name='unique_stream_count_null_subgroup'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(subgroup__isnull=True),
+                fields=('stream', 'property', 'end_time'),
+                name='unique_stream_count_null_subgroup',
+            ),
         ),
         migrations.AddConstraint(
             model_name='usercount',
-            constraint=models.UniqueConstraint(condition=models.Q(subgroup__isnull=False), fields=('user', 'property', 'subgroup', 'end_time'), name='unique_user_count'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(subgroup__isnull=False),
+                fields=('user', 'property', 'subgroup', 'end_time'),
+                name='unique_user_count',
+            ),
         ),
         migrations.AddConstraint(
             model_name='usercount',
-            constraint=models.UniqueConstraint(condition=models.Q(subgroup__isnull=True), fields=('user', 'property', 'end_time'), name='unique_user_count_null_subgroup'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(subgroup__isnull=True),
+                fields=('user', 'property', 'end_time'),
+                name='unique_user_count_null_subgroup',
+            ),
         ),
     ]

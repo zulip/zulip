@@ -11,8 +11,11 @@ class Command(ZulipBaseCommand):
     help = """Change the names for many users."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('data_file', metavar='<data file>',
-                            help="file containing rows of the form <email>,<desired name>")
+        parser.add_argument(
+            'data_file',
+            metavar='<data file>',
+            help="file containing rows of the form <email>,<desired name>",
+        )
         self.add_realm_args(parser, True)
 
     def handle(self, *args: Any, **options: str) -> None:

@@ -37,7 +37,6 @@ VNU_IGNORE = [
     r'No “p” element in scope but a “p” end tag seen\.',
     r'Element “div” not allowed as child of element “ul” in this context\. '
     + r'\(Suppressing further errors from this subtree\.\)',
-
     # Warnings that are probably less important.
     r'The “type” attribute is unnecessary for JavaScript resources\.',
 ]
@@ -47,6 +46,7 @@ DEPLOY_ROOT = os.path.abspath(os.path.join(__file__, "../../../../../.."))
 
 ZULIP_SERVER_GITHUB_FILE_URL_PREFIX = "https://github.com/zulip/zulip/blob/master"
 ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX = "https://github.com/zulip/zulip/tree/master"
+
 
 class BaseDocumentationSpider(scrapy.Spider):
     name: Optional[str] = None
@@ -80,7 +80,9 @@ class BaseDocumentationSpider(scrapy.Spider):
         if (len(url) > 4 and url[:4] == "file") or ("localhost" in url):
             # We also want CI to check any links to built documentation.
             return False
-        if url.startswith(ZULIP_SERVER_GITHUB_FILE_URL_PREFIX) or url.startswith(ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX):
+        if url.startswith(ZULIP_SERVER_GITHUB_FILE_URL_PREFIX) or url.startswith(
+            ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX
+        ):
             # We can verify these links directly in the local git repo without making any requests to GitHub servers.
             return False
         if 'github.com/zulip' in url:
@@ -100,7 +102,8 @@ class BaseDocumentationSpider(scrapy.Spider):
         # Check fragment existing on response page.
         if not response.selector.xpath(xpath_template.format(fragment=fragment)):
             self.logger.error(
-                "Fragment #%s is not found on page %s", fragment, response.request.url)
+                "Fragment #%s is not found on page %s", fragment, response.request.url
+            )
 
     def _vnu_callback(self, url: str) -> Callable[[Response], None]:
         def callback(response: Response) -> None:
@@ -125,7 +128,11 @@ class BaseDocumentationSpider(scrapy.Spider):
         # can be accessible without login an account.  While we do
         # crawl documentation served by the webapp (E.g. /help/), we
         # don't want to crawl the webapp itself, so we exclude these.
-        if url in ['http://localhost:9981/', 'http://localhost:9981'] or url.startswith('http://localhost:9981/#') or url.startswith('http://localhost:9981#'):
+        if (
+            url in ['http://localhost:9981/', 'http://localhost:9981']
+            or url.startswith('http://localhost:9981/#')
+            or url.startswith('http://localhost:9981#')
+        ):
             return
 
         callback: Callable[[Response], Optional[Iterator[Request]]] = self.parse
@@ -141,20 +148,29 @@ class BaseDocumentationSpider(scrapy.Spider):
                 if hash_index != -1:
                     file_path = file_path[:hash_index]
                 if not os.path.isfile(file_path):
-                    self.logger.error("There is no local file associated with the GitHub URL: %s", url)
+                    self.logger.error(
+                        "There is no local file associated with the GitHub URL: %s", url
+                    )
                 return
             elif url.startswith(ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX):
                 dir_path = url.replace(ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX, DEPLOY_ROOT)
                 if not os.path.isdir(dir_path):
-                    self.logger.error("There is no local directory associated with the GitHub URL: %s", url)
+                    self.logger.error(
+                        "There is no local directory associated with the GitHub URL: %s", url
+                    )
                 return
         elif '#' in url:
             dont_filter = True
             callback = self.check_fragment
         if getattr(self, 'skip_external', False) and self._is_external_link(url):
             return
-        yield Request(url, method=method, callback=callback, dont_filter=dont_filter,
-                      errback=self.error_callback)
+        yield Request(
+            url,
+            method=method,
+            callback=callback,
+            dont_filter=dont_filter,
+            errback=self.error_callback,
+        )
 
     def start_requests(self) -> Iterator[Request]:
         for url in self.start_urls:
@@ -173,9 +189,14 @@ class BaseDocumentationSpider(scrapy.Spider):
                 errback=self.error_callback,
             )
 
-        for link in LxmlLinkExtractor(deny_domains=self.deny_domains, deny_extensions=['doc'],
-                                      tags=self.tags, attrs=self.attrs, deny=self.deny,
-                                      canonicalize=False).extract_links(response):
+        for link in LxmlLinkExtractor(
+            deny_domains=self.deny_domains,
+            deny_extensions=['doc'],
+            tags=self.tags,
+            attrs=self.attrs,
+            deny=self.deny,
+            canonicalize=False,
+        ).extract_links(response):
             yield from self._make_requests(link.url)
 
     def retry_request_with_get(self, request: Request) -> Iterator[Request]:

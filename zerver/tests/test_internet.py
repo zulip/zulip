@@ -13,9 +13,13 @@ class ResponsesTest(ZulipTestCase):
         # A test can invoke its own responses.RequestsMock context manager
         # and register URLs to mock, accessible from within the context.
         with responses.RequestsMock() as requests_mock:
-            requests_mock.add(responses.GET, 'https://www.google.com',
-                              body='{}', status=200,
-                              content_type='application/json')
+            requests_mock.add(
+                responses.GET,
+                'https://www.google.com',
+                body='{}',
+                status=200,
+                content_type='application/json',
+            )
             result = requests.request('GET', 'https://www.google.com')
             self.assertEqual(result.status_code, 200)
             self.assertEqual(result.text, '{}')

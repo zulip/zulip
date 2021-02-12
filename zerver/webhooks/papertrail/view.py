@@ -17,18 +17,28 @@ SEARCH_TEMPLATE = """
 ```
 """.strip()
 
+
 @webhook_view('Papertrail')
 @has_request_variables
 def api_papertrail_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(validator=check_dict([
-        ("events", check_list(check_dict([]))),
-        ("saved_search", check_dict([
-            ("name", check_string),
-            ("html_search_url", check_string),
-        ])),
-    ])),
+    payload: Dict[str, Any] = REQ(
+        validator=check_dict(
+            [
+                ("events", check_list(check_dict([]))),
+                (
+                    "saved_search",
+                    check_dict(
+                        [
+                            ("name", check_string),
+                            ("html_search_url", check_string),
+                        ]
+                    ),
+                ),
+            ]
+        )
+    ),
 ) -> HttpResponse:
 
     matches = MATCHES_TEMPLATE.format(

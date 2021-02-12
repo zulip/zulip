@@ -32,17 +32,13 @@ usage = """Usage: send-receive.py [options] [config]
         Otherwise, returns the output data."""
 
 parser = argparse.ArgumentParser(usage=usage)
-parser.add_argument('--site',
-                    default="https://api.zulip.com")
+parser.add_argument('--site', default="https://api.zulip.com")
 
-parser.add_argument('--nagios',
-                    action='store_true')
+parser.add_argument('--nagios', action='store_true')
 
-parser.add_argument('--insecure',
-                    action='store_true')
+parser.add_argument('--insecure', action='store_true')
 
-parser.add_argument('--munin',
-                    action='store_true')
+parser.add_argument('--munin', action='store_true')
 
 parser.add_argument('config', nargs='?')
 
@@ -54,13 +50,15 @@ if not options.nagios and not options.munin:
 
 if options.munin:
     if options.config == 'config':
-        print("""graph_title Send-Receive times
+        print(
+            """graph_title Send-Receive times
 graph_info The number of seconds it takes to send and receive a message from the server
 graph_args -u 5 -l 0
 graph_vlabel RTT (seconds)
 sendreceive.label Send-receive round trip time
 sendreceive.warning 3
-sendreceive.critical 5""")
+sendreceive.critical 5"""
+        )
         sys.exit(0)
 
 sys.path.append('/home/zulip/deployments/current')
@@ -79,6 +77,7 @@ states = {
     "UNKNOWN": 3,
 }
 
+
 def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> None:
     now = int(time.time())
     if msg is None:
@@ -90,10 +89,12 @@ def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> None
     print(f"{state}: {msg}")
     exit(states[state])
 
+
 def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
     result = sender.send_message(message)
     if result["result"] != "success" and options.nagios:
         report("CRITICAL", msg=f"Error sending Zulip, args were: {message}, {result}")
+
 
 def get_zulips() -> List[Dict[str, Any]]:
     global queue_id, last_event_id
@@ -108,8 +109,12 @@ def get_zulips() -> List[Dict[str, Any]]:
         report("CRITICAL", msg="Got heartbeat waiting for Zulip, which means get_events is hanging")
     return [event['message'] for event in res['events']]
 
-if "staging" in options.site and settings.NAGIOS_STAGING_SEND_BOT is not None and \
-        settings.NAGIOS_STAGING_RECEIVE_BOT is not None:
+
+if (
+    "staging" in options.site
+    and settings.NAGIOS_STAGING_SEND_BOT is not None
+    and settings.NAGIOS_STAGING_RECEIVE_BOT is not None
+):
     sender = get_system_bot(settings.NAGIOS_STAGING_SEND_BOT)
     recipient = get_system_bot(settings.NAGIOS_STAGING_RECEIVE_BOT)
 else:
@@ -122,7 +127,8 @@ zulip_sender = zulip.Client(
     verbose=True,
     insecure=options.insecure,
     client="ZulipMonitoring/0.1",
-    site=options.site)
+    site=options.site,
+)
 
 zulip_recipient = zulip.Client(
     email=recipient.email,
@@ -130,7 +136,8 @@ zulip_recipient = zulip.Client(
     verbose=True,
     insecure=options.insecure,
     client="ZulipMonitoring/0.1",
-    site=options.site)
+    site=options.site,
+)
 
 try:
     res = zulip_recipient.register(event_types=["message"])
@@ -142,12 +149,15 @@ except Exception:
 msg_to_send = str(random.getrandbits(64))
 time_start = time.time()
 
-send_zulip(zulip_sender, {
-    "type": 'private',
-    "content": msg_to_send,
-    "subject": "time to send",
-    "to": recipient.email,
-})
+send_zulip(
+    zulip_sender,
+    {
+        "type": 'private',
+        "content": msg_to_send,
+        "subject": "time to send",
+        "to": recipient.email,
+    },
+)
 
 msg_content: List[str] = []
 

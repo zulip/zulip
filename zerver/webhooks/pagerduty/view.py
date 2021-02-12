@@ -66,6 +66,7 @@ Incident [{incident_num}]({incident_url}) resolved:
 ```
 """.strip()
 
+
 def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
     format_dict: Dict[str, Any] = {}
     format_dict['action'] = PAGER_DUTY_EVENT_NAMES[message['type']]
@@ -107,6 +108,7 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
     format_dict['trigger_message'] = '\n'.join(trigger_message)
     return format_dict
 
+
 def build_pagerduty_formatdict_v2(message: Dict[str, Any]) -> Dict[str, Any]:
     format_dict = {}
     format_dict['action'] = PAGER_DUTY_EVENT_NAMES_V2[message['event']]
@@ -122,7 +124,8 @@ def build_pagerduty_formatdict_v2(message: Dict[str, Any]) -> Dict[str, Any]:
     if assignments:
         assignee = assignments[0]['assignee']
         format_dict['assignee_info'] = ASSIGNEE_TEMPLATE.format(
-            username=assignee['summary'], url=assignee['html_url'])
+            username=assignee['summary'], url=assignee['html_url']
+        )
     else:
         format_dict['assignee_info'] = 'nobody'
 
@@ -138,10 +141,10 @@ def build_pagerduty_formatdict_v2(message: Dict[str, Any]) -> Dict[str, Any]:
         format_dict['trigger_message'] = trigger_description
     return format_dict
 
-def send_formated_pagerduty(request: HttpRequest,
-                            user_profile: UserProfile,
-                            message_type: str,
-                            format_dict: Dict[str, Any]) -> None:
+
+def send_formated_pagerduty(
+    request: HttpRequest, user_profile: UserProfile, message_type: str, format_dict: Dict[str, Any]
+) -> None:
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
         template = INCIDENT_WITH_SERVICE_AND_ASSIGNEE
     elif message_type == 'incident.resolve' and format_dict.get('resolving_agent_info') is not None:
@@ -157,11 +160,13 @@ def send_formated_pagerduty(request: HttpRequest,
     body = template.format(**format_dict)
     check_send_webhook_message(request, user_profile, subject, body)
 
+
 @webhook_view('PagerDuty')
 @has_request_variables
 def api_pagerduty_webhook(
-        request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type='body'),
 ) -> HttpResponse:
     for message in payload['messages']:
         message_type = message.get('type')

@@ -21,8 +21,10 @@ handlers: Dict[int, 'AsyncDjangoHandler'] = {}
 # Copied from django.core.handlers.base
 logger = logging.getLogger('django.request')
 
+
 def get_handler_by_id(handler_id: int) -> 'AsyncDjangoHandler':
     return handlers[handler_id]
+
 
 def allocate_handler_id(handler: 'AsyncDjangoHandler') -> int:
     global current_handler_id
@@ -31,14 +33,18 @@ def allocate_handler_id(handler: 'AsyncDjangoHandler') -> int:
     current_handler_id += 1
     return handler.handler_id
 
+
 def clear_handler_by_id(handler_id: int) -> None:
     del handlers[handler_id]
+
 
 def handler_stats_string() -> str:
     return f"{len(handlers)} handlers, latest ID {current_handler_id}"
 
-def finish_handler(handler_id: int, event_queue_id: str,
-                   contents: List[Dict[str, Any]], apply_markdown: bool) -> None:
+
+def finish_handler(
+    handler_id: int, event_queue_id: str, contents: List[Dict[str, Any]], apply_markdown: bool
+) -> None:
     err_msg = f"Got error finishing handler for queue {event_queue_id}"
     try:
         # We call async_request_timer_restart here in case we are
@@ -52,10 +58,11 @@ def finish_handler(handler_id: int, event_queue_id: str,
         else:
             request._log_data['extra'] = "[{}/1/{}]".format(event_queue_id, contents[0]["type"])
 
-        handler.zulip_finish(dict(result='success', msg='',
-                                  events=contents,
-                                  queue_id=event_queue_id),
-                             request, apply_markdown=apply_markdown)
+        handler.zulip_finish(
+            dict(result='success', msg='', events=contents, queue_id=event_queue_id),
+            request,
+            apply_markdown=apply_markdown,
+        )
     except OSError as e:
         if str(e) != 'Stream is closed':
             logging.exception(err_msg, stack_info=True)
@@ -183,8 +190,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         if client_descriptor is not None:
             client_descriptor.disconnect_handler(client_closed=True)
 
-    def zulip_finish(self, result_dict: Dict[str, Any], old_request: HttpRequest,
-                     apply_markdown: bool) -> None:
+    def zulip_finish(
+        self, result_dict: Dict[str, Any], old_request: HttpRequest, apply_markdown: bool
+    ) -> None:
         # Function called when we want to break a long-polled
         # get_events request and return a response to the client.
 
@@ -229,8 +237,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # request/middleware system to run unmodified while avoiding
         # running expensive things like Zulip's authentication code a
         # second time.
-        request.saved_response = json_response(res_type=result_dict['result'],
-                                               data=result_dict, status=self.get_status())
+        request.saved_response = json_response(
+            res_type=result_dict['result'], data=result_dict, status=self.get_status()
+        )
 
         try:
             response = self.get_response(request)

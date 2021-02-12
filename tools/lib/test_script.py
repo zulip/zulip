@@ -10,12 +10,15 @@ from version import PROVISION_VERSION
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+
 def get_major_version(v: str) -> int:
     return int(v.split('.')[0])
+
 
 def get_version_file() -> str:
     uuid_var_path = get_dev_uuid_var_path()
     return os.path.join(uuid_var_path, 'provision_version')
+
 
 PREAMBLE = '''
 Before we run tests, we make sure your provisioning version
@@ -24,10 +27,12 @@ version {}, and we compare it to the version in source
 control (version.py), which is {}.
 '''
 
+
 def preamble(version: str) -> str:
     text = PREAMBLE.format(version, PROVISION_VERSION)
     text += '\n'
     return text
+
 
 NEED_TO_DOWNGRADE = '''
 It looks like you checked out a branch that expects an older
@@ -45,6 +50,7 @@ is likely to fail until you add dependencies by provisioning.
 
 Do this: `./tools/provision`
 '''
+
 
 def get_provisioning_status() -> Tuple[bool, Optional[str]]:
     version_file = get_version_file()
@@ -97,6 +103,7 @@ def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
         test_files = sorted(glob.glob(os.path.join(test_dir, '*.js')))
 
     return test_files
+
 
 def prepare_puppeteer_run() -> None:
     os.chdir(ZULIP_PATH)

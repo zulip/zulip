@@ -11,9 +11,7 @@ sanity_check.check_venv(__file__)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--coverage',
-                        action="store_true",
-                        help='compute test coverage')
+    parser.add_argument('--coverage', action="store_true", help='compute test coverage')
     args = parser.parse_args()
 
     def dir_join(dir1: str, dir2: str) -> str:
@@ -29,7 +27,10 @@ if __name__ == '__main__':
 
     if args.coverage:
         import coverage
-        cov = coverage.Coverage(branch=True, omit=["*/zulip-venv-cache/*", dir_join(tools_test_dir, "*")])
+
+        cov = coverage.Coverage(
+            branch=True, omit=["*/zulip-venv-cache/*", dir_join(tools_test_dir, "*")]
+        )
         cov.start()
 
     suite = loader.discover(start_dir=tools_test_dir, top_level_dir=root_dir)

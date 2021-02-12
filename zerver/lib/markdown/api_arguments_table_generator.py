@@ -16,7 +16,10 @@ REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+)\s*\}'
 class MarkdownArgumentsTableGenerator(Extension):
     def __init__(self, configs: Mapping[str, Any] = {}) -> None:
         self.config = {
-            'base_path': ['.', 'Default location from which to evaluate relative paths for the JSON files.'],
+            'base_path': [
+                '.',
+                'Default location from which to evaluate relative paths for the JSON files.',
+            ],
         }
         for key, value in configs.items():
             self.setConfig(key, value)
@@ -81,7 +84,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 preceding = line_split[0]
                 following = line_split[-1]
                 text = [preceding, *text, following]
-                lines = lines[:loc] + text + lines[loc+1:]
+                lines = lines[:loc] + text + lines[loc + 1 :]
                 break
             else:
                 done = True
@@ -104,8 +107,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         arguments = sorted(arguments, key=lambda argument: 'deprecated' in argument)
         for argument in arguments:
             description = argument['description']
-            oneof = ['`' + str(item) + '`'
-                     for item in argument.get('schema', {}).get('enum', [])]
+            oneof = ['`' + str(item) + '`' for item in argument.get('schema', {}).get('enum', [])]
             if oneof:
                 description += '\nMust be one of: {}.'.format(', '.join(oneof))
 
@@ -139,25 +141,29 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
             # Test to make sure deprecated parameters are marked so.
             if likely_deprecated_parameter(description):
-                assert(argument['deprecated'])
+                assert argument['deprecated']
             if argument.get('deprecated', False):
                 deprecated_block = '<span class="api-argument-deprecated">Deprecated</span>'
             else:
                 deprecated_block = ''
 
-            table.append(argument_template.format(
-                argument=argument.get('argument') or argument.get('name'),
-                example=escape_html(example),
-                required=required_block,
-                deprecated=deprecated_block,
-                description=md_engine.convert(description),
-                type=data_type
-            ))
+            table.append(
+                argument_template.format(
+                    argument=argument.get('argument') or argument.get('name'),
+                    example=escape_html(example),
+                    required=required_block,
+                    deprecated=deprecated_block,
+                    description=md_engine.convert(description),
+                    type=data_type,
+                )
+            )
 
         return table
 
+
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownArgumentsTableGenerator:
     return MarkdownArgumentsTableGenerator(kwargs)
+
 
 def generate_data_type(schema: Mapping[str, Any]) -> str:
     data_type = ""

@@ -17,6 +17,7 @@ def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
         webpack_args.append('--display=errors-only')
     os.execvp(webpack_args[0], webpack_args)
 
+
 def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check: bool) -> None:
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
 
@@ -56,6 +57,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     # TODO: This process should also fall back to periodic polling if
     # inotify_broken.
     import pyinotify
+
     try:
         webpack_process = subprocess.Popen(webpack_args)
 
@@ -77,6 +79,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
         webpack_process.terminate()
         webpack_process.wait()
 
+
 def build_for_most_tests() -> None:
     """Generates a stub asset stat file for django so backend test can render a page"""
 
@@ -91,11 +94,13 @@ def build_for_most_tests() -> None:
     entries = {}
     with open('tools/webpack.assets.json') as json_data:
         for entry in json.load(json_data).keys():
-            entries[entry] = [{
-                "name": f"{entry}.js",
-                "publicPath": f"http://localhost:3000/webpack-stub/{entry}-stubentry.js",
-                "path": f"/stubfolder/{entry}-stubfile.js",
-            }]
+            entries[entry] = [
+                {
+                    "name": f"{entry}.js",
+                    "publicPath": f"http://localhost:3000/webpack-stub/{entry}-stubentry.js",
+                    "path": f"/stubfolder/{entry}-stubfile.js",
+                }
+            ]
     stat_data = {
         "status": "done",
         "chunks": entries,
@@ -109,25 +114,25 @@ def build_for_most_tests() -> None:
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--test',
-                    action='store_true',
-                    help='generate a stub webpack-stats.json file (for backend testing)')
-parser.add_argument('--quiet',
-                    action='store_true',
-                    help='Minimizes webpack output while running')
-parser.add_argument('--watch',
-                    action='store_true',
-                    help='watch for changes to source files (for development)')
-parser.add_argument('--host',
-                    default='127.0.0.1', help='set the host for the webpack server to run on')
-parser.add_argument('--port',
-                    default='9994', help='set the port for the webpack server to run on')
-parser.add_argument('--minify',
-                    action='store_true',
-                    help='Minify and optimize the assets (for development)')
-parser.add_argument('--disable-host-check',
-                    action='store_true',
-                    help='Disable host check for webpack-dev-server')
+parser.add_argument(
+    '--test',
+    action='store_true',
+    help='generate a stub webpack-stats.json file (for backend testing)',
+)
+parser.add_argument('--quiet', action='store_true', help='Minimizes webpack output while running')
+parser.add_argument(
+    '--watch', action='store_true', help='watch for changes to source files (for development)'
+)
+parser.add_argument(
+    '--host', default='127.0.0.1', help='set the host for the webpack server to run on'
+)
+parser.add_argument('--port', default='9994', help='set the port for the webpack server to run on')
+parser.add_argument(
+    '--minify', action='store_true', help='Minify and optimize the assets (for development)'
+)
+parser.add_argument(
+    '--disable-host-check', action='store_true', help='Disable host check for webpack-dev-server'
+)
 
 args = parser.parse_args()
 if "PUPPETEER_TESTS" in os.environ:

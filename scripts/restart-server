@@ -20,12 +20,10 @@ from scripts.lib.zulip_tools import (
 )
 
 logging.Formatter.converter = time.gmtime
-logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
-                    level=logging.INFO)
+logging.basicConfig(format="%(asctime)s restart-server: %(message)s", level=logging.INFO)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--fill-cache', action='store_true',
-                    help='Fill the memcached caches')
+parser.add_argument('--fill-cache', action='store_true', help='Fill the memcached caches')
 args = parser.parse_args()
 
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
@@ -36,7 +34,9 @@ if pwd.getpwuid(os.getuid()).pw_name != "zulip":
     sys.exit(1)
 
 # Send a statsd event on restarting the server
-subprocess.check_call(["./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
+subprocess.check_call(
+    ["./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))]
+)
 
 if args.fill_cache:
     logging.info("Filling memcached caches")
@@ -105,6 +105,8 @@ if change_symlink and "PWD" in os.environ:
 which has now changed. Your shell will not see this change until you run:
   cd {}
 to traverse the symlink again.{}
-""".format(WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC),
+""".format(
+                    WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC
+                ),
                 file=sys.stderr,
             )

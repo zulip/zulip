@@ -17,8 +17,9 @@ class ZephyrTest(ZulipTestCase):
 
         def post(subdomain: Any, **kwargs: Any) -> HttpResponse:
             params = {k: orjson.dumps(v).decode() for k, v in kwargs.items()}
-            return self.client_post('/accounts/webathena_kerberos_login/', params,
-                                    subdomain=subdomain)
+            return self.client_post(
+                '/accounts/webathena_kerberos_login/', params, subdomain=subdomain
+            )
 
         result = post("zulip")
         self.assert_json_error(result, 'Could not find Kerberos credential')
@@ -47,10 +48,9 @@ class ZephyrTest(ZulipTestCase):
             result = post("zephyr", cred=cred)
         self.assert_json_error(result, 'Invalid Kerberos cache')
 
-        with \
-                ccache_mock(return_value=b'1234'), \
-                ssh_mock(side_effect=subprocess.CalledProcessError(1, [])), \
-                self.assertLogs(level='ERROR') as log:
+        with ccache_mock(return_value=b'1234'), ssh_mock(
+            side_effect=subprocess.CalledProcessError(1, [])
+        ), self.assertLogs(level='ERROR') as log:
             result = post("zephyr", cred=cred)
 
         self.assert_json_error(result, 'We were unable to setup mirroring for you')
@@ -60,31 +60,35 @@ class ZephyrTest(ZulipTestCase):
             result = post("zephyr", cred=cred)
 
         self.assert_json_success(result)
-        ssh.assert_called_with([
-            'ssh',
-            'server',
-            '--',
-            f'/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache starnine {api_key} MTIzNA=='])
+        ssh.assert_called_with(
+            [
+                'ssh',
+                'server',
+                '--',
+                f'/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache starnine {api_key} MTIzNA==',
+            ]
+        )
 
         # Accounts whose Kerberos usernames are known not to match their
         # zephyr accounts are hardcoded, and should be handled properly.
 
         def kerberos_alter_egos_mock() -> Any:
             return patch(
-                'zerver.views.zephyr.kerberos_alter_egos',
-                {'kerberos_alter_ego': 'starnine'})
+                'zerver.views.zephyr.kerberos_alter_egos', {'kerberos_alter_ego': 'starnine'}
+            )
 
         cred = dict(cname=dict(nameString=['kerberos_alter_ego']))
-        with \
-                ccache_mock(return_value=b'1234'), \
-                mirror_mock(), \
-                ssh_mock() as ssh, \
-                kerberos_alter_egos_mock():
+        with ccache_mock(
+            return_value=b'1234'
+        ), mirror_mock(), ssh_mock() as ssh, kerberos_alter_egos_mock():
             result = post("zephyr", cred=cred)
 
         self.assert_json_success(result)
-        ssh.assert_called_with([
-            'ssh',
-            'server',
-            '--',
-            f'/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache starnine {api_key} MTIzNA=='])
+        ssh.assert_called_with(
+            [
+                'ssh',
+                'server',
+                '--',
+                f'/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache starnine {api_key} MTIzNA==',
+            ]
+        )

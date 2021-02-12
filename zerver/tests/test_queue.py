@@ -16,7 +16,12 @@ class TestTornadoQueueClient(ZulipTestCase):
             connection = TornadoQueueClient()
             connection.connection.channel.side_effect = ConnectionClosed('500', 'test')
             connection._on_open(mock.MagicMock())
-            self.assertEqual(m.output, ['WARNING:zulip.queue:TornadoQueueClient couldn\'t open channel: connection already closed'])
+            self.assertEqual(
+                m.output,
+                [
+                    'WARNING:zulip.queue:TornadoQueueClient couldn\'t open channel: connection already closed'
+                ],
+            )
 
 
 class TestQueueImplementation(ZulipTestCase):
@@ -73,19 +78,20 @@ class TestQueueImplementation(ZulipTestCase):
 
         self.counter = 0
 
-        def throw_connection_error_once(self_obj: Any, *args: Any,
-                                        **kwargs: Any) -> None:
+        def throw_connection_error_once(self_obj: Any, *args: Any, **kwargs: Any) -> None:
             self.counter += 1
             if self.counter <= 1:
                 raise AMQPConnectionError("test")
             actual_publish(*args, **kwargs)
 
-        with mock.patch("zerver.lib.queue.SimpleQueueClient.publish",
-                        throw_connection_error_once), self.assertLogs('zulip.queue', level='WARN') as warn_logs:
+        with mock.patch(
+            "zerver.lib.queue.SimpleQueueClient.publish", throw_connection_error_once
+        ), self.assertLogs('zulip.queue', level='WARN') as warn_logs:
             queue_json_publish("test_suite", {"event": "my_event"})
-        self.assertEqual(warn_logs.output, [
-            'WARNING:zulip.queue:Failed to send to rabbitmq, trying to reconnect and send again'
-        ])
+        self.assertEqual(
+            warn_logs.output,
+            ['WARNING:zulip.queue:Failed to send to rabbitmq, trying to reconnect and send again'],
+        )
 
         assert queue_client.channel
         (_, _, message) = queue_client.channel.basic_get("test_suite")

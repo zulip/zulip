@@ -26,15 +26,16 @@ from zerver.models import UserProfile
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GOGS_EVENT")
 
+
 def get_issue_url(repo_url: str, issue_nr: int) -> str:
     return f"{repo_url}/issues/{issue_nr}"
+
 
 def format_push_event(payload: Dict[str, Any]) -> str:
 
     for commit in payload['commits']:
         commit['sha'] = commit['id']
-        commit['name'] = (commit['author']['username'] or
-                          commit['author']['name'].split()[0])
+        commit['name'] = commit['author']['username'] or commit['author']['name'].split()[0]
 
     data = {
         'user_name': payload['sender']['username'],
@@ -44,6 +45,7 @@ def format_push_event(payload: Dict[str, Any]) -> str:
     }
 
     return get_push_commits_event_message(**data)
+
 
 def format_new_branch_event(payload: Dict[str, Any]) -> str:
 
@@ -57,8 +59,8 @@ def format_new_branch_event(payload: Dict[str, Any]) -> str:
     }
     return get_create_branch_event_message(**data)
 
-def format_pull_request_event(payload: Dict[str, Any],
-                              include_title: bool=False) -> str:
+
+def format_pull_request_event(payload: Dict[str, Any], include_title: bool = False) -> str:
 
     data = {
         'user_name': payload['pull_request']['user']['username'],
@@ -76,7 +78,8 @@ def format_pull_request_event(payload: Dict[str, Any],
 
     return get_pull_request_event_message(**data)
 
-def format_issues_event(payload: Dict[str, Any], include_title: bool=False) -> str:
+
+def format_issues_event(payload: Dict[str, Any], include_title: bool = False) -> str:
     issue_nr = payload['issue']['number']
     assignee = payload['issue']['assignee']
     return get_issue_event_message(
@@ -89,7 +92,8 @@ def format_issues_event(payload: Dict[str, Any], include_title: bool=False) -> s
         title=payload['issue']['title'] if include_title else None,
     )
 
-def format_issue_comment_event(payload: Dict[str, Any], include_title: bool=False) -> str:
+
+def format_issue_comment_event(payload: Dict[str, Any], include_title: bool = False) -> str:
     action = payload['action']
     comment = payload['comment']
     issue = payload['issue']
@@ -109,7 +113,8 @@ def format_issue_comment_event(payload: Dict[str, Any], include_title: bool=Fals
         title=issue['title'] if include_title else None,
     )
 
-def format_release_event(payload: Dict[str, Any], include_title: bool=False) -> str:
+
+def format_release_event(payload: Dict[str, Any], include_title: bool = False) -> str:
     data = {
         'user_name': payload['release']['author']['username'],
         'action': payload['action'],
@@ -120,21 +125,38 @@ def format_release_event(payload: Dict[str, Any], include_title: bool=False) -> 
 
     return get_release_event_message(**data)
 
+
 @webhook_view('Gogs')
 @has_request_variables
-def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
-                     payload: Dict[str, Any]=REQ(argument_type='body'),
-                     branches: Optional[str]=REQ(default=None),
-                     user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
-    return gogs_webhook_main("Gogs", "X_GOGS_EVENT", format_pull_request_event,
-                             request, user_profile, payload, branches, user_specified_topic)
+def api_gogs_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type='body'),
+    branches: Optional[str] = REQ(default=None),
+    user_specified_topic: Optional[str] = REQ("topic", default=None),
+) -> HttpResponse:
+    return gogs_webhook_main(
+        "Gogs",
+        "X_GOGS_EVENT",
+        format_pull_request_event,
+        request,
+        user_profile,
+        payload,
+        branches,
+        user_specified_topic,
+    )
 
-def gogs_webhook_main(integration_name: str, http_header_name: str,
-                      format_pull_request_event: Callable[..., Any],
-                      request: HttpRequest, user_profile: UserProfile,
-                      payload: Dict[str, Any],
-                      branches: Optional[str],
-                      user_specified_topic: Optional[str]) -> HttpResponse:
+
+def gogs_webhook_main(
+    integration_name: str,
+    http_header_name: str,
+    format_pull_request_event: Callable[..., Any],
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any],
+    branches: Optional[str],
+    user_specified_topic: Optional[str],
+) -> HttpResponse:
     repo = payload['repository']['name']
     event = validate_extract_webhook_http_header(request, http_header_name, integration_name)
     if event == 'push':

@@ -5,6 +5,7 @@ from django.db import migrations, models
 # The values at the time of this migration
 ROLE_MEMBER = 400
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -20,7 +21,6 @@ class Migration(migrations.Migration):
             model_name='userprofile',
             name='is_realm_admin',
         ),
-
         migrations.AlterField(
             model_name='userprofile',
             name='role',
