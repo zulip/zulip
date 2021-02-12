@@ -168,10 +168,8 @@ sense (e.g. a link in a comment to an extremely long URL).
 
 The bulk of our Python linting gets outsourced to the "pyflakes" tool.  We
 call "pyflakes" in a fairly vanilla fashion, and then we post-process its
-output to exclude certain types of errors that Zulip is comfortable
-ignoring.  (One notable class of error that Zulip currently tolerates is
-unused imports--because of the way mypy type annotations work in Python 2,
-it would be inconvenient to enforce this too strictly.)
+output to exclude certain specific errors that Zulip is comfortable
+ignoring.
 
 Zulip also has custom regex-based rules that it applies to Python code.
 Look for `python_rules` in the source code for `lint`.  Note that we
