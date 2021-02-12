@@ -93,8 +93,7 @@ if replication_info:
 
 else:
     replication_info = run_sql_query(
-        'client_addr, state, sent_lsn, write_lsn, flush_lsn, replay_lsn'
-        ' from pg_stat_replication'
+        'client_addr, state, sent_lsn, write_lsn, flush_lsn, replay_lsn from pg_stat_replication'
     )
     if replication_info == 0:
         report('CRITICAL', 'No replicas!')

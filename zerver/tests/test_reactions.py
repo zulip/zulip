@@ -646,9 +646,7 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
 
     def test_delete_insufficient_arguments_reaction(self) -> None:
         result = self.delete_reaction({})
-        self.assert_json_error(result, 'At least one of the following '
-                               'arguments must be present: emoji_name, '
-                               'emoji_code')
+        self.assert_json_error(result, 'At least one of the following arguments must be present: emoji_name, emoji_code')
 
     def test_delete_non_existing_emoji_reaction(self) -> None:
         reaction_info = {

@@ -217,8 +217,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
         key = 'capacity-filling entry'
         storage.put(key, 'x' * (settings.USER_STATE_SIZE_LIMIT - len(key)))
 
-        with self.assertRaisesMessage(StateError, "Request exceeds storage limit by 32 characters. "
-                                                  "The limit is 100 characters."):
+        with self.assertRaisesMessage(StateError, "Request exceeds storage limit by 32 characters. The limit is 100 characters."):
             storage.put('too much data', 'a few bits too long')
 
         second_storage = StateHandler(self.second_bot_profile)

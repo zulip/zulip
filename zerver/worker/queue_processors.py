@@ -635,8 +635,7 @@ class MirrorWorker(QueueProcessingWorker):
             try:
                 rate_limit_mirror_by_realm(recipient_realm)
             except RateLimited:
-                logger.warning("MirrorWorker: Rejecting an email from: %s "
-                               "to realm: %s - rate limited.",
+                logger.warning("MirrorWorker: Rejecting an email from: %s to realm: %s - rate limited.",
                                msg['From'], recipient_realm.name)
                 return
 

@@ -1009,8 +1009,7 @@ class MarkdownTest(ZulipTestCase):
         realm_filter.save()
         self.assertEqual(
             realm_filter.__str__(),
-            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.example.com/ticket/%(id)s>')
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>')
 
         msg = Message(sender=self.example_user('othello'))
         msg.set_topic_name("#444")
@@ -1679,8 +1678,7 @@ class MarkdownTest(ZulipTestCase):
         realm_filter.save()
         self.assertEqual(
             realm_filter.__str__(),
-            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.example.com/ticket/%(id)s>')
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>')
         # Create a user that potentially interferes with the pattern.
         test_user = create_user(
             email='atomic@example.com',
@@ -1736,8 +1734,7 @@ class MarkdownTest(ZulipTestCase):
         realm_filter.save()
         self.assertEqual(
             realm_filter.__str__(),
-            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.example.com/ticket/%(id)s>')
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>')
         # Create a user-group that potentially interferes with the pattern.
         user_id = user_profile.id
         user_group = self.create_user_group_for_test('support #123')
@@ -1908,8 +1905,7 @@ class MarkdownTest(ZulipTestCase):
         realm_filter.save()
         self.assertEqual(
             realm_filter.__str__(),
-            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.example.com/ticket/%(id)s>')
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>')
         # Create a topic link that potentially interferes with the pattern.
         denmark = get_stream('Denmark', realm)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -1974,8 +1970,7 @@ class MarkdownTest(ZulipTestCase):
         realm_filter.save()
         self.assertEqual(
             realm_filter.__str__(),
-            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.example.com/ticket/%(id)s>')
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>')
         # Create a stream that potentially interferes with the pattern.
         stream = Stream.objects.create(name='Stream #1234', realm=realm)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))

@@ -923,8 +923,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                            return_value={'apns': True}), \
                 mock.patch('zerver.lib.push_notifications.get_message_payload_gcm',
                            return_value=({'gcm': True}, {})), \
-                mock.patch('zerver.lib.push_notifications'
-                           '.send_notifications_to_bouncer') as mock_send:
+                mock.patch('zerver.lib.push_notifications.send_notifications_to_bouncer') as mock_send:
             handle_push_notification(user_profile.id, missed_message)
             mock_send.assert_called_with(user_profile.id,
                                          {'apns': True},
@@ -957,10 +956,8 @@ class HandlePushNotificationTest(PushNotificationTest):
                         return_value={'apns': True}), \
                 mock.patch('zerver.lib.push_notifications.get_message_payload_gcm',
                            return_value=({'gcm': True}, {})), \
-                mock.patch('zerver.lib.push_notifications'
-                           '.send_apple_push_notification') as mock_send_apple, \
-                mock.patch('zerver.lib.push_notifications'
-                           '.send_android_push_notification') as mock_send_android, \
+                mock.patch('zerver.lib.push_notifications.send_apple_push_notification') as mock_send_apple, \
+                mock.patch('zerver.lib.push_notifications.send_android_push_notification') as mock_send_android, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
 
             handle_push_notification(self.user_profile.id, missed_message)
@@ -980,8 +977,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
 
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
-                mock.patch('zerver.lib.push_notifications'
-                           '.send_notifications_to_bouncer') as mock_send:
+                mock.patch('zerver.lib.push_notifications.send_notifications_to_bouncer') as mock_send:
             handle_remove_push_notification(user_profile.id, [message.id])
             mock_send.assert_called_with(
                 user_profile.id,
@@ -1030,10 +1026,8 @@ class HandlePushNotificationTest(PushNotificationTest):
             PushDeviceToken.objects.filter(user=self.user_profile,
                                            kind=PushDeviceToken.APNS))
 
-        with mock.patch('zerver.lib.push_notifications'
-                        '.send_android_push_notification') as mock_send_android, \
-                mock.patch('zerver.lib.push_notifications'
-                           '.send_apple_push_notification') as mock_send_apple:
+        with mock.patch('zerver.lib.push_notifications.send_android_push_notification') as mock_send_android, \
+                mock.patch('zerver.lib.push_notifications.send_apple_push_notification') as mock_send_apple:
             handle_remove_push_notification(self.user_profile.id, [message.id])
             mock_send_android.assert_called_with(
                 android_devices,
@@ -1116,10 +1110,8 @@ class HandlePushNotificationTest(PushNotificationTest):
                         return_value={'apns': True}), \
                 mock.patch('zerver.lib.push_notifications.get_message_payload_gcm',
                            return_value=({'gcm': True}, {})), \
-                mock.patch('zerver.lib.push_notifications'
-                           '.send_apple_push_notification') as mock_send_apple, \
-                mock.patch('zerver.lib.push_notifications'
-                           '.send_android_push_notification') as mock_send_android, \
+                mock.patch('zerver.lib.push_notifications.send_apple_push_notification') as mock_send_apple, \
+                mock.patch('zerver.lib.push_notifications.send_android_push_notification') as mock_send_android, \
                 mock.patch('zerver.lib.push_notifications.logger.error') as mock_logger, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
             handle_push_notification(self.user_profile.id, missed_message)
@@ -1914,9 +1906,7 @@ class GCMSendTest(PushNotificationTest):
 
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
-        msg = ("GCM: Got canonical ref %s "
-               "replacing %s but new ID not "
-               "registered! Updating.")
+        msg = "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating."
         mock_warning.assert_called_once_with(msg, t2, t1)
 
         self.assertEqual(get_count('1111'), 0)

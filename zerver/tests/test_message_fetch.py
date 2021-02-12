@@ -3248,9 +3248,9 @@ class MessageHasKeywordsTest(ZulipTestCase):
 
         # This message should claim attachments 1 only because attachment 2
         # is not being parsed as a link by Markdown.
-        body = ("Some files here ...[zulip.txt]({})" +
-                "{}.... Some more...." +
-                "{}").format(dummy_urls[0], dummy_urls[1], dummy_urls[1])
+        body = (f"Some files here ...[zulip.txt]({dummy_urls[0]})"
+                f"{dummy_urls[1]}.... Some more...."
+                f"{dummy_urls[1]}")
         self.send_stream_message(user_profile, "Denmark", body, "test")
         assert_attachment_claimed(dummy_path_ids[0], True)
         assert_attachment_claimed(dummy_path_ids[1], False)

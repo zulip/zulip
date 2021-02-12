@@ -7,11 +7,9 @@ from tools.lib.capitalization import check_capitalization, get_safe_text, is_cap
 
 class GetSafeTextTestCase(TestCase):
     def test_get_safe_text(self) -> None:
-        string = ('Messages in __page_params.product_name__ go to a '
-                  'stream and have a topic.')
+        string = ('Messages in __page_params.product_name__ go to a stream and have a topic.')
         safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, 'Messages in __page_params_product_name__ '
-                                    'go to a stream and have a topic.')
+        self.assertEqual(safe_text, 'Messages in __page_params_product_name__ go to a stream and have a topic.')
 
         string = "Zulip Zulip. Zulip some text!"
         safe_text = get_safe_text(string)

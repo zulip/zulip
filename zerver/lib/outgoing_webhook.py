@@ -236,8 +236,7 @@ def notify_bot_owner(event: Dict[str, Any],
     if status_code:
         notification_message += f"\nThe webhook got a response with status code *{status_code}*."
     if response_content:
-        notification_message += "\nThe response contains the following payload:\n" \
-                                f"```\n{response_content!r}\n```"
+        notification_message += f"\nThe response contains the following payload:\n```\n{response_content!r}\n```"
     if exception:
         notification_message += "\nWhen trying to send a request to the webhook service, an exception " \
                                 f"of type {type(exception).__name__} occurred:\n```\n{exception}\n```"

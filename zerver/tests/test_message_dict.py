@@ -256,8 +256,7 @@ class MessageDictTest(ZulipTestCase):
                                    url_format_string=url_format_string)
         self.assertEqual(
             realm_filter.__str__(),
-            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.example.com/ticket/%(id)s>')
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>')
 
         def get_message(sender: UserProfile) -> Message:
             msg_id = self.send_stream_message(sender, 'Denmark', 'hello world', topic_name,

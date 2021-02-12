@@ -1603,8 +1603,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         email_change_key = email_change_url.split('/')[-1]
         url = '/accounts/do_confirm/' + email_change_key
         result = self.client_get(url)
-        self.assert_in_success_response(["Whoops. We couldn't find your "
-                                         "confirmation link in the system."], result)
+        self.assert_in_success_response(["Whoops. We couldn't find your confirmation link in the system."], result)
 
     def test_confirmation_expired(self) -> None:
         email = self.nonreg_email("alice")
@@ -1621,8 +1620,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         target_url = '/' + url.split('/', 3)[3]
         result = self.client_get(target_url)
-        self.assert_in_success_response(["Whoops. The confirmation link has expired "
-                                         "or been deactivated."], result)
+        self.assert_in_success_response(["Whoops. The confirmation link has expired or been deactivated."], result)
 
     def test_send_more_than_one_invite_to_same_user(self) -> None:
         self.user_profile = self.example_user('iago')
@@ -3281,8 +3279,7 @@ class UserSignUpTest(InviteUserBase):
     def test_failed_signup_due_to_nonexistent_realm(self) -> None:
         email = 'user@acme.com'
         form = HomepageForm({'email': email}, realm=None)
-        self.assertIn("organization you are trying to join using {} does "
-                      "not exist".format(email), form.errors['email'][0])
+        self.assertIn(f"organization you are trying to join using {email} does not exist", form.errors['email'][0])
 
     def test_access_signup_page_in_root_domain_without_realm(self) -> None:
         result = self.client_get('/register', subdomain="", follow=True)

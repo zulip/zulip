@@ -36,12 +36,10 @@ approach shown above.
                                  'into Zulip')
 
         parser.add_argument('-u', '--url',
-                            help='The URL on your Zulip server that you want '
-                                 'to post the fixture to')
+                            help='The URL on your Zulip server that you want to post the fixture to')
 
         parser.add_argument('-H', '--custom-headers',
-                            help='The headers you want to provide along with '
-                                 'your mock request to Zulip.')
+                            help='The headers you want to provide along with your mock request to Zulip.')
 
         self.add_realm_args(parser, help="Specify which realm/subdomain to connect to; default is zulip")
 

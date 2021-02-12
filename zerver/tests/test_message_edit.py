@@ -293,9 +293,7 @@ class EditMessageTest(ZulipTestCase):
             self.example_user("hamlet"),
             "Scotland",
             topic_name="editing",
-            content=('content before edit, line 1\n'
-                     '\n'
-                     'content before edit, line 3'))
+            content='content before edit, line 1\n\ncontent before edit, line 3')
         new_content_2 = ('content before edit, line 1\n'
                          'content after edit, line 2\n'
                          'content before edit, line 3')
@@ -310,8 +308,7 @@ class EditMessageTest(ZulipTestCase):
         message_history_2 = json_response_2['message_history']
 
         self.assertEqual(message_history_2[0]['rendered_content'],
-                         ('<p>content before edit, line 1</p>\n'
-                          '<p>content before edit, line 3</p>'))
+                         '<p>content before edit, line 1</p>\n<p>content before edit, line 3</p>')
         self.assertEqual(message_history_2[1]['rendered_content'],
                          ('<p>content before edit, line 1<br>\n'
                           'content after edit, line 2<br>\n'
@@ -321,8 +318,7 @@ class EditMessageTest(ZulipTestCase):
                           'content <span class="highlight_text_inserted">after edit, line 2<br> '
                           'content</span> before edit, line 3</p>'))
         self.assertEqual(message_history_2[1]['prev_rendered_content'],
-                         ('<p>content before edit, line 1</p>\n'
-                          '<p>content before edit, line 3</p>'))
+                         '<p>content before edit, line 1</p>\n<p>content before edit, line 3</p>')
 
     def test_edit_link(self) -> None:
         # Link editing

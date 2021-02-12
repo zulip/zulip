@@ -102,8 +102,7 @@ class OpenAPIToolsTest(ZulipTestCase):
 
     def test_validate_against_openapi_schema(self) -> None:
         with self.assertRaises(ValidationError,
-                               msg=("Additional properties are not" +
-                                    " allowed ('foo' was unexpected)")):
+                               msg="Additional properties are not allowed ('foo' was unexpected)"):
             bad_content: Dict[str, object] = {
                 'msg': '',
                 'result': 'success',

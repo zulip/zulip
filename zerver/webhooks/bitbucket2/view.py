@@ -31,10 +31,8 @@ from zerver.models import UserProfile
 BITBUCKET_TOPIC_TEMPLATE = '{repository_name}'
 
 BITBUCKET_FORK_BODY = "{actor} forked the repository into [{fork_name}]({fork_url})."
-BITBUCKET_COMMIT_STATUS_CHANGED_BODY = ('[System {key}]({system_url}) changed status of'
-                                        ' {commit_info} to {status}.')
-BITBUCKET_REPO_UPDATED_CHANGED = ('{actor} changed the {change} of the **{repo_name}**'
-                                  ' repo from **{old}** to **{new}**')
+BITBUCKET_COMMIT_STATUS_CHANGED_BODY = '[System {key}]({system_url}) changed status of {commit_info} to {status}.'
+BITBUCKET_REPO_UPDATED_CHANGED = '{actor} changed the {change} of the **{repo_name}** repo from **{old}** to **{new}**'
 BITBUCKET_REPO_UPDATED_ADDED = '{actor} changed the {change} of the **{repo_name}** repo to **{new}**'
 
 PULL_REQUEST_SUPPORTED_ACTIONS = [

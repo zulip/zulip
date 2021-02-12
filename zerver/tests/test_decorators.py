@@ -1486,8 +1486,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         with self.assertLogs(level="WARNING") as m, \
                 mock.patch('zerver.decorator.get_subdomain', return_value=''):
             self.assert_json_error_contains(self._do_test(user),
-                                            "Account is not associated with this "
-                                            "subdomain")
+                                            "Account is not associated with this subdomain")
         self.assertEqual(
             m.output,
             ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(email, 'zulip', ''),
@@ -1497,8 +1496,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         with self.assertLogs(level="WARNING") as m, \
                 mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
             self.assert_json_error_contains(self._do_test(user),
-                                            "Account is not associated with this "
-                                            "subdomain")
+                                            "Account is not associated with this subdomain")
         self.assertEqual(
             m.output,
             ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(email, 'zulip', 'acme'),
@@ -1545,8 +1543,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
         with self.assertLogs(level="WARNING") as m, \
                 mock.patch('zerver.decorator.get_subdomain', return_value=''):
             self.assert_json_error_contains(self._do_test(email),
-                                            "Account is not associated with this "
-                                            "subdomain")
+                                            "Account is not associated with this subdomain")
         self.assertEqual(
             m.output,
             ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(email, "zulip", "")]
@@ -1555,8 +1552,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
         with self.assertLogs(level="WARNING") as m, \
                 mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
             self.assert_json_error_contains(self._do_test(email),
-                                            "Account is not associated with this "
-                                            "subdomain")
+                                            "Account is not associated with this subdomain")
         self.assertEqual(
             m.output,
             ["WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(email, "zulip", "acme")]

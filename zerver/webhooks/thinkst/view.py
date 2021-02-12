@@ -62,8 +62,7 @@ def body(message: Dict[str, Any]) -> str:
 
     title = canary_kind(message).title()
     name = canary_name(message)
-    body = (f"**:alert: {title} *{name}* has been triggered!**\n\n"
-            f"{message['Intro']}\n\n")
+    body = f"**:alert: {title} *{name}* has been triggered!**\n\n{message['Intro']}\n\n"
 
     if 'IncidentHash' in message:
         body += f"**Incident Id:** `{message['IncidentHash']}`\n"

@@ -76,8 +76,7 @@ import a database dump from one or more JSON files."""
             if not os.path.exists(path):
                 raise CommandError(f"Directory not found: '{path}'")
             if not os.path.isdir(path):
-                raise CommandError("Export file should be folder; if it's a "
-                                   "tarball, please unpack it first.")
+                raise CommandError("Export file should be folder; if it's a tarball, please unpack it first.")
             paths.append(path)
 
         for path in paths:

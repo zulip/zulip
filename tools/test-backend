@@ -382,8 +382,7 @@ def main() -> None:
     TestRunner = get_runner(settings)
 
     if parallel > 1:
-        print("-- Running tests in parallel mode with {} "
-              "processes.".format(parallel), flush=True)
+        print(f"-- Running tests in parallel mode with {parallel} processes.", flush=True)
     else:
         print("-- Running tests in serial mode.", flush=True)
 

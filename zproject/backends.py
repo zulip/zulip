@@ -987,8 +987,7 @@ class ExternalAuthResult:
             data_dict = {}
 
         if login_token is not None:
-            assert (not data_dict) and (user_profile is None), ("Passing in data_dict or user_profile " +
-                                                                "with login_token is disallowed.")
+            assert (not data_dict) and (user_profile is None), "Passing in data_dict or user_profile with login_token is disallowed."
             self.instantiate_with_token(login_token, delete_stored_data)
         else:
             self.data_dict = data_dict.copy()

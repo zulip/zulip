@@ -23,23 +23,17 @@ NAME_CHANGED_TEMPLATE = ("The name of the {entity} {name_template} was changed f
 ARCHIVED_TEMPLATE = "The {entity} {name_template} was {action}."
 STORY_TASK_TEMPLATE = "Task **{task_description}** was {action} the story {name_template}."
 STORY_TASK_COMPLETED_TEMPLATE = "Task **{task_description}** ({name_template}) was completed. :tada:"
-STORY_ADDED_REMOVED_EPIC_TEMPLATE = ("The story {story_name_template} was {action} the"
-                                     " epic {epic_name_template}.")
-STORY_EPIC_CHANGED_TEMPLATE = ("The story {story_name_template} was moved from {old_epic_name_template}"
-                               " to {new_epic_name_template}.")
+STORY_ADDED_REMOVED_EPIC_TEMPLATE = "The story {story_name_template} was {action} the epic {epic_name_template}."
+STORY_EPIC_CHANGED_TEMPLATE = "The story {story_name_template} was moved from {old_epic_name_template} to {new_epic_name_template}."
 STORY_ESTIMATE_TEMPLATE = "The estimate for the story {story_name_template} was set to {estimate}."
 FILE_ATTACHMENT_TEMPLATE = "A {type} attachment `{file_name}` was added to the story {name_template}."
 STORY_LABEL_TEMPLATE = "The label **{label_name}** was added to the story {name_template}."
-STORY_UPDATE_PROJECT_TEMPLATE = ("The story {name_template} was moved from"
-                                 " the **{old}** project to **{new}**.")
-STORY_UPDATE_TYPE_TEMPLATE = ("The type of the story {name_template} was changed"
-                              " from **{old_type}** to **{new_type}**.")
+STORY_UPDATE_PROJECT_TEMPLATE = "The story {name_template} was moved from the **{old}** project to **{new}**."
+STORY_UPDATE_TYPE_TEMPLATE = "The type of the story {name_template} was changed from **{old_type}** to **{new_type}**."
 DELETE_TEMPLATE = "The {entity_type} **{name}** was deleted."
 STORY_UPDATE_OWNER_TEMPLATE = "New owner added to the story {name_template}."
-STORY_GITHUB_PR_TEMPLATE = ("New GitHub PR [#{name}]({url}) opened for story"
-                            " {name_template} ({old} -> {new}).")
-STORY_GITHUB_BRANCH_TEMPLATE = ("New GitHub branch [{name}]({url})"
-                                " associated with story {name_template} ({old} -> {new}).")
+STORY_GITHUB_PR_TEMPLATE = "New GitHub PR [#{name}]({url}) opened for story {name_template} ({old} -> {new})."
+STORY_GITHUB_BRANCH_TEMPLATE = "New GitHub branch [{name}]({url}) associated with story {name_template} ({old} -> {new})."
 
 
 def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
