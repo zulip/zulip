@@ -630,20 +630,6 @@ const social_stream = {
     subscribed: true,
 };
 
-run_test("set_up_filter", () => {
-    stream_data.add_sub(social_stream);
-
-    const filter_terms = [
-        {operator: "stream", operand: "Social"},
-        {operator: "topic", operand: "lunch"},
-    ];
-
-    const filter = new Filter(filter_terms);
-
-    narrow_state.filter = () => filter;
-    narrow_state.active = () => true;
-});
-
 function jquery_elem() {
     // We create basic stubs for jQuery elements, so they
     // just work.  We can extend these in cases where we want
@@ -748,7 +734,19 @@ function make_sidebar_helper() {
     };
 }
 
-run_test("stream_list", () => {
+run_test("stream_list", (override) => {
+    stream_data.add_sub(social_stream);
+
+    const filter_terms = [
+        {operator: "stream", operand: "Social"},
+        {operator: "topic", operand: "lunch"},
+    ];
+
+    const filter = new Filter(filter_terms);
+
+    override(narrow_state, "filter", () => filter);
+    override(narrow_state, "active",  () => true);
+
     const jquery_helper = make_jquery_helper();
     const sidebar_helper = make_sidebar_helper();
     const topic_list_helper = make_topic_list_helper();
