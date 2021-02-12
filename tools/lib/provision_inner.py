@@ -110,8 +110,7 @@ def setup_bash_profile() -> None:
 
         BASH_PROFILE = BASH_PROFILES[0]
         DOT_PROFILE = BASH_PROFILES[2]
-        OLD_PROFILE_TEXT = "source /srv/zulip-py3-venv/bin/activate\n" + \
-            "cd /srv/zulip\n"
+        OLD_PROFILE_TEXT = "source /srv/zulip-py3-venv/bin/activate\ncd /srv/zulip\n"
 
         if os.path.exists(DOT_PROFILE):
             try:

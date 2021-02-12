@@ -50,25 +50,20 @@ def run() -> None:
 
     linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css'],
                                   fix_arg='--fix',
-                                  description="Standard CSS style and formatting linter "
-                                  "(config: stylelint.config.js)")
+                                  description="Standard CSS style and formatting linter (config: stylelint.config.js)")
     linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
                                              '--max-warnings=0', '--cache', '--ext', '.js,.ts'], ['js', 'ts'],
                                   fix_arg='--fix',
-                                  description="Standard JavaScript style and formatting linter "
-                                  "(config: .eslintrc).")
+                                  description="Standard JavaScript style and formatting linter (config: .eslintrc).")
     linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'],
-                                  description="Runs the puppet parser validator, "
-                                  "checking for syntax errors.")
+                                  description="Runs the puppet parser validator, checking for syntax errors.")
     linter_config.external_linter('puppet-lint',
                                   ['puppet-lint', '--fail-on-warnings', *PUPPET_CHECK_RULES_TO_EXCLUDE],
                                   ['pp'],
                                   fix_arg='--fix',
-                                  description="Standard puppet linter "
-                                  "(config: tools/linter_lib/exclude.py)")
+                                  description="Standard puppet linter (config: tools/linter_lib/exclude.py)")
     linter_config.external_linter('templates', ['tools/check-templates'], ['hbs', 'html'],
-                                  description="Custom linter checks whitespace formatting "
-                                  "of HTML templates",
+                                  description="Custom linter checks whitespace formatting of HTML templates",
                                   fix_arg='--fix')
     linter_config.external_linter('openapi', ['node', 'tools/check-openapi'], ['yaml'],
                                   description="Validates our OpenAPI/Swagger API documentation "
@@ -89,8 +84,7 @@ def run() -> None:
                                   pass_targets=False,
                                   description="Shares duplicate packages in yarn.lock")
     linter_config.external_linter('gitlint', ['tools/commit-message-lint'],
-                                  description="Checks commit messages for common formatting errors "
-                                  "(config: .gitlint)")
+                                  description="Checks commit messages for common formatting errors (config: .gitlint)")
     linter_config.external_linter('isort', ['isort'], ['py'],
                                   description="Sorts Python import statements",
                                   check_arg=['--check-only', '--diff'])
@@ -112,8 +106,7 @@ def run() -> None:
                        "--dangerously-allow-arbitrary-code-execution-from-rules"]
     linter_config.external_linter('semgrep-py', [*semgrep_command, "--lang=python"], ['py'],
                                   fix_arg='--autofix',
-                                  description="Syntactic Grep (semgrep) Code Search Tool "
-                                  "(config: ./tools/semgrep.yml)")
+                                  description="Syntactic Grep (semgrep) Code Search Tool (config: ./tools/semgrep.yml)")
 
     linter_config.external_linter('thirdparty', ['tools/check-thirdparty'],
                                   description="Check docs/THIRDPARTY copyright file syntax")

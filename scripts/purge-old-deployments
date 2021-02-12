@@ -17,16 +17,15 @@ def parse_args() -> argparse.Namespace:
         "examined and removed.")
     parser.add_argument(
         "--threshold", dest="threshold_days", type=int, default=14,
-        metavar="<days>", help="Deployments older than "
-        "threshold days will be deleted. (defaults to 14)")
+        metavar="<days>",
+        help="Deployments older than threshold days will be deleted. (defaults to 14)")
     parser.add_argument(
         "--dry-run", action="store_true",
         help="If specified then script will only print the deployments and "
         "caches that it will delete/keep back. It will not delete anything.")
     parser.add_argument(
         "--verbose", action="store_true",
-        help="If specified then script will print a detailed report "
-        "of what is going on.")
+        help="If specified then script will print a detailed report of what is going on.")
 
     args = parser.parse_args()
     args.verbose |= args.dry_run    # Always print a detailed report in case of dry run.

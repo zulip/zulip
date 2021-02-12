@@ -123,12 +123,9 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
                 'Chrome/54.0.2840.59 Safari/537.36', 'Chrome', 'Linux'),
             ('mozilla/5.0 (windows nt 6.1; win64; x64) applewebkit/537.36 (khtml, like gecko) ' +
                 'chrome/56.0.2924.87 safari/537.36', 'Chrome', 'Windows'),
-            ('mozilla/5.0 (windows nt 6.1; wow64; rv:51.0) ' +
-                'gecko/20100101 firefox/51.0', 'Firefox', 'Windows'),
-            ('mozilla/5.0 (windows nt 6.1; wow64; trident/7.0; rv:11.0) ' +
-                'like gecko', 'Internet Explorer', 'Windows'),
-            ('Mozilla/5.0 (Android; Mobile; rv:27.0) ' +
-                'Gecko/27.0 Firefox/27.0', 'Firefox', 'Android'),
+            ('mozilla/5.0 (windows nt 6.1; wow64; rv:51.0) gecko/20100101 firefox/51.0', 'Firefox', 'Windows'),
+            ('mozilla/5.0 (windows nt 6.1; wow64; trident/7.0; rv:11.0) like gecko', 'Internet Explorer', 'Windows'),
+            ('Mozilla/5.0 (Android; Mobile; rv:27.0) Gecko/27.0 Firefox/27.0', 'Firefox', 'Android'),
             ('Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) '
              'AppleWebKit/602.1.50 (KHTML, like Gecko) '
              'CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1', 'Chrome', 'iOS'),

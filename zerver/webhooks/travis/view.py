@@ -14,11 +14,10 @@ GOOD_STATUSES = ['Passed', 'Fixed']
 BAD_STATUSES = ['Failed', 'Broken', 'Still Failing', 'Errored', 'Canceled']
 PENDING_STATUSES = ['Pending']
 
-MESSAGE_TEMPLATE = (
-    'Author: {}\n'
-    'Build status: {} {}\n'
-    'Details: [changes]({}), [build log]({})'
-)
+MESSAGE_TEMPLATE = """\
+Author: {}
+Build status: {} {}
+Details: [changes]({}), [build log]({})"""
 
 @webhook_view('Travis')
 @has_request_variables

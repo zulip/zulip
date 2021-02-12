@@ -21,12 +21,10 @@ class Command(ZulipBaseCommand):
             # first check if the db has been initialized
             Realm.objects.first()
         except ProgrammingError:
-            raise CommandError("The Zulip database does not appear to exist. "
-                               "Have you run initialize-database?")
+            raise CommandError("The Zulip database does not appear to exist. Have you run initialize-database?")
 
         url = generate_realm_creation_url(by_admin=True)
-        self.stdout.write(self.style.SUCCESS("Please visit the following "
-                                             "secure single-use link to register your "))
+        self.stdout.write(self.style.SUCCESS("Please visit the following secure single-use link to register your "))
         self.stdout.write(self.style.SUCCESS("new Zulip organization:\033[0m"))
         self.stdout.write("")
         self.stdout.write(self.style.SUCCESS(f"    \033[1;92m{url}\033[0m"))

@@ -46,8 +46,7 @@ def generate_time_series_data(days: int=100, business_hours_base: float=10,
     else:
         raise AssertionError(f"Unknown frequency: {frequency}")
     if length < 2:
-        raise AssertionError("Must be generating at least 2 data points. "
-                             f"Currently generating {length}")
+        raise AssertionError(f"Must be generating at least 2 data points. Currently generating {length}")
     growth_base = growth ** (1. / (length-1))
     values_no_noise = [seasonality[i % len(seasonality)] * (growth_base**i) for i in range(length)]
 
