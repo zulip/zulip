@@ -175,7 +175,7 @@ run_test("build_display_recipient", () => {
     assert.equal(iago.id, 123);
 });
 
-run_test("insert_local_message", () => {
+run_test("insert_local_message", (override) => {
     const local_id_float = 1;
 
     page_params.user_id = 123;
@@ -196,13 +196,13 @@ run_test("insert_local_message", () => {
     let add_topic_links_called = false;
     let insert_message_called = false;
 
-    markdown.apply_markdown = () => {
+    override(markdown, "apply_markdown", () => {
         apply_markdown_called = true;
-    };
+    });
 
-    markdown.add_topic_links = () => {
+    override(markdown, "add_topic_links", () => {
         add_topic_links_called = true;
-    };
+    });
 
     local_message.insert_message = (message) => {
         assert.equal(message.display_recipient, "general");
