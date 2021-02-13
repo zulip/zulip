@@ -143,38 +143,30 @@ run_test("draft_model", () => {
     })();
 });
 
-run_test("snapshot_message", () => {
-    function stub_draft(draft) {
-        compose_state.get_message_type = function () {
-            return draft.type;
-        };
-        compose_state.composing = function () {
-            return Boolean(draft.type);
-        };
-        compose_state.message_content = function () {
-            return draft.content;
-        };
-        compose_state.private_message_recipient = function () {
-            return draft.private_message_recipient;
-        };
-        compose_state.stream_name = function () {
-            return draft.stream;
-        };
-        compose_state.topic = function () {
-            return draft.topic;
-        };
+run_test("snapshot_message", (override) => {
+    let curr_draft;
+
+    function map(field, f) {
+        override(compose_state, field, f);
     }
 
-    stub_draft(draft_1);
+    map("get_message_type", () => curr_draft.type);
+    map("composing", () => Boolean(curr_draft.type));
+    map("message_content", () => curr_draft.content);
+    map("stream_name", () => curr_draft.stream);
+    map("topic", () => curr_draft.topic);
+    map("private_message_recipient", () => curr_draft.private_message_recipient);
+
+    curr_draft = draft_1;
     assert.deepEqual(drafts.snapshot_message(), draft_1);
 
-    stub_draft(draft_2);
+    curr_draft = draft_2;
     assert.deepEqual(drafts.snapshot_message(), draft_2);
 
-    stub_draft(short_msg);
+    curr_draft = short_msg;
     assert.deepEqual(drafts.snapshot_message(), undefined);
 
-    stub_draft({});
+    curr_draft = {};
     assert.equal(drafts.snapshot_message(), undefined);
 });
 
