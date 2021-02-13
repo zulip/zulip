@@ -106,7 +106,9 @@ exports.with_overrides = function (test_function) {
         // step.  Generally our code calls `run_test`, which wraps
         // `with_overrides`.
         if (typeof f !== "function") {
-            throw new TypeError("You can only override with a function.");
+            throw new TypeError(
+                "You can only override with a function. Use with_field for non-functions.",
+            );
         }
 
         if (!funcs.has(obj)) {
