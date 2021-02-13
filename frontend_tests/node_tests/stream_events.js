@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
-const {make_stub, with_stub} = require("../zjsunit/stub");
+const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -89,24 +89,24 @@ run_test("update_property", (override) => {
 
     // Test update color
     {
-        with_stub((stub) => {
-            override(stream_color, "update_stream_color", stub.f);
-            stream_events.update_property(stream_id, "color", "blue");
-            const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, stream_id);
-            assert.equal(args.val, "blue");
-        });
+        const stub = make_stub();
+        override(stream_color, "update_stream_color", stub.f);
+        stream_events.update_property(stream_id, "color", "blue");
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, "blue");
     }
 
     // Test in home view
     {
-        with_stub((stub) => {
-            override(stream_muting, "update_is_muted", stub.f);
-            stream_events.update_property(stream_id, "in_home_view", false);
-            const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, stream_id);
-            assert.equal(args.val, true);
-        });
+        const stub = make_stub();
+        override(stream_muting, "update_is_muted", stub.f);
+        stream_events.update_property(stream_id, "in_home_view", false);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, true);
     }
 
     function checkbox_for(property) {
@@ -145,26 +145,26 @@ run_test("update_property", (override) => {
 
     // Test name change
     {
-        with_stub((stub) => {
-            override(subs, "update_stream_name", stub.f);
-            stream_events.update_property(stream_id, "name", "the frontend");
-            const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, stream_id);
-            assert.equal(args.val, "the frontend");
-        });
+        const stub = make_stub();
+        override(subs, "update_stream_name", stub.f);
+        stream_events.update_property(stream_id, "name", "the frontend");
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, "the frontend");
     }
 
     // Test description change
     {
-        with_stub((stub) => {
-            override(subs, "update_stream_description", stub.f);
-            stream_events.update_property(stream_id, "description", "we write code", {
-                rendered_description: "we write code",
-            });
-            const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, stream_id);
-            assert.equal(args.val, "we write code");
+        const stub = make_stub();
+        override(subs, "update_stream_description", stub.f);
+        stream_events.update_property(stream_id, "description", "we write code", {
+            rendered_description: "we write code",
         });
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, "we write code");
     }
 
     // Test email address change
@@ -181,44 +181,44 @@ run_test("update_property", (override) => {
 
     // Test stream privacy change event
     {
-        with_stub((stub) => {
-            override(subs, "update_stream_privacy", stub.f);
-            stream_events.update_property(stream_id, "invite_only", true, {
-                history_public_to_subscribers: true,
-            });
-            const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, stream_id);
-            assert.deepEqual(args.val, {
-                invite_only: true,
-                history_public_to_subscribers: true,
-            });
+        const stub = make_stub();
+        override(subs, "update_stream_privacy", stub.f);
+        stream_events.update_property(stream_id, "invite_only", true, {
+            history_public_to_subscribers: true,
+        });
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.deepEqual(args.val, {
+            invite_only: true,
+            history_public_to_subscribers: true,
         });
     }
 
     // Test stream stream_post_policy change event
     {
-        with_stub((stub) => {
-            override(subs, "update_stream_post_policy", stub.f);
-            stream_events.update_property(
-                stream_id,
-                "stream_post_policy",
-                stream_data.stream_post_policy_values.admins.code,
-            );
-            const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, stream_id);
-            assert.equal(args.val, stream_data.stream_post_policy_values.admins.code);
-        });
+        const stub = make_stub();
+        override(subs, "update_stream_post_policy", stub.f);
+        stream_events.update_property(
+            stream_id,
+            "stream_post_policy",
+            stream_data.stream_post_policy_values.admins.code,
+        );
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, stream_data.stream_post_policy_values.admins.code);
     }
 
     // Test stream message_retention_days change event
     {
-        with_stub((stub) => {
-            override(subs, "update_message_retention_setting", stub.f);
-            stream_events.update_property(stream_id, "message_retention_days", 20);
-            const args = stub.get_args("sub", "val");
-            assert.equal(args.sub.stream_id, stream_id);
-            assert.equal(args.val, 20);
-        });
+        const stub = make_stub();
+        override(subs, "update_message_retention_setting", stub.f);
+        stream_events.update_property(stream_id, "message_retention_days", 20);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, 20);
     }
 });
 
@@ -298,14 +298,16 @@ run_test("marked_subscribed (color)", (override) => {
     });
 
     // narrow state is undefined
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(subs, "set_color", stub.f);
         stream_events.mark_subscribed(frontend, [], undefined);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("id", "color");
         assert.equal(args.id, frontend.stream_id);
         assert.equal(args.color, "green");
         assert.equal(warnings, 1);
-    });
+    }
 });
 
 run_test("marked_subscribed (emails)", (override) => {

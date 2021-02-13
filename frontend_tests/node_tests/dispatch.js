@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
-const {make_stub, with_stub} = require("../zjsunit/stub");
+const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -123,51 +123,59 @@ run_test("alert_words", (override) => {
 
 run_test("attachments", (override) => {
     const event = event_fixtures.attachment__add;
-    with_stub((stub) => {
-        // attachments_ui is hard to test deeply
-        override(attachments_ui, "update_attachments", stub.f);
-        dispatch(event);
-        assert_same(stub.get_args("event").event, event);
-    });
+    const stub = make_stub();
+    // attachments_ui is hard to test deeply
+    override(attachments_ui, "update_attachments", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    assert_same(stub.get_args("event").event, event);
 });
 
 run_test("user groups", (override) => {
     let event = event_fixtures.user_group__add;
     override(settings_user_groups, "reload", noop);
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(user_groups, "add", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("group");
         assert_same(args.group, event.group);
-    });
+    }
 
     event = event_fixtures.user_group__add_members;
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(user_groups, "add_members", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("group_id", "user_ids");
         assert_same(args.group_id, event.group_id);
         assert_same(args.user_ids, event.user_ids);
-    });
+    }
 
     event = event_fixtures.user_group__remove_members;
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(user_groups, "remove_members", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("group_id", "user_ids");
         assert_same(args.group_id, event.group_id);
         assert_same(args.user_ids, event.user_ids);
-    });
+    }
 
     event = event_fixtures.user_group__update;
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(user_groups, "update", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
         assert_same(args.event.group_id, event.group_id);
         assert_same(args.event.data.name, event.data.name);
         assert_same(args.event.data.description, event.data.description);
-    });
+    }
 });
 
 run_test("custom profile fields", (override) => {
@@ -181,12 +189,12 @@ run_test("custom profile fields", (override) => {
 run_test("default_streams", (override) => {
     const event = event_fixtures.default_streams;
     override(settings_streams, "update_default_streams_table", noop);
-    with_stub((stub) => {
-        override(stream_data, "set_realm_default_streams", stub.f);
-        dispatch(event);
-        const args = stub.get_args("realm_default_streams");
-        assert_same(args.realm_default_streams, event.default_streams);
-    });
+    const stub = make_stub();
+    override(stream_data, "set_realm_default_streams", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("realm_default_streams");
+    assert_same(args.realm_default_streams, event.default_streams);
 });
 
 run_test("hotspots", (override) => {
@@ -198,54 +206,58 @@ run_test("hotspots", (override) => {
 
 run_test("invites_changed", (override) => {
     const event = event_fixtures.invites_changed;
-    with_stub((stub) => {
-        override(settings_invites, "set_up", stub.f);
-        dispatch(event); // stub automatically checks if stub.f is called once
-    });
+    const stub = make_stub();
+    override(settings_invites, "set_up", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
 });
 
 run_test("muted_topics", (override) => {
     const event = event_fixtures.muted_topics;
 
-    with_stub((stub) => {
-        override(muting_ui, "handle_topic_updates", stub.f);
-        dispatch(event);
-        const args = stub.get_args("muted_topics");
-        assert_same(args.muted_topics, event.muted_topics);
-    });
+    const stub = make_stub();
+    override(muting_ui, "handle_topic_updates", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("muted_topics");
+    assert_same(args.muted_topics, event.muted_topics);
 });
 
 run_test("presence", (override) => {
     const event = event_fixtures.presence;
 
-    with_stub((stub) => {
-        override(activity, "update_presence_info", stub.f);
-        dispatch(event);
-        const args = stub.get_args("user_id", "presence", "server_time");
-        assert_same(args.user_id, event.user_id);
-        assert_same(args.presence, event.presence);
-        assert_same(args.server_time, event.server_timestamp);
-    });
+    const stub = make_stub();
+    override(activity, "update_presence_info", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("user_id", "presence", "server_time");
+    assert_same(args.user_id, event.user_id);
+    assert_same(args.presence, event.presence);
+    assert_same(args.server_time, event.server_timestamp);
 });
 
 run_test("reaction", (override) => {
     let event = event_fixtures.reaction__add;
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(reactions, "add_reaction", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
         assert_same(args.event.emoji_name, event.emoji_name);
         assert_same(args.event.message_id, event.message_id);
-    });
+    }
 
     event = event_fixtures.reaction__remove;
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(reactions, "remove_reaction", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
         assert_same(args.event.emoji_name, event.emoji_name);
         assert_same(args.event.message_id, event.message_id);
-    });
+    }
 });
 
 run_test("realm settings", (override) => {
@@ -387,32 +399,32 @@ run_test("realm settings", (override) => {
 
 run_test("realm_bot add", (override) => {
     const event = event_fixtures.realm_bot__add;
-    with_stub((bot_stub) => {
-        with_stub((admin_stub) => {
-            override(bot_data, "add", bot_stub.f);
-            override(settings_users, "update_bot_data", admin_stub.f);
-            dispatch(event);
-            const args = bot_stub.get_args("bot");
-            assert_same(args.bot, event.bot);
+    const bot_stub = make_stub();
+    const admin_stub = make_stub();
+    override(bot_data, "add", bot_stub.f);
+    override(settings_users, "update_bot_data", admin_stub.f);
+    dispatch(event);
 
-            admin_stub.get_args("update_user_id", "update_bot_data");
-        });
-    });
+    assert.equal(bot_stub.num_calls, 1);
+    assert.equal(admin_stub.num_calls, 1);
+    const args = bot_stub.get_args("bot");
+    assert_same(args.bot, event.bot);
+    admin_stub.get_args("update_user_id", "update_bot_data");
 });
 
 run_test("realm_bot remove", (override) => {
     const event = event_fixtures.realm_bot__remove;
-    with_stub((bot_stub) => {
-        with_stub((admin_stub) => {
-            override(bot_data, "deactivate", bot_stub.f);
-            override(settings_users, "update_bot_data", admin_stub.f);
-            dispatch(event);
-            const args = bot_stub.get_args("user_id");
-            assert_same(args.user_id, event.bot.user_id);
+    const bot_stub = make_stub();
+    const admin_stub = make_stub();
+    override(bot_data, "deactivate", bot_stub.f);
+    override(settings_users, "update_bot_data", admin_stub.f);
+    dispatch(event);
 
-            admin_stub.get_args("update_user_id", "update_bot_data");
-        });
-    });
+    assert.equal(bot_stub.num_calls, 1);
+    assert.equal(admin_stub.num_calls, 1);
+    const args = bot_stub.get_args("user_id");
+    assert_same(args.user_id, event.bot.user_id);
+    admin_stub.get_args("update_user_id", "update_bot_data");
 });
 
 run_test("realm_bot delete", () => {
@@ -423,21 +435,21 @@ run_test("realm_bot delete", () => {
 
 run_test("realm_bot update", (override) => {
     const event = event_fixtures.realm_bot__update;
-    with_stub((bot_stub) => {
-        with_stub((admin_stub) => {
-            override(bot_data, "update", bot_stub.f);
-            override(settings_users, "update_bot_data", admin_stub.f);
+    const bot_stub = make_stub();
+    const admin_stub = make_stub();
+    override(bot_data, "update", bot_stub.f);
+    override(settings_users, "update_bot_data", admin_stub.f);
 
-            dispatch(event);
+    dispatch(event);
 
-            let args = bot_stub.get_args("user_id", "bot");
-            assert_same(args.user_id, event.bot.user_id);
-            assert_same(args.bot, event.bot);
+    assert.equal(bot_stub.num_calls, 1);
+    assert.equal(admin_stub.num_calls, 1);
+    let args = bot_stub.get_args("user_id", "bot");
+    assert_same(args.user_id, event.bot.user_id);
+    assert_same(args.bot, event.bot);
 
-            args = admin_stub.get_args("update_user_id", "update_bot_data");
-            assert_same(args.update_user_id, event.bot.user_id);
-        });
-    });
+    args = admin_stub.get_args("update_user_id", "update_bot_data");
+    assert_same(args.update_user_id, event.bot.user_id);
 });
 
 run_test("realm_emoji", (override) => {
@@ -521,38 +533,38 @@ run_test("realm_user", (override) => {
     assert(!people.is_active_user_for_popover(event.person.user_id));
 
     event = event_fixtures.realm_user__update;
-    with_stub((stub) => {
-        override(user_events, "update_person", stub.f);
-        dispatch(event);
-        const args = stub.get_args("person");
-        assert_same(args.person, event.person);
-    });
+    const stub = make_stub();
+    override(user_events, "update_person", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("person");
+    assert_same(args.person, event.person);
 });
 
 run_test("restart", (override) => {
     const event = event_fixtures.restart;
-    with_stub((stub) => {
-        override(reload, "initiate", stub.f);
-        dispatch(event);
-        const args = stub.get_args("options");
-        assert.equal(args.options.save_pointer, true);
-        assert.equal(args.options.immediate, true);
-    });
+    const stub = make_stub();
+    override(reload, "initiate", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("options");
+    assert.equal(args.options.save_pointer, true);
+    assert.equal(args.options.immediate, true);
 });
 
 run_test("submessage", (override) => {
     const event = event_fixtures.submessage;
-    with_stub((stub) => {
-        override(submessage, "handle_event", stub.f);
-        dispatch(event);
-        const submsg = stub.get_args("submsg").submsg;
-        assert_same(submsg, {
-            id: 99,
-            sender_id: 42,
-            msg_type: "stream",
-            message_id: 56,
-            content: "test",
-        });
+    const stub = make_stub();
+    override(submessage, "handle_event", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const submsg = stub.get_args("submsg").submsg;
+    assert_same(submsg, {
+        id: 99,
+        sender_id: 42,
+        msg_type: "stream",
+        message_id: 56,
+        content: "test",
     });
 });
 
@@ -560,20 +572,24 @@ run_test("submessage", (override) => {
 
 run_test("typing", (override) => {
     let event = event_fixtures.typing__start;
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(typing_events, "display_notification", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
         assert_same(args.event.sender.user_id, typing_person1.user_id);
-    });
+    }
 
     event = event_fixtures.typing__stop;
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(typing_events, "hide_notification", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
         assert_same(args.event.sender.user_id, typing_person1.user_id);
-    });
+    }
 
     page_params.user_id = typing_person1.user_id;
     event = event_fixtures.typing__start;
@@ -643,39 +659,47 @@ run_test("update_display_settings", (override) => {
 
     override(realm_logo, "rerender", noop);
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         event = event_fixtures.update_display_settings__color_scheme_dark;
         page_params.color_scheme = 1;
         override(night_mode, "enable", stub.f); // automatically checks if called
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         assert(page_params.color_scheme, 2);
-    });
+    }
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         event = event_fixtures.update_display_settings__color_scheme_light;
         page_params.color_scheme = 1;
         override(night_mode, "disable", stub.f); // automatically checks if called
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         assert(page_params.color_scheme, 3);
-    });
+    }
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         event = event_fixtures.update_display_settings__color_scheme_automatic;
         page_params.color_scheme = 2;
         override(night_mode, "default_preference_checker", stub.f); // automatically checks if called
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         assert(page_params.color_scheme, 1);
-    });
+    }
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         event = event_fixtures.update_display_settings__emojiset;
         called = false;
         override(settings_display, "report_emojiset_change", stub.f);
         page_params.emojiset = "text";
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         assert_same(called, true);
         assert_same(page_params.emojiset, "google");
-    });
+    }
 
     override(starred_messages, "rerender_ui", noop);
     event = event_fixtures.update_display_settings__starred_message_counts;
@@ -689,66 +713,68 @@ run_test("update_display_settings", (override) => {
     dispatch(event);
     assert_same(page_params.fluid_layout_width, true);
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         event = event_fixtures.update_display_settings__demote_inactive_streams;
         override(stream_data, "set_filter_out_inactives", noop);
         override(stream_list, "update_streams_sidebar", stub.f);
         page_params.demote_inactive_streams = 1;
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         assert_same(page_params.demote_inactive_streams, 2);
-    });
+    }
 });
 
 run_test("update_global_notifications", (override) => {
     const event = event_fixtures.update_global_notifications;
-    with_stub((stub) => {
-        override(notifications, "handle_global_notification_updates", stub.f);
-        override(settings_notifications, "update_page", noop);
-        dispatch(event);
-        const args = stub.get_args("name", "setting");
-        assert_same(args.name, event.notification_name);
-        assert_same(args.setting, event.setting);
-    });
+    const stub = make_stub();
+    override(notifications, "handle_global_notification_updates", stub.f);
+    override(settings_notifications, "update_page", noop);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("name", "setting");
+    assert_same(args.name, event.notification_name);
+    assert_same(args.setting, event.setting);
 });
 
 run_test("update_message (read)", (override) => {
     const event = event_fixtures.update_message_flags__read;
 
-    with_stub((stub) => {
-        override(unread_ops, "process_read_messages_event", stub.f);
-        dispatch(event);
-        const args = stub.get_args("message_ids");
-        assert_same(args.message_ids, [999]);
-    });
+    const stub = make_stub();
+    override(unread_ops, "process_read_messages_event", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("message_ids");
+    assert_same(args.message_ids, [999]);
 });
 
 run_test("update_message (add star)", (override) => {
     override(starred_messages, "rerender_ui", noop);
 
     const event = event_fixtures.update_message_flags__starred_add;
-    with_stub((stub) => {
-        override(ui, "update_starred_view", stub.f);
-        dispatch(event);
-        const args = stub.get_args("message_id", "new_value");
-        assert_same(args.message_id, test_message.id);
-        assert_same(args.new_value, true); // for 'add'
-        const msg = message_store.get(test_message.id);
-        assert.equal(msg.starred, true);
-    });
+    const stub = make_stub();
+    override(ui, "update_starred_view", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("message_id", "new_value");
+    assert_same(args.message_id, test_message.id);
+    assert_same(args.new_value, true); // for 'add'
+    const msg = message_store.get(test_message.id);
+    assert.equal(msg.starred, true);
 });
 
 run_test("update_message (remove star)", (override) => {
     override(starred_messages, "rerender_ui", noop);
     const event = event_fixtures.update_message_flags__starred_remove;
-    with_stub((stub) => {
-        override(ui, "update_starred_view", stub.f);
-        dispatch(event);
-        const args = stub.get_args("message_id", "new_value");
-        assert_same(args.message_id, test_message.id);
-        assert_same(args.new_value, false);
-        const msg = message_store.get(test_message.id);
-        assert.equal(msg.starred, false);
-    });
+    const stub = make_stub();
+    override(ui, "update_starred_view", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("message_id", "new_value");
+    assert_same(args.message_id, test_message.id);
+    assert_same(args.new_value, false);
+    const msg = message_store.get(test_message.id);
+    assert.equal(msg.starred, false);
 });
 
 run_test("delete_message", (override) => {
@@ -784,39 +810,45 @@ run_test("delete_message", (override) => {
 
 run_test("user_status", (override) => {
     let event = event_fixtures.user_status__set_away;
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(activity, "on_set_away", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("user_id");
         assert_same(args.user_id, 55);
-    });
+    }
 
     event = event_fixtures.user_status__revoke_away;
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(activity, "on_revoke_away", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("user_id");
         assert_same(args.user_id, 63);
-    });
+    }
 
     event = event_fixtures.user_status__set_status_text;
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         override(activity, "redraw_user", stub.f);
         dispatch(event);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("user_id");
         assert_same(args.user_id, test_user.user_id);
         const status_text = user_status.get_status_text(test_user.user_id);
         assert.equal(status_text, "out to lunch");
-    });
+    }
 });
 
 run_test("realm_export", (override) => {
     const event = event_fixtures.realm_export;
-    with_stub((stub) => {
-        override(settings_exports, "populate_exports_table", stub.f);
-        dispatch(event);
+    const stub = make_stub();
+    override(settings_exports, "populate_exports_table", stub.f);
+    dispatch(event);
 
-        const args = stub.get_args("exports");
-        assert.equal(args.exports, event.exports);
-    });
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("exports");
+    assert.equal(args.exports, event.exports);
 });

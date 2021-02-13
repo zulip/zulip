@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
-const {with_stub} = require("../zjsunit/stub");
+const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -348,22 +348,26 @@ run_test("message_id_change", () => {
         new_id: 402,
     };
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         home_msg_list.change_message_id = stub.f;
         message_store.reify_message_id(opts);
+        assert.equal(stub.num_calls, 1);
         const msg_id = stub.get_args("old", "new");
         assert.equal(msg_id.old, 401);
         assert.equal(msg_id.new, 402);
-    });
+    }
 
     home_msg_list.view = {};
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         home_msg_list.view.change_message_id = stub.f;
         message_store.reify_message_id(opts);
+        assert.equal(stub.num_calls, 1);
         const msg_id = stub.get_args("old", "new");
         assert.equal(msg_id.old, 401);
         assert.equal(msg_id.new, 402);
-    });
+    }
 });
 
 run_test("errors", () => {

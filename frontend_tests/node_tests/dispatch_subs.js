@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
-const {make_stub, with_stub} = require("../zjsunit/stub");
+const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
 const events = require("./lib/events");
@@ -62,13 +62,13 @@ test("add", (override) => {
         name: sub.name,
     });
 
-    with_stub((subscription_stub) => {
-        override(stream_events, "mark_subscribed", subscription_stub.f);
-        dispatch(event);
-        const args = subscription_stub.get_args("sub", "subscribers");
-        assert.deepEqual(args.sub.stream_id, stream_id);
-        assert.deepEqual(args.subscribers, event.subscriptions[0].subscribers);
-    });
+    const subscription_stub = make_stub();
+    override(stream_events, "mark_subscribed", subscription_stub.f);
+    dispatch(event);
+    assert.equal(subscription_stub.num_calls, 1);
+    const args = subscription_stub.get_args("sub", "subscribers");
+    assert.deepEqual(args.sub.stream_id, stream_id);
+    assert.deepEqual(args.subscribers, event.subscriptions[0].subscribers);
 });
 
 test("peer add/remove", (override) => {
@@ -111,34 +111,36 @@ test("remove", (override) => {
 
     stream_data.add_sub(sub);
 
-    with_stub((stub) => {
-        override(stream_events, "mark_unsubscribed", stub.f);
-        dispatch(event);
-        const args = stub.get_args("sub");
-        assert.deepEqual(args.sub, sub);
-    });
+    const stub = make_stub();
+    override(stream_events, "mark_unsubscribed", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("sub");
+    assert.deepEqual(args.sub, sub);
 });
 
 test("update", (override) => {
     const event = event_fixtures.subscription__update;
-    with_stub((stub) => {
-        override(stream_events, "update_property", stub.f);
-        dispatch(event);
-        const args = stub.get_args("stream_id", "property", "value");
-        assert.deepEqual(args.stream_id, event.stream_id);
-        assert.deepEqual(args.property, event.property);
-        assert.deepEqual(args.value, event.value);
-    });
+
+    const stub = make_stub();
+    override(stream_events, "update_property", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("stream_id", "property", "value");
+    assert.deepEqual(args.stream_id, event.stream_id);
+    assert.deepEqual(args.property, event.property);
+    assert.deepEqual(args.value, event.value);
 });
 
 test("add error handling", (override) => {
     // test blueslip errors/warns
     const event = event_fixtures.subscription__add;
-    with_stub((stub) => {
-        override(blueslip, "error", stub.f);
-        dispatch(event);
-        assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 101");
-    });
+
+    const stub = make_stub();
+    override(blueslip, "error", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 101");
 });
 
 test("peer event error handling (bad stream_ids/user_ids)", (override) => {
@@ -171,32 +173,33 @@ test("peer event error handling (bad stream_ids/user_ids)", (override) => {
 test("stream update", (override) => {
     const event = event_fixtures.stream__update;
 
-    with_stub((stub) => {
-        override(stream_events, "update_property", stub.f);
-        override(settings_streams, "update_default_streams_table", noop);
-        dispatch(event);
-        const args = stub.get_args("stream_id", "property", "value");
-        assert.equal(args.stream_id, event.stream_id);
-        assert.equal(args.property, event.property);
-        assert.equal(args.value, event.value);
-    });
+    const stub = make_stub();
+    override(stream_events, "update_property", stub.f);
+    override(settings_streams, "update_default_streams_table", noop);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("stream_id", "property", "value");
+    assert.equal(args.stream_id, event.stream_id);
+    assert.equal(args.property, event.property);
+    assert.equal(args.value, event.value);
 });
 
 test("stream create", (override) => {
     const event = event_fixtures.stream__create;
-    with_stub((stub) => {
-        override(stream_data, "create_streams", stub.f);
-        override(stream_data, "get_sub_by_id", noop);
-        override(stream_data, "update_calculated_fields", noop);
-        override(subs, "add_sub_to_table", noop);
-        override(overlays, "streams_open", () => true);
-        dispatch(event);
-        const args = stub.get_args("streams");
-        assert.deepEqual(
-            args.streams.map((stream) => stream.stream_id),
-            [101, 102],
-        );
-    });
+
+    const stub = make_stub();
+    override(stream_data, "create_streams", stub.f);
+    override(stream_data, "get_sub_by_id", noop);
+    override(stream_data, "update_calculated_fields", noop);
+    override(subs, "add_sub_to_table", noop);
+    override(overlays, "streams_open", () => true);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("streams");
+    assert.deepEqual(
+        args.streams.map((stream) => stream.stream_id),
+        [101, 102],
+    );
 });
 
 test("stream delete (normal)", (override) => {
