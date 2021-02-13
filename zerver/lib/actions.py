@@ -523,26 +523,29 @@ def revoke_preregistration_users(
     used_preregistration_user: Optional[PreregistrationUser],
     realm_creation: bool,
 ) -> None:
-    if realm_creation and used_preregistration_user is None:
-        raise AssertionError("realm_creation should only happen with a PreregistrationUser")
+    if used_preregistration_user is None:
+        assert not realm_creation, "realm_creation should only happen with a PreregistrationUser"
 
     if used_preregistration_user is not None:
         used_preregistration_user.status = confirmation_settings.STATUS_ACTIVE
         used_preregistration_user.save(update_fields=["status"])
 
+    # In the special case of realm creation, there can be no additional PreregistrationUser
+    # for us to want to modify - because other realm_creation PreregistrationUsers should be
+    # left usable for creating different realms.
+    if realm_creation:
+        return
+
     # Mark any other PreregistrationUsers in the realm that are STATUS_ACTIVE as
     # inactive so we can keep track of the PreregistrationUser we
     # actually used for analytics.
-    # In the special case of realm creation, there can be no additional PreregistrationUser
-    # for us to want to modify.
-    if used_preregistration_user is not None and not realm_creation:
+    if used_preregistration_user is not None:
         PreregistrationUser.objects.filter(
             email__iexact=created_user_profile.delivery_email, realm=created_user_profile.realm
         ).exclude(id=used_preregistration_user.id).update(
             status=confirmation_settings.STATUS_REVOKED
         )
-    elif used_preregistration_user is None:
-        assert not realm_creation
+    else:
         PreregistrationUser.objects.filter(
             email__iexact=created_user_profile.delivery_email, realm=created_user_profile.realm
         ).update(status=confirmation_settings.STATUS_REVOKED)
