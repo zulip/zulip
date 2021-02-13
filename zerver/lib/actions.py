@@ -463,8 +463,6 @@ def process_new_human_user(
 
     mit_beta_user = realm.is_zephyr_mirror_realm
     if prereg_user is not None:
-        prereg_user.status = confirmation_settings.STATUS_ACTIVE
-        prereg_user.save(update_fields=["status"])
         streams = prereg_user.streams.all()
         acting_user: Optional[UserProfile] = prereg_user.referred_by
     else:
@@ -525,6 +523,10 @@ def revoke_preregistration_users(
 ) -> None:
     if realm_creation and used_preregistration_user is None:
         raise AssertionError("realm_creation should only happen with a PreregistrationUser")
+
+    if used_preregistration_user is not None:
+        used_preregistration_user.status = confirmation_settings.STATUS_ACTIVE
+        used_preregistration_user.save(update_fields=["status"])
 
     # Mark any other PreregistrationUsers in the realm that are STATUS_ACTIVE as
     # inactive so we can keep track of the PreregistrationUser we
