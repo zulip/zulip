@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
-const {with_stub} = require("../zjsunit/stub");
+const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -86,10 +86,9 @@ function return_false() {
 
 function stubbing(module, func_name_to_stub, test_function) {
     with_overrides((override) => {
-        with_stub((stub) => {
-            override(module, func_name_to_stub, stub.f);
-            test_function(stub);
-        });
+        const stub = make_stub();
+        override(module, func_name_to_stub, stub.f);
+        test_function(stub);
     });
 }
 
@@ -192,8 +191,9 @@ run_test("basic_chars", () => {
     }
 
     function assert_mapping(c, module, func_name, shiftKey) {
-        stubbing(module, func_name, () => {
+        stubbing(module, func_name, (stub) => {
             assert(process(c, shiftKey));
+            assert.equal(stub.num_calls, 1);
         });
     }
 
@@ -406,8 +406,9 @@ run_test("motion_keys", () => {
     }
 
     function assert_mapping(key_name, module, func_name, shiftKey, ctrlKey) {
-        stubbing(module, func_name, () => {
+        stubbing(module, func_name, (stub) => {
             assert(process(key_name, shiftKey, ctrlKey));
+            assert.equal(stub.num_calls, 1);
         });
     }
 

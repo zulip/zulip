@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
-const {with_stub} = require("../zjsunit/stub");
+const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -264,9 +264,11 @@ run_test("sending", (override) => {
     override(reactions, "add_reaction", () => {});
     override(reactions, "remove_reaction", () => {});
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         channel.del = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
         assert.deepEqual(args.data, {
@@ -284,11 +286,13 @@ run_test("sending", (override) => {
             return "XHR Error Message.";
         };
         args.error();
-    });
+    }
     emoji_name = "alien"; // not set yet
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         channel.post = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
         assert.deepEqual(args.data, {
@@ -296,16 +300,18 @@ run_test("sending", (override) => {
             emoji_name: "alien",
             emoji_code: "1f47d",
         });
-    });
+    }
 
     emoji_name = "inactive_realm_emoji";
-    with_stub((stub) => {
+    {
         // Test removing a deactivated realm emoji. An user can interact with a
         // deactivated realm emoji only by clicking on a reaction, hence, only
         // `process_reaction_click()` codepath supports deleting/adding a deactivated
         // realm emoji.
+        const stub = make_stub();
         channel.del = stub.f;
         reactions.process_reaction_click(message_id, "realm_emoji,992");
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
         assert.deepEqual(args.data, {
@@ -313,12 +319,14 @@ run_test("sending", (override) => {
             emoji_name: "inactive_realm_emoji",
             emoji_code: "992",
         });
-    });
+    }
 
     emoji_name = "zulip"; // Test adding zulip emoji.
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         channel.post = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
         assert.deepEqual(args.data, {
@@ -326,7 +334,7 @@ run_test("sending", (override) => {
             emoji_name: "zulip",
             emoji_code: "zulip",
         });
-    });
+    }
 
     emoji_name = "unknown-emoji"; // Test sending an emoji unknown to frontend.
     blueslip.expect("warn", "Bad emoji name: " + emoji_name);
@@ -778,13 +786,15 @@ run_test("process_reaction_click", () => {
         emoji_name: "smile",
         emoji_code: "1f642",
     };
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         channel.del = stub.f;
         reactions.process_reaction_click(message_id, "unicode_emoji,1f642");
+        assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
         assert.deepEqual(args.data, expected_reaction_info);
-    });
+    }
 });
 
 run_test("warnings", () => {

@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
-const {with_stub} = require("../zjsunit/stub");
+const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 // These unit tests for static/js/message_list.js emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
@@ -316,54 +316,62 @@ run_test("bookend", (override) => {
     override(stream_data, "is_subscribed", () => is_subscribed);
     override(stream_data, "get_sub", () => ({invite_only}));
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
+        assert.equal(stub.num_calls, 1);
         const bookend = stub.get_args("content", "subscribed", "show_button");
         assert.equal(bookend.content, expected);
         assert.equal(bookend.subscribed, true);
         assert.equal(bookend.show_button, true);
-    });
+    }
 
     expected = "translated: You unsubscribed from stream IceCream";
     list.last_message_historical = false;
 
     is_subscribed = false;
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
+        assert.equal(stub.num_calls, 1);
         const bookend = stub.get_args("content", "subscribed", "show_button");
         assert.equal(bookend.content, expected);
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.show_button, true);
-    });
+    }
 
     // Test when the stream is privates (invite only)
     expected = "translated: You unsubscribed from stream IceCream";
 
     invite_only = true;
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
+        assert.equal(stub.num_calls, 1);
         const bookend = stub.get_args("content", "subscribed", "show_button");
         assert.equal(bookend.content, expected);
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.show_button, false);
-    });
+    }
 
     expected = "translated: You are not subscribed to stream IceCream";
     list.last_message_historical = true;
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
+        assert.equal(stub.num_calls, 1);
         const bookend = stub.get_args("content", "subscribed", "show_button");
         assert.equal(bookend.content, expected);
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.show_button, true);
-    });
+    }
 });
 
 run_test("filter_muted_topic_messages", () => {
@@ -414,11 +422,12 @@ run_test("add_remove_rerender", () => {
     list.add_messages(messages);
     assert.equal(list.num_items(), 3);
 
-    with_stub((stub) => {
+    {
+        const stub = make_stub();
         list.rerender = stub.f;
         const message_ids = messages.map((msg) => msg.id);
         list.remove_and_rerender(message_ids);
         assert.equal(stub.num_calls, 1);
         assert.equal(list.num_items(), 0);
-    });
+    }
 });
