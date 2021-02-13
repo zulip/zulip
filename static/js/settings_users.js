@@ -538,11 +538,10 @@ function confirm_deactivation(row, user_id, status_field) {
         settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
     }
 
-    modal_elem.modal("hide");
     modal_elem.off("click", ".do_deactivate_button");
     set_fields();
     modal_elem.on("click", ".do_deactivate_button", handle_confirm);
-    modal_elem.modal("show");
+    overlays.open_modal("#deactivation_user_modal");
 }
 
 function handle_deactivation(tbody, status_field) {
