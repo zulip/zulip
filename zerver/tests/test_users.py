@@ -11,6 +11,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    change_user_is_active,
     create_users,
     do_change_can_create_users,
     do_change_user_role,
@@ -1050,8 +1051,7 @@ class UserProfileTest(ZulipTestCase):
             check_valid_user_ids(get_realm("zephyr").id, [hamlet.id])
 
         # User is not active
-        hamlet.is_active = False
-        hamlet.save()
+        change_user_is_active(hamlet, False)
         with self.assertRaisesRegex(ValidationError, rf"User with ID {hamlet.id} is deactivated"):
             check_valid_user_ids(realm.id, [hamlet.id])
         check_valid_user_ids(realm.id, [hamlet.id], allow_deactivated=True)
@@ -1330,6 +1330,22 @@ class ActivateTest(ZulipTestCase):
         self.assertFalse(user.is_active)
         do_reactivate_user(user, acting_user=None)
         self.assertTrue(user.is_active)
+
+    def test_subscriptions_is_user_active(self) -> None:
+        user = self.example_user("hamlet")
+        do_deactivate_user(user, acting_user=None)
+        self.assertFalse(user.is_active)
+        self.assertTrue(Subscription.objects.filter(user_profile=user).exists())
+        self.assertFalse(
+            Subscription.objects.filter(user_profile=user, is_user_active=True).exists()
+        )
+
+        do_reactivate_user(user, acting_user=None)
+        self.assertTrue(user.is_active)
+        self.assertTrue(Subscription.objects.filter(user_profile=user).exists())
+        self.assertFalse(
+            Subscription.objects.filter(user_profile=user, is_user_active=False).exists()
+        )
 
     def test_api(self) -> None:
         admin = self.example_user("othello")

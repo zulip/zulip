@@ -2564,6 +2564,13 @@ class Subscription(models.Model):
     # notification settings, stream color, etc., if the user later
     # resubscribes.
     active: bool = models.BooleanField(default=True)
+    # This is a denormalization designed to improve the performance of
+    # bulk queries of Subscription objects, Whether the subscribed user
+    # is active tends to be a key condition in those queries.
+    # We intentionally don't specify a default value to promote thinking
+    # about this explicitly, as in some special cases, such as data import,
+    # we may be creating Subscription objects for a user that's deactivated.
+    is_user_active: Optional[bool] = models.BooleanField(null=True)
 
     ROLE_STREAM_ADMINISTRATOR = 20
     ROLE_MEMBER = 50
@@ -2846,8 +2853,14 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
             huddle.recipient = recipient
             huddle.save(update_fields=["recipient"])
             subs_to_create = [
-                Subscription(recipient=recipient, user_profile_id=user_profile_id)
-                for user_profile_id in id_list
+                Subscription(
+                    recipient=recipient,
+                    user_profile_id=user_profile_id,
+                    is_user_active=is_active,
+                )
+                for user_profile_id, is_active in UserProfile.objects.filter(id__in=id_list)
+                .distinct("id")
+                .values_list("id", "is_active")
             ]
             Subscription.objects.bulk_create(subs_to_create)
         return huddle

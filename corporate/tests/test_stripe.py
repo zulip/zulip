@@ -341,9 +341,10 @@ class StripeTestCase(ZulipTestCase):
         ]
 
         # Deactivate all users in our realm that aren't in our whitelist.
-        UserProfile.objects.filter(realm_id=realm.id).exclude(email__in=active_emails).update(
-            is_active=False
-        )
+        for user_profile in UserProfile.objects.filter(realm_id=realm.id).exclude(
+            email__in=active_emails
+        ):
+            do_deactivate_user(user_profile, acting_user=None)
 
         # sanity check our 8 expected users are active
         self.assertEqual(

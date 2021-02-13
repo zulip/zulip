@@ -14,6 +14,7 @@ from zerver.lib.actions import (
     do_change_logo_source,
     do_change_plan_type,
     do_create_user,
+    do_deactivate_user,
     do_update_user_presence,
 )
 from zerver.lib.avatar_hash import user_avatar_path
@@ -766,6 +767,9 @@ class ImportExportTest(ZulipTestCase):
 
         original_realm = Realm.objects.get(string_id="zulip")
         RealmEmoji.objects.get(realm=original_realm).delete()
+
+        # Deactivate a user to ensure such a case is covered.
+        do_deactivate_user(self.example_user("aaron"), acting_user=None)
         # data to test import of huddles
         huddle = [
             self.example_user("hamlet"),
@@ -1122,6 +1126,18 @@ class ImportExportTest(ZulipTestCase):
                 huddle_object.recipient_id,
                 Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle_object.id).id,
             )
+
+        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+            # Check that all Subscriptions have the correct is_user_active set.
+            self.assertEqual(
+                Subscription.objects.filter(
+                    user_profile=user_profile, is_user_active=user_profile.is_active
+                ).count(),
+                Subscription.objects.filter(user_profile=user_profile).count(),
+            )
+        # Verify that we've actually tested something meaningful instead of a blind import
+        # with is_user_active=True used for everything.
+        self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
 
     def test_import_files_from_local(self) -> None:
         realm = Realm.objects.get(string_id="zulip")

@@ -11,6 +11,7 @@ from django.test import override_settings
 from markdown import Markdown
 
 from zerver.lib.actions import (
+    change_user_is_active,
     do_add_alert_words,
     do_create_realm,
     do_remove_realm_emoji,
@@ -218,14 +219,12 @@ class MarkdownMiscTest(ZulipTestCase):
             )
 
         fred1 = make_user("fred1@example.com", "Fred Flintstone")
-        fred1.is_active = False
-        fred1.save()
+        change_user_is_active(fred1, False)
 
         fred2 = make_user("fred2@example.com", "Fred Flintstone")
 
         fred3 = make_user("fred3@example.com", "Fred Flintstone")
-        fred3.is_active = False
-        fred3.save()
+        change_user_is_active(fred3, False)
 
         fred4 = make_user("fred4@example.com", "Fred Flintstone")
 

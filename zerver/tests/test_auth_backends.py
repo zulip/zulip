@@ -35,6 +35,7 @@ from social_django.strategy import DjangoStrategy
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
+    change_user_is_active,
     do_create_realm,
     do_create_user,
     do_deactivate_realm,
@@ -5872,8 +5873,7 @@ class EmailValidatorTestCase(ZulipTestCase):
         self.assertEqual(False, is_deactivated)
         self.assertEqual(error, "Already has an account.")
 
-        cordelia.is_active = False
-        cordelia.save()
+        change_user_is_active(cordelia, False)
 
         errors = get_existing_user_errors(realm, {cordelia_email})
         error, is_deactivated = errors[cordelia_email]

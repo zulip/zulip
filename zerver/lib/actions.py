@@ -695,13 +695,13 @@ def do_create_user(
 
 def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     with transaction.atomic():
-        user_profile.is_active = True
+        change_user_is_active(user_profile, True)
         user_profile.is_mirror_dummy = False
         user_profile.set_unusable_password()
         user_profile.date_joined = timezone_now()
         user_profile.tos_version = settings.TOS_VERSION
         user_profile.save(
-            update_fields=["is_active", "date_joined", "password", "is_mirror_dummy", "tos_version"]
+            update_fields=["date_joined", "password", "is_mirror_dummy", "tos_version"]
         )
 
         event_time = user_profile.date_joined
@@ -733,8 +733,7 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
     # Unlike do_activate_user, this is meant for re-activating existing users,
     # so it doesn't reset their password, etc.
     with transaction.atomic():
-        user_profile.is_active = True
-        user_profile.save(update_fields=["is_active"])
+        change_user_is_active(user_profile, True)
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
@@ -1118,10 +1117,27 @@ def do_delete_user(user_profile: UserProfile) -> None:
         is_mirror_dummy=True,
     )
     subs_to_recreate = [
-        Subscription(user_profile=replacement_user, recipient=recipient)
+        Subscription(
+            user_profile=replacement_user,
+            recipient=recipient,
+            is_user_active=replacement_user.is_active,
+        )
         for recipient in Recipient.objects.filter(id__in=subscribed_huddle_recipient_ids)
     ]
     Subscription.objects.bulk_create(subs_to_recreate)
+
+
+def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
+    """
+    Helper function for changing the .is_active field. Not meant as a standalone function
+    in production code as properly activating/deactivating users requires more steps.
+    This changes the is_active value and saves it, while ensuring
+    Subscription.is_user_active values are updated in the same db transaction.
+    """
+    with transaction.atomic(savepoint=False):
+        user_profile.is_active = value
+        user_profile.save(update_fields=["is_active"])
+        Subscription.objects.filter(user_profile=user_profile).update(is_user_active=value)
 
 
 def do_deactivate_user(
@@ -1130,18 +1146,18 @@ def do_deactivate_user(
     if not user_profile.is_active:
         return
 
-    if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
-        # For zephyr mirror users, we need to make them a mirror dummy
-        # again; otherwise, other users won't get the correct behavior
-        # when trying to send messages to this person inside Zulip.
-        #
-        # Ideally, we need to also ensure their zephyr mirroring bot
-        # isn't running, but that's a separate issue.
-        user_profile.is_mirror_dummy = True
-
     with transaction.atomic():
-        user_profile.is_active = False
-        user_profile.save(update_fields=["is_active", "is_mirror_dummy"])
+        if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
+            # For zephyr mirror users, we need to make them a mirror dummy
+            # again; otherwise, other users won't get the correct behavior
+            # when trying to send messages to this person inside Zulip.
+            #
+            # Ideally, we need to also ensure their zephyr mirroring bot
+            # isn't running, but that's a separate issue.
+            user_profile.is_mirror_dummy = True
+            user_profile.save(update_fields=["is_mirror_dummy"])
+
+        change_user_is_active(user_profile, False)
 
         delete_user_sessions(user_profile)
         clear_scheduled_emails([user_profile.id])
@@ -3295,7 +3311,11 @@ def bulk_add_subscriptions(
             used_colors.add(color)
 
             sub = Subscription(
-                user_profile=user_profile, active=True, color=color, recipient_id=recipient_id
+                user_profile=user_profile,
+                is_user_active=user_profile.is_active,
+                active=True,
+                color=color,
+                recipient_id=recipient_id,
             )
             sub_info = SubInfo(user_profile, sub, stream)
             subs_to_add.append(sub_info)

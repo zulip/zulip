@@ -84,9 +84,13 @@ def bulk_create_users(
         recipients_by_user_id[recipient.type_id] = recipient
 
     subscriptions_to_create: List[Subscription] = []
-    for user_id in user_ids:
-        recipient = recipients_by_user_id[user_id]
-        subscription = Subscription(user_profile_id=user_id, recipient=recipient)
+    for user_profile in profiles_to_create:
+        recipient = recipients_by_user_id[user_profile.id]
+        subscription = Subscription(
+            user_profile_id=user_profile.id,
+            recipient=recipient,
+            is_user_active=user_profile.is_active,
+        )
         subscriptions_to_create.append(subscription)
 
     Subscription.objects.bulk_create(subscriptions_to_create)

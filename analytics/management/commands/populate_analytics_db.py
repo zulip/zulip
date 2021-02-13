@@ -95,7 +95,10 @@ class Command(BaseCommand):
         # TODO: This should use subscribe_users_to_streams from populate_db.
         subs = [
             Subscription(
-                recipient=recipient, user_profile=shylock, color=STREAM_ASSIGNMENT_COLORS[0]
+                recipient=recipient,
+                user_profile=shylock,
+                is_user_active=shylock.is_active,
+                color=STREAM_ASSIGNMENT_COLORS[0],
             ),
         ]
         Subscription.objects.bulk_create(subs)

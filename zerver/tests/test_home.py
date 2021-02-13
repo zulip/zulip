@@ -10,7 +10,12 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
-from zerver.lib.actions import do_change_logo_source, do_change_plan_type, do_create_user
+from zerver.lib.actions import (
+    change_user_is_active,
+    do_change_logo_source,
+    do_change_plan_type,
+    do_create_user,
+)
 from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.home import get_furthest_read_time
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
@@ -500,8 +505,7 @@ class HomeTest(ZulipTestCase):
         # Doing a full-stack deactivation would be expensive here,
         # and we really only need to flip the flag to get a valid
         # test.
-        user.is_active = False
-        user.save()
+        change_user_is_active(user, False)
         return user
 
     def test_signup_notifications_stream(self) -> None:

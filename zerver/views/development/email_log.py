@@ -9,7 +9,11 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_safe
 
 from confirmation.models import Confirmation, confirmation_url
-from zerver.lib.actions import do_change_user_delivery_email, do_send_realm_reactivation_email
+from zerver.lib.actions import (
+    change_user_is_active,
+    do_change_user_delivery_email,
+    do_send_realm_reactivation_email,
+)
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.response import json_success
 from zerver.models import Realm, get_realm, get_realm_stream, get_user_by_delivery_email
@@ -71,12 +75,10 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     result = client.post("/accounts/password/reset/", {"email": registered_email}, **host_kwargs)
     assert result.status_code == 302
     # deactivated user
-    user.is_active = False
-    user.save(update_fields=["is_active"])
+    change_user_is_active(user, False)
     result = client.post("/accounts/password/reset/", {"email": registered_email}, **host_kwargs)
     assert result.status_code == 302
-    user.is_active = True
-    user.save(update_fields=["is_active"])
+    change_user_is_active(user, True)
     # account on different realm
     result = client.post(
         "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=other_realm.host

@@ -29,6 +29,7 @@ from zerver.decorator import (
 )
 from zerver.forms import OurAuthenticationForm
 from zerver.lib.actions import (
+    change_user_is_active,
     do_deactivate_realm,
     do_deactivate_user,
     do_reactivate_realm,
@@ -390,14 +391,12 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(api_result, webhook_bot_email)
 
         # Now deactivate the user
-        webhook_bot.is_active = False
-        webhook_bot.save()
+        change_user_is_active(webhook_bot, False)
         with self.assertRaisesRegex(JsonableError, "Account is deactivated"):
             my_webhook(request)
 
         # Reactive the user, but deactivate their realm.
-        webhook_bot.is_active = True
-        webhook_bot.save()
+        change_user_is_active(webhook_bot, True)
         webhook_bot.realm.deactivated = True
         webhook_bot.realm.save()
         with self.assertRaisesRegex(JsonableError, "This organization has been deactivated"):
@@ -1128,8 +1127,7 @@ class LoginRequiredTest(ZulipTestCase):
         self.assert_in_response("I agree to the", result)
 
         # Verify fails if user deactivated (with session still valid)
-        user_profile.is_active = False
-        user_profile.save()
+        change_user_is_active(user_profile, False)
         result = self.client_get("/accounts/accept_terms/")
         self.assertEqual(result.status_code, 302)
 
@@ -1200,8 +1198,7 @@ class InactiveUserTest(ZulipTestCase):
         # Even if a logged-in session was leaked, it still wouldn't work
         do_reactivate_user(user_profile, acting_user=None)
         self.login_user(user_profile)
-        user_profile.is_active = False
-        user_profile.save()
+        change_user_is_active(user_profile, False)
 
         result = self.client_post(
             "/json/messages",
@@ -1238,8 +1235,8 @@ class InactiveUserTest(ZulipTestCase):
         user_profile.save()
 
         self.login_by_email(email, password=test_password)
-        user_profile.is_active = False
-        user_profile.save()
+        change_user_is_active(user_profile, False)
+
         result = self.client_post("/json/fetch_api_key", {"password": test_password})
         self.assert_json_error_contains(result, "Account is deactivated", status_code=400)
 
@@ -1366,11 +1363,11 @@ class TestValidateApiKey(ZulipTestCase):
             validate_api_key(HostRequestMock(), self.webhook_bot.email, api_key)
 
     def test_validate_api_key_if_profile_is_not_active(self) -> None:
-        self._change_is_active_field(self.default_bot, False)
+        change_user_is_active(self.default_bot, False)
         with self.assertRaises(JsonableError):
             api_key = get_api_key(self.default_bot)
             validate_api_key(HostRequestMock(), self.default_bot.email, api_key)
-        self._change_is_active_field(self.default_bot, True)
+        change_user_is_active(self.default_bot, True)
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_unset(self) -> None:
         with self.assertRaises(JsonableError), self.assertLogs(level="WARNING") as root_warn_log:
@@ -1438,10 +1435,6 @@ class TestValidateApiKey(ZulipTestCase):
                     )
                 ],
             )
-
-    def _change_is_active_field(self, profile: UserProfile, value: bool) -> None:
-        profile.is_active = value
-        profile.save()
 
 
 class TestInternalNotifyView(ZulipTestCase):
@@ -1653,8 +1646,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         # we deactivate user manually because do_deactivate_user removes user session
-        user_profile.is_active = False
-        user_profile.save()
+        change_user_is_active(user_profile, False)
         self.assert_json_error_contains(self._do_test(user_profile), "Account is deactivated")
         do_reactivate_user(user_profile, acting_user=None)
 

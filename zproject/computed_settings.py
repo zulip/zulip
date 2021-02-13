@@ -242,6 +242,9 @@ SILENCED_SYSTEM_CHECKS = [
     # backends support the username not being unique; and they do.
     # See: https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
+    # models.E034 limits index names to 30 characters for Oracle compatibility.
+    # We aren't using Oracle.
+    "models.E034",
 ]
 
 ########################################################################

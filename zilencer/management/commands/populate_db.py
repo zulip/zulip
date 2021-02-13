@@ -134,6 +134,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, An
             s = Subscription(
                 recipient=recipient,
                 user_profile=profile,
+                is_user_active=profile.is_active,
                 color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)],
             )
             subscriptions_to_add.append(s)
@@ -569,7 +570,12 @@ class Command(BaseCommand):
             for profile, recipient in subscriptions_list:
                 i += 1
                 color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
-                s = Subscription(recipient=recipient, user_profile=profile, color=color)
+                s = Subscription(
+                    recipient=recipient,
+                    user_profile=profile,
+                    is_user_active=profile.is_active,
+                    color=color,
+                )
 
                 subscriptions_to_add.append(s)
 

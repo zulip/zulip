@@ -655,6 +655,15 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
         update_id_map(table="client", old_id=item["id"], new_id=client.id)
 
 
+def fix_subscriptions_is_user_active_column(
+    data: TableData, user_profiles: List[UserProfile]
+) -> None:
+    table = get_db_table(Subscription)
+    user_id_to_active_status = {user.id: user.is_active for user in user_profiles}
+    for sub in data[table]:
+        sub["is_user_active"] = user_id_to_active_status[sub["user_profile_id"]]
+
+
 def process_avatars(record: Dict[str, Any]) -> None:
     from zerver.lib.upload import upload_backend
 
@@ -1008,6 +1017,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     get_huddles_from_subscription(data, "zerver_subscription")
     re_map_foreign_keys(data, "zerver_subscription", "recipient", related_table="recipient")
     update_model_ids(Subscription, data, "subscription")
+    fix_subscriptions_is_user_active_column(data, user_profiles)
     bulk_import_model(data, Subscription)
 
     if "zerver_realmauditlog" in data:

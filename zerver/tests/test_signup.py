@@ -33,6 +33,7 @@ from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
 from zerver.lib.actions import (
     add_new_user_history,
+    change_user_is_active,
     do_add_default_stream,
     do_change_full_name,
     do_change_realm_subdomain,
@@ -1107,8 +1108,8 @@ class InviteUserTest(InviteUserBase):
 
         mirror_user = self.example_user("cordelia")
         mirror_user.is_mirror_dummy = True
-        mirror_user.is_active = False
         mirror_user.save()
+        change_user_is_active(mirror_user, False)
 
         self.assertEqual(
             PreregistrationUser.objects.filter(email=mirror_user.email).count(),
@@ -4460,8 +4461,8 @@ class UserSignUpTest(InviteUserBase):
         user_profile = self.mit_user("sipbtest")
         email = user_profile.delivery_email
         user_profile.is_mirror_dummy = True
-        user_profile.is_active = False
         user_profile.save()
+        change_user_is_active(user_profile, False)
 
         result = self.client_post("/register/", {"email": email}, subdomain="zephyr")
 
@@ -4487,8 +4488,8 @@ class UserSignUpTest(InviteUserBase):
         # If the mirror dummy user is already active, attempting to
         # submit the registration form should raise an AssertionError
         # (this is an invalid state, so it's a bug we got here):
-        user_profile.is_active = True
-        user_profile.save()
+        change_user_is_active(user_profile, True)
+
         with self.assertRaisesRegex(
             AssertionError, "Mirror dummy user is already active!"
         ), self.assertLogs("django.request", "ERROR") as error_log:
@@ -4509,8 +4510,7 @@ class UserSignUpTest(InviteUserBase):
             "AssertionError: Mirror dummy user is already active!" in error_log.output[0]
         )
 
-        user_profile.is_active = False
-        user_profile.save()
+        change_user_is_active(user_profile, False)
 
         result = self.submit_reg_form_for_user(
             email,
@@ -4537,8 +4537,8 @@ class UserSignUpTest(InviteUserBase):
         user_profile = self.mit_user("sipbtest")
         email = user_profile.delivery_email
         user_profile.is_mirror_dummy = True
-        user_profile.is_active = True
         user_profile.save()
+        change_user_is_active(user_profile, True)
 
         with self.assertRaisesRegex(
             AssertionError, "Mirror dummy user is already active!"
@@ -4619,9 +4619,10 @@ class DeactivateUserTest(ZulipTestCase):
 
     def test_do_not_deactivate_final_user(self) -> None:
         realm = get_realm("zulip")
-        UserProfile.objects.filter(realm=realm).exclude(role=UserProfile.ROLE_REALM_OWNER).update(
-            is_active=False
-        )
+        for user_profile in UserProfile.objects.filter(realm=realm).exclude(
+            role=UserProfile.ROLE_REALM_OWNER
+        ):
+            do_deactivate_user(user_profile, acting_user=None)
         user = self.example_user("desdemona")
         self.login_user(user)
         result = self.client_delete("/json/users/me")

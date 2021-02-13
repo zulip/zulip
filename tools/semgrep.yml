@@ -139,3 +139,17 @@ rules:
     pattern: typing.Text
     severity: ERROR
     message: "Use str instead of typing.Text"
+
+  - id: change-user-is-active
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $X.is_active = ...
+          - pattern: |
+              setattr($X, 'is_active', ...)
+      - pattern-not-inside: |
+          def change_user_is_active(...):
+            ...
+    message: "Use change_user_is_active to mutate user_profile.is_active"
+    severity: ERROR

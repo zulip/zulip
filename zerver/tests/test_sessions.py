@@ -4,6 +4,7 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.actions import change_user_is_active
 from zerver.lib.sessions import (
     delete_all_deactivated_user_sessions,
     delete_all_user_sessions,
@@ -98,8 +99,7 @@ class TestSessions(ZulipTestCase):
         user_profile_3 = self.example_user("cordelia")
         self.login_user(user_profile_3)
         self.assertIn("_auth_user_id", self.client.session)
-        user_profile_3.is_active = False
-        user_profile_3.save()
+        change_user_is_active(user_profile_3, False)
         with self.assertLogs(level="INFO") as info_logs:
             delete_all_deactivated_user_sessions()
         self.assertEqual(
