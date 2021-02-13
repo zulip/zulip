@@ -2570,7 +2570,7 @@ class Subscription(models.Model):
     # We intentionally don't specify a default value to promote thinking
     # about this explicitly, as in some special cases, such as data import,
     # we may be creating Subscription objects for a user that's deactivated.
-    is_user_active: Optional[bool] = models.BooleanField(null=True)
+    is_user_active: bool = models.BooleanField()
 
     ROLE_STREAM_ADMINISTRATOR = 20
     ROLE_MEMBER = 50
@@ -2600,6 +2600,13 @@ class Subscription(models.Model):
 
     class Meta:
         unique_together = ("user_profile", "recipient")
+        indexes = [
+            models.Index(
+                fields=("recipient", "user_profile"),
+                name="zerver_subscription_recipient_id_user_profile_id_idx",
+                condition=Q(active=True, is_user_active=True),
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"<Subscription: {self.user_profile} -> {self.recipient}>"
