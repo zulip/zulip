@@ -15,6 +15,7 @@ Subsystems documentation
    pointer
    markdown
    caching
+   performance
    realms
    management-commands
    schema-migrations

@@ -216,6 +216,10 @@ Scalability is an area of active development, so if you're unsure
 whether Zulip is a fit for your organization or need further advice
 [contact Zulip support][contact-support].
 
+For readers interested in technical details around what features
+impact Zulip's scalability, this [performance and scalability design
+document](../subsystems/performance.md) may also be of interest.
+
 [s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
 [streaming-replication]: ../production/export-and-import.html#postgresql-streaming-replication
 [contact-support]: https://zulip.com/help/contact-support
