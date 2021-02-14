@@ -43,7 +43,7 @@ def run() -> None:
     by_lang = linter_config.list_files(
         groups={
             "backend": ["py", "sh", "pp", "json", "md", "txt", "text", "yaml", "rst", "yml"],
-            "frontend": ["js", "ts", "css", "hbs", "html", "lock"],
+            "frontend": ["js", "ts", "flow", "css", "hbs", "html", "lock"],
         },
         exclude=EXCLUDED_FILES,
     )
@@ -142,7 +142,7 @@ def run() -> None:
     linter_config.external_linter(
         "prettier",
         ["node_modules/.bin/prettier", "--check", "--loglevel=warn"],
-        ["css", "js", "json", "ts", "yaml", "yml"],
+        ["css", "flow", "js", "json", "ts", "yaml", "yml"],
         fix_arg=["--write"],
         description="Formats CSS, JavaScript, YAML",
     )
