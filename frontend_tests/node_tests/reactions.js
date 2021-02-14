@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
@@ -686,7 +686,7 @@ run_test("with_view_stubs", () => {
     });
 });
 
-run_test("error_handling", () => {
+run_test("error_handling", (override) => {
     message_store.get = function () {
         return;
     };
@@ -700,15 +700,8 @@ run_test("error_handling", () => {
         emoji_code: "991",
         user_id: 99,
     };
-
-    with_field(
-        reactions,
-        "current_user_has_reacted_to_emoji",
-        () => true,
-        () => {
-            reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
-        },
-    );
+    override(reactions, "current_user_has_reacted_to_emoji", () => true);
+    reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
 
     reactions.add_reaction(bogus_event);
     reactions.remove_reaction(bogus_event);

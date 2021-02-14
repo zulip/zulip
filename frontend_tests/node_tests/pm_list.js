@@ -229,54 +229,44 @@ run_test("is_all_privates", () => {
     assert.equal(pm_list.is_all_privates(), true);
 });
 
-function with_fake_list(f) {
-    with_field(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS", f);
-}
+run_test("expand", (override) => {
+    override(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS");
+    let html_updated;
+    vdom.update = () => {
+        html_updated = true;
+    };
 
-run_test("expand", () => {
-    with_fake_list(() => {
-        let html_updated;
-
-        vdom.update = () => {
-            html_updated = true;
-        };
-
-        pm_list.expand();
-
-        assert(html_updated);
-    });
+    pm_list.expand();
+    assert(html_updated);
 });
 
-run_test("update_private_messages", () => {
+run_test("update_private_messages", (override) => {
     narrow_state.active = () => true;
-
     $("#private-container").find = (sel) => {
         assert.equal(sel, "ul");
     };
+    override(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS");
 
-    with_fake_list(() => {
-        let html_updated;
+    let html_updated;
+    vdom.update = (replace_content, find) => {
+        html_updated = true;
 
-        vdom.update = (replace_content, find) => {
-            html_updated = true;
+        // get line coverage for simple one-liners
+        replace_content();
+        find();
+    };
 
-            // get line coverage for simple one-liners
-            replace_content();
-            find();
-        };
+    with_field(
+        pm_list,
+        "is_all_privates",
+        () => true,
+        () => {
+            pm_list.update_private_messages();
+        },
+    );
 
-        with_field(
-            pm_list,
-            "is_all_privates",
-            () => true,
-            () => {
-                pm_list.update_private_messages();
-            },
-        );
-
-        assert(html_updated);
-        assert($(".top_left_private_messages").hasClass("active-filter"));
-    });
+    assert(html_updated);
+    assert($(".top_left_private_messages").hasClass("active-filter"));
 });
 
 run_test("ensure coverage", () => {
