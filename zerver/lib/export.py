@@ -47,6 +47,7 @@ from zerver.models import (
     RealmDomain,
     RealmEmoji,
     RealmFilter,
+    RealmPlayground,
     Recipient,
     Service,
     Stream,
@@ -140,6 +141,7 @@ ALL_ZULIP_TABLES = {
     "zerver_realmdomain",
     "zerver_realmemoji",
     "zerver_realmfilter",
+    "zerver_realmplayground",
     "zerver_recipient",
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",
@@ -635,6 +637,13 @@ def get_realm_config() -> Config:
     Config(
         table="zerver_realmfilter",
         model=RealmFilter,
+        normal_parent=realm_config,
+        parent_key="realm_id__in",
+    )
+
+    Config(
+        table="zerver_realmplayground",
+        model=RealmPlayground,
         normal_parent=realm_config,
         parent_key="realm_id__in",
     )

@@ -52,6 +52,7 @@ from zerver.models import (
     RealmDomain,
     RealmEmoji,
     RealmFilter,
+    RealmPlayground,
     Recipient,
     Service,
     Stream,
@@ -74,6 +75,7 @@ realm_tables = [
     ("zerver_realmemoji", RealmEmoji, "realmemoji"),
     ("zerver_realmdomain", RealmDomain, "realmdomain"),
     ("zerver_realmfilter", RealmFilter, "realmfilter"),
+    ("zerver_realmplayground", RealmPlayground, "realmplayground"),
 ]  # List[Tuple[TableName, Any, str]]
 
 
@@ -100,6 +102,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "realmemoji": {},
     "realmdomain": {},
     "realmfilter": {},
+    "realmplayground": {},
     "message": {},
     "user_presence": {},
     "useractivity": {},
