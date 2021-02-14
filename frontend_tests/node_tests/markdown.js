@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 const markdown_assert = require("../zjsunit/markdown_assert");
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -750,7 +750,7 @@ run_test("translate_emoticons_to_names", () => {
     }
 });
 
-run_test("missing unicode emojis", () => {
+run_test("missing unicode emojis", (override) => {
     const message = {raw_content: "\u{1F6B2}"};
 
     markdown.apply_markdown(message);
@@ -759,15 +759,11 @@ run_test("missing unicode emojis", () => {
         '<p><span aria-label="bike" class="emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
     );
 
-    // Now simulate that we don't know any emoji names.
-    function fake_get_emoji_name(codepoint) {
+    override(emoji, "get_emoji_name", (codepoint) => {
+        // Now simulate that we don't know any emoji names.
         assert.equal(codepoint, "1f6b2");
         // return undefined
-    }
-
-    with_field(emoji, "get_emoji_name", fake_get_emoji_name, () => {
-        markdown.apply_markdown(message);
     });
-
+    markdown.apply_markdown(message);
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });
