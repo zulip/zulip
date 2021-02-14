@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -256,15 +256,7 @@ run_test("update_private_messages", (override) => {
         find();
     };
 
-    with_field(
-        pm_list,
-        "is_all_privates",
-        () => true,
-        () => {
-            pm_list.update_private_messages();
-        },
-    );
-
+    pm_list.update_private_messages();
     assert(html_updated);
     assert($(".top_left_private_messages").hasClass("active-filter"));
 });
