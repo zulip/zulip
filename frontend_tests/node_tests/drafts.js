@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {make_zjquery} = require("../zjsunit/zjquery");
 
@@ -47,13 +47,6 @@ set_global("page_params", {
     twenty_four_hour_time: false,
 });
 
-function stub_timestamp(timestamp, func) {
-    function fake_time() {
-        return timestamp;
-    }
-    with_field(Date, "now", fake_time, func);
-}
-
 const legacy_draft = {
     stream: "stream",
     subject: "lunch",
@@ -91,56 +84,57 @@ run_test("legacy", () => {
     assert.deepEqual(drafts.restore_message(legacy_draft), compose_args_for_legacy_draft);
 });
 
-run_test("draft_model", () => {
+run_test("draft_model add", (override) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
-
     localStorage.clear();
-    (function test_get() {
-        const expected = {id1: draft_1, id2: draft_2};
-        ls.set("drafts", expected);
+    assert.equal(ls.get("draft"), undefined);
 
-        assert.deepEqual(draft_model.get(), expected);
-    })();
+    override(Date, "now", () => 1);
+    const expected = {...draft_1};
+    expected.updatedAt = 1;
+    const id = draft_model.addDraft({...draft_1});
+    assert.deepEqual(draft_model.getDraft(id), expected);
+});
 
+run_test("draft_model edit", () => {
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
     localStorage.clear();
-    (function test_get() {
-        ls.set("drafts", {id1: draft_1});
+    assert.equal(ls.get("draft"), undefined);
+    let id;
 
-        assert.deepEqual(draft_model.getDraft("id1"), draft_1);
-        assert.equal(draft_model.getDraft("id2"), false);
-    })();
+    with_overrides((override) => {
+        override(Date, "now", () => 1);
+        const expected = {...draft_1};
+        expected.updatedAt = 1;
+        id = draft_model.addDraft({...draft_1});
+        assert.deepEqual(draft_model.getDraft(id), expected);
+    });
 
+    with_overrides((override) => {
+        override(Date, "now", () => 2);
+        const expected = {...draft_2};
+        expected.updatedAt = 2;
+        draft_model.editDraft(id, {...draft_2});
+        assert.deepEqual(draft_model.getDraft(id), expected);
+    });
+});
+
+run_test("draft_model delete", (override) => {
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
     localStorage.clear();
-    (function test_addDraft() {
-        stub_timestamp(1, () => {
-            const expected = {...draft_1};
-            expected.updatedAt = 1;
-            const id = draft_model.addDraft({...draft_1});
+    assert.equal(ls.get("draft"), undefined);
 
-            assert.deepEqual(ls.get("drafts")[id], expected);
-        });
-    })();
+    override(Date, "now", () => 1);
+    const expected = {...draft_1};
+    expected.updatedAt = 1;
+    const id = draft_model.addDraft({...draft_1});
+    assert.deepEqual(draft_model.getDraft(id), expected);
 
-    localStorage.clear();
-    (function test_editDraft() {
-        stub_timestamp(2, () => {
-            ls.set("drafts", {id1: draft_1});
-            const expected = {...draft_2};
-            expected.updatedAt = 2;
-            draft_model.editDraft("id1", {...draft_2});
-
-            assert.deepEqual(ls.get("drafts").id1, expected);
-        });
-    })();
-
-    localStorage.clear();
-    (function test_deleteDraft() {
-        ls.set("drafts", {id1: draft_1});
-        draft_model.deleteDraft("id1");
-
-        assert.deepEqual(ls.get("drafts"), {});
-    })();
+    draft_model.deleteDraft(id);
+    assert.deepEqual(draft_model.getDraft(id), false);
 });
 
 run_test("snapshot_message", (override) => {
