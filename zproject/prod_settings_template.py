@@ -442,6 +442,124 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #SSO_APPEND_DOMAIN = None
 
 ################
+# Service configuration
+
+########
+# PostgreSQL configuration.
+#
+# To access an external PostgreSQL database you should define the host name in
+# REMOTE_POSTGRES_HOST, port in REMOTE_POSTGRES_PORT, password in the secrets file in the
+# property postgres_password, and the SSL connection mode in REMOTE_POSTGRES_SSLMODE
+# Valid values for REMOTE_POSTGRES_SSLMODE are documented in the
+# "SSL Mode Descriptions" table in
+#   https://www.postgresql.org/docs/9.5/static/libpq-ssl.html
+#REMOTE_POSTGRES_HOST = 'dbserver.example.com'
+#REMOTE_POSTGRES_PORT = '5432'
+#REMOTE_POSTGRES_SSLMODE = 'require'
+
+########
+# RabbitMQ configuration
+#
+# By default, Zulip connects to RabbitMQ running locally on the machine,
+# but Zulip also supports connecting to RabbitMQ over the network;
+# to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
+#RABBITMQ_HOST = "127.0.0.1"
+# To use another RabbitMQ user than the default 'zulip', set RABBITMQ_USERNAME here.
+#RABBITMQ_USERNAME = 'zulip'
+
+########
+# Redis configuration
+#
+# By default, Zulip connects to Redis running locally on the machine,
+# but Zulip also supports connecting to Redis over the network;
+# to use a remote Redis instance, set REDIS_HOST here.
+#REDIS_HOST = '127.0.0.1'
+# For a different Redis port set the REDIS_PORT here.
+#REDIS_PORT = 6379
+# If you set redis_password in zulip-secrets.conf, Zulip will use that password
+# to connect to the Redis server.
+
+########
+# Memcached configuration
+#
+# By default, Zulip connects to memcached running locally on the machine,
+# but Zulip also supports connecting to memcached over the network;
+# to use a remote Memcached instance, set MEMCACHED_LOCATION here.
+# Format HOST:PORT
+#MEMCACHED_LOCATION = 127.0.0.1:11211
+# To authenticate to memcached, set memcached_password in zulip-secrets.conf,
+# and optionally change the default username 'zulip@localhost' here.
+#MEMCACHED_USERNAME = 'zulip@localhost'
+
+
+################
+# Previews.
+
+########
+# Image and URL previews.
+#
+# Controls whether or not Zulip will provide inline image preview when
+# a link to an image is referenced in a message.  Note: this feature
+# can also be disabled in a realm's organization settings.
+#INLINE_IMAGE_PREVIEW = True
+
+# Controls whether or not Zulip will provide inline previews of
+# websites that are referenced in links in messages.  Note: this feature
+# can also be disabled in a realm's organization settings.
+#INLINE_URL_EMBED_PREVIEW = True
+
+# By default, Zulip connects to the thumbor (the thumbnailing software
+# we use) service running locally on the machine.  If you're running
+# thumbor on a different server, you can configure that by setting
+# THUMBOR_URL here.  Setting THUMBOR_URL='' will let Zulip server know that
+# thumbor is not running or configured.
+#THUMBOR_URL = 'http://127.0.0.1:9995'
+#
+# This setting controls whether images shown in Zulip's inline image
+# previews should be thumbnailed by thumbor, which saves bandwidth but
+# can modify the image's appearance.
+#THUMBNAIL_IMAGES = True
+
+########
+# Twitter previews.
+#
+# Zulip supports showing inline Tweet previews when a tweet is linked
+# to in a message.  To support this, Zulip must have access to the
+# Twitter API via OAuth.  To obtain the various access tokens needed
+# below, you must register a new application under your Twitter
+# account by doing the following:
+#
+# 1. Log in to http://dev.twitter.com.
+# 2. In the menu under your username, click My Applications. From this page, create a new application.
+# 3. Click on the application you created and click "create my access token".
+# 4. Fill in the values for twitter_consumer_key, twitter_consumer_secret, twitter_access_token_key,
+#    and twitter_access_token_secret in /etc/zulip/zulip-secrets.conf.
+
+
+################
+# Logging and error reporting
+#
+# Controls whether or not error reports (tracebacks) are emailed to the
+# server administrators.
+#ERROR_REPORTING = True
+# For frontend (JavaScript) tracebacks
+#BROWSER_ERROR_REPORTING = False
+
+# Controls the DSN used to report errors to Sentry.io
+#SENTRY_DSN = 'https://bbb@bbb.ingest.sentry.io/1235'
+
+# If True, each log message in the server logs will identify the
+# Python module where it came from.  Useful for tracking down a
+# mysterious log message, but a little verbose.
+#LOGGING_SHOW_MODULE = False
+
+# If True, each log message in the server logs will identify the
+# process ID.  Useful for correlating logs with information from
+# system-level monitoring tools.
+#LOGGING_SHOW_PID = False
+
+
+################
 # Miscellaneous settings.
 
 # Support for mobile push notifications.  Setting controls whether
