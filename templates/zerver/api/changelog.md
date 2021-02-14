@@ -16,9 +16,22 @@ below features are supported.
 * [`PATCH /settings`](/api/update-settings): Added a new
   `enable_drafts_synchronization` setting, which controls whether the
   syncing drafts between different clients is enabled.
+
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
   Added new `enable_drafts_synchronization` setting under
   `update_display_settings`.
+
+* [`GET /drafts`](/api/get-drafts): Added new endpoint to fetch user's
+  synced drafts from the server.
+
+* [`POST /drafts`](/api/create-drafts): Added new endpoint to create
+  drafts when syncing has been enabled.
+
+* [`PATCH /drafts/{draft_id}`](/api/edit-draft): Added new endpoint
+  to edit a draft already owned by the user.
+
+* [`DELETE /drafts/{draft_id}`](/api/delete-draft): Added new endpoint
+  to delete a draft already owned by the user.
 
 **Feature level 86**
 

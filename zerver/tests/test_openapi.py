@@ -1000,7 +1000,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
             "real_time_events",
             "streams",
             "messages",
-            "users",
+            "drafts",
             "webhooks",
         ]
         paths = OpenAPISpec(OPENAPI_SPEC_PATH).openapi()["paths"]

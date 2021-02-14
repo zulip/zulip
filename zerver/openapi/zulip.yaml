@@ -4205,6 +4205,234 @@ paths:
                           ],
                         "upload_space_used": 571946,
                       }
+  /drafts:
+    get:
+      operationId: get-drafts
+      tags: ["drafts"]
+      summary: Get drafts
+      description: |
+        Fetch all drafts for the current user.
+
+        `GET {{ api_url }}/v1/drafts`
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      count:
+                        type: integer
+                        description: |
+                          The number of drafts the user currently has. Also the
+                          number of drafts returned under "drafts".
+                        example: 3
+                      drafts:
+                        type: array
+                        description: |
+                          Returns all of the current user's drafts, in order of last edit time
+                          (with the most recently edited draft appearing first).
+                        items:
+                          $ref: "#/components/schemas/Draft"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "count": 3,
+                        "drafts":
+                          [
+                            {
+                              "id": 1,
+                              "type": "stream",
+                              "to": [3],
+                              "topic": "sync drafts",
+                              "content": "Let's add backend support for syncing drafts.",
+                              "timestamp": 1595479019.43915,
+                            },
+                            {
+                              "id": 2,
+                              "type": "private",
+                              "to": [4],
+                              "topic": "",
+                              "content": "What if we made it possible to sync drafts in Zulip?",
+                              "timestamp": 1595479020.43916,
+                            },
+                            {
+                              "id": 3,
+                              "type": "private",
+                              "to": [4, 10],
+                              "topic": "",
+                              "content": "What if we made it possible to sync drafts in Zulip?",
+                              "timestamp": 1595479021.43916,
+                            },
+                          ],
+                      }
+    post:
+      operationId: create-drafts
+      tags: ["drafts"]
+      summary: Create drafts
+      description: |
+        Create one or more drafts on the server. These drafts will be automatically
+        synchronized to other clients via `drafts` events.
+
+        `POST {{ api_url }}/v1/drafts`
+      parameters:
+        - name: drafts
+          in: query
+          description: |
+            A JSON-encoded list of containing new draft objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Draft"
+              example:
+                [
+                  {
+                    "type": "stream",
+                    "to": [1],
+                    "topic": "questions",
+                    "content": "What are the contribution guidelines for this project?",
+                    "timestamp": 1595479019,
+                  },
+                ]
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - additionalProperties: false
+                    description: |
+                      When all of the drafts in the request are valid, this endpoint will return
+                      an array of the IDs for the drafts that were just created in the same
+                      order as they were requested. If any of the drafts failed the validation
+                      step, then none of the drafts will be created and we would not get this
+                      status code.
+                    properties:
+                      ids:
+                        type: array
+                        description: |
+                          An array of the IDs for the drafts that were just created in the same
+                          order as they were submitted.
+                        items:
+                          type: integer
+                    example: {"result": "success", "msg": "", "ids": [1, 2, 3]}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      JSON response for when a draft targeted towards a stream does not specify
+                      exactly one stream ID.
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Must specify exactly 1 stream ID for stream messages",
+                        "result": "error",
+                      }
+  /drafts/{draft_id}:
+    patch:
+      operationId: edit-draft
+      tags: ["drafts"]
+      summary: Edit a draft
+      description: |
+        Edit a draft on the server. The edit will be automatically
+        synchronized to other clients via `drafts` events.
+
+        `PATCH {{ api_url }}/v1/drafts/{draft_id}`
+      parameters:
+        - name: draft_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the draft to be edited.
+          required: True
+          example: 2
+        - name: draft
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Draft"
+              example:
+                {
+                  "type": "stream",
+                  "to": [1],
+                  "topic": "questions",
+                  "content": "how tough is a Lamy Safari?",
+                  "timestamp": 1595479019,
+                }
+          description: |
+            A JSON-encoded object containing a replacement draft object for this ID.
+          required: True
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - description: |
+                      JSON response for when no draft exists with the provided ID.
+                    example: {"result": "error", "msg": "Draft does not exist"}
+    delete:
+      operationId: delete-draft
+      tags: ["drafts"]
+      summary: Delete a draft
+      description: |
+        Delete a single draft from the server. The deletion will be automatically
+        synchronized to other clients via a `drafts` event.
+
+        `DELETE {{ api_url }}/v1/drafts/{draft_id}`
+      parameters:
+        - name: draft_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the draft you want to delete.
+          required: True
+          example: 1
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - description: |
+                      JSON response for when no draft exists with the provided ID.
+                    example: {"result": "error", "msg": "Draft does not exist"}
   /messages:
     get:
       operationId: get-messages
@@ -12931,16 +13159,16 @@ components:
             An array of the tentative target audience IDs. For "stream"
             messages, this should contain exactly 1 ID, the ID of the
             target stream. For private messages, this should be an array
-            of target user IDs. For unaddressed drafts this is ignored
-            so it's best to leave it as an empty array.
+            of target user IDs. For unaddressed drafts, this is ignored,
+            and clients should send an empty array.
           items:
             type: integer
         topic:
           type: string
           description: |
             For stream message drafts, the tentative topic name. For private
-            or unaddressed messages this will be ignored and should ideally
-            be an empty string. Should not contain null bytes.
+            or unaddressed messages, this will be ignored and should ideally
+            be the empty string. Should not contain null bytes.
         content:
           type: string
           description: |
