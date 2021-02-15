@@ -105,7 +105,7 @@ run_test("filter_table", () => {
         populated_subs = data.subscriptions;
     });
 
-    subs.populate_stream_settings_left_panel();
+    subs.render_left_panel_superset();
 
     const sub_stubs = [];
 
