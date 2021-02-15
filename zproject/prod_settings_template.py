@@ -562,6 +562,25 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 
 
 ################
+## Video call integrations.
+##
+## Controls the Zoom video call integration.  See:
+## https://zulip.readthedocs.io/en/latest/production/video-calls.html
+#
+# VIDEO_ZOOM_CLIENT_ID = <your Zoom Client ID>
+
+## Controls the Jitsi Meet video call integration.  By default, the
+## integration uses the SaaS https://meet.jit.si server.  You can specify
+## your own Jitsi Meet server, or if you'd like to disable the
+## integration, set JITSI_SERVER_URL = None.
+# JITSI_SERVER_URL = 'https://jitsi.example.com'
+
+## Controls the Big Blue Button video call integration.  You must also
+## set big_blue_button_secret in zulip-secrets.conf.
+# BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
+
+
+################
 ## Miscellaneous settings.
 
 ## Support for mobile push notifications.  Setting controls whether
@@ -659,22 +678,3 @@ CAMO_URI = "/external_content/"
 
 ## Similarly if you want to set a Privacy Policy.
 # PRIVACY_POLICY = '/etc/zulip/privacy.md'
-
-
-################
-## Video call integrations.
-##
-## Controls the Zoom video call integration.  See:
-## https://zulip.readthedocs.io/en/latest/production/video-calls.html
-#
-# VIDEO_ZOOM_CLIENT_ID = <your Zoom Client ID>
-
-## Controls the Jitsi Meet video call integration.  By default, the
-## integration uses the SaaS https://meet.jit.si server.  You can specify
-## your own Jitsi Meet server, or if you'd like to disable the
-## integration, set JITSI_SERVER_URL = None.
-# JITSI_SERVER_URL = 'https://jitsi.example.com'
-
-## Controls the Big Blue Button video call integration.  You must also
-## set big_blue_button_secret in zulip-secrets.conf.
-# BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
