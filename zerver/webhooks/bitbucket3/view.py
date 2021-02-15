@@ -358,7 +358,7 @@ def pr_comment_handler(
     return [{"subject": subject, "body": body}]
 
 
-EVENT_HANDLER_MAP = {
+EVENT_HANDLER_MAP: Dict[str, Optional[Callable[..., List[Dict[str, str]]]]] = {
     "diagnostics:ping": ping_handler,
     "repo:comment:added": partial(repo_comment_handler, action="commented"),
     "repo:comment:edited": partial(repo_comment_handler, action="edited their comment"),
@@ -378,15 +378,7 @@ EVENT_HANDLER_MAP = {
     "pr:reviewer:needs_work": partial(pr_handler, action="needs_work"),
     "pr:reviewer:updated": partial(pr_handler, action="reviewers_updated"),
     "pr:reviewer:unapproved": partial(pr_handler, action="unapproved"),
-}  # type Dict[str, Optional[Callable[..., List[Dict[str, str]]]]]
-
-
-def get_event_handler(eventkey: str) -> Callable[..., List[Dict[str, str]]]:
-    # The main reason for this function existence is because of mypy
-    handler: Any = EVENT_HANDLER_MAP.get(eventkey)
-    if handler is None:
-        raise UnsupportedWebhookEventType(eventkey)
-    return handler
+}
 
 
 @webhook_view("Bitbucket3")
@@ -402,7 +394,9 @@ def api_bitbucket3_webhook(
         eventkey = payload["eventKey"]
     except KeyError:
         eventkey = request.META["HTTP_X_EVENT_KEY"]
-    handler = get_event_handler(eventkey)
+    handler = EVENT_HANDLER_MAP.get(eventkey)
+    if handler is None:
+        raise UnsupportedWebhookEventType(eventkey)
 
     if "branches" in signature(handler).parameters:
         data = handler(payload, branches)

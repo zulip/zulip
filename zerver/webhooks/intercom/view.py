@@ -268,7 +268,7 @@ def get_user_unsubscribed_message(payload: Dict[str, Any]) -> Tuple[str, str]:
     return (topic, body)
 
 
-EVENT_TO_FUNCTION_MAPPER = {
+EVENT_TO_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any]], Tuple[str, str]]] = {
     "company.created": get_company_created_message,
     "contact.added_email": get_contact_added_email_message,
     "contact.created": get_contact_created_message,
@@ -302,13 +302,6 @@ EVENT_TO_FUNCTION_MAPPER = {
 }
 
 
-def get_event_handler(event_type: str) -> Callable[..., Tuple[str, str]]:
-    handler: Any = EVENT_TO_FUNCTION_MAPPER.get(event_type)
-    if handler is None:
-        raise UnsupportedWebhookEventType(event_type)
-    return handler
-
-
 @webhook_view("Intercom")
 @has_request_variables
 def api_intercom_webhook(
@@ -320,7 +313,10 @@ def api_intercom_webhook(
     if event_type == "ping":
         return json_success()
 
-    topic, body = get_event_handler(event_type)(payload)
+    handler = EVENT_TO_FUNCTION_MAPPER.get(event_type)
+    if handler is None:
+        raise UnsupportedWebhookEventType(event_type)
+    topic, body = handler(payload)
 
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
