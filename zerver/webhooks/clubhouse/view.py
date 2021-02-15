@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -511,7 +511,7 @@ def get_name_template(entity: str) -> str:
     return EPIC_NAME_TEMPLATE
 
 
-EVENT_BODY_FUNCTION_MAPPER = {
+EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any]], Optional[str]]] = {
     "story_update_archived": partial(get_update_archived_body, entity="story"),
     "epic_update_archived": partial(get_update_archived_body, entity="epic"),
     "story_create": get_story_create_body,
@@ -574,7 +574,7 @@ def api_clubhouse_webhook(
     if event is None:
         return json_success()
 
-    body_func: Any = EVENT_BODY_FUNCTION_MAPPER.get(event)
+    body_func = EVENT_BODY_FUNCTION_MAPPER.get(event)
     topic_func = get_topic_function_based_on_type(payload)
     if body_func is None or topic_func is None:
         raise UnsupportedWebhookEventType(event)

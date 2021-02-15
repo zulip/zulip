@@ -325,7 +325,9 @@ def handle_comment_deleted_event(payload: Dict[str, Any], user_profile: UserProf
     )
 
 
-JIRA_CONTENT_FUNCTION_MAPPER = {
+JIRA_CONTENT_FUNCTION_MAPPER: Dict[
+    Optional[str], Optional[Callable[[Dict[str, Any], UserProfile], str]]
+] = {
     "jira:issue_created": handle_created_issue_event,
     "jira:issue_deleted": handle_deleted_issue_event,
     "jira:issue_updated": handle_updated_issue_event,
@@ -333,13 +335,6 @@ JIRA_CONTENT_FUNCTION_MAPPER = {
     "comment_updated": handle_comment_updated_event,
     "comment_deleted": handle_comment_deleted_event,
 }
-
-
-def get_event_handler(event: Optional[str]) -> Optional[Callable[..., str]]:
-    if event is None:
-        return None
-
-    return JIRA_CONTENT_FUNCTION_MAPPER.get(event)
 
 
 @webhook_view("JIRA")
@@ -354,7 +349,7 @@ def api_jira_webhook(
     if event in IGNORED_EVENTS:
         return json_success()
 
-    content_func = get_event_handler(event)
+    content_func = JIRA_CONTENT_FUNCTION_MAPPER.get(event)
 
     if content_func is None:
         raise UnsupportedWebhookEventType(event)

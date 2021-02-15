@@ -79,14 +79,6 @@ def replied_body(payload: Dict[str, Any], actor: str, action: str) -> str:
     return body
 
 
-def get_event_handler(event: str) -> Callable[..., str]:
-    # The main reason for this function existence is because of mypy
-    handler: Any = EVENTS_FUNCTION_MAPPER.get(event)
-    if handler is None:
-        raise UnsupportedWebhookEventType(event)
-    return handler
-
-
 @webhook_view("Groove")
 @has_request_variables
 def api_groove_webhook(
@@ -96,7 +88,9 @@ def api_groove_webhook(
 ) -> HttpResponse:
     event = validate_extract_webhook_http_header(request, "X_GROOVE_EVENT", "Groove")
     assert event is not None
-    handler = get_event_handler(event)
+    handler = EVENTS_FUNCTION_MAPPER.get(event)
+    if handler is None:
+        raise UnsupportedWebhookEventType(event)
 
     body = handler(payload)
     topic = "notifications"
@@ -107,7 +101,7 @@ def api_groove_webhook(
     return json_success()
 
 
-EVENTS_FUNCTION_MAPPER = {
+EVENTS_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any]], Optional[str]]] = {
     "ticket_started": ticket_started_body,
     "ticket_assigned": ticket_assigned_body,
     "agent_replied": partial(replied_body, actor="agent", action="replied to"),
