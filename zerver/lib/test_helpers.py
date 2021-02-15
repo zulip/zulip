@@ -88,7 +88,7 @@ def stub_event_queue_user_events(
 
 
 @contextmanager
-def simulated_queue_client(client: Callable[..., Any]) -> Iterator[None]:
+def simulated_queue_client(client: Callable[[], object]) -> Iterator[None]:
     with mock.patch.object(queue_processors, "SimpleQueueClient", client):
         yield
 
@@ -555,7 +555,9 @@ def create_s3_buckets(*bucket_names: str) -> List[ServiceResource]:
     return buckets
 
 
-def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocoverage
+def use_db_models(
+    method: Callable[["MigrationsTestCase", StateApps], None]
+) -> Callable[["MigrationsTestCase", StateApps], None]:  # nocoverage
     def method_patched_with_mock(self: "MigrationsTestCase", apps: StateApps) -> None:
         ArchivedAttachment = apps.get_model("zerver", "ArchivedAttachment")
         ArchivedMessage = apps.get_model("zerver", "ArchivedMessage")
