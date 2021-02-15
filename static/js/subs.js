@@ -350,13 +350,13 @@ exports.update_settings_for_unsubscribed = function (sub) {
     stream_ui_updates.update_stream_row_in_settings_tab(sub);
 };
 
-function triage_stream(query, sub) {
-    if (query.subscribed_only && !sub.subscribed) {
+function triage_stream(left_panel_params, sub) {
+    if (left_panel_params.subscribed_only && !sub.subscribed) {
         // reject non-subscribed streams
         return "rejected";
     }
 
-    const search_terms = search_util.get_search_terms(query.input);
+    const search_terms = search_util.get_search_terms(left_panel_params.input);
 
     function match(attr) {
         const val = sub[attr];
@@ -378,7 +378,7 @@ function triage_stream(query, sub) {
     return "rejected";
 }
 
-function get_stream_id_buckets(stream_ids, query) {
+function get_stream_id_buckets(stream_ids, left_panel_params) {
     // When we simplify the settings UI, we can get
     // rid of the "others" bucket.
 
@@ -390,7 +390,7 @@ function get_stream_id_buckets(stream_ids, query) {
 
     for (const stream_id of stream_ids) {
         const sub = stream_data.get_sub_by_id(stream_id);
-        const match_status = triage_stream(query, sub);
+        const match_status = triage_stream(left_panel_params, sub);
 
         if (match_status === "name_match") {
             buckets.name.push(stream_id);
@@ -401,8 +401,8 @@ function get_stream_id_buckets(stream_ids, query) {
         }
     }
 
-    stream_data.sort_for_stream_settings(buckets.name, query.sort_order);
-    stream_data.sort_for_stream_settings(buckets.desc, query.sort_order);
+    stream_data.sort_for_stream_settings(buckets.name, left_panel_params.sort_order);
+    stream_data.sort_for_stream_settings(buckets.desc, left_panel_params.sort_order);
 
     return buckets;
 }
@@ -424,9 +424,8 @@ exports.render_left_panel_superset = function () {
     ui.get_content_element($("#subscriptions_table .streams-list")).html(html);
 };
 
-// query is now an object rather than a string.
-// Query { input: String, subscribed_only: Boolean, sort_order: String }
-exports.filter_table = function (query) {
+// LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
+exports.filter_table = function (left_panel_params) {
     exports.show_active_stream_in_left_panel();
 
     function stream_id_for_row(row) {
@@ -443,7 +442,7 @@ exports.filter_table = function (query) {
         stream_ids.push(stream_id);
     }
 
-    const buckets = get_stream_id_buckets(stream_ids, query);
+    const buckets = get_stream_id_buckets(stream_ids, left_panel_params);
 
     // If we just re-built the DOM from scratch we wouldn't need
     // all this hidden/notdisplayed logic.
@@ -486,7 +485,7 @@ exports.filter_table = function (query) {
 
 let sort_order = "by-stream-name";
 
-exports.get_search_params = function () {
+exports.get_left_panel_params = function () {
     const search_box = $("#stream_filter input[type='text']");
     const input = search_box.expectOne().val().trim();
     const params = {
@@ -506,8 +505,8 @@ exports.maybe_reset_right_panel = function () {
 };
 
 exports.redraw_left_panel = function () {
-    const search_params = exports.get_search_params();
-    exports.filter_table(search_params);
+    const left_panel_params = exports.get_left_panel_params();
+    exports.filter_table(left_panel_params);
 };
 
 // Make it explicit that our toggler is not created right away.
