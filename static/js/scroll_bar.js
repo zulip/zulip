@@ -46,7 +46,6 @@ export function initialize() {
         $(".fixed-app").css("left", "-" + sbWidth + "px");
         $(".fixed-app .column-middle").css("margin-left", 7 + sbWidth + "px");
 
-        $(".column-right").css("right", sbWidth + "px");
         $(".app-main .right-sidebar").css({
             "margin-left": sbWidth + "px",
             width: 250 - sbWidth + "px",
