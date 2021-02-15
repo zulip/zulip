@@ -9,6 +9,7 @@ from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, S
 import orjson
 import requests
 from django.forms.models import model_to_dict
+from typing_extensions import Protocol
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
@@ -223,8 +224,13 @@ def build_public_stream_subscriptions(
     return subscriptions
 
 
+class GetUsers(Protocol):
+    def __call__(self, stream_id: int = ..., huddle_id: int = ...) -> Set[int]:
+        ...
+
+
 def build_stream_subscriptions(
-    get_users: Callable[..., Set[int]],
+    get_users: GetUsers,
     zerver_recipient: List[ZerverFieldsT],
     zerver_stream: List[ZerverFieldsT],
 ) -> List[ZerverFieldsT]:
@@ -253,7 +259,7 @@ def build_stream_subscriptions(
 
 
 def build_huddle_subscriptions(
-    get_users: Callable[..., Set[int]],
+    get_users: GetUsers,
     zerver_recipient: List[ZerverFieldsT],
     zerver_huddle: List[ZerverFieldsT],
 ) -> List[ZerverFieldsT]:
