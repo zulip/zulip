@@ -3,7 +3,7 @@ import sys
 import threading
 import time
 from types import TracebackType
-from typing import Any, Callable, Optional, Tuple, Type, TypeVar
+from typing import Callable, Optional, Tuple, Type, TypeVar
 
 # Based on https://code.activestate.com/recipes/483752/
 
@@ -18,7 +18,7 @@ class TimeoutExpired(Exception):
 ResultT = TypeVar("ResultT")
 
 
-def timeout(timeout: float, func: Callable[..., ResultT], *args: Any, **kwargs: Any) -> ResultT:
+def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
     """Call the function in a separate thread.
     Return its return value, or raise an exception,
     within approximately 'timeout' seconds.
@@ -50,7 +50,7 @@ def timeout(timeout: float, func: Callable[..., ResultT], *args: Any, **kwargs: 
 
         def run(self) -> None:
             try:
-                self.result = func(*args, **kwargs)
+                self.result = func()
             except BaseException:
                 self.exc_info = sys.exc_info()
 
