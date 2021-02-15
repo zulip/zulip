@@ -737,10 +737,9 @@ def flush_submessage(sender: Any, **kwargs: Any) -> None:
     cache_delete(to_dict_cache_key_id(message_id))
 
 
-DECORATOR = Callable[[Callable[..., Any]], Callable[..., Any]]
-
-
-def ignore_unhashable_lru_cache(maxsize: int = 128, typed: bool = False) -> DECORATOR:
+def ignore_unhashable_lru_cache(
+    maxsize: int = 128, typed: bool = False
+) -> Callable[[FuncT], FuncT]:
     """
     This is a wrapper over lru_cache function. It adds following features on
     top of lru_cache:
@@ -750,16 +749,16 @@ def ignore_unhashable_lru_cache(maxsize: int = 128, typed: bool = False) -> DECO
     """
     internal_decorator = lru_cache(maxsize=maxsize, typed=typed)
 
-    def decorator(user_function: Callable[..., Any]) -> Callable[..., Any]:
+    def decorator(user_function: FuncT) -> FuncT:
         if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
             # In the development environment, we want every file
             # change to refresh the source files from disk.
             return user_function
 
         # Casting to Any since we're about to monkey-patch this.
-        cache_enabled_user_function = cast(Any, internal_decorator(user_function))
+        cache_enabled_user_function: Any = internal_decorator(user_function)
 
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
+        def wrapper(*args: object, **kwargs: object) -> object:
             if not hasattr(cache_enabled_user_function, "key_prefix"):
                 cache_enabled_user_function.key_prefix = KEY_PREFIX
 
@@ -784,7 +783,7 @@ def ignore_unhashable_lru_cache(maxsize: int = 128, typed: bool = False) -> DECO
 
         setattr(wrapper, "cache_info", cache_enabled_user_function.cache_info)
         setattr(wrapper, "cache_clear", cache_enabled_user_function.cache_clear)
-        return wrapper
+        return cast(FuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
     return decorator
 
