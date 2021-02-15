@@ -420,7 +420,7 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
             # preview, rather than having the message be rejected
             # entirely. This timeout needs to be less than our overall
             # formatting timeout.
-            tweet = timeout(3, api.GetStatus, tweet_id)
+            tweet = timeout(3, lambda: api.GetStatus(tweet_id))
             res = tweet.AsDict()
         except TimeoutExpired:
             # We'd like to try again later and not cache the bad result,
@@ -2541,7 +2541,7 @@ def do_convert(
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a realm filter that makes some syntax
         # infinite-loop).
-        rendered_content = timeout(5, _md_engine.convert, content)
+        rendered_content = timeout(5, lambda: _md_engine.convert(content))
 
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering
