@@ -1,5 +1,5 @@
 import subprocess
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+from typing import Callable, ContextManager, Dict, List, Tuple
 from unittest import mock
 
 import orjson
@@ -10,20 +10,20 @@ from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.utils import statsd
 
 
-def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:
+def fix_params(raw_params: Dict[str, object]) -> Dict[str, str]:
     # A few of our few legacy endpoints need their
     # individual parameters serialized as JSON.
     return {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
 
 
 class StatsMock:
-    def __init__(self, settings: Callable[..., Any]) -> None:
+    def __init__(self, settings: Callable[..., ContextManager[None]]) -> None:
         self.settings = settings
         self.real_impl = statsd
-        self.func_calls: List[Tuple[str, Iterable[Any]]] = []
+        self.func_calls: List[Tuple[str, Tuple[object, ...]]] = []
 
-    def __getattr__(self, name: str) -> Callable[..., Any]:
-        def f(*args: Any) -> None:
+    def __getattr__(self, name: str) -> Callable[..., None]:
+        def f(*args: object) -> None:
             with self.settings(STATSD_HOST=""):
                 getattr(self.real_impl, name)(*args)
             self.func_calls.append((name, args))
