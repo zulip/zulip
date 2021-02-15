@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, cast
+from typing import Any, Callable, Dict, Optional, TypeVar, cast
 from unittest import mock
 
 import orjson
@@ -409,7 +409,10 @@ class TestServiceBotConfigHandler(ZulipTestCase):
             self.bot_handler.send_message(message={"type": "private", "to": []})
 
 
-def for_all_bot_types(test_func: Callable[..., None]) -> Callable[..., None]:
+FuncT = TypeVar("FuncT", bound=Callable[..., None])
+
+
+def for_all_bot_types(test_func: FuncT) -> FuncT:
     @wraps(test_func)
     def _wrapped(*args: object, **kwargs: object) -> None:
         assert len(args) > 0
@@ -419,7 +422,7 @@ def for_all_bot_types(test_func: Callable[..., None]) -> Callable[..., None]:
             self.bot_profile.save()
             test_func(*args, **kwargs)
 
-    return _wrapped
+    return cast(FuncT, _wrapped)  # https://github.com/python/mypy/issues/1927
 
 
 class TestServiceBotEventTriggers(ZulipTestCase):
