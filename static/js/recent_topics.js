@@ -78,6 +78,12 @@ function revive_current_focus() {
     // After re-render, the current_focus_elem is no longer linked
     // to the focused element, this function attempts to revive the
     // link and focus to the element prior to the rerender.
+
+    // Don't change focus if user is trying to type anywhere.
+    if ($(".home-page-input").is(":focus")) {
+        return false;
+    }
+
     if (!current_focus_elem) {
         set_default_focus();
         return false;
