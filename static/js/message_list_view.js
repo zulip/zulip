@@ -629,10 +629,7 @@ export class MessageListView {
             }
         };
 
-        // This function processes messages into chunks with separators between them,
-        // and templates them to be inserted as table rows into the DOM.
-
-        if (message_containers.length === 0 || this.table_name === undefined) {
+        if (message_containers.length === 0) {
             return undefined;
         }
 
