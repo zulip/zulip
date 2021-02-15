@@ -14,7 +14,7 @@ from typing import Any, Dict, Tuple
 #   su zulip -c /home/zulip/deployments/current/scripts/restart-server
 
 
-################################
+################
 # Mandatory settings.
 #
 # These settings MUST be set in production. In a development environment,
