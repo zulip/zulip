@@ -407,7 +407,10 @@ function get_stream_id_buckets(stream_ids, query) {
     return buckets;
 }
 
-exports.populate_stream_settings_left_panel = function () {
+exports.render_left_panel_superset = function () {
+    // For annoying legacy reasons we render all the subs we are
+    // allowed to know about and put them in the DOM, then we do
+    // a second pass where we filter/sort them.
     const html = blueslip.measure_time("render left panel", () => {
         const sub_rows = stream_data.get_updated_unsorted_subs();
 
@@ -502,12 +505,10 @@ exports.maybe_reset_right_panel = function () {
     }
 };
 
-exports.actually_filter_streams = function () {
+exports.redraw_left_panel = function () {
     const search_params = exports.get_search_params();
     exports.filter_table(search_params);
 };
-
-const filter_streams = _.throttle(exports.actually_filter_streams, 50);
 
 // Make it explicit that our toggler is not created right away.
 exports.toggler = undefined;
@@ -525,7 +526,7 @@ exports.switch_stream_tab = function (tab_name) {
         subscribed_only = true;
     }
 
-    exports.actually_filter_streams();
+    exports.redraw_left_panel();
     stream_edit.setup_subscriptions_tab_hash(tab_name);
 };
 
@@ -539,7 +540,7 @@ exports.switch_stream_sort = function (tab_name) {
     } else {
         sort_order = "by-stream-name";
     }
-    exports.actually_filter_streams();
+    exports.redraw_left_panel();
 };
 
 exports.setup_page = function (callback) {
@@ -634,19 +635,20 @@ exports.setup_page = function (callback) {
         const rendered = render_subscription_table_body(template_data);
         $("#subscriptions_table").append(rendered);
 
-        exports.populate_stream_settings_left_panel();
+        exports.render_left_panel_superset();
         initialize_components();
-        exports.actually_filter_streams();
+        exports.redraw_left_panel();
         stream_create.set_up_handlers();
 
+        const throttled_redraw_left_panel = _.throttle(exports.redraw_left_panel, 50);
         $("#stream_filter input[type='text']").on("input", () => {
             // Debounce filtering in case a user is typing quickly
-            filter_streams();
+            throttled_redraw_left_panel();
         });
 
         $("#clear_search_stream_name").on("click", () => {
             $("#stream_filter input[type='text']").val("");
-            filter_streams();
+            exports.redraw_left_panel();
         });
 
         if (callback) {
