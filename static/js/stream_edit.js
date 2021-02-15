@@ -688,6 +688,9 @@ export function change_stream_description(e) {
 export function delete_stream(stream_id, alert_element, stream_row) {
     channel.del({
         url: "/json/streams/" + stream_id,
+        data: {
+            is_archive: JSON.stringify(true),
+        },
         error(xhr) {
             ui_report.error(i18n.t("Failed"), xhr, alert_element);
         },

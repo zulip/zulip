@@ -132,12 +132,22 @@ def check_if_removing_someone_else(
     else:
         return principals[0] != user_profile.email
 
+<<<<<<< HEAD
 
 def deactivate_stream_backend(
     request: HttpRequest, user_profile: UserProfile, stream_id: int
 ) -> HttpResponse:
+=======
+def deactivate_stream_backend(request: HttpRequest,
+                              user_profile: UserProfile,
+                              stream_id: int,
+                              is_archive: bool=True) -> HttpResponse:
+>>>>>>> passing tests
     (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
-    do_deactivate_stream(stream, acting_user=user_profile)
+
+    if (is_archive and is_archive is not None):
+        do_deactivate_stream(stream, acting_user=user_profile)
+
     return json_success()
 
 
