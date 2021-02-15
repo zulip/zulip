@@ -14,7 +14,7 @@ from typing import Any, Dict, Tuple
 ##   su zulip -c /home/zulip/deployments/current/scripts/restart-server
 
 
-################################
+################
 ## Mandatory settings.
 ##
 ## These settings MUST be set in production. In a development environment,
@@ -268,7 +268,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## client secret in zulip-secrets.conf as `social_auth_google_secret`.
 # SOCIAL_AUTH_GOOGLE_KEY = <your client ID from Google>
 
-#######
+########
 ## GitLab OAuth.
 ##
 ## To set up GitLab authentication, you'll need to do the following:
