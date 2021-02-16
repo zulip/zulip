@@ -153,7 +153,9 @@ jobs:
       - name: Check development database build
         if: ${{ matrix.is_focal }}
         run: mispipe "tools/ci/setup-backend" ts
-      # TODO: We need to port the notify_failure step from CircleCI
-      # config, however, it might be the case that GitHub notifications
-      # make this unnecessary. More details on settings to configure it:
-      # https://help.github.com/en/github/managing-subscriptions-and-notifications-on-github/configuring-notifications#github-actions-notification-options
+
+      - name: Report status
+        if: failure()
+        env:
+          ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
+        run: tools/ci/send-failure-message
