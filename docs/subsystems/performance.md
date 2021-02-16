@@ -78,16 +78,42 @@ optimizations with any cost in code readability to save a few
 milliseconds that would be invisible to the end user.
 
 In Zulip's documentation, our general rule is to primarily write facts
-that are likely to remain true for a long time.  While the numbers in
-this article will surely shift with time and hardware, we expect the
-rough sense of them (as well as the list of important endpoints) to
-remain constant for the foreseeable future.
+that are likely to remain true for a long time.  While the numbers
+presented here vary with hardware, usage patterns, and time (there's
+substantial oscillation within a 24 hour period), we the rough sense
+of them (as well as the list of important endpoints) is not likely to
+vary dramatically over time.
 
-As a spoiler, there are two categories of endpoints that are important
-for scalability: those with extremely high request volumes, and those
-with moderately high request volumes that are also expensive.  We
-first discuss the two endpoints in the first category, and then
-proceed to discuss the rest.
+``` eval_rst
+=======================   ============  ==============  ===============
+Endpoint                  Average time  Request volume  Average impact
+=======================   ============  ==============  ===============
+POST /users/me/presence   25ms          36%             9000
+GET /messages             70ms          3%              2100
+GET /                     300ms         0.3%            900
+GET /events               2ms           44%             880
+GET /user_uploads/*       12ms          5%              600
+POST /messages/flags      25ms          1.5%            375
+POST /messages            40ms          0.5%            200
+POST /users/me/*          50ms          0.04%           20
+=======================   ============  ==============  ===============
+```
+
+The "Average impact" above is computed by multiplying request volume
+by average time; this tells you roughly that endpoint's **relative**
+contribution to the steady-state total CPU load of the system.  It's
+not precise -- waiting for a network request is counted the same as
+active CPU time, but it's extremely useful for providing intuition for
+what code paths are most important to optimize, especially since
+network wait is in practice largely waiting for postgres or memcached
+to do work.
+
+As one can see, there are two categories of endpoints that are
+important for scalability: those with extremely high request volumes,
+and those with moderately high request volumes that are also
+expensive.  It doesn't matter how expensive `POST
+/users/me/subscriptions` is for scalability, because the volume is
+negligible.
 
 ### Tornado
 
