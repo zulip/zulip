@@ -1,17 +1,5 @@
 from collections import defaultdict
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Union,
-)
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Union
 
 import orjson
 from django.conf import settings
@@ -331,8 +319,6 @@ def list_subscriptions_backend(
     return json_success({"subscriptions": subscribed})
 
 
-FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Union[int, Iterable[Any]]]]
-
 add_subscriptions_schema = check_list(
     check_dict_only(
         required_keys=[("name", check_string)],
@@ -351,37 +337,34 @@ def update_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     delete: Iterable[str] = REQ(validator=remove_subscriptions_schema, default=[]),
-    add: Iterable[Mapping[str, Any]] = REQ(validator=add_subscriptions_schema, default=[]),
+    add: Iterable[Mapping[str, str]] = REQ(validator=add_subscriptions_schema, default=[]),
 ) -> HttpResponse:
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
-    method_kwarg_pairs: List[FuncKwargPair] = [
-        (add_subscriptions_backend, dict(streams_raw=add)),
-        (remove_subscriptions_backend, dict(streams_raw=delete)),
+    thunks = [
+        lambda: add_subscriptions_backend(request, user_profile, streams_raw=add),
+        lambda: remove_subscriptions_backend(request, user_profile, streams_raw=delete),
     ]
-    return compose_views(request, user_profile, method_kwarg_pairs)
+    return compose_views(thunks)
 
 
-def compose_views(
-    request: HttpRequest,
-    user_profile: UserProfile,
-    method_kwarg_pairs: "List[FuncKwargPair]",
-) -> HttpResponse:
+def compose_views(thunks: List[Callable[[], HttpResponse]]) -> HttpResponse:
     """
-    This takes a series of view methods from method_kwarg_pairs and calls
-    them in sequence, and it smushes all the json results into a single
-    response when everything goes right.  (This helps clients avoid extra
-    latency hops.)  It rolls back the transaction when things go wrong in
-    any one of the composed methods.
+    This takes a series of thunks and calls them in sequence, and it
+    smushes all the json results into a single response when
+    everything goes right.  (This helps clients avoid extra latency
+    hops.)  It rolls back the transaction when things go wrong in any
+    one of the composed methods.
 
     TODO: Move this a utils-like module if we end up using it more widely.
+
     """
 
     json_dict: Dict[str, Any] = {}
     with transaction.atomic():
-        for method, kwargs in method_kwarg_pairs:
-            response = method(request, user_profile, **kwargs)
+        for thunk in thunks:
+            response = thunk()
             if response.status_code != 200:
                 raise JsonableError(response.content)
             json_dict.update(orjson.loads(response.content))
@@ -463,7 +446,7 @@ EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
 def add_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    streams_raw: Iterable[Dict[str, str]] = REQ(
+    streams_raw: Iterable[Mapping[str, str]] = REQ(
         "subscriptions", validator=add_subscriptions_schema
     ),
     invite_only: bool = REQ(validator=check_bool, default=False),
