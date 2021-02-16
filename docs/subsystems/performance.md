@@ -11,8 +11,8 @@ First, a few notes on philosophy.
   because that's an important part of user experience for a real-time
   collaboration tool like Zulip.  Many UI features in the Zulip webapp
   are designed to load instantly, because all the data required for
-  them is present in the initial HTTP request to, and both the Zulip
-  API and webapp are architected around strategy.
+  them is present in the initial HTTP response, and both the Zulip
+  API and webapp are architected around that strategy.
 * The Zulip database model and server implementation are carefully
   designed to ensure that every common operation is efficient, with
   automated tests designed to prevent the accidental introductions of
@@ -24,13 +24,13 @@ See also [scalability for production users](../production/requirements.html#scal
 
 ## Load profiles
 
-Whenever one's thinking about scalability and performance, it's
+When thinking about scalability and performance, it's
 important to understand the load profiles for production uses.
 
 Zulip servers typically involve a mixture of two very different types
 of load profiles:
 * Open communities like open source projects, online classes,
-  etc. with large numbers of users, many of whom are idle.  (Many of
+  etc. have large numbers of users, many of whom are idle.  (Many of
   the others likely stopped by to ask a question, got it answered, and
   then didn't need the community again for the next year).  Our own
   [chat.zulip.org](../contributing/chat-zulip-org.md) is a good
@@ -41,7 +41,7 @@ of load profiles:
   to ensure idle users have minimal impact on both server-side
   scalability and request latency.
 * Fulltime teams, like your typical corporate Zulip installation,
-  where most users are active for multiple hours a day and sending a
+  have users who are mostly active for multiple hours a day and sending a
   high volume of messages each.  This load profile is most important
   for self-hosted servers, since many of those are used exclusively by
   the employees of the organization running the server.
