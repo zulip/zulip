@@ -433,7 +433,6 @@ exports.filter_table = function (left_panel_params) {
     }
 
     const widgets = new Map();
-    const streams_list_scrolltop = ui.get_scroll_element($(".streams-list")).scrollTop();
 
     const stream_ids = [];
 
@@ -478,9 +477,6 @@ exports.filter_table = function (left_panel_params) {
     }
 
     exports.maybe_reset_right_panel();
-
-    // this puts the scrollTop back to what it was before the list was updated again.
-    ui.get_scroll_element($(".streams-list")).scrollTop(streams_list_scrolltop);
 };
 
 let sort_order = "by-stream-name";
