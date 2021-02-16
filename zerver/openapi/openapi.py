@@ -402,6 +402,14 @@ def likely_deprecated_parameter(parameter_description: str) -> bool:
     return "**Deprecated**" in parameter_description
 
 
+def check_deprecated_consistency(argument: Dict[str, Any], description: str) -> None:
+    # Test to make sure deprecated parameters are marked so.
+    if likely_deprecated_parameter(description):
+        assert argument["deprecated"]
+    if "deprecated" in argument:
+        assert likely_deprecated_parameter(description)
+
+
 # Skip those JSON endpoints whose query parameters are different from
 # their `/api/v1` counterpart.  This is a legacy code issue that we
 # plan to fix by changing the implementation.

@@ -8,7 +8,7 @@ from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from zerver.openapi.openapi import get_openapi_parameters, likely_deprecated_parameter
+from zerver.openapi.openapi import check_deprecated_consistency, get_openapi_parameters
 
 REGEXP = re.compile(r"\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+)\s*\}")
 
@@ -139,9 +139,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             else:
                 required_block = '<span class="api-argument-optional">optional</span>'
 
-            # Test to make sure deprecated parameters are marked so.
-            if likely_deprecated_parameter(description):
-                assert argument["deprecated"]
+            check_deprecated_consistency(argument, description)
             if argument.get("deprecated", False):
                 deprecated_block = '<span class="api-argument-deprecated">Deprecated</span>'
             else:
