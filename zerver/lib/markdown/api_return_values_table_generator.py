@@ -7,7 +7,7 @@ import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from zerver.openapi.openapi import get_openapi_return_values, likely_deprecated_parameter
+from zerver.openapi.openapi import check_deprecated_consistency, get_openapi_return_values
 
 from .api_arguments_table_generator import generate_data_type
 
@@ -134,9 +134,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 continue
             description = return_values[return_value]["description"]
             data_type = generate_data_type(return_values[return_value])
-            # Test to make sure deprecated keys are marked appropriately.
-            if likely_deprecated_parameter(description):
-                assert return_values[return_value]["deprecated"]
+            check_deprecated_consistency(return_values[return_value], description)
             ans.append(self.render_desc(description, spacing, data_type, return_value))
             if "properties" in return_values[return_value]:
                 ans += self.render_table(return_values[return_value]["properties"], spacing + 4)
