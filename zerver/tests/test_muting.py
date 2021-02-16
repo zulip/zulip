@@ -16,6 +16,29 @@ from zerver.models import MutedTopic, UserProfile, get_stream
 
 
 class MutedTopicsTests(ZulipTestCase):
+    def test_get_deactivated_muted_topic(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        stream = get_stream("Verona", user.realm)
+        recipient = stream.recipient
+
+        mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
+
+        add_topic_mute(
+            user_profile=user,
+            stream_id=stream.id,
+            recipient_id=recipient.id,
+            topic_name="Verona3",
+            date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
+        )
+
+        stream.deactivated = True
+        stream.save()
+
+        self.assertNotIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
+        self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user, True))
+
     def test_user_ids_muting_topic(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
