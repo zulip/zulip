@@ -99,6 +99,12 @@ jobs:
           path: /tmp/production-build
           retention-days: 14
 
+      - name: Report status
+        if: failure()
+        env:
+          ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
+        run: tools/ci/send-failure-message
+
   production_install:
     strategy:
       fail-fast: false
@@ -142,6 +148,7 @@ jobs:
           chmod +x /tmp/production-upgrade-pg
           chmod +x /tmp/production-install
           chmod +x /tmp/production-verify
+          chmod +x /tmp/send-failure-message
 
       - name: Create cache directories
         run: |
@@ -181,3 +188,9 @@ jobs:
       - name: Verify install after upgrading postgresql
         if: ${{ matrix.is_bionic }}
         run: sudo mispipe "/tmp/production-verify 2>&1" ts
+
+      - name: Report status
+        if: failure()
+        env:
+          ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
+        run: /tmp/send-failure-message
