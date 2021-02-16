@@ -80,9 +80,9 @@ milliseconds that would be invisible to the end user.
 In Zulip's documentation, our general rule is to primarily write facts
 that are likely to remain true for a long time.  While the numbers
 presented here vary with hardware, usage patterns, and time (there's
-substantial oscillation within a 24 hour period), we the rough sense
-of them (as well as the list of important endpoints) is not likely to
-vary dramatically over time.
+substantial oscillation within a 24 hour period), we expect the rough
+sense of them (as well as the list of important endpoints) is not
+likely to vary dramatically over time.
 
 ``` eval_rst
 =======================   ============  ==============  ===============
@@ -105,13 +105,13 @@ contribution to the steady-state total CPU load of the system.  It's
 not precise -- waiting for a network request is counted the same as
 active CPU time, but it's extremely useful for providing intuition for
 what code paths are most important to optimize, especially since
-network wait is in practice largely waiting for postgres or memcached
-to do work.
+network wait is in practice largely waiting for PostgreSQL or
+memcached to do work.
 
 As one can see, there are two categories of endpoints that are
 important for scalability: those with extremely high request volumes,
 and those with moderately high request volumes that are also
-expensive.  It doesn't matter how expensive `POST
+expensive.  It doesn't matter how expensive, for example, `POST
 /users/me/subscriptions` is for scalability, because the volume is
 negligible.
 
