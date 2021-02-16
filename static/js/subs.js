@@ -529,7 +529,6 @@ exports.switch_stream_tab = function (tab_name) {
     stream_edit.setup_subscriptions_tab_hash(tab_name);
 };
 
-exports.sort_toggler = undefined;
 exports.switch_stream_sort = function (tab_name) {
     if (
         tab_name === "by-stream-name" ||
@@ -560,7 +559,7 @@ exports.setup_page = function (callback) {
     function initialize_components() {
         // Sort by name by default when opening "Manage streams".
         sort_order = "by-stream-name";
-        exports.sort_toggler = components.toggle({
+        const sort_toggler = components.toggle({
             values: [
                 {
                     label_html: `<i class="fa fa-sort-alpha-asc" title="${i18n.t(
@@ -586,7 +585,7 @@ exports.setup_page = function (callback) {
                 exports.switch_stream_sort(key);
             },
         });
-        $("#subscriptions_table .search-container").prepend(exports.sort_toggler.get());
+        $("#subscriptions_table .search-container").prepend(sort_toggler.get());
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Manage streams".
