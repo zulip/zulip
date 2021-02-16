@@ -39,6 +39,7 @@ class zulip_ops::profile::smokescreen {
     ensure  => 'link',
     target  => "/usr/local/bin/smokescreen-${version}",
     require => Exec['compile smokescreen'],
+    notify  => Service[supervisor],
   }
 
   file { '/etc/supervisor/conf.d/smokescreen.conf':
@@ -50,7 +51,7 @@ class zulip_ops::profile::smokescreen {
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip_ops/supervisor/conf.d/smokescreen.conf',
+    content => template('zulip_ops/supervisor/conf.d/smokescreen.conf.erb'),
     notify  => Service[supervisor],
   }
 }
