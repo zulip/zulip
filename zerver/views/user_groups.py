@@ -1,4 +1,4 @@
-from typing import List, Sequence
+from typing import Sequence
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -24,7 +24,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.users import user_ids_to_users
 from zerver.lib.validator import check_int, check_list
 from zerver.models import UserProfile
-from zerver.views.streams import FuncKwargPair, compose_views
+from zerver.views.streams import compose_views
 
 
 @require_user_group_edit_permission
@@ -95,15 +95,19 @@ def update_user_group_backend(
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
-    method_kwarg_pairs: List[FuncKwargPair] = [
-        (add_members_to_group_backend, dict(user_group_id=user_group_id, members=add)),
-        (remove_members_from_group_backend, dict(user_group_id=user_group_id, members=delete)),
+    thunks = [
+        lambda: add_members_to_group_backend(
+            request, user_profile, user_group_id=user_group_id, members=add
+        ),
+        lambda: remove_members_from_group_backend(
+            request, user_profile, user_group_id=user_group_id, members=delete
+        ),
     ]
-    return compose_views(request, user_profile, method_kwarg_pairs)
+    return compose_views(thunks)
 
 
 def add_members_to_group_backend(
-    request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: List[int]
+    request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
 ) -> HttpResponse:
     if not members:
         return json_success()
@@ -125,7 +129,7 @@ def add_members_to_group_backend(
 
 
 def remove_members_from_group_backend(
-    request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: List[int]
+    request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
 ) -> HttpResponse:
     if not members:
         return json_success()

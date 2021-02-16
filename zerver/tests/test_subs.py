@@ -6,7 +6,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.decorator import JsonableError
@@ -2873,16 +2873,16 @@ class SubscriptionRestApiTest(ZulipTestCase):
         user_profile.full_name = "Hamlet"
         user_profile.save()
 
-        def method1(req: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+        def thunk1() -> HttpResponse:
             user_profile.full_name = "Should not be committed"
             user_profile.save()
             return json_success()
 
-        def method2(req: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+        def thunk2() -> HttpResponse:
             return json_error("random failure")
 
         with self.assertRaises(JsonableError):
-            compose_views(None, user_profile, [(method1, {}), (method2, {})])
+            compose_views([thunk1, thunk2])
 
         user_profile = self.example_user("hamlet")
         self.assertEqual(user_profile.full_name, "Hamlet")
