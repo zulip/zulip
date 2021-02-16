@@ -477,6 +477,9 @@ exports.filter_table = function (left_panel_params) {
     }
 
     exports.maybe_reset_right_panel();
+
+    // return this for test convenience
+    return [...buckets.name, ...buckets.desc];
 };
 
 let sort_order = "by-stream-name";
