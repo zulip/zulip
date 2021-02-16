@@ -31,58 +31,58 @@ run_test("filter_table", (override) => {
     override(subs, "add_tooltips_to_left_panel", () => {});
 
     // set-up sub rows stubs
-    const sub_row_data = [
-        {
-            elem: "denmark",
-            subscribed: false,
-            name: "Denmark",
-            stream_id: denmark_stream_id,
-            description: "Copenhagen",
-            subscribers: [1],
-            stream_weekly_traffic: null,
-            color: "red",
-        },
-        {
-            elem: "poland",
-            subscribed: true,
-            name: "Poland",
-            stream_id: 102,
-            description: "monday",
-            subscribers: [1, 2, 3],
-            stream_weekly_traffic: 13,
-            color: "red",
-        },
-        {
-            elem: "pomona",
-            subscribed: true,
-            name: "Pomona",
-            stream_id: 103,
-            description: "college",
-            subscribers: [],
-            stream_weekly_traffic: 0,
-            color: "red",
-        },
-        {
-            elem: "cpp",
-            subscribed: true,
-            name: "C++",
-            stream_id: 104,
-            description: "programming lang",
-            subscribers: [1, 2],
-            stream_weekly_traffic: 6,
-            color: "red",
-        },
-        {
-            elem: "zzyzx",
-            subscribed: true,
-            name: "Zzyzx",
-            stream_id: 105,
-            description: "california town",
-            subscribers: [1, 2],
-            stream_weekly_traffic: 6,
-            color: "red",
-        },
-    ];
+    const denmark = {
+        elem: "denmark",
+        subscribed: false,
+        name: "Denmark",
+        stream_id: denmark_stream_id,
+        description: "Copenhagen",
+        subscribers: [1],
+        stream_weekly_traffic: null,
+        color: "red",
+    };
+    const poland = {
+        elem: "poland",
+        subscribed: true,
+        name: "Poland",
+        stream_id: 102,
+        description: "monday",
+        subscribers: [1, 2, 3],
+        stream_weekly_traffic: 13,
+        color: "red",
+    };
+    const pomona = {
+        elem: "pomona",
+        subscribed: true,
+        name: "Pomona",
+        stream_id: 103,
+        description: "college",
+        subscribers: [],
+        stream_weekly_traffic: 0,
+        color: "red",
+    };
+    const cpp = {
+        elem: "cpp",
+        subscribed: true,
+        name: "C++",
+        stream_id: 104,
+        description: "programming lang",
+        subscribers: [1, 2],
+        stream_weekly_traffic: 6,
+        color: "red",
+    };
+    const zzyzx = {
+        elem: "zzyzx",
+        subscribed: true,
+        name: "Zzyzx",
+        stream_id: 105,
+        description: "california town",
+        subscribers: [1, 2],
+        stream_weekly_traffic: 6,
+        color: "red",
+    };
+
+    const sub_row_data = [denmark, poland, pomona, cpp, zzyzx];
 
     for (const sub of sub_row_data) {
         stream_data.create_sub_from_server_data(sub);
