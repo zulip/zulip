@@ -13,7 +13,7 @@ integrations, all open source.
 
 Zulip has gained a considerable amount of traction since it was
 [released as open source software][oss-release] in late 2015, with
-code contributions from [over 500 people](https://zulip.com/team)
+code contributions from [over 700 people](https://zulip.com/team)
 from all around the world.  Thousands of people use Zulip every single
 day, and your work on Zulip will have impact on the daily experiences
 of a large and rapidly growing number of people.
@@ -26,7 +26,7 @@ experience disciplined code reviews by highly experienced
 engineers.  Since Zulip is a team chat product, your GSoC experience
 with the Zulip project will be highly interactive.
 
-As part of that commitment, Zulip has over 150,000 words of
+As part of that commitment, Zulip has over 160,000 words of
 [documentation for
 developers](../index.html#welcome-to-the-zulip-documentation), much of
 it designed to explain not just how Zulip works, but why Zulip works
