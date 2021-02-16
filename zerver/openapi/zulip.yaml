@@ -6045,9 +6045,11 @@ paths:
                           Present if `message` is present in `fetch_event_types`.
 
                           The highest message ID among all messages the user has received as of the
-                          moment of this request.  Recommended for client-side logic only; clients wishing
-                          to fetch the latest messages should simply pass `anchor="latest"` to
-                          `GET /messages`.
+                          moment of this request.
+
+                          **Deprecated**: This field may be removed in future versions as it no
+                          longer has a clear purpose.  Clients wishing to fetch the latest messages
+                          should pass `anchor="latest"` to `GET /messages`.
                       muted_topics:
                         type: array
                         description: |
