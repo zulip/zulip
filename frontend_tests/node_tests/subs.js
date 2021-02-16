@@ -28,18 +28,6 @@ set_global("hash_util", {
 });
 
 run_test("filter_table", () => {
-    const stream_list = $(".streams-list");
-
-    let scrolltop_called = false;
-    stream_list.scrollTop = function (set) {
-        scrolltop_called = true;
-        if (!set) {
-            return 10;
-        }
-        assert.equal(set, 10);
-        return this;
-    };
-
     // set-up sub rows stubs
     const sub_row_data = [
         {
@@ -167,7 +155,6 @@ run_test("filter_table", () => {
 
     // assert these once and call it done
     assert(ui_called);
-    assert(scrolltop_called);
     assert(tooltip_called);
     assert.deepEqual(sub_table_append, [
         ".stream-row-poland",
