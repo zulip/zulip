@@ -35,7 +35,7 @@ the way that it does.
 ### Our history with Google Open Source Programs
 
 Zulip has been a GSoC mentoring organization since 2016, and we aim
-for 10-20 GSoC students each summer.  We have some of the highest
+for 15-20 GSoC students each summer.  We have some of the highest
 standards of any GSoC organization; successful applications generally
 have dozens of commits integrated into Zulip or other open source
 projects by the time we review their application.  See [our
@@ -44,10 +44,16 @@ getting involved with GSoC.
 
 Zulip participated in GSoC 2016 and mentored three successful students
 officially (plus 4 more who did their proposed projects unofficially).
-We had 14 (+3) students in 2017, 10 (+3) students in 2018, and 17 (+1)
-in 2019.  We've also mentored five Outreachy interns and hundreds of
-Google Code-In participants (several of who are major contributors to
-the project today).
+We had 14 (+3) students in 2017, 10 (+3) students in 2018, 17 (+1) in
+2019, and 18 in 2020.  We've also mentored five Outreachy interns and
+hundreds of Google Code-In participants (several of who are major
+contributors to the project today).
+
+While GSoC switched to a shorter coding period in 2021, we expect to
+run a program that's very similar to past years in terms of how we
+select and mentor students during the Spring (though with an
+appropriately reduced expectation for students' time commitment during
+the summer).
 
 ### Expectations for GSoC students
 
@@ -67,7 +73,9 @@ We also recommend reviewing
 
 Finally, keep your eye on
 [the GSoC timeline](https://developers.google.com/open-source/gsoc/timeline). The
-student application deadline is March 31, 2020.
+student application deadline is April 13, 2021.  However, as is
+discussed in detail later in this document, we recommend against
+working on a proposal until 2 weeks before the deadline.
 
 ## Getting started
 
@@ -161,12 +169,13 @@ post.](https://www.harihareswara.net/sumana/2016/10/12/0)
 
 ## Mentors
 
-We have more than a dozen Zulip contributors who are interested in
-mentoring projects.  We usually decide which contributors are
-mentoring which projects based in part on who is a good fit for the
-needs of each student as well as technical expertise.  You can reach
-us via [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on
-[the Zulip development community server](../contributing/chat-zulip-org.md),
+Zulip has dozens of longtime contributors who sign up to mentoring
+projects.  We usually decide who will mentor which projects based in
+part on who is a good fit for the needs of each student as well as
+technical expertise as well as who has available time during the
+summer.  You can reach us via
+[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on [the Zulip
+development community server](../contributing/chat-zulip-org.md),
 (compose a new stream message with your name as the topic).
 
 Zulip operates under group mentorship.  That means you should
@@ -176,7 +185,8 @@ an appropriate public stream on chat.zulip.org and someone will help
 you.  We list the Zulip contributors who are experts for various
 projects by name below; they will likely be able to provide you with
 the best feedback on your proposal (feel free to @-mention them in
-your Zulip post).
+your Zulip post). In practice, this allows project leadership to
+be involved in mentoring all students.
 
 However, the first and most important thing to do for building a
 strong application is to show your skills by contributing to a large
@@ -224,11 +234,26 @@ For all of our projects, an important skill to develop is a good
 command of Git; read [our Git Guide](../git/overview.md) in full to
 learn how to use it well.  Of particular importance is mastering using
 Git rebase so that you can construct commits that are clearly correct
-and explain why they are correct.
+and explain why they are correct. We highly recommend investing in
+learning a [graphical Git client](../git/setup.md) and learning to
+write good commit structures and messages; this is more important than
+any other single skill for contributing to a large open source
+project like Zulip.
+
+We will never reject a strong student because their project idea was
+not a top priority, whereas we often reject students proposing
+projects important to the project where we haven't seen compelling
+work from the student.
+
+More important to us than specific deliverables in a project proposal
+is a clear body of work to focus on; E.g. if we see a proposal with 8
+markdown processor issues, we'll interpret this as a student excited
+to work on the markdown processor for the summer, even if the specific
+set of 8 issues may not be the right ones to invest in.
 
 ### Focus areas
 
-For 2020, we are particularly interested in GSoC students who have
+For 2021, we are particularly interested in GSoC students who have
 strong skills at visual design, HTML/CSS, mobile development,
 performance optimization, or Electron.  So if you're a student with
 those skills and are looking for an organization to join, we'd love to
@@ -543,17 +568,16 @@ app or the Zulip web frontend (which is used by the electron app).
 
 If you're applying to GSoC, we'd like for you to publicly post a few
 sections of your proposal -- the project summary, list of
-deliverables, and timeline -- some place public on the Web, sometime
-in February or March. That way, the whole developer community -- not
-just the mentors and administrators -- have a chance to give you
-feedback and help you improve your proposal.
+deliverables, and timeline -- some place public on the Web, a week or
+two before the application deadline. That way, the whole developer
+community -- not just the mentors and administrators -- have a chance
+to give you feedback and help you improve your proposal.
 
 Where should you publish your draft?  We prefer Dropbox Paper or
-Google Docs (or even just a message in Zulip), since those platforms
-allow people to look at the text without having to log in or download
-a particular app, and you can update the draft as you improve your
-idea.  In either case, you should post the draft for feedback in
-chat.zulip.org.
+Google Docs, since those platforms allow people to look at the text
+without having to log in or download a particular app, and you can
+update the draft as you improve your idea.  In either case, you should
+post the draft for feedback in chat.zulip.org.
 
 Rough is fine! The ideal first draft to get feedback from the
 community on should include primarily (1) links to your contributions
@@ -563,7 +587,6 @@ you improve the sections of your application explaining who you are,
 and this helps the community focus feedback on the areas you can most
 improve (e.g. either doing more contributions or adjusting the project
 plan).
-
 
 We hope to hear from you! And thanks for being interested in
 Zulip. We're always happy to help volunteers get started contributing
