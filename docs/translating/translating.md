@@ -51,6 +51,15 @@ Some useful tips for your translating journey:
   HTML tags `<...>` or enclosed like `__variable__` or
   `{{ variable }}`); just keep them verbatim.
 
+- When context is unclear, you may find [GitHub
+  search](https://github.com/search?q=org%3Azulip+%22alert+word+already+exists%22&type=code)
+  helpful for finding the code using a given string (ignore `.po` and
+  `.json` matches, and note the search box is semi-invisible in the
+  upper-left corner of the page), or looking at the "Occurences"
+  section in the Transifex UI, browsing to the file on
+  [GitHub](https://github.com/zulip/zulip/), and then searching for
+  the string with `Ctrl+F` in your browser.
+
 - When in doubt, ask for context in
   [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
   the [Zulip development community server](../contributing/chat-zulip-org.md).
