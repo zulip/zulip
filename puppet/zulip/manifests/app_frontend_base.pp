@@ -50,6 +50,14 @@ class zulip::app_frontend_base {
       content => template('zulip/accept-loadbalancer.conf.template.erb'),
       notify  => Service['nginx'],
     }
+    file { '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf':
+      require => File['/etc/nginx/zulip-include/app.d'],
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0644',
+      source  => 'puppet:///modules/zulip/nginx/zulip-include-app.d/keepalive-loadbalancer.conf',
+      notify  => Service['nginx'],
+    }
   }
 
   file { '/etc/nginx/zulip-include/upstreams':
