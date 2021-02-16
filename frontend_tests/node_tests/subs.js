@@ -27,7 +27,9 @@ set_global("hash_util", {
     by_stream_uri: () => {},
 });
 
-run_test("filter_table", () => {
+run_test("filter_table", (override) => {
+    override(subs, "add_tooltips_to_left_panel", () => {});
+
     // set-up sub rows stubs
     const sub_row_data = [
         {
@@ -102,23 +104,10 @@ run_test("filter_table", () => {
         sub_stubs.push(sub_row);
 
         $(sub_row).attr("data-stream-id", data.stream_id);
-        $(sub_row).set_find_results(
-            '.sub-info-box [class$="-bar"] [class$="-count"]',
-            $(".tooltip"),
-        );
         $(sub_row).detach = function () {
             return sub_row;
         };
     }
-
-    let tooltip_called = false;
-    $(".tooltip").tooltip = function (obj) {
-        tooltip_called = true;
-        assert.deepEqual(obj, {
-            placement: "left",
-            animation: false,
-        });
-    };
 
     $.stub_selector("#subscriptions_table .stream-row", sub_stubs);
 
@@ -155,7 +144,6 @@ run_test("filter_table", () => {
 
     // assert these once and call it done
     assert(ui_called);
-    assert(tooltip_called);
     assert.deepEqual(sub_table_append, [
         ".stream-row-poland",
         ".stream-row-pomona",
