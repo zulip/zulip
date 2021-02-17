@@ -28,7 +28,7 @@ set_global("hash_util", {
 });
 
 run_test("filter_table", (override) => {
-    override(subs, "add_tooltips_to_left_panel", () => {});
+    override(subs, "add_tooltip_to_left_panel_row", () => {});
 
     // set-up sub rows stubs
     const denmark = {
