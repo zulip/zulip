@@ -9,6 +9,7 @@ from typing_extensions import TypedDict
 from zerver.lib.exceptions import StreamAdministratorRequired
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.request import JsonableError
+from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.models import (
     DefaultStreamGroup,
     Realm,
@@ -642,3 +643,18 @@ def get_stream_by_narrow_operand_access_unchecked(operand: Union[str, int], real
     if isinstance(operand, str):
         return get_stream(operand, realm)
     return get_stream_by_id_in_realm(operand, realm)
+
+
+def get_subscribed_streams_for_user_by_history_public_to_subscribers(
+    realm: Realm, user_profile: Optional[UserProfile], history_public_to_subscribers: bool
+) -> "QuerySet[Stream]":
+
+    assert user_profile is not None
+
+    subscribed_stream_ids = get_subscribed_stream_ids_for_user(user_profile)
+
+    return Stream.objects.filter(
+        realm=realm,
+        id__in=subscribed_stream_ids,
+        history_public_to_subscribers=history_public_to_subscribers,
+    )
