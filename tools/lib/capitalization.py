@@ -157,6 +157,11 @@ IGNORED_PHRASES = [
     r"your-organization-url",
     # Used in invite modal
     r"or",
+    # Incorrectly treated as a separate sentence
+    # If you run into this in the future, it may be worth changing the
+    # SPLIT_BOUNDARY_REGEX to require whitespace, but I'm not changing it just
+    # for this for fear of false negatives.
+    r"{stream.name}",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

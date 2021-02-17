@@ -625,16 +625,27 @@ def send_messages_for_new_subscribers(
         notifications_stream = user_profile.realm.get_notifications_stream()
         if notifications_stream is not None:
             with override_language(notifications_stream.realm.default_language):
-                if len(created_streams) > 1:
-                    content = _("{user_name} created the following streams: {stream_str}.")
-                else:
-                    content = _("{user_name} created a new stream {stream_str}.")
                 topic = _("new streams")
 
-            content = content.format(
-                user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
-                stream_str=", ".join(f"#**{s.name}**" for s in created_streams),
-            )
+                user_name = f"@_**{user_profile.full_name}|{user_profile.id}**"
+
+                announce_messages = []
+
+                for stream in created_streams:
+                    if stream.description != "":
+                        announce_messages.append(
+                            _(
+                                "{user_name} created a new stream #**{stream.name}** (*{stream.description}*)."
+                            ).format(user_name=user_name, stream=stream)
+                        )
+                    else:
+                        announce_messages.append(
+                            _("{user_name} created a new stream #**{stream.name}**.").format(
+                                user_name=user_name, stream=stream
+                            )
+                        )
+
+                content = "\n\n".join(announce_messages)
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
 
