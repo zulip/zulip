@@ -40,8 +40,13 @@
 -A INPUT -p tcp --dport https      -j ACCEPT
 -A INPUT -p tcp --dport postgresql -j ACCEPT
 
+<% if @fqdn.include? "smokescreen" -%>
 #                       Smokescreen proxy
 -A INPUT -p tcp --dport 4750       -j ACCEPT
+
+#                       Camo proxy
+-A INPUT -p tcp --dport 9292       -j ACCEPT
+<% end -%>
 
 #                       statsd
 -A INPUT -p udp --dport 8125       -j ACCEPT
