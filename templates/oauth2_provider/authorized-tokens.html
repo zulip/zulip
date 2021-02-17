@@ -1,0 +1,30 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% block portico_content %}
+<div class="oauth-account flex full-page">
+    <div class="center-block new-style">
+
+        <form class="form-horizontal white-box" id="registration" method="post">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+            <div class="pitch">
+                <h1>{{ Tokens.client_id }}</h1>
+            </div>
+
+            <div class="block-center white-box">
+                <ul class="unstyled">
+                    <li>
+                        {{ authorized_token.application }}
+                        <a href="/o/applications/{{ application.id }}/delete"><b>{{ ("Go Back") }}</b>revoke</a>
+                    </li>
+                    <ul>
+                        <li>{{ scope_name }}: {{ scope_description }}</li>
+                    </ul>
+                    <li>{{ ("There are no authorized tokens yet.") }}</li>
+                </ul>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
