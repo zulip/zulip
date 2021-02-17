@@ -892,10 +892,18 @@ default: OSError: [Errno 26] Text file busy: 'baremetrics'
 
 This error is caused by a
 [bug](https://www.virtualbox.org/ticket/19004) in recent versions of
-the VirtualBox Guest Additions for Linux on Windows hosts.  It has not
-been fixed upstream as of this writing, but you may be able to work
-around it by downgrading VirtualBox Guest Additions to 6.0.4.  To do
-this, create a `~/.zulip-vagrant-config` file and add this line:
+the VirtualBox Guest Additions for Linux on Windows hosts.  You can
+check the running version of VirtualBox Guest Additions with this
+command:
+
+```
+vagrant ssh -- 'modinfo -F version vboxsf'
+```
+
+The bug has not been fixed upstream as of this writing, but you may be
+able to work around it by downgrading VirtualBox Guest Additions to
+6.0.4.  To do this, create a `~/.zulip-vagrant-config` file and add
+this line:
 
 ```
 VBOXADD_VERSION 6.0.4
