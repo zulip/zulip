@@ -1,0 +1,26 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% block portico_content %}
+<div class="oauth-account flex full-page">
+    <div class="center-block new-style">
+
+        <div class="pitch">
+            <h1>{{ _("Your applications") }}</h1>
+        </div>
+
+        <div class="white-box">
+            <ul>
+                {% for application in applications %}
+                <li><a href="/o/applications/{{ application.id }}">{{ application.name }}</a></li>
+                {% endfor %}
+            </ul>
+
+            <a href="{{ 'register' }}">
+                <div class="oauth-button-box">
+                    <button class="oauth-button" type="submit">{{ _('Create New Applcation') }}</button>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
