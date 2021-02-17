@@ -216,21 +216,9 @@ exports.set_color = function (stream_id, color) {
     stream_edit.set_stream_property(sub, "color", color);
 };
 
-exports.rerender_subscriptions_settings = function (sub) {
-    // This rerendes the subscriber data for a given sub object
-    // where it might have already been rendered in the subscriptions UI.
-    if (typeof sub === "undefined") {
-        blueslip.error("Undefined sub passed to function rerender_subscriptions_settings");
-        return;
-    }
+exports.update_subscribers_ui = function (sub) {
     stream_ui_updates.update_subscribers_count(sub);
     stream_ui_updates.update_subscribers_list(sub);
-};
-
-exports.update_subscribers_ui = function (sub) {
-    // We rely on rerender_subscriptions_settings to complete the
-    // stream_data subscribers count update
-    exports.rerender_subscriptions_settings(sub);
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 };
 
@@ -325,7 +313,8 @@ exports.add_tooltip_to_left_panel_row = (row) => {
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
-    exports.rerender_subscriptions_settings(sub);
+    stream_ui_updates.update_subscribers_count(sub);
+    stream_ui_updates.update_subscribers_list(sub);
     stream_ui_updates.update_check_button_for_sub(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_regular_sub_settings(sub);
