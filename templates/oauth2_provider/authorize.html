@@ -1,0 +1,47 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% block portico_content %}
+<div class="oauth-account flex full-page">
+    <div class="center-block new-style">
+
+        <h1 class="block-center">
+            {% block app_form_title %}
+            {{ _("Authorize") }} {{ application.name }}
+            {% endblock %}
+        </h1>
+
+        {% if not error %}
+        <form class="form-horizontal white-box" method="post" id="authorizationForm">
+
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+            {% for field in form %}
+                {% if field.is_hidden %}
+                {{ field }}
+                {% endif %}
+            {% endfor %}
+
+            <p>{{ _("Application requires following permissions") }}</p>
+            <ul>
+                {% for scope in scopes_descriptions %}
+                <li>{{ scope }}</li>
+                {% endfor %}
+            </ul>
+
+            <div class="block-center">
+                <button class="oauth-button" type="submit" value="Cancle">{{ _('Cancel') }}</button>
+                <button class="oauth-button" type="submit" name="allow" value="Authorize">{{ _('Authorize') }}</button>
+            </div>
+
+        </form>
+
+        {% else %}
+        <h2>Error: {{ error.error }}</h2>
+        <p> {{ error.description }} </p>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
