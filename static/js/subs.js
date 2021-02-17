@@ -37,6 +37,10 @@ exports.row_for_stream_id = function (stream_id) {
     return $(`.stream-row[data-stream-id='${CSS.escape(stream_id)}']`);
 };
 
+exports.is_sub_already_present = function (sub) {
+    return exports.row_for_stream_id(sub.stream_id).length > 0;
+};
+
 exports.settings_button_for_sub = function (sub) {
     // We don't do expectOne() here, because this button is only
     // visible if the user has that stream selected in the streams UI.
@@ -264,16 +268,6 @@ exports.add_sub_to_table = function (sub) {
         exports.row_for_stream_id(sub.stream_id).trigger("click");
         stream_create.reset_created_stream();
     }
-};
-
-exports.is_sub_already_present = function (sub) {
-    // This checks if a stream is already listed the "Manage streams"
-    // UI, by checking for its subscribe/unsubscribe checkmark button.
-    const button = exports.check_button_for_sub(sub);
-    if (button.length !== 0) {
-        return true;
-    }
-    return false;
 };
 
 exports.remove_stream = function (stream_id) {
