@@ -1,27 +1,6 @@
-import render_subscription_count from "../templates/subscription_count.hbs";
-import render_subscription_setting_icon from "../templates/subscription_setting_icon.hbs";
 import render_subscription_type from "../templates/subscription_type.hbs";
 
 import * as peer_data from "./peer_data";
-
-export function update_check_button_for_sub(sub) {
-    /*
-        TODO: remove update_check_button_for_sub
-
-        <div class="check {{#if subscribed }}checked{{/if}} sub_unsub_button {{#unless should_display_subscription_button}}disabled{{/unless}}">
-    */
-    const button = subs.check_button_for_sub(sub);
-    if (sub.subscribed) {
-        button.addClass("checked");
-    } else {
-        button.removeClass("checked");
-    }
-    if (sub.should_display_subscription_button) {
-        button.removeClass("disabled");
-    } else {
-        button.addClass("disabled");
-    }
-}
 
 export function initialize_disable_btn_hint_popover(
     btn_wrapper,
@@ -143,39 +122,6 @@ export function update_stream_row_in_settings_tab(sub) {
     }
 }
 
-export function update_stream_privacy_type_icon(sub) {
-    /*
-        TODO: remove update_stream_privacy_type_icon
-
-        {{#if invite_only}}
-        <i class="fa fa-lock" aria-hidden="true"></i>
-        {{else if is_web_public}}
-        <i class="fa fa-globe fa-lg" aria-hidden="true"></i>
-        {{else}}
-        <span class="hashtag">#</span>
-        {{/if}}
-
-    */
-    const stream_settings = stream_edit.settings_for_sub(sub);
-    const sub_row = subs.row_for_stream_id(sub.stream_id);
-    const html = render_subscription_setting_icon(sub);
-
-    if (overlays.streams_open()) {
-        sub_row.find(".icon").expectOne().replaceWith($(html));
-    }
-    if (stream_edit.is_sub_settings_active(sub)) {
-        const large_icon = stream_settings.find(".large-icon").expectOne();
-        if (sub.invite_only) {
-            large_icon
-                .removeClass("hash")
-                .addClass("lock")
-                .html("<i class='fa fa-lock' aria-hidden='true'></i>");
-        } else {
-            large_icon.addClass("hash").removeClass("lock").html("");
-        }
-    }
-}
-
 export function update_stream_subscription_type_text(sub) {
     // This is in the right panel.
     const stream_settings = stream_edit.settings_for_sub(sub);
@@ -187,45 +133,6 @@ export function update_stream_subscription_type_text(sub) {
     const html = render_subscription_type(template_data);
     if (stream_edit.is_sub_settings_active(sub)) {
         stream_settings.find(".subscription-type-text").expectOne().html(html);
-    }
-}
-
-export function update_subscribers_count(sub, just_subscribed) {
-    /*
-        TODO: remove update_subscribers_count
-
-            <div class="subscriber-count" data-toggle="tooltip" title="{{t 'Subscriber count' }}">
-                {{> subscription_count}}
-            </div>
-
-            <i class="fa fa-user-o" aria-hidden="true"></i>
-            {{#if can_access_subscribers}}
-            <span class="subscriber-count-text">{{numberFormat subscriber_count}}</span>
-            {{else}}
-            <i class="subscriber-count-lock fa fa-lock" aria-hidden="true"></i>
-            {{/if}}
-    */
-
-    if (!overlays.streams_open()) {
-        // If the streams overlay isn't open, we don't need to rerender anything.
-        return;
-    }
-
-    const stream_row = subs.row_for_stream_id(sub.stream_id);
-    const sub_count = peer_data.get_subscriber_count(sub.stream_id);
-
-    if (
-        !sub.can_access_subscribers ||
-        (just_subscribed && sub.invite_only) ||
-        page_params.is_guest
-    ) {
-        const rendered_sub_count = render_subscription_count({
-            can_access_subscribers: sub.can_access_subscribers,
-            subscriber_count: sub_count,
-        });
-        stream_row.find(".subscriber-count").expectOne().html(rendered_sub_count);
-    } else {
-        stream_row.find(".subscriber-count-text").expectOne().text(sub_count);
     }
 }
 
