@@ -29,17 +29,39 @@ exports.show_subs_pane = {
     },
 };
 
-exports.check_button_for_sub = function (sub) {
-    // TODO: remove check_button_for_sub
-    return $(`.stream-row[data-stream-id='${CSS.escape(sub.stream_id)}'] .check`);
-};
-
 exports.row_for_stream_id = function (stream_id) {
     return $(`.stream-row[data-stream-id='${CSS.escape(stream_id)}']`);
 };
 
 exports.is_sub_already_present = function (sub) {
     return exports.row_for_stream_id(sub.stream_id).length > 0;
+};
+
+exports.update_left_panel_row = (sub) => {
+    const row = exports.row_for_stream_id(sub.stream_id);
+
+    if (row.length === 0) {
+        return;
+    }
+
+    blueslip.debug(`Updating row in left panel of stream settings for: ${sub.name}`);
+    const setting_sub = stream_data.get_sub_for_settings(sub);
+    const html = render_subscription(setting_sub);
+    const new_row = $(html);
+
+    // TODO: Clean up this hack when we eliminate `notdisplayed`
+    if (row.hasClass("notdisplayed")) {
+        new_row.addClass("notdisplayed");
+    }
+
+    // TODO: Remove this if/when we just handle "active" when rendering templates.
+    if (row.hasClass("active")) {
+        new_row.addClass("active");
+    }
+
+    exports.add_tooltip_to_left_panel_row(new_row);
+
+    row.replaceWith(new_row);
 };
 
 exports.settings_button_for_sub = function (sub) {
@@ -188,11 +210,10 @@ exports.update_stream_privacy = function (sub, values) {
     stream_data.update_calculated_fields(sub);
 
     // Update UI elements
-    stream_ui_updates.update_stream_privacy_type_icon(sub);
+    exports.update_left_panel_row(sub);
     stream_ui_updates.update_stream_subscription_type_text(sub);
     stream_ui_updates.update_change_stream_privacy_settings(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
-    stream_ui_updates.update_subscribers_count(sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_list.redraw_stream_privacy(sub);
 
@@ -218,7 +239,7 @@ exports.set_color = function (stream_id, color) {
 };
 
 exports.update_subscribers_ui = function (sub) {
-    stream_ui_updates.update_subscribers_count(sub);
+    exports.update_left_panel_row(sub);
     stream_ui_updates.update_subscribers_list(sub);
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 };
@@ -282,9 +303,8 @@ exports.update_settings_for_subscribed = function (sub) {
     ).show();
 
     if (exports.is_sub_already_present(sub)) {
+        exports.update_left_panel_row(sub);
         stream_ui_updates.update_stream_row_in_settings_tab(sub);
-        stream_ui_updates.update_subscribers_count(sub, true);
-        stream_ui_updates.update_check_button_for_sub(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
         stream_ui_updates.update_change_stream_privacy_settings(sub);
     } else {
@@ -314,9 +334,8 @@ exports.add_tooltip_to_left_panel_row = (row) => {
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
-    stream_ui_updates.update_subscribers_count(sub);
+    exports.update_left_panel_row(sub);
     stream_ui_updates.update_subscribers_list(sub);
-    stream_ui_updates.update_check_button_for_sub(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_regular_sub_settings(sub);
     stream_ui_updates.update_change_stream_privacy_settings(sub);
