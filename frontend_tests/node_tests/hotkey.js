@@ -50,7 +50,9 @@ zrequire("common");
 const compose_actions = set_global("compose_actions", {});
 const condense = set_global("condense", {});
 const drafts = set_global("drafts", {});
-const hashchange = set_global("hashchange", {});
+const hashchange = set_global("hashchange", {
+    in_recent_topics_hash: () => false,
+});
 set_global("info_overlay", {});
 const lightbox = set_global("lightbox", {});
 const list_util = set_global("list_util", {});

@@ -480,7 +480,7 @@ exports.process_hotkey = function (e, hotkey) {
         case "open_recent_topics":
         case "escape":
             if (
-                ["#recent_topics", "#", ""].includes(window.location.hash) &&
+                hashchange.in_recent_topics_hash() &&
                 !popovers.any_active() &&
                 !overlays.is_active() &&
                 !$("#searchbox_form #search_query").is(":focus") &&

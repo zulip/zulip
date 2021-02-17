@@ -44,6 +44,10 @@ function maybe_hide_recent_topics() {
     return false;
 }
 
+exports.in_recent_topics_hash = function () {
+    return ["recent_topics", "#", ""].includes(window.location.hash);
+};
+
 exports.changehash = function (newhash) {
     if (changing_hash) {
         return;
