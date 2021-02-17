@@ -60,8 +60,7 @@ wouldn't materially improve Zulip's scalability.
 
 For that reason, we organize this discussion of Zulip's scalability
 around the several specific endpoints that have a combination of
-request volume and cost that they are important to Zulip's
-scalability.
+request volume and cost that makes them important.
 
 That said, it is important to distinguish the load associated with an
 API endpoint from the load associated with a feature.  Almost any
@@ -70,12 +69,12 @@ the client in `page_params` or `GET /messages`, i.e. one of the
 endpoints important to scalability here. As a result, it is important
 to thoughtfully implement the data fetch code path for every feature.
 
-Further, a snappy user interface is one of Zulip's design goals, and
+Furthermore, a snappy user interface is one of Zulip's design goals, and
 so we care about the performance of any user-facing code path, even
 though many of them are not material to scalability of the server.
-But only the requests detailed below are worth thinking about
-optimizations with any cost in code readability to save a few
-milliseconds that would be invisible to the end user.
+But only with regard to the requests detailed below, is it worth considering
+optimizations which save a few milliseconds that would be invisible to the end user,
+if they carry any cost in code readability.
 
 In Zulip's documentation, our general rule is to primarily write facts
 that are likely to remain true for a long time.  While the numbers
@@ -124,7 +123,7 @@ production Zulip server.  Despite `GET /events` being extremely
 high-volume, the typical request takes 1-3ms to process, and doesn't
 use the database at all (though it will access `memcached` and
 `redis`), so they aren't a huge contributor to the overall CPU usage
-of the server, despite their high volume.
+of the server.
 
 Because these requests are so efficient from a total CPU usage
 perspective, Tornado is significantly less important than other
@@ -143,7 +142,7 @@ Tornado load) dramatically.
 Currently, Tornado is sharded by realm, which is sufficient for
 arbitrary scaling of the number of organizations on a multi-tenant
 system like zulip.com.  With a somewhat straightforward set of work,
-one could change this so sharding by `user_id` instead, which will
+one could change this to sharding by `user_id` instead, which will
 eventually be important for individual large organizations with many
 thousands of concurrent users.
 
@@ -178,10 +177,10 @@ The request to generate the `page_params` portion of `GET /`
 /api/v1/register](https://zulip.com/api/register-queue) used by
 mobile/terminal apps) is one of Zulip's most complex and expensive.
 
-Zulip is somewhat unusual in webapps in sending essentially all of the
+Zulip is somewhat unusual among webapps in sending essentially all of the
 data required for the entire Zulip webapp in this single request,
 which is part of why the Zulip webapp loads very quickly -- one only
-needs one round trip aside from cacheable assets (avatars, images, JS,
+needs a single round trip aside from cacheable assets (avatars, images, JS,
 CSS).  Data on other users in the organization, streams, supported
 emoji, custom profile fields, etc., is all included.  The nice thing
 about this model is that essentially every UI element in the Zulip
@@ -192,18 +191,18 @@ who have a lot of latency to the server.
 There are only a few exceptions where we fetch data in a separate AJAX
 request after page load:
 
-* Message history are managed separately; this is why the Zulip webapp will
+* Message history is managed separately; this is why the Zulip webapp will
   first render the entire site except for the middle panel, and then a
   moment later render the middle panel (showing the message history).
 * A few very rarely accessed data sets like [message edit
   history](https://zulip.com/help/view-a-messages-edit-history) are
   only fetched on demand.
 * A few data sets that are only required for administrative settings
-  pages is fetched only when loading those parts of the UI.
+  pages are fetched only when loading those parts of the UI.
 
 Requests to `GET /` and `/api/v1/register` that fetch `page_params`
 are pretty rare -- something like 0.3% of total requests, but are
-important for scalability because (1) they are most expensive read
+important for scalability because (1) they are the most expensive read
 requests the Zulip API supports and (2) they can come in a thundering
 herd around server restarts (as discussed in [fetching message
 history](#fetching-message-history).
@@ -257,9 +256,9 @@ a large number of these requests:
   to spread most of that herd over several minutes.
 
 Typical requests consume 20-100ms to process, much of which is waiting
-to fetch message IDs from the database and then their content
+to fetch message IDs from the database and then their content from
 memcached.  While not large in an absolute sense, these requests are
-relatively expensive to most other Zulip endpoints.
+expensive relative to most other Zulip endpoints.
 
 Some requests, like full-text search for commonly used words, can be
 more expensive, but they are sufficiently rare in an absolute sense so
@@ -311,7 +310,7 @@ rendering](../subsystems/markdown.md) of more complex syntax.  As a
 result, these requests are not material to Zulip's scalability.
 Editing messages and adding emoji reactions are very similar to
 sending them for the purposes of performance and scalability, since
-the same clients need to be notified, and lower in volume.
+the same clients need to be notified, and these requests are lower in volume.
 
 That said, we consider the performance of these endpoints to be some
 of the most important for Zulip's user experience, since even with
@@ -341,7 +340,7 @@ does; various tasks like sending outgoing emails or recording the data
 that powers [/stats](https://zulip.com/help/analytics) are run by
 [queue processors](../subsystems/queuing.md) and cron jobs, not in
 response to incoming HTTP requests.  In practice, all of these have
-been written such that they are immaterial total load and thus
+been written such that they are immaterial to total load and thus
 architectual scalability, though we do from time to time need to do
 operational work to add additional queue processors for particularly
 high-traffic queues.  For all of our queue processors, any
