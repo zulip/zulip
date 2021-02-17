@@ -31,7 +31,12 @@ from zerver.lib.message import (
 from zerver.lib.narrow import build_narrow_filter, is_web_public_compatible
 from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
+from zerver.lib.streams import (
+    StreamDict,
+    create_streams_if_needed,
+    get_public_streams_queryset,
+    get_subscribed_streams_for_user_by_history_public_to_subscribers,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock, get_user_messages, queries_captured
 from zerver.lib.topic import MATCH_TOPIC, TOPIC_NAME
@@ -202,6 +207,51 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE recipient_id NOT IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s, %(recipient_id_6)s)",
+        )
+
+    def test_add_term_using_streams_operator_and_subscribed_stream_operand(self) -> None:
+        term = dict(operator="streams", operand="subscribed")
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s)",
+        )
+
+        # Add new streams
+        stream_dicts: List[StreamDict] = [
+            {
+                "name": "publicstream",
+                "description": "Public stream with public history",
+            },
+            {
+                "name": "privatestream",
+                "description": "Private stream with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "privatewithhistory",
+                "description": "Private stream with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+            },
+        ]
+        realm = get_realm("zulip")
+        created, existing = create_streams_if_needed(realm, stream_dicts)
+        self.assertEqual(len(created), 3)
+        self.assertEqual(len(existing), 0)
+
+        self.subscribe(self.user_profile, stream_dicts[0]["name"])
+        self.subscribe(self.user_profile, stream_dicts[1]["name"])
+        self.subscribe(self.user_profile, stream_dicts[2]["name"])
+
+        # For the message case
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s)",
+        )
+        # For the user_message case
+        self._do_add_term_test(
+            term,
+            "recipient_id IN (%(recipient_id_5)s)",
         )
 
     def test_add_term_using_is_operator_private_operand_and_negated(self) -> None:  # NEGATED
@@ -601,6 +651,12 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
+        # streams:subscribed base query should include history for non-guest members.
+        narrow = [
+            dict(operator="streams", operand="subscribed"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
         # Definitely forbid seeing history on private streams.
         self.make_stream("private_stream", realm=user_profile.realm, invite_only=True)
         subscribed_user_profile = self.example_user("cordelia")
@@ -664,6 +720,24 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
+        # No point in searching history for is operator even if included with
+        # streams:subscribed
+        narrow = [
+            dict(operator="streams", operand="subscribed"),
+            dict(operator="is", operand="mentioned"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        narrow = [
+            dict(operator="streams", operand="subscribed"),
+            dict(operator="is", operand="unread"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        narrow = [
+            dict(operator="streams", operand="subscribed"),
+            dict(operator="is", operand="alerted"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
         # simple True case
         narrow = [
             dict(operator="stream", operand="public_stream"),
@@ -685,6 +759,12 @@ class IncludeHistoryTest(ZulipTestCase):
         # streams:public searches should not include history for guest members.
         narrow = [
             dict(operator="streams", operand="public"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
+
+        # streams:public searches should not include history for guest members.
+        narrow = [
+            dict(operator="streams", operand="subscribed"),
         ]
         self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
 
@@ -1375,6 +1455,16 @@ class GetOldMessagesTest(ZulipTestCase):
             .values_list("recipient_id", flat=True)
             .order_by("id")
         )
+        subscribed_recipients_with_full_history = (
+            get_subscribed_streams_for_user_by_history_public_to_subscribers(
+                hamlet_user.realm, hamlet_user, True
+            )
+            .values_list("recipient_id", flat=True)
+            .order_by("id")
+        )
+        query_ids["subscribed_recipients_with_full_history"] = ", ".join(
+            str(r) for r in subscribed_recipients_with_full_history
+        )
         query_ids["public_streams_recipents"] = ", ".join(str(r) for r in recipients)
         return query_ids
 
@@ -1879,6 +1969,95 @@ class GetOldMessagesTest(ZulipTestCase):
             for message in result["messages"]:
                 self.assertEqual(message["type"], "stream")
                 self.assertEqual(message["recipient_id"], stream_recipient_id)
+
+    def test_get_messages_with_narrow_streams_subscribed(self) -> None:
+        stream_dicts: List[StreamDict] = [
+            {
+                "name": "public_stream",
+                "description": "Public stream with public history",
+            },
+            {
+                "name": "private_stream",
+                "description": "Private stream with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "private_with_history",
+                "description": "Private stream with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+            },
+        ]
+
+        realm = get_realm("zulip")
+        created, existing = create_streams_if_needed(realm, stream_dicts)
+        self.assertEqual(len(created), 3)
+        self.assertEqual(len(existing), 0)
+
+        cordelia = self.example_user("cordelia")
+        self.login("cordelia")
+        self.subscribe(cordelia, stream_dicts[1]["name"])
+        self.subscribe(cordelia, stream_dicts[2]["name"])
+
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        last_msg_id = self.get_last_message().id + 1
+
+        for stream in stream_dicts:
+            self.send_stream_message(
+                sender=cordelia,
+                stream_name=stream["name"],
+            )
+
+        self._update_tsvector_index()
+
+        narrow = [dict(operator="streams", operand="subscribed")]
+
+        result: Dict[str, Any] = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=last_msg_id,
+                num_before=0,
+                num_after=10,
+            )
+        )
+
+        # Before the user subscribes no message in narrow
+        self.assertEqual(len(result["messages"]), 0)
+
+        self.subscribe(hamlet, stream_dicts[0]["name"])
+        self.subscribe(hamlet, stream_dicts[1]["name"])
+        self.subscribe(hamlet, stream_dicts[2]["name"])
+
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=last_msg_id,
+                num_before=0,
+                num_after=10,
+            )
+        )
+
+        # Messages will be 2 not 3 first due to the subscribed
+        # public stream and second due to the private stream
+        # with shared history. Private stream with unshared
+        # history does not contribute to message in narrow.
+        self.assertEqual(len(result["messages"]), 2)
+
+        self.send_stream_message(sender=cordelia, stream_name=stream_dicts[1]["name"])
+
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=last_msg_id,
+                num_before=0,
+                num_after=10,
+            )
+        )
+        # Now the message of private stream with unshared
+        # history is also included .
+        self.assertEqual(len(result["messages"]), 3)
 
     def test_get_visible_messages_with_narrow_stream(self) -> None:
         self.login("hamlet")
@@ -3236,7 +3415,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Do some tests on the main query, to verify the muting logic
         # runs on this code path.
-        queries = [q for q in all_queries if str(q["sql"]).startswith("SELECT message_id, flags")]
+        queries = [q for q in all_queries if str(q["sql"]).startswith("SELECT message_id")]
         self.assertEqual(len(queries), 1)
 
         stream = get_stream("Scotland", realm)
@@ -3375,8 +3554,9 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         hamlet_email = self.example_user("hamlet").email
         othello_email = self.example_user("othello").email
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT message_id \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
+
         self.common_check_get_messages_query(
             {
                 "anchor": 0,
@@ -3387,7 +3567,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT message_id \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -3399,7 +3579,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT message_id \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -3411,13 +3591,13 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (flags & 2) != 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT message_id \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND (flags & 2) != 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["is", "starred"]]'}, sql
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {othello_id} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT message_id \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND sender_id = {othello_id} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -3442,7 +3622,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["streams", "public"]]'}, sql
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND recipient_id NOT IN ({public_streams_recipents}) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT message_id \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND recipient_id NOT IN ({public_streams_recipents}) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -3454,7 +3634,19 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND upper(subject) = upper('blah') ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id IN ({subscribed_recipients_with_full_history}) OR id IN (SELECT message_id \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND 1 != 1) ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql = sql_template.format(**query_ids)
+        self.common_check_get_messages_query(
+            {
+                "anchor": 0,
+                "num_before": 0,
+                "num_after": 9,
+                "narrow": '[{"operator":"streams", "operand":"subscribed"}]',
+            },
+            sql,
+        )
+
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT message_id \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND upper(subject) = upper('blah') ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["topic", "blah"]]'}, sql
@@ -3473,7 +3665,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         )
 
         # Narrow to pms with yourself
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT message_id \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -3485,7 +3677,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND recipient_id = {scotland_recipient} AND (flags & 2) != 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT message_id \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND recipient_id = {scotland_recipient} AND (flags & 2) != 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -3502,14 +3694,14 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         query_ids = self.get_query_ids()
 
         sql_template = """\
-SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
-FROM (SELECT message_id, flags, subject, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
+SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
+FROM (SELECT message_id, subject, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3 \n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5 \n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n\
+WHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -3540,14 +3732,14 @@ WHERE recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquer
         )
 
         sql_template = """\
-SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
-FROM (SELECT message_id, flags, subject, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
+SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
+FROM (SELECT message_id, subject, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3 \n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5 \n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject ILIKE '%jumping%') AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) ORDER BY message_id ASC \n\
+WHERE user_profile_id = {hamlet_id} AND message_id IN (SELECT id AS message_id \nFROM zerver_message) AND (content ILIKE '%jumping%' OR subject ILIKE '%jumping%') AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
