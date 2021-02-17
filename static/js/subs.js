@@ -248,14 +248,17 @@ exports.add_sub_to_table = function (sub) {
 
     const setting_sub = stream_data.get_sub_for_settings(sub);
     const html = render_subscription(setting_sub);
-    const settings_html = render_subscription_settings(sub);
+    const new_row = $(html);
+    exports.add_tooltip_to_left_panel_row(new_row);
 
     if (stream_create.get_name() === sub.name) {
-        ui.get_content_element($(".streams-list")).prepend(html);
+        ui.get_content_element($(".streams-list")).prepend(new_row);
         ui.reset_scrollbar($(".streams-list"));
     } else {
-        ui.get_content_element($(".streams-list")).append(html);
+        ui.get_content_element($(".streams-list")).append(new_row);
     }
+
+    const settings_html = render_subscription_settings(sub);
     ui.get_content_element($(".subscriptions .settings")).append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
@@ -314,13 +317,11 @@ exports.show_active_stream_in_left_panel = function () {
     }
 };
 
-exports.add_tooltips_to_left_panel = function () {
-    for (const row of $("#subscriptions_table .stream-row")) {
-        $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
-            placement: "left",
-            animation: false,
-        });
-    }
+exports.add_tooltip_to_left_panel_row = (row) => {
+    row.find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
+        placement: "left",
+        animation: false,
+    });
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
@@ -458,8 +459,6 @@ exports.filter_table = function (left_panel_params) {
         widgets.set(stream_id, $(row).detach());
     }
 
-    exports.add_tooltips_to_left_panel();
-
     ui.reset_scrollbar($("#subscription_overlay .streams-list"));
 
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];
@@ -469,8 +468,11 @@ exports.filter_table = function (left_panel_params) {
             widgets.get(stream_id),
         );
     }
-
     exports.maybe_reset_right_panel();
+
+    for (const row of $("#subscriptions_table .stream-row")) {
+        exports.add_tooltip_to_left_panel_row($(row));
+    }
 
     // return this for test convenience
     return [...buckets.name, ...buckets.desc];
