@@ -1,0 +1,86 @@
+{% extends "oauth2_provider/base.html" %}
+
+
+{% block portico_content %}
+<div class="oauth-account flex full-page">
+    <div class="center-block new-style">
+
+        <h1 class="block-center-heading">
+            {% block app_form_title %}
+            {{ _("Edit application") }} {{ application.name }}
+            {% endblock %}
+        </h1>
+
+        <form class="form-horizontal white-box" method="post" id="registration"
+          action="{% block app_form_action_url %}{{ url('oauth2_provider:update', args=[application.id])}}{% endblock %}">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+            <fieldset class="oauth-registration">
+                {% for field in form %}
+                <div class="controls">
+                    {% for error in field.errors %}
+                    <span class="help-inline">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+                <div class="block-center input-box">
+                    <div class="inline-block relative">
+                        <input id="id_name" class="required" type="text"
+                          value="{% if form.name.value() %}{{ form.name.value() }}{% endif %}"
+                          name="name" maxlength = 255 required />
+                    </div>
+                    <label class="inline-block label-title" for="id_name">{{ _('Organization name') }}</label>
+                </div>
+
+                <div class="block-center input-box">
+                    <div class="inline-block relative">
+                        <input id="oauth_id_client_id" class=required type="text"
+                          value="{{ form.client_id.value() }}" name="client_id" required  />
+                        <input id="initial-id_client_id" class=required type="hidden"
+                          value="{{ form.client_id.value() }}" name="initial-client_id" required  />
+                    </div>
+                    <label class="inline-block label-title" for="oauth_id_client_id">{{ _('Client ID') }}</label>
+                </div>
+
+                <div class="block-center input-box">
+                    <div class="inline-block relative">
+                        <input id="id_client_secret" class=required type="text"
+                          value="{{ form.client_secret.value() }}" name="client_secret" required  />
+                        <input id="initial-id_client_secret" class=required type="hidden"
+                          value="{{ form.client_secret.value() }}" name="initial-client_secret" required  />
+                    </div>
+                    <label class="inline-block label-title" for="id_client_secret">{{ _('Client Secret') }}</label>
+                </div>
+
+                <div class="block-center input-box">
+                    <div id="client_type_section">
+                        <input class=required  type="text" name="client_type" value="confidential" readonly />
+                    </div>
+                    <label class="inline-block label-title" for="client_type">{{ _('Client type') }}</label>
+                </div>
+
+                <div class="block-center input-box">
+                    <div id="authorization_grant_type_section">
+                        <input class="required" type="text" name="authorization_grant_type" value="authorization-code" readonly />
+                    </div>
+                    <label class="inline-block label-title" for="id_authorization_grant_type">{{ _('Authorization grant type') }}</label>
+                </div>
+
+                <div class="block-center input-box">
+                    <div class="inline-block relative">
+                        <input id="id_redirect_uris" class="required" type="text"
+                          name="redirect_uris"
+                          value="{% if form.redirect_uris.value() %}{{ form.redirect_uris.value() }}{% endif %}" required />
+                    </div>
+                    <label class="inline-block label-title" for="id_redirect_uris">{{ _('Redirect uris') }}</label>
+                </div>
+            </fieldset>
+
+            <div class="oauth-button-box">
+                <button class="oauth-button" type="submit">{{ _('Save') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
