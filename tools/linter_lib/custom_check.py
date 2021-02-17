@@ -284,14 +284,6 @@ python_rules = RuleList(
             "bad_lines": ["def foo(self: Any):"],
         },
         {
-            "pattern": r"^\s+#\w",
-            "strip": "\n",
-            "exclude": {"tools/droplets/create.py"},
-            "description": 'Missing whitespace after "#"',
-            "good_lines": ["a = b # some operation", "1+2 #  3 is the result"],
-            "bad_lines": [" #some operation", "  #not valid!!!"],
-        },
-        {
             "pattern": "assertEquals[(]",
             "description": "Use assertEqual, not assertEquals (which is deprecated).",
             "good_lines": ["assertEqual(1, 2)"],
@@ -307,18 +299,6 @@ python_rules = RuleList(
                 "foo = bar  # type: ignore[code]",
                 "foo = bar  # type: ignore # explanation",
             ],
-        },
-        {
-            "pattern": r"\b(if|else|while)[(]",
-            "description": "Put a space between statements like if, else, etc. and (.",
-            "good_lines": ["if (1 == 2):", "while (foo == bar):"],
-            "bad_lines": ["if(1 == 2):", "while(foo == bar):"],
-        },
-        {
-            "pattern": ", [)]",
-            "description": 'Unnecessary whitespace between "," and ")"',
-            "good_lines": ["foo = (1, 2, 3,)", "foo(bar, 42)"],
-            "bad_lines": ["foo = (1, 2, 3, )"],
         },
         {
             "pattern": r"\bsudo\b",
@@ -512,7 +492,6 @@ python_rules = RuleList(
             "description": 'A mock function is missing a leading "assert_"',
         },
         *whitespace_rules,
-        *comma_whitespace_rule,
     ],
     max_length=110,
     shebang_rules=shebang_rules,
