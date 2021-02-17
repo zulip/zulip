@@ -1,0 +1,7 @@
+{% extends "oauth2_provider/application_form.html" %}
+
+{% block app_form_title %}{{ _("Register a new application") }} {% endblock %}
+
+{% block app_form_action_url %}{{ url('oauth2_provider:register') }}{% endblock %}
+
+{% block app_form_back_url %}{{ url('oauth2_provider:list') }}{% endblock %}
