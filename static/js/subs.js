@@ -30,6 +30,7 @@ exports.show_subs_pane = {
 };
 
 exports.check_button_for_sub = function (sub) {
+    // TODO: remove check_button_for_sub
     return $(`.stream-row[data-stream-id='${CSS.escape(sub.stream_id)}'] .check`);
 };
 

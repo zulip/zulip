@@ -5,6 +5,11 @@ import render_subscription_type from "../templates/subscription_type.hbs";
 import * as peer_data from "./peer_data";
 
 export function update_check_button_for_sub(sub) {
+    /*
+        TODO: remove update_check_button_for_sub
+
+        <div class="check {{#if subscribed }}checked{{/if}} sub_unsub_button {{#unless should_display_subscription_button}}disabled{{/unless}}">
+    */
     const button = subs.check_button_for_sub(sub);
     if (sub.subscribed) {
         button.addClass("checked");
@@ -59,6 +64,7 @@ export function initialize_cant_subscribe_popover(sub) {
 }
 
 export function update_settings_button_for_sub(sub) {
+    // This is for the Subscribe/Unsubscribe button in the right panel.
     const settings_button = subs.settings_button_for_sub(sub);
     if (sub.subscribed) {
         settings_button.text(i18n.t("Unsubscribe")).removeClass("unsubscribed");
@@ -77,6 +83,7 @@ export function update_settings_button_for_sub(sub) {
 }
 
 export function update_regular_sub_settings(sub) {
+    // These are in the right panel.
     if (!stream_edit.is_sub_settings_active(sub)) {
         return;
     }
@@ -96,6 +103,7 @@ export function update_regular_sub_settings(sub) {
 }
 
 export function update_change_stream_privacy_settings(sub) {
+    // This is in the right panel.
     const stream_privacy_btn = $(".change-stream-privacy");
 
     if (sub.can_change_stream_permissions) {
@@ -106,6 +114,7 @@ export function update_change_stream_privacy_settings(sub) {
 }
 
 export function update_notification_setting_checkbox(notification_name) {
+    // This is in the right panel (Personal settings).
     const stream_row = $("#subscriptions_table .stream-row.active");
     if (!stream_row.length) {
         return;
@@ -118,6 +127,7 @@ export function update_notification_setting_checkbox(notification_name) {
 }
 
 export function update_stream_row_in_settings_tab(sub) {
+    // This is in the left panel.
     // This function display/hide stream row in stream settings tab,
     // used to display immediate effect of add/removal subscription event.
     // If user is subscribed to stream, it will show sub row under
@@ -134,6 +144,18 @@ export function update_stream_row_in_settings_tab(sub) {
 }
 
 export function update_stream_privacy_type_icon(sub) {
+    /*
+        TODO: remove update_stream_privacy_type_icon
+
+        {{#if invite_only}}
+        <i class="fa fa-lock" aria-hidden="true"></i>
+        {{else if is_web_public}}
+        <i class="fa fa-globe fa-lg" aria-hidden="true"></i>
+        {{else}}
+        <span class="hashtag">#</span>
+        {{/if}}
+
+    */
     const stream_settings = stream_edit.settings_for_sub(sub);
     const sub_row = subs.row_for_stream_id(sub.stream_id);
     const html = render_subscription_setting_icon(sub);
@@ -155,6 +177,7 @@ export function update_stream_privacy_type_icon(sub) {
 }
 
 export function update_stream_subscription_type_text(sub) {
+    // This is in the right panel.
     const stream_settings = stream_edit.settings_for_sub(sub);
     const template_data = {
         ...sub,
@@ -168,6 +191,21 @@ export function update_stream_subscription_type_text(sub) {
 }
 
 export function update_subscribers_count(sub, just_subscribed) {
+    /*
+        TODO: remove update_subscribers_count
+
+            <div class="subscriber-count" data-toggle="tooltip" title="{{t 'Subscriber count' }}">
+                {{> subscription_count}}
+            </div>
+
+            <i class="fa fa-user-o" aria-hidden="true"></i>
+            {{#if can_access_subscribers}}
+            <span class="subscriber-count-text">{{numberFormat subscriber_count}}</span>
+            {{else}}
+            <i class="subscriber-count-lock fa fa-lock" aria-hidden="true"></i>
+            {{/if}}
+    */
+
     if (!overlays.streams_open()) {
         // If the streams overlay isn't open, we don't need to rerender anything.
         return;
@@ -192,6 +230,7 @@ export function update_subscribers_count(sub, just_subscribed) {
 }
 
 export function update_subscribers_list(sub) {
+    // This is for the "Stream membership" section of the right panel.
     // Render subscriptions only if stream settings is open
     if (!stream_edit.is_sub_settings_active(sub)) {
         return;
