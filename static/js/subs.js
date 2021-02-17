@@ -429,7 +429,13 @@ exports.render_left_panel_superset = function () {
 };
 
 // LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
-exports.filter_table = function (left_panel_params) {
+exports.redraw_left_panel = function (left_panel_params) {
+    // We only get left_panel_params passed in from tests.  Real
+    // code calls get_left_panel_params().
+    if (left_panel_params === undefined) {
+        left_panel_params = exports.get_left_panel_params();
+    }
+
     exports.show_active_stream_in_left_panel();
 
     function stream_id_for_row(row) {
@@ -506,11 +512,6 @@ exports.maybe_reset_right_panel = function () {
         $(".nothing-selected").show();
         $(".stream-row.active").removeClass("active");
     }
-};
-
-exports.redraw_left_panel = function () {
-    const left_panel_params = exports.get_left_panel_params();
-    exports.filter_table(left_panel_params);
 };
 
 // Make it explicit that our toggler is not created right away.
