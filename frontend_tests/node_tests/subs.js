@@ -27,7 +27,7 @@ set_global("hash_util", {
     by_stream_uri: () => {},
 });
 
-run_test("filter_table", (override) => {
+run_test("redraw_left_panel", (override) => {
     override(subs, "add_tooltip_to_left_panel_row", () => {});
 
     // set-up sub rows stubs
@@ -124,7 +124,7 @@ run_test("filter_table", (override) => {
     assert(!denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
-        const stream_ids = subs.filter_table(params);
+        const stream_ids = subs.redraw_left_panel(params);
         assert.deepEqual(
             stream_ids,
             expected_streams.map((sub) => sub.stream_id),
