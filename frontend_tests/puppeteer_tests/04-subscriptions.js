@@ -47,17 +47,33 @@ async function open_streams_modal(page) {
 }
 
 async function test_subscription_button_verona_stream(page) {
-    const verona_subscribed_selector = "[data-stream-name='Verona'] .sub_unsub_button.checked";
-    const verona_unsubscribed_selector =
-        "[data-stream-name='Verona'] .sub_unsub_button:not(.checked)";
-    // assert it's already checked.
-    await page.waitForSelector(verona_subscribed_selector, {visible: true});
-    // get subscribe/unsubscribe button element.
-    const subscription_checkmark = await page.$("[data-stream-name='Verona'] .sub_unsub_button");
-    await subscription_checkmark.click(); // Unsubscribe.
-    await page.waitForSelector(verona_unsubscribed_selector); // Unsubscribed.
-    await subscription_checkmark.click(); // Subscribe again now.
-    await page.waitForSelector(verona_subscribed_selector, {visible: true}); // Subscribed.
+    const button_selector = "[data-stream-name='Verona'] .sub_unsub_button";
+    const subscribed_selector = `${button_selector}.checked`;
+    const unsubscribed_selector = `${button_selector}:not(.checked)`;
+
+    async function subscribed() {
+        return await page.waitForSelector(subscribed_selector, {visible: true});
+    }
+
+    async function unsubscribed() {
+        return await page.waitForSelector(unsubscribed_selector, {visible: true});
+    }
+
+    // Note that we intentionally re-find the button after each click, since
+    // the live-update code may replace the whole row.
+    let button;
+
+    // We assume Verona is already subscribed, so the first line here
+    // should happen immediately.
+    button = await subscribed();
+    button.click();
+    button = await unsubscribed();
+    button.click();
+    button = await subscribed();
+    button.click();
+    button = await unsubscribed();
+    button.click();
+    button = await subscribed();
 }
 
 async function click_create_new_stream(page, cordelia_checkbox, othello_checkbox) {
