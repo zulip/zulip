@@ -430,6 +430,11 @@ exports.initialize = function () {
         recent_topics.update_filters_view();
     });
 
+    $("body").on("click", "td.recent_topic_stream", (e) => {
+        e.stopPropagation();
+        window.location.href = $(e.currentTarget).find("a").attr("href");
+    });
+
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
         window.location.href = $(e.currentTarget).find("a").attr("href");
