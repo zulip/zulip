@@ -1106,7 +1106,6 @@ ul.grey-box {
 @media (width < $lg_min) {
     .subscriptions-container .left .search-container {
         flex-wrap: wrap;
-        justify-content: space-evenly;
     }
 
     .search-container {
