@@ -347,6 +347,7 @@ export function initialize() {
         $msg_edit_content.hide();
         row.find(".markdown_preview").hide();
         row.find(".undo_markdown_preview").show();
+        row.find(".undo_markdown_preview").trigger("focus");
         row.find(".preview_message_area").show();
 
         compose.render_and_show_preview(
@@ -364,6 +365,7 @@ export function initialize() {
         row.find(".preview_message_area").hide();
         row.find(".preview_content").empty();
         row.find(".markdown_preview").show();
+        row.find("#message_edit_content").trigger("focus");
     });
 
     // TOPIC MUTING

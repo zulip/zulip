@@ -228,7 +228,6 @@ export function show(target) {
         toggler.goto(target);
     }
 }
-
 export function maybe_show_keyboard_shortcuts() {
     if (overlays.is_active()) {
         return;
