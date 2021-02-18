@@ -220,7 +220,7 @@ class MessagePOSTTest(ZulipTestCase):
         # Cross realm bots should be allowed
         notification_bot = get_system_bot("notification-bot@zulip.com")
         internal_send_stream_message(
-            stream.realm, notification_bot, stream, "Test topic", "Test message by notification bot"
+            notification_bot, stream, "Test topic", "Test message by notification bot"
         )
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
@@ -305,7 +305,7 @@ class MessagePOSTTest(ZulipTestCase):
         # Cross realm bots should be allowed
         notification_bot = get_system_bot("notification-bot@zulip.com")
         internal_send_stream_message(
-            stream.realm, notification_bot, stream, "Test topic", "Test message by notification bot"
+            notification_bot, stream, "Test topic", "Test message by notification bot"
         )
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
@@ -2012,7 +2012,6 @@ class InternalPrepTest(ZulipTestCase):
 
         with self.assertLogs(level="ERROR") as m:
             internal_send_stream_message(
-                realm=realm,
                 sender=cordelia,
                 topic="whatever",
                 content=bad_content,

@@ -640,7 +640,6 @@ def send_messages_for_new_subscribers(
 
             notifications.append(
                 internal_prep_stream_message(
-                    realm=user_profile.realm,
                     sender=sender,
                     stream=notifications_stream,
                     topic=topic,
@@ -654,7 +653,6 @@ def send_messages_for_new_subscribers(
             with override_language(stream.realm.default_language):
                 notifications.append(
                     internal_prep_stream_message(
-                        realm=user_profile.realm,
                         sender=sender,
                         stream=stream,
                         topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,

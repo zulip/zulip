@@ -202,7 +202,6 @@ class ZulipEmailForwardUserError(ZulipEmailForwardError):
 
 def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) -> None:
     internal_send_stream_message(
-        stream.realm,
         sender,
         stream,
         truncate_topic(topic),
@@ -431,7 +430,6 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
     if recipient.type == Recipient.STREAM:
         stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
         internal_send_stream_message(
-            user_profile.realm,
             user_profile,
             stream,
             topic,
