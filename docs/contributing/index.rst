@@ -13,4 +13,5 @@ Code contribution guide
    accessibility
    bug-reports
    ../code-of-conduct
+   gsoc-ideas
    summer-with-zulip

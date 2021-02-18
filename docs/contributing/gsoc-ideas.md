@@ -1,7 +1,3 @@
-```eval_rst
-:orphan:
-```
-
 # Google Summer of Code
 
 ## About us
