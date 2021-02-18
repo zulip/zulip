@@ -766,16 +766,12 @@ run_test("local_reaction_id", () => {
 
 run_test("process_reaction_click", () => {
     const message_id = 1001;
-    let expected_reaction_info = {
-        reaction_type: "unicode_emoji",
-        emoji_code: "1f3b1",
-    };
     message_store.get = function (message_id) {
         assert.equal(message_id, 1001);
         return message;
     };
 
-    expected_reaction_info = {
+    const expected_reaction_info = {
         reaction_type: "unicode_emoji",
         emoji_name: "smile",
         emoji_code: "1f642",
