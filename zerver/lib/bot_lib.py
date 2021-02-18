@@ -102,9 +102,7 @@ class EmbeddedBotHandler:
             raise EmbeddedBotEmptyRecipientsList(_("Message must have recipients!"))
         elif len(message["to"]) == 1:
             recipient_user = get_active_user(recipients[0], self.user_profile.realm)
-            internal_send_private_message(
-                self.user_profile.realm, self.user_profile, recipient_user, message["content"]
-            )
+            internal_send_private_message(self.user_profile, recipient_user, message["content"])
         else:
             internal_send_huddle_message(
                 self.user_profile.realm, self.user_profile, recipients, message["content"]

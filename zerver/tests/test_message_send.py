@@ -1983,7 +1983,6 @@ class InternalPrepTest(ZulipTestCase):
 
         with self.assertLogs(level="ERROR") as m:
             internal_send_private_message(
-                realm=realm,
                 sender=cordelia,
                 recipient_user=hamlet,
                 content=bad_content,
@@ -2149,7 +2148,6 @@ class TestCrossRealmPMs(ZulipTestCase):
         # Cross-realm bots in the zulip.com realm can PM any realm
         # (They need lower level APIs to do this.)
         internal_send_private_message(
-            realm=r2,
             sender=get_system_bot(notification_bot_email),
             recipient_user=get_user(user2_email, r2),
             content="bla",

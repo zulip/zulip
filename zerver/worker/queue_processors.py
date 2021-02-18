@@ -887,7 +887,6 @@ class DeferredWorker(QueueProcessingWorker):
                     "Your data export is complete and has been uploaded here:\n\n{public_url}"
                 ).format(public_url=public_url)
             internal_send_private_message(
-                realm=user_profile.realm,
                 sender=get_system_bot(settings.NOTIFICATION_BOT),
                 recipient_user=user_profile,
                 content=content,

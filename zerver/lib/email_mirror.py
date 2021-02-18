@@ -443,7 +443,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         assert not isinstance(display_recipient, str)
         recipient_str = display_recipient[0]["email"]
         recipient_user = get_user(recipient_str, user_profile.realm)
-        internal_send_private_message(user_profile.realm, user_profile, recipient_user, body)
+        internal_send_private_message(user_profile, recipient_user, body)
     elif recipient.type == Recipient.HUDDLE:
         display_recipient = get_display_recipient(recipient)
         assert not isinstance(display_recipient, str)

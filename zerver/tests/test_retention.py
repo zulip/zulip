@@ -137,7 +137,6 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         get_user_profile_by_email(bot_email)
         zulip_user = self.example_user("hamlet")
         msg_id = internal_send_private_message(
-            realm=self.zulip_realm,
             sender=get_system_bot(bot_email),
             recipient_user=zulip_user,
             content="test message",
