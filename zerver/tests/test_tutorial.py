@@ -16,7 +16,7 @@ class TutorialTests(ZulipTestCase):
         user = self.example_user("hamlet")
         welcome_bot = get_system_bot(settings.WELCOME_BOT)
         content = "Shortened welcome message."
-        internal_send_private_message(user.realm, welcome_bot, user, content)
+        internal_send_private_message(welcome_bot, user, content)
 
     def test_tutorial_status(self) -> None:
         user = self.example_user("hamlet")

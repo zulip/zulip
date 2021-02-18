@@ -584,7 +584,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         body = f"First message ...[zulip.txt](http://{host}/user_uploads/" + fp_path_id + ")"
         with self.settings(CROSS_REALM_BOT_EMAILS={user_2.email, user_3.email}):
             internal_send_private_message(
-                realm=r1,
                 sender=get_system_bot(user_2.email),
                 recipient_user=user_1,
                 content=body,

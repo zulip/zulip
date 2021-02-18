@@ -769,9 +769,7 @@ def approve_sponsorship(realm: Realm) -> None:
                 f"Your organization's request for sponsored hosting has been approved! {emoji}.\n"
                 f"You have been upgraded to {plan_name}, free of charge."
             )
-            internal_send_private_message(
-                billing_admin.realm, notification_bot, billing_admin, message
-            )
+            internal_send_private_message(notification_bot, billing_admin, message)
 
 
 def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:

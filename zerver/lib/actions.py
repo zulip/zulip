@@ -494,7 +494,6 @@ def process_new_human_user(
         # This is a cross-realm private message.
         with override_language(prereg_user.referred_by.default_language):
             internal_send_private_message(
-                realm,
                 get_system_bot(settings.NOTIFICATION_BOT),
                 prereg_user.referred_by,
                 _("{user} accepted your invitation to join Zulip!").format(
@@ -2574,7 +2573,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
         return
 
     internal_send_private_message(
-        realm, get_system_bot(settings.NOTIFICATION_BOT), sender.bot_owner, content
+        get_system_bot(settings.NOTIFICATION_BOT), sender.bot_owner, content
     )
 
     sender.last_reminder = timezone_now()
@@ -2918,8 +2917,9 @@ def internal_prep_private_message(
 
 
 def internal_send_private_message(
-    realm: Realm, sender: UserProfile, recipient_user: UserProfile, content: str
+    sender: UserProfile, recipient_user: UserProfile, content: str
 ) -> Optional[int]:
+    realm = recipient_user.realm
     message = internal_prep_private_message(realm, sender, recipient_user, content)
     if message is None:
         return None

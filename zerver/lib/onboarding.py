@@ -96,7 +96,7 @@ def send_initial_pms(user: UserProfile) -> None:
         apps_url="/apps", settings_url="#settings", organization_setup_text=organization_setup_text
     )
 
-    internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT), user, content)
+    internal_send_private_message(get_system_bot(settings.WELCOME_BOT), user, content)
 
 
 def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
@@ -113,9 +113,7 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
                 "skills. Or, try clicking on some of the stream names to your left!"
             )
         )
-        internal_send_private_message(
-            send_request.realm, welcome_bot, send_request.message.sender, content
-        )
+        internal_send_private_message(welcome_bot, send_request.message.sender, content)
 
 
 def send_initial_realm_messages(realm: Realm) -> None:
