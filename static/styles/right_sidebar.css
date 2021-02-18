@@ -181,6 +181,11 @@
         font-size: 13px;
         opacity: 0.5;
         margin-right: 5px;
+
+        &:hover {
+            opacity: 1;
+            cursor: pointer;
+        }
     }
 }
 
