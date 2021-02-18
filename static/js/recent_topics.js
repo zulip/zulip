@@ -397,12 +397,14 @@ function show_selected_filters() {
     if (filters.size === 0) {
         $("#recent_topics_filter_buttons")
             .find('[data-filter="all"]')
-            .addClass("btn-recent-selected");
+            .addClass("btn-recent-selected")
+            .attr("aria-checked", "true");
     } else {
         for (const filter of filters) {
             $("#recent_topics_filter_buttons")
                 .find(`[data-filter="${CSS.escape(filter)}"]`)
-                .addClass("btn-recent-selected");
+                .addClass("btn-recent-selected")
+                .attr("aria-checked", "true");
         }
     }
 }
