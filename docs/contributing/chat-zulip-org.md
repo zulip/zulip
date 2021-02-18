@@ -109,6 +109,13 @@ descriptions for all of them.  Relevant to almost everyone are these:
 * [#learning](https://chat.zulip.org/#narrow/stream/92-learning) is for
   posting great learning resources one comes across.
 
+There are also official private streams, including large ones for
+established community contributors (and for GSoC mentors), and small
+streams where Kandra Labs staff can discuss customer support,
+production server operations, and security issues.  Because our
+community values are to work in the open, these private streams are
+relatively low traffic.
+
 ## Searching for past conversations
 
 When [searching][] for previous discussions of a given topic, we
