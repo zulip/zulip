@@ -267,10 +267,6 @@
 
     .stream_sorter_toggle {
         margin-left: auto;
-
-        @media (width < $lg_min) {
-            margin-left: unset;
-        }
     }
 }
 
