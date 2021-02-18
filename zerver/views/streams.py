@@ -145,7 +145,7 @@ def deactivate_stream_backend(request: HttpRequest,
 >>>>>>> passing tests
     (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
 
-    if (is_archive and is_archive is not None):
+    if (is_archive):
         do_deactivate_stream(stream, acting_user=user_profile)
 
     return json_success()
