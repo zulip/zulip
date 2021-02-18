@@ -376,9 +376,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
             message = _("{user} just signed up for Zulip. (total: {user_count})").format(
                 user=f"@_**{user_profile.full_name}|{user_profile.id}**", user_count=user_count
             )
-            internal_send_stream_message(
-                user_profile.realm, sender, signup_notifications_stream, _("signups"), message
-            )
+            internal_send_stream_message(sender, signup_notifications_stream, _("signups"), message)
 
     # We also send a notification to the Zulip administrative realm
     admin_realm = sender.realm
@@ -391,7 +389,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
                 user=f"{user_profile.full_name} <`{user_profile.email}`>", user_count=user_count
             )
             internal_send_stream_message(
-                admin_realm, sender, signups_stream, user_profile.realm.display_subdomain, message
+                sender, signups_stream, user_profile.realm.display_subdomain, message
             )
 
     except Stream.DoesNotExist:
@@ -2859,7 +2857,6 @@ def _internal_prep_message(
 
 
 def internal_prep_stream_message(
-    realm: Realm,
     sender: UserProfile,
     stream: Stream,
     topic: str,
@@ -2869,6 +2866,7 @@ def internal_prep_stream_message(
     """
     See _internal_prep_message for details of how this works.
     """
+    realm = stream.realm
     addressee = Addressee.for_stream(stream, topic)
 
     return _internal_prep_message(
@@ -2928,7 +2926,6 @@ def internal_send_private_message(
 
 
 def internal_send_stream_message(
-    realm: Realm,
     sender: UserProfile,
     stream: Stream,
     topic: str,
@@ -2936,7 +2933,7 @@ def internal_send_stream_message(
     email_gateway: bool = False,
 ) -> Optional[int]:
 
-    message = internal_prep_stream_message(realm, sender, stream, topic, content, email_gateway)
+    message = internal_prep_stream_message(sender, stream, topic, content, email_gateway)
 
     if message is None:
         return None
@@ -4316,7 +4313,6 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
     sender = get_system_bot(settings.NOTIFICATION_BOT)
     with override_language(stream.realm.default_language):
         internal_send_stream_message(
-            stream.realm,
             sender,
             stream,
             Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
@@ -4418,7 +4414,6 @@ def do_create_realm(
         topic = realm.display_subdomain
 
         internal_send_stream_message(
-            admin_realm,
             sender,
             signups_stream,
             topic,
@@ -5120,7 +5115,6 @@ def send_message_moved_breadcrumbs(
     if send_notification_to_new_thread:
         with override_language(new_stream.realm.default_language):
             internal_send_stream_message(
-                new_stream.realm,
                 sender,
                 new_stream,
                 new_topic,
@@ -5134,7 +5128,6 @@ def send_message_moved_breadcrumbs(
         with override_language(old_stream.realm.default_language):
             # Send a notification to the old stream that the topic was moved.
             internal_send_stream_message(
-                old_stream.realm,
                 sender,
                 old_stream,
                 old_topic,
