@@ -324,7 +324,7 @@ run_test("level", () => {
     assert.equal(buddy_data.level(selma.user_id), 3);
 });
 
-run_test("user_last_seen_time_status", () => {
+run_test("user_last_seen_time_status", (override) => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
     page_params.realm_is_zephyr_mirror_realm = true;
@@ -335,21 +335,21 @@ run_test("user_last_seen_time_status", () => {
         "translated: More than 2 weeks ago",
     );
 
-    presence.last_active_date = (user_id) => {
+    override(presence, "last_active_date", (user_id) => {
         assert.equal(user_id, old_user.user_id);
         return new Date(1526137743000);
-    };
+    });
 
-    timerender.last_seen_status_from_date = (date) => {
+    override(timerender, "last_seen_status_from_date", (date) => {
         assert.deepEqual(date, new Date(1526137743000));
         return "May 12";
-    };
+    });
 
     assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id), "May 12");
 });
 
-run_test("error handling", () => {
-    presence.get_user_ids = () => [42];
+run_test("error handling", (override) => {
+    override(presence, "get_user_ids", () => [42]);
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
     blueslip.expect("warn", "Got user_id in presence but not people: 42");
     buddy_data.get_filtered_and_sorted_user_ids();
