@@ -78,7 +78,7 @@ async function un_narrow(page: Page): Promise<void> {
     }
     await page.click(".top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
-    assert.strictEqual(await page.title(), "home - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "All messages - Zulip Dev - Zulip");
 }
 
 async function un_narrow_by_clicking_org_icon(page: Page): Promise<void> {
@@ -211,7 +211,13 @@ async function search_tests(page: Page): Promise<void> {
         "other topic - Zulip Dev - Zulip",
     );
 
-    await search_and_check(page, "topic:test", "", expect_test_topic, "home - Zulip Dev - Zulip");
+    await search_and_check(
+        page,
+        "topic:test",
+        "",
+        expect_test_topic,
+        "All messages - Zulip Dev - Zulip",
+    );
 
     await search_silent_user(page, "sender:emailgateway@zulip.com", "");
 

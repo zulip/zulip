@@ -484,7 +484,7 @@ exports.show = function () {
     // with no compose box.
     compose_actions.cancel();
 
-    narrow.narrow_title = "Recent topics (beta)";
+    narrow.narrow_title = "Recent topics";
     narrow_state.set_current_filter(undefined);
     notifications.redraw_title();
     message_view_header.render_title_area();

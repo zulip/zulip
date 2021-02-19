@@ -766,7 +766,7 @@ function handle_post_narrow_deactivate_processes() {
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
     message_view_header.initialize();
-    exports.narrow_title = "home";
+    exports.narrow_title = "All messages";
     notifications.redraw_title();
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.update_top_of_narrow_notices(home_msg_list);
