@@ -244,7 +244,7 @@ appreciated.
 ## Data export
 
 Zulip's powerful data export tool is designed to handle migration of a
-Zulip organization between different hardware platforms; as a result,
+Zulip organization between different Zulip installations; as a result,
 these exports contain all non-transient data for a Zulip organization,
 with the exception of passwords and API keys.
 
