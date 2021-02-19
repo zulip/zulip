@@ -2226,7 +2226,7 @@ class InvitationsTestCase(InviteUserBase):
         password = "password"
         realm = get_realm("zulip")
 
-        inviter = UserProfile.objects.first()
+        inviter = UserProfile.objects.filter(realm=realm).first()
         prereg_user = PreregistrationUser.objects.create(
             email=email, referred_by=inviter, realm=realm
         )
