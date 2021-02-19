@@ -200,7 +200,7 @@ function get_last_seen(active_status, last_seen) {
         return last_seen;
     }
 
-    const last_seen_text = i18n.t("Last active: __last_seen__", {last_seen});
+    const last_seen_text = i18n.t("Last active: __- last_seen__", {last_seen});
     return last_seen_text;
 }
 
