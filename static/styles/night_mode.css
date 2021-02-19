@@ -86,6 +86,11 @@ body.night-mode {
     .popover a {
         color: inherit;
     }
+    /* this one is because in the light-mode we have light-white overlay (bootstrap default)
+    and in night-mode it should be light-black overlay. */
+    .popover a:focus {
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
 
     .dark_background a,
     a.dark_background:hover,
