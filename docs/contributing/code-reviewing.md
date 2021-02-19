@@ -4,6 +4,25 @@ Code review is a key part of how Zulip does development!  If you've
 been contributing to Zulip's code, we'd love for you to do reviews.
 This is a guide to how.  (With some thoughts for writing code too.)
 
+## Protocol for authors
+
+When you send a PR, try to think of a good person to review it --
+outside of the handful of people who do a ton of reviews -- and
+`@`-mention them with something like "`@person`, would you review
+this?". Good choices include
+* someone based in your timezone or a nearby timezone
+* people working on similar things, or in a loosely related area
+
+Alternatively, posting a message in
+[#code-review](https://chat.zulip.org/#narrow/stream/91-code-review) on [the Zulip
+development community server](../contributing/chat-zulip-org.md), would
+help in reaching out to a wider group of reviewers. Either way, please be
+patient and mindful of the fact that it isn't possible to provide a
+quick reply always, but that the reviewer would get to it sooner or later.
+Lastly, ensuring the your PR passes CI and is organized into coherent
+commits would help save reviewers time, which could otherwise be used
+to dive right into reviewing the PR's core functionality.
+
 ## Principles of code review
 
 ### Anyone can review
@@ -24,7 +43,7 @@ those are really helpful contributions.
 
 ### Please do reviews
 
-Doing code reviews is an important part of making the project go.
+Doing code reviews is an important part of making the project grow.
 It's also an important skill to develop for participating in
 open-source projects and working in the industry in general.  If
 you're contributing to Zulip and have been working in our code for a
@@ -55,15 +74,6 @@ things, so an immediate reply isn't always possible.  But a good
 benchmark is to try to always reply **within one workday**, at least
 with a short initial reply, if you're working regularly on Zulip.  And
 sooner is better.
-
-### Protocol for authors
-
-When you send a PR, try to think of a good person to review it --
-outside of the handful of people who do a ton of reviews -- and
-`@`-mention them with something like "`@person`, would you review
-this?". Good choices include
-* someone based in your timezone or a nearby timezone
-* people working on similar things, or in a loosely related area
 
 ## Things to look for
 
