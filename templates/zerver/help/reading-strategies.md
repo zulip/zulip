@@ -25,6 +25,22 @@ only going to learn one way to do it, this is the one.
 
 * Use up arrow or `Esc` to exit out of the compose box.
 
+## Recent topics
+
+Zulip's recent topics view gives you an overview of recent
+conversations. This view is particularly useful for catching up on
+messages sent while you were away.
+
+* You can navigate to this view by clicking on the `Recent topics` button
+  in the left sidebar or pressing the `t` hotkey.
+
+* The arrows keys and vim navigation keys (`j`, `k`, `l`, `h`) can be
+  used to move between elements.
+
+* There filters at the top can help you quickly find the conversations
+  that are specifically relevant to you.  Filtering for conversations
+  where you've participated with new unread messages is often useful.
+
 ## Stream view
 
 Sometimes it's useful to scroll through all the messages in a stream,

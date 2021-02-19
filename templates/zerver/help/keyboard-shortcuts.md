@@ -141,8 +141,9 @@ title="thumbs up"/>**: `+`
 
 * **View recent topics**: `t` or `Esc` or `Ctrl` + `[`
 * **Search recent topics**: `t`
+* **Escape from recent topics search**: `esc` or arrow keys
+* **Navigate recent topics**: Use arrow keys or vim keys (`j`, `k`, `l`, `h`).
 
-Keyboard navigation (e.g. arrow keys) works as expected.
 Use `Enter` to engage with elements.
 
 ## Drafts
