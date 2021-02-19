@@ -255,11 +255,8 @@ For `nginx` configuration, there's two things you need to set up:
   settings.  E.g. if you don't set `client_max_body_size`, it won't be
   possible to upload large files to your Zulip server.
 * The `nginx` site-specific configuration (in
-  `/etc/nginx/sites-available`) for the Zulip app.  You can look at
-  our [nginx reverse proxy configuration][nginx-loadbalancer] to see
-  an example of how to do this properly (the various include files are
-  available via the `zulip::nginx` Puppet module).  Or modify this
-  example:
+  `/etc/nginx/sites-available`) for the Zulip app.  The following
+  example is a good starting point:
 
 ```
 server {
@@ -285,11 +282,9 @@ Don't forget to update `server_name`, `ssl_certificate`,
 `ssl_certificate_key` and `proxy_pass` with the appropriate values for
 your installation.
 
-[nginx-proxy-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy
 [nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
 [standalone.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/profile/standalone.pp
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
-[nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
 
 ### Apache2 configuration
 

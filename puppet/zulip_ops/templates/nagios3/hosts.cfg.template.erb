@@ -1,13 +1,3 @@
-<% @hosts_loadbalancer.each do |host| -%>
-define host{
-       use              generic-host
-       host_name        <%= host %>
-       alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,pageable_servers
-       }
-<% end -%>
-
 <% @hosts_app_prod.each do |host| -%>
 define host{
        use              generic-host
