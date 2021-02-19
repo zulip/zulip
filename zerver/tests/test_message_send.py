@@ -2156,7 +2156,14 @@ class TestCrossRealmPMs(ZulipTestCase):
         # All users can PM cross-realm bots in the zulip.com realm
         self.send_personal_message(user1, notification_bot)
         assert_message_received(notification_bot, user1)
-
+        # Verify that internal_send_private_message can also successfully
+        # be used.
+        internal_send_private_message(
+            sender=user2,
+            recipient_user=get_system_bot(notification_bot_email),
+            content="blabla",
+        )
+        assert_message_received(notification_bot, user2)
         # Users can PM cross-realm bots on non-zulip realms.
         # (The support bot represents some theoretical bot that we may
         # create in the future that does not have zulip.com as its realm.)
