@@ -59,22 +59,20 @@ run_test("get_items", () => {
     assert.deepEqual(items, [alice_li]);
 });
 
-run_test("basics", () => {
+run_test("basics", (override) => {
     init_simulated_scrolling();
 
-    buddy_list.get_data_from_keys = (opts) => {
+    override(buddy_list, "get_data_from_keys", (opts) => {
         const keys = opts.keys;
         assert.deepEqual(keys, [alice.user_id]);
         return "data-stub";
-    };
+    });
 
-    buddy_list.items_to_html = (opts) => {
+    override(buddy_list, "items_to_html", (opts) => {
         const items = opts.items;
-
         assert.equal(items, "data-stub");
-
         return "html-stub";
-    };
+    });
 
     let appended;
     buddy_list.container.append = (html) => {
@@ -89,12 +87,12 @@ run_test("basics", () => {
 
     const alice_li = {length: 1};
 
-    buddy_list.get_li_from_key = (opts) => {
+    override(buddy_list, "get_li_from_key", (opts) => {
         const key = opts.key;
 
         assert.equal(key, alice.user_id);
         return alice_li;
-    };
+    });
 
     const li = buddy_list.find_li({
         key: alice.user_id,
@@ -102,17 +100,17 @@ run_test("basics", () => {
     assert.equal(li, alice_li);
 });
 
-run_test("big_list", () => {
+run_test("big_list", (override) => {
     const elem = init_simulated_scrolling();
 
     // Don't actually render, but do simulate filling up
     // the screen.
     let chunks_inserted = 0;
 
-    buddy_list.render_more = () => {
+    override(buddy_list, "render_more", () => {
         elem.scrollHeight += 100;
         chunks_inserted += 1;
-    };
+    });
 
     // We will have more than enough users, but still
     // only do 6 chunks of data.
@@ -136,13 +134,13 @@ run_test("big_list", () => {
     assert.equal(chunks_inserted, 6);
 });
 
-run_test("force_render", () => {
+run_test("force_render", (override) => {
     buddy_list.render_count = 50;
 
     let num_rendered = 0;
-    buddy_list.render_more = (opts) => {
+    override(buddy_list, "render_more", (opts) => {
         num_rendered += opts.chunk_size;
-    };
+    });
 
     buddy_list.force_render({
         pos: 60,
@@ -157,26 +155,26 @@ run_test("force_render", () => {
     });
 });
 
-run_test("find_li w/force_render", () => {
+run_test("find_li w/force_render", (override) => {
     // If we call find_li w/force_render set, and the
     // key is not already rendered in DOM, then the
     // widget will call show_key to force-render it.
     const key = "999";
     const stub_li = {length: 0};
 
-    buddy_list.get_li_from_key = (opts) => {
+    override(buddy_list, "get_li_from_key", (opts) => {
         assert.equal(opts.key, key);
         return stub_li;
-    };
+    });
 
     buddy_list.keys = ["foo", "bar", key, "baz"];
 
     let shown;
 
-    buddy_list.force_render = (opts) => {
+    override(buddy_list, "force_render", (opts) => {
         assert.equal(opts.pos, 2);
         shown = true;
-    };
+    });
 
     const empty_li = buddy_list.find_li({
         key,
@@ -191,28 +189,29 @@ run_test("find_li w/force_render", () => {
 
     assert.equal(li, stub_li);
     assert(shown);
+});
 
-    buddy_list.get_li_from_key = () => ({length: 0});
+run_test("find_li w/bad key", (override) => {
+    override(buddy_list, "get_li_from_key", () => ({length: 0}));
 
     const undefined_li = buddy_list.find_li({
         key: "not-there",
         force_render: true,
     });
 
-    // very hacky:
-    assert.equal(undefined_li.length, 0);
+    assert.deepEqual(undefined_li, []);
 });
 
-run_test("scrolling", () => {
+run_test("scrolling", (override) => {
     buddy_list.populate({
         keys: [],
     });
 
     let tried_to_fill;
 
-    buddy_list.fill_screen_with_content = () => {
+    override(buddy_list, "fill_screen_with_content", () => {
         tried_to_fill = true;
-    };
+    });
 
     assert(!tried_to_fill);
 
