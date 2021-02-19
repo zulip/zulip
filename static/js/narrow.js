@@ -867,17 +867,6 @@ exports.deactivate = function (coming_from_recent_topics = false) {
     });
 };
 
-exports.restore_home_state = function () {
-    // If we click on the All messages link while already at All messages, unnarrow.
-    // If we click on the All messages link from another nav pane, just go
-    // back to the state you were in (possibly still narrowed) before
-    // you left the All messages pane.
-    if (!overlays.is_active()) {
-        exports.deactivate();
-    }
-    navigate.maybe_scroll_to_selected();
-};
-
 function set_invalid_narrow_message(invalid_narrow_message) {
     const search_string_display = $("#empty_search_stop_words_string");
     search_string_display.text(invalid_narrow_message);

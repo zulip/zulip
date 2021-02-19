@@ -580,18 +580,6 @@ exports.initialize = function () {
         $(e.currentTarget).tooltip("destroy");
     });
 
-    // HOME
-
-    $(".brand").on("click", (e) => {
-        if (overlays.is_active()) {
-            overlays.close_active();
-        } else {
-            narrow.restore_home_state();
-        }
-        navigate.maybe_scroll_to_selected();
-        e.preventDefault();
-    });
-
     // MISC
 
     (function () {

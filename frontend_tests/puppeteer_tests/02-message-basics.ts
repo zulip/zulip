@@ -85,6 +85,11 @@ async function un_narrow_by_clicking_org_icon(page: Page): Promise<void> {
     await page.click(".brand");
 }
 
+async function expect_recent_topics(page: Page): Promise<void> {
+    await page.waitForSelector("#recent_topics_table", {visible: true});
+    assert.strictEqual(await page.title(), "Home - Zulip Dev - Zulip");
+}
+
 async function test_navigations_from_home(page: Page): Promise<void> {
     console.log("Narrowing by clicking stream");
     await page.evaluate(() => $(`*[title='Narrow to stream "Verona"']`).trigger("click"));
@@ -98,7 +103,7 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     await page.click('*[title="Narrow to stream \\"Verona\\", topic \\"test\\""]');
     await expect_verona_stream_test_topic(page);
 
-    await un_narrow_by_clicking_org_icon(page);
+    await un_narrow(page);
     await expect_home(page);
 
     console.log("Narrowing by clicking group personal header");
@@ -109,8 +114,14 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     );
     await expect_huddle(page);
 
-    await un_narrow_by_clicking_org_icon(page);
+    await un_narrow(page);
     await expect_home(page);
+
+    await page.evaluate(() =>
+        $('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]').click(),
+    );
+    await un_narrow_by_clicking_org_icon(page);
+    await expect_recent_topics(page);
 }
 
 async function search_and_check(
