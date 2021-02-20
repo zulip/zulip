@@ -154,16 +154,16 @@ buddy_list.fill_screen_with_content = () => {
     });
 };
 
+run_test("reload_defaults", () => {
+    blueslip.expect("warn", "get_filter_text() is called before initialization");
+    assert.equal(activity.get_filter_text(), "");
+});
+
 run_test("get_status", () => {
     assert.equal(presence.get_status(page_params.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "inactive");
     assert.equal(presence.get_status(fred.user_id), "active");
     assert.equal(presence.get_status(zoe.user_id), "offline");
-});
-
-run_test("reload_defaults", () => {
-    blueslip.expect("warn", "get_filter_text() is called before initialization");
-    assert.equal(activity.get_filter_text(), "");
 });
 
 run_test("sort_users", () => {
@@ -232,19 +232,17 @@ function clear_buddy_list() {
     });
 }
 
-function reset_setup() {
+function test_ui(label, f) {
     $.clear_all_elements();
-    activity.set_cursor_and_filter();
-
-    buddy_list.container = $("#user_presences");
-
-    buddy_list.container.append = () => {};
-    clear_buddy_list();
+    run_test(label, (override) => {
+        clear_buddy_list();
+        f(override);
+    });
 }
 
-reset_setup();
+test_ui("presence_list_full_update", () => {
+    activity.set_cursor_and_filter();
 
-run_test("presence_list_full_update", () => {
     $(".user-list-filter").trigger("focus");
     compose_state.private_message_recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
@@ -285,7 +283,7 @@ function buddy_list_add(user_id, stub) {
     $("#user_presences").set_find_results(sel, stub);
 }
 
-run_test("PM_update_dom_counts", () => {
+test_ui("PM_update_dom_counts", () => {
     const value = $.create("alice-value");
     const count = $.create("alice-count");
     const pm_key = alice.user_id.toString();
@@ -310,7 +308,7 @@ run_test("PM_update_dom_counts", () => {
     assert.equal(value.text(), "");
 });
 
-run_test("handlers", () => {
+test_ui("handlers", () => {
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
     let me_li;
@@ -318,10 +316,11 @@ run_test("handlers", () => {
     let fred_li;
 
     function init() {
-        reset_setup();
+        $.clear_all_elements();
         buddy_list.populate({
             keys: [me.user_id, alice.user_id, fred.user_id],
         });
+        activity.set_cursor_and_filter();
 
         me_li = $.create("me stub");
         alice_li = $.create("alice stub");
@@ -412,9 +411,7 @@ presence.presence_info.set(mark.user_id, {status: activity.IDLE});
 presence.presence_info.set(norbert.user_id, {status: activity.ACTIVE});
 presence.presence_info.set(zoe.user_id, {status: activity.ACTIVE});
 
-reset_setup();
-
-run_test("first/prev/next", () => {
+test_ui("first/prev/next", () => {
     clear_buddy_list();
 
     assert.equal(buddy_list.first_key(), undefined);
@@ -434,11 +431,10 @@ run_test("first/prev/next", () => {
     assert.equal(buddy_list.next_key(fred.user_id), undefined);
 });
 
-reset_setup();
-
-run_test("filter_user_ids", () => {
+test_ui("filter_user_ids", () => {
     const user_filter = $(".user-list-filter");
     user_filter.val(""); // no search filter
+    activity.set_cursor_and_filter();
 
     function get_user_ids() {
         const filter_text = activity.get_filter_text();
@@ -487,27 +483,22 @@ run_test("filter_user_ids", () => {
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 });
 
-run_test("insert_one_user_into_empty_list", () => {
+test_ui("insert_one_user_into_empty_list", (override) => {
     let appended_html;
-    $("#user_presences").append = function (html) {
+    override(buddy_list.container, "append", (html) => {
         appended_html = html;
-    };
+    });
 
-    clear_buddy_list();
     activity.redraw_user(alice.user_id);
     assert(appended_html.indexOf('data-user-id="1"') > 0);
     assert(appended_html.indexOf("user_circle_green") > 0);
 });
 
-reset_setup();
-
-run_test("insert_alice_then_fred", () => {
-    clear_buddy_list();
-
+test_ui("insert_alice_then_fred", (override) => {
     let appended_html;
-    $("#user_presences").append = function (html) {
+    override(buddy_list.container, "append", (html) => {
         appended_html = html;
-    };
+    });
 
     activity.redraw_user(alice.user_id);
     assert(appended_html.indexOf('data-user-id="1"') > 0);
@@ -518,15 +509,11 @@ run_test("insert_alice_then_fred", () => {
     assert(appended_html.indexOf("user_circle_green") > 0);
 });
 
-reset_setup();
-
-run_test("insert_fred_then_alice_then_rename", () => {
-    clear_buddy_list();
-
+test_ui("insert_fred_then_alice_then_rename", (override) => {
     let appended_html;
-    $("#user_presences").append = function (html) {
+    override(buddy_list.container, "append", (html) => {
         appended_html = html;
-    };
+    });
 
     activity.redraw_user(fred.user_id);
     assert(appended_html.indexOf('data-user-id="2"') > 0);
@@ -566,26 +553,27 @@ run_test("insert_fred_then_alice_then_rename", () => {
     people.add_active_user(fred);
 });
 
-// Reset jquery here.
-reset_setup();
-
-run_test("insert_unfiltered_user_with_filter", () => {
+test_ui("insert_unfiltered_user_with_filter", () => {
     // This test only tests that we do not explode when
     // try to insert Fred into a list where he does not
     // match the search filter.
+    activity.set_cursor_and_filter();
+
     const user_filter = $(".user-list-filter");
     user_filter.val("do-not-match-filter");
     activity.redraw_user(fred.user_id);
 });
 
-run_test("realm_presence_disabled", () => {
+test_ui("realm_presence_disabled", () => {
     page_params.realm_presence_disabled = true;
 
     activity.redraw_user();
     activity.build_user_sidebar();
 });
 
-run_test("clear_search", () => {
+test_ui("clear_search", () => {
+    activity.set_cursor_and_filter();
+
     $(".user-list-filter").val("somevalue");
     $("#clear_search_people_button").trigger("click");
     assert.equal($(".user-list-filter").val(), "");
@@ -593,8 +581,9 @@ run_test("clear_search", () => {
     assert($("#user_search_section").hasClass("notdisplayed"));
 });
 
-run_test("escape_search", () => {
-    clear_buddy_list();
+test_ui("escape_search", () => {
+    activity.set_cursor_and_filter();
+
     $(".user-list-filter").val("somevalue");
     activity.escape_search();
     assert.equal($(".user-list-filter").val(), "");
@@ -602,9 +591,9 @@ run_test("escape_search", () => {
     assert($("#user_search_section").hasClass("notdisplayed"));
 });
 
-reset_setup();
+test_ui("initiate_search", () => {
+    activity.set_cursor_and_filter();
 
-run_test("initiate_search", () => {
     $(".user-list-filter").trigger("blur");
     simulate_right_column_buddy_list();
     activity.initiate_search();
@@ -615,7 +604,9 @@ run_test("initiate_search", () => {
     assert.equal($(".user-list-filter").is_focused(), true);
 });
 
-run_test("toggle_filter_display", () => {
+test_ui("toggle_filter_display", () => {
+    activity.set_cursor_and_filter();
+
     activity.user_filter.toggle_filter_displayed();
     assert($("#user_search_section").hasClass("notdisplayed"));
     $(".user-list-filter").closest = function (selector) {
@@ -626,16 +617,16 @@ run_test("toggle_filter_display", () => {
     assert.equal($("#user_search_section").hasClass("notdisplayed"), false);
 });
 
-run_test("searching", () => {
+test_ui("searching", () => {
+    activity.set_cursor_and_filter();
+
     $(".user-list-filter").trigger("focus");
     assert.equal(activity.searching(), true);
     $(".user-list-filter").trigger("blur");
     assert.equal(activity.searching(), false);
 });
 
-reset_setup();
-
-run_test("update_presence_info", () => {
+test_ui("update_presence_info", () => {
     page_params.realm_presence_disabled = false;
 
     const server_time = 500;
@@ -669,7 +660,7 @@ run_test("update_presence_info", () => {
     assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
 });
 
-run_test("initialize", () => {
+test_ui("initialize", () => {
     function clear() {
         $.clear_all_elements();
         buddy_list.container = $("#user_presences");
@@ -738,7 +729,7 @@ run_test("away_status", () => {
     assert(!user_status.is_away(alice.user_id));
 });
 
-run_test("electron_bridge", () => {
+test_ui("electron_bridge", () => {
     activity.client_is_active = false;
     window.electron_bridge = undefined;
     assert.equal(activity.compute_active_status(), activity.IDLE);
@@ -761,7 +752,7 @@ run_test("electron_bridge", () => {
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
 });
 
-run_test("test_send_or_receive_no_presence_for_web_public_visitor", () => {
+test_ui("test_send_or_receive_no_presence_for_web_public_visitor", () => {
     set_global("page_params", {
         is_web_public_visitor: true,
     });
