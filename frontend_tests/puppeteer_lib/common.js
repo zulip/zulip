@@ -12,52 +12,50 @@ const root_dir = path.resolve(__dirname, "../../");
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
 
 class CommonUtils {
-    constructor() {
-        this.browser = null;
-        this.screenshot_id = 0;
-        this.realm_url = "http://zulip.zulipdev.com:9981/";
-        this.pm_recipient = {
-            async set(page, recipient) {
-                // Without using the delay option here there seems to be
-                // a flake where the typeahead doesn't show up.
-                await page.type("#private_message_recipient", recipient, {delay: 100});
+    browser = null;
+    screenshot_id = 0;
+    realm_url = "http://zulip.zulipdev.com:9981/";
+    pm_recipient = {
+        async set(page, recipient) {
+            // Without using the delay option here there seems to be
+            // a flake where the typeahead doesn't show up.
+            await page.type("#private_message_recipient", recipient, {delay: 100});
 
-                // We use jQuery here because we need to use it's :visible
-                // pseudo selector to actually wait for typeahead item that
-                // is visible; there can be typeahead item with this selector
-                // that is invisible because it is meant for something else
-                // e.g. private message input typeahead is different from topic
-                // input typeahead but both can be present in the dom.
-                await page.waitForFunction(() => {
-                    const selector = ".typeahead-menu .active a:visible";
-                    return $(selector).length !== 0;
-                });
+            // We use jQuery here because we need to use it's :visible
+            // pseudo selector to actually wait for typeahead item that
+            // is visible; there can be typeahead item with this selector
+            // that is invisible because it is meant for something else
+            // e.g. private message input typeahead is different from topic
+            // input typeahead but both can be present in the dom.
+            await page.waitForFunction(() => {
+                const selector = ".typeahead-menu .active a:visible";
+                return $(selector).length !== 0;
+            });
 
-                await page.evaluate(() => {
-                    $(".typeahead-menu .active a:visible").trigger("click");
-                });
-            },
+            await page.evaluate(() => {
+                $(".typeahead-menu .active a:visible").trigger("click");
+            });
+        },
 
-            async expect(page, expected) {
-                const actual_recipients = await page.evaluate(() => {
-                    const compose_state = window.require("./static/js/compose_state");
-                    return compose_state.private_message_recipient();
-                });
-                assert.equal(actual_recipients, expected);
-            },
-        };
+        async expect(page, expected) {
+            const actual_recipients = await page.evaluate(() => {
+                const compose_state = window.require("./static/js/compose_state");
+                return compose_state.private_message_recipient();
+            });
+            assert.equal(actual_recipients, expected);
+        },
+    };
 
-        this.fullname = {
-            cordelia: "Cordelia Lear",
-            othello: "Othello, the Moor of Venice",
-            hamlet: "King Hamlet",
-        };
+    fullname = {
+        cordelia: "Cordelia Lear",
+        othello: "Othello, the Moor of Venice",
+        hamlet: "King Hamlet",
+    };
 
-        this.window_size = {
-            width: 1400,
-            height: 1024,
-        };
-    }
+    window_size = {
+        width: 1400,
+        height: 1024,
+    };
 
     async ensure_browser() {
         if (this.browser === null) {
