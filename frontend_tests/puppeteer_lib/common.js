@@ -117,11 +117,15 @@ class CommonUtils {
             const name_selector = `${form_selector} [name="${name}"]`;
             const value = params[name];
             if (typeof value === "boolean") {
-                await page.$eval(name_selector, (el, value) => {
-                    if (el.checked !== value) {
-                        el.click();
-                    }
-                });
+                await page.$eval(
+                    name_selector,
+                    (el, value) => {
+                        if (el.checked !== value) {
+                            el.click();
+                        }
+                    },
+                    value,
+                );
             } else if (await is_dropdown(page, name)) {
                 await page.select(name_selector, params[name]);
             } else {
