@@ -15,7 +15,6 @@
         /* Basic options */
         "noEmit": true,
         "target": "ES2019",
-        "module": "ES6",
         "esModuleInterop": true,
         "moduleResolution": "node",
         "resolveJsonModule": true,
