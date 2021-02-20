@@ -43,7 +43,12 @@ const alice = {
 };
 people.add_active_user(alice);
 
-run_test("get_items", () => {
+function test(label, f) {
+    $.clear_all_elements();
+    run_test(label, f);
+}
+
+function populate_list_with_just_alice() {
     // We don't make alice_li an actual jQuery stub,
     // because our test only cares that it comes
     // back from get_items.
@@ -52,14 +57,18 @@ run_test("get_items", () => {
     const container = $.create("get_items container", {
         children: [{to_$: () => alice_li}],
     });
-
     buddy_list.container.set_find_results(sel, container);
-    const items = buddy_list.get_items();
 
+    return alice_li;
+}
+
+test("get_items", () => {
+    const alice_li = populate_list_with_just_alice();
+    const items = buddy_list.get_items();
     assert.deepEqual(items, [alice_li]);
 });
 
-run_test("basics", (override) => {
+test("basics", (override) => {
     init_simulated_scrolling();
 
     override(buddy_list, "get_data_from_keys", (opts) => {
@@ -75,7 +84,7 @@ run_test("basics", (override) => {
     });
 
     let appended;
-    buddy_list.container.append = (html) => {
+    $("#user_presences").append = (html) => {
         assert.equal(html, "html-stub");
         appended = true;
     };
@@ -100,7 +109,7 @@ run_test("basics", (override) => {
     assert.equal(li, alice_li);
 });
 
-run_test("big_list", (override) => {
+test("big_list", (override) => {
     const elem = init_simulated_scrolling();
 
     // Don't actually render, but do simulate filling up
@@ -134,7 +143,7 @@ run_test("big_list", (override) => {
     assert.equal(chunks_inserted, 6);
 });
 
-run_test("force_render", (override) => {
+test("force_render", (override) => {
     buddy_list.render_count = 50;
 
     let num_rendered = 0;
@@ -155,7 +164,7 @@ run_test("force_render", (override) => {
     });
 });
 
-run_test("find_li w/force_render", (override) => {
+test("find_li w/force_render", (override) => {
     // If we call find_li w/force_render set, and the
     // key is not already rendered in DOM, then the
     // widget will call show_key to force-render it.
@@ -191,7 +200,7 @@ run_test("find_li w/force_render", (override) => {
     assert(shown);
 });
 
-run_test("find_li w/bad key", (override) => {
+test("find_li w/bad key", (override) => {
     override(buddy_list, "get_li_from_key", () => ({length: 0}));
 
     const undefined_li = buddy_list.find_li({
@@ -202,7 +211,9 @@ run_test("find_li w/bad key", (override) => {
     assert.deepEqual(undefined_li, []);
 });
 
-run_test("scrolling", (override) => {
+test("scrolling", (override) => {
+    init_simulated_scrolling();
+
     buddy_list.populate({
         keys: [],
     });
@@ -220,6 +231,3 @@ run_test("scrolling", (override) => {
 
     assert(tried_to_fill);
 });
-
-// You have to be careful here about where you place tests,
-// since there is lots of stubbing in this module.
