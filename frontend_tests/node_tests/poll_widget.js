@@ -3,15 +3,24 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, zrequire, set_global} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 mock_cjs("jquery", $);
-
+const markdown = zrequire("markdown");
+const markdown_config = zrequire("markdown_config");
 const poll_widget = zrequire("poll_widget");
 
 const people = zrequire("people");
+
+zrequire("message_store");
+zrequire("user_groups");
+zrequire("stream_data");
+zrequire("hash_util");
+set_global("page_params", {});
+
+markdown.initialize([], markdown_config.get_helpers());
 
 run_test("PollData my question", () => {
     const is_my_poll = true;

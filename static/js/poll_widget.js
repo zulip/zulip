@@ -3,7 +3,10 @@ import $ from "jquery";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
-import * as people from "./people";
+const marked = require("../third/marked/lib/marked");
+
+const people = require("./people");
+const rendered_markdown = require("./rendered_markdown");
 
 export class PollData {
     // This object just holds data for a poll, although it
@@ -206,8 +209,14 @@ export function activate(opts) {
         const waiting = !is_my_poll && !has_question;
         const author_help = is_my_poll && !has_question;
 
+        const content = elem.find(".poll-question-header");
         elem.find(".poll-question-header").toggle(!input_mode);
-        elem.find(".poll-question-header").text(question);
+        if (/<time:([^>]+)>/.test(question)) {
+            elem.find(".poll-question-header").append(marked(question));
+            rendered_markdown.update_elements(content);
+        } else {
+            elem.find(".poll-question-header").text(question);
+        }
         elem.find(".poll-edit-question").toggle(can_edit);
         update_edit_controls();
 
