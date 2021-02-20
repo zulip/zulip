@@ -29,7 +29,7 @@ async function delete_message_test(page) {
         messages_quantitiy - 1,
     );
 
-    await common.assert_selector_doesnt_exist(page, last_message_id);
+    await page.waitForSelector(last_message_id, {hidden: true});
     await page.waitForSelector("#do_delete_message_spinner .loading_indicator_spinner", {
         hidden: true,
     });

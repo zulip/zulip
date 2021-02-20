@@ -219,7 +219,7 @@ async function test_duplicate_alert_words_cannot_be_added(page, duplicate_word) 
 async function delete_alert_word(page, word) {
     const delete_btn_selector = `.remove-alert-word[data-word="${CSS.escape(word)}"]`;
     await page.click(delete_btn_selector);
-    await common.assert_selector_doesnt_exist(page, delete_btn_selector);
+    await page.waitForSelector(delete_btn_selector, {hidden: true});
 }
 
 async function test_alert_word_deletion(page, word) {

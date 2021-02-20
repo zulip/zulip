@@ -351,16 +351,14 @@ async function test_users_search(page) {
     async function assert_selected(page, name) {
         await page.waitForSelector(
             `#user_presences li.highlighted_user [data-name="${CSS.escape(name)}"]`,
-            {
-                visible: true,
-            },
+            {visible: true},
         );
     }
 
     async function assert_not_selected(page, name) {
-        await common.assert_selector_doesnt_exist(
-            page,
+        await page.waitForSelector(
             `#user_presences li.highlighted_user [data-name="${CSS.escape(name)}"]`,
+            {hidden: true},
         );
     }
 

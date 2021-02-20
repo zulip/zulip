@@ -188,7 +188,7 @@ async function test_delete_draft(page) {
     await page.click("#drafts_table .message_row.private-message .delete-draft");
     const drafts_count = await get_drafts_count(page);
     assert.strictEqual(drafts_count, 1, "Draft not deleted.");
-    await common.assert_selector_doesnt_exist(page, "#drafts_table .message_row.private-message");
+    await page.waitForSelector("#drafts_table .message_row.private-message", {hidden: true});
     await page.click(`${drafts_overlay} .exit`);
     await wait_for_drafts_to_dissapear(page);
     await page.click("body");
@@ -242,7 +242,7 @@ async function test_delete_draft_on_sending(page) {
     await wait_for_drafts_to_appear(page);
     const drafts_count = await get_drafts_count(page);
     assert.strictEqual(drafts_count, 1, "Draft wasn't cleared on sending.");
-    await common.assert_selector_doesnt_exist(page, "#drafts_table .message_row.private-message");
+    await page.waitForSelector("#drafts_table .message_row.private-message", {hidden: true});
 }
 
 async function drafts_test(page) {
