@@ -460,6 +460,7 @@ li,
     position: relative;
     margin-right: -32px;
     margin-top: -1px;
+    padding: 8px 3px 0 13px;
 }
 
 #clipboard_image {
