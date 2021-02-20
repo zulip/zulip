@@ -27,7 +27,10 @@
 package-lock.json
 
 /.vagrant
-/var
+/var/*
+!/var/puppeteer
+/var/puppeteer/*
+!/var/puppeteer/test_credentials.d.ts
 
 /.dmypy.json
 

@@ -1,10 +1,10 @@
-"use strict";
+import {strict as assert} from "assert";
 
-const {strict: assert} = require("assert");
+import type {Page} from "puppeteer";
 
-const common = require("../puppeteer_lib/common");
+import common from "../puppeteer_lib/common";
 
-async function test_add_linkifier(page) {
+async function test_add_linkifier(page: Page): Promise<void> {
     await page.waitForSelector(".admin-filter-form", {visible: true});
     await common.fill_form(page, "form.admin-filter-form", {
         pattern: "#(?P<id>[0-9]+)",
@@ -31,12 +31,12 @@ async function test_add_linkifier(page) {
     );
 }
 
-async function test_delete_linkifier(page) {
+async function test_delete_linkifier(page: Page): Promise<void> {
     await page.click(".filter_row button");
     await page.waitForSelector(".filter_row", {hidden: true});
 }
 
-async function test_invalid_linkifier_pattern(page) {
+async function test_invalid_linkifier_pattern(page: Page): Promise<void> {
     await page.waitForSelector(".admin-filter-form", {visible: true});
     await common.fill_form(page, "form.admin-filter-form", {
         pattern: "a$",
@@ -51,7 +51,7 @@ async function test_invalid_linkifier_pattern(page) {
     );
 }
 
-async function realm_linkifier_test(page) {
+async function realm_linkifier_test(page: Page): Promise<void> {
     await common.log_in(page);
     await common.manage_organization(page);
     await page.click("li[data-section='filter-settings']");

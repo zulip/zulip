@@ -1,14 +1,14 @@
-"use strict";
+import {strict as assert} from "assert";
 
-const {strict: assert} = require("assert");
+import type {Page} from "puppeteer";
 
-const common = require("../puppeteer_lib/common");
+import common from "../puppeteer_lib/common";
 
 // These will be the row and edit form of the the custom profile we add.
 const profile_field_row = "#admin_profile_fields_table tr:nth-last-child(2)";
 const profile_field_form = "#admin_profile_fields_table tr:nth-last-child(1)";
 
-async function test_add_new_profile_field(page) {
+async function test_add_new_profile_field(page: Page): Promise<void> {
     await page.waitForSelector(".admin-profile-field-form", {visible: true});
     await common.fill_form(page, "form.admin-profile-field-form", {
         name: "Teams",
@@ -28,7 +28,7 @@ async function test_add_new_profile_field(page) {
     );
 }
 
-async function test_edit_profile_field(page) {
+async function test_edit_profile_field(page: Page): Promise<void> {
     await page.click(`${profile_field_row} button.open-edit-form`);
     await page.waitForSelector(`${profile_field_form} form.name-setting`, {visible: true});
     await common.fill_form(page, `${profile_field_form} form.name-setting`, {
@@ -44,7 +44,7 @@ async function test_edit_profile_field(page) {
     );
 }
 
-async function test_delete_custom_profile_field(page) {
+async function test_delete_custom_profile_field(page: Page): Promise<void> {
     await page.click(`${profile_field_row} button.delete`);
     await page.waitForSelector("#admin-profile-field-status img", {visible: true});
     assert.strictEqual(
@@ -53,7 +53,7 @@ async function test_delete_custom_profile_field(page) {
     );
 }
 
-async function test_custom_profile(page) {
+async function test_custom_profile(page: Page): Promise<void> {
     await common.log_in(page);
     await common.manage_organization(page);
 

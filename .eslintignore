@@ -6,5 +6,8 @@
 /static/generated
 /static/third
 /static/webpack-bundles
-/var
+/var/*
+!/var/puppeteer
+/var/puppeteer/*
+!/var/puppeteer/test_credentials.d.ts
 /zulip-py3-venv

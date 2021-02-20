@@ -1,28 +1,28 @@
-"use strict";
+import {strict as assert} from "assert";
 
-const {strict: assert} = require("assert");
+import type {Page} from "puppeteer";
 
-const common = require("../puppeteer_lib/common");
+import common from "../puppeteer_lib/common";
 
-async function wait_for_tab(page, tab) {
+async function wait_for_tab(page: Page, tab: string): Promise<void> {
     const tab_slector = `#${CSS.escape(tab)}.tab-pane.active`;
     await page.waitForSelector(tab_slector, {visible: true});
 }
 
-async function navigate_to(page, click_target, tab) {
+async function navigate_to(page: Page, click_target: string, tab: string): Promise<void> {
     console.log("Visiting #" + click_target);
     await page.click(`a[href='#${CSS.escape(click_target)}']`);
 
     await wait_for_tab(page, tab);
 }
 
-async function open_menu(page) {
+async function open_menu(page: Page): Promise<void> {
     const menu_selector = "#settings-dropdown";
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
 }
 
-async function navigate_to_settings(page) {
+async function navigate_to_settings(page: Page): Promise<void> {
     console.log("Navigating to settings");
 
     await open_menu(page);
@@ -36,7 +36,7 @@ async function navigate_to_settings(page) {
     await page.click("#settings_page .content-wrapper .exit");
 }
 
-async function navigate_to_subscriptions(page) {
+async function navigate_to_subscriptions(page: Page): Promise<void> {
     console.log("Navigate to subscriptions");
 
     await open_menu(page);
@@ -51,7 +51,7 @@ async function navigate_to_subscriptions(page) {
     await page.click("#subscription_overlay .exit");
 }
 
-async function test_reload_hash(page) {
+async function test_reload_hash(page: Page): Promise<void> {
     const initial_page_load_time = await page.evaluate(() => page_params.page_load_time);
     console.log("initial load time: " + initial_page_load_time);
 
@@ -70,7 +70,7 @@ async function test_reload_hash(page) {
     assert.strictEqual(hash, initial_hash, "Hash not preserved.");
 }
 
-async function navigation_tests(page) {
+async function navigation_tests(page: Page): Promise<void> {
     await common.log_in(page);
 
     await navigate_to_settings(page);

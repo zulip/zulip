@@ -1,22 +1,22 @@
-"use strict";
+import {strict as assert} from "assert";
 
-const {strict: assert} = require("assert");
+import type {Page} from "puppeteer";
 
-const common = require("../puppeteer_lib/common");
+import common from "../puppeteer_lib/common";
 
-async function wait_for_drafts_to_dissapear(page) {
+async function wait_for_drafts_to_dissapear(page: Page): Promise<void> {
     await page.waitForFunction(
         () => $("#draft_overlay").length === 0 || $("#draft_overlay").css("opacity") === "0",
     );
 }
 
-async function wait_for_drafts_to_appear(page) {
+async function wait_for_drafts_to_appear(page: Page): Promise<void> {
     await page.waitForFunction(
         () => $("#draft_overlay").length === 1 && $("#draft_overlay").css("opacity") === "1",
     );
 }
 
-async function get_drafts_count(page) {
+async function get_drafts_count(page: Page): Promise<number> {
     return await page.$$eval(".draft-row", (drafts) => drafts.length);
 }
 
@@ -24,7 +24,7 @@ const drafts_button = ".compose_drafts_button";
 const drafts_overlay = "#draft_overlay";
 const drafts_button_in_compose = "#below-compose-content .drafts-link";
 
-async function test_empty_drafts(page) {
+async function test_empty_drafts(page: Page): Promise<void> {
     await page.waitForSelector(drafts_button, {visible: true});
     await page.click(drafts_button);
 
@@ -36,7 +36,7 @@ async function test_empty_drafts(page) {
     await wait_for_drafts_to_dissapear(page);
 }
 
-async function create_stream_message_draft(page) {
+async function create_stream_message_draft(page: Page): Promise<void> {
     console.log("Creating Stream Message Draft");
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#stream-message", {visible: true});
@@ -48,7 +48,7 @@ async function create_stream_message_draft(page) {
     await page.click("#compose_close");
 }
 
-async function create_private_message_draft(page) {
+async function create_private_message_draft(page: Page): Promise<void> {
     console.log("Creating private message draft");
     await page.keyboard.press("KeyX");
     await page.waitForSelector("#private_message_recipient", {visible: true});
@@ -58,7 +58,7 @@ async function create_private_message_draft(page) {
     await page.click("#compose_close");
 }
 
-async function open_compose_markdown_preview(page) {
+async function open_compose_markdown_preview(page: Page): Promise<void> {
     const new_topic_button = "#left_bar_compose_stream_button_big";
     await page.waitForSelector(new_topic_button, {visible: true});
     await page.click(new_topic_button);
@@ -68,14 +68,14 @@ async function open_compose_markdown_preview(page) {
     await page.click(markdown_preview_button);
 }
 
-async function open_drafts_through_compose(page) {
+async function open_drafts_through_compose(page: Page): Promise<void> {
     await open_compose_markdown_preview(page);
     await page.waitForSelector(drafts_button_in_compose, {visible: true});
     await page.click(drafts_button_in_compose);
     await wait_for_drafts_to_appear(page);
 }
 
-async function test_previously_created_drafts_rendered(page) {
+async function test_previously_created_drafts_rendered(page: Page): Promise<void> {
     const drafts_count = await get_drafts_count(page);
     assert.strictEqual(drafts_count, 2, "Drafts improperly loaded.");
     assert.strictEqual(
@@ -109,7 +109,7 @@ async function test_previously_created_drafts_rendered(page) {
     );
 }
 
-async function test_restore_message_draft(page) {
+async function test_restore_message_draft(page: Page): Promise<void> {
     console.log("Restoring Stream Message Draft");
     await page.click("#drafts_table .message_row:not(.private-message) .restore-draft");
     await wait_for_drafts_to_dissapear(page);
@@ -127,7 +127,7 @@ async function test_restore_message_draft(page) {
     );
 }
 
-async function edit_stream_message_draft(page) {
+async function edit_stream_message_draft(page: Page): Promise<void> {
     await common.fill_form(page, "form#send_message_form", {
         stream_message_recipient_stream: "all",
         stream_message_recipient_topic: "tests",
@@ -136,7 +136,7 @@ async function edit_stream_message_draft(page) {
     await page.click("#compose_close");
 }
 
-async function test_edited_draft_message(page) {
+async function test_edited_draft_message(page: Page): Promise<void> {
     await page.waitForSelector(drafts_button, {visible: true});
     await page.click(drafts_button);
 
@@ -161,7 +161,7 @@ async function test_edited_draft_message(page) {
     );
 }
 
-async function test_restore_private_message_draft(page) {
+async function test_restore_private_message_draft(page: Page): Promise<void> {
     console.log("Restoring private message draft.");
     await page.click("#drafts_table .message_row.private-message .restore-draft");
     await wait_for_drafts_to_dissapear(page);
@@ -180,7 +180,7 @@ async function test_restore_private_message_draft(page) {
     await page.click("#compose_close");
 }
 
-async function test_delete_draft(page) {
+async function test_delete_draft(page: Page): Promise<void> {
     console.log("Deleting draft");
     await page.waitForSelector(drafts_button, {visible: true});
     await page.click(drafts_button);
@@ -194,7 +194,7 @@ async function test_delete_draft(page) {
     await page.click("body");
 }
 
-async function test_save_draft_by_reloading(page) {
+async function test_save_draft_by_reloading(page: Page): Promise<void> {
     console.log("Saving draft by reloading.");
     await page.keyboard.press("KeyX");
     await page.waitForSelector("#private-message", {visible: true});
@@ -229,7 +229,7 @@ async function test_save_draft_by_reloading(page) {
     );
 }
 
-async function test_delete_draft_on_sending(page) {
+async function test_delete_draft_on_sending(page: Page): Promise<void> {
     await page.click("#drafts_table .message_row.private-message .restore-draft");
     await wait_for_drafts_to_dissapear(page);
     await page.waitForSelector("#private-message", {visible: true});
@@ -245,7 +245,7 @@ async function test_delete_draft_on_sending(page) {
     await page.waitForSelector("#drafts_table .message_row.private-message", {hidden: true});
 }
 
-async function drafts_test(page) {
+async function drafts_test(page: Page): Promise<void> {
     await common.log_in(page);
 
     await test_empty_drafts(page);

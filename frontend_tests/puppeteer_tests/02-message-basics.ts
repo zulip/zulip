@@ -1,15 +1,15 @@
-"use strict";
+import {strict as assert} from "assert";
 
-const {strict: assert} = require("assert");
+import type {Page} from "puppeteer";
 
-const common = require("../puppeteer_lib/common");
+import common from "../puppeteer_lib/common";
 
-async function get_stream_li(page, stream_name) {
+async function get_stream_li(page: Page, stream_name: string): Promise<string> {
     const stream_id = await common.get_stream_id(page, stream_name);
-    return `#stream_filters [data-stream-id="${CSS.escape(stream_id)}"]`;
+    return `#stream_filters [data-stream-id="${CSS.escape(stream_id.toString())}"]`;
 }
 
-async function expect_home(page) {
+async function expect_home(page: Page): Promise<void> {
     await common.check_messages_sent(page, "zhome", [
         ["Verona > test", ["verona test a", "verona test b"]],
         ["Verona > other topic", ["verona other topic c"]],
@@ -22,7 +22,7 @@ async function expect_home(page) {
     ]);
 }
 
-async function expect_verona_stream(page) {
+async function expect_verona_stream(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
         ["Verona > test", ["verona test a", "verona test b"]],
@@ -32,7 +32,7 @@ async function expect_verona_stream(page) {
     assert.strictEqual(await page.title(), "Verona - Zulip Dev - Zulip");
 }
 
-async function expect_verona_stream_test_topic(page) {
+async function expect_verona_stream_test_topic(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
         ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
@@ -43,14 +43,14 @@ async function expect_verona_stream_test_topic(page) {
     );
 }
 
-async function expect_verona_other_topic(page) {
+async function expect_verona_other_topic(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
         ["Verona > other topic", ["verona other topic c"]],
     ]);
 }
 
-async function expect_test_topic(page) {
+async function expect_test_topic(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
         ["Verona > test", ["verona test a", "verona test b"]],
@@ -59,7 +59,7 @@ async function expect_test_topic(page) {
     ]);
 }
 
-async function expect_huddle(page) {
+async function expect_huddle(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
         ["You and Cordelia Lear, King Hamlet", ["group pm a", "group pm b", "group pm d"]],
@@ -67,12 +67,12 @@ async function expect_huddle(page) {
     assert.strictEqual(await page.title(), "Cordelia Lear, King Hamlet - Zulip Dev - Zulip");
 }
 
-async function expect_cordelia_private_narrow(page) {
+async function expect_cordelia_private_narrow(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [["You and Cordelia Lear", ["pm c", "pm e"]]]);
 }
 
-async function un_narrow(page) {
+async function un_narrow(page: Page): Promise<void> {
     if (await page.evaluate(() => $(".message_comp").is(":visible"))) {
         await page.keyboard.press("Escape");
     }
@@ -81,11 +81,11 @@ async function un_narrow(page) {
     assert.strictEqual(await page.title(), "home - Zulip Dev - Zulip");
 }
 
-async function un_narrow_by_clicking_org_icon(page) {
+async function un_narrow_by_clicking_org_icon(page: Page): Promise<void> {
     await page.click(".brand");
 }
 
-async function test_navigations_from_home(page) {
+async function test_navigations_from_home(page: Page): Promise<void> {
     console.log("Narrowing by clicking stream");
     await page.evaluate(() => $(`*[title='Narrow to stream "Verona"']`).trigger("click"));
     await expect_verona_stream(page);
@@ -113,7 +113,13 @@ async function test_navigations_from_home(page) {
     await expect_home(page);
 }
 
-async function search_and_check(page, search_str, item_to_select, check, expected_narrow_title) {
+async function search_and_check(
+    page: Page,
+    search_str: string,
+    item_to_select: string,
+    check: (page: Page) => Promise<void>,
+    expected_narrow_title: string,
+): Promise<void> {
     await common.select_item_via_typeahead(page, "#search_query", search_str, item_to_select);
     await check(page);
     assert.strictEqual(await page.title(), expected_narrow_title);
@@ -121,7 +127,7 @@ async function search_and_check(page, search_str, item_to_select, check, expecte
     await expect_home(page);
 }
 
-async function search_silent_user(page, str, item) {
+async function search_silent_user(page: Page, str: string, item: string): Promise<void> {
     await common.select_item_via_typeahead(page, "#search_query", str, item);
     await page.waitForSelector("#silent_user", {visible: true});
     const expect_message = "You haven't received any messages sent by this user yet!";
@@ -129,7 +135,7 @@ async function search_silent_user(page, str, item) {
     await un_narrow(page);
 }
 
-async function expect_non_existing_user(page) {
+async function expect_non_existing_user(page: Page): Promise<void> {
     await page.waitForSelector("#non_existing_user", {visible: true});
     const expected_message = "This user does not exist!";
     assert.strictEqual(
@@ -138,7 +144,7 @@ async function expect_non_existing_user(page) {
     );
 }
 
-async function expect_non_existing_users(page) {
+async function expect_non_existing_users(page: Page): Promise<void> {
     await page.waitForSelector("#non_existing_users", {visible: true});
     const expected_message = "One or more of these users do not exist!";
     assert.strictEqual(
@@ -147,13 +153,13 @@ async function expect_non_existing_users(page) {
     );
 }
 
-async function search_non_existing_user(page, str, item) {
+async function search_non_existing_user(page: Page, str: string, item: string): Promise<void> {
     await common.select_item_via_typeahead(page, "#search_query", str, item);
     await expect_non_existing_user(page);
     await un_narrow(page);
 }
 
-async function search_tests(page) {
+async function search_tests(page: Page): Promise<void> {
     await search_and_check(
         page,
         "Verona",
@@ -217,7 +223,7 @@ async function search_tests(page) {
     );
 }
 
-async function expect_all_pm(page) {
+async function expect_all_pm(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
         ["You and Cordelia Lear, King Hamlet", ["group pm a", "group pm b"]],
@@ -232,7 +238,7 @@ async function expect_all_pm(page) {
     assert.strictEqual(await page.title(), "Private messages - Zulip Dev - Zulip");
 }
 
-async function test_narrow_by_clicking_the_left_sidebar(page) {
+async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<void> {
     console.log("Narrowing with left sidebar");
 
     await page.click((await get_stream_li(page, "Verona")) + " a");
@@ -247,11 +253,11 @@ async function test_narrow_by_clicking_the_left_sidebar(page) {
     await un_narrow(page);
 }
 
-async function arrow(page, direction) {
-    await page.keyboard.press(`Arrow${direction}`);
+async function arrow(page: Page, direction: "Up" | "Down"): Promise<void> {
+    await page.keyboard.press(({Up: "ArrowUp", Down: "ArrowDown"} as const)[direction]);
 }
 
-async function test_search_venice(page) {
+async function test_search_venice(page: Page): Promise<void> {
     await page.evaluate(() => {
         $(".stream-list-filter")
             .expectOne()
@@ -279,7 +285,7 @@ async function test_search_venice(page) {
     await page.waitForSelector(".input-append.notdisplayed");
 }
 
-async function test_stream_search_filters_stream_list(page) {
+async function test_stream_search_filters_stream_list(page: Page): Promise<void> {
     console.log("Search streams using left side bar");
 
     await page.waitForSelector(".input-append.notdisplayed"); // Stream filter box invisible initially
@@ -342,22 +348,22 @@ async function test_stream_search_filters_stream_list(page) {
     await un_narrow(page);
 }
 
-async function test_users_search(page) {
+async function test_users_search(page: Page): Promise<void> {
     console.log("Search users using right sidebar");
-    async function assert_in_list(page, name) {
+    async function assert_in_list(page: Page, name: string): Promise<void> {
         await page.waitForSelector(`#user_presences li [data-name="${CSS.escape(name)}"]`, {
             visible: true,
         });
     }
 
-    async function assert_selected(page, name) {
+    async function assert_selected(page: Page, name: string): Promise<void> {
         await page.waitForSelector(
             `#user_presences li.highlighted_user [data-name="${CSS.escape(name)}"]`,
             {visible: true},
         );
     }
 
-    async function assert_not_selected(page, name) {
+    async function assert_not_selected(page: Page, name: string): Promise<void> {
         await page.waitForSelector(
             `#user_presences li.highlighted_user [data-name="${CSS.escape(name)}"]`,
             {hidden: true},
@@ -406,7 +412,7 @@ async function test_users_search(page) {
     await expect_cordelia_private_narrow(page);
 }
 
-async function message_basic_tests(page) {
+async function message_basic_tests(page: Page): Promise<void> {
     await common.log_in(page);
 
     console.log("Sending messages");
