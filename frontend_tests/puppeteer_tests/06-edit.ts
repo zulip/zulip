@@ -1,8 +1,8 @@
-"use strict";
+import type {Page} from "puppeteer";
 
-const common = require("../puppeteer_lib/common");
+import common from "../puppeteer_lib/common";
 
-async function trigger_edit_last_message(page) {
+async function trigger_edit_last_message(page: Page): Promise<void> {
     await page.evaluate(() => {
         const msg = $("#zhome .message_row").last();
         msg.find(".info").trigger("click");
@@ -11,7 +11,7 @@ async function trigger_edit_last_message(page) {
     await page.waitForSelector(".message_edit_content", {visible: true});
 }
 
-async function edit_stream_message(page, topic, content) {
+async function edit_stream_message(page: Page, topic: string, content: string): Promise<void> {
     await trigger_edit_last_message(page);
 
     await page.evaluate(() => $(".message_edit_topic").val(""));
@@ -24,7 +24,7 @@ async function edit_stream_message(page, topic, content) {
     await common.wait_for_fully_processed_message(page, content);
 }
 
-async function test_stream_message_edit(page) {
+async function test_stream_message_edit(page: Page): Promise<void> {
     await common.send_message(page, "stream", {
         stream: "Verona",
         topic: "edits",
@@ -36,7 +36,7 @@ async function test_stream_message_edit(page) {
     await common.check_messages_sent(page, "zhome", [["Verona > edited", ["test edited"]]]);
 }
 
-async function test_edit_message_with_slash_me(page) {
+async function test_edit_message_with_slash_me(page: Page): Promise<void> {
     await common.send_message(page, "stream", {
         stream: "Verona",
         topic: "edits",
@@ -59,7 +59,7 @@ async function test_edit_message_with_slash_me(page) {
     );
 }
 
-async function test_edit_private_message(page) {
+async function test_edit_private_message(page: Page): Promise<void> {
     await common.send_message(page, "private", {
         recipient: "cordelia@zulip.com",
         content: "test editing pm",
@@ -76,7 +76,7 @@ async function test_edit_private_message(page) {
     ]);
 }
 
-async function edit_tests(page) {
+async function edit_tests(page: Page): Promise<void> {
     await common.log_in(page);
 
     await test_stream_message_edit(page);

@@ -1,10 +1,10 @@
-"use strict";
+import {strict as assert} from "assert";
 
-const {strict: assert} = require("assert");
+import type {Page} from "puppeteer";
 
-const common = require("../puppeteer_lib/common");
+import common from "../puppeteer_lib/common";
 
-async function check_compose_form_empty(page) {
+async function check_compose_form_empty(page: Page): Promise<void> {
     await common.check_form_contents(page, "#send_message_form", {
         stream_message_recipient_stream: "",
         stream_message_recipient_topic: "",
@@ -12,20 +12,20 @@ async function check_compose_form_empty(page) {
     });
 }
 
-async function close_compose_box(page) {
+async function close_compose_box(page: Page): Promise<void> {
     await page.keyboard.press("Escape");
     await page.waitForSelector("#compose-textarea", {hidden: true});
 }
 
-function get_message_xpath(text) {
+function get_message_xpath(text: string): string {
     return `//p[text()='${text}']`;
 }
 
-function get_last_element(array) {
+function get_last_element<T>(array: T[]): T {
     return array.slice(-1)[0];
 }
 
-async function test_send_messages(page) {
+async function test_send_messages(page: Page): Promise<void> {
     const initial_msgs_count = await page.evaluate(() => $("#zhome .message_row").length);
 
     await common.send_multiple_messages(page, [
@@ -39,26 +39,26 @@ async function test_send_messages(page) {
     );
 }
 
-async function test_stream_compose_keyboard_shortcut(page) {
+async function test_stream_compose_keyboard_shortcut(page: Page): Promise<void> {
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#stream-message", {visible: true});
     await check_compose_form_empty(page);
     await close_compose_box(page);
 }
 
-async function test_private_message_compose_shortcut(page) {
+async function test_private_message_compose_shortcut(page: Page): Promise<void> {
     await page.keyboard.press("KeyX");
     await page.waitForSelector("#private_message_recipient", {visible: true});
     await common.pm_recipient.expect(page, "");
     await close_compose_box(page);
 }
 
-async function test_keyboard_shortcuts(page) {
+async function test_keyboard_shortcuts(page: Page): Promise<void> {
     await test_stream_compose_keyboard_shortcut(page);
     await test_private_message_compose_shortcut(page);
 }
 
-async function test_reply_by_click_prepopulates_stream_topic_names(page) {
+async function test_reply_by_click_prepopulates_stream_topic_names(page: Page): Promise<void> {
     const stream_message = get_last_element(
         await page.$x(get_message_xpath("Compose stream reply test")),
     );
@@ -72,7 +72,9 @@ async function test_reply_by_click_prepopulates_stream_topic_names(page) {
     await close_compose_box(page);
 }
 
-async function test_reply_by_click_prepopulates_private_message_recipient(page) {
+async function test_reply_by_click_prepopulates_private_message_recipient(
+    page: Page,
+): Promise<void> {
     const private_message = get_last_element(
         await page.$x(get_message_xpath("Compose private message reply test")),
     );
@@ -85,7 +87,7 @@ async function test_reply_by_click_prepopulates_private_message_recipient(page) 
     await close_compose_box(page);
 }
 
-async function test_reply_with_r_shortcut(page) {
+async function test_reply_with_r_shortcut(page: Page): Promise<void> {
     // The last message(private) in the narrow is currently selected as a result of previous tests.
     // Now we go up and open compose box with r key.
     await page.keyboard.press("KeyK");
@@ -97,7 +99,7 @@ async function test_reply_with_r_shortcut(page) {
     });
 }
 
-async function test_open_close_compose_box(page) {
+async function test_open_close_compose_box(page: Page): Promise<void> {
     await page.waitForSelector("#stream-message", {visible: true});
     await close_compose_box(page);
     await page.waitForSelector("#stream-message", {hidden: true});
@@ -108,12 +110,12 @@ async function test_open_close_compose_box(page) {
     await page.waitForSelector("#private-message", {hidden: true});
 }
 
-async function test_narrow_to_private_messages_with_cordelia(page) {
+async function test_narrow_to_private_messages_with_cordelia(page: Page): Promise<void> {
     const you_and_cordelia_selector =
         '*[title="Narrow to your private messages with Cordelia Lear"]';
     // For some unknown reason page.click() isn't working here.
     await page.evaluate(
-        (selector) => document.querySelector(selector).click(),
+        (selector: string) => document.querySelector<HTMLElement>(selector)!.click(),
         you_and_cordelia_selector,
     );
     const cordelia_user_id = await common.get_user_id_from_name(page, "Cordelia Lear");
@@ -129,7 +131,7 @@ async function test_narrow_to_private_messages_with_cordelia(page) {
     await close_compose_box(page);
 }
 
-async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page) {
+async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): Promise<void> {
     const recipients = ["cordelia@zulip.com", "othello@zulip.com"];
     const multiple_recipients_pm = "A huddle to check spaces";
     const pm_selector = `.messagebox:contains('${CSS.escape(multiple_recipients_pm)}')`;
@@ -143,8 +145,8 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page) {
     await page.keyboard.press("Escape");
 
     await page.waitForSelector("#zhome .message_row", {visible: true});
-    await page.waitForFunction((selector) => $(selector).length !== 0, {}, pm_selector);
-    await page.evaluate((selector) => {
+    await page.waitForFunction((selector: string) => $(selector).length !== 0, {}, pm_selector);
+    await page.evaluate((selector: string) => {
         $(selector).slice(-1)[0].click();
     }, pm_selector);
     await page.waitForSelector("#compose-textarea", {visible: true});
@@ -158,7 +160,7 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page) {
 const markdown_preview_button = "#markdown_preview";
 const markdown_preview_hide_button = "#undo_markdown_preview";
 
-async function test_markdown_preview_buttons_visibility(page) {
+async function test_markdown_preview_buttons_visibility(page: Page): Promise<void> {
     await page.waitForSelector(markdown_preview_button, {visible: true});
     await page.waitForSelector(markdown_preview_hide_button, {hidden: true});
 
@@ -173,22 +175,22 @@ async function test_markdown_preview_buttons_visibility(page) {
     await page.waitForSelector(markdown_preview_hide_button, {hidden: true});
 }
 
-async function test_markdown_preview_without_any_content(page) {
+async function test_markdown_preview_without_any_content(page: Page): Promise<void> {
     await page.click("#markdown_preview");
     await page.waitForSelector("#undo_markdown_preview", {visible: true});
     const markdown_preview_element = await page.$("#preview_content");
     assert.equal(
-        await page.evaluate((element) => element.textContent, markdown_preview_element),
+        await page.evaluate((element: Element) => element.textContent, markdown_preview_element),
         "Nothing to preview",
     );
     await page.click("#undo_markdown_preview");
 }
 
-async function test_markdown_rendering(page) {
+async function test_markdown_rendering(page: Page): Promise<void> {
     await page.waitForSelector("#markdown_preview", {visible: true});
     let markdown_preview_element = await page.$("#preview_content");
     assert.equal(
-        await page.evaluate((element) => element.textContent, markdown_preview_element),
+        await page.evaluate((element: Element) => element.textContent, markdown_preview_element),
         "",
     );
     await common.fill_form(page, 'form[action^="/json/messages"]', {
@@ -201,18 +203,18 @@ async function test_markdown_rendering(page) {
     await page.waitForFunction(() => $("#preview_content").html() !== "");
     markdown_preview_element = await page.$("#preview_content");
     assert.equal(
-        await page.evaluate((element) => element.innerHTML, markdown_preview_element),
+        await page.evaluate((element: Element) => element.innerHTML, markdown_preview_element),
         expected_markdown_html,
     );
 }
 
-async function test_markdown_preview(page) {
+async function test_markdown_preview(page: Page): Promise<void> {
     await test_markdown_preview_buttons_visibility(page);
     await test_markdown_preview_without_any_content(page);
     await test_markdown_rendering(page);
 }
 
-async function compose_tests(page) {
+async function compose_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await test_send_messages(page);
     await test_keyboard_shortcuts(page);

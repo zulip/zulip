@@ -1,43 +1,44 @@
-"use strict";
+import {strict as assert} from "assert";
 
-const {strict: assert} = require("assert");
+import type {ElementHandle, Page} from "puppeteer";
 
-const common = require("../puppeteer_lib/common");
+import common from "../puppeteer_lib/common";
 
-async function user_checkbox(page, name) {
+async function user_checkbox(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
-    return `#user-checkboxes [data-user-id="${CSS.escape(user_id)}"]`;
+    return `#user-checkboxes [data-user-id="${CSS.escape(user_id.toString())}"]`;
 }
 
-async function user_span(page, name) {
+async function user_span(page: Page, name: string): Promise<string> {
     return (await user_checkbox(page, name)) + " input ~ span";
 }
 
-async function stream_checkbox(page, stream_name) {
+async function stream_checkbox(page: Page, stream_name: string): Promise<string> {
     const stream_id = await common.get_stream_id(page, stream_name);
-    return `#stream-checkboxes [data-stream-id="${CSS.escape(stream_id)}"]`;
+    return `#stream-checkboxes [data-stream-id="${CSS.escape(stream_id.toString())}"]`;
 }
 
-async function stream_span(page, stream_name) {
+async function stream_span(page: Page, stream_name: string): Promise<string> {
     return (await stream_checkbox(page, stream_name)) + " input ~ span";
 }
 
-async function wait_for_checked(page, user_name, is_checked) {
+async function wait_for_checked(page: Page, user_name: string, is_checked: boolean): Promise<void> {
     const selector = await user_checkbox(page, user_name);
     await page.waitForFunction(
-        (selector, is_checked) => $(selector).find("input")[0].checked === is_checked,
+        (selector: string, is_checked: boolean) =>
+            $(selector).find("input")[0].checked === is_checked,
         {},
         selector,
         is_checked,
     );
 }
 
-async function stream_name_error(page) {
+async function stream_name_error(page: Page): Promise<string> {
     await page.waitForSelector("#stream_name_error", {visible: true});
     return await common.get_text_from_selector(page, "#stream_name_error");
 }
 
-async function open_streams_modal(page) {
+async function open_streams_modal(page: Page): Promise<void> {
     const all_streams_selector = 'a[href="#streams/all"]';
     await page.waitForSelector(all_streams_selector, {visible: true});
     await page.click(all_streams_selector);
@@ -46,16 +47,16 @@ async function open_streams_modal(page) {
     assert(page.url().includes("#streams/all"));
 }
 
-async function test_subscription_button_verona_stream(page) {
+async function test_subscription_button_verona_stream(page: Page): Promise<void> {
     const button_selector = "[data-stream-name='Verona'] .sub_unsub_button";
     const subscribed_selector = `${button_selector}.checked`;
     const unsubscribed_selector = `${button_selector}:not(.checked)`;
 
-    async function subscribed() {
+    async function subscribed(): Promise<ElementHandle | null> {
         return await page.waitForSelector(subscribed_selector, {visible: true});
     }
 
-    async function unsubscribed() {
+    async function unsubscribed(): Promise<ElementHandle | null> {
         return await page.waitForSelector(unsubscribed_selector, {visible: true});
     }
 
@@ -66,57 +67,69 @@ async function test_subscription_button_verona_stream(page) {
     // We assume Verona is already subscribed, so the first line here
     // should happen immediately.
     button = await subscribed();
-    button.click();
+    button!.click();
     button = await unsubscribed();
-    button.click();
+    button!.click();
     button = await subscribed();
-    button.click();
+    button!.click();
     button = await unsubscribed();
-    button.click();
+    button!.click();
     button = await subscribed();
 }
 
-async function click_create_new_stream(page, cordelia_checkbox, othello_checkbox) {
+async function click_create_new_stream(
+    page: Page,
+    cordelia_checkbox: string,
+    othello_checkbox: string,
+): Promise<void> {
     await page.click("#add_new_subscription .create_stream_button");
     await page.waitForSelector(cordelia_checkbox, {visible: true});
     await page.waitForSelector(othello_checkbox, {visible: true});
 }
 
-async function open_copy_from_stream_dropdown(page, scotland_checkbox, rome_checkbox) {
+async function open_copy_from_stream_dropdown(
+    page: Page,
+    scotland_checkbox: string,
+    rome_checkbox: string,
+): Promise<void> {
     await page.click("#copy-from-stream-expand-collapse .control-label");
     await page.waitForSelector(scotland_checkbox, {visible: true});
     await page.waitForSelector(rome_checkbox, {visible: true});
 }
 
-async function test_check_all_only_affects_visible_users(page) {
+async function test_check_all_only_affects_visible_users(page: Page): Promise<void> {
     await page.click(".subs_set_all_users");
     await wait_for_checked(page, "cordelia", false);
     await wait_for_checked(page, "othello", true);
 }
 
-async function test_uncheck_all(page) {
+async function test_uncheck_all(page: Page): Promise<void> {
     await page.click(".subs_unset_all_users");
     await wait_for_checked(page, "othello", false);
 }
 
-async function clear_ot_filter_with_backspace(page) {
+async function clear_ot_filter_with_backspace(page: Page): Promise<void> {
     await page.click(".add-user-list-filter");
     await page.keyboard.press("Backspace");
     await page.keyboard.press("Backspace");
 }
 
-async function verify_filtered_users_are_visible_again(page, cordelia_checkbox, othello_checkbox) {
+async function verify_filtered_users_are_visible_again(
+    page: Page,
+    cordelia_checkbox: string,
+    othello_checkbox: string,
+): Promise<void> {
     await page.waitForSelector(cordelia_checkbox, {visible: true});
     await page.waitForSelector(othello_checkbox, {visible: true});
 }
 
 async function test_user_filter_ui(
-    page,
-    cordelia_checkbox,
-    othello_checkbox,
-    scotland_checkbox,
-    rome_checkbox,
-) {
+    page: Page,
+    cordelia_checkbox: string,
+    othello_checkbox: string,
+    scotland_checkbox: string,
+    rome_checkbox: string,
+): Promise<void> {
     await page.waitForSelector("form#stream_creation_form", {visible: true});
 
     await common.fill_form(page, "form#stream_creation_form", {user_list_filter: "ot"});
@@ -135,7 +148,7 @@ async function test_user_filter_ui(
     await verify_filtered_users_are_visible_again(page, cordelia_checkbox, othello_checkbox);
 }
 
-async function create_stream(page) {
+async function create_stream(page: Page): Promise<void> {
     await page.waitForXPath('//*[text()="Create stream"]', {visible: true});
     await common.fill_form(page, "form#stream_creation_form", {
         stream_name: "Puppeteer",
@@ -162,13 +175,13 @@ async function create_stream(page) {
 
     // Assert subscriber count becomes 5(scotland(+4), cordelia(+1), othello(-1), Desdemona(+1)).
     await page.waitForFunction(
-        (subscriber_count_selector) => $(subscriber_count_selector).text().trim() === "5",
+        (subscriber_count_selector: string) => $(subscriber_count_selector).text().trim() === "5",
         {},
         subscriber_count_selector,
     );
 }
 
-async function test_streams_with_empty_names_cannot_be_created(page) {
+async function test_streams_with_empty_names_cannot_be_created(page: Page): Promise<void> {
     await page.click("#add_new_subscription .create_stream_button");
     await page.waitForSelector("form#stream_creation_form", {visible: true});
     await common.fill_form(page, "form#stream_creation_form", {stream_name: "  "});
@@ -176,7 +189,7 @@ async function test_streams_with_empty_names_cannot_be_created(page) {
     assert.strictEqual(await stream_name_error(page), "A stream needs to have a name");
 }
 
-async function test_streams_with_duplicate_names_cannot_be_created(page) {
+async function test_streams_with_duplicate_names_cannot_be_created(page: Page): Promise<void> {
     await common.fill_form(page, "form#stream_creation_form", {stream_name: "Puppeteer"});
     await page.click("form#stream_creation_form button.button.sea-green");
     assert.strictEqual(await stream_name_error(page), "A stream with this name already exists");
@@ -185,7 +198,7 @@ async function test_streams_with_duplicate_names_cannot_be_created(page) {
     await page.click(cancel_button_selector);
 }
 
-async function test_stream_creation(page) {
+async function test_stream_creation(page: Page): Promise<void> {
     const cordelia_checkbox = await user_checkbox(page, "cordelia");
     const othello_checkbox = await user_checkbox(page, "othello");
     const scotland_checkbox = await stream_checkbox(page, "Scotland");
@@ -205,7 +218,7 @@ async function test_stream_creation(page) {
     await test_streams_with_duplicate_names_cannot_be_created(page);
 }
 
-async function test_streams_search_feature(page) {
+async function test_streams_search_feature(page: Page): Promise<void> {
     assert.strictEqual(await common.get_text_from_selector(page, "#search_stream_name"), "");
     const hidden_streams_selector = ".stream-row.notdisplayed .stream-name";
     assert.strictEqual(
@@ -235,7 +248,7 @@ async function test_streams_search_feature(page) {
     );
 }
 
-async function subscriptions_tests(page) {
+async function subscriptions_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await open_streams_modal(page);
     await test_subscription_button_verona_stream(page);

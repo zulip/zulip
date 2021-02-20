@@ -1,22 +1,22 @@
-"use strict";
+import {strict as assert} from "assert";
+import "css.escape";
+import path from "path";
 
-const {strict: assert} = require("assert");
-const path = require("path");
+import {Browser, Page, launch} from "puppeteer";
 
-require("css.escape");
-const puppeteer = require("puppeteer");
-
-const {test_credentials} = require("../../var/puppeteer/test_credentials");
+import {test_credentials} from "../../var/puppeteer/test_credentials";
 
 const root_dir = path.resolve(__dirname, "../../");
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
 
+type Message = Record<string, string | boolean> & {recipient?: string; content: string};
+
 class CommonUtils {
-    browser = null;
+    browser: Browser | null = null;
     screenshot_id = 0;
     realm_url = "http://zulip.zulipdev.com:9981/";
     pm_recipient = {
-        async set(page, recipient) {
+        async set(page: Page, recipient: string): Promise<void> {
             // Without using the delay option here there seems to be
             // a flake where the typeahead doesn't show up.
             await page.type("#private_message_recipient", recipient, {delay: 100});
@@ -37,7 +37,7 @@ class CommonUtils {
             });
         },
 
-        async expect(page, expected) {
+        async expect(page: Page, expected: string): Promise<void> {
             const actual_recipients = await page.evaluate(() => {
                 const compose_state = window.require("./static/js/compose_state");
                 return compose_state.private_message_recipient();
@@ -46,7 +46,7 @@ class CommonUtils {
         },
     };
 
-    fullname = {
+    fullname: Record<string, string> = {
         cordelia: "Cordelia Lear",
         othello: "Othello, the Moor of Venice",
         hamlet: "King Hamlet",
@@ -57,10 +57,10 @@ class CommonUtils {
         height: 1024,
     };
 
-    async ensure_browser() {
+    async ensure_browser(): Promise<Browser> {
         if (this.browser === null) {
             const {window_size} = this;
-            this.browser = await puppeteer.launch({
+            this.browser = await launch({
                 args: [
                     `--window-size=${window_size.width},${window_size.height}`,
                     "--no-sandbox",
@@ -70,15 +70,16 @@ class CommonUtils {
                 headless: true,
             });
         }
+        return this.browser;
     }
 
-    async get_page() {
-        await this.ensure_browser();
-        const page = await this.browser.newPage();
+    async get_page(): Promise<Page> {
+        const browser = await this.ensure_browser();
+        const page = await browser.newPage();
         return page;
     }
 
-    async screenshot(page, name = null) {
+    async screenshot(page: Page, name: string | null = null): Promise<void> {
         if (name === null) {
             name = `${this.screenshot_id}`;
             this.screenshot_id += 1;
@@ -107,8 +108,12 @@ class CommonUtils {
      *     terms: true
      * });
      */
-    async fill_form(page, form_selector, params) {
-        async function is_dropdown(page, name) {
+    async fill_form(
+        page: Page,
+        form_selector: string,
+        params: Record<string, boolean | string>,
+    ): Promise<void> {
+        async function is_dropdown(page: Page, name: string): Promise<boolean> {
             return (await page.$(`select[name="${name}"]`)) !== null;
         }
         for (const name of Object.keys(params)) {
@@ -118,37 +123,44 @@ class CommonUtils {
                 await page.$eval(
                     name_selector,
                     (el, value) => {
-                        if (el.checked !== value) {
+                        if (el instanceof HTMLInputElement && el.checked !== value) {
                             el.click();
                         }
                     },
                     value,
                 );
             } else if (await is_dropdown(page, name)) {
-                await page.select(name_selector, params[name]);
+                if (typeof value !== "string") {
+                    throw new TypeError(`Expected string for ${name}`);
+                }
+                await page.select(name_selector, value);
             } else {
                 // clear any existing text in the input field before filling.
                 await page.$eval(name_selector, (el) => {
-                    el.value = "";
+                    (el as HTMLInputElement).value = "";
                 });
-                await page.type(name_selector, params[name]);
+                await page.type(name_selector, value);
             }
         }
     }
 
-    async check_form_contents(page, form_selector, params) {
+    async check_form_contents(
+        page: Page,
+        form_selector: string,
+        params: Record<string, boolean | string>,
+    ): Promise<void> {
         for (const name of Object.keys(params)) {
             const name_selector = `${form_selector} [name="${name}"]`;
             const expected_value = params[name];
             if (typeof expected_value === "boolean") {
                 assert.equal(
-                    await page.$eval(name_selector, (el) => el.checked),
+                    await page.$eval(name_selector, (el) => (el as HTMLInputElement).checked),
                     expected_value,
                     "Form content is not as expected.",
                 );
             } else {
                 assert.equal(
-                    await page.$eval(name_selector, (el) => el.value),
+                    await page.$eval(name_selector, (el) => (el as HTMLInputElement).value),
                     expected_value,
                     "Form content is not as expected.",
                 );
@@ -156,48 +168,51 @@ class CommonUtils {
         }
     }
 
-    async get_text_from_selector(page, selector) {
-        return await page.evaluate((selector) => $(selector).text().trim(), selector);
+    async get_text_from_selector(page: Page, selector: string): Promise<string> {
+        return await page.evaluate((selector: string) => $(selector).text().trim(), selector);
     }
 
-    async wait_for_text(page, selector, text) {
+    async wait_for_text(page: Page, selector: string, text: string): Promise<void> {
         await page.waitForFunction(
-            (selector, text) => $(selector).text().includes(text),
+            (selector: string, text: string) => $(selector).text().includes(text),
             {},
             selector,
             text,
         );
     }
 
-    async get_stream_id(page, stream_name) {
-        return await page.evaluate((stream_name) => {
+    async get_stream_id(page: Page, stream_name: string): Promise<number> {
+        return await page.evaluate((stream_name: string) => {
             const stream_data = window.require("./static/js/stream_data");
             return stream_data.get_stream_id(stream_name);
         }, stream_name);
     }
 
-    async get_user_id_from_name(page, name) {
+    async get_user_id_from_name(page: Page, name: string): Promise<number> {
         if (this.fullname[name] !== undefined) {
             name = this.fullname[name];
         }
-        return await page.evaluate((name) => {
-            const people = require("./static/js/people");
+        return await page.evaluate((name: string) => {
+            const people = window.require("./static/js/people");
             return people.get_user_id_from_name(name);
         }, name);
     }
 
-    async get_internal_email_from_name(page, name) {
+    async get_internal_email_from_name(page: Page, name: string): Promise<string> {
         if (this.fullname[name] !== undefined) {
             name = this.fullname[name];
         }
-        return await page.evaluate((fullname) => {
-            const people = require("./static/js/people");
+        return await page.evaluate((fullname: string) => {
+            const people = window.require("./static/js/people");
             const user_id = people.get_user_id_from_name(fullname);
             return people.get_by_user_id(user_id).email;
         }, name);
     }
 
-    async log_in(page, credentials = null) {
+    async log_in(
+        page: Page,
+        credentials: {username: string; password: string} | null = null,
+    ): Promise<void> {
         console.log("Logging in");
         await page.goto(this.realm_url + "login/");
         assert.equal(this.realm_url + "login/", page.url());
@@ -210,12 +225,12 @@ class CommonUtils {
             password: credentials.password,
         };
         await this.fill_form(page, "#login_form", params);
-        await page.$eval("#login_form", (form) => form.submit());
+        await page.$eval("#login_form", (form) => (form as HTMLFormElement).submit());
 
         await page.waitForSelector("#zhome .message_row", {visible: true});
     }
 
-    async log_out(page) {
+    async log_out(page: Page): Promise<void> {
         await page.goto(this.realm_url);
         const menu_selector = "#settings-dropdown";
         const logout_selector = 'a[href="#logout"]';
@@ -231,20 +246,20 @@ class CommonUtils {
         assert(page.url().includes("/login/"));
     }
 
-    async ensure_enter_does_not_send(page) {
+    async ensure_enter_does_not_send(page: Page): Promise<void> {
         await page.$eval("#enter_sends", (el) => {
-            if (el.checked) {
-                el.click();
+            if ((el as HTMLInputElement).checked) {
+                (el as HTMLInputElement).click();
             }
         });
     }
 
-    async assert_compose_box_content(page, expected_value) {
+    async assert_compose_box_content(page: Page, expected_value: string): Promise<void> {
         await page.waitForSelector("#compose-textarea");
 
         const compose_box_element = await page.$("#compose-textarea");
         const compose_box_content = await page.evaluate(
-            (element) => element.value,
+            (element: HTMLTextAreaElement) => element.value,
             compose_box_element,
         );
         assert.equal(
@@ -254,9 +269,9 @@ class CommonUtils {
         );
     }
 
-    async wait_for_fully_processed_message(page, content) {
+    async wait_for_fully_processed_message(page: Page, content: string): Promise<void> {
         await page.waitForFunction(
-            (content) => {
+            (content: string) => {
                 /*
                 The tricky part about making sure that
                 a message has actually been fully processed
@@ -312,7 +327,7 @@ class CommonUtils {
     }
 
     // Wait for any previous send to finish, then send a message.
-    async send_message(page, type, params) {
+    async send_message(page: Page, type: "stream" | "private", params: Message): Promise<void> {
         // If a message is outside the view, we do not need
         // to wait for it to be processed later.
         const outside_view = params.outside_view;
@@ -325,7 +340,7 @@ class CommonUtils {
             await page.keyboard.press("KeyC");
         } else if (type === "private") {
             await page.keyboard.press("KeyX");
-            const recipients = params.recipient.split(", ");
+            const recipients = params.recipient!.split(", ");
             for (const recipient of recipients) {
                 await this.pm_recipient.set(page, recipient);
             }
@@ -366,7 +381,7 @@ class CommonUtils {
         await page.waitForSelector("#compose-textarea", {hidden: true});
     }
 
-    async send_multiple_messages(page, msgs) {
+    async send_multiple_messages(page: Page, msgs: Message[]): Promise<void> {
         for (const msg of msgs) {
             await this.send_message(page, msg.stream !== undefined ? "stream" : "private", msg);
         }
@@ -381,10 +396,10 @@ class CommonUtils {
      *
      * The messages are sorted chronologically.
      */
-    async get_rendered_messages(page, table = "zhome") {
-        return await page.evaluate((table) => {
+    async get_rendered_messages(page: Page, table = "zhome"): Promise<[string, string[]][]> {
+        return await page.evaluate((table: string) => {
             const $recipient_rows = $(`#${CSS.escape(table)}`).find(".recipient_row");
-            return $recipient_rows.toArray().map((element) => {
+            return $recipient_rows.toArray().map((element): [string, string[]] => {
                 const $el = $(element);
                 const stream_name = $el.find(".stream_label").text().trim();
                 const topic_name = $el.find(".stream_topic a").text().trim();
@@ -399,7 +414,7 @@ class CommonUtils {
                 const messages = $el
                     .find(".message_row .message_content")
                     .toArray()
-                    .map((message_row) => message_row.textContent.trim());
+                    .map((message_row) => message_row.textContent!.trim());
 
                 return [key, messages];
             });
@@ -411,7 +426,11 @@ class CommonUtils {
     // message is { "stream > topic": [messages] }.
     // The method will only check that all the messages in the
     // messages array passed exist in the order they are passed.
-    async check_messages_sent(page, table, messages) {
+    async check_messages_sent(
+        page: Page,
+        table: string,
+        messages: [string, string[]][],
+    ): Promise<void> {
         await page.waitForSelector(`#${CSS.escape(table)}`, {visible: true});
         const rendered_messages = await this.get_rendered_messages(page, table);
 
@@ -421,7 +440,7 @@ class CommonUtils {
         assert.deepStrictEqual(last_n_messages, messages);
     }
 
-    async manage_organization(page) {
+    async manage_organization(page: Page): Promise<void> {
         const menu_selector = "#settings-dropdown";
         await page.waitForSelector(menu_selector, {visible: true});
         await page.click(menu_selector);
@@ -437,10 +456,15 @@ class CommonUtils {
         await page.click(organization_settings_data_section);
     }
 
-    async select_item_via_typeahead(page, field_selector, str, item) {
+    async select_item_via_typeahead(
+        page: Page,
+        field_selector: string,
+        str: string,
+        item: string,
+    ): Promise<void> {
         console.log(`Looking in ${field_selector} to select ${str}, ${item}`);
         await page.evaluate(
-            (field_selector, str, item) => {
+            (field_selector: string, str: string, item: string) => {
                 // Set the value and then send a bogus keyup event to trigger
                 // the typeahead.
                 $(field_selector)
@@ -464,26 +488,26 @@ class CommonUtils {
         );
     }
 
-    async run_test(test_function) {
+    async run_test(test_function: (page: Page) => Promise<void>): Promise<void> {
         // Pass a page instance to test so we can take
         // a screenshot of it when the test fails.
+        const browser = await this.ensure_browser();
         const page = await this.get_page();
         try {
             await test_function(page);
-        } catch (error) {
+        } catch (error: unknown) {
             console.log(error);
 
             // Take a screenshot, and increment the screenshot_id.
             await this.screenshot(page, `failure-${this.screenshot_id}`);
             this.screenshot_id += 1;
 
-            await this.browser.close();
+            await browser.close();
             process.exit(1);
         } finally {
-            this.browser.close();
+            await browser.close();
         }
     }
 }
 
-const common = new CommonUtils();
-module.exports = common;
+export default new CommonUtils();

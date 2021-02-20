@@ -61,7 +61,14 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
         current_test_num = test_number
         for test_file in test_files[test_number:]:
             test_name = os.path.basename(test_file)
-            cmd = ["node", "--unhandled-rejections=strict", test_file]
+            cmd = [
+                "node",
+                "--unhandled-rejections=strict",
+                os.path.join(ZULIP_PATH, "node_modules/.bin/ts-node"),
+                "--script-mode",
+                "--transpile-only",
+                test_file,
+            ]
             print(
                 "\n\n===================== {}\nRunning {}\n\n".format(
                     test_name, " ".join(map(shlex.quote, cmd))

@@ -1,10 +1,10 @@
-"use strict";
+import {strict as assert} from "assert";
 
-const {strict: assert} = require("assert");
+import type {Page} from "puppeteer";
 
-const common = require("../puppeteer_lib/common");
+import common from "../puppeteer_lib/common";
 
-async function navigate_to_user_list(page) {
+async function navigate_to_user_list(page: Page): Promise<void> {
     const menu_selector = "#settings-dropdown";
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
@@ -13,12 +13,12 @@ async function navigate_to_user_list(page) {
     await page.click("li[data-section='user-list-admin']");
 }
 
-async function user_row(page, name) {
+async function user_row(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
-    return `.user_row[data-user-id="${CSS.escape(user_id)}"]`;
+    return `.user_row[data-user-id="${CSS.escape(user_id.toString())}"]`;
 }
 
-async function test_deactivate_user(page) {
+async function test_deactivate_user(page: Page): Promise<void> {
     const cordelia_user_row = await user_row(page, "cordelia");
     await page.waitForSelector(cordelia_user_row, {visible: true});
     await page.waitForSelector(cordelia_user_row + " .fa-user-times");
@@ -39,7 +39,7 @@ async function test_deactivate_user(page) {
     await page.waitForSelector("#user-field-status", {hidden: true});
 }
 
-async function test_reactivate_user(page) {
+async function test_reactivate_user(page: Page): Promise<void> {
     let cordelia_user_row = await user_row(page, "cordelia");
     await page.waitForSelector(cordelia_user_row + ".deactivated_user");
     await page.waitForSelector(cordelia_user_row + " .fa-user-plus");
@@ -51,7 +51,7 @@ async function test_reactivate_user(page) {
     await page.waitForSelector("#user-field-status", {hidden: true});
 }
 
-async function test_deactivated_users_section(page) {
+async function test_deactivated_users_section(page: Page): Promise<void> {
     const cordelia_user_row = await user_row(page, "cordelia");
     await test_deactivate_user(page);
 
@@ -72,7 +72,7 @@ async function test_deactivated_users_section(page) {
     );
 }
 
-async function test_bot_deactivation_and_reactivation(page) {
+async function test_bot_deactivation_and_reactivation(page: Page): Promise<void> {
     await page.click("li[data-section='bot-list-admin']");
 
     const default_bot_user_row = await user_row(page, "Zulip Default Bot");
@@ -87,7 +87,7 @@ async function test_bot_deactivation_and_reactivation(page) {
     await page.waitForSelector(default_bot_user_row + " .fa-user-times");
 }
 
-async function user_deactivation_test(page) {
+async function user_deactivation_test(page: Page): Promise<void> {
     await common.log_in(page);
     await navigate_to_user_list(page);
     await test_deactivate_user(page);

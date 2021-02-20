@@ -1,23 +1,23 @@
-"use strict";
+import {strict as assert} from "assert";
 
-const {strict: assert} = require("assert");
+import type {Page} from "puppeteer";
 
-const {test_credentials} = require("../../var/puppeteer/test_credentials");
-const common = require("../puppeteer_lib/common");
+import {test_credentials} from "../../var/puppeteer/test_credentials";
+import common from "../puppeteer_lib/common";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";
 
 const zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
-async function get_decoded_url_in_selector(page, selector) {
+async function get_decoded_url_in_selector(page: Page, selector: string): Promise<string> {
     return await page.evaluate(
-        (selector) => decodeURIComponent($(selector).attr("href")),
+        (selector: string) => decodeURIComponent($(selector).attr("href")!),
         selector,
     );
 }
 
-async function open_settings(page) {
+async function open_settings(page: Page): Promise<void> {
     const menu_selector = "#settings-dropdown";
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
@@ -31,7 +31,7 @@ async function open_settings(page) {
     assert(page_url.includes("/#settings/"), `Page url: ${page_url} does not contain /#settings/`);
 }
 
-async function test_change_full_name(page) {
+async function test_change_full_name(page: Page): Promise<void> {
     await page.click("#change_full_name");
 
     const change_full_name_button_selector = "#change_full_name_button";
@@ -39,7 +39,7 @@ async function test_change_full_name(page) {
 
     const full_name_input_selector = 'input[name="full_name"]';
     await page.$eval(full_name_input_selector, (el) => {
-        el.value = "";
+        (el as HTMLInputElement).value = "";
     });
     await page.waitForFunction(() => $(":focus").attr("id") === "change_full_name_modal");
     await page.type(full_name_input_selector, "New name");
@@ -47,7 +47,7 @@ async function test_change_full_name(page) {
     await page.waitForFunction(() => $("#change_full_name").text().trim() === "New name");
 }
 
-async function test_change_password(page) {
+async function test_change_password(page: Page): Promise<void> {
     await page.click("#change_password");
 
     const change_password_button_selector = "#change_password_button";
@@ -62,7 +62,7 @@ async function test_change_password(page) {
     await page.waitForFunction(() => $("#change_password_modal").attr("aria-hidden") === "true");
 }
 
-async function test_get_api_key(page) {
+async function test_get_api_key(page: Page): Promise<void> {
     const show_change_api_key_selector = "#api_key_button";
     await page.click(show_change_api_key_selector);
 
@@ -85,7 +85,7 @@ async function test_get_api_key(page) {
     await page.click("#api_key_modal .close");
 }
 
-async function test_webhook_bot_creation(page) {
+async function test_webhook_bot_creation(page: Page): Promise<void> {
     await common.fill_form(page, "#create_bot_form", {
         bot_name: "Bot 1",
         bot_short_name: "1",
@@ -111,7 +111,7 @@ async function test_webhook_bot_creation(page) {
     );
 }
 
-async function test_normal_bot_creation(page) {
+async function test_normal_bot_creation(page: Page): Promise<void> {
     await page.click(".add-a-new-bot-tab");
     await page.waitForSelector("#create_bot_button", {visible: true});
 
@@ -134,7 +134,7 @@ async function test_normal_bot_creation(page) {
     assert(zuliprc_regex.test(zuliprc_decoded_url), "Incorrect zuliprc format for bot.");
 }
 
-async function test_botserverrc(page) {
+async function test_botserverrc(page: Page): Promise<void> {
     await page.click("#download_botserverrc");
     await page.waitForSelector('#download_botserverrc[href^="data:application"]', {visible: true});
     const botserverrc_decoded_url = await get_decoded_url_in_selector(
@@ -145,7 +145,7 @@ async function test_botserverrc(page) {
     assert(botserverrc_regex.test(botserverrc_decoded_url), "Incorrect botserverrc format.");
 }
 
-async function test_edit_bot_form(page) {
+async function test_edit_bot_form(page: Page): Promise<void> {
     const bot1_email = "1-bot@zulip.testserver";
     const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.click(bot1_edit_btn);
@@ -164,14 +164,14 @@ async function test_edit_bot_form(page) {
 
     const bot1_name_selector = `.details:has(${bot1_edit_btn}) .name`;
     await page.waitForFunction(
-        (bot1_name_selector) => $(bot1_name_selector).text() !== "Bot 1",
+        (bot1_name_selector: string) => $(bot1_name_selector).text() !== "Bot 1",
         {},
         bot1_name_selector,
     );
     assert.strictEqual(await common.get_text_from_selector(page, bot1_name_selector), "Bot one");
 }
 
-async function test_your_bots_section(page) {
+async function test_your_bots_section(page: Page): Promise<void> {
     await page.click('[data-section="your-bots"]');
     await test_webhook_bot_creation(page);
     await test_normal_bot_creation(page);
@@ -181,55 +181,61 @@ async function test_your_bots_section(page) {
 
 const alert_word_status_selector = "#alert_word_status";
 
-async function add_alert_word(page, word) {
+async function add_alert_word(page: Page, word: string): Promise<void> {
     await page.type("#create_alert_word_name", word);
     await page.click("#create_alert_word_button");
 }
 
-async function check_alert_word_added(page, word) {
+async function check_alert_word_added(page: Page, word: string): Promise<void> {
     const added_alert_word_selector = `.alert-word-item[data-word='${CSS.escape(word)}']`;
     await page.waitForSelector(added_alert_word_selector, {visible: true});
 }
 
-async function get_alert_words_status_text(page) {
+async function get_alert_words_status_text(page: Page): Promise<string> {
     await page.waitForSelector(alert_word_status_selector, {visible: true});
     const status_text = await common.get_text_from_selector(page, ".alert_word_status_text");
     return status_text;
 }
 
-async function close_alert_words_status(page) {
+async function close_alert_words_status(page: Page): Promise<void> {
     const status_close_btn = ".close-alert-word-status";
     await page.click(status_close_btn);
     await page.waitForSelector(alert_word_status_selector, {hidden: true});
 }
 
-async function test_and_close_alert_word_added_successfully_status(page, word) {
+async function test_and_close_alert_word_added_successfully_status(
+    page: Page,
+    word: string,
+): Promise<void> {
     const status_text = await get_alert_words_status_text(page);
     assert.strictEqual(status_text, `Alert word "${word}" added successfully!`);
     await close_alert_words_status(page);
 }
 
-async function test_duplicate_alert_words_cannot_be_added(page, duplicate_word) {
+async function test_duplicate_alert_words_cannot_be_added(
+    page: Page,
+    duplicate_word: string,
+): Promise<void> {
     await add_alert_word(page, duplicate_word);
     const status_text = await get_alert_words_status_text(page);
     assert.strictEqual(status_text, "Alert word already exists!");
     await close_alert_words_status(page);
 }
 
-async function delete_alert_word(page, word) {
+async function delete_alert_word(page: Page, word: string): Promise<void> {
     const delete_btn_selector = `.remove-alert-word[data-word="${CSS.escape(word)}"]`;
     await page.click(delete_btn_selector);
     await page.waitForSelector(delete_btn_selector, {hidden: true});
 }
 
-async function test_alert_word_deletion(page, word) {
+async function test_alert_word_deletion(page: Page, word: string): Promise<void> {
     await delete_alert_word(page, word);
     const status_text = await get_alert_words_status_text(page);
     assert.strictEqual(status_text, "Alert word removed successfully!");
     await close_alert_words_status(page);
 }
 
-async function test_alert_words_section(page) {
+async function test_alert_words_section(page: Page): Promise<void> {
     await page.click('[data-section="alert-words"]');
     const word = "puppeteer";
     await add_alert_word(page, word);
@@ -239,7 +245,7 @@ async function test_alert_words_section(page) {
     await test_alert_word_deletion(page, word);
 }
 
-async function change_language(page, language_data_code) {
+async function change_language(page: Page, language_data_code: string): Promise<void> {
     await page.waitForSelector("#default_language", {visible: true});
     await page.click("#default_language");
     await page.waitForSelector("#default_language_modal", {visible: true});
@@ -247,19 +253,19 @@ async function change_language(page, language_data_code) {
     await page.click(language_selector);
 }
 
-async function check_language_setting_status(page) {
+async function check_language_setting_status(page: Page): Promise<void> {
     const language_setting_status_selector = "#language-settings-status";
     await page.waitForSelector(language_setting_status_selector, {visible: true});
     const status_text = "Saved. Please reload for the change to take effect.";
     await page.waitForFunction(
-        (selector, status) => $(selector).text() === status,
+        (selector: string, status: string) => $(selector).text() === status,
         {},
         language_setting_status_selector,
         status_text,
     );
 }
 
-async function assert_language_changed_to_chinese(page) {
+async function assert_language_changed_to_chinese(page: Page): Promise<void> {
     await page.waitForSelector("#default_language", {visible: true});
     const default_language = await common.get_text_from_selector(page, "#default_language");
     assert.strictEqual(
@@ -269,7 +275,7 @@ async function assert_language_changed_to_chinese(page) {
     );
 }
 
-async function test_i18n_language_precedence(page) {
+async function test_i18n_language_precedence(page: Page): Promise<void> {
     const settings_url_for_german = "http://zulip.zulipdev.com:9981/de/#settings";
     await page.goto(settings_url_for_german);
     await page.waitForSelector("#settings-change-box", {visible: true});
@@ -277,7 +283,7 @@ async function test_i18n_language_precedence(page) {
     assert.strictEqual(page_language_code, "de");
 }
 
-async function test_default_language_setting(page) {
+async function test_default_language_setting(page: Page): Promise<void> {
     const display_settings_section = '[data-section="display-settings"]';
     await page.click(display_settings_section);
 
@@ -304,7 +310,7 @@ async function test_default_language_setting(page) {
     await page.waitForSelector("#default_language", {visible: true});
 }
 
-async function test_notifications_section(page) {
+async function test_notifications_section(page: Page): Promise<void> {
     await page.click('[data-section="notifications"]');
     // At the beginning, "PMs, mentions, and alerts"(checkbox name=enable_sounds) audio will be on
     // and "Streams"(checkbox name=enable_stream_audible_notifications) audio will be off by default.
@@ -331,7 +337,7 @@ async function test_notifications_section(page) {
     */
 }
 
-async function settings_tests(page) {
+async function settings_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await open_settings(page);
     await test_change_full_name(page);

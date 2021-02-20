@@ -100,7 +100,9 @@ def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
         test_files.append(os.path.abspath(file))
 
     if not test_files:
-        test_files = sorted(glob.glob(os.path.join(test_dir, "*.js")))
+        test_files = sorted(
+            glob.glob(os.path.join(test_dir, "*.ts")) + glob.glob(os.path.join(test_dir, "*.js"))
+        )
 
     return test_files
 

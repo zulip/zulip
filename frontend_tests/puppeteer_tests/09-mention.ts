@@ -1,10 +1,10 @@
-"use strict";
+import {strict as assert} from "assert";
 
-const {strict: assert} = require("assert");
+import type {Page} from "puppeteer";
 
-const common = require("../puppeteer_lib/common");
+import common from "../puppeteer_lib/common";
 
-async function test_mention(page) {
+async function test_mention(page: Page): Promise<void> {
     await common.log_in(page);
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#compose", {visible: true});
