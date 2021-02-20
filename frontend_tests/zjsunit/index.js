@@ -56,9 +56,7 @@ Module.prototype.hot = {
 function short_tb(tb) {
     const lines = tb.split("\n");
 
-    const i = lines.findIndex(
-        (line) => line.includes("run_test") || line.includes("run_one_module"),
-    );
+    const i = lines.findIndex((line) => line.includes("Module._compile"));
 
     if (i === -1) {
         return tb;
