@@ -248,15 +248,17 @@ run_test("expand", (override) => {
 });
 
 run_test("update_private_messages", (override) => {
+    let html_updated;
+    let container_found;
+
     override(narrow_state, "active", () => true);
+    override(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS");
 
     $("#private-container").find = (sel) => {
         assert.equal(sel, "ul");
+        container_found = true;
     };
 
-    override(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS");
-
-    let html_updated;
     override(vdom, "update", (replace_content, find) => {
         html_updated = true;
 
@@ -267,6 +269,7 @@ run_test("update_private_messages", (override) => {
 
     pm_list.update_private_messages();
     assert(html_updated);
+    assert(container_found);
 });
 
 run_test("ensure coverage", (override) => {
