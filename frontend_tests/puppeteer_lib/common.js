@@ -34,7 +34,7 @@ class CommonUtils {
                 });
 
                 await page.evaluate(() => {
-                    $(".typeahead-menu .active a:visible").click();
+                    $(".typeahead-menu .active a:visible").trigger("click");
                 });
             },
 

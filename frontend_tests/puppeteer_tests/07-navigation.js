@@ -85,7 +85,7 @@ async function navigation_tests(page) {
 
     // Hardcoded this instead of using `navigate_to`
     // as Puppeteer cannot click hidden elements.
-    await page.evaluate(() => $("a[href='#message_feed_container]'").click());
+    await page.evaluate(() => $("a[href='#message_feed_container]'").trigger("click"));
     await wait_for_tab(page, "message_feed_container");
 
     await navigate_to_subscriptions(page);
