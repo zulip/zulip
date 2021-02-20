@@ -41,7 +41,7 @@ async function test_change_new_stream_notifications_setting(page) {
 
     await common.wait_for_text(page, verona_in_dropdown, "Verona");
     await page.waitForSelector(verona_in_dropdown, {visible: true});
-    await page.evaluate((selector) => $(selector).click(), verona_in_dropdown);
+    await page.evaluate((selector) => $(selector).trigger("click"), verona_in_dropdown);
 
     await submit_notifications_stream_settings(page);
 
@@ -103,42 +103,42 @@ async function submit_stream_permissions_change(page) {
 async function test_set_create_streams_to_admins_only(page) {
     console.log("Test setting create streams policy to 'admins only'.");
     await page.waitForSelector("#id_realm_create_stream_policy", {visible: true});
-    await page.evaluate(() => $("#id_realm_create_stream_policy").val(2).change());
+    await page.evaluate(() => $("#id_realm_create_stream_policy").val(2).trigger("change"));
     await submit_stream_permissions_change(page);
 }
 
 async function test_set_create_streams_to_members_and_admins(page) {
     console.log("Test setting create streams policy to 'members and admins'.");
     await page.waitForSelector("#id_realm_create_stream_policy", {visible: true});
-    await page.evaluate(() => $("#id_realm_create_stream_policy").val(1).change());
+    await page.evaluate(() => $("#id_realm_create_stream_policy").val(1).trigger("change"));
     await submit_stream_permissions_change(page);
 }
 
 async function test_set_create_streams_policy_to_full_members(page) {
     console.log("Test setting create streams policy to 'full members'.");
     await page.waitForSelector("#id_realm_create_stream_policy", {visible: true});
-    await page.evaluate(() => $("#id_realm_create_stream_policy").val(3).change());
+    await page.evaluate(() => $("#id_realm_create_stream_policy").val(3).trigger("change"));
     await submit_stream_permissions_change(page);
 }
 
 async function test_set_invite_to_streams_policy_to_admins_only(page) {
     console.log("Test setting invite to streams policy to 'admins only'.");
     await page.waitForSelector("#id_realm_invite_to_stream_policy", {visible: true});
-    await page.evaluate(() => $("#id_realm_invite_to_stream_policy").val(2).change());
+    await page.evaluate(() => $("#id_realm_invite_to_stream_policy").val(2).trigger("change"));
     await submit_stream_permissions_change(page);
 }
 
 async function test_set_invite_to_streams_policy_to_members_and_admins(page) {
     console.log("Test setting invite to streams policy to 'members and admins'.");
     await page.waitForSelector("#id_realm_invite_to_stream_policy", {visible: true});
-    await page.evaluate(() => $("#id_realm_invite_to_stream_policy").val(1).change());
+    await page.evaluate(() => $("#id_realm_invite_to_stream_policy").val(1).trigger("change"));
     await submit_stream_permissions_change(page);
 }
 
 async function test_set_invite_to_streams_policy_to_full_members(page) {
     console.log("Test setting invite to streams policy to 'full members'.");
     await page.waitForSelector("#id_realm_invite_to_stream_policy", {visible: true});
-    await page.evaluate(() => $("#id_realm_invite_to_stream_policy").val(3).change());
+    await page.evaluate(() => $("#id_realm_invite_to_stream_policy").val(3).trigger("change"));
     await submit_stream_permissions_change(page);
 }
 
@@ -167,14 +167,14 @@ async function submit_joining_organization_change(page) {
 async function test_set_new_user_threshold_to_three_days(page) {
     console.log("Test setting new user threshold to three days.");
     await page.waitForSelector("#id_realm_waiting_period_setting", {visible: true});
-    await page.evaluate(() => $("#id_realm_waiting_period_setting").val("three_days").change());
+    await page.evaluate(() => $("#id_realm_waiting_period_setting").val("three_days").trigger("change"));
     await submit_joining_organization_change(page);
 }
 
 async function test_set_new_user_threshold_to_N_days(page) {
     console.log("Test setting new user threshold to three days.");
     await page.waitForSelector("#id_realm_waiting_period_setting", {visible: true});
-    await page.evaluate(() => $("#id_realm_waiting_period_setting").val("custom_days").change());
+    await page.evaluate(() => $("#id_realm_waiting_period_setting").val("custom_days").trigger("change"));
 
     const N = 10;
     await page.evaluate((N) => $("#id_realm_waiting_period_threshold").val(N), N);
@@ -337,7 +337,7 @@ async function test_change_organization_default_language(page) {
     await page.click("li[data-section='organization-settings']");
     await page.waitForSelector("#id_realm_default_language", {visible: true});
 
-    await page.evaluate(() => $("#id_realm_default_language").val("de").change());
+    await page.evaluate(() => $("#id_realm_default_language").val("de").trigger("change"));
     await submit_default_user_settings(page);
 }
 

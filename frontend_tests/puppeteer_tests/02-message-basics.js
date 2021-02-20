@@ -87,7 +87,7 @@ async function un_narrow_by_clicking_org_icon(page) {
 
 async function test_navigations_from_home(page) {
     console.log("Narrowing by clicking stream");
-    await page.evaluate(() => $(`*[title='Narrow to stream "Verona"']`).click());
+    await page.evaluate(() => $(`*[title='Narrow to stream "Verona"']`).trigger("click"));
     await expect_verona_stream(page);
 
     assert.strictEqual(await page.title(), "Verona - Zulip Dev - Zulip");
@@ -103,7 +103,9 @@ async function test_navigations_from_home(page) {
 
     console.log("Narrowing by clicking group personal header");
     await page.evaluate(() =>
-        $('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]').click(),
+        $('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]').trigger(
+            "click",
+        ),
     );
     await expect_huddle(page);
 
