@@ -1724,7 +1724,7 @@ test_ui("nonexistent_stream_reply_error", () => {
 test_ui("narrow_button_titles", () => {
     util.is_mobile = () => false;
 
-    compose.update_closed_compose_buttons_for_private();
+    compose.update_closed_compose_buttons_outside_stream();
     assert.equal(
         $("#left_bar_compose_stream_button_big").text(),
         $t({defaultMessage: "New stream message"}),

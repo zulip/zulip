@@ -177,7 +177,7 @@ function update_conversation_button(btn_text, title) {
     $("#left_bar_compose_private_button_big").prop("title", title);
 }
 
-export function update_closed_compose_buttons_for_private() {
+export function update_closed_compose_buttons_outside_stream() {
     const text_stream = $t({defaultMessage: "New stream message"});
     const title_stream = text_stream + " (c)";
     const text_conversation = $t({defaultMessage: "New private message"});

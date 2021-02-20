@@ -379,10 +379,10 @@ export function activate(raw_operators, opts) {
         }
     }
 
-    if (filter.contains_only_private_messages()) {
-        compose.update_closed_compose_buttons_for_private();
-    } else {
+    if (filter.has_operator("stream")) {
         compose.update_closed_compose_buttons_for_stream();
+    } else {
+        compose.update_closed_compose_buttons_outside_stream();
     }
 
     search.update_button_visibility();
@@ -800,7 +800,7 @@ function handle_post_narrow_deactivate_processes() {
 
     top_left_corner.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
-    compose.update_closed_compose_buttons_for_stream();
+    compose.update_closed_compose_buttons_outside_stream();
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();

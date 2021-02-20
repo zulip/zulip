@@ -93,7 +93,7 @@ function test_helper() {
     stub(ui_util, "change_tab_to");
     stub(unread_ops, "process_visible");
     stub(compose, "update_closed_compose_buttons_for_stream");
-    stub(compose, "update_closed_compose_buttons_for_private");
+    stub(compose, "update_closed_compose_buttons_outside_stream");
 
     return {
         clear: () => {
