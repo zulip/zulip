@@ -17,7 +17,7 @@ from zerver.models import (
     Subscription,
     UserProfile,
     active_non_guest_user_ids,
-    bulk_get_streams,
+    bulk_get_streams_by_names,
     get_realm_stream,
     get_stream,
     get_stream_by_id_in_realm,
@@ -628,7 +628,7 @@ def list_to_streams(
 
     existing_streams: List[Stream] = []
     missing_stream_dicts: List[StreamDict] = []
-    existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
+    existing_stream_map = bulk_get_streams_by_names(user_profile.realm, stream_set)
 
     if admin_access_required:
         existing_recipient_ids = [stream.recipient_id for stream in existing_stream_map.values()]

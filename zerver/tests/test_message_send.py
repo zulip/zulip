@@ -33,7 +33,7 @@ from zerver.lib.actions import (
     send_rate_limited_pm_notification_to_bot_owner,
 )
 from zerver.lib.addressee import Addressee
-from zerver.lib.cache import cache_delete, get_stream_cache_key
+from zerver.lib.cache import cache_delete, get_stream_cache_key_for_stream_name
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.test_classes import ZulipTestCase
@@ -1606,7 +1606,7 @@ class StreamMessagesTest(ZulipTestCase):
         # persistent, so our test can also fail if cache is invalidated
         # during the course of the unit test.
         flush_per_request_caches()
-        cache_delete(get_stream_cache_key(stream_name, realm.id))
+        cache_delete(get_stream_cache_key_for_stream_name(stream_name, realm.id))
         with queries_captured() as queries:
             check_send_stream_message(
                 sender=sender,

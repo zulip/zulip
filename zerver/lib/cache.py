@@ -572,7 +572,7 @@ def bot_dicts_in_realm_cache_key(realm: "Realm") -> str:
     return f"bot_dicts_in_realm:{realm.id}"
 
 
-def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
+def get_stream_cache_key_for_stream_name(stream_name: str, realm_id: int) -> str:
     return f"stream_by_realm_and_name:{realm_id}:{make_safe_digest(stream_name.strip().lower())}"
 
 
@@ -719,9 +719,11 @@ def flush_stream(
     items_for_remote_cache = {}
 
     if update_fields is None:
-        cache_delete(get_stream_cache_key(stream.name, stream.realm_id))
+        cache_delete(get_stream_cache_key_for_stream_name(stream.name, stream.realm_id))
     else:
-        items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
+        items_for_remote_cache[
+            get_stream_cache_key_for_stream_name(stream.name, stream.realm_id)
+        ] = (stream,)
         cache_set_many(items_for_remote_cache)
 
     if (
