@@ -33,7 +33,7 @@ Here is the **full list of search operators**.
 * `id:12345`: Show only message `12345`.
 * `streams:public`: Search the history of all [public
   streams](/help/change-the-privacy-of-a-stream) in the organization.
-
+* `streams:subscribed`: Search history of all subscribed streams
 * `is:alerted`: See [alert words](/help/add-an-alert-word).
 * `is:mentioned`: See [mentions](/help/mention-a-user-or-group).
 * `is:starred`: See [starred messages](/help/star-a-message).
@@ -64,6 +64,8 @@ messages that you have access to in the selected stream(s).  For
 example:
 
 * `streams:public keyword` searches for `keyword` in all public
+  streams in the organization.
+* `streams:subscribed keyword` searches for `keyword` in all subscribed
   streams in the organization.
 * `streams:public sender:user@example.com` searches for all messages
   sent by the user to any public stream.

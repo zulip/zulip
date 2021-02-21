@@ -438,6 +438,18 @@ function get_streams_filter_suggestions(last, operators) {
                 {operator: "streams"},
             ],
         },
+        {
+            search_string: "streams:subscribed",
+            description: "All subscribed streams in organization",
+            invalid: [
+                {operator: "is", operand: "private"},
+                {operator: "stream"},
+                {operator: "group-pm-with"},
+                {operator: "pm-with"},
+                {operator: "in"},
+                {operator: "streams"},
+            ],
+        },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
 }
