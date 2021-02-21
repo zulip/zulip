@@ -121,7 +121,7 @@ function test_create_bot_type_input_box_toggle(f) {
 }
 
 function set_up() {
-    set_global("$", make_zjquery());
+    $.clear_all_elements();
 
     // bunch of stubs
 

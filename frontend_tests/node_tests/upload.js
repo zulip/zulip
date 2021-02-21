@@ -368,7 +368,7 @@ run_test("uppy_config", () => {
 });
 
 run_test("file_input", () => {
-    set_global("$", make_zjquery());
+    $.clear_all_elements();
 
     upload.setup_upload({mode: "compose"});
 
@@ -391,8 +391,7 @@ run_test("file_input", () => {
 });
 
 run_test("file_drop", () => {
-    set_global("$", make_zjquery());
-
+    $.clear_all_elements();
     upload.setup_upload({mode: "compose"});
 
     let prevent_default_counter = 0;
@@ -431,7 +430,7 @@ run_test("file_drop", () => {
 });
 
 run_test("copy_paste", () => {
-    set_global("$", make_zjquery());
+    $.clear_all_elements();
 
     upload.setup_upload({mode: "compose"});
 
@@ -472,7 +471,7 @@ run_test("copy_paste", () => {
 });
 
 run_test("uppy_events", () => {
-    set_global("$", make_zjquery());
+    $.clear_all_elements();
     const callbacks = {};
     let uppy_cancel_all_called = false;
     let state = {};
