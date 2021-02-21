@@ -77,10 +77,6 @@ const {server_events, ui} = Object.fromEntries(
     ]),
 );
 
-util.is_mobile = () => false;
-stub_templates(() => "some-html");
-ui.get_scroll_element = (element) => element;
-
 zrequire("hash_util");
 zrequire("stream_color");
 zrequire("stream_edit");
@@ -124,67 +120,71 @@ const ui_init = rewiremock.proxy(() => zrequire("ui_init"), {
 
 set_global("$", make_zjquery());
 
-const document_stub = $.create("document-stub");
-document.to_$ = () => document_stub;
-document_stub.idle = () => {};
-
-const window_stub = $.create("window-stub");
-set_global("to_$", () => window_stub);
-window_stub.idle = () => {};
-
-ui_init.initialize_kitchen_sink_stuff = () => {};
-
-page_params.realm_default_streams = [];
-page_params.subscriptions = [];
-page_params.unsubscribed = [];
-page_params.never_subscribed = [];
-page_params.realm_notifications_stream_id = -1;
-page_params.unread_msgs = {
-    huddles: [],
-    pms: [],
-    streams: [],
-    mentions: [],
-};
-page_params.recent_private_conversations = [];
-page_params.user_status = {};
-page_params.realm_emoji = {};
-page_params.realm_users = [];
-page_params.realm_non_active_users = [];
-page_params.cross_realm_bots = [];
-page_params.muted_topics = [];
-page_params.realm_user_groups = [];
-page_params.realm_bots = [];
-page_params.realm_filters = [];
-page_params.starred_messages = [];
-page_params.presences = [];
-
-const $message_view_header = $.create("#message_view_header");
-$message_view_header.append = () => {};
-upload.setup_upload = () => {};
-
-server_events.home_view_loaded = () => true;
-
-resize.watch_manual_resize = () => {};
-
-$("#stream_message_recipient_stream").typeahead = () => {};
-$("#stream_message_recipient_topic").typeahead = () => {};
-$("#private_message_recipient").typeahead = () => {};
-$("#compose-textarea").typeahead = () => {};
-$("#search_query").typeahead = () => {};
-
-const value_stub = $.create("value");
-const count_stub = $.create("count");
-count_stub.set_find_results(".value", value_stub);
-$(".top_left_starred_messages").set_find_results(".count", count_stub);
-
-$("#message_view_header .stream").length = 0;
-
-// set find results doesn't work here since we call .empty() in the code.
-$message_view_header.find = () => false;
-
-compose.compute_show_video_chat_button = () => {};
-$("#below-compose-content .video_link").toggle = () => {};
-
 run_test("initialize_everything", () => {
+    util.is_mobile = () => false;
+    stub_templates(() => "some-html");
+    ui.get_scroll_element = (element) => element;
+
+    const document_stub = $.create("document-stub");
+    document.to_$ = () => document_stub;
+    document_stub.idle = () => {};
+
+    const window_stub = $.create("window-stub");
+    set_global("to_$", () => window_stub);
+    window_stub.idle = () => {};
+
+    ui_init.initialize_kitchen_sink_stuff = () => {};
+
+    page_params.realm_default_streams = [];
+    page_params.subscriptions = [];
+    page_params.unsubscribed = [];
+    page_params.never_subscribed = [];
+    page_params.realm_notifications_stream_id = -1;
+    page_params.unread_msgs = {
+        huddles: [],
+        pms: [],
+        streams: [],
+        mentions: [],
+    };
+    page_params.recent_private_conversations = [];
+    page_params.user_status = {};
+    page_params.realm_emoji = {};
+    page_params.realm_users = [];
+    page_params.realm_non_active_users = [];
+    page_params.cross_realm_bots = [];
+    page_params.muted_topics = [];
+    page_params.realm_user_groups = [];
+    page_params.realm_bots = [];
+    page_params.realm_filters = [];
+    page_params.starred_messages = [];
+    page_params.presences = [];
+
+    const $message_view_header = $.create("#message_view_header");
+    $message_view_header.append = () => {};
+    upload.setup_upload = () => {};
+
+    server_events.home_view_loaded = () => true;
+
+    resize.watch_manual_resize = () => {};
+
+    $("#stream_message_recipient_stream").typeahead = () => {};
+    $("#stream_message_recipient_topic").typeahead = () => {};
+    $("#private_message_recipient").typeahead = () => {};
+    $("#compose-textarea").typeahead = () => {};
+    $("#search_query").typeahead = () => {};
+
+    const value_stub = $.create("value");
+    const count_stub = $.create("count");
+    count_stub.set_find_results(".value", value_stub);
+    $(".top_left_starred_messages").set_find_results(".count", count_stub);
+
+    $("#message_view_header .stream").length = 0;
+
+    // set find results doesn't work here since we call .empty() in the code.
+    $message_view_header.find = () => false;
+
+    compose.compute_show_video_chat_button = () => {};
+    $("#below-compose-content .video_link").toggle = () => {};
+
     ui_init.initialize_everything();
 });
