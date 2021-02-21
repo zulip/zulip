@@ -71,11 +71,6 @@ const me = {
     timezone: "America/Los_Angeles",
 };
 
-const target = $.create("click target");
-target.offset = () => ({
-    top: 10,
-});
-
 const e = {
     stopPropagation: noop,
 };
@@ -111,9 +106,15 @@ function make_image_stubber() {
     };
 }
 
-popovers.register_click_handlers();
+function test_ui(label, f) {
+    $.clear_all_elements();
+    run_test(label, (override) => {
+        popovers.register_click_handlers();
+        f(override);
+    });
+}
 
-run_test("sender_hover", (override) => {
+test_ui("sender_hover", (override) => {
     override(popovers, "hide_user_profile", noop);
 
     const selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
@@ -139,6 +140,8 @@ run_test("sender_hover", (override) => {
     current_msg_list.select_id = (msg_id) => {
         assert.equal(msg_id, message.id);
     };
+
+    const target = $.create("click target");
 
     target.closest = (sel) => {
         assert.equal(sel, ".message_row");
@@ -206,7 +209,9 @@ run_test("sender_hover", (override) => {
     // todo: load image
 });
 
-run_test("actions_popover", (override) => {
+test_ui("actions_popover", (override) => {
+    const target = $.create("click target");
+
     override(popovers, "hide_user_profile", noop);
 
     const handler = $("#main_div").get_on_handler("click", ".actions_hover");
