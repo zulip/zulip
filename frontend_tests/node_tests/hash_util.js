@@ -12,12 +12,8 @@ const people = zrequire("people");
 const Filter = zrequire("Filter", "js/filter");
 const narrow_state = zrequire("narrow_state");
 
-set_global(
-    "$",
-    make_zjquery({
-        silent: true,
-    }),
-);
+set_global("$", make_zjquery());
+
 const ui_report = set_global("ui_report", {
     displayed_error: false,
     error: () => {
