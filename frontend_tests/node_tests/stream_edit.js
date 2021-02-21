@@ -91,34 +91,40 @@ for (const sub of subs) {
     stream_data.add_sub(sub);
 }
 
-const subscriptions_table_selector = "#subscriptions_table";
-const input_field_stub = $.create(".input");
+function test_ui(label, f) {
+    $.clear_all_elements();
+    run_test(label, (override) => {
+        stream_edit.initialize();
+        f(override);
+    });
+}
 
-const sub_settings_selector = `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
-    denmark.stream_id,
-)}']`;
-const $sub_settings_container = $.create(sub_settings_selector);
-$sub_settings_container.find = noop;
-$sub_settings_container.find = function () {
-    return input_field_stub;
-};
+test_ui("subscriber_pills", () => {
+    const subscriptions_table_selector = "#subscriptions_table";
+    const input_field_stub = $.create(".input");
 
-const pill_container_stub = $.create(sub_settings_selector + " .pill-container");
-pill_container_stub.find = function () {
-    return input_field_stub;
-};
+    const sub_settings_selector = `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
+        denmark.stream_id,
+    )}']`;
+    const $sub_settings_container = $.create(sub_settings_selector);
+    $sub_settings_container.find = noop;
+    $sub_settings_container.find = function () {
+        return input_field_stub;
+    };
 
-const $subscription_settings = $.create(".subscription_settings");
-$subscription_settings.addClass = noop;
-$subscription_settings.closest = () => $subscription_settings;
-$subscription_settings.attr("data-stream-id", denmark.stream_id);
-$subscription_settings.length = 0;
+    const pill_container_stub = $.create(sub_settings_selector + " .pill-container");
+    pill_container_stub.find = function () {
+        return input_field_stub;
+    };
 
-const $add_subscribers_form = $.create(".subscriber_list_add form");
-$add_subscribers_form.closest = () => $subscription_settings;
+    const $subscription_settings = $.create(".subscription_settings");
+    $subscription_settings.addClass = noop;
+    $subscription_settings.closest = () => $subscription_settings;
+    $subscription_settings.attr("data-stream-id", denmark.stream_id);
+    $subscription_settings.length = 0;
 
-run_test("subscriber_pills", () => {
-    stream_edit.initialize();
+    const $add_subscribers_form = $.create(".subscriber_list_add form");
+    $add_subscribers_form.closest = () => $subscription_settings;
 
     let template_rendered = false;
     ui.get_content_element = () => {
