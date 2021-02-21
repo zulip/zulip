@@ -103,7 +103,16 @@ function create_social_sidebar_row() {
     assert.equal(social_value.text(), "99");
 }
 
-run_test("create_sidebar_row", (override) => {
+function test_ui(label, f) {
+    $.clear_all_elements();
+    run_test(label, (override) => {
+        stream_data.clear_subscriptions();
+        stream_list.stream_sidebar.rows.clear();
+        f(override);
+    });
+}
+
+test_ui("create_sidebar_row", (override) => {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
     page_params.demote_inactive_streams = 1;
@@ -184,15 +193,8 @@ run_test("create_sidebar_row", (override) => {
     assert(removed);
 });
 
-run_test("pinned_streams_never_inactive", (override) => {
+test_ui("pinned_streams_never_inactive", (override) => {
     override(unread, "num_unread_for_stream", () => num_unread_for_stream);
-
-    $.clear_all_elements();
-
-    // Ensure that pinned streams are never treated as dormant ie never given "inactive" class
-    stream_data.clear_subscriptions();
-
-    stream_list.stream_sidebar.rows.clear();
 
     stream_data.add_sub(devel);
     stream_data.add_sub(social);
@@ -230,8 +232,6 @@ run_test("pinned_streams_never_inactive", (override) => {
     assert(!devel_sidebar.hasClass("inactive_stream"));
 });
 
-set_global("$", make_zjquery());
-
 function add_row(sub) {
     stream_data.add_sub(sub);
     const row = {
@@ -249,8 +249,6 @@ function add_row(sub) {
 }
 
 function initialize_stream_data() {
-    stream_data.clear_subscriptions();
-
     // pinned streams
     const develSub = {
         name: "devel",
@@ -306,13 +304,15 @@ function initialize_stream_data() {
         subscribed: true,
     };
     add_row(carSub);
+
+    stream_list.build_stream_list();
 }
 
 function elem($obj) {
     return {to_$: () => $obj};
 }
 
-run_test("zoom_in_and_zoom_out", () => {
+test_ui("zoom_in_and_zoom_out", () => {
     const label1 = $.create("label1 stub");
     const label2 = $.create("label2 stub");
 
@@ -383,10 +383,8 @@ run_test("zoom_in_and_zoom_out", () => {
     assert($("#streams_list").hasClass("zoom-out"));
 });
 
-set_global("$", make_zjquery());
-
 let narrow_state;
-run_test("narrowing", () => {
+test_ui("narrowing", () => {
     initialize_stream_data();
 
     narrow_state = set_global("narrow_state", {
@@ -444,13 +442,19 @@ run_test("narrowing", () => {
     assert(topics_closed);
 });
 
-run_test("focusout_user_filter", () => {
+test_ui("focusout_user_filter", () => {
+    stream_list.set_event_handlers();
     const e = {};
     const click_handler = $(".stream-list-filter").get_on_handler("focusout");
     click_handler(e);
 });
 
-run_test("focus_user_filter", () => {
+test_ui("focus_user_filter", () => {
+    stream_list.set_event_handlers();
+
+    initialize_stream_data();
+    stream_list.build_stream_list();
+
     const e = {
         stopPropagation() {},
     };
@@ -458,9 +462,7 @@ run_test("focus_user_filter", () => {
     click_handler(e);
 });
 
-run_test("sort_streams", () => {
-    stream_data.clear_subscriptions();
-
+test_ui("sort_streams", () => {
     // Get coverage on early-exit.
     stream_list.build_stream_list();
 
@@ -512,10 +514,8 @@ run_test("sort_streams", () => {
     assert(!stream_list.stream_sidebar.has_row_for(stream_id));
 });
 
-run_test("separators_only_pinned_and_dormant", () => {
+test_ui("separators_only_pinned_and_dormant", () => {
     // Test only pinned and dormant streams
-
-    stream_data.clear_subscriptions();
 
     // Get coverage on early-exit.
     stream_list.build_stream_list();
@@ -572,10 +572,8 @@ run_test("separators_only_pinned_and_dormant", () => {
     assert.deepEqual(appended_elems, expected_elems);
 });
 
-run_test("separators_only_pinned", () => {
+test_ui("separators_only_pinned", () => {
     // Test only pinned streams
-
-    stream_data.clear_subscriptions();
 
     // Get coverage on early-exit.
     stream_list.build_stream_list();
@@ -616,7 +614,7 @@ run_test("separators_only_pinned", () => {
     assert.deepEqual(appended_elems, expected_elems);
 });
 
-run_test("update_count_in_dom", () => {
+test_ui("update_count_in_dom", () => {
     function make_elem(elem, count_selector, value_selector) {
         const count = $(count_selector);
         const value = $(value_selector);
@@ -664,7 +662,9 @@ run_test("update_count_in_dom", () => {
 
 narrow_state.active = () => false;
 
-run_test("rename_stream", () => {
+test_ui("rename_stream", () => {
+    initialize_stream_data();
+
     const sub = stream_data.get_sub_by_name("devel");
     const new_name = "Development";
 
@@ -699,9 +699,7 @@ run_test("rename_stream", () => {
     assert(count_updated);
 });
 
-set_global("$", make_zjquery());
-
-run_test("refresh_pin", () => {
+test_ui("refresh_pin", () => {
     initialize_stream_data();
 
     const sub = {
@@ -736,7 +734,7 @@ run_test("refresh_pin", () => {
     assert(scrolled);
 });
 
-run_test("create_initial_sidebar_rows", () => {
+test_ui("create_initial_sidebar_rows", () => {
     initialize_stream_data();
 
     const html_dict = new Map();
