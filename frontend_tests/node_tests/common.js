@@ -9,30 +9,21 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 const noop = () => {};
 
 set_global("$", make_zjquery());
-const input = $.create("input");
-set_global("document", {
-    createElement: () => input,
-    execCommand: noop,
-});
-
-const admin_emails_val = "iago@zulip.com";
-
-$("body").append = noop;
-$(input).val = (arg) => {
-    assert.equal(arg, admin_emails_val);
-    return {
-        trigger: noop,
-    };
-};
+set_global("document", {});
 
 const common = zrequire("common");
 
-run_test("basics", () => {
+function test_ui(label, f) {
+    $.clear_all_elements();
+    run_test(label, f);
+}
+
+test_ui("basics", () => {
     common.autofocus("#home");
     assert($("#home").is_focused());
 });
 
-run_test("phrase_match", () => {
+test_ui("phrase_match", () => {
     assert(common.phrase_match("tes", "test"));
     assert(common.phrase_match("Tes", "test"));
     assert(common.phrase_match("Tes", "Test"));
@@ -42,7 +33,22 @@ run_test("phrase_match", () => {
     assert(!common.phrase_match("tes", "hostess"));
 });
 
-run_test("copy_data_attribute_value", () => {
+test_ui("copy_data_attribute_value", (override) => {
+    const admin_emails_val = "iago@zulip.com";
+
+    const input = $.create("input");
+
+    override(document, "createElement", () => input);
+    override(document, "execCommand", noop);
+
+    $("body").append = noop;
+    $(input).val = (arg) => {
+        assert.equal(arg, admin_emails_val);
+        return {
+            trigger: noop,
+        };
+    };
+
     const elem = {};
     let faded_in = false;
     let faded_out = false;
@@ -64,7 +70,7 @@ run_test("copy_data_attribute_value", () => {
     assert(faded_out);
 });
 
-run_test("adjust_mac_shortcuts non-mac", () => {
+test_ui("adjust_mac_shortcuts non-mac", () => {
     common.has_mac_keyboard = function () {
         return false;
     };
@@ -75,7 +81,7 @@ run_test("adjust_mac_shortcuts non-mac", () => {
     common.adjust_mac_shortcuts("selector-that-does-not-exist");
 });
 
-run_test("adjust_mac_shortcuts mac", () => {
+test_ui("adjust_mac_shortcuts mac", () => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
@@ -94,8 +100,6 @@ run_test("adjust_mac_shortcuts mac", () => {
     common.has_mac_keyboard = function () {
         return true;
     };
-
-    $.clear_all_elements();
 
     const test_items = [];
     let key_no = 1;
