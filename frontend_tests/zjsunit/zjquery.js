@@ -16,7 +16,7 @@ class Event {
     stopPropagation() {}
 }
 
-exports.make_event_store = (selector) => {
+function make_event_store(selector) {
     /*
 
        This function returns an event_store object that
@@ -144,9 +144,9 @@ exports.make_event_store = (selector) => {
     };
 
     return self;
-};
+}
 
-exports.make_new_elem = function (selector, opts) {
+function make_new_elem(selector, opts) {
     let html = "never-been-set";
     let text = "never-been-set";
     let value;
@@ -160,7 +160,7 @@ exports.make_new_elem = function (selector, opts) {
     const properties = new Map();
     const attrs = new Map();
     const classes = new Map();
-    const event_store = exports.make_event_store(selector);
+    const event_store = make_event_store(selector);
 
     const self = {
         addClass(class_name) {
@@ -402,16 +402,16 @@ exports.make_new_elem = function (selector, opts) {
     self.length = 1;
 
     return self;
-};
+}
 
-exports.make_zjquery = function () {
+function make_zjquery() {
     const elems = new Map();
 
     // Our fn structure helps us simulate extending jQuery.
     const fn = {};
 
     function new_elem(selector, create_opts) {
-        const elem = exports.make_new_elem(selector, {...create_opts});
+        const elem = make_new_elem(selector, {...create_opts});
         Object.assign(elem, fn);
 
         // Create a proxy handler to detect missing stubs.
@@ -550,4 +550,6 @@ exports.make_zjquery = function () {
     };
 
     return zjquery;
-};
+}
+
+module.exports = make_zjquery();

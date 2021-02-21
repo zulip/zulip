@@ -6,7 +6,7 @@ const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 set_global("page_params", {
     realm_uri: "https://chat.example.com",
@@ -30,8 +30,6 @@ const bot_data_params = {
 };
 
 const avatar = set_global("avatar", {});
-
-set_global("$", make_zjquery());
 
 const bot_data = zrequire("bot_data");
 

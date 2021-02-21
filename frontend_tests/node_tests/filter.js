@@ -4,12 +4,11 @@ const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 zrequire("unread");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
-set_global("$", make_zjquery());
 zrequire("message_util", "js/message_util");
 const Filter = zrequire("Filter", "js/filter");
 

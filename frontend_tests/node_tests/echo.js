@@ -6,9 +6,7 @@ const MockDate = require("mockdate");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
 
-set_global("$", make_zjquery());
 const local_message = set_global("local_message", {});
 const markdown = set_global("markdown", {});
 set_global("page_params", {});

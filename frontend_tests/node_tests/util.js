@@ -7,9 +7,7 @@ const _ = require("lodash");
 
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
 
-set_global("$", make_zjquery());
 set_global("DOMParser", new JSDOM().window.DOMParser);
 set_global("document", {});
 const util = zrequire("util");

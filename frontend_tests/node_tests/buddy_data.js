@@ -6,12 +6,10 @@ const _ = require("lodash");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
 
 const _page_params = {};
 
 set_global("page_params", _page_params);
-set_global("$", make_zjquery());
 const people = zrequire("people");
 const presence = zrequire("presence");
 const user_status = zrequire("user_status");

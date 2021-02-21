@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 const noop = function () {};
 
@@ -15,8 +15,6 @@ const event_fixtures = events.fixtures;
 const test_message = events.test_message;
 const test_user = events.test_user;
 const typing_person1 = events.typing_person1;
-
-set_global("$", make_zjquery());
 
 set_global("setTimeout", (func) => func());
 

@@ -2,9 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 /*
 
@@ -29,12 +28,6 @@ The code we are testing lives here:
     https://github.com/zulip/zulip/blob/master/frontend_tests/zjsunit/zjquery.js
 
 */
-
-// The first thing we do to use zjquery is patch our global namespace
-// with zjquery as follows.  This call gives us our own instance of a
-// zjquery stub variable.  Like with real jQuery, the '$' function will
-// be the gateway to a bigger API.
-set_global("$", make_zjquery());
 
 run_test("basics", () => {
     // Let's create a sample piece of code to test:

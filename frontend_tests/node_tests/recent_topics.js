@@ -5,12 +5,12 @@ const {strict: assert} = require("assert");
 const {stub_templates} = require("../zjsunit/handlebars");
 const {reset_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 zrequire("message_util");
 
 const noop = () => {};
-set_global("$", make_zjquery());
+
 set_global("hashchange", {
     exit_overlay: noop,
 });

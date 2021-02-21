@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const jquery = require("jquery");
 const {JSDOM} = require("jsdom");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
@@ -14,7 +15,7 @@ const compose_ui = set_global("compose_ui", {});
 
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 const {DOMParser, document} = window;
-set_global("$", require("jquery")(window));
+const $ = set_global("$", jquery(window));
 
 set_global("DOMParser", DOMParser);
 set_global("document", document);

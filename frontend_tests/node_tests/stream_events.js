@@ -5,13 +5,12 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 const noop = function () {};
 const return_true = function () {
     return true;
 };
-set_global("$", make_zjquery());
 const _settings_notifications = {
     update_page: () => {},
 };

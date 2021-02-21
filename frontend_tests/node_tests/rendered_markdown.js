@@ -4,14 +4,13 @@ const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
 zrequire("timerender");
-set_global("$", make_zjquery());
 
 set_global("rtl", {
     get_direction: () => "ltr",

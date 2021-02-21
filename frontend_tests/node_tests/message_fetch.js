@@ -6,9 +6,8 @@ const _ = require("lodash");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
-set_global("$", make_zjquery());
 set_global("document", "document-stub");
 
 const message_fetch = zrequire("message_fetch");

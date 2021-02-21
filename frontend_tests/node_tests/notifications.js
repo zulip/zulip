@@ -6,10 +6,9 @@ const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
 
 // Dependencies
-set_global("$", make_zjquery());
+
 set_global("document", {
     hasFocus() {
         return true;

@@ -7,10 +7,9 @@ const rewiremock = require("rewiremock/node");
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 set_global("page_params", {});
-set_global("$", make_zjquery());
 const loading = set_global("loading", {});
 
 const SHORT_TEXT_ID = 1;

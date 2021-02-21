@@ -5,15 +5,13 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 const template = fs.readFileSync("templates/analytics/realm_details.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
-
-set_global("$", make_zjquery());
 
 run_test("scrub_realm", () => {
     zrequire("support", "js/analytics/support");

@@ -4,9 +4,7 @@ const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
-
-set_global("$", make_zjquery());
+const $ = require("../zjsunit/zjquery");
 
 zrequire("timerender");
 const settings_muting = zrequire("settings_muting");
