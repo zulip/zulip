@@ -1850,17 +1850,9 @@ run_test("create_message_object", () => {
     };
     stream_data.add_sub(sub);
 
-    const page = {
-        "#stream_message_recipient_stream": "social",
-        "#stream_message_recipient_topic": "lunch",
-        "#compose-textarea": "burrito",
-    };
-
-    set_global("$", (selector) => ({
-        val() {
-            return page[selector];
-        },
-    }));
+    $("#stream_message_recipient_stream").val("social");
+    $("#stream_message_recipient_topic").val("lunch");
+    $("#compose-textarea").val("burrito");
 
     compose_state.get_message_type = function () {
         return "stream";
@@ -1873,7 +1865,7 @@ run_test("create_message_object", () => {
 
     blueslip.expect("error", "Trying to send message with bad stream name: BOGUS STREAM");
 
-    page["#stream_message_recipient_stream"] = "BOGUS STREAM";
+    $("#stream_message_recipient_stream").val("BOGUS STREAM");
     message = compose.create_message_object();
     assert.equal(message.to, "BOGUS STREAM");
     assert.equal(message.topic, "lunch");
