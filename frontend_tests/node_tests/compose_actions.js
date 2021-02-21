@@ -112,13 +112,18 @@ function assert_hidden(sel) {
     assert(!$(sel).visible());
 }
 
-run_test("initial_state", () => {
+function test_ui(label, f) {
+    $.clear_all_elements();
+    run_test(label, f);
+}
+
+test_ui("initial_state", () => {
     assert.equal(compose_state.composing(), false);
     assert.equal(compose_state.get_message_type(), false);
     assert.equal(compose_state.has_message_content(), false);
 });
 
-run_test("start", () => {
+test_ui("start", () => {
     compose_actions.autosize_message_content = noop;
     compose_actions.expand_compose_box = noop;
     compose_actions.set_focus = noop;
@@ -234,7 +239,7 @@ run_test("start", () => {
     assert(!compose_state.composing());
 });
 
-run_test("respond_to_message", () => {
+test_ui("respond_to_message", () => {
     // Test PM
     const person = {
         user_id: 22,
@@ -271,7 +276,7 @@ run_test("respond_to_message", () => {
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
 });
 
-run_test("reply_with_mention", () => {
+test_ui("reply_with_mention", (override) => {
     const msg = {
         type: "stream",
         stream: "devel",
@@ -283,16 +288,15 @@ run_test("reply_with_mention", () => {
     stub_selected_message(msg);
 
     let syntax_to_insert;
-    compose_ui.insert_syntax_and_focus = function (syntax) {
+    override(compose_ui, "insert_syntax_and_focus", (syntax) => {
         syntax_to_insert = syntax;
-    };
+    });
 
     const opts = {};
 
     reply_with_mention(opts);
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
     assert.equal(syntax_to_insert, "@**Bob Roberts**");
-    assert(compose_state.has_message_content());
 
     // Test for extended mention syntax
     const bob_1 = {
@@ -311,10 +315,9 @@ run_test("reply_with_mention", () => {
     reply_with_mention(opts);
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
-    assert(compose_state.has_message_content());
 });
 
-run_test("quote_and_reply", () => {
+test_ui("quote_and_reply", () => {
     const msg = {
         type: "stream",
         stream: "devel",
@@ -396,7 +399,7 @@ run_test("quote_and_reply", () => {
     quote_and_reply(opts);
 });
 
-run_test("get_focus_area", () => {
+test_ui("get_focus_area", () => {
     assert.equal(get_focus_area("private", {}), "#private_message_recipient");
     assert.equal(
         get_focus_area("private", {
@@ -413,7 +416,7 @@ run_test("get_focus_area", () => {
     );
 });
 
-run_test("focus_in_empty_compose", () => {
+test_ui("focus_in_empty_compose", () => {
     $("#compose-textarea").is = function (attr) {
         assert.equal(attr, ":focus");
         return $("#compose-textarea").is_focused;
@@ -434,7 +437,7 @@ run_test("focus_in_empty_compose", () => {
     assert(!compose_state.focus_in_empty_compose());
 });
 
-run_test("on_narrow", () => {
+test_ui("on_narrow", () => {
     let cancel_called = false;
     compose_actions.cancel = function () {
         cancel_called = true;
