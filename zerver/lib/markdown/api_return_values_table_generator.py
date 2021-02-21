@@ -170,10 +170,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             + " {event_type} {op}</h3></p></div> \n{description}\n\n\n"
         )
         for events in events_dict["oneOf"]:
-            # `id` is present in every event so it will be redundant to display
-            # it every time. So remove it from the dictionary.
-            events["properties"].pop("id")
-            event_type: Dict[str, Any] = events["properties"].pop("type")
+            event_type: Dict[str, Any] = events["properties"]["type"]
             event_type_str: str = event_type["enum"][0]
             # Internal hyperlink name
             h3_id: str = event_type_str

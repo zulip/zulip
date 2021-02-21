@@ -191,11 +191,12 @@ paths:
                                 [alert words](/help/add-an-alert-word) have changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - alert_words
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - alert_words
                                 alert_words:
                                   type: array
                                   description: |
@@ -215,11 +216,12 @@ paths:
                                 have changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - update_display_settings
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_display_settings
                                 setting_name:
                                   type: string
                                   description: |
@@ -250,11 +252,12 @@ paths:
                                 settings](/api/update-notification-settings) have changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - update_global_notifications
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_global_notifications
                                 notification_name:
                                   type: string
                                   description: |
@@ -278,12 +281,13 @@ paths:
                                 Event sent generally to all users in an organization for changes
                                 in the set of users or those users metadata.
                               properties:
-                                type:
-                                  type: string
-                                  enum:
-                                    - realm_user
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_user
                                 op:
                                   type: string
                                   enum:
@@ -456,11 +460,12 @@ paths:
                                 have changed (either the set of subscriptions or their properties).
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - subscription
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
                                 op:
                                   type: string
                                   enum:
@@ -513,11 +518,12 @@ paths:
                                 from one or more streams.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - subscription
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
                                 op:
                                   type: string
                                   enum:
@@ -558,11 +564,12 @@ paths:
                                 for global properties of a stream.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - subscription
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
                                 op:
                                   type: string
                                   enum:
@@ -619,11 +626,12 @@ paths:
                                 the existing subscribers if the stream is private.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - subscription
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
                                 op:
                                   type: string
                                   enum:
@@ -656,11 +664,12 @@ paths:
                                 the existing subscribers if the stream is private.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - subscription
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
                                 op:
                                   type: string
                                   enum:
@@ -692,11 +701,12 @@ paths:
                                 Event type for messages.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - message
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - message
                                 message:
                                   $ref: "#/components/schemas/Messages"
                                 flags:
@@ -742,11 +752,12 @@ paths:
                                 to know whether initiating Zoom OAuth is required before creating a Zoom call.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - has_zoom_token
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - has_zoom_token
                                 value:
                                   type: boolean
                                   description: |
@@ -767,11 +778,12 @@ paths:
                                 invitations.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - invites_changed
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - invites_changed
                               additionalProperties: false
                               example: {"type": "invites_changed", "id": 0}
                             - type: object
@@ -781,11 +793,12 @@ paths:
                                 to display basic details on other users given only their ID.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_user
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_user
                                 op:
                                   type: string
                                   enum:
@@ -821,11 +834,12 @@ paths:
                                 a user is deactivated.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_user
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_user
                                 op:
                                   type: string
                                   enum:
@@ -865,11 +879,12 @@ paths:
                                 a message (one wouldn't want them to still appear offline at that point!).
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - presence
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - presence
                                 user_id:
                                   type: integer
                                   description: |
@@ -923,11 +938,12 @@ paths:
                                 not be able to see content on the stream; just that it exists.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - stream
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - stream
                                 op:
                                   type: string
                                   enum:
@@ -968,11 +984,12 @@ paths:
                                 Event sent to all users who can see a stream when it is deactivated.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - stream
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - stream
                                 op:
                                   type: string
                                   enum:
@@ -1013,11 +1030,12 @@ paths:
                                 when a property of that stream changes.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - stream
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - stream
                                 op:
                                   type: string
                                   enum:
@@ -1095,11 +1113,12 @@ paths:
                                     user_id: {}
                                     user: {}
                                     id:
-                                      type: integer
+                                      $ref: "#/components/schemas/EventIdSchema"
                                     type:
-                                      type: string
-                                      enum:
-                                        - reaction
+                                      allOf:
+                                        - $ref: "#/components/schemas/EventTypeSchema"
+                                        - enum:
+                                            - reaction
                                     op:
                                       type: string
                                       enum:
@@ -1139,11 +1158,12 @@ paths:
                                     user_id: {}
                                     user: {}
                                     id:
-                                      type: integer
+                                      $ref: "#/components/schemas/EventIdSchema"
                                     type:
-                                      type: string
-                                      enum:
-                                        - reaction
+                                      allOf:
+                                        - $ref: "#/components/schemas/EventTypeSchema"
+                                        - enum:
+                                            - reaction
                                     op:
                                       type: string
                                       enum:
@@ -1178,11 +1198,12 @@ paths:
                                 the current user has uploaded.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - attachment
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - attachment
                                 op:
                                   type: string
                                   enum:
@@ -1218,11 +1239,12 @@ paths:
                                 messages that reference the uploaded file.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - attachment
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - attachment
                                 op:
                                   type: string
                                   enum:
@@ -1258,11 +1280,12 @@ paths:
                                 the current user has uploaded.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - attachment
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - attachment
                                 op:
                                   type: string
                                   enum:
@@ -1298,11 +1321,12 @@ paths:
                                 `/poll` widget in Zulip.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - submessage
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - submessage
                                 msg_type:
                                   type: string
                                   description: |
@@ -1340,11 +1364,12 @@ paths:
                                 status of a user changes.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_status
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_status
                                 away:
                                   type: boolean
                                   description: |
@@ -1372,11 +1397,12 @@ paths:
                                 profile field types are configured for that Zulip organization.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - custom_profile_fields
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - custom_profile_fields
                                 op:
                                   type: string
                                   enum:
@@ -1472,11 +1498,12 @@ paths:
                                 stabilized.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - default_stream_groups
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - default_stream_groups
                                 default_stream_groups:
                                   type: array
                                   description: |
@@ -1547,11 +1574,12 @@ paths:
                                 organization administrator.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - default_streams
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - default_streams
                                 default_streams:
                                   type: array
                                   description: |
@@ -1587,11 +1615,12 @@ paths:
                                 Sent to all users who received the message.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - delete_message
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - delete_message
                                 message_ids:
                                   type: array
                                   description: |
@@ -1656,11 +1685,12 @@ paths:
                                 configured muted topics have changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - muted_topics
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - muted_topics
                                 muted_topics:
                                   type: array
                                   description: |
@@ -1693,11 +1723,12 @@ paths:
                                 webapp may want to handle these events.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - hotspots
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - hotspots
                                 hotspots:
                                   type: array
                                   description: |
@@ -1727,11 +1758,12 @@ paths:
                                 message.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - update_message
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_message
                                 user_id:
                                   type: integer
                                   description: |
@@ -1869,11 +1901,12 @@ paths:
                                 See the [typing endpoint docs](/api/set-typing-status) for more details.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - typing
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - typing
                                 op:
                                   type: string
                                   enum:
@@ -1945,11 +1978,12 @@ paths:
                                 See the [typing endpoint docs](/api/set-typing-status) for more details.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - typing
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - typing
                                 op:
                                   type: string
                                   enum:
@@ -2019,11 +2053,12 @@ paths:
                                 to a message.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - update_message_flags
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_message_flags
                                 op:
                                   type: string
                                   enum:
@@ -2072,11 +2107,12 @@ paths:
                                 removed from a message.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - update_message_flags
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_message_flags
                                 op:
                                   type: string
                                   enum:
@@ -2123,11 +2159,12 @@ paths:
                                 Event sent to users in an organization when a [user group](/help/user-groups) is created.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_group
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
                                 op:
                                   type: string
                                   enum:
@@ -2154,11 +2191,12 @@ paths:
                                 when a property of a user group is changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_group
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
                                 op:
                                   type: string
                                   enum:
@@ -2199,11 +2237,12 @@ paths:
                                 Event sent to all users when users have been added to a user group.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_group
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
                                 op:
                                   type: string
                                   enum:
@@ -2234,11 +2273,12 @@ paths:
                                 a user group.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_group
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
                                 op:
                                   type: string
                                   enum:
@@ -2268,11 +2308,12 @@ paths:
                                 Event sent to all users when a user group has been deleted.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_group
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
                                 op:
                                   type: string
                                   enum:
@@ -2299,11 +2340,12 @@ paths:
                                 correctly.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_filters
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_filters
                                 realm_filters:
                                   type: array
                                   items:
@@ -2340,11 +2382,12 @@ paths:
                                 typically when it has been deactivated.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_emoji
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_emoji
                                 op:
                                   type: string
                                   enum:
@@ -2388,11 +2431,12 @@ paths:
                                 has changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_domains
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_domains
                                 op:
                                   type: string
                                   enum:
@@ -2418,11 +2462,12 @@ paths:
                                 has changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_domains
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_domains
                                 op:
                                   type: string
                                   enum:
@@ -2460,11 +2505,12 @@ paths:
                                 has changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_domains
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_domains
                                 op:
                                   type: string
                                   enum:
@@ -2487,11 +2533,12 @@ paths:
                                 when the status of the export changes.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_export
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_export
                                 exports:
                                   type: array
                                   description: |
@@ -2531,11 +2578,12 @@ paths:
                                 receive this event.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_bot
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_bot
                                 op:
                                   type: string
                                   enum:
@@ -2578,11 +2626,12 @@ paths:
                               additionalProperties: false
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_bot
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_bot
                                 op:
                                   type: string
                                   enum:
@@ -2619,11 +2668,12 @@ paths:
                                 Event sent to all users when a bot has been deactivated.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_bot
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_bot
                                 op:
                                   type: string
                                   enum:
@@ -2657,11 +2707,12 @@ paths:
                                 and one of them will be removed soon.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_bot
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_bot
                                 op:
                                   type: string
                                   enum:
@@ -2690,11 +2741,12 @@ paths:
                                 configuration of the organization (realm) has changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm
                                 op:
                                   type: string
                                   enum:
@@ -2741,11 +2793,12 @@ paths:
                                 in a single event.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm
                                 op:
                                   type: string
                                   enum:
@@ -8771,6 +8824,15 @@ components:
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
 
   schemas:
+    EventIdSchema:
+      type: integer
+      description: |
+        The ID of the event.  Events appear in increasing order but may not be consecutive.
+    EventTypeSchema:
+      type: string
+      description: |
+        The event's type, relevant both for client-side dispatch and server-side
+        filtering by event type in [POST /register](/api/register-queue).
     Attachments:
       type: object
       description: |
