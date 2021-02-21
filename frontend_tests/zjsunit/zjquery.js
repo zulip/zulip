@@ -227,9 +227,6 @@ exports.make_new_elem = function (selector, opts) {
                 // if ($.find().length) { //success }
                 return [];
             }
-            if (opts.silent) {
-                return self;
-            }
             throw new Error("Cannot find " + child_selector + " in " + selector);
         },
         get_on_handler(name, child_selector) {
@@ -407,19 +404,14 @@ exports.make_new_elem = function (selector, opts) {
     return self;
 };
 
-exports.make_zjquery = function (opts) {
-    opts = opts || {};
-
+exports.make_zjquery = function () {
     const elems = new Map();
 
     // Our fn structure helps us simulate extending jQuery.
     const fn = {};
 
     function new_elem(selector, create_opts) {
-        const elem = exports.make_new_elem(selector, {
-            silent: opts.silent,
-            ...create_opts,
-        });
+        const elem = exports.make_new_elem(selector, {...create_opts});
         Object.assign(elem, fn);
 
         // Create a proxy handler to detect missing stubs.

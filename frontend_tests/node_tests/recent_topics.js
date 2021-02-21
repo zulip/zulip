@@ -10,12 +10,7 @@ const {make_zjquery} = require("../zjsunit/zjquery");
 zrequire("message_util");
 
 const noop = () => {};
-set_global(
-    "$",
-    make_zjquery({
-        silent: true,
-    }),
-);
+set_global("$", make_zjquery());
 set_global("hashchange", {
     exit_overlay: noop,
 });
@@ -290,6 +285,20 @@ function verify_topic_data(all_topics, stream, topic, last_msg_id, participated)
 
 let rt = zrequire("recent_topics");
 
+function stub_out_filter_buttons() {
+    // TODO: We probably want more direct tests that make sure
+    //       the widgets get updated correctly, but the stubs here
+    //       should accurately simulate toggling the filters.
+    //
+    //       See show_selected_filters() and set_filter() in the
+    //       implementation.
+    for (const filter of ["all", "unread", "muted", "participated"]) {
+        const stub = $.create(`filter-${filter}-stub`);
+        const selector = `[data-filter="${filter}"]`;
+        $("#recent_topics_filter_buttons").set_find_results(selector, stub);
+    }
+}
+
 run_test("test_recent_topics_launch", () => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
@@ -310,6 +319,8 @@ run_test("test_recent_topics_launch", () => {
         }
         return "<recent_topics table stub>";
     });
+
+    stub_out_filter_buttons();
 
     rt = reset_module("recent_topics");
     rt.process_messages(messages);
@@ -349,12 +360,15 @@ run_test("test_filter_all", () => {
     row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
     i = row_data.length;
     rt = reset_module("recent_topics");
+
+    stub_out_filter_buttons();
     rt.set_filter("all");
     rt.process_messages([messages[0]]);
 
     row_data = row_data.concat(generate_topic_data([[1, "topic-7", 1, true, true]]));
     i = row_data.length;
     // topic is muted (=== hidden)
+    stub_out_filter_buttons();
     rt.process_messages([messages[9]]);
 
     // Test search
@@ -389,6 +403,7 @@ run_test("test_filter_unread", () => {
     rt = reset_module("recent_topics");
 
     stub_templates(() => "<recent_topics table stub>");
+    stub_out_filter_buttons();
     rt.process_messages(messages);
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 
@@ -452,6 +467,7 @@ run_test("test_filter_participated", () => {
 
     rt = reset_module("recent_topics");
     stub_templates(() => "<recent_topics table stub>");
+    stub_out_filter_buttons();
     rt.process_messages(messages);
     assert.equal(rt.inplace_rerender("1:topic-4"), true);
 
@@ -504,12 +520,14 @@ stub_templates(() => "<recent_topics table stub>");
 
 run_test("basic assertions", () => {
     rt = reset_module("recent_topics");
+    stub_out_filter_buttons();
     rt.set_filter("all");
     rt.process_messages(messages);
     let all_topics = rt.get();
 
     // update a message
     generate_topic_data([[1, "topic-7", 1, false, true]]);
+    stub_out_filter_buttons();
     rt.process_messages([messages[9]]);
     // Check for expected lengths.
     // total 8 topics, 1 muted
@@ -581,6 +599,7 @@ run_test("basic assertions", () => {
 
 run_test("test_reify_local_echo_message", () => {
     rt = reset_module("recent_topics");
+    stub_out_filter_buttons();
     rt.set_filter("all");
     rt.process_messages(messages);
 
