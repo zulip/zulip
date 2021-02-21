@@ -2,18 +2,31 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 const noop = function () {};
 
-set_global("document", {});
+set_global("document", {
+    to_$() {
+        return {
+            trigger() {},
+        };
+    },
+});
 set_global("addEventListener", noop);
-stub_out_jquery();
+
+// Turn off $.now so we can import server_events.
+set_global("$", {
+    now() {},
+});
 
 zrequire("message_store");
 const server_events = zrequire("server_events");
 zrequire("sent_messages");
+
+set_global("$", $);
 
 const channel = set_global("channel", {});
 set_global("home_msg_list", {

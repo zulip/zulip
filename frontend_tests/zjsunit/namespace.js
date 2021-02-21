@@ -72,17 +72,6 @@ exports.restore = function () {
     new_globals.clear();
 };
 
-exports.stub_out_jquery = function () {
-    const $ = exports.set_global("$", () => ({
-        on() {},
-        trigger() {},
-        hide() {},
-        removeClass() {},
-    }));
-    $.fn = {};
-    $.now = function () {};
-};
-
 exports.with_field = function (obj, field, val, f) {
     const old_val = obj[field];
     obj[field] = val;
