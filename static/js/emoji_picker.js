@@ -723,6 +723,9 @@ exports.register_click_handlers = function () {
             animation: false,
         });
         elem.tooltip("show");
+        $(".tooltip").css({
+            opacity: 1,
+        });
         $(".tooltip-arrow").remove();
     });
 

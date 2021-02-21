@@ -229,6 +229,7 @@ exports.initialize = function () {
         $(".tooltip, .tooltip-inner").css({
             "margin-left": "15px",
             "max-width": $(window).width() * 0.6,
+            opacity: "1",
         });
         // Remove the arrow from the tooltip.
         $(".tooltip-arrow").remove();
