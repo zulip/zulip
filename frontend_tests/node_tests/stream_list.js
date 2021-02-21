@@ -44,69 +44,76 @@ set_global("keydown_util", {
     handle: noop,
 });
 
-run_test("create_sidebar_row", () => {
+const devel = {
+    name: "devel",
+    stream_id: 100,
+    color: "blue",
+    subscribed: true,
+    pin_to_top: true,
+};
+
+const social = {
+    name: "social",
+    stream_id: 200,
+    color: "green",
+    subscribed: true,
+};
+
+// We use this with override.
+let num_unread_for_stream;
+
+function create_devel_sidebar_row() {
+    const devel_value = $.create("devel-value");
+    const devel_count = $.create("devel-count");
+
+    const sidebar_row = $("<devel sidebar row>");
+
+    sidebar_row.set_find_results(".count", devel_count);
+    devel_count.set_find_results(".value", devel_value);
+    devel_count.set_parent(sidebar_row);
+
+    stub_templates((template_name, data) => {
+        assert.equal(template_name, "stream_sidebar_row");
+        assert.equal(data.uri, "#narrow/stream/100-devel");
+        return "<devel sidebar row>";
+    });
+
+    num_unread_for_stream = 42;
+    stream_list.create_sidebar_row(devel);
+    assert.equal(devel_value.text(), "42");
+}
+
+function create_social_sidebar_row() {
+    const social_value = $.create("social-value");
+    const social_count = $.create("social-count");
+    const sidebar_row = $("<social sidebar row>");
+
+    sidebar_row.set_find_results(".count", social_count);
+    social_count.set_find_results(".value", social_value);
+    social_count.set_parent(sidebar_row);
+
+    stub_templates((template_name, data) => {
+        assert.equal(template_name, "stream_sidebar_row");
+        assert.equal(data.uri, "#narrow/stream/200-social");
+        return "<social sidebar row>";
+    });
+
+    num_unread_for_stream = 99;
+    stream_list.create_sidebar_row(social);
+    assert.equal(social_value.text(), "99");
+}
+
+run_test("create_sidebar_row", (override) => {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
     page_params.demote_inactive_streams = 1;
-    const devel = {
-        name: "devel",
-        stream_id: 100,
-        color: "blue",
-        subscribed: true,
-        pin_to_top: true,
-    };
-    stream_data.add_sub(devel);
+    override(unread, "num_unread_for_stream", () => num_unread_for_stream);
 
-    const social = {
-        name: "social",
-        stream_id: 200,
-        color: "green",
-        subscribed: true,
-    };
+    stream_data.add_sub(devel);
     stream_data.add_sub(social);
 
-    unread.num_unread_for_stream = function () {
-        return 42;
-    };
-
-    (function create_devel_sidebar_row() {
-        const devel_value = $.create("devel-value");
-        const devel_count = $.create("devel-count");
-
-        const sidebar_row = $("<devel sidebar row>");
-
-        sidebar_row.set_find_results(".count", devel_count);
-        devel_count.set_find_results(".value", devel_value);
-        devel_count.set_parent(sidebar_row);
-
-        stub_templates((template_name, data) => {
-            assert.equal(template_name, "stream_sidebar_row");
-            assert.equal(data.uri, "#narrow/stream/100-devel");
-            return "<devel sidebar row>";
-        });
-
-        stream_list.create_sidebar_row(devel);
-        assert.equal(devel_value.text(), "42");
-    })();
-
-    (function create_social_sidebar_row() {
-        const social_value = $.create("social-value");
-        const social_count = $.create("social-count");
-        const sidebar_row = $("<social sidebar row>");
-
-        sidebar_row.set_find_results(".count", social_count);
-        social_count.set_find_results(".value", social_value);
-        social_count.set_parent(sidebar_row);
-
-        stub_templates((template_name, data) => {
-            assert.equal(template_name, "stream_sidebar_row");
-            assert.equal(data.uri, "#narrow/stream/200-social");
-            return "<social sidebar row>";
-        });
-
-        stream_list.create_sidebar_row(social);
-        assert.equal(social_value.text(), "42");
-    })();
+    create_devel_sidebar_row();
+    create_social_sidebar_row();
 
     const split = '<hr class="stream-split">';
     const devel_sidebar = $("<devel sidebar row>");
@@ -177,28 +184,21 @@ run_test("create_sidebar_row", () => {
     assert(removed);
 });
 
-run_test("pinned_streams_never_inactive", () => {
+run_test("pinned_streams_never_inactive", (override) => {
+    override(unread, "num_unread_for_stream", () => num_unread_for_stream);
+
+    $.clear_all_elements();
+
     // Ensure that pinned streams are never treated as dormant ie never given "inactive" class
     stream_data.clear_subscriptions();
 
-    const devel = {
-        name: "devel",
-        stream_id: 100,
-        color: "blue",
-        subscribed: true,
-        pin_to_top: true,
-    };
-    stream_data.add_sub(devel);
+    stream_list.stream_sidebar.rows.clear();
 
-    const social = {
-        name: "social",
-        stream_id: 200,
-        color: "green",
-        subscribed: true,
-    };
+    stream_data.add_sub(devel);
     stream_data.add_sub(social);
 
-    // we use social and devel created in create_social_sidebar_row() and create_devel_sidebar_row()
+    create_devel_sidebar_row();
+    create_social_sidebar_row();
 
     // non-pinned streams can be made inactive
     const social_sidebar = $("<social sidebar row>");
