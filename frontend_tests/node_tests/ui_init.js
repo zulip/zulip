@@ -5,7 +5,7 @@ const rewiremock = require("rewiremock/node");
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 /*
     This test suite is designed to find errors
@@ -27,6 +27,7 @@ const {make_zjquery} = require("../zjsunit/zjquery");
     some things can happen later in a `launch` method.
 
 */
+
 const util = zrequire("util");
 
 set_global("document", {
@@ -118,7 +119,7 @@ const ui_init = rewiremock.proxy(() => zrequire("ui_init"), {
     },
 });
 
-set_global("$", make_zjquery());
+set_global("$", $);
 
 run_test("initialize_everything", () => {
     util.is_mobile = () => false;

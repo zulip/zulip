@@ -6,7 +6,6 @@ const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_c
 const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
 
 zrequire("hash_util");
 
@@ -61,8 +60,6 @@ fenced_code.initialize(pygments_data);
 
 const doc = "";
 set_global("document", doc);
-
-set_global("$", make_zjquery());
 
 const cordelia = {
     full_name: "Cordelia Lear",

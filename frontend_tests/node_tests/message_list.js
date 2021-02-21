@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {set_global, stub_out_jquery, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+
 // These unit tests for static/js/message_list.js emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
@@ -31,7 +32,7 @@ function accept_all_filter() {
     return filter;
 }
 
-run_test("basics", () => {
+run_test("basics", (override) => {
     const filter = accept_all_filter();
 
     const list = new MessageList({
@@ -74,9 +75,9 @@ run_test("basics", () => {
 
     assert.deepEqual(list.all_messages(), messages);
 
-    $.Event = function (ev) {
+    override(global.$, "Event", (ev) => {
         assert.equal(ev, "message_selected.zulip");
-    };
+    });
     list.select_id(50);
 
     assert.equal(list.selected_id(), 50);

@@ -4,11 +4,9 @@ const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
 
 const noop = function () {};
 
-set_global("$", make_zjquery());
 set_global("page_params", {});
 const channel = set_global("channel", {});
 const reload = set_global("reload", {});

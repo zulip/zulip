@@ -5,7 +5,6 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
 
 const util = zrequire("util");
 const people = zrequire("people");
@@ -13,7 +12,6 @@ const message_store = zrequire("message_store");
 
 const noop = function () {};
 
-set_global("$", make_zjquery());
 set_global("document", "document-stub");
 
 set_global("stream_topic_history", {

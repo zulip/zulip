@@ -6,8 +6,7 @@ const _ = require("lodash");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-set_global("$", {});
+const $ = require("../zjsunit/zjquery");
 
 const reload = set_global("reload", {});
 zrequire("reload_state");

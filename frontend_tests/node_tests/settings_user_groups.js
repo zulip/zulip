@@ -7,12 +7,11 @@ const _ = require("lodash");
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 const user_pill = zrequire("user_pill");
 const settings_user_groups = zrequire("settings_user_groups");
 
-set_global("$", make_zjquery());
 const confirm_dialog = set_global("confirm_dialog", {});
 
 const noop = function () {};

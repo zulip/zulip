@@ -5,9 +5,7 @@ const {strict: assert} = require("assert");
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
-
-set_global("$", make_zjquery());
+const $ = require("../zjsunit/zjquery");
 
 const localstorage = zrequire("localstorage");
 const drafts = zrequire("drafts");

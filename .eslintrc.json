@@ -108,7 +108,6 @@
         {
             "files": ["frontend_tests/node_tests/**"],
             "globals": {
-                "$": false,
                 "blueslip": false,
                 "current_msg_list": false,
                 "home_msg_list": false,

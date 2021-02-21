@@ -6,9 +6,8 @@ const _ = require("lodash");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
-set_global("$", make_zjquery());
 const people = zrequire("people");
 zrequire("buddy_data");
 const buddy_list = zrequire("buddy_list");

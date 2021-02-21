@@ -6,7 +6,7 @@ const autosize = require("autosize");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {make_zjquery} = require("../zjsunit/zjquery");
+const $ = require("../zjsunit/zjquery");
 
 const compose_ui = zrequire("compose_ui");
 const people = zrequire("people");
@@ -17,8 +17,6 @@ set_global("document", {
         return false;
     },
 });
-
-set_global("$", make_zjquery());
 
 const alice = {
     email: "alice@zulip.com",
