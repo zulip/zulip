@@ -93,7 +93,7 @@ run_test("basics", () => {
 });
 
 function set_up() {
-    set_global("$", make_zjquery());
+    $.clear_all_elements();
     const items = {
         blue: {
             display_value: "BLUE",

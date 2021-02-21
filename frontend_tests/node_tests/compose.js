@@ -113,7 +113,7 @@ function stub_out_video_calls() {
 
 function reset_jquery() {
     // Avoid leaks.
-    set_global("$", make_zjquery());
+    $.clear_all_elements();
 }
 
 const new_user = {
@@ -206,7 +206,7 @@ run_test("validate_stream_message_address_info", () => {
 
 run_test("validate", () => {
     function initialize_pm_pill() {
-        set_global("$", make_zjquery());
+        reset_jquery();
 
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
@@ -1891,7 +1891,7 @@ run_test("create_message_object", () => {
 });
 
 run_test("nonexistent_stream_reply_error", () => {
-    set_global("$", make_zjquery());
+    reset_jquery();
 
     const actions = [];
     $("#nonexistent_stream_reply_error").show = () => {

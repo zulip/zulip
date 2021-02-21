@@ -393,7 +393,7 @@ run_test("with_external_user", () => {
     };
 
     // Reset zjquery to test stuff with user who cannot edit
-    set_global("$", make_zjquery());
+    $.clear_all_elements();
 
     let user_group_find_called = 0;
     const user_group_stub = $(`div.user-group[id="${CSS.escape(1)}"]`);
