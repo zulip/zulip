@@ -531,6 +531,7 @@ exports.initialize = function () {
 
         $(".tooltip").css("left", elem.pageX + "px");
         $(".tooltip").css("top", elem.pageY + "px");
+        $(".tooltip").css("opacity", 1);
     }
 
     // BUDDY LIST TOOLTIPS
