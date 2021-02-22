@@ -5,7 +5,6 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("document", null);
 set_global("page_params", {
     realm_community_topic_editing_limit_seconds: 259200,
 });
