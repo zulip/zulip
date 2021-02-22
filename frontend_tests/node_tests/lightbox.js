@@ -48,8 +48,7 @@ run_test("pan_and_zoom", (override) => {
         return "message-stub";
     };
 
-    // Used by render_lightbox_list_images
-    $.stub_selector(".focused_table .message_inline_image img", []);
+    override(lightbox, "render_lightbox_list_images", () => {});
 
     lightbox.open(img);
 
@@ -84,8 +83,7 @@ run_test("youtube", (override) => {
     link.closest = () => msg;
     link.attr("href", href);
 
-    // Used by render_lightbox_list_images
-    $.stub_selector(".focused_table .message_inline_image img", []);
+    override(lightbox, "render_lightbox_list_images", () => {});
 
     lightbox.open(img);
     assert.equal($(".image-actions .open").attr("href"), href);

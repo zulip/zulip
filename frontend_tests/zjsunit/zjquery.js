@@ -531,10 +531,6 @@ function make_zjquery() {
         return elem;
     };
 
-    zjquery.stub_selector = function (selector, stub) {
-        elems.set(selector, stub);
-    };
-
     zjquery.trim = function (s) {
         return s;
     };

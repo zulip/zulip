@@ -8,7 +8,7 @@ let is_open = false;
 // memoized instead of being looked up multiple times.
 const asset_map = new Map();
 
-function render_lightbox_list_images(preview_source) {
+exports.render_lightbox_list_images = function (preview_source) {
     if (!is_open) {
         const images = Array.prototype.slice.call($(".focused_table .message_inline_image img"));
         const $image_list = $("#lightbox_overlay .image-list").html("");
@@ -31,10 +31,10 @@ function render_lightbox_list_images(preview_source) {
             exports.parse_image_data(img);
         }
     }
-}
+};
 
 function display_image(payload) {
-    render_lightbox_list_images(payload.preview);
+    exports.render_lightbox_list_images(payload.preview);
 
     $(".player-container").hide();
     $(".image-actions, .image-description, .download, .lightbox-canvas-trigger").show();
@@ -62,7 +62,7 @@ function display_image(payload) {
 }
 
 function display_video(payload) {
-    render_lightbox_list_images(payload.preview);
+    exports.render_lightbox_list_images(payload.preview);
 
     $(
         "#lightbox_overlay .image-preview, .image-description, .download, .lightbox-canvas-trigger",
