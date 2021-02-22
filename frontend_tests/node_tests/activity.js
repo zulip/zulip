@@ -476,7 +476,6 @@ test_ui("filter_user_ids", () => {
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, [fred.user_id, alice.user_id]);
 
-    $.stub_selector(".user-list-filter", []);
     presence.presence_info.set(alice.user_id, {status: activity.ACTIVE});
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
@@ -670,12 +669,6 @@ test_ui("initialize", () => {
 
     clear();
 
-    $.stub_selector("html", {
-        on(name, func) {
-            func();
-        },
-    });
-
     channel.post = function (payload) {
         payload.success({});
     };
@@ -716,6 +709,10 @@ test_ui("initialize", () => {
     assert($("#zephyr-mirror-error").hasClass("show"));
     assert(!activity.new_user_input);
     assert(!activity.client_is_active);
+
+    // Exercise the mousemove handler, which just
+    // sets a flag.
+    $("html").get_on_handler("mousemove")();
 
     clear();
 });
