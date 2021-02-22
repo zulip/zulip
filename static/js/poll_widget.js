@@ -78,8 +78,10 @@ class PollData {
             //rendered_option  = timerender.render_markdown_timestamp({content: obj.option});
             //console.log(rendered_option);
             obj.raw_content = obj.option;
-            markdown.apply_markdown(obj);
-            console.log(obj.content);
+            //markdown.apply_markdown(obj);
+            timerender.render_markdown_timestamp(obj);
+            console.log("obj.content: " + obj.content);
+            console.log("obj.raw_content: " + obj.raw_content);
             
 
             options.push({
