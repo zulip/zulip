@@ -620,8 +620,9 @@ run_test("unread_ops", (override) => {
         });
 
         // Ignore these interactions for now:
-        message_list.all = {};
-        override(message_list.all, "show_message_as_read", noop);
+        message_list.all = {
+            show_message_as_read() {},
+        };
         override(home_msg_list, "show_message_as_read", noop);
         override(notifications, "close_notification", noop);
     })();

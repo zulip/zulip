@@ -9,6 +9,18 @@ const new_globals = new Set();
 let old_globals = {};
 
 exports.set_global = function (name, val) {
+    if (val === null) {
+        throw new Error(`
+            We try to avoid using null in our codebase.
+        `);
+    }
+
+    // Add this for debugging and to allow with_overrides
+    // to know that we're dealing with stubbed code.
+    if (typeof val === "object") {
+        val._patched_with_set_global = true;
+    }
+
     if (!(name in old_globals)) {
         if (!(name in global)) {
             new_globals.add(name);
@@ -99,6 +111,26 @@ exports.with_overrides = function (test_function) {
             throw new TypeError(
                 "You can only override with a function. Use with_field for non-functions.",
             );
+        }
+
+        if (typeof obj !== "object" && typeof obj !== "function") {
+            throw new TypeError(`We cannot override a function for ${typeof obj} objects`);
+        }
+
+        if (obj[func_name] === undefined) {
+            if (obj !== global.$ && !obj._patched_with_set_global) {
+                throw new Error(`
+                    It looks like you are overriding ${func_name}
+                    for a module that never defined it, which probably
+                    indicates that you have a typo or are doing
+                    something hacky in the test.
+                `);
+            }
+        } else if (typeof obj[func_name] !== "function") {
+            throw new TypeError(`
+                You are overriding a non-function with a function.
+                This is almost certainly an error.
+            `);
         }
 
         if (!funcs.has(obj)) {
