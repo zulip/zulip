@@ -16,6 +16,23 @@ class Event {
     stopPropagation() {}
 }
 
+function verify_selector_for_zulip(selector) {
+    const is_valid =
+        "<#.".includes(selector[0]) ||
+        selector === "window-stub" ||
+        selector === "document-stub" ||
+        selector === "body" ||
+        selector === "html" ||
+        selector.location ||
+        selector.includes("#") ||
+        selector.includes(".") ||
+        (selector.includes("[") && selector.indexOf("]") >= selector.indexOf("["));
+
+    if (!is_valid) {
+        throw new Error("Invalid selector: " + selector + " Use $.create() maybe?");
+    }
+}
+
 function make_event_store(selector) {
     /*
 
@@ -488,18 +505,7 @@ function make_zjquery() {
             throw new Error("zjquery does not know how to wrap this object yet");
         }
 
-        const valid_selector =
-            "<#.".includes(selector[0]) ||
-            selector === "window-stub" ||
-            selector === "document-stub" ||
-            selector === "body" ||
-            selector === "html" ||
-            selector.location ||
-            selector.includes("#") ||
-            selector.includes(".") ||
-            (selector.includes("[") && selector.indexOf("]") >= selector.indexOf("["));
-
-        assert(valid_selector, "Invalid selector: " + selector + " Use $.create() maybe?");
+        verify_selector_for_zulip(selector);
 
         if (!elems.has(selector)) {
             const elem = new_elem(selector);
