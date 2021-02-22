@@ -127,14 +127,14 @@ set_global("current_msg_list", {
 });
 
 run_test("open_reactions_popover", () => {
-    $(".selected-row").set_find_results(".actions_hover", $(".target-action"));
-    $(".selected-row").set_find_results(".reaction_button", $(".target-reaction"));
+    $(".selected-row").set_find_results(".actions_hover", ["action-stub"]);
+    $(".selected-row").set_find_results(".reaction_button", ["reaction-stub"]);
 
     let called = false;
     emoji_picker.toggle_emoji_popover = function (target, id) {
         called = true;
         assert.equal(id, 42);
-        assert.equal(target, $(".target-reaction")[0]);
+        assert.equal(target, "action-stub");
     };
 
     assert(reactions.open_reactions_popover());
@@ -148,7 +148,7 @@ run_test("open_reactions_popover", () => {
     emoji_picker.toggle_emoji_popover = function (target, id) {
         called = true;
         assert.equal(id, 42);
-        assert.equal(target, $(".target-action")[0]);
+        assert.equal(target, "reaction-stub");
     };
 
     assert(reactions.open_reactions_popover());

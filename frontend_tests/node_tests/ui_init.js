@@ -187,5 +187,7 @@ run_test("initialize_everything", () => {
     compose.compute_show_video_chat_button = () => {};
     $("#below-compose-content .video_link").toggle = () => {};
 
+    $("<audio>")[0] = "stub";
+
     ui_init.initialize_everything();
 });

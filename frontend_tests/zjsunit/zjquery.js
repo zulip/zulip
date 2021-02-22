@@ -413,17 +413,19 @@ function make_new_elem(selector, opts) {
                 f.call(child);
             }
         };
+        self[Symbol.iterator] = function* () {
+            for (const child of opts.children) {
+                yield child;
+            }
+        };
+        self.length = opts.children.length;
     }
 
     if (selector[0] === "<") {
         self.html(selector);
     }
 
-    self[0] = "you-must-set-the-child-yourself";
-
     self.selector = selector;
-
-    self.length = 1;
 
     return self;
 }

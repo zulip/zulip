@@ -203,6 +203,7 @@ run_test("hotspots", (override) => {
 });
 
 run_test("invites_changed", (override) => {
+    $.create("#admin-invites-list", {children: ["stub"]});
     const event = event_fixtures.invites_changed;
     const stub = make_stub();
     override(settings_invites, "set_up", stub.f);
