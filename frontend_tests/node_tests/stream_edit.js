@@ -102,6 +102,8 @@ test_ui("subscriber_pills", () => {
     const subscriptions_table_selector = "#subscriptions_table";
     const input_field_stub = $.create(".input");
 
+    input_field_stub.before = () => {};
+
     const sub_settings_selector = `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
         denmark.stream_id,
     )}']`;
