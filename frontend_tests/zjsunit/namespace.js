@@ -122,14 +122,31 @@ exports.with_overrides = function (test_function) {
 
         unused_funcs.get(obj).set(func_name, true);
 
-        const old_f = obj[func_name];
-        obj[func_name] = function (...args) {
+        let old_f = obj[func_name];
+        if (old_f === undefined) {
+            // Create a dummy function so that we can
+            // attach _patched_with_override to it.
+            old_f = () => {
+                throw new Error(`There is no ${func_name}() field for this object.`);
+            };
+        }
+
+        const new_f = function (...args) {
             unused_funcs.get(obj).delete(func_name);
             return f.apply(this, args);
         };
 
+        // Let zjquery know this function was patched with override,
+        // so it doesn't complain about us modifying it.  (Other
+        // code can also use this, as needed.)
+        new_f._patched_with_override = true;
+
+        obj[func_name] = new_f;
+
         restore_callbacks.push(() => {
+            old_f._patched_with_override = true;
             obj[func_name] = old_f;
+            delete old_f._patched_with_override;
         });
     };
 
