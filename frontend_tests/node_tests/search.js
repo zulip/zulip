@@ -84,6 +84,8 @@ run_test("initialize", () => {
     const search_button = $(".search_button");
     const searchbox = $("#searchbox");
 
+    search_query_box[0] = "stub";
+
     search_pill.get_search_string_for_current_filter = function () {
         return "is:starred";
     };

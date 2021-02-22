@@ -22,7 +22,7 @@ set_global("popovers", {
 
 rows.is_draft_row = () => false;
 
-run_test("pan_and_zoom", () => {
+run_test("pan_and_zoom", (override) => {
     $.clear_all_elements();
 
     const img = $.create("img-stub");
@@ -33,7 +33,12 @@ run_test("pan_and_zoom", () => {
 
     img.set_parent(link);
     link.closest = () => msg;
-    msg.attr("zid", "1234");
+
+    override(rows, "id", (row) => {
+        assert.equal(row, msg);
+        return 1234;
+    });
+
     img.attr("src", "example");
 
     let fetched_zid;
@@ -51,7 +56,7 @@ run_test("pan_and_zoom", () => {
     assert.equal(fetched_zid, 1234);
 });
 
-run_test("youtube", () => {
+run_test("youtube", (override) => {
     $.clear_all_elements();
 
     const href = "https://youtube.com/some-random-clip";
@@ -59,7 +64,10 @@ run_test("youtube", () => {
     const link = $.create("link-stub");
     const msg = $.create("msg-stub");
 
-    msg.attr("zid", "4321");
+    override(rows, "id", (row) => {
+        assert.equal(row, msg);
+        return 4321;
+    });
 
     $(img).attr("src", href);
 

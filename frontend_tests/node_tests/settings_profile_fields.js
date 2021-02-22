@@ -52,6 +52,8 @@ function test_populate(opts) {
     table.set_find_results("tr.profile-field-row", rows);
     table.set_find_results("tr.profile-field-form", form);
 
+    table[0] = "stub";
+
     let num_appends = 0;
     table.append = () => {
         num_appends += 1;

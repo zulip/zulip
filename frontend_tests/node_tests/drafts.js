@@ -301,6 +301,7 @@ run_test("format_drafts", (override) => {
     override(drafts, "open_overlay", noop);
     drafts.set_initial_element = noop;
 
+    $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();
     timerender.render_now = stub_render_now;
 });
