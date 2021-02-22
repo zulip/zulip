@@ -44,8 +44,8 @@ details worth understanding:
 
 ### Google
 
-* Visit https://console.developers.google.com and navigate to "APIs &
-  services" > "Credentials".  Create a "Project" which will correspond
+* Visit [the Google developer console](https://console.developers.google.com)
+  and navigate to "APIs & services" > "Credentials". Create a "Project" which will correspond
   to your dev environment.
 
 * Navigate to "APIs & services" > "Library", and find the "Identity
@@ -63,8 +63,8 @@ details worth understanding:
 ### GitHub
 
 * Register an OAuth2 application with GitHub at one of
-  https://github.com/settings/developers or
-  https://github.com/organizations/ORGNAME/settings/developers.
+  <https://github.com/settings/developers> or
+  <https://github.com/organizations/ORGNAME/settings/developers>.
   Specify `http://zulipdev.com:9991/complete/github/` as the callback URL.
 
 * You should get a page with settings for your new application,
@@ -75,7 +75,7 @@ details worth understanding:
 ### GitLab
 
 * Register an OAuth application with GitLab at
-  https://gitlab.com/oauth/applications.
+  <https://gitlab.com/oauth/applications>.
   Specify `http://zulipdev.com:9991/complete/gitlab` as the callback URL.
 
 * You should get a page containing the Application ID and Secret for
@@ -85,9 +85,9 @@ details worth understanding:
 
 ### Apple
 
-* Visit https://developer.apple.com/account/resources/,
+* Visit <https://developer.apple.com/account/resources/>,
   Enable App ID and Create a Services ID with the instructions in
-  https://help.apple.com/developer-account/?lang=en#/dev1c0e25352 .
+  <https://help.apple.com/developer-account/?lang=en#/dev1c0e25352> .
   When prompted for a "Return URL", enter
   `http://zulipdev.com:9991/complete/apple/` .
 
