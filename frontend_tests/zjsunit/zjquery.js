@@ -549,6 +549,12 @@ function make_zjquery() {
         elems.clear();
     };
 
+    zjquery.validator = {
+        addMethod() {
+            throw new Error("You must create your own $.validator.addMethod stub.");
+        },
+    };
+
     return zjquery;
 }
 

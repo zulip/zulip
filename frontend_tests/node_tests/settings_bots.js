@@ -118,12 +118,10 @@ function test_create_bot_type_input_box_toggle(f) {
     assert(!config_inputbox.visible());
 }
 
-function set_up() {
+run_test("test tab clicks", (override) => {
     $.clear_all_elements();
 
-    // bunch of stubs
-
-    $.validator = {addMethod: () => {}};
+    override($.validator, "addMethod", () => {});
 
     $("#create_bot_form").validate = () => {};
 
@@ -133,20 +131,12 @@ function set_up() {
         };
         return mock_children;
     };
-    avatar.build_bot_create_widget = () => {};
-    avatar.build_bot_edit_widget = () => {};
+
+    override(avatar, "build_bot_create_widget", () => {});
 
     settings_bots.set_up();
 
     test_create_bot_type_input_box_toggle(() => $("#create_bot_type").trigger("change"));
-}
-
-run_test("set_up", () => {
-    set_up();
-});
-
-run_test("test tab clicks", () => {
-    set_up();
 
     function click_on_tab(tab_elem) {
         tab_elem.trigger("click");
@@ -171,38 +161,32 @@ run_test("test tab clicks", () => {
         inactive: $("#inactive_bots_list"),
     };
 
-    (function () {
-        click_on_tab(tabs.add);
-        assert(tabs.add.hasClass("active"));
-        assert(!tabs.active.hasClass("active"));
-        assert(!tabs.inactive.hasClass("active"));
+    click_on_tab(tabs.add);
+    assert(tabs.add.hasClass("active"));
+    assert(!tabs.active.hasClass("active"));
+    assert(!tabs.inactive.hasClass("active"));
 
-        assert(forms.add.visible());
-        assert(!forms.active.visible());
-        assert(!forms.inactive.visible());
-    })();
+    assert(forms.add.visible());
+    assert(!forms.active.visible());
+    assert(!forms.inactive.visible());
 
-    (function () {
-        click_on_tab(tabs.active);
-        assert(!tabs.add.hasClass("active"));
-        assert(tabs.active.hasClass("active"));
-        assert(!tabs.inactive.hasClass("active"));
+    click_on_tab(tabs.active);
+    assert(!tabs.add.hasClass("active"));
+    assert(tabs.active.hasClass("active"));
+    assert(!tabs.inactive.hasClass("active"));
 
-        assert(!forms.add.visible());
-        assert(forms.active.visible());
-        assert(!forms.inactive.visible());
-    })();
+    assert(!forms.add.visible());
+    assert(forms.active.visible());
+    assert(!forms.inactive.visible());
 
-    (function () {
-        click_on_tab(tabs.inactive);
-        assert(!tabs.add.hasClass("active"));
-        assert(!tabs.active.hasClass("active"));
-        assert(tabs.inactive.hasClass("active"));
+    click_on_tab(tabs.inactive);
+    assert(!tabs.add.hasClass("active"));
+    assert(!tabs.active.hasClass("active"));
+    assert(tabs.inactive.hasClass("active"));
 
-        assert(!forms.add.visible());
-        assert(!forms.active.visible());
-        assert(forms.inactive.visible());
-    })();
+    assert(!forms.add.visible());
+    assert(!forms.active.visible());
+    assert(forms.inactive.visible());
 });
 
 run_test("can_create_new_bots", () => {
