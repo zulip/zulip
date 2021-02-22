@@ -28,7 +28,7 @@ set_global("location", {
 
 const helpers = zrequire("helpers", "js/billing/helpers");
 
-run_test("create_ajax_request", () => {
+run_test("create_ajax_request", (override) => {
     const form_loading_indicator = "#autopay_loading_indicator";
     const form_input_section = "#autopay-input-section";
     const form_success = "#autopay-success";
@@ -112,7 +112,7 @@ run_test("create_ajax_request", () => {
 
     $("#autopay-form").serializeArray = () => jquery("#autopay-form").serializeArray();
 
-    $.post = ({url, data, success, error}) => {
+    override($, "post", ({url, data, success, error}) => {
         assert.equal(state.form_input_section_hide, 1);
         assert.equal(state.form_error_hide, 1);
         assert.equal(state.form_loading_show, 1);
@@ -170,7 +170,7 @@ run_test("create_ajax_request", () => {
         assert.equal(state.zulip_limited_section_hide, 1);
         assert.equal(state.free_trial_alert_message_hide, 1);
         assert.equal(state.free_trial_alert_message_show, 1);
-    };
+    });
 
     helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"}, [
         "licenses",
