@@ -558,4 +558,32 @@ function make_zjquery() {
     return zjquery;
 }
 
-module.exports = make_zjquery();
+const $ = new Proxy(make_zjquery(), {
+    set(obj, prop, value) {
+        if (value._patched_with_override) {
+            obj[prop] = value;
+            return true;
+        }
+
+        throw new Error(`
+            Please don't modify $.${prop} if you are using zjquery.
+
+            You can do this instead:
+
+                override($, "${prop}", () => {...});
+
+            Or you can do this if you don't actually
+            need zjquery and just want to simulate one function.
+
+                set_global("$", {
+                    ${prop}(...) {...},
+                });
+
+            It's also possible that you are testing code with
+            node tests when it would be a better strategy to
+            use puppeteer tests.
+        `);
+    },
+});
+
+module.exports = $;
