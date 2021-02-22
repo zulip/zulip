@@ -537,13 +537,6 @@ function make_zjquery() {
 
     zjquery.Event = Event;
 
-    fn.after = function (s) {
-        return s;
-    };
-    fn.before = function (s) {
-        return s;
-    };
-
     fn.popover = () => {
         throw new Error(`
             Do not try to test $.fn.popover code unless
