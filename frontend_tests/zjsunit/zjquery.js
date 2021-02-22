@@ -29,7 +29,14 @@ function verify_selector_for_zulip(selector) {
         (selector.includes("[") && selector.indexOf("]") >= selector.indexOf("["));
 
     if (!is_valid) {
-        throw new Error("Invalid selector: " + selector + " Use $.create() maybe?");
+        // Check if selector has only english alphabets and space.
+        // Then, the user is probably trying to use a tag as a selector
+        // like $('div a').
+        if (/^[ A-Za-z]+$/.test(selector)) {
+            throw new Error("Selector too broad! Use id, class or attributes of target instead.");
+        } else {
+            throw new Error("Invalid selector: " + selector + " Use $.create() maybe?");
+        }
     }
 }
 
