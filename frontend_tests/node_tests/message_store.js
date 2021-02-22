@@ -2,12 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
 const util = zrequire("util");
 const people = zrequire("people");
+const pm_conversations = zrequire("pm_conversations");
 const message_store = zrequire("message_store");
 
 const noop = function () {};
@@ -217,15 +218,15 @@ run_test("errors", () => {
         display_recipient: [{}],
     };
 
-    // This should early return and not run pm_conversation.set_partner
-    let num_partner = 0;
-    set_global("pm_conversation", {
-        set_partner() {
-            num_partner += 1;
+    // This should early return and not run pm_conversations.set_partner
+    with_field(
+        pm_conversations,
+        "set_partner",
+        () => assert(false),
+        () => {
+            message_store.process_message_for_recent_private_messages(message);
         },
-    });
-    message_store.process_message_for_recent_private_messages(message);
-    assert.equal(num_partner, 0);
+    );
 });
 
 run_test("update_booleans", () => {
