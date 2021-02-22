@@ -1,4 +1,7 @@
+/* eslint-disable no-console */
 "use strict";
+const Cropper = require("cropperjs");
+const {reset} = require("./color_data");
 
 const default_max_file_size = 5;
 
@@ -10,6 +13,27 @@ function is_image_format(file) {
         return false;
     }
     return supported_types.includes(type);
+}
+
+function dataURItoBlob(dataURI) {
+    // convert base64/URLEncoded data component to raw binary data held in a string
+    let byteString;
+    if (dataURI.split(",")[0].includes("base64")) {
+        byteString = atob(dataURI.split(",")[1]);
+    } else {
+        byteString = unescape(dataURI.split(",")[1]);
+    }
+
+    // separate out the mime component
+    const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
+
+    // write the bytes of the string to a typed array
+    const ia = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i += 1) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([ia], {type: mimeString});
 }
 
 exports.build_widget = function (
@@ -120,7 +144,7 @@ exports.build_direct_upload_widget = function (
 ) {
     // default value of max uploaded file size
     max_file_upload_size = max_file_upload_size || default_max_file_size;
-    function accept() {
+    function accept(file) {
         input_error.hide();
         const realm_logo_section = upload_button.closest(".image_upload_widget");
         if (realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
@@ -128,8 +152,148 @@ exports.build_direct_upload_widget = function (
         } else if (realm_logo_section.attr("id") === "realm-day-logo-upload-widget") {
             upload_function(get_file_input(), false, false);
         } else {
+            // We can call this function like this once this is complete.
+            // upload_function(get_file_input(), file, null, true);
             upload_function(get_file_input(), null, true);
         }
+    }
+
+    function handle_image_edit(image_file) {
+        const url = URL.createObjectURL(image_file);
+        overlays.open_modal("#image_edit_modal");
+        const image_ele = document.querySelector("#uploaded-image");
+        image_ele.src = url;
+        // these variables are to be used in many functions below.
+        let cropper = null;
+        let croppedData = null;
+        let canvasData = null;
+        let cropBoxData = null;
+        let cropping = false;
+        let cropped = true;
+        let croppedDataURI = null;
+        start();
+
+        function start() {
+            // set display of toolbar
+            cropper = new Cropper(image_ele, {
+                autoCrop: false,
+                dragMode: "move",
+                background: false,
+                ready: () => {
+                    // We crop only once.
+                    if (croppedData) {
+                        cropper
+                            .crop()
+                            .setData(croppedData)
+                            .setCanvasData(canvasData)
+                            .setCropBoxData(cropBoxData);
+                        croppedData = null;
+                        canvasData = null;
+                        cropBoxData = null;
+                    }
+                },
+                crop: ({detail}) => {
+                    if (detail.width > 0 && detail.height > 0 && !cropping) {
+                        cropping = true;
+                    }
+                },
+            });
+        }
+
+        function stop() {
+            if (cropper) {
+                // hide display of toolbar here.
+                cropper.destroy();
+                cropper = null;
+            }
+        }
+
+        function crop() {
+            // here we simply update cropping data and state to be used by other functions.
+            if (cropping) {
+                croppedData = cropper.getData();
+                canvasData = cropper.getCanvasData();
+                cropBoxData = cropper.getCropBoxData();
+                cropped = true;
+                cropping = false;
+                croppedDataURI = cropper.getCroppedCanvas().toDataURL(image_file.type);
+                stop();
+            }
+        }
+
+        function clear_cropper() {
+            if (cropping) {
+                cropper.clear();
+                cropping = false;
+            }
+        }
+
+        function restore() {
+            // nothing need to be done if we have not done cropping atleast once.
+            if (cropped) {
+                cropped = false;
+                croppedDataURI = "";
+                image_ele.src = url;
+            }
+        }
+
+        function reset() {
+            // probably not of my use.
+            stop();
+            cropped = false;
+            cropping = false;
+        }
+
+        const toolbar_buttons = document.querySelectorAll(".edit__toolbar__button");
+
+        function handle_toolbar_events(event) {
+            const action =
+                event.target.getAttribute("data-action") ||
+                event.target.parentElement.getAttribute("data-action");
+
+            switch (action) {
+                case "move":
+                case "crop":
+                    cropper.setDragMode(action);
+                    break;
+                case "zoom-in":
+                    cropper.zoom(0.1);
+                    break;
+                case "zoom-out":
+                    cropper.zoom(-0.1);
+                    break;
+                case "rotate-left":
+                    cropper.rotate(-90);
+                    break;
+                case "rotate-right":
+                    cropper.rotate(90);
+                    break;
+                case "flip-horizontal":
+                    cropper.scaleX(-cropper.getData().scaleX || -1);
+                    break;
+
+                case "flip-vertical":
+                    cropper.scaleY(-cropper.getData().scaleY || -1);
+                    break;
+                default:
+            }
+        }
+
+        for (const button of toolbar_buttons) {
+            button.addEventListener("click", (e) => {
+                handle_toolbar_events(e);
+            });
+        }
+        $("#confirm_edit_button").on("click", () => {
+            const cropped_image = cropper.getCroppedCanvas().toDataURL(image_file.type);
+            const blob = dataURItoBlob(cropped_image);
+            console.log("blob =", blob);
+            console.log("cropped_image =", cropped_image);
+            console.log("get_file_input() =", get_file_input()[0]);
+            get_file_input()[0].files[0] = cropped_image;
+            overlays.close_modal("#image_edit_modal");
+            accept(blob);
+        });
     }
 
     function clear() {
@@ -166,7 +330,8 @@ exports.build_direct_upload_widget = function (
                 input_error.show();
                 clear();
             } else {
-                accept();
+                handle_image_edit(file);
+                console.log("reached the commented line");
             }
         } else {
             input_error.text(i18n.t("Please just upload one file."));

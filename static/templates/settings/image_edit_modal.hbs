@@ -1,0 +1,74 @@
+<div id="image_edit_modal" class="modal modal-bg hide fade image_edit_modal" tabindex="-1" role="dialog" aria-labelledby="image_edit_modal_label" aria-hidden="true">
+    <div class="modal-dialog image-edit-dialog" role="dialog-container">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+            <h3 id="image_edit_modal_label">{{t 'Edit Image' }}</h3>
+        </div>
+        <div class="modal-body image-edit-body">
+            <div class="canvas">
+                <img id="uploaded-image" src="" alt="uploaded-image" class="uploaded-image" >
+            </div>
+            <div class="image-edit-toolbar">
+                <button
+                    class="edit__toolbar__button"
+                    data-action="move"
+                    title="Move"
+                >
+                    <span class="fa fa-arrows" />
+                </button>
+                <button
+                    class="edit__toolbar__button"
+                    data-action="crop"
+                    title="Crop"
+                >
+                    <span class="fa fa-crop" />
+                </button>
+                <button
+                    class="edit__toolbar__button"
+                    data-action="zoom-in"
+                    title="Zoom In"
+                >
+                    <span class="fa fa-search-plus" />
+                </button>
+                <button
+                    class="edit__toolbar__button"
+                    data-action="zoom-out"
+                    title="Zoom Out"
+                >
+                    <span class="fa fa-search-minus" />
+                </button>
+                <button
+                    class="edit__toolbar__button"
+                    data-action="rotate-left"
+                    title="Rotate Left"
+                >
+                    <span class="fa fa-rotate-left" />
+                </button>
+                <button
+                    class="edit__toolbar__button"
+                    data-action="rotate-right"
+                    title="Rotate Right"
+                >
+                    <span class="fa fa-rotate-right" />
+                </button>
+                <button
+                    class="edit__toolbar__button"
+                    data-action="flip-horizontal"
+                    title="Flip Horizontal"
+                >
+                    <span class="fa fa-arrows-h" />
+                </button>
+                <button
+                    class="edit__toolbar__button"
+                    data-action="flip-vertical"
+                    title="Flip Vertical"
+                >
+                    <span class="fa fa-arrows-v" />
+                </button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id='confirm_edit_button' class="button rounded sea-green">{{t "Confirm" }}</button>
+        </div>
+    </div>
+</div>

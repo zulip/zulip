@@ -11,6 +11,7 @@ import "spectrum-colorpicker";
 import "jquery-validation";
 import "flatpickr";
 import "flatpickr/dist/plugins/confirmDate/confirmDate";
+import "cropperjs/dist/cropper.min.css";
 
 // Import app JS
 import "../i18n";
@@ -188,6 +189,7 @@ import "../../styles/hotspots.css";
 import "../../styles/night_mode.css";
 import "../../styles/user_status.css";
 import "../../styles/widgets.css";
+import "../../styles/image_edit_modal.css";
 
 // This should be last.
 import "../ready";
