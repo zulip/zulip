@@ -40,7 +40,7 @@ function test_with_mock_ajax(test_params) {
     check_ajax_options(ajax_options);
 }
 
-run_test("basics", () => {
+run_test("post", () => {
     test_with_mock_ajax({
         run_code() {
             channel.post({});
@@ -55,7 +55,9 @@ run_test("basics", () => {
             options.simulate_error();
         },
     });
+});
 
+run_test("patch", () => {
     test_with_mock_ajax({
         run_code() {
             channel.patch({});
@@ -71,7 +73,9 @@ run_test("basics", () => {
             options.simulate_error();
         },
     });
+});
 
+run_test("put", () => {
     test_with_mock_ajax({
         run_code() {
             channel.put({});
@@ -86,7 +90,9 @@ run_test("basics", () => {
             options.simulate_error();
         },
     });
+});
 
+run_test("delete", () => {
     test_with_mock_ajax({
         run_code() {
             channel.del({});
@@ -101,7 +107,9 @@ run_test("basics", () => {
             options.simulate_error();
         },
     });
+});
 
+run_test("get", () => {
     test_with_mock_ajax({
         run_code() {
             channel.get({});
