@@ -197,26 +197,3 @@ run_test("create", () => {
     obj2.addClass(".striped");
     assert(obj2.hasClass(".striped"));
 });
-
-run_test("extensions", () => {
-    // You can extend $.fn so that all subsequent objects
-    // we create get a new function.
-
-    $.fn.area = function () {
-        return this.width() * this.height();
-    };
-
-    // Before we use area, though, let's illustrate that
-    // the predominant Zulip testing style is to stub objects
-    // using direct syntax:
-
-    const rect = $.create("rectangle");
-    rect.width = () => 5;
-    rect.height = () => 7;
-
-    assert.equal(rect.width(), 5);
-    assert.equal(rect.height(), 7);
-
-    // But we also have area available from general extension.
-    assert.equal(rect.area(), 35);
-});

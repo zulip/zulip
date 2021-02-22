@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const rewiremock = require("rewiremock/node");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -19,7 +19,6 @@ const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");
 
 const noop = function () {};
-$.fn.popover = noop; // this will get wrapped by our code
 
 set_global("current_msg_list", {});
 set_global("page_params", {
@@ -49,9 +48,14 @@ const stream_data = set_global("stream_data", {});
 
 const ClipboardJS = noop;
 
-const popovers = rewiremock.proxy(() => zrequire("popovers"), {
-    clipboard: ClipboardJS,
-});
+function import_popovers() {
+    return rewiremock.proxy(() => zrequire("popovers"), {
+        clipboard: ClipboardJS,
+    });
+}
+
+// Bypass some scary code that runs when we import the module.
+const popovers = with_field($.fn, "popover", noop, import_popovers);
 
 const alice = {
     email: "alice@example.com",
@@ -114,6 +118,7 @@ function test_ui(label, f) {
 
 test_ui("sender_hover", (override) => {
     override(popovers, "hide_user_profile", noop);
+    override($.fn, "popover", noop);
 
     const selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
     const handler = $("#main_div").get_on_handler("click", selection);
@@ -208,6 +213,8 @@ test_ui("sender_hover", (override) => {
 });
 
 test_ui("actions_popover", (override) => {
+    override($.fn, "popover", noop);
+
     const target = $.create("click target");
 
     override(popovers, "hide_user_profile", noop);
