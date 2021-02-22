@@ -6,13 +6,14 @@ const _ = require("lodash");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 
 const reload = set_global("reload", {});
 zrequire("reload_state");
 const channel = zrequire("channel");
 
 const default_stub_xhr = "default-stub-xhr";
+
+const $ = set_global("$", {});
 
 function test_with_mock_ajax(test_params) {
     const {xhr = default_stub_xhr, run_code, check_ajax_options} = test_params;
