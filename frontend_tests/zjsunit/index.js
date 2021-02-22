@@ -90,7 +90,6 @@ try {
 
         const blueslip = namespace.set_global("blueslip", make_zblueslip());
         namespace.set_global("i18n", stub_i18n);
-        namespace.clear_zulip_refs();
 
         run_one_module(file);
 

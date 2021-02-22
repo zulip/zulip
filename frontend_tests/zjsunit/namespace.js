@@ -2,9 +2,6 @@
 
 const path = require("path");
 
-const _ = require("lodash");
-
-const requires = [];
 const new_globals = new Set();
 let old_globals = {};
 
@@ -43,9 +40,7 @@ function require_path(name, fn) {
 }
 
 exports.zrequire = function (name, fn) {
-    fn = require_path(name, fn);
-    requires.push(fn);
-    return require(fn);
+    return require(require_path(name, fn));
 };
 
 exports.reset_module = function (name, fn) {
@@ -54,27 +49,14 @@ exports.reset_module = function (name, fn) {
     return require(fn);
 };
 
-exports.clear_zulip_refs = function () {
-    /*
-        This is a big hammer to make sure
-        we are not "borrowing" a transitively
-        required module from a previous test.
-        This kind of leak can make it seems
-        like we've written the second test
-        correctly, but it will fail if we
-        run it standalone.
-    */
-    const staticPath = path.resolve(__dirname, "../../static") + path.sep;
-    _.each(require.cache, (_, fn) => {
-        if (fn.startsWith(staticPath) && !fn.startsWith(staticPath + "templates" + path.sep)) {
-            delete require.cache[fn];
-        }
-    });
-};
+const staticPath = path.resolve(__dirname, "../../static") + path.sep;
+const templatesPath = staticPath + "templates" + path.sep;
 
 exports.restore = function () {
-    for (const fn of requires) {
-        delete require.cache[require.resolve(fn)];
+    for (const path of Object.keys(require.cache)) {
+        if (path.startsWith(staticPath) && !path.startsWith(templatesPath)) {
+            delete require.cache[path];
+        }
     }
     Object.assign(global, old_globals);
     old_globals = {};
