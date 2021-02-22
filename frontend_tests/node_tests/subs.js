@@ -108,7 +108,7 @@ run_test("redraw_left_panel", (override) => {
         };
     }
 
-    $.stub_selector("#subscriptions_table .stream-row", sub_stubs);
+    $.create("#subscriptions_table .stream-row", {children: sub_stubs});
 
     let ui_called = false;
     ui.reset_scrollbar = function (elem) {
