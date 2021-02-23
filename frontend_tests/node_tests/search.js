@@ -337,6 +337,8 @@ run_test("initiate_search", () => {
         is_searchbox_text_selected = true;
     });
 
+    $("#search_query")[0] = "stub";
+
     search.initiate_search();
     assert(typeahead_forced_open);
     assert(is_searchbox_text_selected);
