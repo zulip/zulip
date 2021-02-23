@@ -783,10 +783,11 @@ def send_message(client: Client) -> int:
 
 @openapi_test_function("/messages/{message_id}/reactions:post")
 def add_reaction(client: Client, message_id: int) -> None:
+    request: Dict[str, Any] = {}
     # {code_example|start}
     # Add an emoji reaction
     request = {
-        "message_id": str(message_id),
+        "message_id": message_id,
         "emoji_name": "octopus",
     }
 
@@ -797,10 +798,11 @@ def add_reaction(client: Client, message_id: int) -> None:
 
 @openapi_test_function("/messages/{message_id}/reactions:delete")
 def remove_reaction(client: Client, message_id: int) -> None:
+    request: Dict[str, Any] = {}
     # {code_example|start}
     # Remove an emoji reaction
     request = {
-        "message_id": str(message_id),
+        "message_id": message_id,
         "emoji_name": "octopus",
     }
 
