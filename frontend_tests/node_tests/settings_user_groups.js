@@ -49,7 +49,8 @@ function reset_test_setup(pill_container_stub) {
 }
 
 function test_ui(label, f) {
-    run_test(label, f);
+    // The sloppy_$ flag lets us re-use setup from prior tests.
+    run_test(label, f, {sloppy_$: true});
 }
 
 test_ui("can_edit", () => {

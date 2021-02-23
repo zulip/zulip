@@ -68,7 +68,6 @@ const $array = (array) => {
 let page_params = set_global("page_params", {emojiset: "apple"});
 
 const get_content_element = () => {
-    $.clear_all_elements();
     const $content = $.create(".rendered_markdown");
     $content.set_find_results(".user-mention", $array([]));
     $content.set_find_results(".user-group-mention", $array([]));

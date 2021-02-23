@@ -91,7 +91,6 @@ for (const sub of subs) {
 }
 
 function test_ui(label, f) {
-    $.clear_all_elements();
     run_test(label, (override) => {
         stream_edit.initialize();
         f(override);

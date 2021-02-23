@@ -43,7 +43,7 @@ const alice = {
 people.add_active_user(alice);
 
 function test(label, f) {
-    $.clear_all_elements();
+    // TODO: go back to run_test
     run_test(label, f);
 }
 

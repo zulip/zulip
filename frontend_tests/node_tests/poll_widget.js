@@ -263,8 +263,6 @@ run_test("activate another person poll", () => {
 });
 
 run_test("activate own poll", () => {
-    $.clear_all_elements();
-
     people.is_my_user_id = return_true;
     stub_templates((template_name) => {
         if (template_name === "widgets/poll_widget") {

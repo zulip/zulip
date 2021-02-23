@@ -13,7 +13,7 @@ set_global("document", {});
 const common = zrequire("common");
 
 function test_ui(label, f) {
-    $.clear_all_elements();
+    // TODO: go back to run_test
     run_test(label, f);
 }
 

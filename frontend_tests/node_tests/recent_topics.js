@@ -505,7 +505,6 @@ run_test("test_filter_participated", () => {
 });
 
 run_test("test_update_unread_count", () => {
-    $.clear_all_elements();
     rt = reset_module("recent_topics");
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -648,7 +647,6 @@ run_test("test_reify_local_echo_message", () => {
 });
 
 run_test("test_delete_messages", () => {
-    $.clear_all_elements();
     rt = reset_module("recent_topics");
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -702,8 +700,6 @@ run_test("test_delete_messages", () => {
 });
 
 run_test("test_topic_edit", () => {
-    $.clear_all_elements();
-
     set_global("message_list", {
         all: {
             all_messages() {
