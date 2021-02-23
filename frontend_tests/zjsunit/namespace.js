@@ -68,10 +68,12 @@ exports.restore = function () {
 
 exports.with_field = function (obj, field, val, f) {
     const old_val = obj[field];
-    obj[field] = val;
-    const result = f();
-    obj[field] = old_val;
-    return result;
+    try {
+        obj[field] = val;
+        return f();
+    } finally {
+        obj[field] = old_val;
+    }
 };
 
 exports.with_overrides = function (test_function) {
@@ -165,11 +167,13 @@ exports.with_overrides = function (test_function) {
         });
     };
 
-    test_function(override);
-
-    restore_callbacks.reverse();
-    for (const restore_callback of restore_callbacks) {
-        restore_callback();
+    try {
+        test_function(override);
+    } finally {
+        restore_callbacks.reverse();
+        for (const restore_callback of restore_callbacks) {
+            restore_callback();
+        }
     }
 
     for (const module_unused_funcs of unused_funcs.values()) {
