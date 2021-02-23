@@ -550,6 +550,12 @@ class StreamAdminTest(ZulipTestCase):
             .exists()
         )
         self.assertFalse(subscription_exists)
+    
+    def test_destroy_stream_backend(self) -> None:
+        stream = self.make_stream("new_stream_1")
+        do_add_default_stream(stream)
+        self.assertEqual(1, DefaultStream.objects.filter(stream_id=stream.id).count())
+        self.assertEqual(0, DefaultStream.objects.filter(stream_id=stream.id).count())
 
     def test_deactivate_stream_removes_default_stream(self) -> None:
         stream = self.make_stream("new_stream")
