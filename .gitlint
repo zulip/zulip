@@ -3,7 +3,7 @@ ignore=title-trailing-punctuation, body-min-length, body-is-missing, title-imper
 
 extra-path=tools/lib/gitlint-rules.py
 
-[title-match-regex-allow-exception]
+[title-match-regex]
 regex=^(.+:\ )?[A-Z].+\.$
 
 [title-max-length]

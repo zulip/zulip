@@ -1,8 +1,6 @@
-import re
 from typing import List
 
 from gitlint.git import GitCommit
-from gitlint.options import StrOption
 from gitlint.rules import CommitMessageTitle, LineRule, RuleViolation
 
 # Word list from https://github.com/m1foley/fit-commit
@@ -307,31 +305,10 @@ class ImperativeMood(LineRule):
             violation = RuleViolation(
                 self.id,
                 self.error_msg.format(
-                    word=first_word,
-                    imperative=imperative,
-                    title=commit.message.title,
+                    word=first_word, imperative=imperative, title=commit.message.title,
                 ),
             )
 
             violations.append(violation)
 
         return violations
-
-
-class TitleMatchRegexAllowException(LineRule):
-    """Allows revert commits contrary to the built-in title-match-regex rule"""
-
-    name = "title-match-regex-allow-exception"
-    id = "Z2"
-    target = CommitMessageTitle
-    options_spec = [StrOption("regex", ".*", "Regex the title should match")]
-
-    def validate(self, title: str, commit: GitCommit) -> List[RuleViolation]:
-
-        regex = self.options["regex"].value
-        pattern = re.compile(regex, re.UNICODE)
-        if not pattern.search(title) and not title.startswith('Revert "'):
-            violation_msg = f"Title does not match regex ({regex})"
-            return [RuleViolation(self.id, violation_msg, title)]
-
-        return []

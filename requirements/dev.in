@@ -45,7 +45,7 @@ pyinotify
 tblib
 
 # Needed to lint Git commit messages
-gitlint
+gitlint>=0.13.0
 
 # Needed for visualising cprofile reports
 snakeviz
