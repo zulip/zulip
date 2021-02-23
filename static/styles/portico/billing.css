@@ -1,5 +1,5 @@
 .billing-upgrade-page {
-    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
     background-color: hsl(0, 0%, 98%);
     height: 100vh;
 
@@ -131,7 +131,7 @@
         span {
             background: 0;
             box-shadow: none;
-            font-family: "Source Sans Pro", Helvetica, Arial;
+            font-family: "Source Sans 3", Helvetica, Arial;
             font-size: 1.4em;
             line-height: 20px;
         }
