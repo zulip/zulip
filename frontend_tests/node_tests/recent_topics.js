@@ -505,7 +505,9 @@ run_test("test_filter_participated", () => {
 });
 
 run_test("test_update_unread_count", () => {
+    $.clear_all_elements();
     rt = reset_module("recent_topics");
+    stub_out_filter_buttons();
     rt.set_filter("all");
     stub_templates(() => "<recent_topics table stub>");
     rt.process_messages(messages);
@@ -646,7 +648,9 @@ run_test("test_reify_local_echo_message", () => {
 });
 
 run_test("test_delete_messages", () => {
+    $.clear_all_elements();
     rt = reset_module("recent_topics");
+    stub_out_filter_buttons();
     rt.set_filter("all");
     rt.process_messages(messages);
 
@@ -698,6 +702,8 @@ run_test("test_delete_messages", () => {
 });
 
 run_test("test_topic_edit", () => {
+    $.clear_all_elements();
+
     set_global("message_list", {
         all: {
             all_messages() {
@@ -707,6 +713,7 @@ run_test("test_topic_edit", () => {
     });
     // NOTE: This test should always run in the end as it modified the messages data.
     rt = reset_module("recent_topics");
+    stub_out_filter_buttons();
     rt.set_filter("all");
     rt.process_messages(messages);
 
