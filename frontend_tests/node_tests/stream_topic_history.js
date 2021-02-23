@@ -303,7 +303,7 @@ run_test("server_history_end_to_end", () => {
     let get_success_callback;
     let on_success_called;
 
-    channel.get = function (opts) {
+    channel.get = (opts) => {
         assert.equal(opts.url, "/json/users/me/99/topics");
         assert.deepEqual(opts.data, {});
         get_success_callback = opts.success;

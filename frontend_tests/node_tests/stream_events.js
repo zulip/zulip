@@ -7,10 +7,8 @@ const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const noop = function () {};
-const return_true = function () {
-    return true;
-};
+const noop = () => {};
+const return_true = () => true;
 const _settings_notifications = {
     update_page: () => {},
 };

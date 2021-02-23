@@ -15,7 +15,7 @@ zrequire("MessageListData", "js/message_list_data");
 const MessageListView = zrequire("MessageListView", "js/message_list_view");
 const message_list = zrequire("message_list");
 
-const noop = function () {};
+const noop = () => {};
 
 const page_params = set_global("page_params", {
     twenty_four_hour_time: false,
@@ -450,9 +450,7 @@ run_test("render_windows", () => {
 
         // Stub out functionality that is not core to the rendering window
         // logic.
-        list.data.unmuted_messages = function (messages) {
-            return messages;
-        };
+        list.data.unmuted_messages = (messages) => messages;
 
         // We don't need to actually render the DOM.  The windowing logic
         // sits above that layer.
@@ -476,9 +474,7 @@ run_test("render_windows", () => {
         messages = _.range(opts.count).map((i) => ({
             id: i,
         }));
-        list.selected_idx = function () {
-            return 0;
-        };
+        list.selected_idx = () => 0;
         list.clear();
 
         list.add_messages(messages, {});
@@ -490,9 +486,7 @@ run_test("render_windows", () => {
         // a re-render.  The code avoids hasty re-renders for
         // performance reasons.
         for (const idx of _.range(start, end)) {
-            list.selected_idx = function () {
-                return idx;
-            };
+            list.selected_idx = () => idx;
             const rendered = view.maybe_rerender();
             assert.equal(rendered, false);
         }
@@ -502,9 +496,7 @@ run_test("render_windows", () => {
         const start = range[0];
         const end = range[1];
 
-        list.selected_idx = function () {
-            return idx;
-        };
+        list.selected_idx = () => idx;
         const rendered = view.maybe_rerender();
         assert.equal(rendered, true);
         assert.equal(view._render_win_start, start);

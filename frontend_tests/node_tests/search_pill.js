@@ -74,7 +74,7 @@ run_test("get_items", () => {
 run_test("create_pills", () => {
     let input_pill_create_called = false;
 
-    input_pill.create = function () {
+    input_pill.create = () => {
         input_pill_create_called = true;
         return {dummy: "dummy"};
     };

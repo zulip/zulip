@@ -8,9 +8,7 @@ const {run_test} = require("../zjsunit/test");
 const people = zrequire("people");
 const presence = zrequire("presence");
 
-const return_false = function () {
-    return false;
-};
+const return_false = () => false;
 
 const server_events = set_global("server_events", {});
 const reload_state = set_global("reload_state", {
@@ -269,9 +267,7 @@ run_test("big realms", () => {
     // which case we will not provide default values for
     // users that aren't in our presences payload.
     const get_active_human_count = people.get_active_human_count;
-    people.get_active_human_count = function () {
-        return 1000;
-    };
+    people.get_active_human_count = () => 1000;
     presence.set_info(presences, now);
     assert(presence.presence_info.has(sally.user_id));
     assert(!presence.presence_info.has(zoe.user_id));

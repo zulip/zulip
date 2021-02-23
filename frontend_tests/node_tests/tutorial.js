@@ -715,7 +715,7 @@ function make_jquery_helper() {
     const stream_filters = jquery_elem();
 
     let appended_data;
-    stream_filters.append = function (data) {
+    stream_filters.append = (data) => {
         appended_data = data;
     };
 

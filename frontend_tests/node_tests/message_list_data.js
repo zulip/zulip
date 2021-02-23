@@ -158,7 +158,7 @@ run_test("muting", () => {
     assert.deepEqual(mld._all_items, []);
 
     let messages_filtered_for_topic_mutes_calls = 0;
-    mld.messages_filtered_for_topic_mutes = function (messages) {
+    mld.messages_filtered_for_topic_mutes = (messages) => {
         messages_filtered_for_topic_mutes_calls = messages_filtered_for_topic_mutes_calls + 1;
         return messages;
     };

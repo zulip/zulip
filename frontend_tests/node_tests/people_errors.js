@@ -7,12 +7,8 @@ const {run_test} = require("../zjsunit/test");
 
 const people = zrequire("people");
 
-const return_false = function () {
-    return false;
-};
-const return_true = function () {
-    return true;
-};
+const return_false = () => false;
+const return_true = () => true;
 const reload_state = set_global("reload_state", {
     is_in_progress: return_false,
 });

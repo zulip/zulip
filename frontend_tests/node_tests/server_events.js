@@ -6,7 +6,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const noop = function () {};
+const noop = () => {};
 
 set_global("document", {
     to_$() {
@@ -79,7 +79,7 @@ run_test("message_event", () => {
 
 // Start blueslip tests here
 
-const setup = function () {
+const setup = () => {
     server_events.home_view_loaded();
     set_global("message_events", {
         insert_new_messages() {
@@ -100,7 +100,7 @@ run_test("event_dispatch_error", () => {
     setup();
 
     const data = {events: [{type: "stream", op: "update", id: 1, other: "thing"}]};
-    channel.get = function (options) {
+    channel.get = (options) => {
         options.success(data);
     };
 
@@ -120,7 +120,7 @@ run_test("event_new_message_error", () => {
     setup();
 
     const data = {events: [{type: "message", id: 1, other: "thing", message: {}}]};
-    channel.get = function (options) {
+    channel.get = (options) => {
         options.success(data);
     };
 
@@ -136,7 +136,7 @@ run_test("event_new_message_error", () => {
 run_test("event_edit_message_error", () => {
     setup();
     const data = {events: [{type: "update_message", id: 1, other: "thing"}]};
-    channel.get = function (options) {
+    channel.get = (options) => {
         options.success(data);
     };
     blueslip.expect("error", "Failed to update messages\nupdate error");

@@ -21,9 +21,7 @@ run_test("streams", () => {
         assert.equal(actual, expected);
     }
 
-    stream_sort.get_streams = function () {
-        return ["announce", "muted", "devel", "test here"];
-    };
+    stream_sort.get_streams = () => ["announce", "muted", "devel", "test here"];
 
     assert_next_stream(undefined, "announce");
     assert_next_stream("NOT THERE", "announce");
@@ -77,9 +75,7 @@ run_test("topics", () => {
     // Now test the deeper function that is wired up to
     // real functions stream_data/stream_sort/unread.
 
-    stream_sort.get_streams = function () {
-        return ["announce", "muted", "devel", "test here"];
-    };
+    stream_sort.get_streams = () => ["announce", "muted", "devel", "test here"];
 
     const muted_stream_id = 400;
     const devel_stream_id = 401;
@@ -89,7 +85,7 @@ run_test("topics", () => {
         devel: devel_stream_id,
     };
 
-    stream_topic_history.get_recent_topic_names = function (stream_id) {
+    stream_topic_history.get_recent_topic_names = (stream_id) => {
         switch (stream_id) {
             case muted_stream_id:
                 return ["ms-topic1", "ms-topic2"];
@@ -100,21 +96,14 @@ run_test("topics", () => {
         return [];
     };
 
-    stream_data.get_stream_id = function (stream_name) {
-        return stream_id_dct[stream_name];
-    };
+    stream_data.get_stream_id = (stream_name) => stream_id_dct[stream_name];
 
-    stream_data.is_stream_muted_by_name = function (stream_name) {
-        return stream_name === "muted";
-    };
+    stream_data.is_stream_muted_by_name = (stream_name) => stream_name === "muted";
 
-    unread.topic_has_any_unread = function (stream_id) {
-        return [devel_stream_id, muted_stream_id].includes(stream_id);
-    };
+    unread.topic_has_any_unread = (stream_id) =>
+        [devel_stream_id, muted_stream_id].includes(stream_id);
 
-    muting.is_topic_muted = function (stream_name, topic) {
-        return topic === "muted";
-    };
+    muting.is_topic_muted = (stream_name, topic) => topic === "muted";
 
     let next_item = tg.get_next_topic("announce", "whatever");
     assert.deepEqual(next_item, {
@@ -130,11 +119,9 @@ run_test("topics", () => {
 });
 
 run_test("get_next_unread_pm_string", () => {
-    pm_conversations.recent.get_strings = function () {
-        return ["1", "read", "2,3", "4", "unk"];
-    };
+    pm_conversations.recent.get_strings = () => ["1", "read", "2,3", "4", "unk"];
 
-    unread.num_unread_for_person = function (user_ids_string) {
+    unread.num_unread_for_person = (user_ids_string) => {
         if (user_ids_string === "unk") {
             return undefined;
         }

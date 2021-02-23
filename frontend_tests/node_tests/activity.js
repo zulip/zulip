@@ -258,14 +258,14 @@ test_ui("presence_list_full_update", () => {
 });
 
 function simulate_right_column_buddy_list() {
-    $(".user-list-filter").closest = function (selector) {
+    $(".user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("right-sidebar").addClass("column-right");
     };
 }
 
 function simulate_left_column_buddy_list() {
-    $(".user-list-filter").closest = function (selector) {
+    $(".user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("left-sidebar").addClass("column-left");
     };
@@ -605,7 +605,7 @@ test_ui("toggle_filter_display", () => {
 
     activity.user_filter.toggle_filter_displayed();
     assert($("#user_search_section").hasClass("notdisplayed"));
-    $(".user-list-filter").closest = function (selector) {
+    $(".user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("sidebar").addClass("column-right");
     };
@@ -667,7 +667,7 @@ test_ui("initialize", () => {
 
     clear();
 
-    channel.post = function (payload) {
+    channel.post = (payload) => {
         payload.success({});
     };
     set_global("server_events", {
@@ -690,10 +690,10 @@ test_ui("initialize", () => {
     assert(!activity.new_user_input);
     assert(!$("#zephyr-mirror-error").hasClass("show"));
     assert(activity.client_is_active);
-    $(window).idle = function (params) {
+    $(window).idle = (params) => {
         params.onIdle();
     };
-    channel.post = function (payload) {
+    channel.post = (payload) => {
         payload.success({
             zephyr_mirror_active: false,
             presences: {},

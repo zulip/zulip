@@ -27,13 +27,9 @@ const page_params = set_global("page_params", {
 
 stream_color.initialize();
 
-const noop = function () {};
-const return_false = function () {
-    return false;
-};
-const return_true = function () {
-    return true;
-};
+const noop = () => {};
+const return_false = () => false;
+const return_true = () => true;
 
 const topic_list = set_global("topic_list", {});
 set_global("overlays", {});
@@ -127,7 +123,7 @@ test_ui("create_sidebar_row", (override) => {
     const social_sidebar = $("<social sidebar row>");
 
     let appended_elems;
-    $("#stream_filters").append = function (elems) {
+    $("#stream_filters").append = (elems) => {
         appended_elems = elems;
     };
 
@@ -183,7 +179,7 @@ test_ui("create_sidebar_row", (override) => {
     assert(social_li.hasClass("inactive_stream"));
 
     let removed;
-    social_li.remove = function () {
+    social_li.remove = () => {
         removed = true;
     };
 
@@ -466,12 +462,10 @@ test_ui("sort_streams", () => {
 
     initialize_stream_data();
 
-    stream_data.is_active = function (sub) {
-        return sub.name !== "cars";
-    };
+    stream_data.is_active = (sub) => sub.name !== "cars";
 
     let appended_elems;
-    $("#stream_filters").append = function (elems) {
+    $("#stream_filters").append = (elems) => {
         appended_elems = elems;
     };
 
@@ -546,12 +540,10 @@ test_ui("separators_only_pinned_and_dormant", () => {
     };
     add_row(DenmarkSub);
 
-    stream_data.is_active = function (sub) {
-        return sub.name !== "Denmark";
-    };
+    stream_data.is_active = (sub) => sub.name !== "Denmark";
 
     let appended_elems;
-    $("#stream_filters").append = function (elems) {
+    $("#stream_filters").append = (elems) => {
         appended_elems = elems;
     };
 
@@ -596,7 +588,7 @@ test_ui("separators_only_pinned", () => {
     add_row(RomeSub);
 
     let appended_elems;
-    $("#stream_filters").append = function (elems) {
+    $("#stream_filters").append = (elems) => {
         appended_elems = elems;
     };
 

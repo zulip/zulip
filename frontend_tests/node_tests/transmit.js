@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const noop = function () {};
+const noop = () => {};
 
 const page_params = set_global("page_params", {});
 const channel = set_global("channel", {});
@@ -21,13 +21,13 @@ const transmit = zrequire("transmit");
 
 run_test("transmit_message_ajax", () => {
     let success_func_called;
-    const success = function () {
+    const success = () => {
         success_func_called = true;
     };
 
     const request = {foo: "bar"};
 
-    channel.post = function (opts) {
+    channel.post = (opts) => {
         assert.equal(opts.url, "/json/messages");
         assert.equal(opts.data.foo, "bar");
         opts.success();
@@ -37,12 +37,12 @@ run_test("transmit_message_ajax", () => {
 
     assert(success_func_called);
 
-    channel.xhr_error_message = function (msg) {
+    channel.xhr_error_message = (msg) => {
         assert.equal(msg, "Error sending message");
         return msg;
     };
 
-    channel.post = function (opts) {
+    channel.post = (opts) => {
         assert.equal(opts.url, "/json/messages");
         assert.equal(opts.data.foo, "bar");
         const xhr = "whatever";
@@ -50,7 +50,7 @@ run_test("transmit_message_ajax", () => {
     };
 
     let error_func_called;
-    const error = function (response) {
+    const error = (response) => {
         assert.equal(response, "Error sending message");
         error_func_called = true;
     };
@@ -59,16 +59,14 @@ run_test("transmit_message_ajax", () => {
 });
 
 run_test("transmit_message_ajax_reload_pending", () => {
-    const success = function () {
+    const success = () => {
         throw new Error("unexpected success");
     };
 
-    reload_state.is_pending = function () {
-        return true;
-    };
+    reload_state.is_pending = () => true;
 
     let reload_initiated;
-    reload.initiate = function (opts) {
+    reload.initiate = (opts) => {
         reload_initiated = true;
         assert.deepEqual(opts, {
             immediate: true,
@@ -82,13 +80,13 @@ run_test("transmit_message_ajax_reload_pending", () => {
     const request = {foo: "bar"};
 
     let error_func_called;
-    const error = function (response) {
+    const error = (response) => {
         assert.equal(response, "Error sending message");
         error_func_called = true;
     };
 
     error_func_called = false;
-    channel.post = function (opts) {
+    channel.post = (opts) => {
         assert.equal(opts.url, "/json/messages");
         assert.equal(opts.data.foo, "bar");
         const xhr = "whatever";

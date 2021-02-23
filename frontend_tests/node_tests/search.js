@@ -86,9 +86,7 @@ run_test("initialize", () => {
 
     search_query_box[0] = "stub";
 
-    search_pill.get_search_string_for_current_filter = function () {
-        return "is:starred";
-    };
+    search_pill.get_search_string_for_current_filter = () => "is:starred";
 
     search_suggestion.max_num_of_search_results = 99;
     search_query_box.typeahead = (opts) => {

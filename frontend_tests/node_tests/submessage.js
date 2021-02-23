@@ -46,7 +46,7 @@ run_test("make_server_callback", () => {
     const callback = submessage.make_server_callback(message_id);
     let was_posted;
 
-    channel.post = function (opts) {
+    channel.post = (opts) => {
         was_posted = true;
         assert.deepEqual(opts, {
             url: "/json/submessage",

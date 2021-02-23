@@ -87,13 +87,9 @@ function get_suggestions(base_query, query) {
 run_test("basic_get_suggestions", () => {
     const query = "fred";
 
-    stream_data.subscribed_streams = function () {
-        return [];
-    };
+    stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = function () {
-        return "office";
-    };
+    narrow_state.stream = () => "office";
 
     const suggestions = get_suggestions("", query);
 
@@ -105,13 +101,9 @@ run_test("subset_suggestions", () => {
     const query = "shakespeare";
     const base_query = "stream:Denmark topic:Hamlet";
 
-    stream_data.subscribed_streams = function () {
-        return [];
-    };
+    stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = function () {
-        return;
-    };
+    narrow_state.stream = () => {};
 
     const suggestions = get_suggestions(base_query, query);
 
@@ -121,13 +113,9 @@ run_test("subset_suggestions", () => {
 });
 
 run_test("private_suggestions", () => {
-    stream_data.subscribed_streams = function () {
-        return [];
-    };
+    stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = function () {
-        return;
-    };
+    narrow_state.stream = () => {};
 
     let query = "is:private";
     let suggestions = get_suggestions("", query);
@@ -242,13 +230,9 @@ run_test("private_suggestions", () => {
 });
 
 run_test("group_suggestions", () => {
-    stream_data.subscribed_streams = function () {
-        return [];
-    };
+    stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = function () {
-        return;
-    };
+    narrow_state.stream = () => {};
 
     // Entering a comma in a pm-with query should immediately generate
     // suggestions for the next person.
@@ -387,13 +371,9 @@ init();
 run_test("empty_query_suggestions", () => {
     const query = "";
 
-    stream_data.subscribed_streams = function () {
-        return ["devel", "office"];
-    };
+    stream_data.subscribed_streams = () => ["devel", "office"];
 
-    narrow_state.stream = function () {
-        return;
-    };
+    narrow_state.stream = () => {};
 
     const suggestions = get_suggestions("", query);
 
@@ -433,12 +413,8 @@ run_test("has_suggestions", () => {
     // Checks that category wise suggestions are displayed instead of a single
     // default suggestion when suggesting `has` operator.
     let query = "h";
-    stream_data.subscribed_streams = function () {
-        return ["devel", "office"];
-    };
-    narrow_state.stream = function () {
-        return;
-    };
+    stream_data.subscribed_streams = () => ["devel", "office"];
+    narrow_state.stream = () => {};
 
     let suggestions = get_suggestions("", query);
     let expected = ["h", "has:link", "has:image", "has:attachment"];
@@ -491,12 +467,8 @@ run_test("has_suggestions", () => {
 
 run_test("check_is_suggestions", () => {
     let query = "i";
-    stream_data.subscribed_streams = function () {
-        return ["devel", "office"];
-    };
-    narrow_state.stream = function () {
-        return;
-    };
+    stream_data.subscribed_streams = () => ["devel", "office"];
+    narrow_state.stream = () => {};
 
     let suggestions = get_suggestions("", query);
     let expected = [
@@ -598,13 +570,9 @@ run_test("check_is_suggestions", () => {
 });
 
 run_test("sent_by_me_suggestions", () => {
-    stream_data.subscribed_streams = function () {
-        return [];
-    };
+    stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = function () {
-        return;
-    };
+    narrow_state.stream = () => {};
 
     let query = "";
     let suggestions = get_suggestions("", query);
@@ -681,18 +649,14 @@ run_test("topic_suggestions", () => {
     let suggestions;
     let expected;
 
-    stream_data.subscribed_streams = function () {
-        return ["office"];
-    };
+    stream_data.subscribed_streams = () => ["office"];
 
-    narrow_state.stream = function () {
-        return "office";
-    };
+    narrow_state.stream = () => "office";
 
     const devel_id = 44;
     const office_id = 77;
 
-    stream_data.get_stream_id = function (stream_name) {
+    stream_data.get_stream_id = (stream_name) => {
         switch (stream_name) {
             case "office":
                 return office_id;
@@ -774,13 +738,9 @@ run_test("topic_suggestions", () => {
 run_test("whitespace_glitch", () => {
     const query = "stream:office "; // note trailing space
 
-    stream_data.subscribed_streams = function () {
-        return ["office"];
-    };
+    stream_data.subscribed_streams = () => ["office"];
 
-    narrow_state.stream = function () {
-        return;
-    };
+    narrow_state.stream = () => {};
 
     stream_topic_history.reset();
 
@@ -792,13 +752,9 @@ run_test("whitespace_glitch", () => {
 });
 
 run_test("stream_completion", () => {
-    stream_data.subscribed_streams = function () {
-        return ["office", "dev help"];
-    };
+    stream_data.subscribed_streams = () => ["office", "dev help"];
 
-    narrow_state.stream = function () {
-        return;
-    };
+    narrow_state.stream = () => {};
 
     stream_topic_history.reset();
 
@@ -966,13 +922,9 @@ run_test("operator_suggestions", () => {
 });
 
 run_test("queries_with_spaces", () => {
-    stream_data.subscribed_streams = function () {
-        return ["office", "dev help"];
-    };
+    stream_data.subscribed_streams = () => ["office", "dev help"];
 
-    narrow_state.stream = function () {
-        return;
-    };
+    narrow_state.stream = () => {};
 
     stream_topic_history.reset();
 

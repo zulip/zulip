@@ -182,9 +182,7 @@ run_test("changing_topics", () => {
     message_dict.set(other_message.id, other_message);
     message_dict.set(sticky_message.id, sticky_message);
 
-    message_store.get = function (msg_id) {
-        return message_dict.get(msg_id);
-    };
+    message_store.get = (msg_id) => message_dict.get(msg_id);
 
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, "sticky");
@@ -260,7 +258,7 @@ run_test("num_unread_for_topic", () => {
 
     const stream_id = 301;
 
-    stream_data.get_sub_by_id = function (arg) {
+    stream_data.get_sub_by_id = (arg) => {
         if (arg === stream_id) {
             return {name: "Some Stream"};
         }
@@ -329,20 +327,14 @@ run_test("num_unread_for_topic", () => {
 });
 
 run_test("home_messages", () => {
-    stream_data.is_subscribed = function () {
-        return true;
-    };
-    stream_data.is_muted = function () {
-        return false;
-    };
+    stream_data.is_subscribed = () => true;
+    stream_data.is_muted = () => false;
 
     const stream_id = 401;
 
-    stream_data.get_sub_by_id = function () {
-        return {
-            name: "whatever",
-        };
-    };
+    stream_data.get_sub_by_id = () => ({
+        name: "whatever",
+    });
 
     const message = {
         id: 15,
@@ -373,9 +365,7 @@ run_test("home_messages", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 
     // Now unsubscribe all our streams.
-    stream_data.is_subscribed = function () {
-        return false;
-    };
+    stream_data.is_subscribed = () => false;
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
@@ -389,9 +379,7 @@ run_test("phantom_messages", () => {
         topic: "phantom",
     };
 
-    stream_data.get_sub_by_id = function () {
-        return;
-    };
+    stream_data.get_sub_by_id = () => {};
 
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();

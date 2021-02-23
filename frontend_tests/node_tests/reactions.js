@@ -131,7 +131,7 @@ run_test("open_reactions_popover", () => {
     $(".selected-row").set_find_results(".reaction_button", ["reaction-stub"]);
 
     let called = false;
-    emoji_picker.toggle_emoji_popover = function (target, id) {
+    emoji_picker.toggle_emoji_popover = (target, id) => {
         called = true;
         assert.equal(id, 42);
         assert.equal(target, "action-stub");
@@ -140,12 +140,10 @@ run_test("open_reactions_popover", () => {
     assert(reactions.open_reactions_popover());
     assert(called);
 
-    current_msg_list.selected_message = function () {
-        return {sent_by_me: false};
-    };
+    current_msg_list.selected_message = () => ({sent_by_me: false});
 
     called = false;
-    emoji_picker.toggle_emoji_popover = function (target, id) {
+    emoji_picker.toggle_emoji_popover = (target, id) => {
         called = true;
         assert.equal(id, 42);
         assert.equal(target, "reaction-stub");
@@ -281,9 +279,7 @@ run_test("sending", (override) => {
         // similarly, we only exercise the failure codepath
         // Since this path calls blueslip.warn, we need to handle it.
         blueslip.expect("warn", "XHR Error Message.");
-        channel.xhr_error_message = function () {
-            return "XHR Error Message.";
-        };
+        channel.xhr_error_message = () => "XHR Error Message.";
         args.error();
     }
     emoji_name = "alien"; // not set yet
@@ -386,12 +382,12 @@ run_test("add_and_remove_reaction", () => {
 
     const message_reactions = $.create("our-reactions");
 
-    reactions.get_reaction_section = function (message_id) {
+    reactions.get_reaction_section = (message_id) => {
         assert.equal(message_id, 1001);
         return message_reactions;
     };
 
-    message_reactions.find = function (selector) {
+    message_reactions.find = (selector) => {
         assert.equal(selector, ".reaction_button");
         return "reaction-button-stub";
     };
@@ -408,7 +404,7 @@ run_test("add_and_remove_reaction", () => {
     });
 
     let insert_called;
-    $("<new reaction html>").insertBefore = function (element) {
+    $("<new reaction html>").insertBefore = (element) => {
         assert.equal(element, "reaction-button-stub");
         insert_called = true;
     };
@@ -445,7 +441,7 @@ run_test("add_and_remove_reaction", () => {
     const reaction_element = $.create("reaction-element");
     reaction_element.set_find_results(".message_reaction_count", count_element);
 
-    message_reactions.find = function (selector) {
+    message_reactions.find = (selector) => {
         assert.equal(selector, "[data-reaction-id='unicode_emoji\\,1f3b1']");
         return reaction_element;
     };
@@ -462,7 +458,7 @@ run_test("add_and_remove_reaction", () => {
     // Next, remove Alice's reaction, which exercises removing the
     // emoji icon.
     let removed;
-    reaction_element.remove = function () {
+    reaction_element.remove = () => {
         removed = true;
     };
 
@@ -494,7 +490,7 @@ run_test("add_and_remove_reaction", () => {
         return "<new reaction html>";
     });
 
-    message_reactions.find = function (selector) {
+    message_reactions.find = (selector) => {
         assert.equal(selector, ".reaction_button");
         return "reaction-button-stub";
     };
@@ -512,11 +508,11 @@ run_test("add_and_remove_reaction", () => {
         user_id: alice.user_id,
     };
 
-    message_reactions.find = function (selector) {
+    message_reactions.find = (selector) => {
         assert.equal(selector, "[data-reaction-id='realm_emoji\\,991']");
         return reaction_element;
     };
-    reaction_element.prop = function () {};
+    reaction_element.prop = () => {};
     reactions.add_reaction(alice_event);
 
     const result = reactions.get_message_reactions(message);
@@ -540,9 +536,7 @@ run_test("with_view_stubs", () => {
         reactions: [],
     };
 
-    message_store.get = function () {
-        return message;
-    };
+    message_store.get = () => message;
 
     function test_view_calls(test_params) {
         const calls = [];
@@ -686,9 +680,7 @@ run_test("with_view_stubs", () => {
 });
 
 run_test("error_handling", (override) => {
-    message_store.get = function () {
-        return;
-    };
+    message_store.get = () => {};
 
     blueslip.expect("error", "reactions: Bad message id: 55");
 
@@ -768,7 +760,7 @@ run_test("process_reaction_click", () => {
         reaction_type: "unicode_emoji",
         emoji_code: "1f3b1",
     };
-    message_store.get = function (message_id) {
+    message_store.get = (message_id) => {
         assert.equal(message_id, 1001);
         return message;
     };
