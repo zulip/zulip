@@ -305,7 +305,9 @@ class ImperativeMood(LineRule):
             violation = RuleViolation(
                 self.id,
                 self.error_msg.format(
-                    word=first_word, imperative=imperative, title=commit.message.title,
+                    word=first_word,
+                    imperative=imperative,
+                    title=commit.message.title,
                 ),
             )
 

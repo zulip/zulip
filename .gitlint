@@ -1,5 +1,5 @@
 [general]
-ignore=title-trailing-punctuation, body-min-length, body-is-missing, title-imperative-mood
+ignore=title-trailing-punctuation, body-min-length, body-is-missing
 
 extra-path=tools/lib/gitlint-rules.py
 
