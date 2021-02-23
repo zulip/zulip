@@ -16,12 +16,7 @@ alert_words.initialize({
     alert_words: ["foo", "bar"],
 });
 
-function test_ui(label, f) {
-    // TODO: go back to run_test
-    run_test(label, f);
-}
-
-test_ui("render_alert_words_ui", () => {
+run_test("render_alert_words_ui", () => {
     const word_list = $("#alert_words_list");
     const appended = [];
     word_list.append = (rendered) => {
@@ -45,7 +40,7 @@ test_ui("render_alert_words_ui", () => {
     assert(new_alert_word.is_focused());
 });
 
-test_ui("add_alert_word", (override) => {
+run_test("add_alert_word", (override) => {
     override(alert_words_ui, "render_alert_words_ui", () => {}); // we've already tested this above
 
     alert_words_ui.set_up_alert_words();
@@ -100,7 +95,7 @@ test_ui("add_alert_word", (override) => {
     assert(alert_word_status.visible());
 });
 
-test_ui("add_alert_word_keypress", (override) => {
+run_test("add_alert_word_keypress", (override) => {
     override(alert_words_ui, "render_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
@@ -126,7 +121,7 @@ test_ui("add_alert_word_keypress", (override) => {
     assert(called);
 });
 
-test_ui("remove_alert_word", (override) => {
+run_test("remove_alert_word", (override) => {
     override(alert_words_ui, "render_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
@@ -173,7 +168,7 @@ test_ui("remove_alert_word", (override) => {
     assert(alert_word_status.visible());
 });
 
-test_ui("close_status_message", (override) => {
+run_test("close_status_message", (override) => {
     override(alert_words_ui, "render_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 

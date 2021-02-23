@@ -42,11 +42,6 @@ const alice = {
 };
 people.add_active_user(alice);
 
-function test(label, f) {
-    // TODO: go back to run_test
-    run_test(label, f);
-}
-
 function populate_list_with_just_alice() {
     // We don't make alice_li an actual jQuery stub,
     // because our test only cares that it comes
@@ -61,13 +56,13 @@ function populate_list_with_just_alice() {
     return alice_li;
 }
 
-test("get_items", () => {
+run_test("get_items", () => {
     const alice_li = populate_list_with_just_alice();
     const items = buddy_list.get_items();
     assert.deepEqual(items, [alice_li]);
 });
 
-test("basics", (override) => {
+run_test("basics", (override) => {
     init_simulated_scrolling();
 
     override(buddy_list, "get_data_from_keys", (opts) => {
@@ -108,7 +103,7 @@ test("basics", (override) => {
     assert.equal(li, alice_li);
 });
 
-test("big_list", (override) => {
+run_test("big_list", (override) => {
     const elem = init_simulated_scrolling();
 
     // Don't actually render, but do simulate filling up
@@ -142,7 +137,7 @@ test("big_list", (override) => {
     assert.equal(chunks_inserted, 6);
 });
 
-test("force_render", (override) => {
+run_test("force_render", (override) => {
     buddy_list.render_count = 50;
 
     let num_rendered = 0;
@@ -163,7 +158,7 @@ test("force_render", (override) => {
     });
 });
 
-test("find_li w/force_render", (override) => {
+run_test("find_li w/force_render", (override) => {
     // If we call find_li w/force_render set, and the
     // key is not already rendered in DOM, then the
     // widget will call show_key to force-render it.
@@ -199,7 +194,7 @@ test("find_li w/force_render", (override) => {
     assert(shown);
 });
 
-test("find_li w/bad key", (override) => {
+run_test("find_li w/bad key", (override) => {
     override(buddy_list, "get_li_from_key", () => ({length: 0}));
 
     const undefined_li = buddy_list.find_li({
@@ -210,7 +205,7 @@ test("find_li w/bad key", (override) => {
     assert.deepEqual(undefined_li, []);
 });
 
-test("scrolling", (override) => {
+run_test("scrolling", (override) => {
     init_simulated_scrolling();
 
     buddy_list.populate({
