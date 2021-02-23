@@ -5,38 +5,37 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const noop = () => {};
 const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
 const helpers = set_global("helpers", {
-    set_tab: noop,
+    set_tab: () => {},
 });
 const StripeCheckout = set_global("StripeCheckout", {
-    configure: noop,
+    configure: () => {},
 });
 
-run_test("initialize", () => {
+run_test("initialize", (override) => {
     let token_func;
 
     let set_tab_called = false;
-    helpers.set_tab = (page_name) => {
+    override(helpers, "set_tab", (page_name) => {
         assert.equal(page_name, "billing");
         set_tab_called = true;
-    };
+    });
 
     let create_ajax_request_called = false;
-    helpers.create_ajax_request = (url, form_name, stripe_token) => {
+    function card_change_ajax(url, form_name, stripe_token) {
         assert.equal(url, "/json/billing/sources/change");
         assert.equal(form_name, "cardchange");
         assert.equal(stripe_token, "stripe_token");
         create_ajax_request_called = true;
-    };
+    }
 
     let open_func_called = false;
     const open_func = (config_opts) => {
@@ -53,7 +52,7 @@ run_test("initialize", () => {
     };
 
     let stripe_checkout_configure_called = false;
-    StripeCheckout.configure = (config_opts) => {
+    override(StripeCheckout, "configure", (config_opts) => {
         assert.equal(config_opts.image, "/static/images/logo/zulip-icon-128x128.png");
         assert.equal(config_opts.locale, "auto");
         assert.equal(config_opts.key, "{{publishable_key}}");
@@ -63,7 +62,7 @@ run_test("initialize", () => {
         return {
             open: open_func,
         };
-    };
+    });
 
     $("#payment-method").data = (key) =>
         document.querySelector("#payment-method").getAttribute("data-" + key);
@@ -73,24 +72,29 @@ run_test("initialize", () => {
     assert(set_tab_called);
     assert(stripe_checkout_configure_called);
     const e = {
-        preventDefault: noop,
+        preventDefault: () => {},
     };
     const update_card_click_handler = $("#update-card-button").get_on_handler("click");
-    update_card_click_handler(e);
-    assert(create_ajax_request_called);
-    assert(open_func_called);
+    with_field(helpers, "create_ajax_request", card_change_ajax, () => {
+        update_card_click_handler(e);
+        assert(create_ajax_request_called);
+        assert(open_func_called);
+    });
 
     create_ajax_request_called = false;
-    helpers.create_ajax_request = (url, form_name, stripe_token, numeric_inputs) => {
+    function plan_change_ajax(url, form_name, stripe_token, numeric_inputs) {
         assert.equal(url, "/json/billing/plan/change");
         assert.equal(form_name, "planchange");
         assert.equal(stripe_token, undefined);
         assert.deepEqual(numeric_inputs, ["status"]);
         create_ajax_request_called = true;
-    };
+    }
 
     const change_plan_status_click_handler = $("#change-plan-status").get_on_handler("click");
-    change_plan_status_click_handler(e);
+
+    with_field(helpers, "create_ajax_request", plan_change_ajax, () => {
+        change_plan_status_click_handler(e);
+    });
     assert(create_ajax_request_called);
 });
 
