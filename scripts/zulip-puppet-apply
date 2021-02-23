@@ -5,8 +5,16 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 
-from lib.zulip_tools import assert_running_as_root, parse_os_release
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+from scripts.lib.setup_path import setup_path
+from scripts.lib.zulip_tools import assert_running_as_root, parse_os_release
+
+setup_path()
+
+import yaml
 
 assert_running_as_root()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -48,7 +56,20 @@ if (distro_info["ID"], distro_info["VERSION_ID"]) in [("ubuntu", "20.04")]:
     puppet_env["RUBYOPT"] = "-W0"
 
 if not args.noop and not args.force:
-    subprocess.check_call([*puppet_cmd, "--noop", "--show_diff"], env=puppet_env)
+    # --noop does not work with --detailed-exitcodes; see https://tickets.puppetlabs.com/browse/PUP-686
+    try:
+        lastrun_file = tempfile.NamedTemporaryFile()
+        subprocess.check_call(
+            [*puppet_cmd, "--noop", "--show_diff", "--lastrunfile", lastrun_file.name],
+            env=puppet_env,
+        )
+
+        with open(lastrun_file.name, "r") as lastrun:
+            lastrun_data = yaml.safe_load(lastrun)
+            if lastrun_data.get("resources", {}).get("out_of_sync", 0) == 0:
+                sys.exit(0)
+    finally:
+        lastrun_file.close()
 
     do_apply = None
     while do_apply != "y":
