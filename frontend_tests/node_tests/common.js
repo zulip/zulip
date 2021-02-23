@@ -12,17 +12,12 @@ set_global("document", {});
 
 const common = zrequire("common");
 
-function test_ui(label, f) {
-    // TODO: go back to run_test
-    run_test(label, f);
-}
-
-test_ui("basics", () => {
+run_test("basics", () => {
     common.autofocus("#home");
     assert($("#home").is_focused());
 });
 
-test_ui("phrase_match", () => {
+run_test("phrase_match", () => {
     assert(common.phrase_match("tes", "test"));
     assert(common.phrase_match("Tes", "test"));
     assert(common.phrase_match("Tes", "Test"));
@@ -32,7 +27,7 @@ test_ui("phrase_match", () => {
     assert(!common.phrase_match("tes", "hostess"));
 });
 
-test_ui("copy_data_attribute_value", (override) => {
+run_test("copy_data_attribute_value", (override) => {
     const admin_emails_val = "iago@zulip.com";
 
     const input = $.create("input");
@@ -69,7 +64,7 @@ test_ui("copy_data_attribute_value", (override) => {
     assert(faded_out);
 });
 
-test_ui("adjust_mac_shortcuts non-mac", () => {
+run_test("adjust_mac_shortcuts non-mac", () => {
     common.has_mac_keyboard = function () {
         return false;
     };
@@ -80,7 +75,7 @@ test_ui("adjust_mac_shortcuts non-mac", () => {
     common.adjust_mac_shortcuts("selector-that-does-not-exist");
 });
 
-test_ui("adjust_mac_shortcuts mac", () => {
+run_test("adjust_mac_shortcuts mac", () => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
