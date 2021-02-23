@@ -313,7 +313,7 @@ run_test("content_typeahead_selected", () => {
     };
     let caret_called1 = false;
     let caret_called2 = false;
-    fake_this.$element.caret = (...args) => {
+    fake_this.$element.caret = function (...args) {
         if (args.length === 0) {
             // .caret() used in split_at_cursor
             caret_called1 = true;

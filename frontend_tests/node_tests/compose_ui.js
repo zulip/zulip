@@ -39,7 +39,7 @@ function make_textbox(s) {
     widget.s = s;
     widget.focused = false;
 
-    widget.caret = (arg) => {
+    widget.caret = function (arg) {
         if (typeof arg === "number") {
             widget.pos = arg;
             return this;
@@ -58,7 +58,7 @@ function make_textbox(s) {
         return widget.pos;
     };
 
-    widget.val = (new_val) => {
+    widget.val = function (new_val) {
         if (new_val) {
             widget.s = new_val;
             return this;
@@ -66,7 +66,7 @@ function make_textbox(s) {
         return widget.s;
     };
 
-    widget.trigger = (type) => {
+    widget.trigger = function (type) {
         if (type === "focus") {
             widget.focused = true;
         } else if (type === "blur") {
@@ -95,7 +95,7 @@ run_test("autosize_textarea", (override) => {
 
 run_test("insert_syntax_and_focus", () => {
     $("#compose-textarea").val("xyz ");
-    $("#compose-textarea").caret = (syntax) => {
+    $("#compose-textarea").caret = function (syntax) {
         if (syntax !== undefined) {
             $("#compose-textarea").val($("#compose-textarea").val() + syntax);
             return this;
