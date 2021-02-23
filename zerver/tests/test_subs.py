@@ -552,10 +552,15 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(subscription_exists)
     
     def test_destroy_stream_backend(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
         stream = self.make_stream("new_stream_1")
-        do_add_default_stream(stream)
-        self.assertEqual(1, DefaultStream.objects.filter(stream_id=stream.id).count())
-        self.assertEqual(0, DefaultStream.objects.filter(stream_id=stream.id).count())
+
+        self.subscribe(user_profile, stream.name)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        result = self.client_delete(f"/json/streams/{stream.id}", {"is_archive": orjson.dumps(False).decode()})
+        self.assert_json_success(result)
 
     def test_deactivate_stream_removes_default_stream(self) -> None:
         stream = self.make_stream("new_stream")
