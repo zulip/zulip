@@ -202,7 +202,7 @@ export function info_for(user_id) {
     };
 }
 
-function get_last_seen(active_status, last_seen) {
+export function get_last_seen(active_status, last_seen) {
     if (active_status === "active") {
         return last_seen;
     }

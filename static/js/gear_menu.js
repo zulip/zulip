@@ -1,10 +1,12 @@
 import $ from "jquery";
 
+import * as buddy_data from "./buddy_data";
 import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
+import * as presence from "./presence";
 
 /*
 For various historical reasons there isn't one
@@ -146,6 +148,18 @@ export function close() {
 
 export function set_avatar() {
     const avatar_url = page_params.avatar_url;
+    const user_id = page_params.user_id;
+    const full_name = page_params.full_name;
+    const active_status = presence.get_status(user_id);
+    const last_seen = buddy_data.user_last_seen_time_status(user_id);
+    const user_circle_class = buddy_data.get_user_circle_class(user_id);
 
     $(".settings-dropdown-avatar").attr("src", avatar_url);
+    $(".dropdown-user-fullname").append(full_name);
+    $(".dropdown-user-presence").append(
+        "<span class='" +
+            user_circle_class +
+            " user_circle'></span>" +
+            buddy_data.get_last_seen(active_status, last_seen),
+    );
 }

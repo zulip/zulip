@@ -685,6 +685,46 @@ li.actual-dropdown-menu i {
     width: 25px;
 }
 
+.settings-dropdown-profile {
+    display: flex;
+    justify-content: left;
+    flex-direction: row;
+    padding-left: 10px;
+
+    .avatar-medium {
+        min-width: 35px;
+    }
+
+    > div {
+        display: flex;
+        justify-content: space-evenly;
+        flex-direction: column;
+        margin-left: 5px;
+        margin-top: 2px;
+        line-height: 15px;
+        padding-right: 5px;
+
+        .dropdown-user-fullname {
+            font-weight: 600;
+            max-width: 75px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dropdown-user-presence {
+            display: flex;
+            flex-direction: row;
+
+            .user_circle {
+                height: 6px;
+                width: 6px;
+                margin: 3px 3px 3px 0;
+                position: inherit;
+            }
+        }
+    }
+}
+
 .message_area_padder {
     /* The height of the header and the message_view_header plus a small gap */
     margin-top: 57px;
