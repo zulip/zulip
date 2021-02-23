@@ -121,7 +121,7 @@ There are dozens of useful management commands under
   (easier done [via the
   UI](https://zulip.com/help/change-a-users-role)) or give bots the
   `can_forge_sender` permission, which is needed for certain special API features.
-* `./manage.py export_single_user` does a limited version of the [main
+* `./manage.py export_single_user`: does a limited version of the [main
   export tools](../production/export-and-import.md) containing just
   the messages accessible by a single user.
 
