@@ -231,7 +231,6 @@ function clear_buddy_list() {
 }
 
 function test_ui(label, f) {
-    $.clear_all_elements();
     run_test(label, (override) => {
         clear_buddy_list();
         f(override);

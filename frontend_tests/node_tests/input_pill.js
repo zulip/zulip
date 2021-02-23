@@ -92,7 +92,6 @@ run_test("basics", () => {
 });
 
 function set_up() {
-    $.clear_all_elements();
     const items = {
         blue: {
             display_value: "BLUE",

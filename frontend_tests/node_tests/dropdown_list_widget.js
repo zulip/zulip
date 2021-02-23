@@ -16,7 +16,6 @@ const _ListWidget = {
 set_global("ListWidget", _ListWidget);
 
 const setup_zjquery_data = (name) => {
-    $.clear_all_elements();
     const input_group = $(".input_group");
     const reset_button = $(".dropdown_list_reset_button");
     input_group.set_find_results(".dropdown_list_reset_button:enabled", reset_button);

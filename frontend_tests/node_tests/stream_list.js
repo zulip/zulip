@@ -103,7 +103,6 @@ function create_social_sidebar_row() {
 }
 
 function test_ui(label, f) {
-    $.clear_all_elements();
     run_test(label, (override) => {
         stream_data.clear_subscriptions();
         stream_list.stream_sidebar.rows.clear();

@@ -149,7 +149,8 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 
 function test_ui(label, f) {
-    run_test(label, f);
+    // The sloppy_$ flag lets us re-use setup from prior tests.
+    run_test(label, f, {sloppy_$: true});
 }
 
 test_ui("validate_stream_message_address_info", () => {

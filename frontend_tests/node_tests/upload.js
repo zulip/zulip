@@ -367,8 +367,6 @@ run_test("uppy_config", () => {
 });
 
 run_test("file_input", () => {
-    $.clear_all_elements();
-
     upload.setup_upload({mode: "compose"});
 
     const change_handler = $("body").get_on_handler("change", "#file_input");
@@ -390,7 +388,6 @@ run_test("file_input", () => {
 });
 
 run_test("file_drop", () => {
-    $.clear_all_elements();
     upload.setup_upload({mode: "compose"});
 
     let prevent_default_counter = 0;
@@ -429,8 +426,6 @@ run_test("file_drop", () => {
 });
 
 run_test("copy_paste", () => {
-    $.clear_all_elements();
-
     upload.setup_upload({mode: "compose"});
 
     const paste_handler = $("#compose").get_on_handler("paste");
@@ -470,7 +465,6 @@ run_test("copy_paste", () => {
 });
 
 run_test("uppy_events", () => {
-    $.clear_all_elements();
     const callbacks = {};
     let uppy_cancel_all_called = false;
     let state = {};

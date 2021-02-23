@@ -109,7 +109,6 @@ function make_image_stubber() {
 }
 
 function test_ui(label, f) {
-    $.clear_all_elements();
     run_test(label, (override) => {
         popovers.register_click_handlers();
         f(override);

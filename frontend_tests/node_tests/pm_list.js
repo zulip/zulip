@@ -56,7 +56,7 @@ people.add_active_user(bot_test);
 people.initialize_current_user(me.user_id);
 
 function test(label, f) {
-    $.clear_all_elements();
+    // TODO: go back to run_test
     run_test(label, f);
 }
 

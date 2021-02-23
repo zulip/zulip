@@ -119,8 +119,6 @@ function test_create_bot_type_input_box_toggle(f) {
 }
 
 run_test("test tab clicks", (override) => {
-    $.clear_all_elements();
-
     override($.validator, "addMethod", () => {});
 
     $("#create_bot_form").validate = () => {};

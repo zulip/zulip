@@ -1,6 +1,7 @@
 "use strict";
 
 const namespace = require("./namespace");
+const $ = require("./zjquery");
 
 let current_file_name;
 let verbose = false;
@@ -13,10 +14,17 @@ exports.set_verbose = (value) => {
     verbose = value;
 };
 
-exports.run_test = (label, f) => {
+exports.run_test = (label, f, opts) => {
+    const {sloppy_$} = opts || {};
+
     if (verbose) {
         console.info("        test: " + label);
     }
+
+    if (!sloppy_$ && $.clear_all_elements) {
+        $.clear_all_elements();
+    }
+
     try {
         namespace.with_overrides(f);
     } catch (error) {
