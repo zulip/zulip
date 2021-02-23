@@ -9,7 +9,7 @@ const {run_test} = require("../zjsunit/test");
 
 const local_message = set_global("local_message", {});
 const markdown = set_global("markdown", {});
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 
 const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));

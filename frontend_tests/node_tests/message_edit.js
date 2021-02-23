@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("page_params", {
+let page_params = set_global("page_params", {
     realm_community_topic_editing_limit_seconds: 259200,
 });
 
@@ -51,19 +51,19 @@ run_test("get_editability", () => {
         sent_by_me: true,
     };
 
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         realm_allow_message_editing: false,
     });
     assert.equal(get_editability(message), editability_types.NO);
 
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         realm_allow_message_editing: true,
         // Limit of 0 means no time limit on editing messages
         realm_message_content_edit_limit_seconds: 0,
     });
     assert.equal(get_editability(message), editability_types.FULL);
 
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         realm_allow_message_editing: true,
         realm_message_content_edit_limit_seconds: 10,
     });
@@ -85,7 +85,7 @@ run_test("get_editability", () => {
         sent_by_me: false,
         type: "stream",
     };
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         realm_allow_community_topic_editing: true,
         realm_allow_message_editing: true,
         realm_message_content_edit_limit_seconds: 0,
@@ -116,7 +116,7 @@ run_test("get_editability", () => {
 });
 
 run_test("get_deletability", () => {
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         is_admin: true,
         realm_allow_message_deleting: false,
         realm_message_content_delete_limit_seconds: 0,

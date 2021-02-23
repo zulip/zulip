@@ -8,7 +8,7 @@ const {run_test} = require("../zjsunit/test");
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
 
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 
 /*
     Some methods in settings_data are fairly

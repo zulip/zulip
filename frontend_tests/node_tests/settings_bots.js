@@ -8,7 +8,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("page_params", {
+const page_params = set_global("page_params", {
     realm_uri: "https://chat.example.com",
     realm_embedded_bots: [
         {name: "converter", config: {}},

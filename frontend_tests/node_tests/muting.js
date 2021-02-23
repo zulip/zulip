@@ -8,7 +8,7 @@ const {run_test} = require("../zjsunit/test");
 zrequire("timerender");
 const muting = zrequire("muting");
 const stream_data = zrequire("stream_data");
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 
 run_test("edge_cases", () => {
     // private messages

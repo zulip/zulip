@@ -19,7 +19,7 @@ set_global("hash_util", {
 set_global("ListWidget", {
     create: () => ({init: noop}),
 });
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 set_global("settings_notifications", {
     get_notifications_table_row_data: noop,
 });

@@ -38,7 +38,7 @@ const emoji_params = {
     emoji_codes,
 };
 
-set_global("page_params", {
+const page_params = set_global("page_params", {
     realm_users: [],
     realm_filters: [
         ["#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s"],

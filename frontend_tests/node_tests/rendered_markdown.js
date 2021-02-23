@@ -65,7 +65,7 @@ const $array = (array) => {
     return {each};
 };
 
-set_global("page_params", {emojiset: "apple"});
+let page_params = set_global("page_params", {emojiset: "apple"});
 
 const get_content_element = () => {
     $.clear_all_elements();
@@ -197,16 +197,16 @@ run_test("timestamp-twenty-four-hour-time", () => {
     // We will temporarily change the 24h setting for this test.
     const old_page_params = page_params;
 
-    set_global("page_params", {...old_page_params, twenty_four_hour_time: true});
+    page_params = set_global("page_params", {...old_page_params, twenty_four_hour_time: true});
     rm.update_elements($content);
     assert.equal($timestamp.text(), "Wed, Jul 15 2020, 20:40");
 
-    set_global("page_params", {...old_page_params, twenty_four_hour_time: false});
+    page_params = set_global("page_params", {...old_page_params, twenty_four_hour_time: false});
     rm.update_elements($content);
     assert.equal($timestamp.text(), "Wed, Jul 15 2020, 8:40 PM");
 
     // Set page_params back to its original value.
-    set_global("page_params", old_page_params);
+    page_params = set_global("page_params", old_page_params);
 });
 
 run_test("timestamp-error", () => {

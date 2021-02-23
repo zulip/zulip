@@ -14,7 +14,7 @@ set_global("document", {
         return true;
     },
 });
-set_global("page_params", {
+const page_params = set_global("page_params", {
     is_admin: false,
     realm_users: [],
     enable_desktop_notifications: true,

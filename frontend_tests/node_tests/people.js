@@ -10,7 +10,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const message_store = set_global("message_store", {});
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");

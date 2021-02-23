@@ -14,10 +14,10 @@ let filter_key_handlers;
 
 const huddle_data = zrequire("huddle_data");
 
-const _page_params = {
+let page_params = set_global("page_params", {
     realm_users: [],
     user_id: 999,
-};
+});
 
 const _document = {
     hasFocus() {
@@ -69,7 +69,6 @@ set_global("channel", channel);
 set_global("compose_state", compose_state);
 set_global("document", _document);
 set_global("keydown_util", _keydown_util);
-set_global("page_params", _page_params);
 set_global("pm_list", _pm_list);
 set_global("popovers", _popovers);
 set_global("resize", _resize);
@@ -749,7 +748,7 @@ test_ui("electron_bridge", () => {
 });
 
 test_ui("test_send_or_receive_no_presence_for_web_public_visitor", () => {
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         is_web_public_visitor: true,
     });
     activity.send_presence_to_server();

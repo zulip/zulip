@@ -9,7 +9,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("page_params", {
+let page_params = set_global("page_params", {
     twenty_four_hour_time: true,
 });
 
@@ -158,7 +158,7 @@ run_test("get_timestamp_for_flatpickr", () => {
 });
 
 run_test("absolute_time_12_hour", () => {
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         twenty_four_hour_time: false,
     });
 
@@ -190,7 +190,7 @@ run_test("absolute_time_12_hour", () => {
 });
 
 run_test("absolute_time_24_hour", () => {
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         twenty_four_hour_time: true,
     });
 

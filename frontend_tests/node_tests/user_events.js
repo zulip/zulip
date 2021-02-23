@@ -32,7 +32,7 @@ set_global("settings_users", {
 set_global("gear_menu", {
     update_org_settings_menu_item() {},
 });
-set_global("page_params", {
+const page_params = set_global("page_params", {
     is_admin: true,
 });
 

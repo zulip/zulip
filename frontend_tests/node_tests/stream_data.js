@@ -7,7 +7,7 @@ const _ = require("lodash");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("page_params", {
+const page_params = set_global("page_params", {
     is_admin: false,
     realm_users: [],
     is_guest: false,

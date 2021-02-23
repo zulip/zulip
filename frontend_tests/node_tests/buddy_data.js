@@ -7,9 +7,8 @@ const _ = require("lodash");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const _page_params = {};
+const page_params = set_global("page_params", {});
 
-set_global("page_params", _page_params);
 const people = zrequire("people");
 const presence = zrequire("presence");
 const user_status = zrequire("user_status");

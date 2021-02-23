@@ -13,7 +13,7 @@ zrequire("message_util", "js/message_util");
 const Filter = zrequire("Filter", "js/filter");
 
 const message_store = set_global("message_store", {});
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 
 const me = {
     email: "me@example.com",

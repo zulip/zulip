@@ -61,7 +61,7 @@ const channel = set_global("channel", {});
 const stream_edit = set_global("stream_edit", {});
 const markdown = set_global("markdown", {});
 const loading = set_global("loading", {});
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 const resize = set_global("resize", {});
 const subs = set_global("subs", {});
 const ui_util = set_global("ui_util", {});

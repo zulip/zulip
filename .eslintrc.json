@@ -112,16 +112,14 @@
                 "current_msg_list": false,
                 "home_msg_list": false,
                 "i18n": false,
-                "location": false,
-                "page_params": false
+                "location": false
             }
         },
         {
             "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {
                 "$": false,
-                "current_msg_list": false,
-                "page_params": false
+                "current_msg_list": false
             }
         },
         {

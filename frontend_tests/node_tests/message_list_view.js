@@ -17,7 +17,7 @@ const message_list = zrequire("message_list");
 
 const noop = function () {};
 
-set_global("page_params", {
+const page_params = set_global("page_params", {
     twenty_four_hour_time: false,
 });
 set_global("home_msg_list", "stub");

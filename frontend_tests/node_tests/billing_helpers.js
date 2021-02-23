@@ -14,7 +14,7 @@ const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const jquery = jQueryFactory(dom.window);
 
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 const loading = set_global("loading", {});
 const history = set_global("history", {});
 set_global("document", {

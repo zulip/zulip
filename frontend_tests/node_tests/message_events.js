@@ -19,7 +19,7 @@ set_global("current_msg_list", {});
 const message_edit = set_global("message_edit", {});
 const message_list = set_global("message_list", {});
 const notifications = set_global("notifications", {});
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 const pm_list = set_global("pm_list", {});
 const stream_list = set_global("stream_list", {});
 const unread_ui = set_global("unread_ui", {});

@@ -34,7 +34,7 @@ const ui_report = set_global("ui_report", {});
 
 const people = zrequire("people");
 
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 
 function reset_test_setup(pill_container_stub) {
     function input_pill_stub(opts) {

@@ -25,7 +25,7 @@ set_global("navigator", {
     platform: "",
 });
 
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 
 let overlays = set_global("overlays", {});
 

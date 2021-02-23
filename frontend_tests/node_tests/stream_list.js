@@ -20,7 +20,7 @@ const scroll_util = zrequire("scroll_util");
 zrequire("list_cursor");
 const stream_list = zrequire("stream_list");
 zrequire("ui");
-set_global("page_params", {
+const page_params = set_global("page_params", {
     is_admin: false,
     realm_users: [],
 });

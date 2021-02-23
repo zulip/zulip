@@ -12,7 +12,7 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
 
-set_global("page_params", {
+let page_params = set_global("page_params", {
     realm_push_notifications_enabled: false,
 });
 zrequire("settings_notifications");
@@ -49,17 +49,17 @@ function assert_zero_counts(counts) {
 }
 
 function test_notifiable_count(home_unread_messages, expected_notifiable_count) {
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         desktop_icon_count_display: 1,
     });
     let notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, home_unread_messages);
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         desktop_icon_count_display: 2,
     });
     notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, expected_notifiable_count);
-    set_global("page_params", {
+    page_params = set_global("page_params", {
         desktop_icon_count_display: 3,
     });
     notifiable_counts = unread.get_notifiable_count();

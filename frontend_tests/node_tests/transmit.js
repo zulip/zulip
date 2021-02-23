@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 
 const noop = function () {};
 
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 const channel = set_global("channel", {});
 const reload = set_global("reload", {});
 const reload_state = set_global("reload_state", {});

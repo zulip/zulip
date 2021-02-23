@@ -30,14 +30,14 @@ const _loading = {
     destroy_indicator: noop,
 };
 
-const _page_params = {
+const page_params = set_global("page_params", {
     is_admin: false,
     realm_domains: [
         {domain: "example.com", allow_subdomains: true},
         {domain: "example.org", allow_subdomains: false},
     ],
     realm_authentication_methods: {},
-};
+});
 
 const realm_icon = set_global("realm_icon", {});
 const channel = set_global("channel", {});
@@ -74,7 +74,6 @@ set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 set_global("jQuery", _jQuery);
 set_global("loading", _loading);
-set_global("page_params", _page_params);
 set_global("realm_logo", _realm_logo);
 set_global("ui_report", _ui_report);
 set_global("ListWidget", _ListWidget);

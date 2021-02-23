@@ -171,7 +171,7 @@ stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(netherland_stream);
 
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 const channel = set_global("channel", {});
 const compose = set_global("compose", {
     finish: noop,

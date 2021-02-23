@@ -40,7 +40,7 @@ set_global("csrf_token", "whatever");
 
 set_global("$", () => {});
 const resize = set_global("resize", {});
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 
 const ignore_modules = [
     "activity",

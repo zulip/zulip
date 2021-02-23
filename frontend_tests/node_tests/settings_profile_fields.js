@@ -9,7 +9,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("page_params", {});
+const page_params = set_global("page_params", {});
 const loading = set_global("loading", {});
 
 const SHORT_TEXT_ID = 1;

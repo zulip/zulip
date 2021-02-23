@@ -63,7 +63,7 @@ const user_events = set_global("user_events", {});
 const user_groups = set_global("user_groups", {});
 
 // page_params is highly coupled to dispatching now
-set_global("page_params", {
+const page_params = set_global("page_params", {
     test_suite: false,
     is_admin: true,
     realm_description: "already set description",
