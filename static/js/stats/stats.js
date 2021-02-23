@@ -3,7 +3,7 @@ import Plotly from "plotly.js/lib/core";
 Plotly.register([require("plotly.js/lib/bar"), require("plotly.js/lib/pie")]);
 
 const font_14pt = {
-    family: "Source Sans Pro",
+    family: "Source Sans 3",
     size: 14,
     color: "#000000",
 };
@@ -470,7 +470,7 @@ function populate_messages_sent_by_client(data) {
                 textinfo: "text",
                 hoverinfo: "none",
                 marker: {color: "#537c5e"},
-                font: {family: "Source Sans Pro", size: 18, color: "#000000"},
+                font: {family: "Source Sans 3", size: 18, color: "#000000"},
             },
             trace_annotations: {
                 x: annotations.values,

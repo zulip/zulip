@@ -11328,10 +11328,10 @@ source-map@^0.7.3, source-map@~0.7.2:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.3.tgz#5302f8169031735226544092e64981f751750383"
   integrity sha512-CkCj6giN3S+n9qrYiBTX5gystlENnRW5jZeNLHpe6aue+SrHcG5VYwujhW9s4dY31mEGsxBDrHR6oI69fTXsaQ==
 
-source-sans-pro@^3.6.0:
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/source-sans-pro/-/source-sans-pro-3.6.0.tgz#f4167065ebf096136b1b4f141dbd48886dda1486"
-  integrity sha512-C1RFUGu+YASuqpgDRInTM7Y6OwqeWNOuKn7v0P/4Kh66epTI4PYWwPWP5kdA4l/VqzBAWiqoz5dk0trof73R7w==
+source-sans@^3.28.0:
+  version "3.28.0"
+  resolved "https://registry.yarnpkg.com/source-sans/-/source-sans-3.28.0.tgz#fca86d2214f75e1c3dfaea6a5bae91dbb00d573f"
+  integrity sha512-ra//x4S1iPfKIAtyHVe92/75CirB3ixIRuWDBOZIIjSUD7DJrs4WSfJaQ1U3MG3JytIJV9G64tUHonhXAftDsw==
 
 spawn-wrap@^2.0.0:
   version "2.0.0"

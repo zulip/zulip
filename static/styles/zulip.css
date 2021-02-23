@@ -33,8 +33,7 @@ html {
 }
 
 body {
-    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial,
-        sans-serif;
+    font-family: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 /* Common background color */
@@ -48,8 +47,7 @@ input,
 button,
 select,
 textarea {
-    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial,
-        sans-serif;
+    font-family: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
     line-height: normal;
 }
 
@@ -381,7 +379,7 @@ p.n-margin {
 
 textarea,
 input {
-    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
@@ -1761,7 +1759,7 @@ div.focused_table {
         padding-right: 20px;
         border: none;
         border-radius: 0;
-        font-family: "Source Sans Pro";
+        font-family: "Source Sans 3";
         font-weight: 300;
         line-height: $header_height;
     }
