@@ -315,7 +315,12 @@ function handleTimestamp(time) {
     // Use html5 <time> tag for valid timestamps.
     // render time without milliseconds.
     const escaped_isotime = _.escape(timeobject.toISOString().split(".")[0] + "Z");
-    return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
+    //const humanReadableTime = timeobject.toString();
+    const timeOptions = {weekday: 'short', year: 'numeric', month: 'short', 
+                        day: 'numeric', hour12: 'true', hour: '2-digit', minute: '2-digit'};
+    const humanReadableTime = timeobject.toLocaleString(undefined, timeOptions);
+    //return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
+    return `<time datetime="${escaped_isotime}">${humanReadableTime}</time>`;
 }
 
 function handleStream(stream_name) {
