@@ -124,6 +124,7 @@ There are dozens of useful management commands under
 * `./manage.py export_single_user`: does a limited version of the [main
   export tools](../production/export-and-import.md) containing just
   the messages accessible by a single user.
+* `./manage.py reactivate_realm`: Reactivates a realm.
 
 All of our management commands have internal documentation available
 via `manage.py command_name --help`.
