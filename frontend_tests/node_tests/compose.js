@@ -148,7 +148,11 @@ people.initialize_current_user(me.user_id);
 people.add_active_user(alice);
 people.add_active_user(bob);
 
-run_test("validate_stream_message_address_info", () => {
+function test_ui(label, f) {
+    run_test(label, f);
+}
+
+test_ui("validate_stream_message_address_info", () => {
     const sub = {
         stream_id: 101,
         name: "social",
@@ -203,7 +207,7 @@ run_test("validate_stream_message_address_info", () => {
     assert.equal($("#compose-error-msg").html(), i18n.t("Error checking subscription"));
 });
 
-run_test("validate", () => {
+test_ui("validate", () => {
     function initialize_pm_pill() {
         reset_jquery();
 
@@ -313,7 +317,7 @@ run_test("validate", () => {
     assert.equal($("#compose-error-msg").html(), i18n.t("Please specify a topic"));
 });
 
-run_test("get_invalid_recipient_emails", () => {
+test_ui("get_invalid_recipient_emails", () => {
     const welcome_bot = {
         email: "welcome-bot@example.com",
         user_id: 124,
@@ -333,7 +337,7 @@ run_test("get_invalid_recipient_emails", () => {
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
 
-run_test("test_wildcard_mention_allowed", () => {
+test_ui("test_wildcard_mention_allowed", () => {
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_everyone.code;
     page_params.is_guest = true;
@@ -375,7 +379,7 @@ run_test("test_wildcard_mention_allowed", () => {
     assert(!compose.wildcard_mention_allowed());
 });
 
-run_test("validate_stream_message", () => {
+test_ui("validate_stream_message", () => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -426,7 +430,7 @@ run_test("validate_stream_message", () => {
     );
 });
 
-run_test("test_validate_stream_message_post_policy_admin_only", () => {
+test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
@@ -463,7 +467,7 @@ run_test("test_validate_stream_message_post_policy_admin_only", () => {
     );
 });
 
-run_test("test_validate_stream_message_post_policy_full_members_only", () => {
+test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
     page_params.is_admin = false;
     page_params.is_guest = true;
     const sub = {
@@ -489,7 +493,7 @@ run_test("test_validate_stream_message_post_policy_full_members_only", () => {
     page_params.is_guest = false;
 });
 
-run_test("markdown_rtl", () => {
+test_ui("markdown_rtl", () => {
     const textarea = $("#compose-textarea");
 
     const event = {
@@ -513,7 +517,7 @@ run_test("markdown_rtl", () => {
 // us back to the "normal" ltr case.
 rtl.get_direction = () => "ltr";
 
-run_test("markdown_ltr", () => {
+test_ui("markdown_ltr", () => {
     const textarea = $("#compose-textarea");
 
     const event = {
@@ -527,7 +531,7 @@ run_test("markdown_ltr", () => {
     assert.equal(textarea.hasClass("rtl"), false);
 });
 
-run_test("markdown_shortcuts", () => {
+test_ui("markdown_shortcuts", () => {
     let queryCommandEnabled = true;
     const event = {
         keyCode: 66,
@@ -691,7 +695,7 @@ run_test("markdown_shortcuts", () => {
     _navigator.userAgent = "";
 });
 
-run_test("send_message_success", () => {
+test_ui("send_message_success", () => {
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
     $("#compose-send-status").show();
@@ -716,7 +720,7 @@ run_test("send_message_success", () => {
     assert(reify_message_id_checked);
 });
 
-run_test("send_message", () => {
+test_ui("send_message", () => {
     // This is the common setup stuff for all of the four tests.
     let stub_state;
     function initialize_state_stub_dict() {
@@ -876,7 +880,7 @@ run_test("send_message", () => {
 
 set_global("document", "document-stub");
 
-run_test("enter_with_preview_open", () => {
+test_ui("enter_with_preview_open", () => {
     // Test sending a message with content.
     compose_state.set_message_type("stream");
     $("#compose-textarea").val("message me");
@@ -913,7 +917,7 @@ run_test("enter_with_preview_open", () => {
     assert.equal($("#compose-error-msg").html(), i18n.t("You have nothing to send!"));
 });
 
-run_test("finish", () => {
+test_ui("finish", () => {
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
@@ -959,7 +963,7 @@ run_test("finish", () => {
     })();
 });
 
-run_test("warn_if_private_stream_is_linked", () => {
+test_ui("warn_if_private_stream_is_linked", () => {
     const test_sub = {
         name: compose_state.stream_name(),
         stream_id: 99,
@@ -1032,7 +1036,7 @@ run_test("warn_if_private_stream_is_linked", () => {
     }
 });
 
-run_test("initialize", () => {
+test_ui("initialize", () => {
     // In this test we mostly do the setup stuff in addition to testing the
     // normal workflow of the function. All the tests for the on functions are
     // done in subsequent tests directly below this test.
@@ -1149,7 +1153,7 @@ run_test("initialize", () => {
     })();
 });
 
-run_test("update_fade", () => {
+test_ui("update_fade", () => {
     const selector =
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
     const keyup_handler_func = $(selector).get_on_handler("keyup");
@@ -1178,7 +1182,7 @@ run_test("update_fade", () => {
     assert(update_all_called);
 });
 
-run_test("trigger_submit_compose_form", () => {
+test_ui("trigger_submit_compose_form", () => {
     let prevent_default_checked = false;
     let compose_finish_checked = false;
     const e = {
@@ -1198,7 +1202,7 @@ run_test("trigger_submit_compose_form", () => {
     assert(compose_finish_checked);
 });
 
-run_test("needs_subscribe_warning", () => {
+test_ui("needs_subscribe_warning", () => {
     const invalid_user_id = 999;
 
     const test_bot = {
@@ -1233,7 +1237,7 @@ run_test("needs_subscribe_warning", () => {
     assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
-run_test("warn_if_mentioning_unsubscribed_user", () => {
+test_ui("warn_if_mentioning_unsubscribed_user", () => {
     let mentioned = {
         email: "foo@bar.com",
     };
@@ -1357,7 +1361,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
     assert(looked_for_existing);
 });
 
-run_test("on_events", () => {
+test_ui("on_events", () => {
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
         const container = $.create("fake " + container_sel);
         let container_removed = false;
@@ -1841,7 +1845,7 @@ run_test("on_events", () => {
     })();
 });
 
-run_test("create_message_object", () => {
+test_ui("create_message_object", () => {
     const sub = {
         stream_id: 101,
         name: "social",
@@ -1889,7 +1893,7 @@ run_test("create_message_object", () => {
     people.email_list_to_user_ids_string = email_list_to_user_ids_string;
 });
 
-run_test("nonexistent_stream_reply_error", () => {
+test_ui("nonexistent_stream_reply_error", () => {
     reset_jquery();
 
     const actions = [];
@@ -1905,7 +1909,7 @@ run_test("nonexistent_stream_reply_error", () => {
     assert.deepEqual(actions, ["show", "hide"]);
 });
 
-run_test("narrow_button_titles", () => {
+test_ui("narrow_button_titles", () => {
     util.is_mobile = () => false;
 
     compose.update_closed_compose_buttons_for_private();
@@ -1917,7 +1921,7 @@ run_test("narrow_button_titles", () => {
     assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
 });
 
-run_test("test_video_chat_button_toggle", () => {
+test_ui("test_video_chat_button_toggle", () => {
     reset_jquery();
     stub_out_video_calls();
 

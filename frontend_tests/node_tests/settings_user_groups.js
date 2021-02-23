@@ -48,7 +48,11 @@ function reset_test_setup(pill_container_stub) {
     });
 }
 
-run_test("can_edit", () => {
+function test_ui(label, f) {
+    run_test(label, f);
+}
+
+test_ui("can_edit", () => {
     page_params.is_guest = false;
     page_params.is_admin = true;
     assert(settings_user_groups.can_edit(1));
@@ -95,7 +99,7 @@ const name_selector = `#user-groups #${CSS.escape(1)} .name`;
 const description_selector = `#user-groups #${CSS.escape(1)} .description`;
 const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
-run_test("populate_user_groups", () => {
+test_ui("populate_user_groups", () => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -358,7 +362,7 @@ run_test("populate_user_groups", () => {
         "function",
     );
 });
-run_test("with_external_user", () => {
+test_ui("with_external_user", () => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -507,7 +511,7 @@ run_test("with_external_user", () => {
     assert.equal(turned_off["click/whole"], true);
 });
 
-run_test("reload", () => {
+test_ui("reload", () => {
     $("#user-groups").html("Some text");
     let populate_user_groups_called = false;
     settings_user_groups.populate_user_groups = function () {
@@ -518,13 +522,13 @@ run_test("reload", () => {
     assert.equal($("#user-groups").html(), "");
 });
 
-run_test("reset", () => {
+test_ui("reset", () => {
     settings_user_groups.reset();
     const result = settings_user_groups.reload();
     assert.equal(result, undefined);
 });
 
-run_test("on_events", () => {
+test_ui("on_events", () => {
     settings_user_groups.can_edit = function () {
         return true;
     };
