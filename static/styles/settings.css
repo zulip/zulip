@@ -251,16 +251,22 @@ td .button {
         }
     }
 
+    .table-sticky-headers th {
+        position: sticky;
+        top: 0;
+    }
+
     .table-striped {
         table-layout: auto;
+        border-collapse: separate;
 
         tbody {
             border-bottom: none;
         }
 
         thead th {
-            background-color: inherit;
             color: inherit;
+            background-color: hsl(0, 0%, 100%);
             border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
             border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
 
@@ -286,7 +292,7 @@ td .button {
 
             &[data-sort]:hover {
                 cursor: pointer;
-                background-color: hsla(0, 0%, 0%, 0.05);
+                background-color: hsla(0, 0%, 95%);
                 transition: background-color 100ms ease-in-out;
 
                 &:not(.active)::after {
