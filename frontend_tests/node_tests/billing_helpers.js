@@ -54,26 +54,26 @@ run_test("create_ajax_request", (override) => {
         make_indicator: 0,
     };
 
-    loading.make_indicator = function (loading_indicator, config) {
+    loading.make_indicator = (loading_indicator, config) => {
         assert.equal(loading_indicator.selector, form_loading_indicator);
         assert.equal(config.text, "Processing ...");
         assert.equal(config.abs_positioned, true);
         state.make_indicator += 1;
     };
 
-    $(form_input_section).hide = function () {
+    $(form_input_section).hide = () => {
         state.form_input_section_hide += 1;
     };
 
-    $(form_input_section).show = function () {
+    $(form_input_section).show = () => {
         state.form_input_section_show += 1;
     };
 
-    $(form_error).hide = function () {
+    $(form_error).hide = () => {
         state.form_error_hide += 1;
     };
 
-    $(form_error).show = function () {
+    $(form_error).show = () => {
         state.form_error_show += 1;
         return {
             text: (msg) => {
@@ -82,15 +82,15 @@ run_test("create_ajax_request", (override) => {
         };
     };
 
-    $(form_success).show = function () {
+    $(form_success).show = () => {
         state.form_success_show += 1;
     };
 
-    $(form_loading).show = function () {
+    $(form_loading).show = () => {
         state.form_loading_show += 1;
     };
 
-    $(form_loading).hide = function () {
+    $(form_loading).hide = () => {
         state.form_loading_hide += 1;
     };
 

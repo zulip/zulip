@@ -95,7 +95,7 @@ function config_fake_channel(conf) {
     let called;
     let called_with_newest_flag = false;
 
-    channel.get = function (opts) {
+    channel.get = (opts) => {
         assert.equal(opts.url, "/json/messages");
         // There's a separate call with anchor="newest" that happens
         // unconditionally; do basic verfication of that call.
@@ -127,17 +127,17 @@ function config_process_results(messages) {
 
     const messages_processed_for_bools = [];
 
-    message_store.set_message_booleans = function (message) {
+    message_store.set_message_booleans = (message) => {
         messages_processed_for_bools.push(message);
     };
 
     message_store.add_message_metadata = (message) => message;
 
-    message_util.do_unread_count_updates = function (arg) {
+    message_util.do_unread_count_updates = (arg) => {
         assert.deepEqual(arg, messages);
     };
 
-    message_util.add_old_messages = function (new_messages, msg_list) {
+    message_util.add_old_messages = (new_messages, msg_list) => {
         assert.deepEqual(new_messages, messages);
         msg_list.add_messages(new_messages);
     };
@@ -146,7 +146,7 @@ function config_process_results(messages) {
 
     pm_list.update_private_messages = noop;
 
-    self.verify = function () {
+    self.verify = () => {
         assert.deepEqual(messages_processed_for_bools, messages);
     };
 
@@ -216,7 +216,7 @@ function initial_fetch_step() {
     let fetch;
     const response = initialize_data.initial_fetch.resp;
 
-    self.prep = function () {
+    self.prep = () => {
         fetch = config_fake_channel({
             expected_opts_data: initialize_data.initial_fetch.req,
         });
@@ -224,7 +224,7 @@ function initial_fetch_step() {
         message_fetch.initialize();
     };
 
-    self.finish = function () {
+    self.finish = () => {
         test_fetch_success({
             fetch,
             response,
@@ -239,17 +239,17 @@ function forward_fill_step() {
 
     let fetch;
 
-    self.prep = function () {
+    self.prep = () => {
         fetch = config_fake_channel({
             expected_opts_data: initialize_data.forward_fill.req,
         });
     };
 
-    self.finish = function () {
+    self.finish = () => {
         const response = initialize_data.forward_fill.resp;
 
         let idle_config;
-        $("document-stub").idle = function (config) {
+        $("document-stub").idle = (config) => {
             idle_config = config;
         };
 
@@ -304,9 +304,7 @@ function simulate_narrow() {
         public_operators: () => [{operator: "pm-with", operand: alice.email}],
     };
 
-    narrow_state.active = function () {
-        return true;
-    };
+    narrow_state.active = () => true;
 
     const msg_list = new message_list.MessageList({
         table_name: "zfilt",

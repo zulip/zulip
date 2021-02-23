@@ -35,9 +35,7 @@ run_test("pills", () => {
         full_name: "Hamlet",
     };
 
-    people.get_realm_users = function () {
-        return [iago, othello, hamlet];
-    };
+    people.get_realm_users = () => [iago, othello, hamlet];
 
     const recipient_stub = $("#private_message_recipient");
     const pill_container_stub = "pill-container";
@@ -46,22 +44,20 @@ run_test("pills", () => {
 
     const all_pills = new Map();
 
-    pills.appendValidatedData = function (item) {
+    pills.appendValidatedData = (item) => {
         const id = item.user_id;
         assert(!all_pills.has(id));
         all_pills.set(id, item);
     };
-    pills.items = function () {
-        return Array.from(all_pills.values());
-    };
+    pills.items = () => Array.from(all_pills.values());
 
     let text_cleared;
-    pills.clear_text = function () {
+    pills.clear_text = () => {
         text_cleared = true;
     };
 
     let pills_cleared;
-    pills.clear = function () {
+    pills.clear = () => {
         pills_cleared = true;
         pills = {
             pill: {},
@@ -77,7 +73,7 @@ run_test("pills", () => {
     };
 
     let get_by_email_called = false;
-    people.get_by_email = function (user_email) {
+    people.get_by_email = (user_email) => {
         get_by_email_called = true;
         if (user_email === iago.email) {
             return iago;
@@ -89,7 +85,7 @@ run_test("pills", () => {
     };
 
     let get_by_user_id_called = false;
-    people.get_by_user_id = function (id) {
+    people.get_by_user_id = (id) => {
         get_by_user_id_called = true;
         if (id === othello.user_id) {
             return othello;

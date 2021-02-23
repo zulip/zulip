@@ -16,17 +16,17 @@ run_test("basics", () => {
     const bar = (function () {
         const self = {};
 
-        self.width = function (width) {
+        self.width = (width) => {
             self.w = width;
             return self;
         };
 
-        self.removeClass = function (arg) {
+        self.removeClass = (arg) => {
             assert.equal(arg, "bar-success bar-danger");
             return self;
         };
 
-        self.addClass = function (arg) {
+        self.addClass = (arg) => {
             self.added_class = arg;
             return self;
         };
@@ -37,7 +37,7 @@ run_test("basics", () => {
     function password_field(min_length, min_guesses) {
         const self = {};
 
-        self.data = function (field) {
+        self.data = (field) => {
             if (field === "minLength") {
                 return min_length;
             } else if (field === "minGuesses") {

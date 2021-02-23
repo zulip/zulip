@@ -13,9 +13,7 @@ const timerender = zrequire("timerender");
 zrequire("stream_color");
 
 const ls_container = new Map();
-const noop = function () {
-    return;
-};
+const noop = () => {};
 
 const localStorage = set_global("localStorage", {
     getItem(key) {
@@ -163,10 +161,10 @@ run_test("snapshot_message", (override) => {
 });
 
 run_test("initialize", () => {
-    window.addEventListener = function (event_name, f) {
+    window.addEventListener = (event_name, f) => {
         assert.equal(event_name, "beforeunload");
         let called = false;
-        drafts.update_draft = function () {
+        drafts.update_draft = () => {
             called = true;
         };
         f();
@@ -287,9 +285,7 @@ run_test("format_drafts", (override) => {
     assert.deepEqual(draft_model.get(), data);
 
     const stub_render_now = timerender.render_now;
-    timerender.render_now = function (time) {
-        return stub_render_now(time, new Date(1549958107000));
-    };
+    timerender.render_now = (time) => stub_render_now(time, new Date(1549958107000));
 
     stub_templates((template_name, data) => {
         assert.equal(template_name, "draft_table_body");

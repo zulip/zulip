@@ -252,7 +252,7 @@ run_test("narrow_to_compose_target", () => {
     const stream_topic_history = set_global("stream_topic_history", {});
     const args = {called: false};
     const activate_backup = narrow.activate;
-    narrow.activate = function (operators, opts) {
+    narrow.activate = (operators, opts) => {
         args.operators = operators;
         args.opts = opts;
         args.called = true;

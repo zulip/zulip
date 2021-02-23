@@ -92,12 +92,12 @@ run_test("render_date_renders_time_html", () => {
     const attrs = {};
     const span_stub = $("<span />");
 
-    span_stub.attr = function (name, val) {
+    span_stub.attr = (name, val) => {
         attrs[name] = val;
         return span_stub;
     };
 
-    span_stub.append = function (str) {
+    span_stub.append = (str) => {
         span_stub.html(str);
         return span_stub;
     };
@@ -116,7 +116,7 @@ run_test("render_date_renders_time_above_html", () => {
     const span_stub = $("<span />");
 
     let appended_val;
-    span_stub.append = function (val) {
+    span_stub.append = (val) => {
         appended_val = val;
         return span_stub;
     };
@@ -228,7 +228,7 @@ run_test("set_full_datetime", () => {
     const time_element = $("<span/>");
     const attrs = {};
 
-    time_element.attr = function (name, val) {
+    time_element.attr = (name, val) => {
         attrs[name] = val;
         return time_element;
     };

@@ -29,7 +29,7 @@ const stream_list = set_global("stream_list", {});
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 
-const noop = function () {};
+const noop = () => {};
 
 people.add_active_user(test_user);
 

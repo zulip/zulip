@@ -241,7 +241,7 @@ run_test("basics", () => {
     // Switch to bob now.
     worker.get_current_time = returns_time(171);
 
-    worker.notify_server_start = function (recipient) {
+    worker.notify_server_start = (recipient) => {
         assert.equal(recipient, "bob");
         events.started = true;
     };

@@ -1550,7 +1550,7 @@ run_test("navbar_helpers", () => {
 run_test("error_cases", () => {
     // This test just gives us 100% line coverage on defensive code that
     // should not be reached unless we break other code.
-    people.pm_with_user_ids = function () {};
+    people.pm_with_user_ids = () => {};
 
     const predicate = get_predicate([["pm-with", "Joe@example.com"]]);
     assert(!predicate({type: "private"}));

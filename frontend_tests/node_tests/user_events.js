@@ -110,7 +110,7 @@ run_test("updates", () => {
 
     let user_id;
     let full_name;
-    message_live_update.update_user_full_name = function (user_id_arg, full_name_arg) {
+    message_live_update.update_user_full_name = (user_id_arg, full_name_arg) => {
         user_id = user_id_arg;
         full_name = full_name_arg;
     };
@@ -144,7 +144,7 @@ run_test("updates", () => {
     assert.equal(person.full_name, "Me V2");
 
     let avatar_url;
-    message_live_update.update_avatar = function (user_id_arg, avatar_url_arg) {
+    message_live_update.update_avatar = (user_id_arg, avatar_url_arg) => {
         user_id = user_id_arg;
         avatar_url = avatar_url_arg;
     };

@@ -10,7 +10,7 @@ const {run_test} = require("../zjsunit/test");
 zrequire("keydown_util");
 const components = zrequire("components");
 
-const noop = function () {};
+const noop = () => {};
 
 const LEFT_KEY = {which: 37, preventDefault: noop, stopPropagation: noop};
 const RIGHT_KEY = {which: 39, preventDefault: noop, stopPropagation: noop};
@@ -30,28 +30,28 @@ run_test("basics", () => {
         self.stub = true;
         self.class = [];
 
-        self.addClass = function (c) {
+        self.addClass = (c) => {
             self.class += " " + c;
             const tokens = self.class.trim().split(/ +/);
             self.class = _.uniq(tokens).join(" ");
         };
 
-        self.removeClass = function (c) {
+        self.removeClass = (c) => {
             const tokens = self.class.trim().split(/ +/);
             self.class = _.without(tokens, c).join(" ");
         };
 
-        self.hasClass = function (c) {
+        self.hasClass = (c) => {
             const tokens = self.class.trim().split(/ +/);
             return tokens.includes(c);
         };
 
-        self.data = function (name) {
+        self.data = (name) => {
             assert.equal(name, "tab-id");
             return i;
         };
 
-        self.text = function (text) {
+        self.text = (text) => {
             assert.equal(
                 text,
                 [
@@ -62,7 +62,7 @@ run_test("basics", () => {
             );
         };
 
-        self.trigger = function (type) {
+        self.trigger = (type) => {
             if (type === "focus") {
                 focused_tab = i;
             }
@@ -78,7 +78,7 @@ run_test("basics", () => {
 
         self.stub = true;
 
-        self.on = function (name, f) {
+        self.on = (name, f) => {
             if (name === "click") {
                 click_f = f;
             } else if (name === "keydown") {
@@ -86,15 +86,13 @@ run_test("basics", () => {
             }
         };
 
-        self.removeClass = function (c) {
+        self.removeClass = (c) => {
             for (const tab of tabs) {
                 tab.removeClass(c);
             }
         };
 
-        self.eq = function (idx) {
-            return tabs[idx];
-        };
+        self.eq = (idx) => tabs[idx];
 
         return self;
     })();
@@ -108,16 +106,16 @@ run_test("basics", () => {
 
         self.classList = new Set();
 
-        self.append = function (child) {
+        self.append = (child) => {
             self.children.push(child);
         };
 
-        self.addClass = function (c) {
+        self.addClass = (c) => {
             self.classList.add(c);
             self.addedClass = c;
         };
 
-        self.find = function (sel) {
+        self.find = (sel) => {
             switch (sel) {
                 case ".ind-tab":
                     return ind_tab;

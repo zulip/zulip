@@ -12,7 +12,7 @@ zrequire("templates");
 
 set_global("document", {});
 
-const noop = function () {};
+const noop = () => {};
 const example_img_link = "http://example.com/example.png";
 
 set_global("ui_util", {
@@ -28,7 +28,7 @@ run_test("set_up_ids", () => {
     // just get coverage on a simple one-liner:
     input_pill.random_id();
 
-    input_pill.random_id = function () {
+    input_pill.random_id = () => {
         id_seq += 1;
         return "some_id" + id_seq;
     };
@@ -80,7 +80,7 @@ run_test("basics", () => {
     let inserted_before;
     const expected_html = pill_html("JavaScript", "some_id1", example_img_link);
 
-    pill_input.before = function (elem) {
+    pill_input.before = (elem) => {
         inserted_before = true;
         assert.equal(elem.html(), expected_html);
     };
@@ -115,9 +115,7 @@ function set_up() {
     pill_input[0] = {};
     pill_input.before = () => {};
 
-    const create_item_from_text = function (text) {
-        return items[text];
-    };
+    const create_item_from_text = (text) => items[text];
 
     const container = $.create("container");
     container.set_find_results(".input", pill_input);
@@ -368,7 +366,7 @@ run_test("insert_remove", () => {
     const container = info.container;
 
     const inserted_html = [];
-    pill_input.before = function (elem) {
+    pill_input.before = (elem) => {
         inserted_html.push(elem.html());
     };
 

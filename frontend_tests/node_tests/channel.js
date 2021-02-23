@@ -20,16 +20,16 @@ function test_with_mock_ajax(test_params) {
 
     let ajax_called;
     let ajax_options;
-    $.ajax = function (options) {
+    $.ajax = (options) => {
         $.ajax = undefined;
         ajax_called = true;
         ajax_options = options;
 
-        options.simulate_success = function (data, text_status) {
+        options.simulate_success = (data, text_status) => {
             options.success(data, text_status, xhr);
         };
 
-        options.simulate_error = function () {
+        options.simulate_error = () => {
             options.error(xhr);
         };
 
@@ -216,7 +216,7 @@ run_test("reload_on_403_error", () => {
 
         check_ajax_options(options) {
             let reload_initiated;
-            reload.initiate = function (options) {
+            reload.initiate = (options) => {
                 reload_initiated = true;
                 assert.deepEqual(options, {
                     immediate: true,
@@ -280,7 +280,7 @@ run_test("retry", () => {
 });
 
 run_test("too_many_pending", () => {
-    $.ajax = function () {
+    $.ajax = () => {
         const xhr = "stub";
         return xhr;
     };

@@ -108,14 +108,10 @@ test_ui("subscriber_pills", () => {
     )}']`;
     const $sub_settings_container = $.create(sub_settings_selector);
     $sub_settings_container.find = noop;
-    $sub_settings_container.find = function () {
-        return input_field_stub;
-    };
+    $sub_settings_container.find = () => input_field_stub;
 
     const pill_container_stub = $.create(sub_settings_selector + " .pill-container");
-    pill_container_stub.find = function () {
-        return input_field_stub;
-    };
+    pill_container_stub.find = () => input_field_stub;
 
     const $subscription_settings = $.create(".subscription_settings");
     $subscription_settings.addClass = noop;
@@ -141,7 +137,7 @@ test_ui("subscriber_pills", () => {
         add_subscribers_request = true;
     };
 
-    input_field_stub.typeahead = function (config) {
+    input_field_stub.typeahead = (config) => {
         assert.equal(config.items, 5);
         assert(config.fixed);
         assert(config.dropup);
@@ -159,9 +155,7 @@ test_ui("subscriber_pills", () => {
 
         (function test_highlighter() {
             const fake_stream = $.create("fake-stream");
-            typeahead_helper.render_stream = function () {
-                return fake_stream;
-            };
+            typeahead_helper.render_stream = () => fake_stream;
             assert.equal(config.highlighter.call(fake_this, denmark), fake_stream);
         })();
 
@@ -175,7 +169,7 @@ test_ui("subscriber_pills", () => {
 
         (function test_sorter() {
             let sort_streams_called = false;
-            typeahead_helper.sort_streams = function () {
+            typeahead_helper.sort_streams = () => {
                 sort_streams_called = true;
             };
             config.sorter.call(fake_this);

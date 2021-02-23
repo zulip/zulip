@@ -12,7 +12,7 @@ const stream_data = zrequire("stream_data");
 const muting = zrequire("muting");
 const muting_ui = set_global("muting_ui", {});
 
-const noop = function () {};
+const noop = () => {};
 
 const frontend = {
     stream_id: 101,
@@ -23,7 +23,7 @@ stream_data.add_sub(frontend);
 run_test("settings", () => {
     muting.add_muted_topic(frontend.stream_id, "js", 1577836800);
     let set_up_topic_ui_called = false;
-    muting_ui.set_up_muted_topics_ui = function () {
+    muting_ui.set_up_muted_topics_ui = () => {
         const opts = muting.get_muted_topics();
         assert.deepEqual(opts, [
             {
@@ -51,13 +51,13 @@ run_test("settings", () => {
 
     const topic_fake_this = $.create("fake.settings-unmute-topic");
     const topic_tr_html = $('tr[data-topic="js"]');
-    topic_fake_this.closest = function (opts) {
+    topic_fake_this.closest = (opts) => {
         assert.equal(opts, "tr");
         return topic_tr_html;
     };
 
     let topic_data_called = 0;
-    topic_tr_html.attr = function (opts) {
+    topic_tr_html.attr = (opts) => {
         if (opts === "data-stream-id") {
             topic_data_called += 1;
             return frontend.stream_id;
@@ -70,7 +70,7 @@ run_test("settings", () => {
     };
 
     let unmute_topic_called = false;
-    muting_ui.unmute_topic = function (stream_id, topic) {
+    muting_ui.unmute_topic = (stream_id, topic) => {
         assert.equal(stream_id, frontend.stream_id);
         assert.equal(topic, "js");
         unmute_topic_called = true;

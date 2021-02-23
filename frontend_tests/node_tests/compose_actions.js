@@ -6,13 +6,9 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const noop = function () {};
-const return_false = function () {
-    return false;
-};
-const return_true = function () {
-    return true;
-};
+const noop = () => {};
+const return_false = () => false;
+const return_true = () => true;
 
 set_global("document", {
     location: {}, // we need this to load compose.js
@@ -125,7 +121,7 @@ run_test("start", () => {
     compose_actions.clear_textarea = noop;
 
     // Start stream message
-    narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = () => {
         const opts = {};
         opts.stream = "stream1";
         opts.topic = "topic1";
@@ -152,7 +148,7 @@ run_test("start", () => {
     };
     stream_data.add_sub(denmark);
 
-    narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = () => {
         const opts = {};
         opts.trigger = "new topic button";
         return opts;
@@ -163,7 +159,7 @@ run_test("start", () => {
     assert.equal($("#stream_message_recipient_stream").val(), "Denmark");
     assert.equal($("#stream_message_recipient_topic").val(), "");
 
-    narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = () => {
         const opts = {};
         opts.trigger = "compose_hotkey";
         return opts;
@@ -190,7 +186,7 @@ run_test("start", () => {
     stream_data.clear_subscriptions();
 
     // Start PM
-    narrow_state.set_compose_defaults = function () {
+    narrow_state.set_compose_defaults = () => {
         const opts = {};
         opts.private_message_recipient = "foo@example.com";
         return opts;
@@ -212,7 +208,7 @@ run_test("start", () => {
 
     // Cancel compose.
     let pill_cleared;
-    compose_pm_pill.clear = function () {
+    compose_pm_pill.clear = () => {
         pill_cleared = true;
     };
 
@@ -325,15 +321,13 @@ run_test("quote_and_reply", () => {
         raw_content: "Testing.",
     });
 
-    current_msg_list.selected_id = function () {
-        return 100;
-    };
+    current_msg_list.selected_id = () => 100;
 
-    compose_ui.insert_syntax_and_focus = function (syntax) {
+    compose_ui.insert_syntax_and_focus = (syntax) => {
         assert.equal(syntax, "[Quoting…]\n");
     };
 
-    compose_ui.replace_syntax = function (syntax, replacement) {
+    compose_ui.replace_syntax = (syntax, replacement) => {
         assert.equal(syntax, "[Quoting…]");
         assert.equal(
             replacement,
@@ -351,17 +345,15 @@ run_test("quote_and_reply", () => {
 
     quote_and_reply(opts);
 
-    current_msg_list.selected_message = function () {
-        return {
-            type: "stream",
-            stream: "devel",
-            topic: "test",
-            reply_to: "bob",
-            sender_full_name: "Bob Roberts",
-            sender_id: 40,
-            raw_content: "Testing.",
-        };
-    };
+    current_msg_list.selected_message = () => ({
+        type: "stream",
+        stream: "devel",
+        topic: "test",
+        reply_to: "bob",
+        sender_full_name: "Bob Roberts",
+        sender_id: 40,
+        raw_content: "Testing.",
+    });
 
     set_global("channel", {
         get() {
@@ -371,18 +363,16 @@ run_test("quote_and_reply", () => {
 
     quote_and_reply(opts);
 
-    current_msg_list.selected_message = function () {
-        return {
-            type: "stream",
-            stream: "devel",
-            topic: "test",
-            reply_to: "bob",
-            sender_full_name: "Bob Roberts",
-            sender_id: 40,
-            raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
-        };
-    };
-    compose_ui.replace_syntax = function (syntax, replacement) {
+    current_msg_list.selected_message = () => ({
+        type: "stream",
+        stream: "devel",
+        topic: "test",
+        reply_to: "bob",
+        sender_full_name: "Bob Roberts",
+        sender_id: 40,
+        raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
+    });
+    compose_ui.replace_syntax = (syntax, replacement) => {
         assert.equal(syntax, "[Quoting…]");
         assert.equal(
             replacement,
@@ -410,7 +400,7 @@ run_test("get_focus_area", () => {
 });
 
 run_test("focus_in_empty_compose", () => {
-    $("#compose-textarea").is = function (attr) {
+    $("#compose-textarea").is = (attr) => {
         assert.equal(attr, ":focus");
         return $("#compose-textarea").is_focused;
     };
@@ -432,7 +422,7 @@ run_test("focus_in_empty_compose", () => {
 
 run_test("on_narrow", () => {
     let cancel_called = false;
-    compose_actions.cancel = function () {
+    compose_actions.cancel = () => {
         cancel_called = true;
     };
     compose_actions.on_narrow({
@@ -441,42 +431,32 @@ run_test("on_narrow", () => {
     assert(cancel_called);
 
     let on_topic_narrow_called = false;
-    compose_actions.on_topic_narrow = function () {
+    compose_actions.on_topic_narrow = () => {
         on_topic_narrow_called = true;
     };
-    narrow_state.narrowed_by_topic_reply = function () {
-        return true;
-    };
+    narrow_state.narrowed_by_topic_reply = () => true;
     compose_actions.on_narrow({
         force_close: false,
     });
     assert(on_topic_narrow_called);
 
     let update_message_list_called = false;
-    narrow_state.narrowed_by_topic_reply = function () {
-        return false;
-    };
-    compose_fade.update_message_list = function () {
+    narrow_state.narrowed_by_topic_reply = () => false;
+    compose_fade.update_message_list = () => {
         update_message_list_called = true;
     };
-    compose_state.has_message_content = function () {
-        return true;
-    };
+    compose_state.has_message_content = () => true;
     compose_actions.on_narrow({
         force_close: false,
     });
     assert(update_message_list_called);
 
-    compose_state.has_message_content = function () {
-        return false;
-    };
+    compose_state.has_message_content = () => false;
     let start_called = false;
-    compose_actions.start = function () {
+    compose_actions.start = () => {
         start_called = true;
     };
-    narrow_state.narrowed_by_pm_reply = function () {
-        return true;
-    };
+    narrow_state.narrowed_by_pm_reply = () => true;
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",
@@ -492,9 +472,7 @@ run_test("on_narrow", () => {
     });
     assert(!start_called);
 
-    narrow_state.narrowed_by_pm_reply = function () {
-        return false;
-    };
+    narrow_state.narrowed_by_pm_reply = () => false;
     cancel_called = false;
     compose_actions.on_narrow({
         force_close: false,

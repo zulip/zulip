@@ -102,7 +102,7 @@ function simulate_realm_domains_table() {
     $("#realm_domains_table tbody").set_find_results("tr", $.create("realm-tr-stub"));
 
     let appended;
-    $("#realm_domains_table tbody").append = function (html) {
+    $("#realm_domains_table tbody").append = (html) => {
         appended = true;
         assert.equal(html, "stub-domains-list");
     };
@@ -128,7 +128,7 @@ function test_realms_domain_modal(add_realm_domain) {
     let posted;
     let success_callback;
     let error_callback;
-    channel.post = function (req) {
+    channel.post = (req) => {
         posted = true;
         assert.equal(req.url, "/json/realm/domains");
         success_callback = req.success;
@@ -365,7 +365,7 @@ function test_upload_realm_icon(upload_realm_logo_or_icon) {
     const file_input = [{files: ["image1.png", "image2.png"]}];
 
     let posted;
-    channel.post = function (req) {
+    channel.post = (req) => {
         posted = true;
         assert.equal(req.url, "/json/realm/icon");
         assert.equal(req.data.csrfmiddlewaretoken, "token-stub");
@@ -389,7 +389,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     let success_callback;
     let error_callback;
-    channel.patch = function (req) {
+    channel.patch = (req) => {
         assert.equal(req.url, "/json/realm/domains/example.com");
         assert.equal(req.data.allow_subdomains, JSON.stringify(allow));
         success_callback = req.success;
@@ -758,7 +758,7 @@ run_test("set_up", (override) => {
     };
 
     let upload_realm_logo_or_icon;
-    realm_icon.build_realm_icon_widget = function (f) {
+    realm_icon.build_realm_icon_widget = (f) => {
         upload_realm_logo_or_icon = f;
     };
 
@@ -786,7 +786,7 @@ run_test("set_up", (override) => {
     const allow_topic_edit_label_parent = $.create("allow-topic-edit-label-parent");
     $("#id_realm_allow_community_topic_editing_label").set_parent(allow_topic_edit_label_parent);
 
-    channel.get = function (opts) {
+    channel.get = (opts) => {
         assert.equal(opts.url, "/json/export/realm");
     };
 
@@ -1024,10 +1024,8 @@ run_test("misc", () => {
 
     let setting_name = "realm_notifications_stream_id";
     let elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
-    elem.closest = function () {
-        return stub_notification_disable_parent;
-    };
-    stream_data.get_sub_by_id = function (stream_id) {
+    elem.closest = () => stub_notification_disable_parent;
+    stream_data.get_sub_by_id = (stream_id) => {
         assert.equal(stream_id, 42);
         return {name: "some_stream"};
     };
@@ -1041,10 +1039,8 @@ run_test("misc", () => {
 
     setting_name = "realm_signup_notifications_stream_id";
     elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
-    elem.closest = function () {
-        return stub_notification_disable_parent;
-    };
-    stream_data.get_sub_by_id = function (stream_id) {
+    elem.closest = () => stub_notification_disable_parent;
+    stream_data.get_sub_by_id = (stream_id) => {
         assert.equal(stream_id, 75);
         return {name: "some_stream"};
     };

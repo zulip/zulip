@@ -103,15 +103,13 @@ run_test("redraw_left_panel", (override) => {
         sub_stubs.push(sub_row);
 
         $(sub_row).attr("data-stream-id", data.stream_id);
-        $(sub_row).detach = function () {
-            return sub_row;
-        };
+        $(sub_row).detach = () => sub_row;
     }
 
     $.create("#subscriptions_table .stream-row", {children: sub_stubs});
 
     let ui_called = false;
-    ui.reset_scrollbar = function (elem) {
+    ui.reset_scrollbar = (elem) => {
         ui_called = true;
         assert.equal(elem, $("#subscription_overlay .streams-list"));
     };
@@ -193,11 +191,11 @@ run_test("redraw_left_panel", (override) => {
 
     // active stream-row is not included in results
     $(".stream-row-denmark").addClass("active");
-    $(".stream-row.active").hasClass = function (cls) {
+    $(".stream-row.active").hasClass = (cls) => {
         assert.equal(cls, "notdisplayed");
         return $(".stream-row-denmark").hasClass("active");
     };
-    $(".stream-row.active").removeClass = function (cls) {
+    $(".stream-row.active").removeClass = (cls) => {
         assert.equal(cls, "active");
         $(".stream-row-denmark").removeClass("active");
     };

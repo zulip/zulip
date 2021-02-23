@@ -11,7 +11,7 @@ const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
 const message_store = zrequire("message_store");
 
-const noop = function () {};
+const noop = () => {};
 
 set_global("document", "document-stub");
 

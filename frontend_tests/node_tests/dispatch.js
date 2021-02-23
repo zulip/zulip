@@ -7,7 +7,7 @@ const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const noop = function () {};
+const noop = () => {};
 
 const events = require("./lib/events");
 
