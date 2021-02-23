@@ -495,7 +495,7 @@ class CommonUtils {
         const page = await this.get_page();
         try {
             await test_function(page);
-        } catch (error: unknown) {
+        } catch (error) {
             console.log(error);
 
             // Take a screenshot, and increment the screenshot_id.
