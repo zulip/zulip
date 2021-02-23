@@ -67,12 +67,17 @@ exports.restore = function () {
 };
 
 exports.with_field = function (obj, field, val, f) {
+    const had_val = Object.prototype.hasOwnProperty.call(obj, field);
     const old_val = obj[field];
     try {
         obj[field] = val;
         return f();
     } finally {
-        obj[field] = old_val;
+        if (had_val) {
+            obj[field] = old_val;
+        } else {
+            delete obj[field];
+        }
     }
 };
 
