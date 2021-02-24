@@ -60,22 +60,6 @@ function update_message_in_all_views(message_id, callback) {
     }
 }
 
-exports.show_error_for_unsupported_platform = function () {
-    // Check if the user is using old desktop app
-    if (typeof bridge !== "undefined") {
-        // We don't internationalize this string because it is long,
-        // and few users will have both the old desktop app and an
-        // internationalized version of Zulip anyway.
-        const error =
-            "Hello! You're using the unsupported old Zulip desktop app," +
-            " which is no longer developed. We recommend switching to the new, " +
-            "modern desktop app, which you can download at " +
-            "<a href='https://zulip.com/apps'>zulip.com/apps</a>.";
-
-        ui_report.generic_embed_error(error);
-    }
-};
-
 exports.update_starred_view = function (message_id, new_value) {
     const starred = new_value;
 
@@ -183,7 +167,6 @@ exports.restore_compose_cursor = function () {
 
 exports.initialize = function () {
     exports.set_compose_textarea_handlers();
-    exports.show_error_for_unsupported_platform();
 };
 
 window.ui = exports;
