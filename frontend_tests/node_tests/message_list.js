@@ -25,7 +25,6 @@ set_global("document", {
 const narrow_state = set_global("narrow_state", {});
 const stream_data = set_global("stream_data", {});
 
-zrequire("FetchStatus", "js/fetch_status");
 const muting = zrequire("muting");
 zrequire("MessageListData", "js/message_list_data");
 zrequire("MessageListView", "js/message_list_view");

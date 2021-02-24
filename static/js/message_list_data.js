@@ -2,6 +2,7 @@
 
 const _ = require("lodash");
 
+const {FetchStatus} = require("./fetch_status");
 const util = require("./util");
 
 class MessageListData {

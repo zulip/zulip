@@ -45,7 +45,6 @@ import "../filter";
 import "../poll_widget";
 import "../widgetize";
 import "../submessage";
-import "../fetch_status";
 import "../message_list_data";
 import "../message_list_view";
 import "../message_list";

@@ -3,7 +3,6 @@
 // remove each declaration when the corresponding module is migrated
 // to TS.
 
-declare let FetchStatus: any;
 declare let Filter: any;
 declare let ListCursor: any;
 declare let MessageListData: any;
