@@ -114,7 +114,6 @@ import "../presence";
 import "../buddy_data";
 import "../padded_widget";
 import "../buddy_list";
-import "../list_cursor";
 import "../activity";
 import "../user_events";
 import "../timerender";

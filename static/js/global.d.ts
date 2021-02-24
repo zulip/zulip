@@ -4,7 +4,6 @@
 // to TS.
 
 declare let Filter: any;
-declare let ListCursor: any;
 declare let MessageListData: any;
 declare let MessageListView: any;
 declare let activity: any;

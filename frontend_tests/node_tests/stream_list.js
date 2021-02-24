@@ -17,7 +17,6 @@ zrequire("hash_util");
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const scroll_util = zrequire("scroll_util");
-zrequire("list_cursor");
 const stream_list = zrequire("stream_list");
 zrequire("ui");
 const page_params = set_global("page_params", {

@@ -105,7 +105,6 @@ rewiremock.proxy(() => zrequire("notifications"), {
     "../../static/js/favicon": {},
 });
 zrequire("pm_list");
-zrequire("list_cursor");
 zrequire("keydown_util");
 zrequire("stream_list");
 zrequire("topic_list");
