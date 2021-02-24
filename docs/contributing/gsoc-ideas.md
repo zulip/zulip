@@ -328,10 +328,10 @@ CSS](https://github.com/zulip/zulip/).
   logic.  We have prototyped for a few modules by migrating them to
   `static/shared/`; this project will involve closely collaborating
   with the mobile team to prioritize the modules to migrate.  **Skills
-  recoommended**: JavaScript experience, careful refactoring, API
+  recommended**: JavaScript experience, careful refactoring, API
   design, React.
 
-  Experts: Greg Price, Steve Howell
+  Experts: Greg Price, Steve Howell.
 
 - Make Zulip integrations easier for nontechnical users to set up.
   This includes adding a backend permissions system for managing bot
@@ -398,7 +398,7 @@ CSS](https://github.com/zulip/zulip/).
   **Skills recommended**: Python and JavaScript/CSS, plus devops
   skills (Linux deployment, Docker, Puppet etc.) are all useful here.
   Experience writing tools using various popular APIs is helpful for
-  being able to make good choices.  Experts: Steve Howell.
+  being able to make good choices.  Expert: Steve Howell.
 
 - Improve the UI and visual design of the existing Zulip settings and
   administration pages while fixing bugs and adding new settings.  The
@@ -496,13 +496,13 @@ issues are being worked on. Since the project is in its early stages of
 development, there are a variety of possible tasks that can be done, including
 adding new features, writing unit tests and creating a testing framework, and
 writing documentation. **Skills required**: Node.js, ECMAScript 6, and API
-experience. Expert: Cynthia Lin, Joshua Pan.
+experience. Experts: Cynthia Lin, Joshua Pan.
 
 ### React Native mobile app
 
 Code:
 [React Native mobile app](https://github.com/zulip/zulip-mobile).
-Experts: Greg Price, Chris Bobbe
+Experts: Greg Price, Chris Bobbe.
 
 The highest priority for the Zulip project overall is improving the
 Zulip React Native mobile app.
@@ -534,7 +534,7 @@ we have enough strong applicants.
 
 Code:
 [Our cross-platform desktop app written in JavaScript on Electron](https://github.com/zulip/zulip-desktop).
-Experts: Anders Kaseorg, Akash Nimare, Abhighyan Khaund
+Experts: Anders Kaseorg, Akash Nimare, Abhighyan Khaund.
 
 - Contribute to our [Electron-based desktop client
   application](https://github.com/zulip/zulip-desktop).  There's
