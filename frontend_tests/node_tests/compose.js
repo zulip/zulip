@@ -53,6 +53,9 @@ set_global("navigator", _navigator);
 set_global("notifications", _notifications);
 set_global("reminder", reminder);
 set_global("sent_messages", sent_messages);
+rewiremock("../../static/js/rendered_markdown").with({
+    update_elements: () => {},
+});
 
 const local_message = set_global("local_message", {});
 const transmit = set_global("transmit", {});
@@ -73,6 +76,8 @@ document.location.host = "foo.com";
 const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));
 
+rewiremock.enable();
+
 const compose_ui = zrequire("compose_ui");
 const peer_data = zrequire("peer_data");
 const util = zrequire("util");
@@ -85,11 +90,7 @@ zrequire("input_pill");
 zrequire("user_pill");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const echo = zrequire("echo");
-const compose = rewiremock.proxy(() => zrequire("compose"), {
-    "../../static/js/rendered_markdown": {
-        update_elements: () => {},
-    },
-});
+const compose = zrequire("compose");
 const upload = zrequire("upload");
 const server_events_dispatch = zrequire("server_events_dispatch");
 const settings_config = zrequire("settings_config");
@@ -1921,3 +1922,5 @@ test_ui("test_video_chat_button_toggle", () => {
 });
 
 MockDate.reset();
+
+rewiremock.disable();

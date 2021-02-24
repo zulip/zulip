@@ -94,6 +94,13 @@ server_events.home_view_loaded = () => true;
 
 resize.watch_manual_resize = () => {};
 
+rewiremock("../../static/js/favicon").with({});
+rewiremock("../../static/js/emojisets").with({
+    initialize: () => {},
+});
+
+rewiremock.enable();
+
 const util = zrequire("util");
 
 zrequire("hash_util");
@@ -119,9 +126,7 @@ zrequire("composebox_typeahead");
 zrequire("narrow");
 zrequire("search_suggestion");
 zrequire("search");
-rewiremock.proxy(() => zrequire("notifications"), {
-    "../../static/js/favicon": {},
-});
+zrequire("notifications");
 zrequire("pm_list");
 zrequire("keydown_util");
 zrequire("stream_list");
@@ -172,9 +177,7 @@ run_test("initialize_everything", () => {
 
     $("<audio>")[0] = "stub";
 
-    rewiremock.proxy(() => zrequire("ui_init"), {
-        "../../static/js/emojisets": {
-            initialize: () => {},
-        },
-    });
+    zrequire("ui_init");
 });
+
+rewiremock.disable();

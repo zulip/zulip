@@ -78,14 +78,16 @@ set_global("realm_logo", _realm_logo);
 set_global("ui_report", _ui_report);
 set_global("ListWidget", _ListWidget);
 
+// setup is only imported to set the
+// setup.password_change_in_progress flag.
+rewiremock("../../static/js/setup").with({});
+
+rewiremock.enable();
+
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
 const stream_data = zrequire("stream_data");
-const settings_account = rewiremock.proxy(() => zrequire("settings_account"), {
-    // Setup is only imported to set the
-    // setup.password_change_in_progress flag.
-    "../../static/js/setup": {},
-});
+const settings_account = zrequire("settings_account");
 const settings_org = zrequire("settings_org");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
@@ -1054,3 +1056,5 @@ run_test("misc", () => {
     assert.equal(elem.text(), "translated: Disabled");
     assert(elem.hasClass("text-warning"));
 });
+
+rewiremock.disable();

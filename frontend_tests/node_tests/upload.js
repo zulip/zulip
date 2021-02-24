@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {reset_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -314,6 +314,8 @@ run_test("upload_files", () => {
     assert($("#compose-textarea").val(), "user modified text");
 });
 
+rewiremock.enable();
+
 run_test("uppy_config", () => {
     let uppy_stub_called = false;
     let uppy_set_meta_called = false;
@@ -356,7 +358,8 @@ run_test("uppy_config", () => {
         };
     }
     uppy_stub.Plugin = plugin_stub;
-    upload = rewiremock.proxy(() => require("../../static/js/upload"), {"@uppy/core": uppy_stub});
+    rewiremock("@uppy/core").with(uppy_stub);
+    upload = reset_module("upload");
     upload.setup_upload({mode: "compose"});
 
     assert.equal(uppy_stub_called, true);
@@ -493,7 +496,8 @@ run_test("uppy_events", () => {
         };
     }
     uppy_stub.Plugin = plugin_stub;
-    upload = rewiremock.proxy(() => require("../../static/js/upload"), {"@uppy/core": uppy_stub});
+    rewiremock("@uppy/core").with(uppy_stub);
+    upload = reset_module("upload");
     upload.setup_upload({mode: "compose"});
     assert.equal(Object.keys(callbacks).length, 5);
 
@@ -679,3 +683,5 @@ run_test("uppy_events", () => {
     assert(compose_ui_replace_syntax_called);
     assert.equal($("#compose-textarea").val(), "user modified text");
 });
+
+rewiremock.disable();
