@@ -1,5 +1,3 @@
-"use strict";
-
 const ls = {
     // parse JSON without throwing an error.
     parseJSON(str) {
@@ -91,7 +89,7 @@ const ls = {
 };
 
 // return a new function instance that has instance-scoped variables.
-const localstorage = function () {
+export const localstorage = function () {
     const _data = {
         VERSION: 1,
         expires: Number.POSITIVE_INFINITY,
@@ -179,6 +177,3 @@ localstorage.supported = function supports_localstorage() {
         return false;
     }
 };
-
-module.exports = localstorage;
-window.localstorage = localstorage;

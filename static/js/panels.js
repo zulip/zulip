@@ -1,5 +1,6 @@
 "use strict";
 
+const {localstorage} = require("./localstorage");
 const util = require("./util");
 
 const resize_app = function () {

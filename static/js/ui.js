@@ -2,6 +2,8 @@
 
 const SimpleBar = require("simplebar/dist/simplebar");
 
+const {localstorage} = require("./localstorage");
+
 // What, if anything, obscures the home tab?
 
 exports.replace_emoji_with_text = function (element) {
