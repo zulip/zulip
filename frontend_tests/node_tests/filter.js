@@ -374,13 +374,13 @@ run_test("show_first_unread", () => {
     assert(!filter.allow_use_first_unread_when_narrowing());
 
     filter = new Filter();
-    filter.can_mark_messages_read = () => true;
+    assert(filter.can_mark_messages_read());
     assert(filter.allow_use_first_unread_when_narrowing());
 
     // Side case
     operators = [{operator: "is", operand: "any"}];
     filter = new Filter(operators);
-    filter.can_mark_messages_read = () => false;
+    assert(!filter.can_mark_messages_read());
     assert(filter.allow_use_first_unread_when_narrowing());
 });
 run_test("filter_with_new_params_topic", () => {
