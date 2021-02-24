@@ -65,41 +65,30 @@ page_params.realm_filters = [];
 page_params.starred_messages = [];
 page_params.presences = [];
 
-const ignore_modules = [
-    "activity",
-    "click_handlers",
-    "compose_pm_pill",
-    "drafts",
-    "emoji_picker",
-    "gear_menu",
-    "hashchange",
-    "hotspots",
-    // Accesses home_msg_list, which is a lot of complexity to setup
-    "message_fetch",
-    "message_scroll",
-    "message_viewport",
-    "panels",
-    "popovers",
-    "reload",
-    "scroll_bar",
-    "server_events",
-    "settings_sections",
-    "settings_panel_menu",
-    "settings_toggle",
-    "subs",
-    "timerender",
-    "ui",
-    "unread_ui",
-];
-
-const {message_viewport, server_events, ui} = Object.fromEntries(
-    ignore_modules.map((mod) => [
-        mod,
-        set_global(mod, {
-            initialize: () => {},
-        }),
-    ]),
-);
+set_global("activity", {initialize() {}});
+set_global("click_handlers", {initialize() {}});
+set_global("compose_pm_pill", {initialize() {}});
+set_global("drafts", {initialize() {}});
+set_global("emoji_picker", {initialize() {}});
+set_global("gear_menu", {initialize() {}});
+set_global("hashchange", {initialize() {}});
+set_global("hotspots", {initialize() {}});
+// Accesses home_msg_list, which is a lot of complexity to set up
+set_global("message_fetch", {initialize() {}});
+set_global("message_scroll", {initialize() {}});
+const message_viewport = set_global("message_viewport", {initialize() {}});
+set_global("panels", {initialize() {}});
+set_global("popovers", {initialize() {}});
+set_global("reload", {initialize() {}});
+set_global("scroll_bar", {initialize() {}});
+const server_events = set_global("server_events", {initialize() {}});
+set_global("settings_sections", {initialize() {}});
+set_global("settings_panel_menu", {initialize() {}});
+set_global("settings_toggle", {initialize() {}});
+set_global("subs", {initialize() {}});
+set_global("timerender", {initialize() {}});
+const ui = set_global("ui", {initialize() {}});
+set_global("unread_ui", {initialize() {}});
 
 server_events.home_view_loaded = () => true;
 
