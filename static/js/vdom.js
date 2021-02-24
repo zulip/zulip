@@ -55,6 +55,23 @@ exports.render_tag = (tag) => {
     return start_tag + "\n" + innards + "\n" + end_tag;
 };
 
+exports.update_attrs = (elem, new_attrs, old_attrs) => {
+    const new_dict = new Map(new_attrs);
+    const old_dict = new Map(old_attrs);
+
+    for (const [k, v] of new_attrs) {
+        if (v !== old_dict.get(k)) {
+            elem.attr(k, v);
+        }
+    }
+
+    for (const [k] of old_attrs) {
+        if (!new_dict.has(k)) {
+            elem.removeAttr(k);
+        }
+    }
+};
+
 exports.update = (replace_content, find, new_dom, old_dom) => {
     /*
         The update method allows you to continually
@@ -165,23 +182,6 @@ exports.update = (replace_content, find, new_dom, old_dom) => {
     }
 
     exports.update_attrs(find(), new_opts.attrs, old_opts.attrs);
-};
-
-exports.update_attrs = (elem, new_attrs, old_attrs) => {
-    const new_dict = new Map(new_attrs);
-    const old_dict = new Map(old_attrs);
-
-    for (const [k, v] of new_attrs) {
-        if (v !== old_dict.get(k)) {
-            elem.attr(k, v);
-        }
-    }
-
-    for (const [k] of old_attrs) {
-        if (!new_dict.has(k)) {
-            elem.removeAttr(k);
-        }
-    }
 };
 
 window.vdom = exports;
