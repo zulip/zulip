@@ -138,11 +138,10 @@ def deactivate_stream_backend(request: HttpRequest,
                               is_archive: Optional[bool] = REQ(validator=check_bool, default=None)) -> HttpResponse:
     (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
 
-    print(is_archive)
     if (is_archive is None or is_archive):
         do_deactivate_stream(stream, acting_user=user_profile)
     if (not is_archive):
-        ##destroy stream
+        ## WIP: destroy stream
         return json_error(_("Trying to destroy stream"))
 
     return json_success()

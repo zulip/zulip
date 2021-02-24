@@ -421,8 +421,7 @@ def delete_stream(client: Client, stream_id: int) -> None:
     # Delete the stream named 'new stream'
 
     request = {
-        'stream_id': stream_id,
-        'is_archive': True
+        'is_archive': True,
     }
 
     stream_id = client.get_stream_id('stream to be deleted')['stream_id']
