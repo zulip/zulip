@@ -312,7 +312,7 @@ run_test("comma", () => {
     const COMMA = 188;
     const key_handler = container.get_on_handler("keydown", ".input");
 
-    pill_input.text = () => " yel";
+    pill_input.text(" yel");
 
     key_handler({
         keyCode: COMMA,
@@ -321,7 +321,7 @@ run_test("comma", () => {
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    pill_input.text = () => " yellow";
+    pill_input.text(" yellow");
 
     key_handler({
         keyCode: COMMA,
