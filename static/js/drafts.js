@@ -5,6 +5,7 @@ const Handlebars = require("handlebars/runtime");
 
 const render_draft_table_body = require("../templates/draft_table_body.hbs");
 
+const {localstorage} = require("./localstorage");
 const people = require("./people");
 const util = require("./util");
 

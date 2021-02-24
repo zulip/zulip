@@ -7,7 +7,7 @@ const {set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const localstorage = zrequire("localstorage");
+const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const timerender = zrequire("timerender");
 zrequire("stream_color");

@@ -177,7 +177,6 @@
                 "loading": false,
                 "localStorage": false,
                 "local_message": false,
-                "localstorage": false,
                 "location": false,
                 "markdown": false,
                 "message_edit": false,
