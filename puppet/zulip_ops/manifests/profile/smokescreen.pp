@@ -3,7 +3,7 @@
 class zulip_ops::profile::smokescreen {
   include zulip_ops::profile::base
   include zulip::supervisor
-  include zulip::camo
+  include zulip_ops::camo
 
   $golang_version = '1.14.10'
   zulip::sha256_tarball_to { 'golang':
