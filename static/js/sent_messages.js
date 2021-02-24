@@ -29,24 +29,6 @@ function report_send_time(send_time, receive_time, locally_echoed, rendered_chan
     });
 }
 
-exports.start_tracking_message = function (opts) {
-    const local_id = opts.local_id;
-
-    if (!opts.local_id) {
-        blueslip.error("You must supply a local_id");
-        return;
-    }
-
-    if (exports.messages.has(local_id)) {
-        blueslip.error("We are re-using a local_id");
-        return;
-    }
-
-    const state = new exports.MessageState(opts);
-
-    exports.messages.set(local_id, state);
-};
-
 class MessageState {
     start = new Date();
 
@@ -119,6 +101,24 @@ class MessageState {
     }
 }
 exports.MessageState = MessageState;
+
+exports.start_tracking_message = function (opts) {
+    const local_id = opts.local_id;
+
+    if (!opts.local_id) {
+        blueslip.error("You must supply a local_id");
+        return;
+    }
+
+    if (exports.messages.has(local_id)) {
+        blueslip.error("We are re-using a local_id");
+        return;
+    }
+
+    const state = new exports.MessageState(opts);
+
+    exports.messages.set(local_id, state);
+}
 
 exports.get_message_state = function (local_id) {
     const state = exports.messages.get(local_id);
