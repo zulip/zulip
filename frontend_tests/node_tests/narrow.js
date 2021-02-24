@@ -2,15 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const hash_util = zrequire("hash_util");
 zrequire("hashchange");
+const compose_state = zrequire("compose_state");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+const stream_topic_history = set_global("stream_topic_history", {});
 const Filter = zrequire("Filter", "js/filter");
 set_global("page_params", {
     stop_words: ["what", "about"],
@@ -247,38 +249,45 @@ run_test("show_invalid_narrow_message", () => {
     );
 });
 
-run_test("narrow_to_compose_target", () => {
-    const compose_state = set_global("compose_state", {});
-    const stream_topic_history = set_global("stream_topic_history", {});
+run_test("narrow_to_compose_target errors", () => {
+    function test() {
+        with_field(
+            narrow,
+            "activate",
+            () => {
+                throw new Error("should not activate!");
+            },
+            () => {
+                narrow.to_compose_target();
+            },
+        );
+    }
+
+    // No-op when not composing.
+    compose_state.set_message_type(false);
+    test();
+
+    // No-op when empty stream.
+    compose_state.set_message_type("stream");
+    compose_state.stream_name("");
+    test();
+});
+
+run_test("narrow_to_compose_target streams", (override) => {
     const args = {called: false};
-    const activate_backup = narrow.activate;
-    narrow.activate = (operators, opts) => {
+    override(narrow, "activate", (operators, opts) => {
         args.operators = operators;
         args.opts = opts;
         args.called = true;
-    };
+    });
 
-    // No-op when not composing.
-    compose_state.composing = () => false;
-    narrow.to_compose_target();
-    assert.equal(args.called, false);
-    compose_state.composing = () => true;
-
-    // No-op when empty stream.
-    compose_state.get_message_type = () => "stream";
-    compose_state.stream_name = () => "";
-    args.called = false;
-    narrow.to_compose_target();
-    assert.equal(args.called, false);
-
-    // --- Tests for stream messages ---
-    compose_state.get_message_type = () => "stream";
+    compose_state.set_message_type("stream");
     stream_data.add_sub({name: "ROME", stream_id: 99});
-    compose_state.stream_name = () => "ROME";
-    stream_topic_history.get_recent_topic_names = () => ["one", "two", "three"];
+    compose_state.stream_name("ROME");
+    override(stream_topic_history, "get_recent_topic_names", () => ["one", "two", "three"]);
 
     // Test with existing topic
-    compose_state.topic = () => "one";
+    compose_state.topic("one");
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
@@ -289,41 +298,52 @@ run_test("narrow_to_compose_target", () => {
     ]);
 
     // Test with new topic
-    compose_state.topic = () => "four";
+    compose_state.topic("four");
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 
     // Test with blank topic
-    compose_state.topic = () => "";
+    compose_state.topic("");
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 
     // Test with no topic
-    compose_state.topic = () => {};
+    compose_state.topic(undefined);
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
+});
 
-    // --- Tests for PMs ---
-    compose_state.get_message_type = () => "private";
+run_test("narrow_to_compose_target PMs", (override) => {
+    const args = {called: false};
+    override(narrow, "activate", (operators, opts) => {
+        args.operators = operators;
+        args.opts = opts;
+        args.called = true;
+    });
+
+    let emails;
+    override(compose_state, "private_message_recipient", () => emails);
+
+    compose_state.set_message_type("private");
     people.add_active_user(ray);
     people.add_active_user(alice);
     people.add_active_user(me);
 
     // Test with valid person
-    compose_state.private_message_recipient = () => "alice@example.com";
+    emails = "alice@example.com";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "pm-with", operand: "alice@example.com"}]);
 
     // Test with valid persons
-    compose_state.private_message_recipient = () => "alice@example.com,ray@example.com";
+    emails = "alice@example.com,ray@example.com";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
@@ -332,25 +352,23 @@ run_test("narrow_to_compose_target", () => {
     ]);
 
     // Test with some invalid persons
-    compose_state.private_message_recipient = () => "alice@example.com,random,ray@example.com";
+    emails = "alice@example.com,random,ray@example.com";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
 
     // Test with all invalid persons
-    compose_state.private_message_recipient = () => "alice,random,ray";
+    emails = "alice,random,ray";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
 
     // Test with no persons
-    compose_state.private_message_recipient = () => "";
+    emails = "";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
-
-    narrow.activate = activate_backup;
 });
