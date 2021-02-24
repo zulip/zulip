@@ -2,6 +2,8 @@
 
 const autosize = require("autosize");
 
+const {MessageListData} = require("./message_list_data");
+
 exports.narrowed = undefined;
 exports.set_narrowed = function (value) {
     exports.narrowed = value;

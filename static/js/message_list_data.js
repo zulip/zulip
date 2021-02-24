@@ -1,11 +1,9 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import {FetchStatus} from "./fetch_status";
+import * as util from "./util";
 
-const {FetchStatus} = require("./fetch_status");
-const util = require("./util");
-
-class MessageListData {
+export class MessageListData {
     constructor(opts) {
         this.excludes_muted_topics = opts.excludes_muted_topics;
         if (this.excludes_muted_topics) {
@@ -521,7 +519,3 @@ class MessageListData {
         return msg;
     }
 }
-
-module.exports = MessageListData;
-
-window.MessageListData = MessageListData;
