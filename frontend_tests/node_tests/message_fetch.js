@@ -20,7 +20,6 @@ function MessageListView() {
 set_global("MessageListView", MessageListView);
 
 const Filter = zrequire("Filter", "js/filter");
-zrequire("MessageListData", "js/message_list_data");
 const message_list = zrequire("message_list");
 const people = zrequire("people");
 

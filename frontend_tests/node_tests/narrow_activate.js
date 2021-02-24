@@ -13,7 +13,6 @@ set_global("resize", {
 });
 const stream_data = zrequire("stream_data");
 zrequire("Filter", "js/filter");
-zrequire("MessageListData", "js/message_list_data");
 zrequire("unread");
 const narrow = zrequire("narrow");
 

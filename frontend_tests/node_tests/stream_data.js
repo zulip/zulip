@@ -20,7 +20,6 @@ const people = zrequire("people");
 const stream_color = zrequire("stream_color");
 const stream_data = zrequire("stream_data");
 zrequire("Filter", "js/filter");
-zrequire("MessageListData", "js/message_list_data");
 zrequire("MessageListView", "js/message_list_view");
 const message_list = zrequire("message_list");
 const settings_config = zrequire("settings_config");
