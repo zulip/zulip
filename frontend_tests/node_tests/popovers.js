@@ -38,6 +38,9 @@ set_global("stream_popover", {
 const stream_data = set_global("stream_data", {});
 
 const ClipboardJS = noop;
+rewiremock("clipboard").with(ClipboardJS);
+
+rewiremock.enable();
 
 zrequire("hash_util");
 zrequire("narrow");
@@ -47,14 +50,9 @@ zrequire("presence");
 zrequire("buddy_data");
 const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");
-function import_popovers() {
-    return rewiremock.proxy(() => zrequire("popovers"), {
-        clipboard: ClipboardJS,
-    });
-}
 
 // Bypass some scary code that runs when we import the module.
-const popovers = with_field($.fn, "popover", noop, import_popovers);
+const popovers = with_field($.fn, "popover", noop, () => zrequire("popovers"));
 
 const alice = {
     email: "alice@example.com",
@@ -267,3 +265,5 @@ test_ui("actions_popover", (override) => {
 
     handler.call(target, e);
 });
+
+rewiremock.disable();

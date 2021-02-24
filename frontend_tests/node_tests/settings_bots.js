@@ -31,15 +31,16 @@ const bot_data_params = {
 
 const avatar = set_global("avatar", {});
 
-const bot_data = zrequire("bot_data");
-
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
 }
 
-const settings_bots = rewiremock.proxy(() => zrequire("settings_bots"), {
-    clipboard: ClipboardJS,
-});
+rewiremock("clipboard").with(ClipboardJS);
+
+rewiremock.enable();
+
+const bot_data = zrequire("bot_data");
+const settings_bots = zrequire("settings_bots");
 
 bot_data.initialize(bot_data_params);
 
@@ -198,3 +199,5 @@ run_test("can_create_new_bots", () => {
     page_params.realm_bot_creation_policy = 3;
     assert(!settings_bots.can_create_new_bots());
 });
+
+rewiremock.disable();

@@ -38,9 +38,11 @@ page_params.custom_profile_field_types = {
     },
 };
 
-const settings_profile_fields = rewiremock.proxy(() => zrequire("settings_profile_fields"), {
-    sortablejs: {default: {create: () => {}}},
-});
+rewiremock("sortablejs").with({default: {create: () => {}}});
+
+rewiremock.enable();
+
+const settings_profile_fields = zrequire("settings_profile_fields");
 
 function test_populate(opts) {
     const fields_data = opts.fields_data;
@@ -186,3 +188,5 @@ run_test("populate_profile_fields", () => {
         is_admin: true,
     });
 });
+
+rewiremock.disable();

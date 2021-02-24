@@ -13,6 +13,13 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {});
+rewiremock("katex").with({
+    renderToString: () => {
+        throw new Error("some-exception");
+    },
+});
+
+rewiremock.enable();
 
 const markdown_config = zrequire("markdown_config");
 zrequire("hash_util");
@@ -20,13 +27,7 @@ zrequire("message_store");
 zrequire("stream_data");
 zrequire("user_groups");
 
-const markdown = rewiremock.proxy(() => zrequire("markdown"), {
-    katex: {
-        renderToString: () => {
-            throw new Error("some-exception");
-        },
-    },
-});
+const markdown = zrequire("markdown");
 
 markdown.initialize([], markdown_config.get_helpers());
 
@@ -35,3 +36,5 @@ run_test("katex_throws_unexpected_exceptions", () => {
     const message = {raw_content: "$$a$$"};
     markdown.apply_markdown(message);
 });
+
+rewiremock.disable();
