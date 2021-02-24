@@ -69,6 +69,15 @@ run_test("get_unread_ids", () => {
         display_recipient: [{id: alice.user_id}],
     };
 
+    message_store.get = (msg_id) => {
+        if (msg_id === stream_msg.id) {
+            return stream_msg;
+        } else if (msg_id === private_msg.id) {
+            return private_msg;
+        }
+        throw new Error("unexpected id");
+    };
+
     stream_data.add_sub(sub);
 
     unread_ids = candidate_ids();
@@ -98,11 +107,6 @@ run_test("get_unread_ids", () => {
     assert_unread_info({flavor: "not_found"});
 
     unread.process_loaded_messages([stream_msg]);
-    message_store.get = (msg_id) => {
-        assert.equal(msg_id, stream_msg.id);
-        return stream_msg;
-    };
-
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id]);
     assert_unread_info({
@@ -146,11 +150,6 @@ run_test("get_unread_ids", () => {
     assert.deepEqual(unread_ids, []);
 
     unread.process_loaded_messages([private_msg]);
-
-    message_store.get = (msg_id) => {
-        assert.equal(msg_id, private_msg.id);
-        return private_msg;
-    };
 
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [private_msg.id]);
