@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const ListCursor = zrequire("list_cursor");
+const {ListCursor} = zrequire("list_cursor");
 
 run_test("config errors", () => {
     blueslip.expect("error", "Programming error");

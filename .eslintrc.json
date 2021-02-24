@@ -127,7 +127,6 @@
             "globals": {
                 "$": false,
                 "Filter": false,
-                "ListCursor": false,
                 "MessageListData": false,
                 "MessageListView": false,
                 "activity": false,
