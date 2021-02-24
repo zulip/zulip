@@ -138,7 +138,6 @@
                 "avatar": false,
                 "blueslip": false,
                 "bot_data": false,
-                "bridge": false,
                 "buddy_data": false,
                 "buddy_list": false,
                 "channel": false,

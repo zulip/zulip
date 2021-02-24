@@ -18,7 +18,6 @@ const page_params = set_global("page_params", {
     max_file_upload_size: 25,
 });
 set_global("csrf_token", "csrf_token");
-set_global("bridge", false);
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.

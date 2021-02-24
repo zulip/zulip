@@ -13,8 +13,6 @@ const $ = require("../zjsunit/zjquery");
 
 const events = require("./lib/events");
 
-set_global("bridge", false);
-
 const noop = () => {};
 
 set_global("DOMParser", new JSDOM().window.DOMParser);
@@ -1029,7 +1027,6 @@ test_ui("initialize", () => {
         assert.equal("#compose-textarea", elem);
         resize_watch_manual_resize_checked = true;
     };
-    set_global("bridge", true);
     let xmlhttprequest_checked = false;
     set_global("XMLHttpRequest", function () {
         this.upload = true;
