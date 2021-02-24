@@ -304,12 +304,19 @@ test_ui("PM_update_dom_counts", () => {
     assert.equal(value.text(), "");
 });
 
-test_ui("handlers", () => {
+test_ui("handlers", (override) => {
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
     let me_li;
     let alice_li;
     let fred_li;
+
+    let narrowed;
+
+    override(narrow, "by", (method, email) => {
+        assert.equal(email, "alice@zulip.com");
+        narrowed = true;
+    });
 
     function init() {
         $.clear_all_elements();
@@ -358,16 +365,10 @@ test_ui("handlers", () => {
 
     (function test_enter_key() {
         init();
-        let narrowed;
-
-        narrow.by = (method, email) => {
-            assert.equal(email, "alice@zulip.com");
-            narrowed = true;
-        };
 
         $(".user-list-filter").val("al");
+        narrowed = false;
         activity.user_cursor.go_to(alice.user_id);
-
         filter_key_handlers.enter_key();
         assert(narrowed);
 
@@ -380,13 +381,7 @@ test_ui("handlers", () => {
         init();
         // We wire up the click handler in click_handlers.js,
         // so this just tests the called function.
-        let narrowed;
-
-        narrow.by = (method, email) => {
-            assert.equal(email, "alice@zulip.com");
-            narrowed = true;
-        };
-
+        narrowed = false;
         activity.narrow_for_user({li: alice_li});
         assert(narrowed);
     })();
@@ -655,7 +650,12 @@ test_ui("update_presence_info", () => {
     assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
 });
 
-test_ui("initialize", () => {
+test_ui("initialize", (override) => {
+    let payload;
+    override(channel, "post", (arg) => {
+        payload = arg;
+    });
+
     function clear() {
         $.clear_all_elements();
         buddy_list.container = $("#user_presences");
@@ -666,9 +666,6 @@ test_ui("initialize", () => {
 
     clear();
 
-    channel.post = (payload) => {
-        payload.success({});
-    };
     set_global("server_events", {
         check_for_unsuspend() {},
     });
@@ -682,6 +679,7 @@ test_ui("initialize", () => {
 
     $(window).off("focus");
     activity.initialize();
+    payload.success({});
     $(window).trigger("focus");
     clear();
 
@@ -692,16 +690,15 @@ test_ui("initialize", () => {
     $(window).idle = (params) => {
         params.onIdle();
     };
-    channel.post = (payload) => {
-        payload.success({
-            zephyr_mirror_active: false,
-            presences: {},
-        });
-    };
+
     set_global("setInterval", (func) => func());
 
     $(window).off("focus");
     activity.initialize();
+    payload.success({
+        zephyr_mirror_active: false,
+        presences: {},
+    });
 
     assert($("#zephyr-mirror-error").hasClass("show"));
     assert(!activity.new_user_input);

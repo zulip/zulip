@@ -80,7 +80,7 @@ run_test("my user", () => {
     assert.equal(presence.get_status(me.user_id), "active");
 });
 
-run_test("unknown user", () => {
+run_test("unknown user", (override) => {
     const unknown_user_id = 999;
     const now = 888888;
     const presences = {};
@@ -96,9 +96,8 @@ run_test("unknown user", () => {
     presence.set_info(presences, now);
     server_events.suspect_offline = false;
 
-    reload_state.is_in_progress = () => true;
+    override(reload_state, "is_in_progress", () => true);
     presence.set_info(presences, now);
-    reload_state.is_in_progress = () => false;
 });
 
 run_test("status_from_raw", () => {

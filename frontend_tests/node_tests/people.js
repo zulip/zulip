@@ -824,8 +824,10 @@ run_test("slugs", () => {
 
 initialize();
 
-run_test("get_people_for_search_bar", () => {
-    message_store.user_ids = () => [];
+run_test("get_people_for_search_bar", (override) => {
+    let message_user_ids;
+
+    override(message_store, "user_ids", () => message_user_ids);
 
     for (const i of _.range(20)) {
         const person = {
@@ -836,12 +838,12 @@ run_test("get_people_for_search_bar", () => {
         people.add_active_user(person);
     }
 
+    message_user_ids = [];
     const big_results = people.get_people_for_search_bar("James");
 
     assert.equal(big_results.length, 20);
 
-    message_store.user_ids = () => [1001, 1002, 1003, 1004, 1005, 1006];
-
+    message_user_ids = [1001, 1002, 1003, 1004, 1005, 1006];
     const small_results = people.get_people_for_search_bar("Jones");
 
     // As long as there are 5+ results among the user_ids

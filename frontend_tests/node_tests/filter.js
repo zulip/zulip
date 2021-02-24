@@ -1247,7 +1247,7 @@ run_test("term_type", () => {
     assert(!filter._build_sorted_term_types_called);
 });
 
-run_test("first_valid_id_from", () => {
+run_test("first_valid_id_from", (override) => {
     const terms = [{operator: "is", operand: "alerted"}];
 
     const filter = new Filter(terms);
@@ -1262,11 +1262,9 @@ run_test("first_valid_id_from", () => {
 
     const msg_ids = [10, 20, 30, 40];
 
-    message_store.get = () => {};
+    override(message_store, "get", (msg_id) => messages[msg_id]);
 
-    assert.equal(filter.first_valid_id_from(msg_ids), undefined);
-
-    message_store.get = (msg_id) => messages[msg_id];
+    assert.equal(filter.first_valid_id_from([999]), undefined);
 
     assert.equal(filter.first_valid_id_from(msg_ids), 20);
 });
