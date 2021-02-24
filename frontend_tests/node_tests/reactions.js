@@ -830,13 +830,15 @@ run_test("duplicates", () => {
     reactions.set_clean_reactions(dup_reaction_message);
 });
 
-run_test("process_reaction_click errors", () => {
-    message_store.get = () => undefined;
+run_test("process_reaction_click undefined", (override) => {
+    override(message_store, "get", () => undefined);
     blueslip.expect("error", "reactions: Bad message id: 55");
     blueslip.expect("error", "message_id for reaction click is unknown: 55");
     reactions.process_reaction_click(55, "whatever");
+});
 
-    message_store.get = () => message;
+run_test("process_reaction_click bad local id", (override) => {
+    override(message_store, "get", () => message);
     blueslip.expect(
         "error",
         "Data integrity problem for reaction bad-local-id (message some-msg-id)",
