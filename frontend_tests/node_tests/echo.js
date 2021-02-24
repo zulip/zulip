@@ -173,8 +173,46 @@ run_test("build_display_recipient", () => {
     assert.equal(iago.id, 123);
 });
 
-run_test("insert_local_message", (override) => {
-    const local_id_float = 1;
+run_test("insert_local_message streams", (override) => {
+    const local_id_float = 101;
+
+    let apply_markdown_called = false;
+    let add_topic_links_called = false;
+    let insert_message_called = false;
+
+    override(markdown, "apply_markdown", () => {
+        apply_markdown_called = true;
+    });
+
+    override(markdown, "add_topic_links", () => {
+        add_topic_links_called = true;
+    });
+
+    override(local_message, "insert_message", (message) => {
+        assert.equal(message.display_recipient, "general");
+        assert.equal(message.timestamp, fake_now);
+        assert.equal(message.sender_email, "iago@zulip.com");
+        assert.equal(message.sender_full_name, "Iago");
+        assert.equal(message.sender_id, 123);
+        insert_message_called = true;
+    });
+
+    const message_request = {
+        type: "stream",
+        stream: "general",
+        sender_email: "iago@zulip.com",
+        sender_full_name: "Iago",
+        sender_id: 123,
+    };
+    echo.insert_local_message(message_request, local_id_float);
+
+    assert(apply_markdown_called);
+    assert(add_topic_links_called);
+    assert(insert_message_called);
+});
+
+run_test("insert_local_message PM", (override) => {
+    const local_id_float = 102;
 
     page_params.user_id = 123;
 
@@ -190,9 +228,14 @@ run_test("insert_local_message", (override) => {
     params.cross_realm_bots = [];
     people.initialize(page_params.user_id, params);
 
-    let apply_markdown_called = false;
     let add_topic_links_called = false;
+    let apply_markdown_called = false;
     let insert_message_called = false;
+
+    override(local_message, "insert_message", (message) => {
+        assert.equal(message.display_recipient.length, 3);
+        insert_message_called = true;
+    });
 
     override(markdown, "apply_markdown", () => {
         apply_markdown_called = true;
@@ -202,38 +245,7 @@ run_test("insert_local_message", (override) => {
         add_topic_links_called = true;
     });
 
-    local_message.insert_message = (message) => {
-        assert.equal(message.display_recipient, "general");
-        assert.equal(message.timestamp, fake_now);
-        assert.equal(message.sender_email, "iago@zulip.com");
-        assert.equal(message.sender_full_name, "Iago");
-        assert.equal(message.sender_id, 123);
-        insert_message_called = true;
-    };
-
-    let message_request = {
-        type: "stream",
-        stream: "general",
-        sender_email: "iago@zulip.com",
-        sender_full_name: "Iago",
-        sender_id: 123,
-    };
-    echo.insert_local_message(message_request, local_id_float);
-
-    assert(apply_markdown_called);
-    assert(add_topic_links_called);
-    assert(insert_message_called);
-
-    add_topic_links_called = false;
-    apply_markdown_called = false;
-    insert_message_called = false;
-
-    local_message.insert_message = (message) => {
-        assert.equal(message.display_recipient.length, 3);
-        insert_message_called = true;
-    };
-
-    message_request = {
+    const message_request = {
         private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
         type: "private",
         sender_email: "iago@zulip.com",
