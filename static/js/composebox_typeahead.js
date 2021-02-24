@@ -25,7 +25,7 @@ const settings_data = require("./settings_data");
 
 // This is what we use for PM/compose typeaheads.
 // We export it to allow tests to mock it.
-exports.max_num_items = 5;
+exports.max_num_items = 8;
 
 exports.emoji_collection = [];
 
