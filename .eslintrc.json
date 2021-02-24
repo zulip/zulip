@@ -126,7 +126,6 @@
             "files": ["static/js/**"],
             "globals": {
                 "$": false,
-                "FetchStatus": false,
                 "Filter": false,
                 "ListCursor": false,
                 "MessageListData": false,

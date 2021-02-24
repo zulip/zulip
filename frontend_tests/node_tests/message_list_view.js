@@ -10,7 +10,6 @@ const {run_test} = require("../zjsunit/test");
 set_global("document", "document-stub");
 
 const Filter = zrequire("Filter", "js/filter");
-zrequire("FetchStatus", "js/fetch_status");
 zrequire("MessageListData", "js/message_list_data");
 const MessageListView = zrequire("MessageListView", "js/message_list_view");
 const message_list = zrequire("message_list");

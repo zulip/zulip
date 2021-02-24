@@ -19,7 +19,6 @@ const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
 const stream_color = zrequire("stream_color");
 const stream_data = zrequire("stream_data");
-zrequire("FetchStatus", "js/fetch_status");
 zrequire("Filter", "js/filter");
 zrequire("MessageListData", "js/message_list_data");
 zrequire("MessageListView", "js/message_list_view");
