@@ -421,19 +421,20 @@ def delete_stream(client: Client, stream_id: int) -> None:
     # Delete the stream named 'new stream'
 
     request = {
-        'is_archive': True,
+        "is_archive": True,
     }
 
-    stream_id = client.get_stream_id('stream to be deleted')['stream_id']
+    stream_id = client.get_stream_id("stream to be deleted")["stream_id"]
     # send request to archive stream
     result = client.call_endpoint(
-        url=f'streams/{stream_id}',
-        method='DELETE',
+        url=f"streams/{stream_id}",
+        method="DELETE",
         request=request,
     )
     # {code_example|end}
-    validate_against_openapi_schema(result, '/streams/{stream_id}', 'delete', '200')
-    assert result['result'] == 'success'
+    validate_against_openapi_schema(result, "/streams/{stream_id}", "delete", "200")
+    assert result["result"] == "success"
+
 
 @openapi_test_function("/streams:get")
 def get_streams(client: Client) -> None:
