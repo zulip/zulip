@@ -126,9 +126,9 @@ set_global("current_msg_list", {
     },
 });
 
-run_test("open_reactions_popover", () => {
+run_test("open_reactions_popover (sent by me)", () => {
+    current_msg_list.selected_message = () => ({sent_by_me: true});
     $(".selected-row").set_find_results(".actions_hover", ["action-stub"]);
-    $(".selected-row").set_find_results(".reaction_button", ["reaction-stub"]);
 
     let called = false;
     emoji_picker.toggle_emoji_popover = (target, id) => {
@@ -139,10 +139,13 @@ run_test("open_reactions_popover", () => {
 
     assert(reactions.open_reactions_popover());
     assert(called);
+});
 
+run_test("open_reactions_popover (not sent by me)", () => {
     current_msg_list.selected_message = () => ({sent_by_me: false});
+    $(".selected-row").set_find_results(".reaction_button", ["reaction-stub"]);
 
-    called = false;
+    let called = false;
     emoji_picker.toggle_emoji_popover = (target, id) => {
         called = true;
         assert.equal(id, 42);

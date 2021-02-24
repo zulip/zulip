@@ -15,10 +15,15 @@ exports.get_local_reaction_id = function (reaction_info) {
 
 exports.open_reactions_popover = function () {
     const message = current_msg_list.selected_message();
-    let target = $(current_msg_list.selected_row()).find(".actions_hover")[0];
-    if (!message.sent_by_me) {
+    let target;
+
+    // Use verbose style to ensure we test both sides of the condition.
+    if (message.sent_by_me) {
+        target = $(current_msg_list.selected_row()).find(".actions_hover")[0];
+    } else {
         target = $(current_msg_list.selected_row()).find(".reaction_button")[0];
     }
+
     emoji_picker.toggle_emoji_popover(target, current_msg_list.selected_id());
     return true;
 };
