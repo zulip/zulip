@@ -311,6 +311,7 @@
         code {
             font-size: 14px;
             white-space: pre-wrap;
+            padding: 0;
         }
     }
 
