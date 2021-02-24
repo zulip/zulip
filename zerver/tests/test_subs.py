@@ -1079,7 +1079,7 @@ class StreamAdminTest(ZulipTestCase):
         def test_non_admin(how_old: int, is_new: bool, policy: int) -> None:
             user_profile.date_joined = timezone_now() - timedelta(days=how_old)
             user_profile.save()
-            self.assertEqual(user_profile.is_new_member, is_new)
+            self.assertEqual(user_profile.is_provisional_member, is_new)
             stream_id = get_stream("stream_name1", user_profile.realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}", {"stream_post_policy": orjson.dumps(policy).decode()}
@@ -3533,7 +3533,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_member = self.nonreg_user("test")
 
         do_set_realm_property(new_member.realm, "waiting_period_threshold", 10)
-        self.assertTrue(new_member.is_new_member)
+        self.assertTrue(new_member.is_provisional_member)
 
         stream = self.make_stream("stream1")
         do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)

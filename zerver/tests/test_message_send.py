@@ -241,7 +241,7 @@ class MessagePOSTTest(ZulipTestCase):
         do_set_realm_property(admin_profile.realm, "waiting_period_threshold", 10)
         admin_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
         admin_profile.save()
-        self.assertTrue(admin_profile.is_new_member)
+        self.assertTrue(admin_profile.is_provisional_member)
         self.assertTrue(admin_profile.is_realm_admin)
 
         stream_name = "Verona"
@@ -263,7 +263,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         non_admin_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
         non_admin_profile.save()
-        self.assertTrue(non_admin_profile.is_new_member)
+        self.assertTrue(non_admin_profile.is_provisional_member)
         self.assertFalse(non_admin_profile.is_realm_admin)
 
         # Non admins and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
@@ -282,7 +282,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         non_admin_profile.date_joined = timezone_now() - datetime.timedelta(days=11)
         non_admin_profile.save()
-        self.assertFalse(non_admin_profile.is_new_member)
+        self.assertFalse(non_admin_profile.is_provisional_member)
 
         self._send_and_verify_message(non_admin_profile, stream_name)
         # We again set bot owner here, as date_joined of non_admin_profile is changed.

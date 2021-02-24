@@ -1336,7 +1336,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return f"<UserProfile: {self.email} {self.realm}>"
 
     @property
-    def is_new_member(self) -> bool:
+    def is_provisional_member(self) -> bool:
         diff = (timezone_now() - self.date_joined).days
         if diff < self.realm.waiting_period_threshold:
             return True
@@ -1433,7 +1433,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         if policy_value == Realm.POLICY_MEMBERS_ONLY:
             return True
-        return not self.is_new_member
+        return not self.is_provisional_member
 
     def can_create_streams(self) -> bool:
         return self.has_permission("create_stream_policy")
