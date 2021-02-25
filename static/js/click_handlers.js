@@ -1,10 +1,10 @@
 import $ from "jquery";
 import _ from "lodash";
+import tippy from "tippy.js";
 import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
-import render_buddy_list_tooltip from "../templates/buddy_list_tooltip.hbs";
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
 import * as activity from "./activity";
@@ -15,6 +15,7 @@ import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
+import {media_breakpoints_num} from "./css_variables";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
@@ -520,18 +521,26 @@ export function initialize() {
         });
 
     function do_render_buddy_list_tooltip(elem, title_data) {
-        elem.tooltip({
-            template: render_buddy_list_tooltip(),
-            title: render_buddy_list_tooltip_content(title_data),
-            html: true,
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
+        let placement = "left";
+        if (window.innerWidth < media_breakpoints_num.md) {
+            // On small devices display tooltips based on available space.
+            // This will default to "bottom" placement for this tooltip.
+            placement = "auto";
+        }
+        tippy(elem[0], {
+            // Quickly display and hide right sidebar tooltips
+            // so that they don't stick and overlap with
+            // each other.
+            delay: 0,
+            content: render_buddy_list_tooltip_content(title_data),
+            arrow: true,
+            placement,
+            allowHTML: true,
+            showOnCreate: true,
+            onHidden: (instance) => {
+                instance.destroy();
+            },
         });
-        elem.tooltip("show");
-
-        $(".tooltip").css("left", elem.pageX + "px");
-        $(".tooltip").css("top", elem.pageY + "px");
     }
 
     // BUDDY LIST TOOLTIPS
@@ -545,25 +554,12 @@ export function initialize() {
                 .find(".user-presence-link");
             const user_id_string = elem.attr("data-user-id");
             const title_data = buddy_data.get_title_data(user_id_string, false);
-            do_render_buddy_list_tooltip(elem, title_data);
-        },
-    );
-
-    $("#user_presences").on(
-        "mouseleave click",
-        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
-        (e) => {
-            e.stopPropagation();
-            const elem = $(e.currentTarget)
-                .closest(".user_sidebar_entry")
-                .find(".user-presence-link");
-            $(elem).tooltip("destroy");
+            do_render_buddy_list_tooltip(elem.parent(), title_data);
         },
     );
 
     // PM LIST TOOLTIPS
     $("body").on("mouseenter", "#pm_user_status", (e) => {
-        $(".tooltip").remove();
         e.stopPropagation();
         const elem = $(e.currentTarget);
         const user_ids_string = elem.attr("data-user-ids-string");
@@ -572,11 +568,6 @@ export function initialize() {
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
         do_render_buddy_list_tooltip(elem, title_data);
-    });
-
-    $("body").on("mouseleave", "#pm_user_status", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
     });
 
     // MISC
