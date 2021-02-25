@@ -542,27 +542,24 @@ run_test("add_reaction/remove_reaction", (override) => {
 
     override(message_store, "get", () => message);
 
+    let view_calls = [];
+
+    override(reactions.view, "insert_new_reaction", (opts) => {
+        view_calls.push({name: "insert_new_reaction", opts});
+    });
+    override(reactions.view, "update_existing_reaction", (opts) => {
+        view_calls.push({name: "update_existing_reaction", opts});
+    });
+    override(reactions.view, "remove_reaction", (opts) => {
+        view_calls.push({name: "remove_reaction", opts});
+    });
+
     function test_view_calls(test_params) {
-        const calls = [];
-
-        function add_call_func(name) {
-            return function (opts) {
-                calls.push({
-                    name,
-                    opts,
-                });
-            };
-        }
-
-        reactions.view = {
-            insert_new_reaction: add_call_func("insert_new_reaction"),
-            update_existing_reaction: add_call_func("update_existing_reaction"),
-            remove_reaction: add_call_func("remove_reaction"),
-        };
+        view_calls = [];
 
         test_params.run_code();
 
-        assert.deepEqual(calls, test_params.expected_view_calls);
+        assert.deepEqual(view_calls, test_params.expected_view_calls);
         assert.deepEqual(
             new Set(reactions.get_emojis_used_by_user_for_message_id(message.message_id)),
             new Set(test_params.alice_emojis),
@@ -726,7 +723,9 @@ run_test("remove spurious user", () => {
     reactions.remove_reaction(event);
 });
 
-run_test("remove last user", () => {
+run_test("remove last user", (override) => {
+    override(reactions.view, "remove_reaction", () => {});
+
     function assert_names(names) {
         assert.deepEqual(
             reactions.get_message_reactions(message).map((r) => r.emoji_name),
@@ -766,6 +765,8 @@ run_test("local_reaction_id", () => {
 });
 
 run_test("process_reaction_click", (override) => {
+    override(reactions.view, "remove_reaction", () => {});
+
     const message_id = 1001;
     let expected_reaction_info = {
         reaction_type: "unicode_emoji",
