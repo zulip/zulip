@@ -403,6 +403,18 @@ run_test("insert_remove", () => {
     assert.equal(pill_input.text(), "");
     assert.equal(widget.is_pending(), false);
 
+    let color_removed;
+    function set_colored_removed_func(color) {
+        return () => {
+            color_removed = color;
+        };
+    }
+
+    const pills = widget._get_pills_for_testing();
+    for (const pill of pills) {
+        pill.$element.remove = set_colored_removed_func(pill.item.display_value);
+    }
+
     const BACKSPACE = 8;
     let key_handler = container.get_on_handler("keydown", ".input");
 
@@ -415,6 +427,7 @@ run_test("insert_remove", () => {
     });
 
     assert(removed);
+    assert.equal(color_removed, "YELLOW");
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
@@ -444,6 +457,7 @@ run_test("insert_remove", () => {
         preventDefault: noop,
     });
 
+    assert.equal(color_removed, "BLUE");
     assert(next_pill_focused);
 });
 
@@ -457,6 +471,11 @@ run_test("exit button on pill", () => {
     const widget = input_pill.create(config);
 
     widget.appendValue("blue,red");
+
+    const pills = widget._get_pills_for_testing();
+    for (const pill of pills) {
+        pill.$element.remove = () => {};
+    }
 
     let next_pill_focused = false;
 

@@ -54,6 +54,9 @@ function test_populate(opts) {
 
     table[0] = "stub";
 
+    rows.remove = () => {};
+    form.remove = () => {};
+
     let num_appends = 0;
     table.append = () => {
         num_appends += 1;

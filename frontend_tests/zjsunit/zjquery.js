@@ -342,7 +342,14 @@ function make_new_elem(selector, opts) {
             return self;
         },
         remove() {
-            return self;
+            throw new Error(`
+                We don't support remove in zjuery.
+
+                You can do $(...).remove = ... if necessary.
+
+                But you are probably writing too deep a test
+                for node testing.
+            `);
         },
         removeData: noop,
         replaceWith() {

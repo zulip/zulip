@@ -56,6 +56,8 @@ run_test("settings", () => {
         return topic_tr_html;
     };
 
+    topic_tr_html.remove = () => {};
+
     let topic_data_called = 0;
     topic_tr_html.attr = (opts) => {
         if (opts === "data-stream-id") {

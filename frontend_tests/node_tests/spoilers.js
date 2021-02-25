@@ -22,6 +22,7 @@ const get_spoiler_elem = (title) => {
     const block = $.create(`block-${title}`);
     const header = $.create(`header-${title}`);
     const content = $.create(`content-${title}`);
+    content.remove = () => {};
     header.text(title);
     block.set_find_results(".spoiler-header", header);
     block.set_find_results(".spoiler-content", content);
