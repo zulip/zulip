@@ -517,6 +517,11 @@ test_ui("insert_fred_then_alice_then_rename", (override) => {
         inserted_html = html;
     };
 
+    let fred_removed;
+    fred_stub.remove = () => {
+        fred_removed = true;
+    };
+
     activity.redraw_user(alice.user_id);
     assert(inserted_html.indexOf('data-user-id="1"') > 0);
     assert(inserted_html.indexOf("user_circle_green") > 0);
@@ -537,6 +542,7 @@ test_ui("insert_fred_then_alice_then_rename", (override) => {
     };
 
     activity.redraw_user(fred_with_new_name.user_id);
+    assert(fred_removed);
     assert(appended_html.indexOf('data-user-id="2"') > 0);
 
     // restore old Fred data

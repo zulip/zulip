@@ -314,7 +314,7 @@ test_ui("validate", () => {
     assert.equal($("#compose-error-msg").html(), i18n.t("Please specify a topic"));
 });
 
-test_ui("get_invalid_recipient_emails", () => {
+test_ui("get_invalid_recipient_emails", (override) => {
     const welcome_bot = {
         email: "welcome-bot@example.com",
         user_id: 124,
@@ -330,7 +330,7 @@ test_ui("get_invalid_recipient_emails", () => {
 
     people.initialize(page_params.user_id, params);
 
-    compose_state.private_message_recipient("welcome-bot@example.com");
+    override(compose_state, "private_message_recipient", () => "welcome-bot@example.com");
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
 

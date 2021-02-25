@@ -32,6 +32,11 @@ run_test("copy_data_attribute_value", (override) => {
 
     const input = $.create("input");
 
+    let removed;
+    input.remove = () => {
+        removed = true;
+    };
+
     override(document, "createElement", () => input);
     override(document, "execCommand", noop);
 
@@ -60,6 +65,7 @@ run_test("copy_data_attribute_value", (override) => {
         faded_in = true;
     };
     common.copy_data_attribute_value(elem, "admin-emails");
+    assert(removed);
     assert(faded_in);
     assert(faded_out);
 });

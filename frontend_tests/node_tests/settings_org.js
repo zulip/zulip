@@ -99,7 +99,9 @@ run_test("unloaded", () => {
 });
 
 function simulate_realm_domains_table() {
-    $("#realm_domains_table tbody").set_find_results("tr", $.create("realm-tr-stub"));
+    const tr_stub = $.create("realm-tr-stub");
+    $("#realm_domains_table tbody").set_find_results("tr", tr_stub);
+    tr_stub.remove = () => {};
 
     let appended;
     $("#realm_domains_table tbody").append = (html) => {
