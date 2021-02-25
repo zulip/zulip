@@ -11,8 +11,12 @@ import "spectrum-colorpicker";
 import "jquery-validation";
 import "flatpickr";
 import "flatpickr/dist/plugins/confirmDate/confirmDate";
+import "tippy.js/dist/tippy.css";
+import "tippy.js/animations/scale.css";
+import "tippy.js/themes/light-border.css";
 
 // Import app JS
+import "../tippyjs";
 import "../i18n";
 import "../loading";
 import "../vdom";
