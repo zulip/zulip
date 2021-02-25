@@ -1,6 +1,7 @@
 class zulip_ops::profile::base {
   include zulip::profile::base
   include zulip_ops::munin_node
+  include zulip_ops::ksplice_uptrack
 
   $org_base_packages = [# Management for our systems
     'openssh-server',
