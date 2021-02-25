@@ -16,8 +16,9 @@ const emoji = zrequire("emoji", "shared/js/emoji");
 const people = zrequire("people");
 const reactions = zrequire("reactions");
 
+const alice_user_id = 5;
 set_global("page_params", {
-    user_id: 5,
+    user_id: alice_user_id,
 });
 
 const emoji_params = {
@@ -53,7 +54,7 @@ const emoji_picker = set_global("emoji_picker", {
 
 const alice = {
     email: "alice@example.com",
-    user_id: 5,
+    user_id: alice_user_id,
     full_name: "Alice",
 };
 const bob = {
