@@ -5,13 +5,13 @@ const WinChan = require("winchan");
 
 // You won't find every click handler here, but it's a good place to start!
 
-const render_buddy_list_tooltip = require("../templates/buddy_list_tooltip.hbs");
 const render_buddy_list_tooltip_content = require("../templates/buddy_list_tooltip_content.hbs");
 
 const message_edit_history = require("./message_edit_history");
 const settings_panel_menu = require("./settings_panel_menu");
 const user_status_ui = require("./user_status_ui");
 const util = require("./util");
+const tippy = require("tippy.js").default;
 
 function convert_enter_to_click(e) {
     const key = e.which;
@@ -521,18 +521,19 @@ exports.initialize = function () {
         });
 
     function do_render_buddy_list_tooltip(elem, title_data) {
-        elem.tooltip({
-            template: render_buddy_list_tooltip(),
-            title: render_buddy_list_tooltip_content(title_data),
-            html: true,
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
+        tippy(elem[0], {
+            // Quickly display and hide tooltips
+            // so that they don't stick and overlap
+            // each other.
+            delay: 0,
+            content: render_buddy_list_tooltip_content(title_data),
+            arrow: true,
+            placement: "left",
+            animation: "fade",
+            inertia: false,
+            allowHTML: true,
+            showOnCreate: true,
         });
-        elem.tooltip("show");
-
-        $(".tooltip").css("left", elem.pageX + "px");
-        $(".tooltip").css("top", elem.pageY + "px");
     }
 
     // BUDDY LIST TOOLTIPS
@@ -546,19 +547,7 @@ exports.initialize = function () {
                 .find(".user-presence-link");
             const user_id_string = elem.attr("data-user-id");
             const title_data = buddy_data.get_title_data(user_id_string, false);
-            do_render_buddy_list_tooltip(elem, title_data);
-        },
-    );
-
-    $("#user_presences").on(
-        "mouseleave click",
-        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
-        (e) => {
-            e.stopPropagation();
-            const elem = $(e.currentTarget)
-                .closest(".user_sidebar_entry")
-                .find(".user-presence-link");
-            $(elem).tooltip("destroy");
+            do_render_buddy_list_tooltip(elem.parent(), title_data);
         },
     );
 
