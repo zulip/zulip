@@ -530,7 +530,7 @@ run_test("add_and_remove_reaction", () => {
     assert(!reaction_element.hasClass("reacted"));
 });
 
-run_test("with_view_stubs", () => {
+run_test("with_view_stubs", (override) => {
     // This function tests reaction events by mocking out calls to
     // the view.
 
@@ -539,7 +539,7 @@ run_test("with_view_stubs", () => {
         reactions: [],
     };
 
-    message_store.get = () => message;
+    override(message_store, "get", () => message);
 
     function test_view_calls(test_params) {
         const calls = [];
@@ -683,7 +683,7 @@ run_test("with_view_stubs", () => {
 });
 
 run_test("error_handling", (override) => {
-    message_store.get = () => {};
+    override(message_store, "get", () => {});
 
     blueslip.expect("error", "reactions: Bad message id: 55");
 
@@ -700,8 +700,6 @@ run_test("error_handling", (override) => {
     reactions.add_reaction(bogus_event);
     reactions.remove_reaction(bogus_event);
 });
-
-message_store.get = () => message;
 
 run_test("remove spurious user", () => {
     // get coverage for removing non-user (it should just
@@ -757,16 +755,16 @@ run_test("local_reaction_id", () => {
     assert.equal(local_id, "unicode_emoji,1f44d");
 });
 
-run_test("process_reaction_click", () => {
+run_test("process_reaction_click", (override) => {
     const message_id = 1001;
     let expected_reaction_info = {
         reaction_type: "unicode_emoji",
         emoji_code: "1f3b1",
     };
-    message_store.get = (message_id) => {
+    override(message_store, "get", (message_id) => {
         assert.equal(message_id, 1001);
         return message;
-    };
+    });
 
     expected_reaction_info = {
         reaction_type: "unicode_emoji",
@@ -792,7 +790,7 @@ run_test("warnings", () => {
     reactions.get_message_reactions(message);
 });
 
-run_test("code coverage", () => {
+run_test("code coverage", (override) => {
     /*
         We just silently fail in a few places in the reaction
         code, since events may come for messages that we don't
@@ -802,12 +800,12 @@ run_test("code coverage", () => {
         it easy to enforce 100% coverage for more significant
         code additions.
     */
-    message_store.get = (id) => {
+    override(message_store, "get", (id) => {
         assert.equal(id, 42);
         return {
             reactions: [],
         };
-    };
+    });
 
     reactions.remove_reaction({
         message_id: 42, // TODO: REACTIONS API
