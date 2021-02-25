@@ -1221,10 +1221,13 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $("body").on("click", ".delete_message", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
+    $("body").on("click", ".actions_popover .delete_message", (e) => {
+        // const message_id = $(e.currentTarget).data("message-id");
+        const msg_id = $(e.currentTarget).data("message-id");
         exports.hide_actions_popover();
-        message_edit.delete_message(message_id);
+        // message_edit.delete_message(message_id);
+        const elem = $(".actions_popover")[0];
+        message_edit.delete_message(elem, msg_id);
         e.stopPropagation();
         e.preventDefault();
     });
