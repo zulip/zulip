@@ -77,8 +77,7 @@
             {{#if has_been_editable}}
             <div class="message-edit-timer-control-group">
                 <span class="message_edit_countdown_timer"></span>
-                <span><i id="message_edit_tooltip" class="message_edit_tooltip fa fa-question-circle" aria-hidden="true" data-toggle="tooltip"
-                    title="{{#tr this}}This organization is configured to restrict editing of message content to __minutes_to_edit__ minutes after it is sent.{{/tr}}"></i>
+                <span><i id="message_edit_tooltip" class="tippy-zulip-tooltip message_edit_tooltip fa fa-question-circle" aria-hidden="true" data-tippy-content="{{#tr this}}This organization is configured to restrict editing of message content to __minutes_to_edit__ minutes after it is sent.{{/tr}}"></i>
                 </span>
             </div>
             {{/if}}
