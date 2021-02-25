@@ -25,19 +25,19 @@ const emoji_params = {
         991: {
             id: "991",
             name: "realm_emoji",
-            source_url: "TBD",
+            source_url: "/url/for/991",
             deactivated: false,
         },
         992: {
             id: "992",
             name: "inactive_realm_emoji",
-            source_url: "TBD",
+            source_url: "/url/for/992",
             deactivated: true,
         },
         zulip: {
             id: "zulip",
             name: "zulip",
-            source_url: "TBD",
+            source_url: "/url/for/zulip",
             deactivated: false,
         },
     },
@@ -187,7 +187,7 @@ run_test("basics", () => {
             label: "translated: You (click to remove) reacted with :inactive_realm_emoji:",
             emoji_alt_code: false,
             is_realm_emoji: true,
-            url: "TBD",
+            url: "/url/for/992",
             class: "message_reaction reacted",
         },
         {
