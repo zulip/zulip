@@ -609,6 +609,15 @@ run_test("add_reaction/remove_reaction", (override) => {
         alice_emojis: ["8ball"],
     });
 
+    // Add redundant reaction.
+    test_view_calls({
+        run_code() {
+            reactions.add_reaction(alice_8ball_event);
+        },
+        expected_view_calls: [],
+        alice_emojis: ["8ball"],
+    });
+
     test_view_calls({
         run_code() {
             reactions.add_reaction(bob_8ball_event);
@@ -685,6 +694,15 @@ run_test("add_reaction/remove_reaction", (override) => {
                 },
             },
         ],
+        alice_emojis: [],
+    });
+
+    // Test redundant remove.
+    test_view_calls({
+        run_code() {
+            reactions.remove_reaction(alice_8ball_event);
+        },
+        expected_view_calls: [],
         alice_emojis: [],
     });
 });
