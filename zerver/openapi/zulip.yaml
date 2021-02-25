@@ -2379,7 +2379,9 @@ paths:
                               description: |
                                 Event sent to all users in a Zulip organization when
                                 a [custom emoji](/help/add-custom-emoji) has been updated,
-                                typically when it has been deactivated.
+                                typically when it has been deactivated. The event contains
+                                all custom emoji known to the server, not just the updated
+                                emoji.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
