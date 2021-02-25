@@ -325,8 +325,6 @@ export function initialize_kitchen_sink_stuff() {
 
     $('.message_failed i[data-toggle="tooltip"]').tooltip();
 
-    $('.copy_message[data-toggle="tooltip"]').tooltip();
-
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
     });
@@ -337,11 +335,6 @@ export function initialize_kitchen_sink_stuff() {
 
     $("body").on("mouseenter", ".copy_message", function () {
         $(this).show();
-        $(this).tooltip("show");
-    });
-
-    $("body").on("mouseleave", ".copy_message", function () {
-        $(this).tooltip("hide");
     });
 
     if (!page_params.realm_allow_message_editing) {
