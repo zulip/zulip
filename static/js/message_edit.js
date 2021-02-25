@@ -398,13 +398,6 @@ function edit_message(row, raw_content) {
         page_params.realm_message_content_edit_limit_seconds > 0
     ) {
         row.find(".message-edit-timer-control-group").show();
-        row.find("#message_edit_tooltip").tooltip({
-            animation: false,
-            placement: "left",
-            template:
-                '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div>' +
-                '<div class="tooltip-inner message-edit-tooltip-inner"></div></div>',
-        });
     }
 
     // add timer
