@@ -543,3 +543,37 @@ run_test("misc things", () => {
 
     container_click_handler.call(this_, {target: this_});
 });
+
+run_test("clear", () => {
+    const pill_input = $.create("pill_input");
+    const container = $.create("container");
+    container.set_find_results(".input", pill_input);
+
+    const config = {
+        container,
+        create_item_from_text: (s) => ({display_value: s}),
+        get_text_from_item: (s) => s.display_value,
+    };
+
+    pill_input.before = () => {};
+    pill_input[0] = {};
+
+    const widget = input_pill.create(config);
+
+    widget.appendValue("red,yellow,blue");
+
+    const pills = widget._get_pills_for_testing();
+
+    const removed_colors = [];
+    for (const pill of pills) {
+        pill.$element.remove = () => {
+            removed_colors.push(pill.item.display_value);
+        };
+    }
+
+    widget.clear();
+
+    // Note that we remove colors in the reverse order that we inserted.
+    assert.deepEqual(removed_colors, ["blue", "yellow", "red"]);
+    assert.equal(pill_input[0].textContent, "");
+});

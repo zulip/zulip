@@ -221,6 +221,10 @@ exports.create = function (opts) {
             return store.pills.find((pill) => pill.id === id);
         },
 
+        _get_pills_for_testing() {
+            return store.pills;
+        },
+
         items() {
             return store.pills.map((pill) => pill.item);
         },
@@ -393,6 +397,7 @@ exports.create = function (opts) {
         clear: funcs.removeAllPills.bind(funcs),
         clear_text: funcs.clear_text,
         is_pending: funcs.is_pending,
+        _get_pills_for_testing: funcs._get_pills_for_testing,
     };
 
     return prototype;
