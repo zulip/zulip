@@ -1,4 +1,5 @@
 import Plotly from "plotly.js/lib/core";
+import tippy from "tippy.js";
 
 Plotly.register([require("plotly.js/lib/bar"), require("plotly.js/lib/pie")]);
 
@@ -80,18 +81,10 @@ function update_last_full_update(end_times) {
 }
 
 $(() => {
-    $('span[data-toggle="tooltip"]').tooltip({
-        animation: false,
-        placement: "top",
-        trigger: "manual",
+    tippy(".last_update_tooltip", {
+        delay: [50, 100],
+        placement: "right",
     });
-    $("#id_last_update_question_sign")
-        .on("mouseenter", () => {
-            $("span.last_update_tooltip").tooltip("show");
-        })
-        .on("mouseleave", () => {
-            $("span.last_update_tooltip").tooltip("hide");
-        });
     // Add configuration for any additional tooltips here.
 });
 
