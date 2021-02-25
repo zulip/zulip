@@ -531,7 +531,7 @@ run_test("add_and_remove_reaction", () => {
     assert(!reaction_element.hasClass("reacted"));
 });
 
-run_test("with_view_stubs", (override) => {
+run_test("add_reaction/remove_reaction", (override) => {
     // This function tests reaction events by mocking out calls to
     // the view.
 
@@ -563,6 +563,10 @@ run_test("with_view_stubs", (override) => {
         test_params.run_code();
 
         assert.deepEqual(calls, test_params.expected_view_calls);
+        assert.deepEqual(
+            new Set(reactions.get_emojis_used_by_user_for_message_id(message.message_id)),
+            new Set(test_params.alice_emojis),
+        );
     }
 
     const alice_8ball_event = {
@@ -605,6 +609,7 @@ run_test("with_view_stubs", (override) => {
                 },
             },
         ],
+        alice_emojis: ["8ball"],
     });
 
     test_view_calls({
@@ -624,6 +629,7 @@ run_test("with_view_stubs", (override) => {
                 },
             },
         ],
+        alice_emojis: ["8ball"],
     });
 
     test_view_calls({
@@ -642,6 +648,7 @@ run_test("with_view_stubs", (override) => {
                 },
             },
         ],
+        alice_emojis: ["8ball"],
     });
 
     test_view_calls({
@@ -661,6 +668,7 @@ run_test("with_view_stubs", (override) => {
                 },
             },
         ],
+        alice_emojis: ["8ball"],
     });
 
     test_view_calls({
@@ -680,6 +688,7 @@ run_test("with_view_stubs", (override) => {
                 },
             },
         ],
+        alice_emojis: [],
     });
 });
 
