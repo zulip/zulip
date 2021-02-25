@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -11,12 +11,15 @@ const people = zrequire("people");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const input_pill = zrequire("input_pill");
 zrequire("user_pill");
+const compose_actions = set_global("compose_actions", {});
 
 let pills = {
     pill: {},
 };
 
-run_test("pills", () => {
+run_test("pills", (override) => {
+    override(compose_actions, "update_placeholder_text", () => {});
+
     const othello = {
         user_id: 1,
         email: "othello@example.com",
@@ -123,8 +126,15 @@ run_test("pills", () => {
     input_pill.create = input_pill_stub;
 
     // We stub the return value of input_pill.create(), manually add widget functions to it.
-    pills.onPillCreate = () => {};
-    pills.onPillRemove = () => {};
+    pills.onPillCreate = (callback) => {
+        // Exercise our callback for line coverage. It is
+        // just compose_actions.update_placeholder_text(),
+        // which we override.
+        callback();
+    };
+    pills.onPillRemove = (callback) => {
+        callback();
+    };
 
     compose_pm_pill.initialize();
     assert(compose_pm_pill.widget);
