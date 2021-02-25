@@ -323,10 +323,6 @@ export function initialize_kitchen_sink_stuff() {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    $("#streams_header h4").tooltip({placement: "right", animation: false});
-
-    $('#streams_header i[data-toggle="tooltip"]').tooltip({placement: "left", animation: false});
-
     $('.message_failed i[data-toggle="tooltip"]').tooltip();
 
     $('.copy_message[data-toggle="tooltip"]').tooltip();
