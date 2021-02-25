@@ -514,6 +514,10 @@ strong {
     display: inline;
 }
 
+.tippy-content {
+    font-size: 12px;
+}
+
 .tooltip {
     &.in {
         font-size: 12px;
