@@ -65,6 +65,7 @@ import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as subs from "./subs";
 import * as timerender from "./timerender";
+import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
@@ -477,6 +478,7 @@ export function initialize_everything() {
 
     const user_status_params = pop_fields("user_status");
 
+    tippyjs.initialize();
     message_lists.initialize();
     alert_popup.initialize();
     alert_words.initialize(alert_words_params);

@@ -147,6 +147,7 @@ EXEMPT_FILES = {
     "static/js/subs.js",
     "static/js/message_view_header.js",
     "static/js/timerender.js",
+    "static/js/tippyjs.js",
     "static/js/todo_widget.js",
     "static/js/topic_list.js",
     "static/js/topic_zoom.js",

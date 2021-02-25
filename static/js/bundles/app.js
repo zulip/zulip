@@ -22,6 +22,7 @@ import "../desktop_integration";
 import "../zulip_test";
 
 // Import styles
+import "tippy.js/dist/tippy.css";
 import "../../third/bootstrap-tooltip/tooltip.css";
 import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
