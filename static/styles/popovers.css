@@ -5,28 +5,19 @@
     .tippy-content {
         font-size: 14px;
         padding: 5px 0;
+
+        hr {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .sub_disable_btn_hint {
+            padding-left: 5px;
+            padding-right: 5px;
+            font-size: small;
+            text-align: justify;
+        }
     }
-}
-
-.popover {
-    width: auto;
-    max-width: 100%;
-
-    hr {
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
-
-    .sub_disable_btn_hint {
-        padding-left: 5px;
-        padding-right: 5px;
-        font-size: small;
-        text-align: justify;
-    }
-}
-
-.popover-content {
-    padding: 5px 0;
 }
 
 .popover-title {
@@ -200,32 +191,40 @@ ul {
     }
 }
 
-.group-info-popover {
-    .manage-group a {
-        text-align: center;
-    }
-
-    .group-info {
-        text-align: center;
-
-        .group-name {
-            font-weight: bold;
+[data-tippy-root] {
+    .group_info_popover {
+        hr {
+            margin-top: 5px;
+            margin-bottom: 5px;
         }
-    }
 
-    .member-list {
-        position: relative;
-        max-height: 300px;
-        overflow-y: auto;
-        list-style: none;
-        margin-left: 0;
-
-        .bot {
-            color: hsl(180, 5%, 74%);
-            vertical-align: top;
-            width: 20px;
-            padding-top: 3.5px;
+        .manage-group a {
             text-align: center;
+        }
+
+        .group-info {
+            font-size: 14px;
+            text-align: center;
+
+            .group-name {
+                font-weight: bold;
+            }
+        }
+
+        .member-list {
+            position: relative;
+            max-height: 300px;
+            overflow-y: auto;
+            list-style: none;
+            margin-left: 0;
+
+            .bot {
+                color: hsl(180, 5%, 74%);
+                vertical-align: top;
+                width: 20px;
+                padding-top: 3.5px;
+                text-align: center;
+            }
         }
     }
 }
@@ -250,6 +249,7 @@ ul {
 }
 
 .popover-avatar {
+    margin: -10px -10px 10px -10px;
     height: 240px;
     width: 240px;
     background-size: cover;

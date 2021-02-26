@@ -3,15 +3,13 @@
 const ClipboardJS = require("clipboard");
 const {parseISO, formatISO, add, set} = require("date-fns");
 const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
+const tippy = require("tippy.js").default;
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
-const render_no_arrow_popover = require("../templates/no_arrow_popover.hbs");
 const render_playground_links_popover_content = require("../templates/playground_links_popover_content.hbs");
 const render_remind_me_popover_content = require("../templates/remind_me_popover_content.hbs");
-const render_user_group_info_popover = require("../templates/user_group_info_popover.hbs");
 const render_user_group_info_popover_content = require("../templates/user_group_info_popover_content.hbs");
 const render_user_info_popover_content = require("../templates/user_info_popover_content.hbs");
-const render_user_info_popover_title = require("../templates/user_info_popover_title.hbs");
 const render_user_profile_modal = require("../templates/user_profile_modal.hbs");
 
 const feature_flags = require("./feature_flags");
@@ -216,6 +214,8 @@ function render_user_info_popover(
         user_type: people.get_user_type(user.user_id),
         status_text: user_status.get_status_text(user.user_id),
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
+        user_avatar: "avatar/" + user.email,
+        user_is_guest: user.is_guest,
     };
 
     if (user.is_bot) {
@@ -229,27 +229,23 @@ function render_user_info_popover(
         }
     }
 
-    popover_element.popover({
-        content: render_user_info_popover_content(args),
-        // TODO: Determine whether `fixed` should be applied
-        // unconditionally.  Right now, we only do it for the user
-        // sidebar version of the popover.
-        fixed: template_class === "user_popover",
+    const tippy_popover = tippy(popover_element[0], {
         placement: popover_placement,
-        template: render_no_arrow_popover({class: template_class}),
-        title: render_user_info_popover_title({
-            user_avatar: "avatar/" + user.email,
-            user_is_guest: user.is_guest,
-        }),
-        html: true,
+        appendTo: () => document.body,
+        content: render_user_info_popover_content(args),
         trigger: "manual",
-        top_offset: $("#userlist-title").offset().top + 15,
-        fix_positions: true,
+        allowHTML: true,
+        interactive: true,
+        showOnCreate: true,
+        interactiveBorder: 30,
+        theme: "light-border",
+        onShown(instance) {
+            init_email_clipboard();
+            load_medium_avatar(user, $(".popover-avatar"));
+        },
     });
-    popover_element.popover("show");
 
-    init_email_clipboard();
-    load_medium_avatar(user, $(".popover-avatar"));
+    return tippy_popover;
 }
 
 // exporting for testability
@@ -261,7 +257,7 @@ exports._test_calculate_info_popover_placement = calculate_info_popover_placemen
 function show_user_info_popover_for_message(element, user, message) {
     const last_popover_elem = current_message_info_popover_elem;
     exports.hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+    if (last_popover_elem !== undefined && last_popover_elem.reference === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
@@ -277,7 +273,7 @@ function show_user_info_popover_for_message(element, user, message) {
         }
 
         const is_sender_popover = message.sender_id === user.user_id;
-        render_user_info_popover(
+        current_message_info_popover_elem = render_user_info_popover(
             user,
             elt,
             is_sender_popover,
@@ -286,8 +282,6 @@ function show_user_info_popover_for_message(element, user, message) {
             "message-info-popover",
             "right",
         );
-
-        current_message_info_popover_elem = elt;
     }
 }
 
@@ -337,7 +331,7 @@ exports.show_user_info_popover = function (element, user) {
         return;
     }
     const elt = $(element);
-    render_user_info_popover(
+    current_user_info_popover_elem = render_user_info_popover(
         user,
         elt,
         false,
@@ -346,7 +340,6 @@ exports.show_user_info_popover = function (element, user) {
         "user-info-popover",
         "right",
     );
-    current_user_info_popover_elem = elt;
 };
 
 function get_user_info_popover_for_message_items() {
@@ -408,43 +401,40 @@ function show_user_group_info_popover(element, group, message) {
     // note that the actual size varies (in group size), but this is about as big as it gets
     const popover_size = 390;
     exports.hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+    if (last_popover_elem !== undefined && last_popover_elem.reference === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
     }
     current_msg_list.select_id(message.id);
-    const elt = $(element);
-    if (elt.data("popover") === undefined) {
-        const args = {
-            group_name: group.name,
-            group_description: group.description,
-            members: sort_group_members(fetch_group_members(Array.from(group.members))),
-        };
-        elt.popover({
-            placement: calculate_info_popover_placement(popover_size, elt),
-            template: render_user_group_info_popover({class: "message-info-popover"}),
-            content: render_user_group_info_popover_content(args),
-            html: true,
-            trigger: "manual",
-        });
-        elt.popover("show");
-        current_message_info_popover_elem = elt;
-    }
+    const args = {
+        group_name: group.name,
+        group_description: group.description,
+        members: sort_group_members(fetch_group_members(Array.from(group.members))),
+    };
+    current_message_info_popover_elem = tippy(element, {
+        placement: calculate_info_popover_placement(popover_size, $(element)),
+        content: render_user_group_info_popover_content(args),
+        appendTo: () => document.body,
+        trigger: "manual",
+        allowHTML: true,
+        interactive: true,
+        showOnCreate: true,
+        interactiveBorder: 30,
+        theme: "light-border",
+    });
 }
 
 exports.toggle_actions_popover = function (element, id) {
     const last_popover_elem = current_actions_popover_elem;
+    const elt = $(element);
+    const tippy_elem = elt.children()[0];
     exports.hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
+    if (last_popover_elem !== undefined && last_popover_elem.reference === tippy_elem) {
         return;
     }
-
     $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
     current_msg_list.select_id(id);
-    const elt = $(element);
     if (elt.data("popover") === undefined) {
         const message = current_msg_list.get(id);
         const editability = message_edit.get_editability(message);
@@ -517,16 +507,16 @@ exports.toggle_actions_popover = function (element, id) {
         };
 
         const ypos = elt.offset().top;
-        elt.popover({
-            // Popover height with 7 items in it is ~190 px
+        current_actions_popover_elem = tippy(tippy_elem, {
             placement: message_viewport.height() - ypos < 220 ? "top" : "bottom",
-            title: "",
             content: render_actions_popover_content(args),
-            html: true,
             trigger: "manual",
+            allowHTML: true,
+            interactive: true,
+            showOnCreate: true,
+            interactiveBorder: 30,
+            theme: "light-border",
         });
-        elt.popover("show");
-        current_actions_popover_elem = elt;
     }
 };
 
@@ -568,14 +558,7 @@ function get_action_menu_menu_items() {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
     }
-
-    const popover_data = current_actions_popover_elem.data("popover");
-    if (!popover_data) {
-        blueslip.error("Cannot find popover data for actions menu.");
-        return undefined;
-    }
-
-    return $("li:not(.divider):visible a", popover_data.$tip);
+    return $(current_actions_popover_elem.popper).find("a");
 }
 
 exports.focus_first_popover_item = (items) => {
@@ -640,10 +623,12 @@ exports.actions_popped = function () {
 };
 
 exports.hide_actions_popover = function () {
+    if (current_actions_popover_elem !== undefined) {
+        current_actions_popover_elem.destroy();
+        current_actions_popover_elem = undefined;
+    }
     if (exports.actions_popped()) {
         $(".has_popover").removeClass("has_popover has_actions_popover");
-        current_actions_popover_elem.popover("destroy");
-        current_actions_popover_elem = undefined;
     }
     if (current_flatpickr_instance !== undefined) {
         current_flatpickr_instance.destroy();
@@ -657,7 +642,7 @@ exports.message_info_popped = function () {
 
 exports.hide_message_info_popover = function () {
     if (exports.message_info_popped()) {
-        current_message_info_popover_elem.popover("destroy");
+        current_message_info_popover_elem.destroy();
         current_message_info_popover_elem = undefined;
     }
 };
@@ -770,31 +755,32 @@ exports.set_suppress_scroll_hide = function () {
 exports.toggle_playground_link_popover = (element, playground_info) => {
     const last_popover_elem = current_playground_links_popover_elem;
     exports.hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+    if (last_popover_elem !== undefined && last_popover_elem.reference === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
     }
-    const elt = $(element);
-    if (elt.data("popover") === undefined) {
-        const ypos = elt.offset().top;
-        elt.popover({
-            // It's unlikely we'll have more than 3-4 playground links
-            // for one language, so it should be OK to hardcode 120 here.
-            placement: message_viewport.height() - ypos < 120 ? "top" : "bottom",
-            title: "",
-            content: render_playground_links_popover_content({playground_info}),
-            html: true,
-            trigger: "manual",
-        });
-        elt.popover("show");
-        current_playground_links_popover_elem = elt;
-    }
+    const ypos = $(element).offset().top;
+    current_playground_links_popover_elem = tippy(element, {
+        // It's unlikely we'll have more than 3-4 playground links
+        // for one language, so it should be OK to hardcode 120 here.
+        placement: message_viewport.height() - ypos < 120 ? "top" : "bottom",
+        appendTo: () => document.body,
+        trigger: "manual",
+        allowHTML: true,
+        interactive: true,
+        showOnCreate: true,
+        interactiveBorder: 30,
+        theme: "light-border",
+    });
+    current_playground_links_popover_elem.setContent(
+        render_playground_links_popover_content({playground_info}),
+    );
 };
 
 exports.hide_playground_links_popover = () => {
     if (current_playground_links_popover_elem !== undefined) {
-        current_playground_links_popover_elem.popover("destroy");
+        current_playground_links_popover_elem.destroy();
         current_playground_links_popover_elem = undefined;
     }
 };

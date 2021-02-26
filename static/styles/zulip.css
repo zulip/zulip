@@ -516,6 +516,10 @@ strong {
 
 .tippy-content {
     font-size: 12px;
+
+    .nav {
+        font-size: 14px;
+    }
 }
 
 .tooltip {
@@ -791,6 +795,29 @@ td.pointer {
 
         > i {
             vertical-align: middle;
+        }
+    }
+
+    .info.actions_hover {
+        [data-tippy-root] {
+            opacity: 1;
+            visibility: visible;
+            width: 250px;
+
+            * {
+                font-size: 14px;
+                text-align: left;
+                padding: 0;
+                margin: 0;
+            }
+
+            ul {
+                padding: 5px 0;
+            }
+
+            a {
+                padding: 5px 20px;
+            }
         }
     }
 

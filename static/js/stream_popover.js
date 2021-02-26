@@ -8,6 +8,8 @@ const render_stream_sidebar_actions = require("../templates/stream_sidebar_actio
 const render_topic_sidebar_actions = require("../templates/topic_sidebar_actions.hbs");
 const render_unstar_messages_modal = require("../templates/unstar_messages_modal.hbs");
 
+const tippy = require("tippy.js").default;
+
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
 let current_stream_sidebar_elem;
@@ -20,13 +22,7 @@ function get_popover_menu_items(sidebar_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
     }
-
-    const popover_data = $(sidebar_elem).data("popover");
-    if (!popover_data) {
-        blueslip.error("Cannot find popover data for stream sidebar menu.");
-        return undefined;
-    }
-    return $("li:not(.divider):visible > a", popover_data.$tip);
+    return $(sidebar_elem.popper).find("a");
 }
 
 exports.stream_sidebar_menu_handle_keyboard = (key) => {
@@ -81,28 +77,28 @@ exports.starred_messages_popped = function () {
 
 exports.hide_stream_popover = function () {
     if (exports.stream_popped()) {
-        $(current_stream_sidebar_elem).popover("destroy");
+        current_stream_sidebar_elem.destroy();
         current_stream_sidebar_elem = undefined;
     }
 };
 
 exports.hide_topic_popover = function () {
     if (exports.topic_popped()) {
-        $(current_topic_sidebar_elem).popover("destroy");
+        current_topic_sidebar_elem.destroy();
         current_topic_sidebar_elem = undefined;
     }
 };
 
 exports.hide_all_messages_popover = function () {
     if (exports.all_messages_popped()) {
-        $(all_messages_sidebar_elem).popover("destroy");
+        all_messages_sidebar_elem.destroy();
         all_messages_sidebar_elem = undefined;
     }
 };
 
 exports.hide_starred_messages_popover = function () {
     if (exports.starred_messages_popped()) {
-        $(starred_messages_sidebar_elem).popover("destroy");
+        starred_messages_sidebar_elem.destroy();
         starred_messages_sidebar_elem = undefined;
     }
 };
@@ -130,69 +126,41 @@ function stream_popover_sub(e) {
     return sub;
 }
 
-// This little function is a workaround for the fact that
-// Bootstrap popovers don't properly handle being resized --
-// so after resizing our popover to add in the spectrum color
-// picker, we need to adjust its height accordingly.
 function update_spectrum(popover, update_func) {
-    const initial_height = popover[0].offsetHeight;
-
     const colorpicker = popover.find(".colorpicker-container").find(".colorpicker");
     update_func(colorpicker);
-    const after_height = popover[0].offsetHeight;
-
-    const popover_root = popover.closest(".popover");
-    const current_top_px = Number.parseFloat(popover_root.css("top").replace("px", ""));
-    const height_delta = after_height - initial_height;
-    let top = current_top_px - height_delta / 2;
-
-    if (top < 0) {
-        top = 0;
-        popover_root.find("div.arrow").hide();
-    } else if (top + after_height > $(window).height() - 20) {
-        top = $(window).height() - after_height - 20;
-        if (top < 0) {
-            top = 0;
-        }
-        popover_root.find("div.arrow").hide();
-    }
-
-    popover_root.css("top", top + "px");
 }
 
 function build_stream_popover(opts) {
     const elt = opts.elt;
+    console.log(elt);
     const stream_id = opts.stream_id;
 
-    if (exports.stream_popped() && current_stream_sidebar_elem === elt) {
-        // If the popover is already shown, clicking again should toggle it.
+    if (exports.stream_popped() && current_stream_sidebar_elem.reference === elt) {
         exports.hide_stream_popover();
         return;
     }
 
     popovers.hide_all();
+
     exports.show_streamlist_sidebar();
 
     const content = render_stream_sidebar_actions({
         stream: stream_data.get_sub_by_id(stream_id),
     });
 
-    $(elt).popover({
+    current_stream_sidebar_elem = tippy(elt, {
+        maxWidth: "auto",
+        placement: "right",
+        appendTo: () => document.body,
         content,
-        html: true,
         trigger: "manual",
-        fixed: true,
-        fix_positions: true,
+        allowHTML: true,
+        interactive: true,
+        showOnCreate: true,
+        interactiveBorder: 30,
+        theme: "light-border",
     });
-
-    $(elt).popover("show");
-    const popover = $(`.streams_popover[data-stream-id="${CSS.escape(stream_id)}"]`);
-
-    update_spectrum(popover, (colorpicker) => {
-        colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
-    });
-
-    current_stream_sidebar_elem = elt;
 }
 
 function build_topic_popover(opts) {
@@ -200,7 +168,7 @@ function build_topic_popover(opts) {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
 
-    if (exports.topic_popped() && current_topic_sidebar_elem === elt) {
+    if (exports.topic_popped() && current_topic_sidebar_elem.reference === elt) {
         // If the popover is already shown, clicking again should toggle it.
         exports.hide_topic_popover();
         return;
@@ -232,22 +200,23 @@ function build_topic_popover(opts) {
         has_starred,
     });
 
-    $(elt).popover({
+    current_topic_sidebar_elem = tippy(elt, {
+        placement: "right",
+        appendTo: () => document.body,
         content,
-        html: true,
         trigger: "manual",
-        fixed: true,
+        allowHTML: true,
+        interactive: true,
+        showOnCreate: true,
+        interactiveBorder: 30,
+        theme: "light-border",
     });
-
-    $(elt).popover("show");
-
-    current_topic_sidebar_elem = elt;
 }
 
 function build_all_messages_popover(e) {
     const elt = e.target;
 
-    if (exports.all_messages_popped() && all_messages_sidebar_elem === elt) {
+    if (exports.all_messages_popped() && all_messages_sidebar_elem.reference === elt) {
         exports.hide_all_messages_popover();
         e.stopPropagation();
         return;
@@ -257,22 +226,23 @@ function build_all_messages_popover(e) {
 
     const content = render_all_messages_sidebar_actions();
 
-    $(elt).popover({
+    all_messages_sidebar_elem = tippy(elt, {
+        placement: "right",
+        appendTo: () => document.body,
         content,
-        html: true,
         trigger: "manual",
-        fixed: true,
+        allowHTML: true,
+        interactive: true,
+        showOnCreate: true,
+        interactiveBorder: 30,
+        theme: "light-border",
     });
-
-    $(elt).popover("show");
-    all_messages_sidebar_elem = elt;
-    e.stopPropagation();
 }
 
 function build_starred_messages_popover(e) {
     const elt = e.target;
 
-    if (exports.starred_messages_popped() && starred_messages_sidebar_elem === elt) {
+    if (exports.starred_messages_popped() && starred_messages_sidebar_elem.reference === elt) {
         exports.hide_starred_messages_popover();
         e.stopPropagation();
         return;
@@ -284,16 +254,17 @@ function build_starred_messages_popover(e) {
         starred_message_counts: page_params.starred_message_counts,
     });
 
-    $(elt).popover({
+    starred_messages_sidebar_elem = tippy(elt, {
+        placement: "right",
+        appendTo: () => document.body,
         content,
-        html: true,
         trigger: "manual",
-        fixed: true,
+        allowHTML: true,
+        interactive: true,
+        showOnCreate: true,
+        interactiveBorder: 30,
+        theme: "light-border",
     });
-
-    $(elt).popover("show");
-    starred_messages_sidebar_elem = elt;
-    e.stopPropagation();
 }
 
 function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
@@ -458,6 +429,7 @@ exports.register_stream_handlers = function () {
 
         const sub = stream_popover_sub(e);
         subs.sub_or_unsub(sub);
+        exports.hide_stream_popover();
         e.preventDefault();
         e.stopPropagation();
     });

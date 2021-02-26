@@ -3,6 +3,9 @@
 const emoji_codes = require("../generated/emoji/emoji_codes.json");
 const emoji = require("../shared/js/emoji");
 const typeahead = require("../shared/js/typeahead");
+
+const tippy = require("tippy.js").default;
+
 const render_emoji_popover = require("../templates/emoji_popover.hbs");
 const render_emoji_popover_content = require("../templates/emoji_popover_content.hbs");
 const render_emoji_popover_search_results = require("../templates/emoji_popover_search_results.hbs");
@@ -180,10 +183,8 @@ exports.reactions_popped = function () {
 exports.hide_emoji_popover = function () {
     $(".has_popover").removeClass("has_popover has_emoji_popover");
     if (exports.reactions_popped()) {
-        const orig_title = current_message_emoji_popover_elem.data("original-title");
-        current_message_emoji_popover_elem.popover("destroy");
-        current_message_emoji_popover_elem.prop("title", orig_title);
-        current_message_emoji_popover_elem.removeClass("reaction_button_visible");
+        $(current_message_emoji_popover_elem.reference).removeClass("reaction_button_visible");
+        current_message_emoji_popover_elem.destroy();
         current_message_emoji_popover_elem = undefined;
     }
 };
@@ -590,9 +591,6 @@ function register_popover_events(popover) {
 }
 
 exports.build_emoji_popover = function (elt, id) {
-    const template_args = {
-        class: "emoji-info-popover",
-    };
     let placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
 
     if (placement === "viewport_center") {
@@ -602,45 +600,36 @@ exports.build_emoji_popover = function (elt, id) {
         placement = "left";
     }
 
-    let template = render_emoji_popover(template_args);
-
-    // if the window is mobile sized, add the `.popover-flex` wrapper to the emoji
-    // popover so that it will be wrapped in flex and centered in the screen.
-    if (window.innerWidth <= 768) {
-        template = "<div class='popover-flex'>" + template + "</div>";
-    }
-
-    elt.popover({
-        // temporary patch for handling popover placement of `viewport_center`
-        placement,
-        fix_positions: true,
-        template,
-        title: "",
+    current_message_emoji_popover_elem = tippy(elt[0], {
+        duration: 0,
+        placement: "auto",
+        appendTo: () => document.body,
         content: generate_emoji_picker_content(id),
-        html: true,
         trigger: "manual",
+        allowHTML: true,
+        interactive: true,
+        showOnCreate: true,
+        interactiveBorder: 30,
+        theme: "light-border",
+        hideOnClick: false,
+        onShown(instance) {
+            const $popover = $(instance.popper);
+            $popover.find(".emoji-popover-filter").trigger("focus");
+            emoji_catalog_last_coordinates = {
+                section: 0,
+                index: 0,
+            };
+            show_emoji_catalog();
+            refill_section_head_offsets($popover);
+            register_popover_events($popover);
+        },
     });
-    elt.popover("show");
-    elt.prop("title", i18n.t("Add emoji reaction (:)"));
-
-    const popover = elt.data("popover").$tip;
-    popover.find(".emoji-popover-filter").trigger("focus");
-    current_message_emoji_popover_elem = elt;
-
-    emoji_catalog_last_coordinates = {
-        section: 0,
-        index: 0,
-    };
-    show_emoji_catalog();
-
-    elt.ready(() => refill_section_head_offsets(popover));
-    register_popover_events(popover);
 };
 
 exports.toggle_emoji_popover = function (element, id) {
     const last_popover_elem = current_message_emoji_popover_elem;
     popovers.hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+    if (last_popover_elem !== undefined && last_popover_elem.reference === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
@@ -652,7 +641,7 @@ exports.toggle_emoji_popover = function (element, id) {
         current_msg_list.select_id(id);
     }
 
-    if (elt.data("popover") === undefined) {
+    if (elt.hasClass("actions_hover")) {
         // Keep the element over which the popover is based off visible.
         elt.addClass("reaction_button_visible");
         exports.build_emoji_popover(elt, id);
@@ -704,34 +693,29 @@ exports.register_click_handlers = function () {
         exports.toggle_emoji_popover(this);
     });
 
-    $("#main_div").on("click", ".reaction_button", function (e) {
+    $("#main_div").on("click", ".message_controls > .reaction_button", function (e) {
         e.stopPropagation();
 
         const message_id = rows.get_message_id(this);
         exports.toggle_emoji_popover(this, message_id);
     });
 
-    $("#main_div").on("mouseenter", ".reaction_button", (e) => {
+    $("#main_div").on("mouseenter", ".message_controls > .reaction_button", (e) => {
         e.stopPropagation();
 
         const elem = $(e.currentTarget);
         const title = i18n.t("Add emoji reaction");
-        elem.tooltip({
-            title: title + " (:)",
-            trigger: "hover",
+        const elem_tooltip = tippy(elem[0], {
+            content: title + " (:)",
             placement: "bottom",
-            animation: false,
         });
-        elem.tooltip("show");
-        $(".tooltip-arrow").remove();
+
+        elem.on("mouseleave", () => {
+            elem_tooltip.destroy();
+        });
     });
 
-    $("#main_div").on("mouseleave", ".reaction_button", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("hide");
-    });
-
-    $("body").on("click", ".actions_popover .reaction_button", (e) => {
+    $("#main_div").on("click", ".actions_popover .reaction_button", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
         e.preventDefault();
         e.stopPropagation();
@@ -739,7 +723,7 @@ exports.register_click_handlers = function () {
         // element that definitely exists in the page even if the
         // message wasn't sent by us and thus the .reaction_hover
         // element is not present, we use the message's
-        // .fa-chevron-down element as the base for the popover.
+        // .ellipsis-v-solid element as the base for the popover.
         const elem = $(".selected_message .actions_hover")[0];
         exports.toggle_emoji_popover(elem, message_id);
     });

@@ -47,3 +47,8 @@ export function initialize() {
         hideOnClick: true,
     });
 }
+
+export function hide_all() {
+    // Imediately hide all elements
+    hideAll({duration: 0});
+}

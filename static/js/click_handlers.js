@@ -182,7 +182,6 @@ exports.initialize = function () {
         const local_id = $(this).attr("data-reaction-id");
         const message_id = rows.get_message_id(this);
         reactions.process_reaction_click(message_id, local_id);
-        $(".tooltip").remove();
     });
 
     $("body").on("mouseenter", ".message_edit_notice", (e) => {
@@ -220,32 +219,14 @@ exports.initialize = function () {
         const local_id = elem.attr("data-reaction-id");
         const message_id = rows.get_message_id(e.currentTarget);
         const title = reactions.get_reaction_title_data(message_id, local_id);
-
-        elem.tooltip({
-            title,
-            trigger: "hover",
+        const reaction_tooltip = tippy(elem[0], {
+            content: title,
             placement: "bottom",
-            animation: false,
         });
-        elem.tooltip("show");
-        $(".tooltip, .tooltip-inner").css({
-            "margin-left": "15px",
-            "max-width": $(window).width() * 0.6,
+
+        elem.on("mouseleave", () => {
+            reaction_tooltip.destroy();
         });
-        // Remove the arrow from the tooltip.
-        $(".tooltip-arrow").remove();
-    });
-
-    $("#main_div").on("mouseleave", ".message_reaction", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
-    });
-
-    // DESTROY PERSISTING TOOLTIPS ON HOVER
-
-    $("body").on("mouseenter", ".tooltip", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).remove();
     });
 
     $("#main_div").on("click", "a.stream", function (e) {
@@ -329,9 +310,6 @@ exports.initialize = function () {
         row.find(".alert-msg").text(i18n.t("Copied!"));
         row.find(".alert-msg").css("display", "block");
         row.find(".alert-msg").delay(1000).fadeOut(300);
-        if ($(".tooltip").is(":visible")) {
-            $(".tooltip").hide();
-        }
         e.preventDefault();
         e.stopPropagation();
     });
@@ -517,7 +495,6 @@ exports.initialize = function () {
             e.preventDefault();
             e.stopPropagation();
             popovers.hide_all();
-            $(".tooltip").remove();
         });
 
     function do_render_buddy_list_tooltip(elem, title_data) {
@@ -553,7 +530,6 @@ exports.initialize = function () {
 
     // PM LIST TOOLTIPS
     $("body").on("mouseenter", "#pm_user_status", (e) => {
-        $(".tooltip").remove();
         e.stopPropagation();
         const elem = $(e.currentTarget);
         const user_ids_string = elem.attr("data-user-ids-string");
@@ -562,11 +538,6 @@ exports.initialize = function () {
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
         do_render_buddy_list_tooltip(elem, title_data);
-    });
-
-    $("body").on("mouseleave", "#pm_user_status", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
     });
 
     // MISC
@@ -912,13 +883,12 @@ exports.initialize = function () {
             return;
         }
 
-        // Dismiss popovers if the user has clicked outside them
+        // Hide tippy instace if user clicked outside.
         if (
-            $(
-                '.popover-inner, #user-profile-modal, .emoji-info-popover, .app-main [class^="column-"].expanded',
-            ).has(e.target).length === 0
+            $(e.target).parents("[data-tippy-root]").length === 0 &&
+            $("[data-tippy-root]").is(":visible")
         ) {
-            popovers.hide_all();
+            popovers.hide_all_except_sidebars();
         }
 
         // If user clicks outside an active modal

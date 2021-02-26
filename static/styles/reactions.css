@@ -122,6 +122,7 @@
 }
 
 .emoji-info-popover {
+    margin: -6px -10px;
     padding: 0;
     height: 370px;
     user-select: none;
@@ -211,6 +212,7 @@
 
         .emoji-search-results-container {
             height: 283px;
+            display: none;
 
             .emoji-popover-results-heading {
                 font-weight: 600;
