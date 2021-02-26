@@ -79,8 +79,6 @@ export function update_left_panel_row(sub) {
         new_row.addClass("active");
     }
 
-    add_tooltip_to_left_panel_row(new_row);
-
     row.replaceWith(new_row);
 }
 
@@ -274,7 +272,6 @@ export function add_sub_to_table(sub) {
     const setting_sub = stream_settings_data.get_sub_for_settings(sub);
     const html = render_subscription(setting_sub);
     const new_row = $(html);
-    add_tooltip_to_left_panel_row(new_row);
 
     if (stream_create.get_name() === sub.name) {
         ui.get_content_element($(".streams-list")).prepend(new_row);
@@ -339,13 +336,6 @@ export function show_active_stream_in_left_panel() {
         const sub_row = row_for_stream_id(selected_row);
         sub_row.addClass("active");
     }
-}
-
-export function add_tooltip_to_left_panel_row(row) {
-    row.find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
-        placement: "left",
-        animation: false,
-    });
 }
 
 export function update_settings_for_unsubscribed(sub) {
@@ -495,10 +485,6 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         );
     }
     maybe_reset_right_panel();
-
-    for (const row of $("#subscriptions_table .stream-row")) {
-        add_tooltip_to_left_panel_row($(row));
-    }
 
     // return this for test convenience
     return [...buckets.name, ...buckets.desc];
