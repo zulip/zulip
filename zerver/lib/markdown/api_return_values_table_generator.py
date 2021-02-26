@@ -191,7 +191,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             # This part is for adding examples of individual events
             text.append("**Example**")
             text.append("\n```json\n")
-            example = json.dumps(events["example"], indent=4)
+            example = json.dumps(events["example"], indent=4, sort_keys=True)
             text.append(example)
             text.append("```\n\n")
         return text
