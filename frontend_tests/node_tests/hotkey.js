@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -12,6 +12,15 @@ const popovers = set_global("popovers", {
     user_sidebar_popped: () => false,
     user_info_popped: () => false,
 });
+const overlays = set_global("overlays", {
+    is_active: () => false,
+    settings_open: () => false,
+    streams_open: () => false,
+    lightbox_open: () => false,
+    drafts_open: () => false,
+    info_overlay_open: () => false,
+});
+
 set_global("stream_popover", {
     stream_popped: () => false,
     topic_popped: () => false,
@@ -50,8 +59,6 @@ set_global("navigator", {
 });
 
 const page_params = set_global("page_params", {});
-
-let overlays = set_global("overlays", {});
 
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
@@ -247,12 +254,13 @@ run_test("allow normal typing when processing text", () => {
     for (const settings_open of [() => true, () => false]) {
         for (const is_active of [() => true, () => false]) {
             for (const info_overlay_open of [() => true, () => false]) {
-                overlays = set_global("overlays", {
-                    is_active,
-                    settings_open,
-                    info_overlay_open,
+                with_field(overlays, "is_active", is_active, () => {
+                    with_field(overlays, "settings_open", settings_open, () => {
+                        with_field(overlays, "info_overlay_open", info_overlay_open, () => {
+                            test_normal_typing();
+                        });
+                    });
                 });
-                test_normal_typing();
             }
         }
     }
@@ -261,10 +269,6 @@ run_test("allow normal typing when processing text", () => {
 run_test("streams", () => {
     // Ok, now test keys that work when we're viewing messages.
     hotkey.processing_text = () => false;
-    overlays.settings_open = () => false;
-    overlays.streams_open = () => false;
-    overlays.lightbox_open = () => false;
-    overlays.drafts_open = () => false;
 
     page_params.can_create_streams = true;
     overlays.streams_open = () => true;
