@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 40**
+
+* [`GET /events`](/api/get-events): Remove email field from update
+  subscription events.
+
 **Feature level 39**
 
 * Added new [GET /users/{email}](/api/get-user-by-email) endpoint.

@@ -601,14 +601,6 @@ paths:
                                     - type: integer
                                     - type: boolean
                                     - type: string
-                                email:
-                                  type: string
-                                  deprecated: true
-                                  description: |
-                                    The display email for the current user.
-
-                                    **Deprecated** and to be removed as it
-                                    serves no purpose to include this field here.
                               additionalProperties: false
                               example:
                                 {
@@ -616,7 +608,6 @@ paths:
                                   "type": "subscription",
                                   "property": "pin_to_top",
                                   "value": true,
-                                  "email": "user10@zulip.testserver",
                                   "stream_id": 11,
                                   "name": "test_stream",
                                   "id": 0,
