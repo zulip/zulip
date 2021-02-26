@@ -401,11 +401,9 @@ run_test("motion_keys", () => {
         "+": 187,
     };
 
-    function process(name, shiftKey, ctrlKey) {
+    function process(name) {
         const e = {
             which: codes[name],
-            shiftKey,
-            ctrlKey,
         };
 
         try {
@@ -424,9 +422,9 @@ run_test("motion_keys", () => {
         assert.equal(process(name), false);
     }
 
-    function assert_mapping(key_name, module, func_name, shiftKey, ctrlKey) {
+    function assert_mapping(key_name, module, func_name) {
         stubbing(module, func_name, (stub) => {
-            assert(process(key_name, shiftKey, ctrlKey));
+            assert(process(key_name));
             assert.equal(stub.num_calls, 1);
         });
     }
