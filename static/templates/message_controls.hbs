@@ -18,8 +18,8 @@
     {{/unless}}
 
     <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
-        <i class="fa fa-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}" aria-label="{{t 'Retry' }}" role="button" tabindex="0"></i>
-        <i class="fa fa-times-circle remove-failed-message" data-toggle="tooltip" title="{{t 'Cancel' }}" aria-label="{{t 'Cancel' }}" role="button" tabindex="0"></i>
+        <i class="fa fa-refresh refresh-failed-message tippy-zulip-tooltip" data-tippy-content="{{t 'Retry' }}" aria-label="{{t 'Retry' }}" role="button" tabindex="0"></i>
+        <i class="fa fa-times-circle remove-failed-message tippy-zulip-tooltip" data-tippy-content="{{t 'Cancel' }}" aria-label="{{t 'Cancel' }}" role="button" tabindex="0"></i>
     </div>
 
     {{#unless msg/locally_echoed}}
