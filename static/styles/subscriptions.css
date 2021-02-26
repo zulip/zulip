@@ -1119,7 +1119,7 @@ ul.grey-box {
 
    Longer-term we should extract this logic two-column-overlay class
    to read more naturally. */
-@media (width < $lg_min) {
+@media (width < $md_min) {
     .subscriptions-container {
         position: relative;
         overflow: hidden;
