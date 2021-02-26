@@ -150,4 +150,37 @@
             <i class="fa fa-paper-plane" aria-hidden="true"></i> {{#tr this}}View messages sent{{/tr}}
         </a>
     </li>
+    {{#if is_user_admin}}
+        {{#if is_user_owner}}
+            {{#unless is_owner}}
+            <li>
+                {{#if is_active}}
+                <a class="deactivate_user_from_popup_info">
+                    <i class="fa fa-user-times" aria-hidden="true"></i> {{#tr this}}Deactivate user{{/tr}}
+                </a>
+                {{else}}
+                <a class="reactivate_user_from_popup_info">
+                    <i class="fa fa-user-plus" aria-hidden="true"></i> {{#tr this}}Reactivate user{{/tr}}
+                </a>
+                {{/if}}
+            </li>
+            {{/unless}}
+        {{else}}
+            {{#unless is_owner}}
+                {{#unless is_me}}
+                <li>
+                    {{#if is_active}}
+                    <a class="deactivate_user_from_popup_info">
+                        <i class="fa fa-user-times" aria-hidden="true"></i> {{#tr this}}Deactivate user{{/tr}}
+                    </a>
+                    {{else}}
+                    <a class="reactivate_user_from_popup_info">
+                        <i class="fa fa-user-plus" aria-hidden="true"></i> {{#tr this}}Reactivate user{{/tr}}
+                    </a>
+                    {{/if}}
+                </li>
+                {{/unless}}
+            {{/unless}}
+        {{/if}}
+    {{/if}}
 </ul>

@@ -5,6 +5,7 @@ const {parseISO, formatISO, add, set} = require("date-fns");
 const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
+const render_confirm_user_deactivation_modal = require("../templates/confirm_user_deactivation_modal.hbs");
 const render_mobile_message_buttons_popover = require("../templates/mobile_message_buttons_popover.hbs");
 const render_mobile_message_buttons_popover_content = require("../templates/mobile_message_buttons_popover_content.hbs");
 const render_no_arrow_popover = require("../templates/no_arrow_popover.hbs");
@@ -202,6 +203,10 @@ function render_user_info_popover(
         can_set_away,
         has_message_context,
         is_active: people.is_active_user_for_popover(user.user_id),
+        is_user_admin: page_params.is_admin,
+        is_user_owner: page_params.is_owner,
+        is_owner: user.is_owner,
+        is_admin: user.is_admin,
         is_bot: user.is_bot,
         is_me,
         is_sender_popover,
@@ -1246,6 +1251,49 @@ exports.register_click_handlers = function () {
             // We unfocus this so keyboard shortcuts, etc., will work again.
             $(":focus").trigger("blur");
         }, 0);
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".deactivate_user_from_popup_info", (e) => {
+        exports.hide_all();
+
+        function confirm_deactivation() {
+            $("#confirm_user_deactivation_modal").modal("hide");
+            const user_id = elem_to_user_id($(e.target).parents("ul"));
+            const url = "/json/users/" + encodeURIComponent(user_id);
+            const request_method = channel.del;
+            request_method({
+                url,
+            });
+        }
+
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user = people.get_by_user_id(user_id);
+
+        $("#confirm_user_deactivation_modal_holder").html(render_confirm_user_deactivation_modal());
+        $("#confirm_user_deactivation_modal").find(".user_name").text(user.full_name);
+        $("#confirm_user_deactivation_modal").find(".email").text(user.email);
+        $("#confirm_user_deactivation_modal").on(
+            "click",
+            ".confirm_user_deactivation_button",
+            confirm_deactivation,
+        );
+        $("#confirm_user_deactivation_modal").modal("show");
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".reactivate_user_from_popup_info", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
+        const request_method = channel.post;
+        request_method({
+            url,
+        });
+        exports.hide_all();
 
         e.stopPropagation();
         e.preventDefault();
