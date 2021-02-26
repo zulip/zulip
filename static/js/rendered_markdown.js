@@ -207,7 +207,7 @@ export const update_elements = (content) => {
                 } else {
                     view_in_playground_button.attr("aria-haspopup", "true");
                 }
-                view_in_playground_button.attr("title", title);
+                view_in_playground_button.attr("data-tippy-content", title);
                 view_in_playground_button.attr("aria-label", title);
             }
         }
