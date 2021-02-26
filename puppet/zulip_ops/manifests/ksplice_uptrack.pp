@@ -5,7 +5,7 @@ class zulip_ops::ksplice_uptrack {
     group  => 'adm',
     mode   => '0750',
   }
-  $ksplice_access_key = zulipsecret('secrets','ksplice_access_key','')
+  $ksplice_access_key = zulipsecret('secrets', 'ksplice_access_key', '')
   file { '/etc/uptrack/uptrack.conf':
     ensure  => file,
     owner   => 'root',
