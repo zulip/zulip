@@ -123,16 +123,12 @@ rewiremock.proxy(() => zrequire("notifications"), {
     "../../static/js/favicon": {},
 });
 zrequire("pm_list");
-zrequire("list_cursor");
-zrequire("localstorage");
 zrequire("keydown_util");
 zrequire("stream_list");
 zrequire("topic_list");
 zrequire("sent_messages");
 zrequire("top_left_corner");
 zrequire("starred_messages");
-zrequire("user_status");
-zrequire("user_status_ui");
 zrequire("recent_topics");
 
 run_test("initialize_everything", () => {

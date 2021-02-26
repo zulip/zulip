@@ -165,7 +165,6 @@ set_global("stream_data", {
 
 zrequire("message_util");
 zrequire("narrow_state");
-zrequire("localstorage");
 const people = zrequire("people");
 let rt = zrequire("recent_topics");
 
