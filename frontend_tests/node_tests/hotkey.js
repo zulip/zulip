@@ -230,7 +230,7 @@ function test_normal_typing() {
     assert_unmapped('~!@#$%^*()_+{}:"<>');
 }
 
-run_test("basic_chars", () => {
+run_test("allow normal typing when processing text", () => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped("bfmoyz");
@@ -256,7 +256,9 @@ run_test("basic_chars", () => {
             }
         }
     }
+});
 
+run_test("streams", () => {
     // Ok, now test keys that work when we're viewing messages.
     hotkey.processing_text = () => false;
     overlays.settings_open = () => false;
@@ -275,7 +277,9 @@ run_test("basic_chars", () => {
     overlays.streams_open = () => false;
     test_normal_typing();
     overlays.is_active = () => false;
+});
 
+run_test("basic mappings", () => {
     assert_mapping("?", hashchange, "go_to_location");
     assert_mapping("/", search, "initiate_search");
     assert_mapping("w", activity, "initiate_search");
@@ -288,15 +292,22 @@ run_test("basic_chars", () => {
     assert_mapping("x", compose_actions, "start");
     assert_mapping("P", narrow, "by");
     assert_mapping("g", gear_menu, "open");
+});
 
+run_test("drafts open", () => {
     overlays.is_active = () => true;
     overlays.drafts_open = () => true;
     assert_mapping("d", overlays, "close_overlay");
+});
+
+run_test("drafts closed", () => {
     overlays.drafts_open = () => false;
     test_normal_typing();
     overlays.is_active = () => false;
     assert_mapping("d", drafts, "launch");
+});
 
+run_test("misc", () => {
     // Next, test keys that only work on a selected message.
     const message_view_only_keys = "@+>RjJkKsSuvi:GM";
 
@@ -329,7 +340,9 @@ run_test("basic_chars", () => {
     assert_mapping(":", reactions, "open_reactions_popover", true);
     assert_mapping(">", compose_actions, "quote_and_reply");
     assert_mapping("e", message_edit, "start");
+});
 
+run_test("lightbox", () => {
     overlays.is_active = () => true;
     overlays.lightbox_open = () => true;
     assert_mapping("v", overlays, "close_overlay");
@@ -337,14 +350,21 @@ run_test("basic_chars", () => {
     test_normal_typing();
     overlays.is_active = () => false;
     assert_mapping("v", lightbox, "show_from_selected_message");
+});
 
+run_test("emoji picker", () => {
     emoji_picker.reactions_popped = () => true;
     assert_mapping(":", emoji_picker, "navigate", true);
     emoji_picker.reactions_popped = () => false;
+});
 
+run_test("G/M keys", () => {
+    // TODO: move
     assert_mapping("G", navigate, "to_end");
     assert_mapping("M", muting_ui, "toggle_topic_mute");
+});
 
+run_test("n/p keys", () => {
     // Test keys that work when a message is selected and
     // also when the message list is empty.
     assert_mapping("n", narrow, "narrow_to_next_topic");
