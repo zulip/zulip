@@ -67,16 +67,26 @@ exports.restore = function () {
 };
 
 exports.with_field = function (obj, field, val, f) {
-    const had_val = Object.prototype.hasOwnProperty.call(obj, field);
-    const old_val = obj[field];
-    try {
-        obj[field] = val;
-        return f();
-    } finally {
-        if (had_val) {
-            obj[field] = old_val;
-        } else {
-            delete obj[field];
+    if ("__esModule" in obj && "__Rewire__" in obj) {
+        const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
+        try {
+            obj.__Rewire__(field, val);
+            return f();
+        } finally {
+            obj.__Rewire__(field, old_val);
+        }
+    } else {
+        const had_val = Object.prototype.hasOwnProperty.call(obj, field);
+        const old_val = obj[field];
+        try {
+            obj[field] = val;
+            return f();
+        } finally {
+            if (had_val) {
+                obj[field] = old_val;
+            } else {
+                delete obj[field];
+            }
         }
     }
 };
