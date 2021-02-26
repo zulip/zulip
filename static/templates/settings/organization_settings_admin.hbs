@@ -43,8 +43,8 @@
                 <div class="input-group">
                     <label for="realm_msg_delete_limit_setting" class="dropdown-title">
                         {{t "Allow message deleting" }}
-                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
-                          aria-hidden="true" title="{{t 'Administrators can always delete any message.' }}"></i>
+                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip tippy-zulip-tooltip"
+                          aria-hidden="true" data-tippy-content="{{t 'Administrators can always delete any message.' }}"></i>
                     </label>
                     <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting" class="prop-element">
                         {{#each msg_delete_limit_dropdown_values}}
@@ -153,8 +153,8 @@
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
                     <label for="id_realm_message_retention_setting" class="dropdown-title">{{t "Message retention period" }}
-                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
-                          aria-hidden="true" title="{{t 'Only owners can change message retention policy.' }}"></i>
+                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip tippy-zulip-tooltip" 
+                          aria-hidden="true" data-tippy-content="{{t 'Only owners can change message retention policy.' }}"></i>
                     </label>
                     <select name="realm_message_retention_setting"
                       id="id_realm_message_retention_setting" class="prop-element"

@@ -12,14 +12,12 @@
                         <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.push_notifications}}control-label-disabled{{/if}}">
                             {{t "Mobile"}}
                             {{#if (not page_params.realm_push_notifications_enabled) }}
-                            <i class="fa fa-question-circle settings-info-icon" data-toggle="tooltip"
-                              title="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
+                            <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
                             {{/if}}
                         </th>
                         <th rowspan="2" width="14%">{{t "Email"}}</th>
                         <th rowspan="2" width="14%">@all
-                            <i class="fa fa-question-circle settings-info-icon" data-toggle="tooltip"
-                              title="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
+                            <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
                         </th>
                     </tr>
                     <tr>

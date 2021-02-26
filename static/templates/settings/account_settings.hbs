@@ -13,8 +13,12 @@
                             {{page_params.delivery_email}}
                             <i class="fa fa-pencil"></i>
                         </button>
-                        <i class="fa fa-question-circle change_email_tooltip settings-info-icon" {{#if (or (not page_params.realm_email_changes_disabled) page_params.is_admin)}}style="display: none;"{{/if}} data-toggle="tooltip"
-                          title="{{t 'Email address changes are disabled in this organization.' }}"></i>
+                        <i class="tippy-zulip-tooltip fa fa-question-circle
+                            change_email_tooltip settings-info-icon" {{#if (or
+                            (not page_params.realm_email_changes_disabled)
+                        page_params.is_admin)}}style="display: none;"{{/if}}
+                           data-tippy-content="{{t 'Email address changes are
+                           disabled in this organization.' }}"></i>
                     </div>
 
                     <div id="change_email_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"
@@ -53,9 +57,9 @@
                                 <span id="full_name_value">{{page_params.full_name}}</span>
                                 <i class="fa fa-pencil"></i>
                             </button>
-                            <i class="fa fa-question-circle change_name_tooltip settings-info-icon" data-toggle="tooltip"
+                            <i class="fa fa-question-circle change_name_tooltip tippy-zulip-tooltip settings-info-icon"
                               {{#if user_can_change_name}}style="display:none"{{/if}}
-                              title="{{t 'Name changes are disabled in this organization. Contact an administrator to change your name.' }}">
+                              data-tippy-content="{{t 'Name changes are disabled in this organization. Contact an administrator to change your name.' }}">
                             </i>
                         </div>
                         <div id="change_full_name_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"

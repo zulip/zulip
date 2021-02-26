@@ -35,8 +35,7 @@
                     <div class="input-group">
                         <label for="bot_type">
                             {{t "Bot type" }}
-                            <i class="fa fa-question-circle settings-info-icon bot_type_tooltip" aria-hidden="true" data-toggle="tooltip"
-                              title='{{t "Incoming webhooks can only send messages." }}'></i>
+                            <i class="fa fa-question-circle settings-info-icon bot_type_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
                         <select name="bot_type" id="create_bot_type">
                             {{#each page_params.bot_types}}
