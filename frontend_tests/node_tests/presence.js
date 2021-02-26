@@ -5,11 +5,9 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const return_false = () => false;
-
 const server_events = set_global("server_events", {});
 const reload_state = set_global("reload_state", {
-    is_in_progress: return_false,
+    is_in_progress: () => false,
 });
 
 const people = zrequire("people");

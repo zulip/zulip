@@ -15,8 +15,6 @@ const page_params = set_global("page_params", {
 });
 
 const noop = () => {};
-const return_false = () => false;
-const return_true = () => true;
 
 const topic_list = set_global("topic_list", {});
 set_global("overlays", {});
@@ -170,11 +168,11 @@ test_ui("create_sidebar_row", (override) => {
     assert(!social_li.hasClass("out_of_home_view"));
 
     const row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.is_active = return_true;
+    stream_data.is_active = () => true;
     row.update_whether_active();
     assert(!social_li.hasClass("inactive_stream"));
 
-    stream_data.is_active = return_false;
+    stream_data.is_active = () => false;
     row.update_whether_active();
     assert(social_li.hasClass("inactive_stream"));
 
@@ -200,16 +198,16 @@ test_ui("pinned_streams_never_inactive", (override) => {
     const social_sidebar = $("<social sidebar row>");
     let stream_id = social.stream_id;
     let row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.is_active = return_false;
+    stream_data.is_active = () => false;
 
     stream_list.build_stream_list();
     assert(social_sidebar.hasClass("inactive_stream"));
 
-    stream_data.is_active = return_true;
+    stream_data.is_active = () => true;
     row.update_whether_active();
     assert(!social_sidebar.hasClass("inactive_stream"));
 
-    stream_data.is_active = return_false;
+    stream_data.is_active = () => false;
     row.update_whether_active();
     assert(social_sidebar.hasClass("inactive_stream"));
 
@@ -217,7 +215,7 @@ test_ui("pinned_streams_never_inactive", (override) => {
     const devel_sidebar = $("<devel sidebar row>");
     stream_id = devel.stream_id;
     row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.is_active = return_false;
+    stream_data.is_active = () => false;
 
     stream_list.build_stream_list();
     assert(!devel_sidebar.hasClass("inactive_stream"));
@@ -730,7 +728,7 @@ test_ui("create_initial_sidebar_rows", () => {
     const html_dict = new Map();
 
     stream_list.stream_sidebar = {
-        has_row_for: return_false,
+        has_row_for: () => false,
         set_row(stream_id, widget) {
             html_dict.set(stream_id, widget.get_li().html());
         },

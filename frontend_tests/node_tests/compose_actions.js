@@ -7,8 +7,6 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-const return_false = () => false;
-const return_true = () => true;
 
 set_global("page_params", {});
 
@@ -22,7 +20,7 @@ const compose_pm_pill = set_global("compose_pm_pill", {});
 const hash_util = set_global("hash_util", {});
 
 set_global("reload_state", {
-    is_in_progress: return_false,
+    is_in_progress: () => false,
 });
 
 set_global("notifications", {
@@ -404,12 +402,12 @@ run_test("focus_in_empty_compose", () => {
         return $("#compose-textarea").is_focused;
     };
 
-    compose_state.composing = return_true;
+    compose_state.composing = () => true;
     $("#compose-textarea").val("");
     $("#compose-textarea").trigger("focus");
     assert(compose_state.focus_in_empty_compose());
 
-    compose_state.composing = return_false;
+    compose_state.composing = () => false;
     assert(!compose_state.focus_in_empty_compose());
 
     $("#compose-textarea").val("foo");

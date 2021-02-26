@@ -11,8 +11,6 @@ set_global("page_params", {
 });
 
 const noop = () => {};
-const return_true = () => true;
-const return_false = () => false;
 
 const narrow_state = set_global("narrow_state", {});
 const search_suggestion = set_global("search_suggestion", {});
@@ -31,30 +29,30 @@ run_test("update_button_visibility", () => {
     const search_query = $("#search_query");
     const search_button = $(".search_button");
 
-    search_query.is = return_false;
+    search_query.is = () => false;
     search_query.val("");
-    narrow_state.active = return_false;
+    narrow_state.active = () => false;
     search_button.prop("disabled", true);
     search.update_button_visibility();
     assert(search_button.prop("disabled"));
 
-    search_query.is = return_true;
+    search_query.is = () => true;
     search_query.val("");
-    narrow_state.active = return_false;
+    narrow_state.active = () => false;
     search_button.prop("disabled", true);
     search.update_button_visibility();
     assert(!search_button.prop("disabled"));
 
-    search_query.is = return_false;
+    search_query.is = () => false;
     search_query.val("Test search term");
-    narrow_state.active = return_false;
+    narrow_state.active = () => false;
     search_button.prop("disabled", true);
     search.update_button_visibility();
     assert(!search_button.prop("disabled"));
 
-    search_query.is = return_false;
+    search_query.is = () => false;
     search_query.val("");
-    narrow_state.active = return_true;
+    narrow_state.active = () => true;
     search_button.prop("disabled", true);
     search.update_button_visibility();
     assert(!search_button.prop("disabled"));
@@ -186,7 +184,7 @@ run_test("initialize", () => {
             default_prevented = true;
         },
     };
-    search_query_box.is = return_false;
+    search_query_box.is = () => false;
     assert.equal(keydown(ev), undefined);
     assert(!default_prevented);
 
@@ -195,7 +193,7 @@ run_test("initialize", () => {
     assert(!default_prevented);
 
     ev.which = 13;
-    search_query_box.is = return_true;
+    search_query_box.is = () => true;
     assert.equal(keydown(ev), undefined);
     assert(default_prevented);
 
@@ -204,7 +202,7 @@ run_test("initialize", () => {
     };
     let operators;
     let is_blurred;
-    narrow_state.active = return_false;
+    narrow_state.active = () => false;
     search_query_box.off("blur");
     search_query_box.on("blur", () => {
         is_blurred = true;
@@ -234,21 +232,21 @@ run_test("initialize", () => {
     _setup("");
 
     ev.which = 15;
-    search_query_box.is = return_false;
+    search_query_box.is = () => false;
     searchbox_form.trigger(ev);
 
     assert(!is_blurred);
     assert(!search_button.prop("disabled"));
 
     ev.which = 13;
-    search_query_box.is = return_false;
+    search_query_box.is = () => false;
     searchbox_form.trigger(ev);
 
     assert(!is_blurred);
     assert(!search_button.prop("disabled"));
 
     ev.which = 13;
-    search_query_box.is = return_true;
+    search_query_box.is = () => true;
     searchbox_form.trigger(ev);
     assert(is_blurred);
 
@@ -261,7 +259,7 @@ run_test("initialize", () => {
 
     _setup("ver");
     ev.which = 13;
-    search_query_box.is = return_true;
+    search_query_box.is = () => true;
     searchbox_form.trigger(ev);
     assert(is_blurred);
     assert(!search_button.prop("disabled"));
@@ -272,7 +270,7 @@ run_test("initiate_search", () => {
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if
     // this test ever fails unexpectedly.
-    narrow_state.filter = () => ({is_search: return_true});
+    narrow_state.filter = () => ({is_search: () => true});
     let typeahead_forced_open = false;
     let is_searchbox_text_selected = false;
     $("#search_query").typeahead = (lookup) => {
@@ -291,7 +289,7 @@ run_test("initiate_search", () => {
     assert.equal($("#search_query").val(), "ver");
 
     // test that we append space for user convenience
-    narrow_state.filter = () => ({is_search: return_false});
+    narrow_state.filter = () => ({is_search: () => false});
     search.initiate_search();
     assert.equal($("#search_query").val(), "ver ");
 });

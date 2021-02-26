@@ -8,7 +8,6 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-const return_true = () => true;
 const _settings_notifications = {
     update_page: () => {},
 };
@@ -34,7 +33,7 @@ set_global("message_list", {
 });
 
 subs = set_global("subs", {update_settings_for_subscribed: noop});
-set_global("overlays", {streams_open: return_true});
+set_global("overlays", {streams_open: () => true});
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");

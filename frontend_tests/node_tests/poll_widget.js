@@ -11,9 +11,6 @@ const poll_widget = zrequire("poll_widget");
 
 const people = zrequire("people");
 
-const return_false = () => false;
-const return_true = () => true;
-
 run_test("PollData my question", () => {
     const is_my_poll = true;
     const question = "Favorite color?";
@@ -140,7 +137,7 @@ run_test("PollData my question", () => {
 });
 
 run_test("activate another person poll", () => {
-    people.is_my_user_id = return_false;
+    people.is_my_user_id = () => false;
     stub_templates((template_name) => {
         if (template_name === "widgets/poll_widget") {
             return "widgets/poll_widget";
@@ -263,7 +260,7 @@ run_test("activate another person poll", () => {
 });
 
 run_test("activate own poll", () => {
-    people.is_my_user_id = return_true;
+    people.is_my_user_id = () => true;
     stub_templates((template_name) => {
         if (template_name === "widgets/poll_widget") {
             return "widgets/poll_widget";
