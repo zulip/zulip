@@ -20,9 +20,8 @@
     </p>
     {{/if}}
     {{#if (eq setting_name "push_notifications")}}
-    <i class="fa fa-question-circle settings-info-icon {{#unless disabled_realm_setting}}hide{{/unless}}"
-      data-toggle="tooltip"
-      title="{{t 'Mobile push notifications are not configured on this server.' }}">
+    <i class="fa fa-question-circle settings-info-icon {{#unless disabled_realm_setting}}hide{{/unless}} tippy-zulip-tooltip"
+      data-tippy-content="{{t 'Mobile push notifications are not configured on this server.' }}">
     </i>
     {{/if}}
 </div>
