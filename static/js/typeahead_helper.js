@@ -6,6 +6,7 @@ import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
+import * as buddy_data from "./buddy_data";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
@@ -75,9 +76,11 @@ export function render_typeahead_item(args) {
 const rendered = {persons: new Map(), streams: new Map(), user_groups: new Map()};
 
 export function render_person(person) {
+    const user_circle_class = buddy_data.get_user_circle_class(person.user_id);
     if (person.special_item_text) {
         return render_typeahead_item({
             primary: person.special_item_text,
+            user_circle_class,
             is_person: true,
         });
     }
@@ -89,6 +92,7 @@ export function render_person(person) {
         const typeahead_arguments = {
             primary: person.full_name,
             img_src: avatar_url,
+            user_circle_class,
             is_person: true,
         };
         typeahead_arguments.secondary = settings_data.email_for_user_settings(person);

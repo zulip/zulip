@@ -50,6 +50,10 @@ rewiremock.enable();
 const emoji = zrequire("emoji", "shared/js/emoji");
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
 const compose_state = zrequire("compose_state");
+zrequire("user_status");
+zrequire("presence");
+zrequire("buddy_data");
+zrequire("pm_conversations");
 zrequire("templates");
 const typeahead_helper = zrequire("typeahead_helper");
 const people = zrequire("people");
@@ -695,17 +699,17 @@ run_test("initialize", () => {
         // corresponding parts in bold.
         options.query = "oth";
         actual_value = options.highlighter(othello);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
         assert.equal(actual_value, expected_value);
 
         options.query = "Lear";
         actual_value = options.highlighter(cordelia);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
         assert.equal(actual_value, expected_value);
 
         options.query = "othello@zulip.com, co";
         actual_value = options.highlighter(cordelia);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
         assert.equal(actual_value, expected_value);
 
         function matcher(query, person) {
@@ -871,7 +875,7 @@ run_test("initialize", () => {
         // content_highlighter.
         fake_this = {completing: "mention", token: "othello"};
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
         assert.equal(actual_value, expected_value);
 
         fake_this = {completing: "mention", token: "hamletcharacters"};
