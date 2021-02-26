@@ -82,13 +82,6 @@ emoji.initialize({
     emoji_codes,
 });
 
-function return_true() {
-    return true;
-}
-function return_false() {
-    return false;
-}
-
 function stubbing(module, func_name_to_stub, test_function) {
     with_overrides((override) => {
         const stub = make_stub();
@@ -215,33 +208,33 @@ run_test("basic_chars", () => {
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
-    hotkey.in_content_editable_widget = return_false;
-    overlays.settings_open = return_false;
+    hotkey.in_content_editable_widget = () => false;
+    overlays.settings_open = () => false;
 
     const popovers = set_global("popovers", {
-        actions_popped: return_false,
-        message_info_popped: return_false,
-        user_sidebar_popped: return_false,
-        user_info_popped: return_false,
+        actions_popped: () => false,
+        message_info_popped: () => false,
+        user_sidebar_popped: () => false,
+        user_info_popped: () => false,
     });
     set_global("stream_popover", {
-        stream_popped: return_false,
-        topic_popped: return_false,
-        all_messages_popped: return_false,
-        starred_messages_popped: return_false,
+        stream_popped: () => false,
+        topic_popped: () => false,
+        all_messages_popped: () => false,
+        starred_messages_popped: () => false,
     });
     const emoji_picker = set_global("emoji_picker", {
-        reactions_popped: return_false,
+        reactions_popped: () => false,
     });
     set_global("hotspots", {
-        is_open: return_false,
+        is_open: () => false,
     });
     const gear_menu = set_global("gear_menu", {
-        is_open: return_false,
+        is_open: () => false,
     });
 
     // All letters should return false if we are composing text.
-    hotkey.processing_text = return_true;
+    hotkey.processing_text = () => true;
 
     function test_normal_typing() {
         assert_unmapped("abcdefghijklmnopqrsuvwxyz");
@@ -251,9 +244,9 @@ run_test("basic_chars", () => {
         assert_unmapped('~!@#$%^*()_+{}:"<>');
     }
 
-    for (const settings_open of [return_true, return_false]) {
-        for (const is_active of [return_true, return_false]) {
-            for (const info_overlay_open of [return_true, return_false]) {
+    for (const settings_open of [() => true, () => false]) {
+        for (const is_active of [() => true, () => false]) {
+            for (const info_overlay_open of [() => true, () => false]) {
                 overlays = set_global("overlays", {
                     is_active,
                     settings_open,
@@ -265,23 +258,23 @@ run_test("basic_chars", () => {
     }
 
     // Ok, now test keys that work when we're viewing messages.
-    hotkey.processing_text = return_false;
-    overlays.settings_open = return_false;
-    overlays.streams_open = return_false;
-    overlays.lightbox_open = return_false;
-    overlays.drafts_open = return_false;
+    hotkey.processing_text = () => false;
+    overlays.settings_open = () => false;
+    overlays.streams_open = () => false;
+    overlays.lightbox_open = () => false;
+    overlays.drafts_open = () => false;
 
     page_params.can_create_streams = true;
-    overlays.streams_open = return_true;
-    overlays.is_active = return_true;
+    overlays.streams_open = () => true;
+    overlays.is_active = () => true;
     assert_mapping("S", subs, "keyboard_sub");
     assert_mapping("V", subs, "view_stream");
     assert_mapping("n", subs, "open_create_stream");
     page_params.can_create_streams = false;
     assert_unmapped("n");
-    overlays.streams_open = return_false;
+    overlays.streams_open = () => false;
     test_normal_typing();
-    overlays.is_active = return_false;
+    overlays.is_active = () => false;
 
     assert_mapping("?", hashchange, "go_to_location");
     assert_mapping("/", search, "initiate_search");
@@ -296,27 +289,27 @@ run_test("basic_chars", () => {
     assert_mapping("P", narrow, "by");
     assert_mapping("g", gear_menu, "open");
 
-    overlays.is_active = return_true;
-    overlays.drafts_open = return_true;
+    overlays.is_active = () => true;
+    overlays.drafts_open = () => true;
     assert_mapping("d", overlays, "close_overlay");
-    overlays.drafts_open = return_false;
+    overlays.drafts_open = () => false;
     test_normal_typing();
-    overlays.is_active = return_false;
+    overlays.is_active = () => false;
     assert_mapping("d", drafts, "launch");
 
     // Next, test keys that only work on a selected message.
     const message_view_only_keys = "@+>RjJkKsSuvi:GM";
 
     // Check that they do nothing without a selected message
-    current_msg_list.empty = return_true;
+    current_msg_list.empty = () => true;
     assert_unmapped(message_view_only_keys);
 
-    current_msg_list.empty = return_false;
+    current_msg_list.empty = () => false;
 
     // Check that they do nothing while in the settings overlay
-    overlays.settings_open = return_true;
+    overlays.settings_open = () => true;
     assert_unmapped("@*+->rRjJkKsSuvi:GM");
-    overlays.settings_open = return_false;
+    overlays.settings_open = () => false;
 
     // TODO: Similar check for being in the subs page
 
@@ -337,17 +330,17 @@ run_test("basic_chars", () => {
     assert_mapping(">", compose_actions, "quote_and_reply");
     assert_mapping("e", message_edit, "start");
 
-    overlays.is_active = return_true;
-    overlays.lightbox_open = return_true;
+    overlays.is_active = () => true;
+    overlays.lightbox_open = () => true;
     assert_mapping("v", overlays, "close_overlay");
-    overlays.lightbox_open = return_false;
+    overlays.lightbox_open = () => false;
     test_normal_typing();
-    overlays.is_active = return_false;
+    overlays.is_active = () => false;
     assert_mapping("v", lightbox, "show_from_selected_message");
 
-    emoji_picker.reactions_popped = return_true;
+    emoji_picker.reactions_popped = () => true;
     assert_mapping(":", emoji_picker, "navigate", true);
-    emoji_picker.reactions_popped = return_false;
+    emoji_picker.reactions_popped = () => false;
 
     assert_mapping("G", navigate, "to_end");
     assert_mapping("M", muting_ui, "toggle_topic_mute");
@@ -357,9 +350,9 @@ run_test("basic_chars", () => {
     assert_mapping("n", narrow, "narrow_to_next_topic");
     assert_mapping("p", narrow, "narrow_to_next_pm_string");
 
-    current_msg_list.empty = return_true;
+    current_msg_list.empty = () => true;
     assert_mapping("n", narrow, "narrow_to_next_topic");
-    current_msg_list.empty = return_false;
+    current_msg_list.empty = () => false;
 });
 
 run_test("motion_keys", () => {
@@ -406,11 +399,11 @@ run_test("motion_keys", () => {
         });
     }
 
-    list_util.inside_list = return_false;
-    current_msg_list.empty = return_true;
-    overlays.settings_open = return_false;
-    overlays.streams_open = return_false;
-    overlays.lightbox_open = return_false;
+    list_util.inside_list = () => false;
+    current_msg_list.empty = () => true;
+    overlays.settings_open = () => false;
+    overlays.streams_open = () => false;
+    overlays.lightbox_open = () => false;
 
     assert_unmapped("down_arrow");
     assert_unmapped("end");
@@ -420,12 +413,12 @@ run_test("motion_keys", () => {
     assert_unmapped("spacebar");
     assert_unmapped("up_arrow");
 
-    list_util.inside_list = return_true;
+    list_util.inside_list = () => true;
     assert_mapping("up_arrow", list_util, "go_up");
     assert_mapping("down_arrow", list_util, "go_down");
-    list_util.inside_list = return_false;
+    list_util.inside_list = () => false;
 
-    current_msg_list.empty = return_false;
+    current_msg_list.empty = () => false;
     assert_mapping("down_arrow", navigate, "down");
     assert_mapping("end", navigate, "to_end");
     assert_mapping("home", navigate, "to_home");
@@ -435,39 +428,39 @@ run_test("motion_keys", () => {
     assert_mapping("spacebar", navigate, "page_down");
     assert_mapping("up_arrow", navigate, "up");
 
-    overlays.info_overlay_open = return_true;
+    overlays.info_overlay_open = () => true;
     assert_unmapped("down_arrow");
     assert_unmapped("up_arrow");
-    overlays.info_overlay_open = return_false;
+    overlays.info_overlay_open = () => false;
 
-    overlays.streams_open = return_true;
+    overlays.streams_open = () => true;
     assert_mapping("up_arrow", subs, "switch_rows");
     assert_mapping("down_arrow", subs, "switch_rows");
-    overlays.streams_open = return_false;
+    overlays.streams_open = () => false;
 
-    overlays.lightbox_open = return_true;
+    overlays.lightbox_open = () => true;
     assert_mapping("left_arrow", lightbox, "prev");
     assert_mapping("right_arrow", lightbox, "next");
-    overlays.lightbox_open = return_false;
+    overlays.lightbox_open = () => false;
 
-    hotkey.in_content_editable_widget = return_true;
+    hotkey.in_content_editable_widget = () => true;
     assert_unmapped("down_arrow");
     assert_unmapped("up_arrow");
-    hotkey.in_content_editable_widget = return_false;
+    hotkey.in_content_editable_widget = () => false;
 
-    overlays.settings_open = return_true;
+    overlays.settings_open = () => true;
     assert_unmapped("end");
     assert_unmapped("home");
     assert_unmapped("left_arrow");
     assert_unmapped("page_up");
     assert_unmapped("page_down");
     assert_unmapped("spacebar");
-    overlays.settings_open = return_false;
+    overlays.settings_open = () => false;
 
-    overlays.is_active = return_true;
-    overlays.drafts_open = return_true;
+    overlays.is_active = () => true;
+    overlays.drafts_open = () => true;
     assert_mapping("up_arrow", drafts, "drafts_handle_events");
     assert_mapping("down_arrow", drafts, "drafts_handle_events");
-    overlays.is_active = return_false;
-    overlays.drafts_open = return_false;
+    overlays.is_active = () => false;
+    overlays.drafts_open = () => false;
 });

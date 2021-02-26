@@ -5,10 +5,8 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const return_false = () => false;
-const return_true = () => true;
 const reload_state = set_global("reload_state", {
-    is_in_progress: return_false,
+    is_in_progress: () => false,
 });
 
 const people = zrequire("people");
@@ -29,7 +27,7 @@ run_test("report_late_add", () => {
     people.report_late_add(55, "foo@example.com");
 
     blueslip.expect("log", "Added user late: user_id=55 email=foo@example.com");
-    reload_state.is_in_progress = return_true;
+    reload_state.is_in_progress = () => true;
     people.report_late_add(55, "foo@example.com");
 });
 
