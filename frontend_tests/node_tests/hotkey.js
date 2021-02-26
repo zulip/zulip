@@ -6,6 +6,28 @@ const {set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
+const popovers = set_global("popovers", {
+    actions_popped: () => false,
+    message_info_popped: () => false,
+    user_sidebar_popped: () => false,
+    user_info_popped: () => false,
+});
+set_global("stream_popover", {
+    stream_popped: () => false,
+    topic_popped: () => false,
+    all_messages_popped: () => false,
+    starred_messages_popped: () => false,
+});
+const emoji_picker = set_global("emoji_picker", {
+    reactions_popped: () => false,
+});
+set_global("hotspots", {
+    is_open: () => false,
+});
+const gear_menu = set_global("gear_menu", {
+    is_open: () => false,
+});
+
 // Important note on these tests:
 //
 // The way the Zulip hotkey tests work is as follows.  First, we set
@@ -171,36 +193,44 @@ run_test("mappings", () => {
     navigator.platform = "";
 });
 
+function process(s) {
+    const e = {
+        which: s.charCodeAt(0),
+    };
+    try {
+        return hotkey.process_keypress(e);
+    } catch (error) {
+        // An exception will be thrown here if a different
+        // function is called than the one declared.  Try to
+        // provide a useful error message.
+        // add a newline to separate from other console output.
+        console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
+        throw error;
+    }
+}
+
+function assert_mapping(c, module, func_name, shiftKey) {
+    stubbing(module, func_name, (stub) => {
+        assert(process(c, shiftKey));
+        assert.equal(stub.num_calls, 1);
+    });
+}
+
+function assert_unmapped(s) {
+    for (const c of s) {
+        assert.equal(process(c), false);
+    }
+}
+
+function test_normal_typing() {
+    assert_unmapped("abcdefghijklmnopqrsuvwxyz");
+    assert_unmapped(" ");
+    assert_unmapped("[]\\.,;");
+    assert_unmapped("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    assert_unmapped('~!@#$%^*()_+{}:"<>');
+}
+
 run_test("basic_chars", () => {
-    function process(s) {
-        const e = {
-            which: s.charCodeAt(0),
-        };
-        try {
-            return hotkey.process_keypress(e);
-        } catch (error) {
-            // An exception will be thrown here if a different
-            // function is called than the one declared.  Try to
-            // provide a useful error message.
-            // add a newline to separate from other console output.
-            console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
-            throw error;
-        }
-    }
-
-    function assert_mapping(c, module, func_name, shiftKey) {
-        stubbing(module, func_name, (stub) => {
-            assert(process(c, shiftKey));
-            assert.equal(stub.num_calls, 1);
-        });
-    }
-
-    function assert_unmapped(s) {
-        for (const c of s) {
-            assert.equal(process(c), false);
-        }
-    }
-
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped("bfmoyz");
@@ -211,38 +241,8 @@ run_test("basic_chars", () => {
     hotkey.in_content_editable_widget = () => false;
     overlays.settings_open = () => false;
 
-    const popovers = set_global("popovers", {
-        actions_popped: () => false,
-        message_info_popped: () => false,
-        user_sidebar_popped: () => false,
-        user_info_popped: () => false,
-    });
-    set_global("stream_popover", {
-        stream_popped: () => false,
-        topic_popped: () => false,
-        all_messages_popped: () => false,
-        starred_messages_popped: () => false,
-    });
-    const emoji_picker = set_global("emoji_picker", {
-        reactions_popped: () => false,
-    });
-    set_global("hotspots", {
-        is_open: () => false,
-    });
-    const gear_menu = set_global("gear_menu", {
-        is_open: () => false,
-    });
-
     // All letters should return false if we are composing text.
     hotkey.processing_text = () => true;
-
-    function test_normal_typing() {
-        assert_unmapped("abcdefghijklmnopqrsuvwxyz");
-        assert_unmapped(" ");
-        assert_unmapped("[]\\.,;");
-        assert_unmapped("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-        assert_unmapped('~!@#$%^*()_+{}:"<>');
-    }
 
     for (const settings_open of [() => true, () => false]) {
         for (const is_active of [() => true, () => false]) {
