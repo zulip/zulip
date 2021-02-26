@@ -35,7 +35,6 @@ set_global("top_left_corner", {
 });
 
 const people = zrequire("people");
-zrequire("localstorage");
 const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
 const stream_data = zrequire("stream_data");
