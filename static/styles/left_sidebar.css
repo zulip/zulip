@@ -40,6 +40,7 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
 .pm_left_col {
     min-width: $left_col_size;
+    padding-left: 15px;
 }
 
 #stream_filters,
