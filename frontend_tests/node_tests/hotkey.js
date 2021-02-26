@@ -82,6 +82,9 @@ const stream_list = set_global("stream_list", {});
 const subs = set_global("subs", {});
 
 set_global("current_msg_list", {
+    empty() {
+        return false;
+    },
     selected_id() {
         return 42;
     },
@@ -118,6 +121,10 @@ function stubbing(module, func_name_to_stub, test_function) {
         test_function(stub);
     });
 }
+
+// Set up defaults for most tests.
+hotkey.in_content_editable_widget = () => false;
+hotkey.processing_text = () => false;
 
 run_test("mappings", () => {
     function map_press(which, shiftKey) {
@@ -237,7 +244,7 @@ function test_normal_typing() {
     assert_unmapped('~!@#$%^*()_+{}:"<>');
 }
 
-run_test("allow normal typing when processing text", () => {
+run_test("allow normal typing when processing text", (override) => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped("bfmoyz");
@@ -245,11 +252,10 @@ run_test("allow normal typing when processing text", () => {
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
-    hotkey.in_content_editable_widget = () => false;
-    overlays.settings_open = () => false;
+    override(hotkey, "in_content_editable_widget", () => false);
 
     // All letters should return false if we are composing text.
-    hotkey.processing_text = () => true;
+    override(hotkey, "processing_text", () => true);
 
     for (const settings_open of [() => true, () => false]) {
         for (const is_active of [() => true, () => false]) {
@@ -266,21 +272,15 @@ run_test("allow normal typing when processing text", () => {
     }
 });
 
-run_test("streams", () => {
-    // Ok, now test keys that work when we're viewing messages.
-    hotkey.processing_text = () => false;
-
+run_test("streams", (override) => {
     page_params.can_create_streams = true;
-    overlays.streams_open = () => true;
-    overlays.is_active = () => true;
+    override(overlays, "streams_open", () => true);
+    override(overlays, "is_active", () => true);
     assert_mapping("S", subs, "keyboard_sub");
     assert_mapping("V", subs, "view_stream");
     assert_mapping("n", subs, "open_create_stream");
     page_params.can_create_streams = false;
     assert_unmapped("n");
-    overlays.streams_open = () => false;
-    test_normal_typing();
-    overlays.is_active = () => false;
 });
 
 run_test("basic mappings", () => {
@@ -298,16 +298,20 @@ run_test("basic mappings", () => {
     assert_mapping("g", gear_menu, "open");
 });
 
-run_test("drafts open", () => {
-    overlays.is_active = () => true;
-    overlays.drafts_open = () => true;
+run_test("drafts open", (override) => {
+    override(overlays, "is_active", () => true);
+    override(overlays, "drafts_open", () => true);
     assert_mapping("d", overlays, "close_overlay");
 });
 
-run_test("drafts closed", () => {
-    overlays.drafts_open = () => false;
+run_test("drafts closed w/other overlay", (override) => {
+    override(overlays, "is_active", () => true);
+    override(overlays, "drafts_open", () => false);
     test_normal_typing();
-    overlays.is_active = () => false;
+});
+
+run_test("drafts closed launch", (override) => {
+    override(overlays, "is_active", () => false);
     assert_mapping("d", drafts, "launch");
 });
 
@@ -316,15 +320,16 @@ run_test("misc", () => {
     const message_view_only_keys = "@+>RjJkKsSuvi:GM";
 
     // Check that they do nothing without a selected message
-    current_msg_list.empty = () => true;
-    assert_unmapped(message_view_only_keys);
-
-    current_msg_list.empty = () => false;
+    with_overrides((override) => {
+        override(current_msg_list, "empty", () => true);
+        assert_unmapped(message_view_only_keys);
+    });
 
     // Check that they do nothing while in the settings overlay
-    overlays.settings_open = () => true;
-    assert_unmapped("@*+->rRjJkKsSuvi:GM");
-    overlays.settings_open = () => false;
+    with_overrides((override) => {
+        override(overlays, "settings_open", () => true);
+        assert_unmapped("@*+->rRjJkKsSuvi:GM");
+    });
 
     // TODO: Similar check for being in the subs page
 
@@ -346,20 +351,26 @@ run_test("misc", () => {
     assert_mapping("e", message_edit, "start");
 });
 
-run_test("lightbox", () => {
-    overlays.is_active = () => true;
-    overlays.lightbox_open = () => true;
+run_test("lightbox overlay open", (override) => {
+    override(overlays, "is_active", () => true);
+    override(overlays, "lightbox_open", () => true);
     assert_mapping("v", overlays, "close_overlay");
-    overlays.lightbox_open = () => false;
+});
+
+run_test("lightbox closed w/other overlay open", (override) => {
+    override(overlays, "is_active", () => true);
+    override(overlays, "lightbox_open", () => false);
     test_normal_typing();
-    overlays.is_active = () => false;
+});
+
+run_test("v w/no overlays", (override) => {
+    override(overlays, "is_active", () => false);
     assert_mapping("v", lightbox, "show_from_selected_message");
 });
 
-run_test("emoji picker", () => {
-    emoji_picker.reactions_popped = () => true;
+run_test("emoji picker", (override) => {
+    override(emoji_picker, "reactions_popped", () => true);
     assert_mapping(":", emoji_picker, "navigate", true);
-    emoji_picker.reactions_popped = () => false;
 });
 
 run_test("G/M keys", () => {
@@ -373,10 +384,7 @@ run_test("n/p keys", () => {
     // also when the message list is empty.
     assert_mapping("n", narrow, "narrow_to_next_topic");
     assert_mapping("p", narrow, "narrow_to_next_pm_string");
-
-    current_msg_list.empty = () => true;
     assert_mapping("n", narrow, "narrow_to_next_topic");
-    current_msg_list.empty = () => false;
 });
 
 run_test("motion_keys", () => {
