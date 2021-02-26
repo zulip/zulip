@@ -625,20 +625,16 @@ exports.initialize = function () {
     });
 
     $(".compose_stream_button").on("click", () => {
-        popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("stream", {trigger: "new topic button"});
     });
     $(".compose_private_button").on("click", () => {
-        popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("private");
     });
 
     $("body").on("click", ".compose_mobile_stream_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("stream", {trigger: "new topic button"});
     });
     $("body").on("click", ".compose_mobile_private_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("private");
     });
 

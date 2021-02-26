@@ -5,8 +5,6 @@ const {parseISO, formatISO, add, set} = require("date-fns");
 const ConfirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate");
 
 const render_actions_popover_content = require("../templates/actions_popover_content.hbs");
-const render_mobile_message_buttons_popover = require("../templates/mobile_message_buttons_popover.hbs");
-const render_mobile_message_buttons_popover_content = require("../templates/mobile_message_buttons_popover_content.hbs");
 const render_no_arrow_popover = require("../templates/no_arrow_popover.hbs");
 const render_playground_links_popover_content = require("../templates/playground_links_popover_content.hbs");
 const render_remind_me_popover_content = require("../templates/remind_me_popover_content.hbs");
@@ -28,7 +26,6 @@ const util = require("./util");
 let current_actions_popover_elem;
 let current_flatpickr_instance;
 let current_message_info_popover_elem;
-let current_mobile_message_buttons_popover_elem;
 let current_user_info_popover_elem;
 let current_playground_links_popover_elem;
 let userlist_placement = "right";
@@ -294,36 +291,6 @@ function show_user_info_popover_for_message(element, user, message) {
     }
 }
 
-function show_mobile_message_buttons_popover(element) {
-    const last_popover_elem = current_mobile_message_buttons_popover_elem;
-    exports.hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
-        return;
-    }
-
-    const $element = $(element);
-    $element.popover({
-        placement: "left",
-        template: render_mobile_message_buttons_popover(),
-        content: render_mobile_message_buttons_popover_content({
-            is_in_private_narrow: narrow_state.narrowed_to_pms(),
-        }),
-        html: true,
-        trigger: "manual",
-    });
-    $element.popover("show");
-
-    current_mobile_message_buttons_popover_elem = $element;
-}
-
-exports.hide_mobile_message_buttons_popover = function () {
-    if (current_mobile_message_buttons_popover_elem) {
-        current_mobile_message_buttons_popover_elem.popover("destroy");
-        current_mobile_message_buttons_popover_elem = undefined;
-    }
-};
 
 exports.hide_user_profile = function () {
     $("#user-profile-modal").modal("hide");
@@ -997,12 +964,6 @@ exports.register_click_handlers = function () {
         exports.hide_user_profile();
     });
 
-    $("body").on("click", ".compose_mobile_button", function (e) {
-        show_mobile_message_buttons_popover(this);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     $("body").on("click", ".set_away_status", (e) => {
         exports.hide_all();
         user_status.server_set_away();
@@ -1311,7 +1272,6 @@ exports.hide_all_except_sidebars = function () {
     stream_popover.hide_all_messages_popover();
     stream_popover.hide_starred_messages_popover();
     exports.hide_user_sidebar_popover();
-    exports.hide_mobile_message_buttons_popover();
     exports.hide_user_profile();
     exports.hide_user_info_popover();
     exports.hide_playground_links_popover();

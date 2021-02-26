@@ -1,3 +1,13 @@
+/* Extend light-border theme of tippyjs
+ * here.
+ */
+.tippy-box[data-theme~='light-border'] {
+    .tippy-content {
+        font-size: 14px;
+        padding: 5px 0;
+    }
+}
+
 .popover {
     width: auto;
     max-width: 100%;
