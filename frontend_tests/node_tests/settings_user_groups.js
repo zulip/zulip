@@ -363,7 +363,7 @@ test_ui("with_external_user", () => {
 
     people.get_by_user_id = () => noop;
 
-    user_pill.append_person = () => noop;
+    user_pill.__Rewire__("append_person", () => noop);
 
     let can_edit_called = 0;
     settings_user_groups.can_edit = () => {

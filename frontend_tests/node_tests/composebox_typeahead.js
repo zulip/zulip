@@ -657,7 +657,7 @@ run_test("initialize", () => {
     let pm_recipient_typeahead_called = false;
     $("#private_message_recipient").typeahead = (options) => {
         let inserted_users = [];
-        user_pill.get_user_ids = () => inserted_users;
+        user_pill.__Rewire__("get_user_ids", () => inserted_users);
 
         // This should match the users added at the beginning of this test file.
         let actual_value = options.source("");

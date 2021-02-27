@@ -16,7 +16,6 @@ import "flatpickr/dist/plugins/confirmDate/confirmDate";
 import "../i18n";
 import "../fold_dict";
 import "../input_pill";
-import "../user_pill";
 import "../compose_pm_pill";
 import "../channel";
 import "../setup";

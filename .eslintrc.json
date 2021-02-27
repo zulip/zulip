@@ -263,7 +263,6 @@
                 "upload_widget": false,
                 "user_events": false,
                 "user_groups": false,
-                "user_pill": false,
                 "poll_widget": false,
                 "widgetize": false,
                 "zxcvbn": false
