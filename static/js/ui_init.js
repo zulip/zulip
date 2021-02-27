@@ -21,6 +21,7 @@ const muting = require("./muting");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const pm_list = require("./pm_list");
+const reload = require("./reload");
 const rows = require("./rows");
 const spoilers = require("./spoilers");
 const topic_list = require("./topic_list");

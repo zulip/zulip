@@ -12,7 +12,8 @@ const noop = () => {};
 const page_params = set_global("page_params", {});
 const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);
-const reload = set_global("reload", {});
+const reload = {__esModule: true};
+rewiremock("../../static/js/reload").with(reload);
 const reload_state = {__esModule: true};
 rewiremock("../../static/js/reload_state").with(reload_state);
 const sent_messages = set_global("sent_messages", {

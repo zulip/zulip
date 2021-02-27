@@ -2,6 +2,7 @@
 
 const channel = require("./channel");
 const message_viewport = require("./message_viewport");
+const reload = require("./reload");
 const unread_ui = require("./unread_ui");
 
 exports.mark_all_as_read = function () {
