@@ -16,14 +16,6 @@ exports.composing = function () {
     return Boolean(message_type);
 };
 
-exports.focus_in_empty_compose = function () {
-    return (
-        exports.composing() &&
-        exports.message_content() === "" &&
-        $("#compose-textarea").is(":focus")
-    );
-};
-
 function get_or_set(fieldname, keep_leading_whitespace) {
     // We can't hoist the assignment of 'elem' out of this lambda,
     // because the DOM element might not exist yet when get_or_set
@@ -44,6 +36,15 @@ exports.topic = get_or_set("stream_message_recipient_topic");
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
 exports.message_content = get_or_set("compose-textarea", true);
+
+exports.focus_in_empty_compose = function () {
+    return (
+        exports.composing() &&
+        exports.message_content() === "" &&
+        $("#compose-textarea").is(":focus")
+    );
+};
+
 exports.private_message_recipient = function (value) {
     if (typeof value === "string") {
         compose_pm_pill.set_from_emails(value);
