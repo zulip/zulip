@@ -84,7 +84,7 @@ run_test("basic_get_suggestions", () => {
 
     stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = () => "office";
+    narrow_state.__Rewire__("stream", () => "office");
 
     const suggestions = get_suggestions("", query);
 
@@ -97,7 +97,7 @@ run_test("subset_suggestions", () => {
 
     stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     const suggestions = get_suggestions("", query);
 
@@ -113,7 +113,7 @@ run_test("subset_suggestions", () => {
 run_test("private_suggestions", () => {
     stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     let query = "is:private";
     let suggestions = get_suggestions("", query);
@@ -226,7 +226,7 @@ run_test("private_suggestions", () => {
 run_test("group_suggestions", () => {
     stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     // Entering a comma in a pm-with query should immediately generate
     // suggestions for the next person.
@@ -374,7 +374,7 @@ run_test("empty_query_suggestions", () => {
 
     stream_data.subscribed_streams = () => ["devel", "office"];
 
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     const suggestions = get_suggestions("", query);
 
@@ -415,7 +415,7 @@ run_test("has_suggestions", () => {
     // default suggestion when suggesting `has` operator.
     let query = "h";
     stream_data.subscribed_streams = () => ["devel", "office"];
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     let suggestions = get_suggestions("", query);
     let expected = ["h", "has:link", "has:image", "has:attachment"];
@@ -471,7 +471,7 @@ run_test("has_suggestions", () => {
 
 run_test("check_is_suggestions", () => {
     stream_data.subscribed_streams = () => ["devel", "office"];
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     let query = "i";
     let suggestions = get_suggestions("", query);
@@ -541,7 +541,7 @@ run_test("check_is_suggestions", () => {
 run_test("sent_by_me_suggestions", () => {
     stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     let query = "";
     let suggestions = get_suggestions("", query);
@@ -615,7 +615,7 @@ run_test("topic_suggestions", () => {
 
     stream_data.subscribed_streams = () => ["office"];
 
-    narrow_state.stream = () => "office";
+    narrow_state.__Rewire__("stream", () => "office");
 
     const devel_id = 44;
     const office_id = 77;
@@ -710,7 +710,7 @@ run_test("whitespace_glitch", () => {
 
     stream_data.subscribed_streams = () => ["office"];
 
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     stream_topic_history.reset();
 
@@ -724,7 +724,7 @@ run_test("whitespace_glitch", () => {
 run_test("stream_completion", () => {
     stream_data.subscribed_streams = () => ["office", "dev help"];
 
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     stream_topic_history.reset();
 
@@ -749,7 +749,7 @@ run_test("people_suggestions", () => {
 
     stream_data.subscribed_streams = () => [];
 
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     const ted = {
         email: "ted@zulip.com",
@@ -863,7 +863,7 @@ run_test("operator_suggestions", () => {
 run_test("queries_with_spaces", () => {
     stream_data.subscribed_streams = () => ["office", "dev help"];
 
-    narrow_state.stream = () => {};
+    narrow_state.__Rewire__("stream", () => {});
 
     stream_topic_history.reset();
 

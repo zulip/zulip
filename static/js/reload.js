@@ -1,6 +1,7 @@
 "use strict";
 
 const {localstorage} = require("./localstorage");
+const narrow_state = require("./narrow_state");
 const util = require("./util");
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html

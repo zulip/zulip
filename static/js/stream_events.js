@@ -1,5 +1,6 @@
 "use strict";
 
+const narrow_state = require("./narrow_state");
 const peer_data = require("./peer_data");
 
 // In theory, this function should apply the account-level defaults,

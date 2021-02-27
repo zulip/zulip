@@ -1,5 +1,6 @@
 "use strict";
 
+const narrow_state = require("./narrow_state");
 const people = require("./people");
 
 exports.get_hash_category = function (hash) {

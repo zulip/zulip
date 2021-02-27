@@ -7,6 +7,7 @@ const render_subscription_settings = require("../templates/subscription_settings
 const render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
 
 const channel = require("./channel");
+const narrow_state = require("./narrow_state");
 const peer_data = require("./peer_data");
 const people = require("./people");
 const pill_typeahead = require("./pill_typeahead");

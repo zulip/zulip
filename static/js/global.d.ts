@@ -52,7 +52,6 @@ declare let message_scroll: any;
 declare let message_store: any;
 declare let message_util: any;
 declare let narrow: any;
-declare let narrow_state: any;
 declare let navigate: any;
 declare let night_mode: any;
 declare let notifications: any;

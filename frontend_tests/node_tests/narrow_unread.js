@@ -204,7 +204,7 @@ run_test("defensive code", () => {
     // _possible_unread_message_ids for any case where we
     // couldn't compute the unread message ids, but that
     // invariant is hard to future-proof.
-    narrow_state._possible_unread_message_ids = () => undefined;
+    narrow_state.__Rewire__("_possible_unread_message_ids", () => undefined);
     const terms = [{operator: "some-unhandled-case", operand: "whatever"}];
     set_filter(terms);
     assert_unread_info({

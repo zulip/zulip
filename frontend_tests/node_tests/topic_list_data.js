@@ -8,9 +8,11 @@ const rewiremock = require("rewiremock/node");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const narrow_state = set_global("narrow_state", {
+const narrow_state = {
+    __esModule: true,
     topic() {},
-});
+};
+rewiremock("../../static/js/narrow_state").with(narrow_state);
 set_global("unread", {});
 const muting = {
     __esModule: true,

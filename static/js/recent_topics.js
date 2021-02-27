@@ -7,6 +7,7 @@ const render_recent_topics_body = require("../templates/recent_topics_table.hbs"
 const drafts = require("./drafts");
 const {localstorage} = require("./localstorage");
 const muting = require("./muting");
+const narrow_state = require("./narrow_state");
 const people = require("./people");
 const recent_senders = require("./recent_senders");
 const top_left_corner = require("./top_left_corner");

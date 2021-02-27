@@ -3,6 +3,7 @@
 const channel = require("./channel");
 const {Filter} = require("./filter");
 const {MessageListData} = require("./message_list_data");
+const narrow_state = require("./narrow_state");
 const people = require("./people");
 const search_pill = require("./search_pill");
 const top_left_corner = require("./top_left_corner");

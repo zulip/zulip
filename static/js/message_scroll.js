@@ -4,6 +4,7 @@ const _ = require("lodash");
 
 const loading = require("./loading");
 const message_viewport = require("./message_viewport");
+const narrow_state = require("./narrow_state");
 
 let actively_scrolling = false;
 

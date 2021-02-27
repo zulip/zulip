@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
@@ -15,12 +17,15 @@ const compose_fade = set_global("compose_fade", {});
 const stream_events = set_global("stream_events", {});
 const subs = set_global("subs", {});
 
+rewiremock.enable();
+
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 
 set_global("current_msg_list", {});
-const narrow_state = set_global("narrow_state", {});
+const narrow_state = {__esModule: true};
+rewiremock("../../static/js/narrow_state").with(narrow_state);
 const page_params = set_global("page_params", {});
 const overlays = set_global("overlays", {});
 const settings_org = set_global("settings_org", {});
@@ -266,3 +271,4 @@ test("stream delete (special streams)", (override) => {
     assert.equal(page_params.realm_notifications_stream_id, -1);
     assert.equal(page_params.realm_signup_notifications_stream_id, -1);
 });
+rewiremock.disable();

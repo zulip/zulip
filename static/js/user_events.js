@@ -5,6 +5,7 @@
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
 const message_live_update = require("./message_live_update");
+const narrow_state = require("./narrow_state");
 const people = require("./people");
 const pm_list = require("./pm_list");
 const settings_config = require("./settings_config");

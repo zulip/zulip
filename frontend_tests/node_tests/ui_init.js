@@ -116,7 +116,6 @@ zrequire("condense");
 zrequire("lightbox");
 zrequire("overlays");
 zrequire("message_view_header");
-zrequire("narrow_state");
 zrequire("presence");
 zrequire("search_pill_widget");
 zrequire("unread");

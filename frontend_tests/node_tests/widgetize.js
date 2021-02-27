@@ -12,7 +12,8 @@ const poll_widget = {__esModule: true};
 rewiremock("../../static/js/poll_widget").with(poll_widget);
 set_global("document", "document-stub");
 
-const narrow_state = set_global("narrow_state", {});
+const narrow_state = {__esModule: true};
+rewiremock("../../static/js/narrow_state").with(narrow_state);
 set_global("current_msg_list", {});
 
 rewiremock.enable();

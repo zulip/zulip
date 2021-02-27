@@ -26,7 +26,8 @@ set_global("document", {
     },
 });
 
-const narrow_state = set_global("narrow_state", {});
+const narrow_state = {__esModule: true};
+rewiremock("../../static/js/narrow_state").with(narrow_state);
 const stream_data = set_global("stream_data", {});
 set_global("recent_topics", {
     is_visible: () => false,

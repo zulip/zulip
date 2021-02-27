@@ -67,7 +67,7 @@ function test_with(fixture) {
         },
     };
 
-    narrow_state.get_first_unread_info = () => fixture.unread_info;
+    narrow_state.__Rewire__("get_first_unread_info", () => fixture.unread_info);
 
     narrow.maybe_add_local_messages({
         id_info,
