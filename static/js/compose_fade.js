@@ -1,6 +1,7 @@
 import _ from "lodash";
 
 import * as compose_state from "./compose_state";
+import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as message_viewport from "./message_viewport";
 import * as people from "./people";
 import * as rows from "./rows";

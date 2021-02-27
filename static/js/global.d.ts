@@ -22,7 +22,6 @@ declare let current_msg_list: any;
 declare let emoji: any;
 declare let emoji_picker: any;
 declare let favicon: any;
-declare let floating_recipient_bar: any;
 declare let gear_menu: any;
 declare let hashchange: any;
 declare let hash_util: any;
