@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
@@ -13,7 +15,10 @@ const notifications = set_global("notifications", {});
 const page_params = set_global("page_params", {});
 const pm_list = set_global("pm_list", {});
 const stream_list = set_global("stream_list", {});
-const unread_ui = set_global("unread_ui", {});
+const unread_ui = {__esModule: true};
+
+rewiremock("../../static/js/unread_ui").with(unread_ui);
+rewiremock.enable();
 
 const message_events = zrequire("message_events");
 const message_store = zrequire("message_store");
@@ -151,3 +156,4 @@ run_test("update_messages", () => {
         },
     ]);
 });
+rewiremock.disable();
