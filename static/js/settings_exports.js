@@ -6,6 +6,7 @@ const channel = require("./channel");
 const ListWidget = require("./list_widget");
 const loading = require("./loading");
 const people = require("./people");
+const ui_report = require("./ui_report");
 
 const meta = {
     loaded: false,

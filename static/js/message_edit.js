@@ -13,6 +13,7 @@ import * as message_viewport from "./message_viewport";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as stream_data from "./stream_data";
+import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 
 const currently_editing_messages = new Map();

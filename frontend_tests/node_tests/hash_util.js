@@ -2,20 +2,27 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const ui_report = set_global("ui_report", {
+const ui_report = {
+    __esModule: true,
     displayed_error: false,
+
     error: () => {
         ui_report.displayed_error = true;
     },
-});
+};
+rewiremock("../../static/js/ui_report").with(ui_report);
 set_global("location", {
     protocol: "https:",
     host: "example.com",
     pathname: "/",
 });
+
+rewiremock.enable();
 
 const hash_util = zrequire("hash_util");
 const stream_data = zrequire("stream_data");
@@ -172,3 +179,4 @@ run_test("test_search_public_streams_notice_url", () => {
         "#narrow/streams/public/sender/15-hamlet",
     );
 });
+rewiremock.disable();

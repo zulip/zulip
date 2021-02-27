@@ -12,6 +12,7 @@ const people = require("./people");
 const pill_typeahead = require("./pill_typeahead");
 const settings_ui = require("./settings_ui");
 const setup = require("./setup");
+const ui_report = require("./ui_report");
 const user_pill = require("./user_pill");
 
 exports.update_email = function (new_email) {

@@ -56,6 +56,8 @@ stub_templates((name, data) => {
 const overlays = set_global("overlays", {});
 
 const _ui_report = {
+    __esModule: true,
+
     success(msg, elem) {
         elem.val(msg);
     },
@@ -79,7 +81,7 @@ set_global("FormData", _FormData);
 set_global("jQuery", _jQuery);
 rewiremock("../../static/js/loading").with(_loading);
 set_global("realm_logo", _realm_logo);
-set_global("ui_report", _ui_report);
+rewiremock("../../static/js/ui_report").with(_ui_report);
 rewiremock("../../static/js/list_widget").with(_ListWidget);
 
 // setup is only imported to set the

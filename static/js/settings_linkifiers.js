@@ -5,6 +5,7 @@ const render_admin_filter_list = require("../templates/admin_filter_list.hbs");
 const channel = require("./channel");
 const ListWidget = require("./list_widget");
 const loading = require("./loading");
+const ui_report = require("./ui_report");
 
 const meta = {
     loaded: false,

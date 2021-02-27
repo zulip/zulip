@@ -6,6 +6,7 @@ const huddle_data = require("./huddle_data");
 const people = require("./people");
 const pm_list = require("./pm_list");
 const stream_data = require("./stream_data");
+const ui_report = require("./ui_report");
 
 const consts = {
     backfill_idle_time: 10 * 1000,

@@ -8,6 +8,7 @@ const reload = require("./reload");
 const reload_state = require("./reload_state");
 const sent_messages = require("./sent_messages");
 const server_events_dispatch = require("./server_events_dispatch");
+const ui_report = require("./ui_report");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
 let waiting_on_homeview_load = true;

@@ -25,7 +25,7 @@ set_global("recent_topics", {
 });
 // Still required for page_params.initial_pointer
 set_global("page_params", {});
-set_global("ui_report", {
+rewiremock("../../static/js/ui_report").with({
     hide_error: noop,
 });
 

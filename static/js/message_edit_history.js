@@ -2,6 +2,7 @@ import render_message_edit_history from "../templates/message_edit_history.hbs";
 
 import * as channel from "./channel";
 import * as people from "./people";
+import * as ui_report from "./ui_report";
 
 const {format, isSameDay} = require("date-fns");
 
