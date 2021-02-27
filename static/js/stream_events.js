@@ -1,5 +1,6 @@
 "use strict";
 
+const color_data = require("./color_data");
 const narrow_state = require("./narrow_state");
 const peer_data = require("./peer_data");
 

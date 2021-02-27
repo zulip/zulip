@@ -110,7 +110,6 @@ const util = zrequire("util");
 zrequire("hash_util");
 zrequire("stream_color");
 zrequire("stream_edit");
-zrequire("color_data");
 zrequire("stream_data");
 zrequire("condense");
 zrequire("lightbox");

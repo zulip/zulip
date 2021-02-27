@@ -653,7 +653,7 @@ run_test("create_sub", () => {
         color: "#76ce90",
     };
 
-    color_data.pick_color = () => "#bd86e5";
+    color_data.__Rewire__("pick_color", () => "#bd86e5");
 
     const india_sub = stream_data.create_sub_from_server_data(india);
     assert(india_sub);
