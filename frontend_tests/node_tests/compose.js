@@ -58,7 +58,8 @@ rewiremock("../../static/js/rendered_markdown").with({
     update_elements: () => {},
 });
 
-const local_message = set_global("local_message", {});
+const local_message = {__esModule: true};
+rewiremock("../../static/js/local_message").with(local_message);
 const transmit = set_global("transmit", {});
 const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);

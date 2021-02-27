@@ -165,7 +165,6 @@
                 "list_util": false,
                 "ListWidget": false,
                 "localStorage": false,
-                "local_message": false,
                 "location": false,
                 "message_edit": false,
                 "message_events": false,
