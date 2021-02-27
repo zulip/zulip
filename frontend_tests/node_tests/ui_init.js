@@ -131,7 +131,6 @@ zrequire("search");
 zrequire("notifications");
 zrequire("stream_list");
 zrequire("sent_messages");
-zrequire("top_left_corner");
 zrequire("starred_messages");
 zrequire("recent_topics");
 

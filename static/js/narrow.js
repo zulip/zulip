@@ -4,6 +4,7 @@ const channel = require("./channel");
 const {MessageListData} = require("./message_list_data");
 const people = require("./people");
 const search_pill = require("./search_pill");
+const top_left_corner = require("./top_left_corner");
 const topic_generator = require("./topic_generator");
 const util = require("./util");
 

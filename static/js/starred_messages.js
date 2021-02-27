@@ -1,5 +1,7 @@
 "use strict";
 
+const top_left_corner = require("./top_left_corner");
+
 exports.starred_ids = new Set();
 
 exports.initialize = function () {

@@ -3,6 +3,7 @@
 const drafts = require("./drafts");
 const invite = require("./invite");
 const message_viewport = require("./message_viewport");
+const top_left_corner = require("./top_left_corner");
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
