@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
+const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -32,7 +33,7 @@ set_global("timerender", {
     },
 });
 
-set_global("rows", {
+rewiremock("../../static/js/rows").with({
     get_table() {
         return {
             children() {
@@ -43,6 +44,8 @@ set_global("rows", {
         };
     },
 });
+
+rewiremock.enable();
 
 const Filter = zrequire("Filter", "js/filter");
 const MessageListView = zrequire("MessageListView", "js/message_list_view");
@@ -542,3 +545,4 @@ run_test("render_windows", () => {
     verify_move(197, [0, 400]);
     verify_no_move_range(0, 350);
 });
+rewiremock.disable();

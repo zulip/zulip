@@ -9,6 +9,7 @@ const channel = require("./channel");
 const echo = require("./echo");
 const loading = require("./loading");
 const message_viewport = require("./message_viewport");
+const rows = require("./rows");
 
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];

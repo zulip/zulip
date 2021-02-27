@@ -17,7 +17,9 @@ set_global("page_params", {
     realm_email_address_visibility: 3,
     custom_profile_fields: [],
 });
-const rows = set_global("rows", {});
+const rows = {__esModule: true};
+
+rewiremock("../../static/js/rows").with(rows);
 
 rewiremock("../../static/js/message_viewport").with({
     height: () => 500,

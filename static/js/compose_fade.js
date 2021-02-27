@@ -4,6 +4,7 @@ const _ = require("lodash");
 
 const message_viewport = require("./message_viewport");
 const people = require("./people");
+const rows = require("./rows");
 const util = require("./util");
 
 let focused_recipient;

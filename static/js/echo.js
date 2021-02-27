@@ -1,5 +1,6 @@
 import * as alert_words from "./alert_words";
 import * as people from "./people";
+import * as rows from "./rows";
 import * as util from "./util";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html

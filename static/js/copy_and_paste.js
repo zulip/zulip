@@ -1,5 +1,7 @@
 import TurndownService from "turndown/lib/turndown.cjs";
 
+import * as rows from "./rows";
+
 function find_boundary_tr(initial_tr, iterate_row) {
     let j;
     let skip_same_td_check = false;

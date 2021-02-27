@@ -77,7 +77,6 @@ declare let reload: any;
 declare let reload_state: any;
 declare let reminder: any;
 declare let resize: any;
-declare let rows: any;
 declare let scroll_bar: any;
 declare let search: any;
 declare let search_pill_widget: any;
