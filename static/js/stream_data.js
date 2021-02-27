@@ -5,6 +5,7 @@ const {FoldDict} = require("./fold_dict");
 const peer_data = require("./peer_data");
 const people = require("./people");
 const settings_config = require("./settings_config");
+const stream_color = require("./stream_color");
 const util = require("./util");
 
 // Expose get_subscriber_count for our automated puppeteer tests.

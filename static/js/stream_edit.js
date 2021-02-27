@@ -14,6 +14,7 @@ const pill_typeahead = require("./pill_typeahead");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 const settings_ui = require("./settings_ui");
+const stream_color = require("./stream_color");
 const stream_pill = require("./stream_pill");
 const stream_ui_updates = require("./stream_ui_updates");
 const user_pill = require("./user_pill");

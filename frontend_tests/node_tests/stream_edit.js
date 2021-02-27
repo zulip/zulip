@@ -25,7 +25,7 @@ const page_params = set_global("page_params", {});
 set_global("settings_notifications", {
     get_notifications_table_row_data: noop,
 });
-set_global("stream_color", {
+rewiremock("../../static/js/stream_color").with({
     set_colorpicker_color: noop,
 });
 const typeahead_helper = set_global("typeahead_helper", {});

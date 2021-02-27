@@ -46,7 +46,6 @@ rewiremock.enable();
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const timerender = zrequire("timerender");
-zrequire("stream_color");
 
 const legacy_draft = {
     stream: "stream",

@@ -27,6 +27,7 @@ const reload = require("./reload");
 const rows = require("./rows");
 const sent_messages = require("./sent_messages");
 const spoilers = require("./spoilers");
+const stream_color = require("./stream_color");
 const topic_list = require("./topic_list");
 const topic_zoom = require("./topic_zoom");
 const tutorial = require("./tutorial");
