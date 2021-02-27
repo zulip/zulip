@@ -260,12 +260,12 @@ run_test("num_unread_for_topic", () => {
 
     const stream_id = 301;
 
-    stream_data.get_sub_by_id = (arg) => {
+    stream_data.__Rewire__("get_sub_by_id", (arg) => {
         if (arg === stream_id) {
             return {name: "Some Stream"};
         }
         throw new Error(`Unknown stream ${arg}`);
-    };
+    });
 
     let count = unread.num_unread_for_topic(stream_id, "lunch");
     assert.equal(count, 0);
@@ -329,14 +329,14 @@ run_test("num_unread_for_topic", () => {
 });
 
 run_test("home_messages", () => {
-    stream_data.is_subscribed = () => true;
-    stream_data.is_muted = () => false;
+    stream_data.__Rewire__("is_subscribed", () => true);
+    stream_data.__Rewire__("is_muted", () => false);
 
     const stream_id = 401;
 
-    stream_data.get_sub_by_id = () => ({
+    stream_data.__Rewire__("get_sub_by_id", () => ({
         name: "whatever",
-    });
+    }));
 
     const message = {
         id: 15,
@@ -367,7 +367,7 @@ run_test("home_messages", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 
     // Now unsubscribe all our streams.
-    stream_data.is_subscribed = () => false;
+    stream_data.__Rewire__("is_subscribed", () => false);
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
@@ -381,7 +381,7 @@ run_test("phantom_messages", () => {
         topic: "phantom",
     };
 
-    stream_data.get_sub_by_id = () => {};
+    stream_data.__Rewire__("get_sub_by_id", () => {});
 
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();

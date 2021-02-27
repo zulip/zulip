@@ -4,6 +4,7 @@ import * as compose_state from "./compose_state";
 import * as message_viewport from "./message_viewport";
 import * as people from "./people";
 import * as rows from "./rows";
+import * as stream_data from "./stream_data";
 import * as util from "./util";
 
 let focused_recipient;

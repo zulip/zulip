@@ -12,6 +12,7 @@ const loading = require("./loading");
 const markdown = require("./markdown");
 const message_viewport = require("./message_viewport");
 const rows = require("./rows");
+const stream_data = require("./stream_data");
 const upload = require("./upload");
 
 const currently_editing_messages = new Map();

@@ -172,11 +172,11 @@ test_ui("create_sidebar_row", (override) => {
     assert(!social_li.hasClass("out_of_home_view"));
 
     const row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.is_active = () => true;
+    stream_data.__Rewire__("is_active", () => true);
     row.update_whether_active();
     assert(!social_li.hasClass("inactive_stream"));
 
-    stream_data.is_active = () => false;
+    stream_data.__Rewire__("is_active", () => false);
     row.update_whether_active();
     assert(social_li.hasClass("inactive_stream"));
 
@@ -202,16 +202,16 @@ test_ui("pinned_streams_never_inactive", (override) => {
     const social_sidebar = $("<social sidebar row>");
     let stream_id = social.stream_id;
     let row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.is_active = () => false;
+    stream_data.__Rewire__("is_active", () => false);
 
     stream_list.build_stream_list();
     assert(social_sidebar.hasClass("inactive_stream"));
 
-    stream_data.is_active = () => true;
+    stream_data.__Rewire__("is_active", () => true);
     row.update_whether_active();
     assert(!social_sidebar.hasClass("inactive_stream"));
 
-    stream_data.is_active = () => false;
+    stream_data.__Rewire__("is_active", () => false);
     row.update_whether_active();
     assert(social_sidebar.hasClass("inactive_stream"));
 
@@ -219,7 +219,7 @@ test_ui("pinned_streams_never_inactive", (override) => {
     const devel_sidebar = $("<devel sidebar row>");
     stream_id = devel.stream_id;
     row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.is_active = () => false;
+    stream_data.__Rewire__("is_active", () => false);
 
     stream_list.build_stream_list();
     assert(!devel_sidebar.hasClass("inactive_stream"));
@@ -464,7 +464,7 @@ test_ui("sort_streams", () => {
 
     initialize_stream_data();
 
-    stream_data.is_active = (sub) => sub.name !== "cars";
+    stream_data.__Rewire__("is_active", (sub) => sub.name !== "cars");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -542,7 +542,7 @@ test_ui("separators_only_pinned_and_dormant", () => {
     };
     add_row(DenmarkSub);
 
-    stream_data.is_active = (sub) => sub.name !== "Denmark";
+    stream_data.__Rewire__("is_active", (sub) => sub.name !== "Denmark");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {

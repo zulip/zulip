@@ -12,6 +12,7 @@ const channel = require("./channel");
 const muting = require("./muting");
 const muting_ui = require("./muting_ui");
 const stream_color = require("./stream_color");
+const stream_data = require("./stream_data");
 
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.

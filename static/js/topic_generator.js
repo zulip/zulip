@@ -1,5 +1,6 @@
 import * as muting from "./muting";
 import * as pm_conversations from "./pm_conversations";
+import * as stream_data from "./stream_data";
 import * as stream_sort from "./stream_sort";
 
 export function next_topic(streams, get_topics, has_unread_messages, curr_stream, curr_topic) {

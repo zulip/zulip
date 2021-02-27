@@ -16,6 +16,7 @@ const compose_state = require("./compose_state");
 const people = require("./people");
 const rows = require("./rows");
 const settings_data = require("./settings_data");
+const stream_data = require("./stream_data");
 const user_groups = require("./user_groups");
 const user_pill = require("./user_pill");
 

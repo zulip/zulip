@@ -2,6 +2,7 @@
 
 const narrow_state = require("./narrow_state");
 const people = require("./people");
+const stream_data = require("./stream_data");
 
 exports.get_hash_category = function (hash) {
     // given "#streams/subscribed", returns "streams"

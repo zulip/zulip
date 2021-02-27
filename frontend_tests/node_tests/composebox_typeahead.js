@@ -58,8 +58,8 @@ const settings_config = zrequire("settings_config");
 const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 
 // To be eliminated in next commit:
-stream_data.update_calculated_fields = () => {};
-stream_data.set_filter_out_inactives = () => false;
+stream_data.__Rewire__("update_calculated_fields", () => {});
+stream_data.__Rewire__("set_filter_out_inactives", () => false);
 
 const ct = composebox_typeahead;
 
@@ -959,13 +959,13 @@ run_test("initialize", () => {
             subscribed: false,
         };
         // Subscribed stream is active
-        stream_data.is_active = () => false;
+        stream_data.__Rewire__("is_active", () => false);
         fake_this = {completing: "stream", token: "s"};
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);
         // Subscribed stream is inactive
-        stream_data.is_active = () => true;
+        stream_data.__Rewire__("is_active", () => true);
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);

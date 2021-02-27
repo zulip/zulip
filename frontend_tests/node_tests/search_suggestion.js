@@ -86,7 +86,7 @@ function get_suggestions(base_query, query) {
 run_test("basic_get_suggestions", () => {
     const query = "fred";
 
-    stream_data.subscribed_streams = () => [];
+    stream_data.__Rewire__("subscribed_streams", () => []);
 
     narrow_state.__Rewire__("stream", () => "office");
 
@@ -100,7 +100,7 @@ run_test("subset_suggestions", () => {
     const query = "shakespeare";
     const base_query = "stream:Denmark topic:Hamlet";
 
-    stream_data.subscribed_streams = () => [];
+    stream_data.__Rewire__("subscribed_streams", () => []);
 
     narrow_state.__Rewire__("stream", () => {});
 
@@ -112,7 +112,7 @@ run_test("subset_suggestions", () => {
 });
 
 run_test("private_suggestions", () => {
-    stream_data.subscribed_streams = () => [];
+    stream_data.__Rewire__("subscribed_streams", () => []);
 
     narrow_state.__Rewire__("stream", () => {});
 
@@ -229,7 +229,7 @@ run_test("private_suggestions", () => {
 });
 
 run_test("group_suggestions", () => {
-    stream_data.subscribed_streams = () => [];
+    stream_data.__Rewire__("subscribed_streams", () => []);
 
     narrow_state.__Rewire__("stream", () => {});
 
@@ -370,7 +370,7 @@ init();
 run_test("empty_query_suggestions", () => {
     const query = "";
 
-    stream_data.subscribed_streams = () => ["devel", "office"];
+    stream_data.__Rewire__("subscribed_streams", () => ["devel", "office"]);
 
     narrow_state.__Rewire__("stream", () => {});
 
@@ -412,7 +412,7 @@ run_test("has_suggestions", () => {
     // Checks that category wise suggestions are displayed instead of a single
     // default suggestion when suggesting `has` operator.
     let query = "h";
-    stream_data.subscribed_streams = () => ["devel", "office"];
+    stream_data.__Rewire__("subscribed_streams", () => ["devel", "office"]);
     narrow_state.__Rewire__("stream", () => {});
 
     let suggestions = get_suggestions("", query);
@@ -466,7 +466,7 @@ run_test("has_suggestions", () => {
 
 run_test("check_is_suggestions", () => {
     let query = "i";
-    stream_data.subscribed_streams = () => ["devel", "office"];
+    stream_data.__Rewire__("subscribed_streams", () => ["devel", "office"]);
     narrow_state.__Rewire__("stream", () => {});
 
     let suggestions = get_suggestions("", query);
@@ -569,7 +569,7 @@ run_test("check_is_suggestions", () => {
 });
 
 run_test("sent_by_me_suggestions", () => {
-    stream_data.subscribed_streams = () => [];
+    stream_data.__Rewire__("subscribed_streams", () => []);
 
     narrow_state.__Rewire__("stream", () => {});
 
@@ -648,14 +648,14 @@ run_test("topic_suggestions", () => {
     let suggestions;
     let expected;
 
-    stream_data.subscribed_streams = () => ["office"];
+    stream_data.__Rewire__("subscribed_streams", () => ["office"]);
 
     narrow_state.__Rewire__("stream", () => "office");
 
     const devel_id = 44;
     const office_id = 77;
 
-    stream_data.get_stream_id = (stream_name) => {
+    stream_data.__Rewire__("get_stream_id", (stream_name) => {
         switch (stream_name) {
             case "office":
                 return office_id;
@@ -664,7 +664,7 @@ run_test("topic_suggestions", () => {
             default:
                 return undefined;
         }
-    };
+    });
 
     stream_topic_history.reset();
     suggestions = get_suggestions("", "te");
@@ -737,7 +737,7 @@ run_test("topic_suggestions", () => {
 run_test("whitespace_glitch", () => {
     const query = "stream:office "; // note trailing space
 
-    stream_data.subscribed_streams = () => ["office"];
+    stream_data.__Rewire__("subscribed_streams", () => ["office"]);
 
     narrow_state.__Rewire__("stream", () => {});
 
@@ -751,7 +751,7 @@ run_test("whitespace_glitch", () => {
 });
 
 run_test("stream_completion", () => {
-    stream_data.subscribed_streams = () => ["office", "dev help"];
+    stream_data.__Rewire__("subscribed_streams", () => ["office", "dev help"]);
 
     narrow_state.__Rewire__("stream", () => {});
 
@@ -774,7 +774,7 @@ run_test("stream_completion", () => {
 });
 
 function people_suggestion_setup() {
-    stream_data.subscribed_streams = () => [];
+    stream_data.__Rewire__("subscribed_streams", () => []);
     narrow_state.__Rewire__("stream", noop);
 
     const ted = {
@@ -921,7 +921,7 @@ run_test("operator_suggestions", () => {
 });
 
 run_test("queries_with_spaces", () => {
-    stream_data.subscribed_streams = () => ["office", "dev help"];
+    stream_data.__Rewire__("subscribed_streams", () => ["office", "dev help"]);
 
     narrow_state.__Rewire__("stream", () => {});
 

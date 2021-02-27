@@ -80,7 +80,7 @@ run_test("sort_streams", () => {
         },
     ];
 
-    stream_data.is_active = (sub) => sub.name !== "dead";
+    stream_data.__Rewire__("is_active", (sub) => sub.name !== "dead");
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first

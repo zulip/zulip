@@ -8,6 +8,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 
 import * as channel from "./channel";
 import * as common from "./common";
+import * as stream_data from "./stream_data";
 
 function reset_error_messages() {
     $("#invite_status").hide().text("").removeClass(common.status_classes);

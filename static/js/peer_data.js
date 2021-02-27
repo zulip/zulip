@@ -1,3 +1,5 @@
+import * as stream_data from "./stream_data";
+
 const {LazySet} = require("./lazy_set");
 const people = require("./people");
 

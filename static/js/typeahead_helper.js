@@ -12,6 +12,7 @@ const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const recent_senders = require("./recent_senders");
 const settings_data = require("./settings_data");
+const stream_data = require("./stream_data");
 const user_groups = require("./user_groups");
 const util = require("./util");
 

@@ -96,9 +96,9 @@ run_test("topics", () => {
         return [];
     };
 
-    stream_data.get_stream_id = (stream_name) => stream_id_dct[stream_name];
+    stream_data.__Rewire__("get_stream_id", (stream_name) => stream_id_dct[stream_name]);
 
-    stream_data.is_stream_muted_by_name = (stream_name) => stream_name === "muted";
+    stream_data.__Rewire__("is_stream_muted_by_name", (stream_name) => stream_name === "muted");
 
     unread.topic_has_any_unread = (stream_id) =>
         [devel_stream_id, muted_stream_id].includes(stream_id);

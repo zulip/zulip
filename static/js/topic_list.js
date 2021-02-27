@@ -4,6 +4,7 @@ import render_more_topics from "../templates/more_topics.hbs";
 import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 
+import * as stream_data from "./stream_data";
 import * as topic_list_data from "./topic_list_data";
 import * as vdom from "./vdom";
 

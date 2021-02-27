@@ -13,6 +13,7 @@ const narrow_state = require("./narrow_state");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const spoilers = require("./spoilers");
+const stream_data = require("./stream_data");
 const stream_ui_updates = require("./stream_ui_updates");
 
 const notice_memory = new Map();

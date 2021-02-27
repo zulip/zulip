@@ -1,6 +1,7 @@
 "use strict";
 
 const stream_color = require("./stream_color");
+const stream_data = require("./stream_data");
 
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.

@@ -145,7 +145,7 @@ set_global("message_list", {
 set_global("message_store", {
     get: (msg_id) => messages[msg_id - 1],
 });
-set_global("stream_data", {
+rewiremock("../../static/js/stream_data").with({
     get_sub_by_id: (stream) => {
         if (stream === stream5) {
             // No data is available for deactivated streams

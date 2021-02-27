@@ -14,6 +14,7 @@ import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as stream_color from "./stream_color";
+import * as stream_data from "./stream_data";
 import * as submessage from "./submessage";
 import * as util from "./util";
 
