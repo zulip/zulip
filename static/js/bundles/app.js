@@ -23,7 +23,6 @@ import "../stream_list";
 import "../widgetize";
 import "../message_list";
 import "../narrow";
-import "../reload_state";
 import "../reload";
 import "../compose_fade";
 import "../markdown";

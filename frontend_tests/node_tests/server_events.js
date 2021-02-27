@@ -28,7 +28,7 @@ set_global("home_msg_list", {
     },
 });
 set_global("page_params", {test_suite: false});
-set_global("reload_state", {
+rewiremock("../../static/js/reload_state").with({
     is_in_progress() {
         return false;
     },

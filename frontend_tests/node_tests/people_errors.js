@@ -2,12 +2,18 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const rewiremock = require("rewiremock/node");
+
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const reload_state = set_global("reload_state", {
+const reload_state = {
+    __esModule: true,
     is_in_progress: () => false,
-});
+};
+
+rewiremock("../../static/js/reload_state").with(reload_state);
+rewiremock.enable();
 
 const people = zrequire("people");
 
@@ -115,3 +121,4 @@ run_test("blueslip", () => {
     blueslip.expect("error", "Trying to set undefined field id");
     people.set_custom_profile_field_data(maria.user_id, {});
 });
+rewiremock.disable();

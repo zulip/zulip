@@ -14,7 +14,6 @@ set_global("setTimeout", (f, delay) => {
     f();
 });
 
-zrequire("reload_state");
 const channel = zrequire("channel");
 
 const default_stub_xhr = "default-stub-xhr";
