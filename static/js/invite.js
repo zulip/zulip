@@ -6,6 +6,8 @@ import render_invitation_failed_error from "../templates/invitation_failed_error
 import render_invite_subscription from "../templates/invite_subscription.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
+import * as common from "./common";
+
 function reset_error_messages() {
     $("#invite_status").hide().text("").removeClass(common.status_classes);
     $("#multiuse_invite_status").hide().text("").removeClass(common.status_classes);

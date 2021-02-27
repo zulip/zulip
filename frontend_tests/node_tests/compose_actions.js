@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -43,7 +45,7 @@ set_global("unread_ops", {
     notify_server_message_read: noop,
 });
 
-set_global("common", {
+rewiremock("../../static/js/common").with({
     status_classes: "status_classes",
 });
 
@@ -54,6 +56,8 @@ set_global("current_msg_list", {
 });
 
 const channel = set_global("channel", {});
+
+rewiremock.enable();
 
 const people = zrequire("people");
 const compose_ui = zrequire("compose_ui");
@@ -485,3 +489,4 @@ run_test("on_narrow", (override) => {
     });
     assert(cancel_called);
 });
+rewiremock.disable();

@@ -1,5 +1,7 @@
 import SimpleBar from "simplebar/dist/simplebar";
 
+import * as common from "../common";
+
 import * as google_analytics from "./google-analytics";
 import {activate_correct_tab} from "./tabbed-instructions";
 

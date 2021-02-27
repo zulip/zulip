@@ -139,7 +139,6 @@
                 "channel": false,
                 "click_handlers": false,
                 "color_data": false,
-                "common": false,
                 "compose": false,
                 "compose_actions": false,
                 "compose_fade": false,

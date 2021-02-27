@@ -71,7 +71,7 @@ run_test("copy_data_attribute_value", (override) => {
 });
 
 run_test("adjust_mac_shortcuts non-mac", () => {
-    common.has_mac_keyboard = () => false;
+    common.__Rewire__("has_mac_keyboard", () => false);
 
     // The adjust_mac_shortcuts has a really simple guard
     // at the top, and we just test the early-return behavior
@@ -95,7 +95,7 @@ run_test("adjust_mac_shortcuts mac", () => {
         ["Ctrl + Backspace + End", "⌘ + Delete + Fn + →"],
     ]);
 
-    common.has_mac_keyboard = () => true;
+    common.__Rewire__("has_mac_keyboard", () => true);
 
     const test_items = [];
     let key_no = 1;

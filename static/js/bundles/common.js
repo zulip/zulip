@@ -7,7 +7,6 @@ import "../page_params";
 import "../csrf";
 import "../blueslip";
 import "../../third/bootstrap/js/bootstrap";
-import "../common";
 import "../../third/bootstrap/css/bootstrap.css";
 import "../../third/bootstrap/css/bootstrap-btn.css";
 import "simplebar/dist/simplebar.css";
