@@ -1,6 +1,7 @@
 import _ from "lodash";
 
 import {FetchStatus} from "./fetch_status";
+import * as muting from "./muting";
 import * as util from "./util";
 
 export class MessageListData {

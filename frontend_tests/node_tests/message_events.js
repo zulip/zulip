@@ -22,7 +22,6 @@ rewiremock.enable();
 
 const message_events = zrequire("message_events");
 const message_store = zrequire("message_store");
-zrequire("muting");
 const people = zrequire("people");
 zrequire("recent_senders");
 const stream_data = zrequire("stream_data");

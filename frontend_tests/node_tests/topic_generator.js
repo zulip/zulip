@@ -103,7 +103,7 @@ run_test("topics", () => {
     unread.topic_has_any_unread = (stream_id) =>
         [devel_stream_id, muted_stream_id].includes(stream_id);
 
-    muting.is_topic_muted = (stream_name, topic) => topic === "muted";
+    muting.__Rewire__("is_topic_muted", (stream_name, topic) => topic === "muted");
 
     let next_item = tg.get_next_topic("announce", "whatever");
     assert.deepEqual(next_item, {

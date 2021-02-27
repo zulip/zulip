@@ -108,7 +108,6 @@ zrequire("stream_color");
 zrequire("stream_edit");
 zrequire("color_data");
 zrequire("stream_data");
-zrequire("muting");
 zrequire("condense");
 zrequire("lightbox");
 zrequire("overlays");

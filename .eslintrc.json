@@ -181,7 +181,6 @@
                 "message_store": false,
                 "message_util": false,
                 "message_viewport": false,
-                "muting": false,
                 "muting_ui": false,
                 "narrow": false,
                 "narrow_state": false,

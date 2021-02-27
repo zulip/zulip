@@ -1,3 +1,5 @@
+import * as muting from "./muting";
+
 const max_topics = 5;
 const max_topics_with_unread = 8;
 

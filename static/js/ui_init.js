@@ -16,6 +16,7 @@ const echo = require("./echo");
 const emojisets = require("./emojisets");
 const invite = require("./invite");
 const markdown_config = require("./markdown_config");
+const muting = require("./muting");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const spoilers = require("./spoilers");
