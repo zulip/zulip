@@ -205,10 +205,10 @@ run_test("upload_files", () => {
         getFiles: () => [...files],
     };
     let hide_upload_status_called = false;
-    upload.hide_upload_status = (config) => {
+    upload.__Rewire__("hide_upload_status", (config) => {
         hide_upload_status_called = true;
         assert(config.mode, "compose");
-    };
+    });
     const config = {mode: "compose"};
     $("#compose-send-button").prop("disabled", false);
     upload.upload_files(uppy, config, []);
@@ -216,14 +216,14 @@ run_test("upload_files", () => {
 
     page_params.max_file_upload_size_mib = 0;
     let show_error_message_called = false;
-    upload.show_error_message = (config, message) => {
+    upload.__Rewire__("show_error_message", (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
         assert.equal(
             message,
             "translated: File and image uploads have been disabled for this organization.",
         );
-    };
+    });
     upload.upload_files(uppy, config, files);
     assert(show_error_message_called);
 
@@ -378,11 +378,11 @@ run_test("file_input", () => {
         },
     };
     let upload_files_called = false;
-    upload.upload_files = (uppy, config, files) => {
+    upload.__Rewire__("upload_files", (uppy, config, files) => {
         assert.equal(config.mode, "compose");
         assert.equal(files, files);
         upload_files_called = true;
-    };
+    });
     change_handler(event);
     assert(upload_files_called);
 });
@@ -417,9 +417,9 @@ run_test("file_drop", () => {
     };
     const drop_handler = $("#compose").get_on_handler("drop");
     let upload_files_called = false;
-    upload.upload_files = () => {
+    upload.__Rewire__("upload_files", () => {
         upload_files_called = true;
-    };
+    });
     drop_handler(drop_event);
     assert.equal(prevent_default_counter, 3);
     assert.equal(upload_files_called, true);
@@ -448,9 +448,9 @@ run_test("copy_paste", () => {
         },
     };
     let upload_files_called = false;
-    upload.upload_files = () => {
+    upload.__Rewire__("upload_files", () => {
         upload_files_called = true;
-    };
+    });
 
     paste_handler(event);
     assert(get_as_file_called);
@@ -549,9 +549,9 @@ run_test("uppy_events", () => {
         func();
     });
     let hide_upload_status_called = false;
-    upload.hide_upload_status = () => {
+    upload.__Rewire__("hide_upload_status", () => {
         hide_upload_status_called = true;
-    };
+    });
     $("#compose-send-status").removeClass("alert-error");
     files = [
         {
@@ -606,11 +606,11 @@ run_test("uppy_events", () => {
     uppy_cancel_all_called = false;
     compose_ui_replace_syntax_called = false;
     const on_restriction_failed_callback = callbacks["restriction-failed"];
-    upload.show_error_message = (config, message) => {
+    upload.__Rewire__("show_error_message", (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
         assert.equal(message, "Some error message");
-    };
+    });
     on_info_visible_callback();
     assert(uppy_cancel_all_called);
     assert(show_error_message_called);
@@ -645,11 +645,11 @@ run_test("uppy_events", () => {
     const on_upload_error_callback = callbacks["upload-error"];
     show_error_message_called = false;
     compose_ui_replace_syntax_called = false;
-    upload.show_error_message = (config, message) => {
+    upload.__Rewire__("show_error_message", (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
         assert.equal(message, "Response message");
-    };
+    });
     response = {
         body: {
             msg: "Response message",
@@ -662,11 +662,11 @@ run_test("uppy_events", () => {
     assert(compose_ui_replace_syntax_called);
 
     compose_ui_replace_syntax_called = false;
-    upload.show_error_message = (config, message) => {
+    upload.__Rewire__("show_error_message", (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
         assert.equal(message, null);
-    };
+    });
     uppy_cancel_all_called = false;
     on_upload_error_callback(file, null, null);
     assert(uppy_cancel_all_called);

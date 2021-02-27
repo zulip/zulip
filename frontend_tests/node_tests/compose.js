@@ -1046,7 +1046,7 @@ test_ui("initialize", () => {
 
     let setup_upload_called = false;
     let uppy_cancel_all_called = false;
-    upload.setup_upload = (config) => {
+    upload.__Rewire__("setup_upload", (config) => {
         assert.equal(config.mode, "compose");
         setup_upload_called = true;
         return {
@@ -1054,7 +1054,7 @@ test_ui("initialize", () => {
                 uppy_cancel_all_called = true;
             },
         };
-    };
+    });
 
     page_params.realm_available_video_chat_providers = {
         disabled: {

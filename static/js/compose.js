@@ -23,6 +23,7 @@ import * as rtl from "./rtl";
 import * as sent_messages from "./sent_messages";
 import * as settings_config from "./settings_config";
 import * as transmit from "./transmit";
+import * as upload from "./upload";
 import * as util from "./util";
 import * as zcommand from "./zcommand";
 
