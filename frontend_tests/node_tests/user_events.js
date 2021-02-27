@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
@@ -32,7 +34,7 @@ const page_params = set_global("page_params", {
     is_admin: true,
 });
 
-set_global("pm_list", {
+rewiremock("../../static/js/pm_list").with({
     update_private_messages() {},
 });
 
@@ -50,6 +52,8 @@ const settings_account = set_global("settings_account", {
 });
 
 const message_live_update = set_global("message_live_update", {});
+
+rewiremock.enable();
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -207,3 +211,4 @@ run_test("updates", () => {
     person = people.get_by_email(test_bot.email);
     assert.equal(person.bot_owner_id, me.user_id);
 });
+rewiremock.disable();

@@ -1,5 +1,6 @@
 import * as alert_words from "./alert_words";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as rows from "./rows";
 import * as util from "./util";
 

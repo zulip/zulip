@@ -4,6 +4,7 @@ const alert_words = require("./alert_words");
 const channel = require("./channel");
 const huddle_data = require("./huddle_data");
 const message_edit_history = require("./message_edit_history");
+const pm_list = require("./pm_list");
 const unread_ui = require("./unread_ui");
 const util = require("./util");
 

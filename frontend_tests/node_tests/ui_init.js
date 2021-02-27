@@ -129,7 +129,6 @@ zrequire("narrow");
 zrequire("search_suggestion");
 zrequire("search");
 zrequire("notifications");
-zrequire("pm_list");
 zrequire("stream_list");
 zrequire("sent_messages");
 zrequire("top_left_corner");

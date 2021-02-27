@@ -47,6 +47,7 @@ const _scroll_util = {
 };
 
 const _pm_list = {
+    __esModule: true,
     update_private_messages: () => {},
 };
 
@@ -72,7 +73,7 @@ rewiremock("../../static/js/channel").with(channel);
 set_global("compose_state", compose_state);
 set_global("document", _document);
 rewiremock("../../static/js/keydown_util").with(_keydown_util);
-set_global("pm_list", _pm_list);
+rewiremock("../../static/js/pm_list").with(_pm_list);
 set_global("popovers", _popovers);
 set_global("resize", _resize);
 rewiremock("../../static/js/scroll_util").with(_scroll_util);

@@ -1,3 +1,4 @@
+import * as pm_list from "./pm_list";
 import * as topic_list from "./topic_list";
 
 let last_mention_count = 0;
