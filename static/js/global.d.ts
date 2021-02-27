@@ -30,7 +30,6 @@ declare let home_msg_list: any;
 declare let hotkey: any;
 declare let hotspots: any;
 declare let i18n: any;
-declare let info_overlay: any;
 declare let input_pill: any;
 declare let list_util: any;
 declare let message_events: any;
