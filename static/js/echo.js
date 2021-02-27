@@ -5,6 +5,7 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as rows from "./rows";
+import * as sent_messages from "./sent_messages";
 import * as util from "./util";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html

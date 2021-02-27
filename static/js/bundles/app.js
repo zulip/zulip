@@ -24,7 +24,6 @@ import "../widgetize";
 import "../message_list";
 import "../narrow";
 import "../reload";
-import "../sent_messages";
 import "../compose_state";
 import "../compose_actions";
 import "../transmit";

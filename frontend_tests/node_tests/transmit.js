@@ -16,10 +16,13 @@ const reload = {__esModule: true};
 rewiremock("../../static/js/reload").with(reload);
 const reload_state = {__esModule: true};
 rewiremock("../../static/js/reload_state").with(reload_state);
-const sent_messages = set_global("sent_messages", {
+const sent_messages = {
+    __esModule: true,
     start_tracking_message: noop,
     report_server_ack: noop,
-});
+};
+
+rewiremock("../../static/js/sent_messages").with(sent_messages);
 
 rewiremock.enable();
 

@@ -4,6 +4,7 @@ const channel = require("./channel");
 const people = require("./people");
 const reload = require("./reload");
 const reload_state = require("./reload_state");
+const sent_messages = require("./sent_messages");
 
 exports.send_message = function (request, on_success, error) {
     channel.post({

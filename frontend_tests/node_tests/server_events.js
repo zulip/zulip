@@ -55,7 +55,6 @@ rewiremock.enable();
 
 zrequire("message_store");
 const server_events = zrequire("server_events");
-zrequire("sent_messages");
 
 set_global("$", $);
 

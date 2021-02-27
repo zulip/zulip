@@ -21,6 +21,7 @@ const peer_data = require("./peer_data");
 const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");
 const rtl = require("./rtl");
+const sent_messages = require("./sent_messages");
 const settings_config = require("./settings_config");
 const util = require("./util");
 const zcommand = require("./zcommand");
