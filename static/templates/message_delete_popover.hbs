@@ -1,0 +1,23 @@
+<div class="popover new-style message-delete-popover" >
+    <div  class="modal-header" >
+        <button type="button" class="close"  aria-label="{{t 'Close' }}"><span
+                aria-hidden="true">&times;</span></button>
+        <h3>
+            Delete message
+            <a href="/help/edit-or-delete-a-message#delete-a-message" target="_blank" rel="noopener noreferrer">
+                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+            </a>
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="content">
+            <p><strong>Are you sure you want to permanently delete this message?</strong></p>
+            <p>Deleting a message removes it for everyone.</p>
+        </div>
+        <div id="delete-message-error"></div>
+    </div>
+    <div class="modal-footer">
+        <button class="button rounded" data-dismiss="modal">Cancel</button>
+        <button class="button rounded btn-danger" id="delete_message_button">Yes, delete this message</button>
+    </div>
+</div>

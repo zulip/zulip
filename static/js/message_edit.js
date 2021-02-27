@@ -2,6 +2,7 @@
 
 const ClipboardJS = require("clipboard");
 
+const render_delete_popover = require("../templates/message_delete_popover.hbs");
 const render_message_edit_form = require("../templates/message_edit_form.hbs");
 const render_topic_edit_form = require("../templates/topic_edit_form.hbs");
 
@@ -11,7 +12,9 @@ const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
-
+let current_message_delete_popover_elem;
+const APPROX_HEIGHT = 208;
+const APPROX_WIDTH = 390;
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
 // move several topics in a row with the same settings.
@@ -31,7 +34,6 @@ const editability_types = {
     FULL: 4,
 };
 exports.editability_types = editability_types;
-
 function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     if (!page_params.realm_allow_message_editing) {
         // If message editing is disabled, so is topic editing.
@@ -860,15 +862,30 @@ function hide_delete_btn_show_spinner(deleting) {
     }
 }
 
-exports.delete_message = function (msg_id) {
-    $("#delete-message-error").html("");
-    $("#delete_message_modal").modal("show");
-    if (currently_deleting_messages.includes(msg_id)) {
-        hide_delete_btn_show_spinner(true);
-    } else {
-        hide_delete_btn_show_spinner(false);
+exports.delete_message = function (element, id) {
+    const msg_id = id;
+    // $("#delete-message-error").html("");
+    // $("#delete_message_modal").modal("show");
+    const last_popover_elem = current_message_delete_popover_elem;
+    popovers.hide_all();
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
     }
-    $("#do_delete_message_button")
+    $(element).closest(".message_row").toggleClass("has_popover");
+    const elt = $(element);
+
+    if (elt.data("popover") === undefined) {
+        // Keep the element over which the popover is based off visible.
+        exports.build_delete_popover(elt);
+    }
+    // if (currently_deleting_messages.includes(msg_id)) {
+    //     hide_delete_btn_show_spinner(true);
+    // } else {
+    //     hide_delete_btn_show_spinner(false);
+    // }
+    $("#delete_message_button")
         .off()
         .on("click", (e) => {
             e.stopPropagation();
@@ -878,7 +895,7 @@ exports.delete_message = function (msg_id) {
             channel.del({
                 url: "/json/messages/" + msg_id,
                 success() {
-                    $("#delete_message_modal").modal("hide");
+                    // $("#delete_message_modal").modal("hide");
                     currently_deleting_messages = currently_deleting_messages.filter(
                         (id) => id !== msg_id,
                     );
@@ -966,6 +983,30 @@ exports.move_topic_containing_message_to_stream = function (
             ui_report.error(i18n.t("Error moving the topic"), xhr, $("#home-error"), 4000);
         },
     });
+};
+
+exports.build_delete_popover = function (elt) {
+    let placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
+
+    if (placement === "viewport_center") {
+        // For legacy reasons `compute_placement` actually can
+        // return `viewport_center`, but bootstrap doesn't actually
+        // support that.
+        placement = "left";
+    }
+
+    const template = render_delete_popover();
+
+    elt.popover({
+        // temporary patch for handling popover placement of `viewport_center`
+        fix_positions: true,
+        template,
+        content: "delete message",
+        title: "",
+        html: true,
+        trigger: "manual",
+    });
+    elt.popover("show");
 };
 
 window.message_edit = exports;

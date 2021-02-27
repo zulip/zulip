@@ -475,3 +475,8 @@ ul {
         margin-left: 5px !important;
     }
 }
+
+.message-delete-popover {
+    margin-top: 20px;
+    margin-right: 27px;
+}
