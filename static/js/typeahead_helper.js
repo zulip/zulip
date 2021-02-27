@@ -11,6 +11,7 @@ const render_typeahead_list_item = require("../templates/typeahead_list_item.hbs
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const settings_data = require("./settings_data");
+const user_groups = require("./user_groups");
 const util = require("./util");
 
 // Returns an array of private message recipients, removing empty elements.

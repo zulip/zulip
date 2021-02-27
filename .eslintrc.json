@@ -255,7 +255,6 @@
                 "upload": false,
                 "upload_widget": false,
                 "user_events": false,
-                "user_groups": false,
                 "poll_widget": false,
                 "widgetize": false,
                 "zxcvbn": false

@@ -25,7 +25,6 @@ const markdown_config = zrequire("markdown_config");
 zrequire("hash_util");
 zrequire("message_store");
 zrequire("stream_data");
-zrequire("user_groups");
 
 const markdown = zrequire("markdown");
 

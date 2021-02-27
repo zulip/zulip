@@ -63,7 +63,9 @@ const typing_events = set_global("typing_events", {});
 const ui = set_global("ui", {});
 const unread_ops = set_global("unread_ops", {});
 const user_events = set_global("user_events", {});
-const user_groups = set_global("user_groups", {});
+const user_groups = {__esModule: true};
+
+rewiremock("../../static/js/user_groups").with(user_groups);
 
 // page_params is highly coupled to dispatching now
 const page_params = set_global("page_params", {

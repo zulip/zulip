@@ -23,11 +23,13 @@ let create_item_handler;
 const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);
 const typeahead_helper = set_global("typeahead_helper", {});
-const user_groups = set_global("user_groups", {
+const user_groups = {
+    __esModule: true,
     get_user_group_from_id: noop,
     remove: noop,
     add: noop,
-});
+};
+rewiremock("../../static/js/user_groups").with(user_groups);
 const ui_report = set_global("ui_report", {});
 
 const page_params = set_global("page_params", {});

@@ -18,7 +18,6 @@ import "../fold_dict";
 import "../input_pill";
 import "../setup";
 import "../unread_ops";
-import "../user_groups";
 import "../unread";
 import "../topic_list";
 import "../pm_list_dom";

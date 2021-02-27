@@ -14,6 +14,7 @@ const compose_pm_pill = require("./compose_pm_pill");
 const people = require("./people");
 const rows = require("./rows");
 const settings_data = require("./settings_data");
+const user_groups = require("./user_groups");
 const user_pill = require("./user_pill");
 
 //************************************

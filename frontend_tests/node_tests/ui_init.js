@@ -119,7 +119,6 @@ zrequire("message_view_header");
 zrequire("narrow_state");
 zrequire("presence");
 zrequire("search_pill_widget");
-zrequire("user_groups");
 zrequire("unread");
 zrequire("bot_data");
 zrequire("markdown");
