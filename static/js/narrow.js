@@ -9,6 +9,7 @@ const {MessageListData} = require("./message_list_data");
 const narrow_state = require("./narrow_state");
 const people = require("./people");
 const search_pill = require("./search_pill");
+const stream_data = require("./stream_data");
 const top_left_corner = require("./top_left_corner");
 const topic_generator = require("./topic_generator");
 const util = require("./util");

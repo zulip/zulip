@@ -4,6 +4,7 @@ const render_admin_default_streams_list = require("../templates/admin_default_st
 
 const channel = require("./channel");
 const loading = require("./loading");
+const stream_data = require("./stream_data");
 
 const meta = {
     loaded: false,

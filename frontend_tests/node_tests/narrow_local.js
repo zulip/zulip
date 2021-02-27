@@ -18,7 +18,6 @@ const {Filter} = zrequire("Filter", "js/filter");
 const {MessageListData} = zrequire("MessageListData", "js/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const narrow = zrequire("narrow");
-zrequire("stream_data");
 
 function test_with(fixture) {
     const filter = new Filter(fixture.filter_terms);

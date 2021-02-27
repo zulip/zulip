@@ -3,6 +3,7 @@
 const {FoldDict} = require("./fold_dict");
 const muting = require("./muting");
 const people = require("./people");
+const stream_data = require("./stream_data");
 const util = require("./util");
 
 // The unread module tracks the message IDs and locations of the

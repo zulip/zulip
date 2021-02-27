@@ -1000,10 +1000,10 @@ run_test("misc", () => {
     settings_account.update_email_change_display();
     assert(!$("#change_email .button").prop("disabled"));
 
-    stream_data.get_streams_for_settings_page = () => [
+    stream_data.__Rewire__("get_streams_for_settings_page", () => [
         {name: "some_stream", stream_id: 75},
         {name: "some_stream", stream_id: 42},
-    ];
+    ]);
 
     // Set stubs for dropdown_list_widget:
     const widget_settings = [
@@ -1032,10 +1032,10 @@ run_test("misc", () => {
     let setting_name = "realm_notifications_stream_id";
     let elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     elem.closest = () => stub_notification_disable_parent;
-    stream_data.get_sub_by_id = (stream_id) => {
+    stream_data.__Rewire__("get_sub_by_id", (stream_id) => {
         assert.equal(stream_id, 42);
         return {name: "some_stream"};
-    };
+    });
     settings_org.notifications_stream_widget.render(42);
     assert.equal(elem.text(), "#some_stream");
     assert(!elem.hasClass("text-warning"));
@@ -1047,10 +1047,10 @@ run_test("misc", () => {
     setting_name = "realm_signup_notifications_stream_id";
     elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     elem.closest = () => stub_notification_disable_parent;
-    stream_data.get_sub_by_id = (stream_id) => {
+    stream_data.__Rewire__("get_sub_by_id", (stream_id) => {
         assert.equal(stream_id, 75);
         return {name: "some_stream"};
-    };
+    });
     settings_org.signup_notifications_stream_widget.render(75);
     assert.equal(elem.text(), "#some_stream");
     assert(!elem.hasClass("text-warning"));

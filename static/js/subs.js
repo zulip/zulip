@@ -16,6 +16,7 @@ const people = require("./people");
 const scroll_util = require("./scroll_util");
 const search_util = require("./search_util");
 const stream_create = require("./stream_create");
+const stream_data = require("./stream_data");
 const stream_ui_updates = require("./stream_ui_updates");
 const util = require("./util");
 

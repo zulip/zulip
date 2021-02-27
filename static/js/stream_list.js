@@ -10,6 +10,7 @@ const {ListCursor} = require("./list_cursor");
 const narrow_state = require("./narrow_state");
 const scroll_util = require("./scroll_util");
 const stream_color = require("./stream_color");
+const stream_data = require("./stream_data");
 const stream_sort = require("./stream_sort");
 const topic_list = require("./topic_list");
 const topic_zoom = require("./topic_zoom");

@@ -1,6 +1,7 @@
 import render_subscription_type from "../templates/subscription_type.hbs";
 
 import * as peer_data from "./peer_data";
+import * as stream_data from "./stream_data";
 
 export function initialize_disable_btn_hint_popover(
     btn_wrapper,

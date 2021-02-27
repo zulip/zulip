@@ -6,6 +6,7 @@ import * as channel from "./channel";
 import * as loading from "./loading";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as stream_data from "./stream_data";
 
 let created_stream;
 

@@ -37,7 +37,9 @@ set_global("stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
-const stream_data = set_global("stream_data", {});
+const stream_data = {__esModule: true};
+
+rewiremock("../../static/js/stream_data").with(stream_data);
 
 const ClipboardJS = noop;
 rewiremock("clipboard").with(ClipboardJS);

@@ -24,7 +24,6 @@ rewiremock.enable();
 const markdown_config = zrequire("markdown_config");
 zrequire("hash_util");
 zrequire("message_store");
-zrequire("stream_data");
 
 const markdown = zrequire("markdown");
 

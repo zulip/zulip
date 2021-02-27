@@ -2,6 +2,7 @@ import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
 import * as people from "./people";
+import * as stream_data from "./stream_data";
 import * as util from "./util";
 
 function zephyr_stream_name_match(message, operand) {

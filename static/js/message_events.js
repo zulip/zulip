@@ -9,6 +9,7 @@ const message_edit_history = require("./message_edit_history");
 const narrow_state = require("./narrow_state");
 const pm_list = require("./pm_list");
 const recent_senders = require("./recent_senders");
+const stream_data = require("./stream_data");
 const unread_ui = require("./unread_ui");
 const util = require("./util");
 

@@ -6,6 +6,7 @@ import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 import * as people from "./people";
 import * as rtl from "./rtl";
 import * as settings_config from "./settings_config";
+import * as stream_data from "./stream_data";
 import * as user_groups from "./user_groups";
 
 const {parseISO, isValid} = require("date-fns");

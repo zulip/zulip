@@ -5,6 +5,7 @@ import * as channel from "./channel";
 import * as feedback_widget from "./feedback_widget";
 import * as muting from "./muting";
 import * as settings_muting from "./settings_muting";
+import * as stream_data from "./stream_data";
 import * as unread_ui from "./unread_ui";
 
 function timestamp_ms() {
