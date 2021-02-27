@@ -11,6 +11,7 @@ const render_edit_content_button = require("../templates/edit_content_button.hbs
 const alert_words = require("./alert_words");
 const compose = require("./compose");
 const compose_pm_pill = require("./compose_pm_pill");
+const condense = require("./condense");
 const copy_and_paste = require("./copy_and_paste");
 const drafts = require("./drafts");
 const echo = require("./echo");

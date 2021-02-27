@@ -7,7 +7,8 @@ const rewiremock = require("rewiremock/node");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const condense = set_global("condense", {});
+const condense = {__esModule: true};
+rewiremock("../../static/js/condense").with(condense);
 set_global("current_msg_list", {});
 const message_edit = {__esModule: true};
 rewiremock("../../static/js/message_edit").with(message_edit);

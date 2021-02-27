@@ -4,6 +4,7 @@ const alert_words = require("./alert_words");
 const channel = require("./channel");
 const compose_fade = require("./compose_fade");
 const compose_state = require("./compose_state");
+const condense = require("./condense");
 const huddle_data = require("./huddle_data");
 const message_edit = require("./message_edit");
 const message_edit_history = require("./message_edit_history");
