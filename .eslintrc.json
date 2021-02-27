@@ -159,7 +159,6 @@
                 "jQuery": false,
                 "lightbox": false,
                 "list_util": false,
-                "ListWidget": false,
                 "localStorage": false,
                 "location": false,
                 "message_events": false,

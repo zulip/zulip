@@ -5,6 +5,7 @@ const render_recent_topics_filters = require("../templates/recent_topics_filters
 const render_recent_topics_body = require("../templates/recent_topics_table.hbs");
 
 const drafts = require("./drafts");
+const ListWidget = require("./list_widget");
 const {localstorage} = require("./localstorage");
 const muting = require("./muting");
 const narrow_state = require("./narrow_state");

@@ -3,6 +3,7 @@ import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as channel from "./channel";
 import * as feedback_widget from "./feedback_widget";
+import * as ListWidget from "./list_widget";
 import * as muting from "./muting";
 import * as settings_muting from "./settings_muting";
 import * as stream_data from "./stream_data";

@@ -54,8 +54,10 @@ set_global("hash_util", {
 rewiremock("../../static/js/recent_senders").with({
     get_topic_recent_senders: () => [1, 2],
 });
-const ListWidget = set_global("ListWidget", {
+const ListWidget = {
+    __esModule: true,
     modifier: noop,
+
     create: (container, mapped_topic_values, opts) => {
         const formatted_topics = [];
         ListWidget.modifier = opts.modifier;
@@ -75,9 +77,11 @@ const ListWidget = set_global("ListWidget", {
         }
         return ListWidget;
     },
+
     hard_redraw: noop,
     render_item: (item) => ListWidget.modifier(item),
-});
+};
+rewiremock("../../static/js/list_widget").with(ListWidget);
 rewiremock("../../static/js/drafts").with({
     update_draft: noop,
 });

@@ -2,15 +2,20 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const rewiremock = require("rewiremock/node");
+
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 const _ListWidget = {
+    __esModule: true,
     create: () => ({init: noop}),
 };
-set_global("ListWidget", _ListWidget);
+rewiremock("../../static/js/list_widget").with(_ListWidget);
+
+rewiremock.enable();
 
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
@@ -74,3 +79,4 @@ run_test("no_default_value", () => {
     const widget = dropdown_list_widget(opts);
     assert.equal(widget.value(), "null-value");
 });
+rewiremock.disable();
