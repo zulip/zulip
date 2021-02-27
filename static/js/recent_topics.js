@@ -8,6 +8,7 @@ const drafts = require("./drafts");
 const {localstorage} = require("./localstorage");
 const muting = require("./muting");
 const people = require("./people");
+const recent_senders = require("./recent_senders");
 
 const topics = new Map(); // Key is stream-id:topic.
 let topics_widget;

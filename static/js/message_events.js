@@ -5,6 +5,7 @@ const channel = require("./channel");
 const huddle_data = require("./huddle_data");
 const message_edit_history = require("./message_edit_history");
 const pm_list = require("./pm_list");
+const recent_senders = require("./recent_senders");
 const unread_ui = require("./unread_ui");
 const util = require("./util");
 
