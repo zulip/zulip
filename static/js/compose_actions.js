@@ -5,6 +5,7 @@ const autosize = require("autosize");
 const fenced_code = require("../shared/js/fenced_code");
 
 const common = require("./common");
+const compose_pm_pill = require("./compose_pm_pill");
 const drafts = require("./drafts");
 const people = require("./people");
 

@@ -786,9 +786,9 @@ run_test("initialize", () => {
         };
 
         let appended_name;
-        compose_pm_pill.set_from_typeahead = (item) => {
+        compose_pm_pill.__Rewire__("set_from_typeahead", (item) => {
             appended_name = item.full_name;
-        };
+        });
 
         // options.updater()
         options.query = "othello";
@@ -808,15 +808,15 @@ run_test("initialize", () => {
 
         let appended_names = [];
 
-        compose_pm_pill.set_from_typeahead = (item) => {
+        compose_pm_pill.__Rewire__("set_from_typeahead", (item) => {
             appended_names.push(item.full_name);
-        };
+        });
 
         let cleared = false;
         function fake_clear() {
             cleared = true;
         }
-        compose_pm_pill.widget = {clear_text: fake_clear};
+        compose_pm_pill.__Rewire__("widget", {clear_text: fake_clear});
 
         options.query = "hamletchar";
         options.updater(hamletcharacters, event);

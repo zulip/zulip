@@ -142,7 +142,6 @@
                 "compose": false,
                 "compose_actions": false,
                 "compose_fade": false,
-                "compose_pm_pill": false,
                 "compose_state": false,
                 "compose_ui": false,
                 "composebox_typeahead": false,

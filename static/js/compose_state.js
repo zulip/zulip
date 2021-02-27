@@ -1,5 +1,7 @@
 "use strict";
 
+const compose_pm_pill = require("./compose_pm_pill");
+
 let message_type = false; // 'stream', 'private', or false-y
 
 exports.set_message_type = function (msg_type) {

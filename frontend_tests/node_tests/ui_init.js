@@ -67,7 +67,7 @@ page_params.presences = [];
 
 set_global("activity", {initialize() {}});
 set_global("click_handlers", {initialize() {}});
-set_global("compose_pm_pill", {initialize() {}});
+rewiremock("../../static/js/compose_pm_pill").with({initialize() {}});
 rewiremock("../../static/js/drafts").with({initialize() {}});
 set_global("emoji_picker", {initialize() {}});
 set_global("gear_menu", {initialize() {}});
