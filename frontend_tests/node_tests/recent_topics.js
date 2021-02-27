@@ -119,7 +119,7 @@ const topic8 = "topic-8";
 const topic9 = "topic-9";
 const topic10 = "topic-10";
 
-set_global("muting", {
+rewiremock("../../static/js/muting").with({
     is_topic_muted: (stream_id, topic) => {
         if (stream_id === stream1 && topic === topic7) {
             return true;

@@ -18,6 +18,7 @@ const render_user_profile_modal = require("../templates/user_profile_modal.hbs")
 
 const feature_flags = require("./feature_flags");
 const message_edit_history = require("./message_edit_history");
+const muting = require("./muting");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");

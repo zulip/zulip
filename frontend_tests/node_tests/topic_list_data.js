@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
+const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -11,12 +12,17 @@ const narrow_state = set_global("narrow_state", {
     topic() {},
 });
 set_global("unread", {});
-const muting = set_global("muting", {
+const muting = {
+    __esModule: true,
+
     is_topic_muted() {
         return false;
     },
-});
+};
+rewiremock("../../static/js/muting").with(muting);
 set_global("message_list", {});
+
+rewiremock.enable();
 
 zrequire("hash_util");
 const stream_data = zrequire("stream_data");
@@ -146,3 +152,4 @@ run_test("get_list_info unreads", (override) => {
         ["topic 0", "topic 1", "topic 2", "topic 3", "topic 5", "topic 6", "topic 7", "topic 8"],
     );
 });
+rewiremock.disable();

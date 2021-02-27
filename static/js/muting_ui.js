@@ -5,6 +5,7 @@ const render_topic_muted = require("../templates/topic_muted.hbs");
 
 const channel = require("./channel");
 const feedback_widget = require("./feedback_widget");
+const muting = require("./muting");
 const settings_muting = require("./settings_muting");
 const unread_ui = require("./unread_ui");
 

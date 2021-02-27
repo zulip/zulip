@@ -58,7 +58,7 @@ set_global("setTimeout", (f, t) => {
     f();
 });
 
-set_global("muting", {
+rewiremock("../../static/js/muting").with({
     is_topic_muted: () => false,
 });
 

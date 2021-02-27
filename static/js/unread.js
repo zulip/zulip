@@ -1,6 +1,7 @@
 "use strict";
 
 const {FoldDict} = require("./fold_dict");
+const muting = require("./muting");
 const people = require("./people");
 const util = require("./util");
 
