@@ -167,7 +167,7 @@ run_test("initialize_everything", () => {
     // set find results doesn't work here since we call .empty() in the code.
     $message_view_header.find = () => false;
 
-    compose.compute_show_video_chat_button = () => {};
+    compose.__Rewire__("compute_show_video_chat_button", () => {});
     $("#below-compose-content .video_link").toggle = () => {};
 
     $("<audio>")[0] = "stub";

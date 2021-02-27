@@ -6,6 +6,7 @@ const render_message_edit_form = require("../templates/message_edit_form.hbs");
 const render_topic_edit_form = require("../templates/topic_edit_form.hbs");
 
 const channel = require("./channel");
+const compose = require("./compose");
 const echo = require("./echo");
 const loading = require("./loading");
 const markdown = require("./markdown");

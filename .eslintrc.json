@@ -136,7 +136,6 @@
                 "buddy_list": false,
                 "click_handlers": false,
                 "color_data": false,
-                "compose": false,
                 "compose_actions": false,
                 "compose_ui": false,
                 "composebox_typeahead": false,

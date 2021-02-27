@@ -19,9 +19,12 @@ const message_store = set_global("message_store", {
 const page_params = set_global("page_params", {});
 const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);
-const compose = set_global("compose", {
+const compose = {
+    __esModule: true,
     finish: noop,
-});
+};
+
+rewiremock("../../static/js/compose").with(compose);
 
 let autosize_called;
 set_global("compose_ui", {

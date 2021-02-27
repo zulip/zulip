@@ -221,9 +221,9 @@ run_test("start", (override) => {
     };
 
     let abort_xhr_called = false;
-    compose.abort_xhr = () => {
+    compose.__Rewire__("abort_xhr", () => {
         abort_xhr_called = true;
-    };
+    });
 
     $("#compose-textarea").set_height(50);
 

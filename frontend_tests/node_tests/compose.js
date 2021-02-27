@@ -414,7 +414,7 @@ test_ui("validate_stream_message", () => {
         compose_content = data;
     };
 
-    compose.wildcard_mention_allowed = () => true;
+    compose.__Rewire__("wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
     assert(!compose.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -422,7 +422,7 @@ test_ui("validate_stream_message", () => {
     assert.equal(compose_content, "compose_all_everyone_stub");
     assert($("#compose-all-everyone").visible());
 
-    compose.wildcard_mention_allowed = () => false;
+    compose.__Rewire__("wildcard_mention_allowed", () => false);
     assert(!compose.validate());
     assert.equal(
         $("#compose-error-msg").html(),
@@ -878,9 +878,9 @@ test_ui("enter_with_preview_open", () => {
     $("#markdown_preview").hide();
     page_params.enter_sends = true;
     let send_message_called = false;
-    compose.send_message = () => {
+    compose.__Rewire__("send_message", () => {
         send_message_called = true;
-    };
+    });
     compose.enter_with_preview_open();
     assert($("#compose-textarea").visible());
     assert(!$("#undo_markdown_preview").visible());
@@ -936,9 +936,9 @@ test_ui("finish", () => {
             compose_finished_event_checked = true;
         });
         let send_message_called = false;
-        compose.send_message = () => {
+        compose.__Rewire__("send_message", () => {
             send_message_called = true;
-        };
+        });
         assert(compose.finish());
         assert($("#compose-textarea").visible());
         assert(!$("#undo_markdown_preview").visible());
@@ -1175,9 +1175,9 @@ test_ui("trigger_submit_compose_form", () => {
             prevent_default_checked = true;
         },
     };
-    compose.finish = () => {
+    compose.__Rewire__("finish", () => {
         compose_finish_checked = true;
-    };
+    });
 
     const submit_handler = $("#compose form").get_on_handler("submit");
 
@@ -1266,12 +1266,12 @@ test_ui("warn_if_mentioning_unsubscribed_user", () => {
     const checks = [
         (function () {
             let called;
-            compose.needs_subscribe_warning = (user_id, stream_id) => {
+            compose.__Rewire__("needs_subscribe_warning", (user_id, stream_id) => {
                 called = true;
                 assert.equal(user_id, 34);
                 assert.equal(stream_id, 111);
                 return true;
-            };
+            });
             return function () {
                 assert(called);
             };
@@ -1390,9 +1390,9 @@ test_ui("on_events", () => {
         $("#compose-send-status").show();
 
         let compose_finish_checked = false;
-        compose.finish = () => {
+        compose.__Rewire__("finish", () => {
             compose_finish_checked = true;
-        };
+        });
 
         handler(helper.event);
 
