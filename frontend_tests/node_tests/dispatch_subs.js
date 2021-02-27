@@ -15,7 +15,8 @@ const test_user = events.test_user;
 
 const compose_fade = {__esModule: true};
 rewiremock("../../static/js/compose_fade").with(compose_fade);
-const stream_events = set_global("stream_events", {});
+const stream_events = {__esModule: true};
+rewiremock("../../static/js/stream_events").with(stream_events);
 const subs = set_global("subs", {});
 
 rewiremock.enable();
