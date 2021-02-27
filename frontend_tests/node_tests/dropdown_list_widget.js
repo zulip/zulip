@@ -13,7 +13,6 @@ const _ListWidget = {
 set_global("ListWidget", _ListWidget);
 
 const dropdown_list_widget = zrequire("dropdown_list_widget");
-zrequire("scroll_util");
 
 const setup_zjquery_data = (name) => {
     const input_group = $(".input_group");

@@ -42,6 +42,7 @@ const _keydown_util = {
 const compose_state = {};
 
 const _scroll_util = {
+    __esModule: true,
     scroll_element_into_container: () => {},
 };
 
@@ -74,7 +75,7 @@ rewiremock("../../static/js/keydown_util").with(_keydown_util);
 set_global("pm_list", _pm_list);
 set_global("popovers", _popovers);
 set_global("resize", _resize);
-set_global("scroll_util", _scroll_util);
+rewiremock("../../static/js/scroll_util").with(_scroll_util);
 set_global("stream_popover", _stream_popover);
 set_global("ui", _ui);
 set_global("server_events", {

@@ -212,7 +212,6 @@
                 "resize": false,
                 "rows": false,
                 "scroll_bar": false,
-                "scroll_util": false,
                 "search": false,
                 "search_pill_widget": false,
                 "search_suggestion": false,

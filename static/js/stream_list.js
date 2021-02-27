@@ -7,6 +7,7 @@ const render_stream_sidebar_row = require("../templates/stream_sidebar_row.hbs")
 
 const keydown_util = require("./keydown_util");
 const {ListCursor} = require("./list_cursor");
+const scroll_util = require("./scroll_util");
 const stream_sort = require("./stream_sort");
 const topic_zoom = require("./topic_zoom");
 

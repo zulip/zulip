@@ -85,7 +85,6 @@ declare let reminder: any;
 declare let resize: any;
 declare let rows: any;
 declare let scroll_bar: any;
-declare let scroll_util: any;
 declare let search: any;
 declare let search_pill_widget: any;
 declare let search_suggestion: any;
