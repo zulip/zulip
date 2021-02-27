@@ -39,7 +39,7 @@ const _keydown_util = {
     },
 };
 
-const compose_state = {};
+const compose_state = {__esModule: true};
 
 const _scroll_util = {
     __esModule: true,
@@ -70,7 +70,7 @@ set_global("padded_widget", {
     update_padding: () => {},
 });
 rewiremock("../../static/js/channel").with(channel);
-set_global("compose_state", compose_state);
+rewiremock("../../static/js/compose_state").with(compose_state);
 set_global("document", _document);
 rewiremock("../../static/js/keydown_util").with(_keydown_util);
 rewiremock("../../static/js/pm_list").with(_pm_list);

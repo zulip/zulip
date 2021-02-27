@@ -4,6 +4,8 @@ const Uppy = require("@uppy/core");
 const ProgressBar = require("@uppy/progress-bar");
 const XHRUpload = require("@uppy/xhr-upload");
 
+const compose_state = require("./compose_state");
+
 exports.make_upload_absolute = function (uri) {
     if (uri.startsWith(compose.uploads_path)) {
         // Rewrite the URI to a usable link

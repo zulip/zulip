@@ -1518,7 +1518,7 @@ run_test("typeahead_results", () => {
 run_test("message people", () => {
     let results;
 
-    compose_state.stream_name = () => undefined;
+    compose_state.__Rewire__("stream_name", () => undefined);
     ct.max_num_items = 2;
 
     /*

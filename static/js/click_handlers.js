@@ -9,6 +9,7 @@ const render_buddy_list_tooltip = require("../templates/buddy_list_tooltip.hbs")
 const render_buddy_list_tooltip_content = require("../templates/buddy_list_tooltip_content.hbs");
 
 const channel = require("./channel");
+const compose_state = require("./compose_state");
 const message_edit_history = require("./message_edit_history");
 const muting_ui = require("./muting_ui");
 const rows = require("./rows");

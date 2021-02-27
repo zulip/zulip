@@ -27,7 +27,8 @@ const localStorage = set_global("localStorage", {
     },
 });
 set_global("compose", {});
-const compose_state = set_global("compose_state", {});
+const compose_state = {__esModule: true};
+rewiremock("../../static/js/compose_state").with(compose_state);
 set_global("stream_data", {
     get_color() {
         return "#FFFFFF";

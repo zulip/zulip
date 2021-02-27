@@ -25,7 +25,6 @@ document.location.protocol = "https:";
 document.location.host = "foo.com";
 
 const compose_ui = zrequire("compose_ui");
-zrequire("compose_state");
 zrequire("compose");
 const compose_actions = zrequire("compose_actions");
 
