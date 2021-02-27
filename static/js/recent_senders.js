@@ -1,13 +1,11 @@
-"use strict";
-
-const {FoldDict} = require("./fold_dict");
+import {FoldDict} from "./fold_dict";
 
 // topic_senders[stream_id][topic_id][sender_id] = latest_message_id
 const topic_senders = new Map();
 // topic_senders[stream_id][sender_id] = latest_message_id
 const stream_senders = new Map();
 
-exports.process_message_for_senders = function (message) {
+export function process_message_for_senders(message) {
     const stream_id = message.stream_id;
     const topic = message.topic;
 
@@ -32,9 +30,9 @@ exports.process_message_for_senders = function (message) {
     }
 
     stream_senders.set(stream_id, sender_message_ids);
-};
+}
 
-exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_stream_id) {
+export function process_topic_edit(old_stream_id, old_topic, new_topic, new_stream_id) {
     // When topic-editing occurs, we need to update the set of known
     // senders in each stream/topic pair.  This is complicated by the
     // fact that the event we receive from the server does not
@@ -55,7 +53,7 @@ exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_
     // sensibly do with existing data structures.
     const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
     for (const msg of old_topic_msgs) {
-        exports.process_message_for_senders(msg);
+        process_message_for_senders(msg);
     }
 
     // use new_stream_id if topic was moved to a new stream,
@@ -64,16 +62,16 @@ exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_
     new_stream_id = new_stream_id || old_stream_id;
     const new_topic_msgs = message_util.get_messages_in_topic(new_stream_id, new_topic);
     for (const msg of new_topic_msgs) {
-        exports.process_message_for_senders(msg);
+        process_message_for_senders(msg);
     }
 
     // Note that we don't delete anything from stream_senders here.
     // Our view is that it's probably better to not do so; users who
     // recently posted to a stream are relevant for typeahead even if
     // the messages were moved to another stream or deleted.
-};
+}
 
-exports.update_topics_of_deleted_message_ids = function (message_ids) {
+export function update_topics_of_deleted_message_ids(message_ids) {
     const topics_to_update = message_util.get_topics_for_message_ids(message_ids);
 
     for (const [stream_id, topic] of topics_to_update.values()) {
@@ -81,12 +79,12 @@ exports.update_topics_of_deleted_message_ids = function (message_ids) {
         topic_dict.delete(topic);
         const topic_msgs = message_util.get_messages_in_topic(stream_id, topic);
         for (const msg of topic_msgs) {
-            exports.process_message_for_senders(msg);
+            process_message_for_senders(msg);
         }
     }
-};
+}
 
-exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
+export function compare_by_recency(user_a, user_b, stream_id, topic) {
     let a_message_id;
     let b_message_id;
 
@@ -115,9 +113,9 @@ exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
     }
 
     return 0;
-};
+}
 
-exports.get_topic_recent_senders = function (stream_id, topic) {
+export function get_topic_recent_senders(stream_id, topic) {
     const topic_dict = topic_senders.get(stream_id);
     if (topic_dict === undefined) {
         return [];
@@ -134,6 +132,4 @@ exports.get_topic_recent_senders = function (stream_id, topic) {
         recent_senders.push(item[0]);
     }
     return recent_senders;
-};
-
-window.recent_senders = exports;
+}

@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
@@ -14,7 +16,7 @@ set_global("stream_topic_history", {
     add_message: noop,
 });
 
-set_global("recent_senders", {
+rewiremock("../../static/js/recent_senders").with({
     process_message_for_senders: noop,
 });
 
@@ -22,6 +24,8 @@ set_global("page_params", {
     realm_allow_message_editing: true,
     is_admin: true,
 });
+
+rewiremock.enable();
 
 const util = zrequire("util");
 const people = zrequire("people");
@@ -373,3 +377,4 @@ run_test("errors", () => {
     blueslip.expect("error", "message_store.get got bad value: undefined");
     message_store.get(undefined);
 });
+rewiremock.disable();

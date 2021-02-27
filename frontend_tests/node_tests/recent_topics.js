@@ -51,7 +51,7 @@ set_global("hash_util", {
     by_stream_uri: () => "https://www.example.com",
     by_stream_topic_uri: () => "https://www.example.com",
 });
-set_global("recent_senders", {
+rewiremock("../../static/js/recent_senders").with({
     get_topic_recent_senders: () => [1, 2],
 });
 const ListWidget = set_global("ListWidget", {
