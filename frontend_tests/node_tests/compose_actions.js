@@ -17,7 +17,9 @@ set_global("document", {
     to_$: () => $("document-stub"),
 });
 
-const compose_pm_pill = set_global("compose_pm_pill", {});
+const compose_pm_pill = {__esModule: true};
+
+rewiremock("../../static/js/compose_pm_pill").with(compose_pm_pill);
 
 const hash_util = set_global("hash_util", {});
 

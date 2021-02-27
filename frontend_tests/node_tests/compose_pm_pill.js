@@ -166,27 +166,27 @@ run_test("pills", (override) => {
 });
 
 run_test("has_unconverted_data", () => {
-    compose_pm_pill.widget = {
+    compose_pm_pill.__Rewire__("widget", {
         is_pending: () => true,
-    };
+    });
 
     // If the pill itself has pending data, we have unconverted
     // data.
     assert.equal(compose_pm_pill.has_unconverted_data(), true);
 
-    compose_pm_pill.widget = {
+    compose_pm_pill.__Rewire__("widget", {
         is_pending: () => false,
         items: () => [{user_id: 99}],
-    };
+    });
 
     // Our pill is complete and all items contain user_id, so
     // we do NOT have unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), false);
 
-    compose_pm_pill.widget = {
+    compose_pm_pill.__Rewire__("widget", {
         is_pending: () => false,
         items: () => [{user_id: 99}, {email: "random@mit.edu"}],
-    };
+    });
 
     // One of our items only knows email (as in a bridge-with-zephyr
     // scenario where we might not have registered the user yet), so
