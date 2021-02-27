@@ -13,7 +13,8 @@ const events = require("./lib/events");
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
-const compose_fade = set_global("compose_fade", {});
+const compose_fade = {__esModule: true};
+rewiremock("../../static/js/compose_fade").with(compose_fade);
 const stream_events = set_global("stream_events", {});
 const subs = set_global("subs", {});
 

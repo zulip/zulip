@@ -1142,7 +1142,7 @@ test_ui("update_fade", () => {
     let set_focused_recipient_checked = false;
     let update_all_called = false;
 
-    set_global("compose_fade", {
+    rewiremock("../../static/js/compose_fade").with({
         set_focused_recipient(msg_type) {
             assert.equal(msg_type, "private");
             set_focused_recipient_checked = true;

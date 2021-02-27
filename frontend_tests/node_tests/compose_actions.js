@@ -31,9 +31,12 @@ set_global("notifications", {
     clear_compose_notifications: noop,
 });
 
-const compose_fade = set_global("compose_fade", {
+const compose_fade = {
+    __esModule: true,
     clear_compose: noop,
-});
+};
+
+rewiremock("../../static/js/compose_fade").with(compose_fade);
 
 rewiremock("../../static/js/drafts").with({
     update_draft: noop,
