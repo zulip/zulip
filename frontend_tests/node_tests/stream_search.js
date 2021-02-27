@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -11,13 +13,15 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-set_global("resize", {
+rewiremock("../../static/js/resize").with({
     resize_page_components: noop,
     resize_stream_filters_container: noop,
 });
 
 const popovers = set_global("popovers", {});
 const stream_popover = set_global("stream_popover", {});
+
+rewiremock.enable();
 
 const stream_list = zrequire("stream_list");
 
@@ -189,3 +193,4 @@ run_test("expanding_sidebar", () => {
 
     assert.deepEqual(events, ["popovers.hide_all", "stream_popover.show_streamlist_sidebar"]);
 });
+rewiremock.disable();

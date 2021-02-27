@@ -26,6 +26,7 @@ const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const pm_list = require("./pm_list");
 const reload = require("./reload");
+const resize = require("./resize");
 const rows = require("./rows");
 const sent_messages = require("./sent_messages");
 const spoilers = require("./spoilers");

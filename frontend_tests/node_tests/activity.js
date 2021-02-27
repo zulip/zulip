@@ -62,6 +62,7 @@ const _stream_popover = {
 };
 
 const _resize = {
+    __esModule: true,
     resize_sidebars: () => {},
     resize_page_components: () => {},
 };
@@ -75,7 +76,7 @@ set_global("document", _document);
 rewiremock("../../static/js/keydown_util").with(_keydown_util);
 rewiremock("../../static/js/pm_list").with(_pm_list);
 set_global("popovers", _popovers);
-set_global("resize", _resize);
+rewiremock("../../static/js/resize").with(_resize);
 rewiremock("../../static/js/scroll_util").with(_scroll_util);
 set_global("stream_popover", _stream_popover);
 set_global("ui", _ui);

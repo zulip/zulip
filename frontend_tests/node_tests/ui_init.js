@@ -36,9 +36,11 @@ set_global("document", {
 
 set_global("csrf_token", "whatever");
 
-const resize = set_global("resize", {
+const resize = {
+    __esModule: true,
     handler: () => {},
-});
+};
+rewiremock("../../static/js/resize").with(resize);
 const page_params = set_global("page_params", {});
 
 page_params.realm_default_streams = [];
