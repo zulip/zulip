@@ -108,7 +108,6 @@ rewiremock.enable();
 const util = zrequire("util");
 
 zrequire("hash_util");
-zrequire("condense");
 zrequire("lightbox");
 zrequire("overlays");
 zrequire("message_view_header");

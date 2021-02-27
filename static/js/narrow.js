@@ -4,6 +4,7 @@ const channel = require("./channel");
 const compose = require("./compose");
 const compose_fade = require("./compose_fade");
 const compose_state = require("./compose_state");
+const condense = require("./condense");
 const {Filter} = require("./filter");
 const message_edit = require("./message_edit");
 const {MessageListData} = require("./message_list_data");

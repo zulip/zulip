@@ -1,7 +1,5 @@
-"use strict";
-
-const message_viewport = require("./message_viewport");
-const rows = require("./rows");
+import * as message_viewport from "./message_viewport";
+import * as rows from "./rows";
 
 /*
 This library implements two related, similar concepts:
@@ -39,7 +37,7 @@ function uncondense_row(row) {
     show_condense_link(row);
 }
 
-exports.uncollapse = function (row) {
+export function uncollapse(row) {
     // Uncollapse a message, restoring the condensed message [More] or
     // [Condense] link if necessary.
     const message = current_msg_list.get(rows.id(row));
@@ -72,9 +70,9 @@ exports.uncollapse = function (row) {
 
     process_row(row);
     process_row(home_row);
-};
+}
 
-exports.collapse = function (row) {
+export function collapse(row) {
     // Collapse a message, hiding the condensed message [More] or
     // [Condense] link if necessary.
     const message = current_msg_list.get(rows.id(row));
@@ -100,9 +98,9 @@ exports.collapse = function (row) {
 
     process_row(row);
     process_row(home_row);
-};
+}
 
-exports.toggle_collapse = function (message) {
+export function toggle_collapse(message) {
     if (message.is_me_message) {
         // Disabled temporarily because /me messages don't have a
         // styling for collapsing /me messages (they only recently
@@ -130,29 +128,29 @@ exports.toggle_collapse = function (message) {
         if (is_condensable) {
             message.condensed = true;
             content.addClass("condensed");
-            exports.show_message_expander(row);
+            show_message_expander(row);
             row.find(".message_condenser").hide();
         }
-        exports.uncollapse(row);
+        uncollapse(row);
     } else {
         if (is_condensed) {
             message.condensed = false;
             content.removeClass("condensed");
-            exports.hide_message_expander(row);
+            hide_message_expander(row);
             row.find(".message_condenser").show();
         } else {
-            exports.collapse(row);
+            collapse(row);
         }
     }
-};
+}
 
-exports.clear_message_content_height_cache = function () {
+export function clear_message_content_height_cache() {
     _message_content_height_cache.clear();
-};
+}
 
-exports.un_cache_message_content_height = function (message_id) {
+export function un_cache_message_content_height(message_id) {
     _message_content_height_cache.delete(message_id);
-};
+}
 
 function get_message_height(elem, message_id) {
     if (_message_content_height_cache.has(message_id)) {
@@ -165,19 +163,19 @@ function get_message_height(elem, message_id) {
     return height;
 }
 
-exports.hide_message_expander = function (row) {
+export function hide_message_expander(row) {
     if (row.find(".could-be-condensed").length !== 0) {
         row.find(".message_expander").hide();
     }
-};
+}
 
-exports.show_message_expander = function (row) {
+export function show_message_expander(row) {
     if (row.find(".could-be-condensed").length !== 0) {
         row.find(".message_expander").show();
     }
-};
+}
 
-exports.condense_and_collapse = function (elems) {
+export function condense_and_collapse(elems) {
     const height_cutoff = message_viewport.height() * 0.65;
 
     for (const elem of elems) {
@@ -236,9 +234,9 @@ exports.condense_and_collapse = function (elems) {
             $(elem).find(".message_expander").show();
         }
     }
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     $("#message_feed_container").on("click", ".message_expander", function (e) {
         // Expanding a message can mean either uncollapsing or
         // uncondensing it.
@@ -247,7 +245,7 @@ exports.initialize = function () {
         const content = row.find(".message_content");
         if (message.collapsed) {
             // Uncollapse.
-            exports.uncollapse(row);
+            uncollapse(row);
         } else if (content.hasClass("condensed")) {
             // Uncondense (show the full long message).
             message.condensed = false;
@@ -266,6 +264,4 @@ exports.initialize = function () {
         e.stopPropagation();
         e.preventDefault();
     });
-};
-
-window.condense = exports;
+}

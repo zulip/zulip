@@ -66,7 +66,8 @@ const page_params = set_global("page_params", {});
 set_global("document", "document-stub");
 
 const compose_actions = set_global("compose_actions", {});
-const condense = set_global("condense", {});
+const condense = {__esModule: true};
+rewiremock("../../static/js/condense").with(condense);
 const drafts = {__esModule: true};
 rewiremock("../../static/js/drafts").with(drafts);
 const hashchange = set_global("hashchange", {
