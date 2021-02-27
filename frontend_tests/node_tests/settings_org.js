@@ -26,6 +26,7 @@ const _FormData = function () {
 };
 
 const _loading = {
+    __esModule: true,
     make_indicator: noop,
     destroy_indicator: noop,
 };
@@ -73,7 +74,7 @@ const _ListWidget = {
 set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 set_global("jQuery", _jQuery);
-set_global("loading", _loading);
+rewiremock("../../static/js/loading").with(_loading);
 set_global("realm_logo", _realm_logo);
 set_global("ui_report", _ui_report);
 set_global("ListWidget", _ListWidget);

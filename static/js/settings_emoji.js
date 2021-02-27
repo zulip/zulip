@@ -4,6 +4,7 @@ const emoji = require("../shared/js/emoji");
 const render_admin_emoji_list = require("../templates/admin_emoji_list.hbs");
 const render_settings_emoji_settings_tip = require("../templates/settings/emoji_settings_tip.hbs");
 
+const loading = require("./loading");
 const people = require("./people");
 
 const meta = {

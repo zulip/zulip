@@ -2,6 +2,8 @@
 
 const render_admin_filter_list = require("../templates/admin_filter_list.hbs");
 
+const loading = require("./loading");
+
 const meta = {
     loaded: false,
 };

@@ -1,6 +1,7 @@
 "use strict";
 
 const emojisets = require("./emojisets");
+const loading = require("./loading");
 const settings_config = require("./settings_config");
 const settings_ui = require("./settings_ui");
 

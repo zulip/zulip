@@ -10,7 +10,9 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const page_params = set_global("page_params", {});
-const loading = set_global("loading", {});
+const loading = {__esModule: true};
+
+rewiremock("../../static/js/loading").with(loading);
 
 const SHORT_TEXT_ID = 1;
 const CHOICE_ID = 3;
