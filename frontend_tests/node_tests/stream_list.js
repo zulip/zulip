@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -20,9 +22,11 @@ const topic_list = set_global("topic_list", {});
 set_global("overlays", {});
 set_global("popovers", {});
 
-set_global("keydown_util", {
+rewiremock("../../static/js/keydown_util").with({
     handle: noop,
 });
+
+rewiremock.enable();
 
 zrequire("unread_ui");
 const Filter = zrequire("Filter", "js/filter");
@@ -747,3 +751,4 @@ test_ui("create_initial_sidebar_rows", () => {
     assert.equal(html_dict.get(1000), "<div>stub-html-devel");
     assert.equal(html_dict.get(5000), "<div>stub-html-Denmark");
 });
+rewiremock.disable();

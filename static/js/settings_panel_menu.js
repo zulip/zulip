@@ -1,5 +1,7 @@
 "use strict";
 
+const keydown_util = require("./keydown_util");
+
 exports.mobile_deactivate_section = function () {
     const $settings_overlay_container = $("#settings_overlay_container");
     $settings_overlay_container.find(".right").removeClass("show");
