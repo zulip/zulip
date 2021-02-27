@@ -24,7 +24,7 @@ set_global("ui", {
     show_failed_message_success: () => {},
 });
 
-set_global("sent_messages", {
+rewiremock("../../static/js/sent_messages").with({
     mark_disparity: (local_id) => {
         disparities.push(local_id);
     },

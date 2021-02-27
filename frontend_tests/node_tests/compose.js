@@ -38,6 +38,7 @@ const _drafts = {
 };
 
 const sent_messages = {
+    __esModule: true,
     start_tracking_message: noop,
 };
 const _notifications = {
@@ -53,7 +54,7 @@ rewiremock("../../static/js/drafts").with(_drafts);
 set_global("navigator", _navigator);
 set_global("notifications", _notifications);
 set_global("reminder", reminder);
-set_global("sent_messages", sent_messages);
+rewiremock("../../static/js/sent_messages").with(sent_messages);
 rewiremock("../../static/js/rendered_markdown").with({
     update_elements: () => {},
 });

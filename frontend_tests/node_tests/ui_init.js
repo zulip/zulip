@@ -128,7 +128,6 @@ zrequire("search_suggestion");
 zrequire("search");
 zrequire("notifications");
 zrequire("stream_list");
-zrequire("sent_messages");
 zrequire("starred_messages");
 zrequire("recent_topics");
 

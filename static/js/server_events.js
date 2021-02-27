@@ -6,6 +6,7 @@ const channel = require("./channel");
 const echo = require("./echo");
 const reload = require("./reload");
 const reload_state = require("./reload_state");
+const sent_messages = require("./sent_messages");
 const server_events_dispatch = require("./server_events_dispatch");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
