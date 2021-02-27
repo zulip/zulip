@@ -9,7 +9,8 @@ const {run_test} = require("../zjsunit/test");
 
 const condense = set_global("condense", {});
 set_global("current_msg_list", {});
-const message_edit = set_global("message_edit", {});
+const message_edit = {__esModule: true};
+rewiremock("../../static/js/message_edit").with(message_edit);
 const message_list = set_global("message_list", {});
 const notifications = set_global("notifications", {});
 const page_params = set_global("page_params", {});

@@ -9,6 +9,7 @@ const render_topic_sidebar_actions = require("../templates/topic_sidebar_actions
 const render_unstar_messages_modal = require("../templates/unstar_messages_modal.hbs");
 
 const channel = require("./channel");
+const message_edit = require("./message_edit");
 const muting = require("./muting");
 const muting_ui = require("./muting_ui");
 const stream_color = require("./stream_color");

@@ -75,7 +75,8 @@ const hashchange = set_global("hashchange", {
 set_global("info_overlay", {});
 const lightbox = set_global("lightbox", {});
 const list_util = set_global("list_util", {});
-const message_edit = set_global("message_edit", {});
+const message_edit = {__esModule: true};
+rewiremock("../../static/js/message_edit").with(message_edit);
 const muting_ui = {__esModule: true};
 rewiremock("../../static/js/muting_ui").with(muting_ui);
 const narrow = set_global("narrow", {});

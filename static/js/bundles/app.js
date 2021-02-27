@@ -26,7 +26,6 @@ import "../narrow";
 import "../reload";
 import "../compose_actions";
 import "../subs";
-import "../message_edit";
 import "../condense";
 import "../resize";
 import "../list_widget";
