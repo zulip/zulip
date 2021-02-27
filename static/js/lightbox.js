@@ -2,6 +2,7 @@
 
 const {LightboxCanvas} = require("./lightbox_canvas");
 const people = require("./people");
+const rows = require("./rows");
 
 let is_open = false;
 // the asset map is a map of all retrieved images and YouTube videos that are

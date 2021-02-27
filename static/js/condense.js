@@ -1,6 +1,7 @@
 "use strict";
 
 const message_viewport = require("./message_viewport");
+const rows = require("./rows");
 
 /*
 This library implements two related, similar concepts:

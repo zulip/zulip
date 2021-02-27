@@ -1,4 +1,5 @@
 import {media_breakpoints} from "./css_variables";
+import * as rows from "./rows";
 import * as util from "./util";
 
 export let message_pane;

@@ -204,7 +204,6 @@
                 "reload_state": false,
                 "reminder": false,
                 "resize": false,
-                "rows": false,
                 "scroll_bar": false,
                 "search": false,
                 "search_pill_widget": false,
