@@ -1,5 +1,6 @@
 "use strict";
 
+const poll_widget = require("./poll_widget");
 const todo_widget = require("./todo_widget");
 const zform = require("./zform");
 
