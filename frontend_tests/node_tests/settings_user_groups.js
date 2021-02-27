@@ -30,7 +30,9 @@ const user_groups = {
     add: noop,
 };
 rewiremock("../../static/js/user_groups").with(user_groups);
-const ui_report = set_global("ui_report", {});
+const ui_report = {__esModule: true};
+
+rewiremock("../../static/js/ui_report").with(ui_report);
 
 const page_params = set_global("page_params", {});
 

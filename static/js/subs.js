@@ -20,6 +20,7 @@ const stream_data = require("./stream_data");
 const stream_edit = require("./stream_edit");
 const stream_muting = require("./stream_muting");
 const stream_ui_updates = require("./stream_ui_updates");
+const ui_report = require("./ui_report");
 const util = require("./util");
 
 exports.show_subs_pane = {

@@ -6,6 +6,7 @@ const render_uploaded_files_list = require("../templates/uploaded_files_list.hbs
 const channel = require("./channel");
 const ListWidget = require("./list_widget");
 const loading = require("./loading");
+const ui_report = require("./ui_report");
 
 let attachments;
 let upload_space_used;

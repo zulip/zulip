@@ -37,7 +37,7 @@ rewiremock("../../static/js/reload_state").with({
 // we also directly write to pointer
 set_global("pointer", {});
 
-set_global("ui_report", {
+rewiremock("../../static/js/ui_report").with({
     hide_error() {
         return false;
     },

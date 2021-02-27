@@ -3,6 +3,7 @@ import * as compose_state from "./compose_state";
 import {localstorage} from "./localstorage";
 import * as narrow_state from "./narrow_state";
 import * as reload_state from "./reload_state";
+import * as ui_report from "./ui_report";
 import * as util from "./util";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html

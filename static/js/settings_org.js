@@ -9,6 +9,7 @@ const loading = require("./loading");
 const settings_config = require("./settings_config");
 const settings_ui = require("./settings_ui");
 const stream_data = require("./stream_data");
+const ui_report = require("./ui_report");
 
 const meta = {
     loaded: false,

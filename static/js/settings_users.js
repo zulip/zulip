@@ -11,6 +11,7 @@ const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 const settings_ui = require("./settings_ui");
+const ui_report = require("./ui_report");
 const user_pill = require("./user_pill");
 
 const section = {
