@@ -4,6 +4,7 @@ import copy_code_button from "../templates/copy_code_button.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as people from "./people";
+import * as rtl from "./rtl";
 import * as settings_config from "./settings_config";
 
 const {parseISO, isValid} = require("date-fns");

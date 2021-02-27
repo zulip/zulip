@@ -495,10 +495,10 @@ test_ui("markdown_rtl", () => {
         keyCode: 65, // A
     };
 
-    rtl.get_direction = (text) => {
+    rtl.__Rewire__("get_direction", (text) => {
         assert.equal(text, " foo");
         return "rtl";
-    };
+    });
 
     assert.equal(textarea.hasClass("rtl"), false);
 
@@ -510,7 +510,7 @@ test_ui("markdown_rtl", () => {
 
 // This is important for subsequent tests--put
 // us back to the "normal" ltr case.
-rtl.get_direction = () => "ltr";
+rtl.__Rewire__("get_direction", () => "ltr");
 
 test_ui("markdown_ltr", () => {
     const textarea = $("#compose-textarea");
