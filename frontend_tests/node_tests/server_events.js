@@ -93,7 +93,7 @@ const setup = () => {
             throw new Error("update error");
         },
     });
-    set_global("stream_events", {
+    rewiremock("../../static/js/stream_events").with({
         update_property() {
             throw new Error("subs update error");
         },
