@@ -8,6 +8,7 @@ import render_single_message from "../templates/single_message.hbs";
 
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
+import * as message_edit from "./message_edit";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";

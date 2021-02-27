@@ -4,6 +4,7 @@ import * as alert_words from "./alert_words";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as markdown from "./markdown";
+import * as message_edit from "./message_edit";
 import * as muting_ui from "./muting_ui";
 import * as narrow_state from "./narrow_state";
 import * as peer_data from "./peer_data";

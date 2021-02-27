@@ -238,7 +238,7 @@ test_ui("actions_popover", (override) => {
         return message;
     };
 
-    message_edit.get_editability = () => 4;
+    message_edit.__Rewire__("get_editability", () => 4);
 
     stream_data.id_to_slug = (stream_id) => {
         assert.equal(stream_id, 123);

@@ -11,6 +11,7 @@ const render_buddy_list_tooltip_content = require("../templates/buddy_list_toolt
 const channel = require("./channel");
 const compose = require("./compose");
 const compose_state = require("./compose_state");
+const message_edit = require("./message_edit");
 const message_edit_history = require("./message_edit_history");
 const muting_ui = require("./muting_ui");
 const rows = require("./rows");
