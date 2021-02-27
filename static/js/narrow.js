@@ -1,5 +1,6 @@
 "use strict";
 
+const channel = require("./channel");
 const {MessageListData} = require("./message_list_data");
 const people = require("./people");
 const search_pill = require("./search_pill");

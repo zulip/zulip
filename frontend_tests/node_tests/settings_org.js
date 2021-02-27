@@ -41,7 +41,9 @@ const page_params = set_global("page_params", {
 });
 
 const realm_icon = set_global("realm_icon", {});
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+
+rewiremock("../../static/js/channel").with(channel);
 
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {

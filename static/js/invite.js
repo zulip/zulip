@@ -6,6 +6,7 @@ import render_invitation_failed_error from "../templates/invitation_failed_error
 import render_invite_subscription from "../templates/invite_subscription.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
+import * as channel from "./channel";
 import * as common from "./common";
 
 function reset_error_messages() {

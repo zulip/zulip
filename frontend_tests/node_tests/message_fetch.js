@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
+const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -26,7 +27,8 @@ set_global("ui_report", {
     hide_error: noop,
 });
 
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 set_global("document", "document-stub");
 set_global("message_scroll", {
     show_loading_older: noop,
@@ -43,6 +45,8 @@ const server_events = set_global("server_events", {});
 const stream_list = set_global("stream_list", {
     maybe_scroll_narrow_into_view: () => {},
 });
+
+rewiremock.enable();
 
 const message_fetch = zrequire("message_fetch");
 const Filter = zrequire("Filter", "js/filter");
@@ -472,3 +476,4 @@ run_test("loading_newer", () => {
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
     })();
 });
+rewiremock.disable();

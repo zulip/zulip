@@ -14,7 +14,6 @@ declare let blueslip: any;
 declare let bot_data: any;
 declare let buddy_data: any;
 declare let buddy_list: any;
-declare let channel: any;
 declare let click_handlers: any;
 declare let color_data: any;
 declare let compose: any;

@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -15,7 +17,8 @@ const message_store = set_global("message_store", {
 });
 
 const page_params = set_global("page_params", {});
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 const compose = set_global("compose", {
     finish: noop,
 });
@@ -33,6 +36,8 @@ set_global("setTimeout", (f, time) => {
     set_timeout_called = true;
 });
 set_global("document", "document-stub");
+
+rewiremock.enable();
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 const typeahead = zrequire("typeahead", "shared/js/typeahead");
@@ -1552,3 +1557,4 @@ run_test("message people", () => {
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hamletcharacters, hal]);
 });
+rewiremock.disable();

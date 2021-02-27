@@ -3,6 +3,7 @@
 const render_settings_upload_space_stats = require("../templates/settings/upload_space_stats.hbs");
 const render_uploaded_files_list = require("../templates/uploaded_files_list.hbs");
 
+const channel = require("./channel");
 const loading = require("./loading");
 
 let attachments;

@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
@@ -15,7 +17,8 @@ set_global("page_params", {
     user_id: alice_user_id,
 });
 
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 const emoji_picker = set_global("emoji_picker", {
     hide_emoji_popover() {},
 });
@@ -69,6 +72,8 @@ set_global("current_msg_list", {
         return 42;
     },
 });
+
+rewiremock.enable();
 
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji", "shared/js/emoji");
@@ -984,3 +989,4 @@ run_test("process_reaction_click bad local id", (override) => {
     );
     reactions.process_reaction_click("some-msg-id", "bad-local-id");
 });
+rewiremock.disable();

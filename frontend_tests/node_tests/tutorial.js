@@ -9,6 +9,8 @@
 // become clear as you keep reading.
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
@@ -32,9 +34,12 @@ const resize = set_global("resize", {});
 let stream_list = set_global("stream_list", {});
 let unread_ops = set_global("unread_ops", {});
 const unread_ui = set_global("unread_ui", {});
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 const message_viewport = set_global("message_viewport", {});
 const topic_list = set_global("topic_list", {});
+
+rewiremock.enable();
 
 // Let's start with testing a function from util.js.
 //
@@ -818,3 +823,4 @@ run_test("stream_list", (override) => {
     sidebar_helper.verify_actions();
     topic_list_helper.verify_actions();
 });
+rewiremock.disable();

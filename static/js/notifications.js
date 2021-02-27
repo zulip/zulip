@@ -6,6 +6,7 @@ const render_compose_notification = require("../templates/compose_notification.h
 const render_notification = require("../templates/notification.hbs");
 
 const alert_words = require("./alert_words");
+const channel = require("./channel");
 const favicon = require("./favicon");
 const people = require("./people");
 const settings_config = require("./settings_config");

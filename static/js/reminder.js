@@ -1,5 +1,6 @@
 "use strict";
 
+const channel = require("./channel");
 const people = require("./people");
 const util = require("./util");
 

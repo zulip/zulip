@@ -1,5 +1,6 @@
 "use strict";
 
+const channel = require("./channel");
 const huddle_data = require("./huddle_data");
 const people = require("./people");
 

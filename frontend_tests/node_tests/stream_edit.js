@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -10,7 +12,7 @@ const $ = require("../zjsunit/zjquery");
 const noop = () => {};
 stub_templates(() => noop);
 
-set_global("channel", {});
+rewiremock("../../static/js/channel").with({});
 set_global("hashchange", {update_browser_history: noop});
 set_global("hash_util", {
     stream_edit_uri: noop,
@@ -30,6 +32,8 @@ const typeahead_helper = set_global("typeahead_helper", {});
 const ui = set_global("ui", {
     get_scroll_element: noop,
 });
+
+rewiremock.enable();
 
 zrequire("input_pill");
 const peer_data = zrequire("peer_data");
@@ -270,3 +274,4 @@ test_ui("subscriber_pills", () => {
     expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);
 });
+rewiremock.disable();

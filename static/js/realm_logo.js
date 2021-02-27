@@ -1,5 +1,6 @@
 "use strict";
 
+const channel = require("./channel");
 const settings_config = require("./settings_config");
 
 exports.build_realm_logo_widget = function (upload_function, is_night) {

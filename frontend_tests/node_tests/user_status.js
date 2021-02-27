@@ -2,10 +2,14 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const rewiremock = require("rewiremock/node");
+
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
+rewiremock.enable();
 const user_status = zrequire("user_status");
 
 function initialize() {
@@ -83,3 +87,4 @@ run_test("defensive checks", () => {
     user_status.set_away("string");
     user_status.revoke_away("string");
 });
+rewiremock.disable();

@@ -6,6 +6,8 @@ const render_hotspot_icon = require("../templates/hotspot_icon.hbs");
 const render_hotspot_overlay = require("../templates/hotspot_overlay.hbs");
 const render_intro_reply_hotspot = require("../templates/intro_reply_hotspot.hbs");
 
+const channel = require("./channel");
+
 // popover orientations
 const TOP = "top";
 const LEFT = "left";

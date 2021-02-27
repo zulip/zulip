@@ -2,6 +2,7 @@
 
 const _ = require("lodash");
 
+const channel = require("./channel");
 const keydown_util = require("./keydown_util");
 const {ListCursor} = require("./list_cursor");
 const people = require("./people");

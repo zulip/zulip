@@ -60,7 +60,8 @@ rewiremock("../../static/js/rendered_markdown").with({
 
 const local_message = set_global("local_message", {});
 const transmit = set_global("transmit", {});
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 const stream_edit = set_global("stream_edit", {});
 const markdown = set_global("markdown", {});
 const loading = {__esModule: true};

@@ -1,5 +1,6 @@
 "use strict";
 
+const channel = require("./channel");
 const {FoldDict} = require("./fold_dict");
 
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object

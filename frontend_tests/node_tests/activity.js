@@ -25,7 +25,7 @@ const _document = {
     },
 };
 
-const channel = {};
+const channel = {__esModule: true};
 
 const _ui = {
     get_content_element: (element) => element,
@@ -68,7 +68,7 @@ const _resize = {
 set_global("padded_widget", {
     update_padding: () => {},
 });
-set_global("channel", channel);
+rewiremock("../../static/js/channel").with(channel);
 set_global("compose_state", compose_state);
 set_global("document", _document);
 rewiremock("../../static/js/keydown_util").with(_keydown_util);

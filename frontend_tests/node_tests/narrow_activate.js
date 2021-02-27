@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
@@ -9,7 +11,8 @@ set_global("resize", {
     resize_stream_filters_container: () => {},
 });
 
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 const compose = set_global("compose", {});
 const compose_actions = set_global("compose_actions", {});
 set_global("current_msg_list", {});
@@ -58,6 +61,8 @@ set_global("setTimeout", (f, t) => {
 set_global("muting", {
     is_topic_muted: () => false,
 });
+
+rewiremock.enable();
 
 const util = zrequire("util");
 const narrow_state = zrequire("narrow_state");
@@ -237,3 +242,4 @@ run_test("basics", () => {
     cont();
     helper.assert_events(["report narrow times"]);
 });
+rewiremock.disable();
