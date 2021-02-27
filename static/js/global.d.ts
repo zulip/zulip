@@ -17,7 +17,6 @@ declare let color_data: any;
 declare let compose: any;
 declare let compose_actions: any;
 declare let composebox_typeahead: any;
-declare let compose_fade: any;
 declare let compose_state: any;
 declare let compose_ui: any;
 declare let condense: any;

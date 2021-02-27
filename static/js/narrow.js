@@ -1,6 +1,7 @@
 "use strict";
 
 const channel = require("./channel");
+const compose_fade = require("./compose_fade");
 const {Filter} = require("./filter");
 const {MessageListData} = require("./message_list_data");
 const narrow_state = require("./narrow_state");

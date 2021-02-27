@@ -2,6 +2,7 @@
 
 const alert_words = require("./alert_words");
 const channel = require("./channel");
+const compose_fade = require("./compose_fade");
 const huddle_data = require("./huddle_data");
 const message_edit_history = require("./message_edit_history");
 const narrow_state = require("./narrow_state");
