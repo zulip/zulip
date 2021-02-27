@@ -1,8 +1,6 @@
-"use strict";
+import * as channel from "./channel";
 
-const channel = require("./channel");
-
-exports.get_message_events = function (message) {
+export function get_message_events(message) {
     if (message.locally_echoed) {
         return undefined;
     }
@@ -23,20 +21,20 @@ exports.get_message_events = function (message) {
     }));
 
     return events;
-};
+}
 
-exports.process_submessages = function (in_opts) {
+export function process_submessages(in_opts) {
     // This happens in our rendering path, so we try to limit any
     // damage that may be triggered by one rogue message.
     try {
-        return exports.do_process_submessages(in_opts);
+        return do_process_submessages(in_opts);
     } catch (error) {
         blueslip.error("in process_submessages: " + error.message);
         return undefined;
     }
-};
+}
 
-exports.do_process_submessages = function (in_opts) {
+export function do_process_submessages(in_opts) {
     const message_id = in_opts.message_id;
     const message = message_store.get(message_id);
 
@@ -44,7 +42,7 @@ exports.do_process_submessages = function (in_opts) {
         return;
     }
 
-    const events = exports.get_message_events(message);
+    const events = get_message_events(message);
 
     if (!events) {
         return;
@@ -66,7 +64,7 @@ exports.do_process_submessages = function (in_opts) {
         return;
     }
 
-    const post_to_server = exports.make_server_callback(message_id);
+    const post_to_server = make_server_callback(message_id);
 
     widgetize.activate({
         widget_type,
@@ -76,9 +74,9 @@ exports.do_process_submessages = function (in_opts) {
         message,
         post_to_server,
     });
-};
+}
 
-exports.update_message = function (submsg) {
+export function update_message(submsg) {
     const message = message_store.get(submsg.message_id);
 
     if (message === undefined) {
@@ -101,13 +99,13 @@ exports.update_message = function (submsg) {
     }
 
     message.submessages.push(submsg);
-};
+}
 
-exports.handle_event = function (submsg) {
+export function handle_event(submsg) {
     // Update message.submessages in case we haven't actually
     // activated the widget yet, so that when the message does
     // come in view, the data will be complete.
-    exports.update_message(submsg);
+    update_message(submsg);
 
     // Right now, our only use of submessages is widgets.
     const msg_type = submsg.msg_type;
@@ -131,9 +129,9 @@ exports.handle_event = function (submsg) {
         message_id: submsg.message_id,
         data,
     });
-};
+}
 
-exports.make_server_callback = function (message_id) {
+export function make_server_callback(message_id) {
     return function (opts) {
         const url = "/json/submessage";
 
@@ -146,6 +144,4 @@ exports.make_server_callback = function (message_id) {
             },
         });
     };
-};
-
-window.submessage = exports;
+}
