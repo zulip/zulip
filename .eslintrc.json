@@ -249,7 +249,6 @@
                 "upload": false,
                 "upload_widget": false,
                 "user_events": false,
-                "poll_widget": false,
                 "widgetize": false,
                 "zxcvbn": false
             }
