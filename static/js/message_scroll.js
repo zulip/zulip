@@ -2,6 +2,7 @@
 
 const _ = require("lodash");
 
+const floating_recipient_bar = require("./floating_recipient_bar");
 const loading = require("./loading");
 const message_viewport = require("./message_viewport");
 const narrow_state = require("./narrow_state");

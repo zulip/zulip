@@ -26,7 +26,6 @@ import "../narrow";
 import "../reload";
 import "../compose_actions";
 import "../subs";
-import "../floating_recipient_bar";
 import "../lightbox";
 import "../ui_report";
 import "../message_scroll";
