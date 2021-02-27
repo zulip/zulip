@@ -3,9 +3,8 @@
 const render_widgets_poll_widget = require("../templates/widgets/poll_widget.hbs");
 const render_widgets_poll_widget_results = require("../templates/widgets/poll_widget_results.hbs");
 
-const people = require("./people");
 const markdown = require("./markdown");
-const timerender = require("./timerender");
+const people = require("./people");
 
 class PollData {
     // This object just holds data for a poll, although it
@@ -62,33 +61,10 @@ class PollData {
             const voters = Array.from(obj.votes.keys());
             const current_user_vote = voters.includes(this.me);
 
-            /*
             obj.raw_content = obj.option;
             markdown.apply_markdown(obj);
-            */
-
-            
-
-            //console.log('Option: ' + obj.option);
-            //const rendered_option  = markdown.apply_markdown({raw_content: obj.option});
-            //const rendered_option = {raw_content: obj.option};
-            //markdown.apply_markdown(rendered_option);
-            //console.log('Option rendered: ' + raw_content);
-            //console.log('Rendered option: ' + rendered_option);
-            //rendered_option  = timerender.render_markdown_timestamp({content: obj.option});
-            //console.log(rendered_option);
-            obj.raw_content = obj.option;
-            markdown.apply_markdown(obj);
-            //timerender.render_markdown_timestamp(obj);
-            console.log("obj.content: " + obj.content);
-            console.log("obj.raw_content: " + obj.raw_content);
-            
-
             options.push({
                 option: obj.content,
-                //rendered_option: rendered_option,
-                //option: rendered_option,
-                //option: markdown.apply_markdown({raw_content: obj.option}),
                 names: people.safe_full_names(voters),
                 count: voters.length,
                 key,
