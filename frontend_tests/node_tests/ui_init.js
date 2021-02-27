@@ -110,7 +110,6 @@ rewiremock.enable();
 const util = zrequire("util");
 
 zrequire("hash_util");
-zrequire("lightbox");
 zrequire("overlays");
 zrequire("message_view_header");
 zrequire("presence");

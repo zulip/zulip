@@ -74,7 +74,8 @@ const hashchange = set_global("hashchange", {
     in_recent_topics_hash: () => false,
 });
 set_global("info_overlay", {});
-const lightbox = set_global("lightbox", {});
+const lightbox = {__esModule: true};
+rewiremock("../../static/js/lightbox").with(lightbox);
 const list_util = set_global("list_util", {});
 const message_edit = {__esModule: true};
 rewiremock("../../static/js/message_edit").with(message_edit);
