@@ -1,5 +1,6 @@
 "use strict";
 
+const drafts = require("./drafts");
 const invite = require("./invite");
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html

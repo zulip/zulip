@@ -33,6 +33,7 @@ const _document = {
 };
 
 const _drafts = {
+    __esModule: true,
     delete_draft_after_send: noop,
 };
 
@@ -48,7 +49,7 @@ const reminder = {
 };
 
 set_global("document", _document);
-set_global("drafts", _drafts);
+rewiremock("../../static/js/drafts").with(_drafts);
 set_global("navigator", _navigator);
 set_global("notifications", _notifications);
 set_global("reminder", reminder);

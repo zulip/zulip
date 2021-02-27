@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {stub_templates} = require("../zjsunit/handlebars");
 const {reset_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -76,7 +78,7 @@ const ListWidget = set_global("ListWidget", {
     hard_redraw: noop,
     render_item: (item) => ListWidget.modifier(item),
 });
-set_global("drafts", {
+rewiremock("../../static/js/drafts").with({
     update_draft: noop,
 });
 
@@ -162,6 +164,8 @@ set_global("stream_data", {
         false,
     id_is_subscribed: () => true,
 });
+
+rewiremock.enable();
 
 zrequire("message_util");
 zrequire("narrow_state");
@@ -835,3 +839,4 @@ run_test("test_search", () => {
     assert.equal(rt.topic_in_search_results("\\", "general", "\\"), true);
     assert.equal(rt.topic_in_search_results("\\", "general", "\\\\"), true);
 });
+rewiremock.disable();

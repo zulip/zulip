@@ -28,7 +28,6 @@ declare let condense: any;
 declare let confirm_dialog: any;
 declare let csrf_token: any;
 declare let current_msg_list: any;
-declare let drafts: any;
 declare let emoji: any;
 declare let emoji_picker: any;
 declare let favicon: any;

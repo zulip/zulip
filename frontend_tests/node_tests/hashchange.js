@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -20,7 +22,8 @@ set_global("document", "document-stub");
 const history = set_global("history", {});
 
 const admin = set_global("admin", {});
-const drafts = set_global("drafts", {});
+const drafts = {__esModule: true};
+rewiremock("../../static/js/drafts").with(drafts);
 set_global("favicon", {});
 const floating_recipient_bar = set_global("floating_recipient_bar", {});
 const info_overlay = set_global("info_overlay", {});
@@ -33,6 +36,8 @@ const ui_util = set_global("ui_util", {});
 set_global("top_left_corner", {
     handle_narrow_deactivated: () => {},
 });
+
+rewiremock.enable();
 
 const people = zrequire("people");
 const hash_util = zrequire("hash_util");
@@ -304,3 +309,4 @@ run_test("save_narrow", () => {
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://example.com/#narrow/is/starred");
 });
+rewiremock.disable();
