@@ -51,7 +51,9 @@ const settings_account = set_global("settings_account", {
     update_full_name() {},
 });
 
-const message_live_update = set_global("message_live_update", {});
+const message_live_update = {__esModule: true};
+
+rewiremock("../../static/js/message_live_update").with(message_live_update);
 
 rewiremock.enable();
 
