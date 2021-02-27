@@ -12,6 +12,7 @@ const message_viewport = require("./message_viewport");
 const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");
 const rows = require("./rows");
+const submessage = require("./submessage");
 const util = require("./util");
 
 function same_day(earlier_msg, later_msg) {

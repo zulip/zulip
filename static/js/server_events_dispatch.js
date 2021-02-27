@@ -5,6 +5,7 @@ import * as muting_ui from "./muting_ui";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import * as submessage from "./submessage";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 

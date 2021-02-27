@@ -233,7 +233,6 @@
                 "stream_muting": false,
                 "stream_popover": false,
                 "StripeCheckout": false,
-                "submessage": false,
                 "subs": false,
                 "message_view_header": false,
                 "timerender": false,
