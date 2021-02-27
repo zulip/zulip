@@ -2,6 +2,7 @@
 
 const Handlebars = require("handlebars/runtime");
 
+const common = require("./common");
 const huddle_data = require("./huddle_data");
 const people = require("./people");
 const settings_data = require("./settings_data");

@@ -1,5 +1,6 @@
 "use strict";
 
+const common = require("./common");
 const components = require("./components");
 
 // Make it explicit that our toggler is undefined until

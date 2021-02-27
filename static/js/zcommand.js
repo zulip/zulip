@@ -1,5 +1,6 @@
 import marked from "../third/marked/lib/marked";
 
+import * as common from "./common";
 import * as feedback_widget from "./feedback_widget";
 
 /*

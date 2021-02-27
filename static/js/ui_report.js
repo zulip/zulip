@@ -1,6 +1,8 @@
 "use strict";
 
 const _ = require("lodash");
+
+const common = require("./common");
 /* Arguments used in the report_* functions are,
    response- response that we want to display
    status_box- element being used to display the response

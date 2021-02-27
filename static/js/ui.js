@@ -2,6 +2,7 @@
 
 const SimpleBar = require("simplebar/dist/simplebar");
 
+const common = require("./common");
 const {localstorage} = require("./localstorage");
 
 // What, if anything, obscures the home tab?

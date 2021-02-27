@@ -82,7 +82,6 @@ const compose_ui = zrequire("compose_ui");
 const peer_data = zrequire("peer_data");
 const util = zrequire("util");
 const rtl = zrequire("rtl");
-zrequire("common");
 const stream_data = zrequire("stream_data");
 const compose_state = zrequire("compose_state");
 const people = zrequire("people");

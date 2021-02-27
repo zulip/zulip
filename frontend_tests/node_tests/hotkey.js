@@ -107,7 +107,6 @@ const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji", "shared/js/emoji");
 const activity = zrequire("activity");
 const hotkey = zrequire("hotkey");
-zrequire("common");
 
 emoji.initialize({
     realm_emoji: {},
