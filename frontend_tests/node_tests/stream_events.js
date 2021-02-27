@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
@@ -13,7 +15,8 @@ const _settings_notifications = {
 };
 set_global("settings_notifications", _settings_notifications);
 
-const color_data = set_global("color_data", {});
+const color_data = {__esModule: true};
+rewiremock("../../static/js/color_data").with(color_data);
 set_global("current_msg_list", {});
 const message_util = set_global("message_util", {});
 const stream_color = set_global("stream_color", {});
@@ -34,6 +37,8 @@ set_global("message_list", {
 
 subs = set_global("subs", {update_settings_for_subscribed: noop});
 set_global("overlays", {streams_open: () => true});
+
+rewiremock.enable();
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -397,3 +402,4 @@ run_test("remove_deactivated_user_from_all_streams", () => {
     // verify that we issue a call to update subscriber count/list UI
     assert.equal(subs_stub.num_calls, 1);
 });
+rewiremock.disable();
