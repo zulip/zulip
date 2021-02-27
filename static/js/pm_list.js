@@ -2,6 +2,7 @@
 
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
+const unread_ui = require("./unread_ui");
 const vdom = require("./vdom");
 
 let prior_dom;

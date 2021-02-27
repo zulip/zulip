@@ -1,6 +1,7 @@
 "use strict";
 
 const channel = require("./channel");
+const unread_ui = require("./unread_ui");
 
 exports.mark_all_as_read = function () {
     unread.declare_bankruptcy();

@@ -16,7 +16,8 @@ set_global("stream_popover", {
     hide_topic_popover() {},
 });
 const unread = set_global("unread", {});
-const unread_ui = set_global("unread_ui", {});
+const unread_ui = {__esModule: true};
+rewiremock("../../static/js/unread_ui").with(unread_ui);
 const vdom = {
     __esModule: true,
     render: () => "fake-dom-for-pm-list",

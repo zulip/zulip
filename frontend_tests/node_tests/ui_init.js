@@ -88,7 +88,7 @@ set_global("settings_toggle", {initialize() {}});
 set_global("subs", {initialize() {}});
 set_global("timerender", {initialize() {}});
 const ui = set_global("ui", {initialize() {}});
-set_global("unread_ui", {initialize() {}});
+rewiremock("../../static/js/unread_ui").with({initialize() {}});
 
 server_events.home_view_loaded = () => true;
 

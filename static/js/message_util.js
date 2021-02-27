@@ -1,6 +1,7 @@
 "use strict";
 
 const loading = require("./loading");
+const unread_ui = require("./unread_ui");
 
 exports.do_unread_count_updates = function do_unread_count_updates(messages) {
     unread.process_loaded_messages(messages);

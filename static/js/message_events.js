@@ -4,6 +4,7 @@ const alert_words = require("./alert_words");
 const channel = require("./channel");
 const huddle_data = require("./huddle_data");
 const message_edit_history = require("./message_edit_history");
+const unread_ui = require("./unread_ui");
 const util = require("./util");
 
 function maybe_add_narrowed_messages(messages, msg_list) {
