@@ -1,4 +1,5 @@
 import * as people from "./people";
+import * as user_groups from "./user_groups";
 
 /*
     This config is in a separate file for partly

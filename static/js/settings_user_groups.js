@@ -8,6 +8,7 @@ const render_confirm_delete_user = require("../templates/confirm_delete_user.hbs
 const channel = require("./channel");
 const people = require("./people");
 const pill_typeahead = require("./pill_typeahead");
+const user_groups = require("./user_groups");
 const user_pill = require("./user_pill");
 
 const meta = {
