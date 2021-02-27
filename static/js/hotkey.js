@@ -3,6 +3,7 @@
 const emoji = require("../shared/js/emoji");
 
 const common = require("./common");
+const compose_state = require("./compose_state");
 const copy_and_paste = require("./copy_and_paste");
 const drafts = require("./drafts");
 const feedback_widget = require("./feedback_widget");

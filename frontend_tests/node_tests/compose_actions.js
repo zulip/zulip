@@ -85,18 +85,21 @@ const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
 
-compose_state.private_message_recipient = (function () {
-    let recipient;
+compose_state.__Rewire__(
+    "private_message_recipient",
+    (function () {
+        let recipient;
 
-    return function (arg) {
-        if (arg === undefined) {
-            return recipient;
-        }
+        return function (arg) {
+            if (arg === undefined) {
+                return recipient;
+            }
 
-        recipient = arg;
-        return undefined;
-    };
-})();
+            recipient = arg;
+            return undefined;
+        };
+    })(),
+);
 
 function stub_selected_message(msg) {
     current_msg_list.selected_message = () => msg;
@@ -416,12 +419,12 @@ run_test("focus_in_empty_compose", () => {
         return $("#compose-textarea").is_focused;
     };
 
-    compose_state.composing = () => true;
+    compose_state.__Rewire__("composing", () => true);
     $("#compose-textarea").val("");
     $("#compose-textarea").trigger("focus");
     assert(compose_state.focus_in_empty_compose());
 
-    compose_state.composing = () => false;
+    compose_state.__Rewire__("composing", () => false);
     assert(!compose_state.focus_in_empty_compose());
 
     $("#compose-textarea").val("foo");

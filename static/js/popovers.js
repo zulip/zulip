@@ -16,6 +16,7 @@ const render_user_info_popover_content = require("../templates/user_info_popover
 const render_user_info_popover_title = require("../templates/user_info_popover_title.hbs");
 const render_user_profile_modal = require("../templates/user_profile_modal.hbs");
 
+const compose_state = require("./compose_state");
 const feature_flags = require("./feature_flags");
 const message_edit_history = require("./message_edit_history");
 const message_viewport = require("./message_viewport");

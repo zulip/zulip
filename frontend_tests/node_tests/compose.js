@@ -741,7 +741,7 @@ test_ui("send_message", () => {
         compose_state.topic("");
         compose_state.set_message_type("private");
         page_params.user_id = 101;
-        compose_state.private_message_recipient = () => "alice@example.com";
+        compose_state.__Rewire__("private_message_recipient", () => "alice@example.com");
 
         const server_message_id = 127;
         local_message.insert_message = (message) => {
@@ -928,7 +928,7 @@ test_ui("finish", () => {
         $("#markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("private");
-        compose_state.private_message_recipient = () => "bob@example.com";
+        compose_state.__Rewire__("private_message_recipient", () => "bob@example.com");
 
         let compose_finished_event_checked = false;
         $(document).on("compose_finished.zulip", () => {
@@ -1841,7 +1841,7 @@ test_ui("create_message_object", () => {
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");
 
-    compose_state.get_message_type = () => "stream";
+    compose_state.__Rewire__("get_message_type", () => "stream");
 
     let message = compose.create_message_object();
     assert.equal(message.to, sub.stream_id);
@@ -1856,8 +1856,11 @@ test_ui("create_message_object", () => {
     assert.equal(message.topic, "lunch");
     assert.equal(message.content, "burrito");
 
-    compose_state.get_message_type = () => "private";
-    compose_state.private_message_recipient = () => "alice@example.com, bob@example.com";
+    compose_state.__Rewire__("get_message_type", () => "private");
+    compose_state.__Rewire__(
+        "private_message_recipient",
+        () => "alice@example.com, bob@example.com",
+    );
 
     message = compose.create_message_object();
     assert.deepEqual(message.to, [alice.user_id, bob.user_id]);
