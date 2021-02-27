@@ -55,7 +55,6 @@ declare let message_scroll: any;
 declare let message_store: any;
 declare let message_util: any;
 declare let message_viewport: any;
-declare let muting_ui: any;
 declare let narrow: any;
 declare let narrow_state: any;
 declare let navigate: any;
