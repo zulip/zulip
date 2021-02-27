@@ -6,6 +6,7 @@ const channel = require("./channel");
 const settings_config = require("./settings_config");
 const settings_ui = require("./settings_ui");
 const stream_data = require("./stream_data");
+const stream_edit = require("./stream_edit");
 const unread_ui = require("./unread_ui");
 
 exports.get_notifications_table_row_data = function (notify_settings) {

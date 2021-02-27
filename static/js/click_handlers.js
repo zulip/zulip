@@ -15,6 +15,7 @@ const message_edit_history = require("./message_edit_history");
 const muting_ui = require("./muting_ui");
 const rows = require("./rows");
 const settings_panel_menu = require("./settings_panel_menu");
+const stream_edit = require("./stream_edit");
 const user_status_ui = require("./user_status_ui");
 const util = require("./util");
 
