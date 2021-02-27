@@ -40,7 +40,6 @@ declare let input_pill: any;
 declare let lightbox: any;
 declare let list_util: any;
 declare let list_widget: any;
-declare let local_message: any;
 declare let message_edit: any;
 declare let message_events: any;
 declare let message_fetch: any;

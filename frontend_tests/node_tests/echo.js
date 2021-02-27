@@ -8,7 +8,8 @@ const rewiremock = require("rewiremock/node");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const local_message = set_global("local_message", {});
+const local_message = {__esModule: true};
+rewiremock("../../static/js/local_message").with(local_message);
 const markdown = {__esModule: true};
 rewiremock("../../static/js/markdown").with(markdown);
 const page_params = set_global("page_params", {});
