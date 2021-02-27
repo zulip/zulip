@@ -44,7 +44,7 @@ const stream_data = zrequire("stream_data");
 const stream_pill = zrequire("stream_pill");
 const user_pill = zrequire("user_pill");
 
-stream_edit.sort_but_pin_current_user_on_top = noop;
+stream_edit.__Rewire__("sort_but_pin_current_user_on_top", noop);
 
 const jill = {
     email: "jill@zulip.com",
@@ -135,11 +135,11 @@ test_ui("subscriber_pills", () => {
     let expected_user_ids = [];
     let input_typeahead_called = false;
     let add_subscribers_request = false;
-    stream_edit.invite_user_to_stream = (user_ids, sub) => {
+    stream_edit.__Rewire__("invite_user_to_stream", (user_ids, sub) => {
         assert.equal(sub.stream_id, denmark.stream_id);
         assert.deepEqual(user_ids.sort(), expected_user_ids.sort());
         add_subscribers_request = true;
-    };
+    });
 
     input_field_stub.typeahead = (config) => {
         assert.equal(config.items, 5);

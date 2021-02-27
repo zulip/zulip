@@ -212,7 +212,6 @@
                 "settings_user_groups": false,
                 "settings_users": false,
                 "starred_messages": false,
-                "stream_edit": false,
                 "stream_list": false,
                 "stream_popover": false,
                 "StripeCheckout": false,
