@@ -2,6 +2,7 @@
 
 const drafts = require("./drafts");
 const floating_recipient_bar = require("./floating_recipient_bar");
+const info_overlay = require("./info_overlay");
 const invite = require("./invite");
 const message_viewport = require("./message_viewport");
 const top_left_corner = require("./top_left_corner");

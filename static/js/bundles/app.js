@@ -26,7 +26,6 @@ import "../narrow";
 import "../reload";
 import "../compose_actions";
 import "../subs";
-import "../info_overlay";
 import "../ui";
 import "../night_mode";
 import "../ui_util";

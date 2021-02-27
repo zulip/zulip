@@ -73,7 +73,7 @@ rewiremock("../../static/js/drafts").with(drafts);
 const hashchange = set_global("hashchange", {
     in_recent_topics_hash: () => false,
 });
-set_global("info_overlay", {});
+rewiremock("../../static/js/info_overlay").with({});
 const lightbox = {__esModule: true};
 rewiremock("../../static/js/lightbox").with(lightbox);
 const list_util = set_global("list_util", {});
