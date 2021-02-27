@@ -18,7 +18,7 @@ set_global("hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });
-set_global("ListWidget", {
+rewiremock("../../static/js/list_widget").with({
     create: () => ({init: noop}),
 });
 const page_params = set_global("page_params", {});

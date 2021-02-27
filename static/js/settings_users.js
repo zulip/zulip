@@ -5,6 +5,7 @@ const render_admin_human_form = require("../templates/admin_human_form.hbs");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");
 
 const channel = require("./channel");
+const ListWidget = require("./list_widget");
 const loading = require("./loading");
 const people = require("./people");
 const settings_config = require("./settings_config");

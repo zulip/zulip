@@ -5,6 +5,7 @@ import render_subscription_settings from "../templates/subscription_settings.hbs
 import render_subscription_stream_privacy_modal from "../templates/subscription_stream_privacy_modal.hbs";
 
 import * as channel from "./channel";
+import * as ListWidget from "./list_widget";
 import * as narrow_state from "./narrow_state";
 import * as peer_data from "./peer_data";
 import * as people from "./people";

@@ -1,5 +1,3 @@
-"use strict";
-
 const DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
     LOAD_COUNT: 20,
@@ -10,7 +8,7 @@ const DEFAULTS = {
 // This function describes (programmatically) how to use the ListWidget.
 // ----------------------------------------------------
 
-exports.validate_opts = (opts) => {
+export function validate_opts(opts) {
     if (opts.html_selector && typeof opts.html_selector !== "function") {
         // We have an html_selector, but it is not a function.
         // This is a programming error.
@@ -22,9 +20,9 @@ exports.validate_opts = (opts) => {
         return false;
     }
     return true;
-};
+}
 
-exports.get_filtered_items = (value, list, opts) => {
+export function get_filtered_items(value, list, opts) {
     /*
         This is used by the main object (see `create`),
         but we split it out to make it a bit easier
@@ -65,10 +63,10 @@ exports.get_filtered_items = (value, list, opts) => {
     }
 
     return list.filter((item) => predicate(item));
-};
+}
 
-exports.alphabetic_sort = (prop) =>
-    function (a, b) {
+export function alphabetic_sort(prop) {
+    return function (a, b) {
         // The conversion to uppercase helps make the sorting case insensitive.
         const str1 = a[prop].toUpperCase();
         const str2 = b[prop].toUpperCase();
@@ -81,9 +79,10 @@ exports.alphabetic_sort = (prop) =>
 
         return -1;
     };
+}
 
-exports.numeric_sort = (prop) =>
-    function (a, b) {
+export function numeric_sort(prop) {
+    return function (a, b) {
         if (Number.parseFloat(a[prop]) > Number.parseFloat(b[prop])) {
             return 1;
         } else if (Number.parseFloat(a[prop]) === Number.parseFloat(b[prop])) {
@@ -92,8 +91,9 @@ exports.numeric_sort = (prop) =>
 
         return -1;
     };
+}
 
-exports.valid_filter_opts = (opts) => {
+export function valid_filter_opts(opts) {
     if (!opts.filter) {
         return true;
     }
@@ -114,19 +114,19 @@ exports.valid_filter_opts = (opts) => {
     }
 
     return true;
-};
+}
 
 // @params
 // container: jQuery object to append to.
 // list: The list of items to progressively append.
 // opts: An object of random preferences.
-exports.create = function ($container, list, opts) {
+export function create($container, list, opts) {
     if (!opts) {
         blueslip.error("Need opts to create widget.");
         return undefined;
     }
 
-    if (!exports.validate_opts(opts)) {
+    if (!validate_opts(opts)) {
         return undefined;
     }
 
@@ -140,8 +140,8 @@ exports.create = function ($container, list, opts) {
         sorting_function: null,
         sorting_functions: new Map(),
         generic_sorting_functions: {
-            alphabetic: exports.alphabetic_sort,
-            numeric: exports.numeric_sort,
+            alphabetic: alphabetic_sort,
+            numeric: numeric_sort,
         },
         offset: 0,
         list,
@@ -150,7 +150,7 @@ exports.create = function ($container, list, opts) {
         filter_value: "",
     };
 
-    if (!exports.valid_filter_opts(opts)) {
+    if (!valid_filter_opts(opts)) {
         return undefined;
     }
 
@@ -162,7 +162,7 @@ exports.create = function ($container, list, opts) {
     const widget = {};
 
     widget.filter_and_sort = function () {
-        meta.filtered_list = exports.get_filtered_items(meta.filter_value, meta.list, opts);
+        meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
 
         if (meta.sorting_function) {
             meta.filtered_list.sort(meta.sorting_function);
@@ -276,7 +276,7 @@ exports.create = function ($container, list, opts) {
 
         if (opts.parent_container) {
             opts.parent_container.on("click.list_widget_sort", "[data-sort]", function () {
-                exports.handle_sort($(this), widget);
+                handle_sort($(this), widget);
             });
         }
 
@@ -349,13 +349,13 @@ exports.create = function ($container, list, opts) {
     }
 
     return widget;
-};
+}
 
-exports.get = function (name) {
+export function get(name) {
     return DEFAULTS.instances.get(name) || false;
-};
+}
 
-exports.handle_sort = function (th, list) {
+export function handle_sort(th, list) {
     /*
         one would specify sort parameters like this:
             - name => sort alphabetic.
@@ -388,6 +388,4 @@ exports.handle_sort = function (th, list) {
     // if `prop_name` is defined, it will trigger the generic codepath,
     // and not if it is undefined.
     list.sort(sort_type, prop_name);
-};
-
-window.ListWidget = exports;
+}

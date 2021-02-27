@@ -70,6 +70,7 @@ const _realm_logo = {
 };
 
 const _ListWidget = {
+    __esModule: true,
     create: () => ({init: noop}),
 };
 
@@ -79,7 +80,7 @@ set_global("jQuery", _jQuery);
 rewiremock("../../static/js/loading").with(_loading);
 set_global("realm_logo", _realm_logo);
 set_global("ui_report", _ui_report);
-set_global("ListWidget", _ListWidget);
+rewiremock("../../static/js/list_widget").with(_ListWidget);
 
 // setup is only imported to set the
 // setup.password_change_in_progress flag.
