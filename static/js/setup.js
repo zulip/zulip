@@ -1,3 +1,4 @@
+import * as loading from "./loading";
 import * as util from "./util";
 
 // Miscellaneous early setup.

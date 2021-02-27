@@ -2,6 +2,8 @@
 
 const render_admin_default_streams_list = require("../templates/admin_default_streams_list.hbs");
 
+const loading = require("./loading");
+
 const meta = {
     loaded: false,
 };

@@ -11,6 +11,7 @@ const render_compose_private_stream_alert = require("../templates/compose_privat
 
 const common = require("./common");
 const echo = require("./echo");
+const loading = require("./loading");
 const peer_data = require("./peer_data");
 const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");

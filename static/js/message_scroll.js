@@ -2,6 +2,8 @@
 
 const _ = require("lodash");
 
+const loading = require("./loading");
+
 let actively_scrolling = false;
 
 // Tracks whether the next scroll that will complete is initiated by

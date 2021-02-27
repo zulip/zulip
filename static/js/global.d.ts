@@ -47,7 +47,6 @@ declare let keydown_util: any;
 declare let lightbox: any;
 declare let list_util: any;
 declare let list_widget: any;
-declare let loading: any;
 declare let local_message: any;
 declare let markdown: any;
 declare let message_edit: any;
