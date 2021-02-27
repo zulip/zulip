@@ -149,7 +149,7 @@ run_test("initialize_everything", () => {
 
     const $message_view_header = $.create("#message_view_header");
     $message_view_header.append = () => {};
-    upload.setup_upload = () => {};
+    upload.__Rewire__("setup_upload", () => {});
 
     $("#stream_message_recipient_stream").typeahead = () => {};
     $("#stream_message_recipient_topic").typeahead = () => {};
