@@ -1,3 +1,5 @@
+import * as message_scroll from "./message_scroll";
+
 function max_id_for_messages(messages) {
     let max_id = 0;
     for (const msg of messages) {

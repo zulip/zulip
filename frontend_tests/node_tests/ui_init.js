@@ -77,7 +77,7 @@ set_global("hashchange", {initialize() {}});
 set_global("hotspots", {initialize() {}});
 // Accesses home_msg_list, which is a lot of complexity to set up
 set_global("message_fetch", {initialize() {}});
-set_global("message_scroll", {initialize() {}});
+rewiremock("../../static/js/message_scroll").with({initialize() {}});
 const message_viewport = {
     __esModule: true,
     initialize() {},
