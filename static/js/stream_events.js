@@ -5,6 +5,7 @@ const narrow_state = require("./narrow_state");
 const peer_data = require("./peer_data");
 const stream_color = require("./stream_color");
 const stream_data = require("./stream_data");
+const stream_muting = require("./stream_muting");
 
 // In theory, this function should apply the account-level defaults,
 // however, they are only called after a manual override, so

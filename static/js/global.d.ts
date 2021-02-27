@@ -88,7 +88,6 @@ declare let starred_messages: any;
 declare let stream_edit: any;
 declare let stream_events: any;
 declare let stream_list: any;
-declare let stream_muting: any;
 declare let stream_popover: any;
 declare let subs: any;
 declare let message_view_header: any;
