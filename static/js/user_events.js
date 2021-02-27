@@ -4,6 +4,7 @@
 // server_events.js simple while breaking some circular
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
+const compose = require("./compose");
 const message_live_update = require("./message_live_update");
 const narrow_state = require("./narrow_state");
 const people = require("./people");

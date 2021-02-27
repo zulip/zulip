@@ -6,6 +6,7 @@ const fenced_code = require("../shared/js/fenced_code");
 
 const channel = require("./channel");
 const common = require("./common");
+const compose = require("./compose");
 const compose_fade = require("./compose_fade");
 const compose_pm_pill = require("./compose_pm_pill");
 const compose_state = require("./compose_state");

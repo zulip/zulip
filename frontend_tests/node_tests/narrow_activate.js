@@ -13,7 +13,8 @@ set_global("resize", {
 
 const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);
-const compose = set_global("compose", {});
+const compose = {__esModule: true};
+rewiremock("../../static/js/compose").with(compose);
 const compose_actions = set_global("compose_actions", {});
 set_global("current_msg_list", {});
 const hashchange = set_global("hashchange", {});

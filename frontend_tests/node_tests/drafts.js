@@ -26,7 +26,7 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
-set_global("compose", {});
+rewiremock("../../static/js/compose").with({});
 const compose_state = {__esModule: true};
 rewiremock("../../static/js/compose_state").with(compose_state);
 set_global("stream_data", {

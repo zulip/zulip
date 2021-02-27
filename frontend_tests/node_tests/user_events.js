@@ -42,7 +42,7 @@ rewiremock("../../static/js/narrow_state").with({
     update_email() {},
 });
 
-set_global("compose", {
+rewiremock("../../static/js/compose").with({
     update_email() {},
 });
 

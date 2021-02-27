@@ -1,6 +1,7 @@
 "use strict";
 
 const channel = require("./channel");
+const compose = require("./compose");
 const compose_fade = require("./compose_fade");
 const compose_state = require("./compose_state");
 const {Filter} = require("./filter");

@@ -24,7 +24,7 @@ const activity = set_global("activity", {});
 const alert_words_ui = set_global("alert_words_ui", {});
 const attachments_ui = set_global("attachments_ui", {});
 const bot_data = set_global("bot_data", {});
-set_global("compose", {});
+rewiremock("../../static/js/compose").with({});
 const composebox_typeahead = set_global("composebox_typeahead", {});
 set_global("current_msg_list", {});
 const emoji_picker = set_global("emoji_picker", {});
