@@ -16,7 +16,7 @@ rewiremock("../../static/js/muting").with({
 
 rewiremock.enable();
 
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("Filter", "js/filter");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");

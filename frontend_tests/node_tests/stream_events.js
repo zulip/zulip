@@ -39,7 +39,7 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("Filter", "js/filter");
 const narrow_state = zrequire("narrow_state");
 const message_view_header = zrequire("message_view_header");
 

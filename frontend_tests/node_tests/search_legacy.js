@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -18,9 +20,15 @@ set_global("ui_util", {
     change_tab_to: noop,
 });
 const narrow = set_global("narrow", {});
-const Filter = set_global("Filter", {});
+const Filter = {};
+
+rewiremock("../../static/js/filter").with({
+    Filter,
+});
 
 set_global("setTimeout", (func) => func());
+
+rewiremock.enable();
 
 const search = zrequire("search");
 zrequire("message_view_header");
@@ -293,3 +301,4 @@ run_test("initiate_search", () => {
     search.initiate_search();
     assert.equal($("#search_query").val(), "ver ");
 });
+rewiremock.disable();

@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
@@ -13,7 +15,9 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = function () {};
 
-set_global("Filter", noop);
+rewiremock("../../static/js/filter").with({
+    Filter: noop,
+});
 set_global("document", {
     to_$() {
         return {
@@ -27,6 +31,8 @@ const stream_data = set_global("stream_data", {});
 set_global("recent_topics", {
     is_visible: () => false,
 });
+
+rewiremock.enable();
 
 const muting = zrequire("muting");
 zrequire("MessageListView", "js/message_list_view");
@@ -440,3 +446,4 @@ run_test("add_remove_rerender", () => {
         assert.equal(list.num_items(), 0);
     }
 });
+rewiremock.disable();

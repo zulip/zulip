@@ -1,5 +1,6 @@
 "use strict";
 
+const {Filter} = require("./filter");
 const search_pill = require("./search_pill");
 
 // Exported for unit testing

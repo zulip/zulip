@@ -12,7 +12,7 @@ set_global("resize", {
     resize_stream_filters_container: () => {},
 });
 rewiremock.enable();
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("Filter", "js/filter");
 const people = zrequire("people");
 
 const top_left_corner = zrequire("top_left_corner");

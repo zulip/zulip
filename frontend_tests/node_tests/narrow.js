@@ -21,7 +21,7 @@ const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = set_global("stream_topic_history", {});
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("Filter", "js/filter");
 const narrow = zrequire("narrow");
 
 function set_filter(operators) {

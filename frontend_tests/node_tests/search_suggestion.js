@@ -22,7 +22,6 @@ page_params.realm_email_address_visibility =
 const huddle_data = zrequire("huddle_data");
 
 zrequire("typeahead_helper");
-zrequire("Filter", "js/filter");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");

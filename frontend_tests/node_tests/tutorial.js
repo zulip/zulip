@@ -187,7 +187,7 @@ run_test("unread", () => {
 
 // We use the second argument of zrequire to find the location of the
 // Filter class.
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("Filter", "js/filter");
 
 run_test("filter", () => {
     const filter_terms = [

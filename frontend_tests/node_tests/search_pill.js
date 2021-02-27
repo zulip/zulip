@@ -7,7 +7,6 @@ const {run_test} = require("../zjsunit/test");
 
 const search_pill = zrequire("search_pill");
 const input_pill = zrequire("input_pill");
-zrequire("Filter", "js/filter");
 
 const is_starred_item = {
     display_value: "is:starred",
