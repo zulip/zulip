@@ -23,7 +23,9 @@ const vdom = {
     render: () => "fake-dom-for-pm-list",
 };
 rewiremock("../../static/js/vdom").with(vdom);
-const pm_list_dom = set_global("pm_list_dom", {});
+const pm_list_dom = {__esModule: true};
+
+rewiremock("../../static/js/pm_list_dom").with(pm_list_dom);
 
 rewiremock.enable();
 

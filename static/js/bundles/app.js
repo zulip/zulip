@@ -19,7 +19,6 @@ import "../input_pill";
 import "../setup";
 import "../unread_ops";
 import "../unread";
-import "../pm_list_dom";
 import "../pm_list";
 import "../recent_senders";
 import "../top_left_corner";
