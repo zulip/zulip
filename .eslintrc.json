@@ -242,7 +242,6 @@
                 "message_view_header": false,
                 "timerender": false,
                 "top_left_corner": false,
-                "topic_list": false,
                 "transmit": false,
                 "typeahead_helper": false,
                 "typing_events": false,

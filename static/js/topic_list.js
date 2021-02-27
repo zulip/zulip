@@ -1,13 +1,11 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import render_more_topics from "../templates/more_topics.hbs";
+import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
+import render_topic_list_item from "../templates/topic_list_item.hbs";
 
-const render_more_topics = require("../templates/more_topics.hbs");
-const render_more_topics_spinner = require("../templates/more_topics_spinner.hbs");
-const render_topic_list_item = require("../templates/topic_list_item.hbs");
-
-const topic_list_data = require("./topic_list_data");
-const vdom = require("./vdom");
+import * as topic_list_data from "./topic_list_data";
+import * as vdom from "./vdom";
 
 /*
     Track all active widgets with a Map.
@@ -22,13 +20,13 @@ const active_widgets = new Map();
 // We know whether we're zoomed or not.
 let zoomed = false;
 
-exports.update = function () {
+export function update() {
     for (const widget of active_widgets.values()) {
         widget.build();
     }
-};
+}
 
-exports.clear = function () {
+export function clear() {
     stream_popover.hide_topic_popover();
 
     for (const widget of active_widgets.values()) {
@@ -36,14 +34,14 @@ exports.clear = function () {
     }
 
     active_widgets.clear();
-};
+}
 
-exports.close = function () {
+export function close() {
     zoomed = false;
-    exports.clear();
-};
+    clear();
+}
 
-exports.zoom_out = function () {
+export function zoom_out() {
     zoomed = false;
 
     const stream_ids = Array.from(active_widgets.keys());
@@ -57,10 +55,10 @@ exports.zoom_out = function () {
     const widget = active_widgets.get(stream_id);
     const parent_widget = widget.get_parent();
 
-    exports.rebuild(parent_widget, stream_id);
-};
+    rebuild(parent_widget, stream_id);
+}
 
-exports.keyed_topic_li = (convo) => {
+export function keyed_topic_li(convo) {
     const render = () => render_topic_list_item(convo);
 
     const eq = (other) => _.isEqual(convo, other.convo);
@@ -73,9 +71,9 @@ exports.keyed_topic_li = (convo) => {
         convo,
         eq,
     };
-};
+}
 
-exports.more_li = (more_topics_unreads) => {
+export function more_li(more_topics_unreads) {
     const render = () =>
         render_more_topics({
             more_topics_unreads,
@@ -92,9 +90,9 @@ exports.more_li = (more_topics_unreads) => {
         render,
         eq,
     };
-};
+}
 
-exports.spinner_li = () => {
+export function spinner_li() {
     const render = () => render_more_topics_spinner();
 
     const eq = (other) => other.spinner;
@@ -107,9 +105,9 @@ exports.spinner_li = () => {
         render,
         eq,
     };
-};
+}
 
-class TopicListWidget {
+export class TopicListWidget {
     prior_dom = undefined;
 
     constructor(parent_elem, my_stream_id) {
@@ -129,12 +127,12 @@ class TopicListWidget {
 
         const attrs = [["class", "topic-list"]];
 
-        const nodes = list_info.items.map((convo) => exports.keyed_topic_li(convo));
+        const nodes = list_info.items.map((convo) => keyed_topic_li(convo));
 
         if (spinner) {
-            nodes.push(exports.spinner_li());
+            nodes.push(spinner_li());
         } else if (!is_showing_all_possible_topics) {
-            nodes.push(exports.more_li(more_topics_unreads));
+            nodes.push(more_li(more_topics_unreads));
         }
 
         const dom = vdom.ul({
@@ -173,9 +171,8 @@ class TopicListWidget {
         this.prior_dom = new_dom;
     }
 }
-exports.TopicListWidget = TopicListWidget;
 
-exports.active_stream_id = function () {
+export function active_stream_id() {
     const stream_ids = Array.from(active_widgets.keys());
 
     if (stream_ids.length !== 1) {
@@ -183,9 +180,9 @@ exports.active_stream_id = function () {
     }
 
     return stream_ids[0];
-};
+}
 
-exports.get_stream_li = function () {
+export function get_stream_li() {
     const widgets = Array.from(active_widgets.values());
 
     if (widgets.length !== 1) {
@@ -194,9 +191,9 @@ exports.get_stream_li = function () {
 
     const stream_li = widgets[0].get_parent();
     return stream_li;
-};
+}
 
-exports.rebuild = function (stream_li, stream_id) {
+export function rebuild(stream_li, stream_id) {
     const active_widget = active_widgets.get(stream_id);
 
     if (active_widget) {
@@ -204,19 +201,19 @@ exports.rebuild = function (stream_li, stream_id) {
         return;
     }
 
-    exports.clear();
+    clear();
     const widget = new TopicListWidget(stream_li, stream_id);
     widget.build();
 
     active_widgets.set(stream_id, widget);
-};
+}
 
 // For zooming, we only do topic-list stuff here...let stream_list
 // handle hiding/showing the non-narrowed streams
-exports.zoom_in = function () {
+export function zoom_in() {
     zoomed = true;
 
-    const stream_id = exports.active_stream_id();
+    const stream_id = active_stream_id();
     if (!stream_id) {
         blueslip.error("Cannot find widget for topic history zooming.");
         return;
@@ -248,9 +245,9 @@ exports.zoom_in = function () {
     active_widget.build(spinner);
 
     stream_topic_history.get_server_history(stream_id, on_success);
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     $("#stream_filters").on("click", ".topic-box", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
@@ -277,6 +274,4 @@ exports.initialize = function () {
 
         e.preventDefault();
     });
-};
-
-window.topic_list = exports;
+}

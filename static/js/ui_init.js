@@ -22,6 +22,7 @@ const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const rows = require("./rows");
 const spoilers = require("./spoilers");
+const topic_list = require("./topic_list");
 const topic_zoom = require("./topic_zoom");
 const tutorial = require("./tutorial");
 const typing = require("./typing");

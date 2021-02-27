@@ -1,3 +1,5 @@
+import * as topic_list from "./topic_list";
+
 let zoomed_in = false;
 
 export function is_zoomed_in() {

@@ -113,7 +113,6 @@ declare let subs: any;
 declare let message_view_header: any;
 declare let timerender: any;
 declare let stream_topic_history: any;
-declare let topic_list: any;
 declare let top_left_corner: any;
 declare let transmit: any;
 declare let typeahead_helper: any;
