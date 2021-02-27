@@ -120,7 +120,6 @@ zrequire("presence");
 zrequire("search_pill_widget");
 zrequire("unread");
 zrequire("bot_data");
-zrequire("markdown");
 const upload = zrequire("upload");
 const compose = zrequire("compose");
 zrequire("composebox_typeahead");

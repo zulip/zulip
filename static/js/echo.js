@@ -1,4 +1,5 @@
 import * as alert_words from "./alert_words";
+import * as markdown from "./markdown";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_list from "./pm_list";

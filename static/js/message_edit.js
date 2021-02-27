@@ -8,6 +8,7 @@ const render_topic_edit_form = require("../templates/topic_edit_form.hbs");
 const channel = require("./channel");
 const echo = require("./echo");
 const loading = require("./loading");
+const markdown = require("./markdown");
 const message_viewport = require("./message_viewport");
 const rows = require("./rows");
 

@@ -16,6 +16,7 @@ const compose_pm_pill = require("./compose_pm_pill");
 const drafts = require("./drafts");
 const echo = require("./echo");
 const loading = require("./loading");
+const markdown = require("./markdown");
 const peer_data = require("./peer_data");
 const people = require("./people");
 const rendered_markdown = require("./rendered_markdown");
