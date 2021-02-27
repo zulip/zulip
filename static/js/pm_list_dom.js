@@ -4,6 +4,8 @@ const _ = require("lodash");
 
 const render_pm_list_item = require("../templates/pm_list_item.hbs");
 
+const vdom = require("./vdom");
+
 exports.keyed_pm_li = (convo) => {
     const render = () => render_pm_list_item(convo);
 

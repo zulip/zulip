@@ -269,7 +269,6 @@
                 "user_groups": false,
                 "user_pill": false,
                 "poll_widget": false,
-                "vdom": false,
                 "widgetize": false,
                 "zxcvbn": false
             }

@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -15,10 +17,14 @@ set_global("stream_popover", {
 });
 const unread = set_global("unread", {});
 const unread_ui = set_global("unread_ui", {});
-const vdom = set_global("vdom", {
+const vdom = {
+    __esModule: true,
     render: () => "fake-dom-for-pm-list",
-});
+};
+rewiremock("../../static/js/vdom").with(vdom);
 const pm_list_dom = set_global("pm_list_dom", {});
+
+rewiremock.enable();
 
 zrequire("presence");
 zrequire("buddy_data");
@@ -288,3 +294,4 @@ run_test("ensure coverage", (override) => {
         },
     );
 });
+rewiremock.disable();
