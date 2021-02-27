@@ -85,7 +85,7 @@ run_test("topics", () => {
         devel: devel_stream_id,
     };
 
-    stream_topic_history.get_recent_topic_names = (stream_id) => {
+    stream_topic_history.__Rewire__("get_recent_topic_names", (stream_id) => {
         switch (stream_id) {
             case muted_stream_id:
                 return ["ms-topic1", "ms-topic2"];
@@ -94,7 +94,7 @@ run_test("topics", () => {
         }
 
         return [];
-    };
+    });
 
     stream_data.__Rewire__("get_stream_id", (stream_name) => stream_id_dct[stream_name]);
 

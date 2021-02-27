@@ -1,13 +1,11 @@
-"use strict";
-
-const channel = require("./channel");
-const {FoldDict} = require("./fold_dict");
-const stream_data = require("./stream_data");
+import * as channel from "./channel";
+import {FoldDict} from "./fold_dict";
+import * as stream_data from "./stream_data";
 
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object
 const fetched_stream_ids = new Set();
 
-exports.is_complete_for_stream_id = (stream_id) => {
+export function is_complete_for_stream_id(stream_id) {
     if (fetched_stream_ids.has(stream_id)) {
         return true;
     }
@@ -34,9 +32,9 @@ exports.is_complete_for_stream_id = (stream_id) => {
     }
 
     return in_cache;
-};
+}
 
-exports.stream_has_topics = function (stream_id) {
+export function stream_has_topics(stream_id) {
     if (!stream_dict.has(stream_id)) {
         return false;
     }
@@ -44,9 +42,9 @@ exports.stream_has_topics = function (stream_id) {
     const history = stream_dict.get(stream_id);
 
     return history.has_topics();
-};
+}
 
-class PerStreamHistory {
+export class PerStreamHistory {
     /*
         For a given stream, this structure has a dictionary of topics.
         The main getter of this object is get_recent_topic_names, and
@@ -196,9 +194,8 @@ class PerStreamHistory {
         return this.max_message_id;
     }
 }
-exports.PerStreamHistory = PerStreamHistory;
 
-exports.remove_messages = function (opts) {
+export function remove_messages(opts) {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
     const num_messages = opts.num_messages;
@@ -236,9 +233,9 @@ exports.remove_messages = function (opts) {
     if (history.max_message_id <= max_removed_msg_id) {
         history.max_message_id = message_util.get_max_message_id_in_stream(stream_id);
     }
-};
+}
 
-exports.find_or_create = function (stream_id) {
+export function find_or_create(stream_id) {
     let history = stream_dict.get(stream_id);
 
     if (!history) {
@@ -247,28 +244,28 @@ exports.find_or_create = function (stream_id) {
     }
 
     return history;
-};
+}
 
-exports.add_message = function (opts) {
+export function add_message(opts) {
     const stream_id = opts.stream_id;
     const message_id = opts.message_id;
     const topic_name = opts.topic_name;
 
-    const history = exports.find_or_create(stream_id);
+    const history = find_or_create(stream_id);
 
     history.add_or_update({
         topic_name,
         message_id,
     });
-};
+}
 
-exports.add_history = function (stream_id, server_history) {
-    const history = exports.find_or_create(stream_id);
+export function add_history(stream_id, server_history) {
+    const history = find_or_create(stream_id);
     history.add_history(server_history);
     fetched_stream_ids.add(stream_id);
-};
+}
 
-exports.get_server_history = function (stream_id, on_success) {
+export function get_server_history(stream_id, on_success) {
     if (fetched_stream_ids.has(stream_id)) {
         on_success();
         return;
@@ -281,28 +278,26 @@ exports.get_server_history = function (stream_id, on_success) {
         data: {},
         success(data) {
             const server_history = data.topics;
-            exports.add_history(stream_id, server_history);
+            add_history(stream_id, server_history);
             on_success();
         },
     });
-};
+}
 
-exports.get_recent_topic_names = function (stream_id) {
-    const history = exports.find_or_create(stream_id);
+export function get_recent_topic_names(stream_id) {
+    const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
-};
+}
 
-exports.get_max_message_id = function (stream_id) {
-    const history = exports.find_or_create(stream_id);
+export function get_max_message_id(stream_id) {
+    const history = find_or_create(stream_id);
 
     return history.get_max_message_id();
-};
+}
 
-exports.reset = function () {
+export function reset() {
     // This is only used by tests.
     stream_dict.clear();
     fetched_stream_ids.clear();
-};
-
-window.stream_topic_history = exports;
+}

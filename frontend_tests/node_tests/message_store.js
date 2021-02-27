@@ -12,7 +12,7 @@ const noop = () => {};
 
 set_global("document", "document-stub");
 
-set_global("stream_topic_history", {
+rewiremock("../../static/js/stream_topic_history").with({
     add_message: noop,
 });
 

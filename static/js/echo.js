@@ -7,6 +7,7 @@ import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
+import * as stream_topic_history from "./stream_topic_history";
 import * as transmit from "./transmit";
 import * as util from "./util";
 
