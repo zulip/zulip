@@ -24,6 +24,7 @@ const rendered_markdown = require("./rendered_markdown");
 const rtl = require("./rtl");
 const sent_messages = require("./sent_messages");
 const settings_config = require("./settings_config");
+const transmit = require("./transmit");
 const util = require("./util");
 const zcommand = require("./zcommand");
 

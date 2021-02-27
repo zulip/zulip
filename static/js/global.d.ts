@@ -98,7 +98,6 @@ declare let subs: any;
 declare let message_view_header: any;
 declare let timerender: any;
 declare let stream_topic_history: any;
-declare let transmit: any;
 declare let typeahead_helper: any;
 declare let typing_events: any;
 declare let ui: any;
