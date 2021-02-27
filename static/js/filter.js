@@ -1,10 +1,8 @@
-"use strict";
+import Handlebars from "handlebars/runtime";
+import _ from "lodash";
 
-const Handlebars = require("handlebars/runtime");
-const _ = require("lodash");
-
-const people = require("./people");
-const util = require("./util");
+import * as people from "./people";
+import * as util from "./util";
 
 function zephyr_stream_name_match(message, operand) {
     // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
@@ -174,7 +172,7 @@ function message_matches_search_term(message, operator, operand) {
     return true; // unknown operators return true (effectively ignored)
 }
 
-class Filter {
+export class Filter {
     constructor(operators) {
         if (operators === undefined) {
             this._operators = [];
@@ -982,7 +980,3 @@ class Filter {
         return Handlebars.Utils.escapeExpression(Filter.describe_unescaped(operators));
     }
 }
-
-module.exports = Filter;
-
-window.Filter = Filter;

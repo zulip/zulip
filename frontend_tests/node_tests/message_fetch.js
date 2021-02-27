@@ -50,7 +50,7 @@ const stream_list = set_global("stream_list", {
 rewiremock.enable();
 
 const message_fetch = zrequire("message_fetch");
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("Filter", "js/filter");
 const message_list = zrequire("message_list");
 const people = zrequire("people");
 

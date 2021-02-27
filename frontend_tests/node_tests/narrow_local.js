@@ -14,7 +14,7 @@ rewiremock("../../static/js/muting").with({
 
 rewiremock.enable();
 
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("Filter", "js/filter");
 const {MessageListData} = zrequire("MessageListData", "js/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const narrow = zrequire("narrow");

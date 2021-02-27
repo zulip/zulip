@@ -20,7 +20,6 @@ import "../setup";
 import "../unread_ops";
 import "../unread";
 import "../stream_list";
-import "../filter";
 import "../poll_widget";
 import "../widgetize";
 import "../submessage";

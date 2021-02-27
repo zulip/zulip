@@ -8,7 +8,7 @@ const {run_test} = require("../zjsunit/test");
 set_global("page_params", {});
 
 const people = zrequire("people");
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("Filter", "js/filter");
 const stream_data = zrequire("stream_data");
 const narrow_state = zrequire("narrow_state");
 

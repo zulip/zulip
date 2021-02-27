@@ -1,5 +1,6 @@
 "use strict";
 
+const {Filter} = require("./filter");
 const people = require("./people");
 
 let current_filter;

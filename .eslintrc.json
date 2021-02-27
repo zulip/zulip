@@ -125,7 +125,6 @@
             "files": ["static/js/**"],
             "globals": {
                 "$": false,
-                "Filter": false,
                 "MessageListView": false,
                 "activity": false,
                 "admin": false,

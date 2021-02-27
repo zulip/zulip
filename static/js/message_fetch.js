@@ -1,6 +1,7 @@
 "use strict";
 
 const channel = require("./channel");
+const {Filter} = require("./filter");
 const huddle_data = require("./huddle_data");
 const people = require("./people");
 const pm_list = require("./pm_list");

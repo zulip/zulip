@@ -29,7 +29,7 @@ rewiremock("../../static/js/keydown_util").with({
 
 rewiremock.enable();
 
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("Filter", "js/filter");
 const stream_sort = zrequire("stream_sort");
 const stream_color = zrequire("stream_color");
 zrequire("hash_util");
