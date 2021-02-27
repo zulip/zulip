@@ -6,6 +6,7 @@ const common = require("./common");
 const copy_and_paste = require("./copy_and_paste");
 const drafts = require("./drafts");
 const feedback_widget = require("./feedback_widget");
+const muting_ui = require("./muting_ui");
 const topic_zoom = require("./topic_zoom");
 
 function do_narrow_action(action) {

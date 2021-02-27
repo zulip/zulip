@@ -1,6 +1,7 @@
 import * as emoji from "../shared/js/emoji";
 
 import * as alert_words from "./alert_words";
+import * as muting_ui from "./muting_ui";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";

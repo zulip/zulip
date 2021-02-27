@@ -2,11 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const rewiremock = require("rewiremock/node");
+
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const muting_ui = set_global("muting_ui", {});
+const muting_ui = {__esModule: true};
+
+rewiremock("../../static/js/muting_ui").with(muting_ui);
+rewiremock.enable();
 
 zrequire("timerender");
 const settings_muting = zrequire("settings_muting");
@@ -88,3 +93,4 @@ run_test("reset", () => {
     settings_muting.reset();
     assert.equal(settings_muting.loaded, false);
 });
+rewiremock.disable();

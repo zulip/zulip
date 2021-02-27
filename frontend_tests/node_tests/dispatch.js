@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
@@ -32,7 +34,8 @@ const markdown = set_global("markdown", {});
 const message_edit = set_global("message_edit", {});
 const message_events = set_global("message_events", {});
 const message_list = set_global("message_list", {});
-const muting_ui = set_global("muting_ui", {});
+const muting_ui = {__esModule: true};
+rewiremock("../../static/js/muting_ui").with(muting_ui);
 const night_mode = set_global("night_mode", {});
 const notifications = set_global("notifications", {});
 const reactions = set_global("reactions", {});
@@ -68,6 +71,8 @@ const page_params = set_global("page_params", {
     is_admin: true,
     realm_description: "already set description",
 });
+
+rewiremock.enable();
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
@@ -851,3 +856,4 @@ run_test("realm_export", (override) => {
     const args = stub.get_args("exports");
     assert.equal(args.exports, event.exports);
 });
+rewiremock.disable();
