@@ -13,6 +13,7 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
+import * as stream_color from "./stream_color";
 import * as submessage from "./submessage";
 import * as util from "./util";
 
