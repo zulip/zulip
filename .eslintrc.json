@@ -167,7 +167,6 @@
                 "info_overlay": false,
                 "input_pill": false,
                 "jQuery": false,
-                "keydown_util": false,
                 "lightbox": false,
                 "list_util": false,
                 "ListWidget": false,

@@ -14,7 +14,6 @@ import "flatpickr/dist/plugins/confirmDate/confirmDate";
 
 // Import app JS
 import "../i18n";
-import "../keydown_util";
 import "../rtl";
 import "../fold_dict";
 import "../scroll_util";

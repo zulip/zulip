@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -30,6 +32,8 @@ const _ui = {
 };
 
 const _keydown_util = {
+    __esModule: true,
+
     handle: (opts) => {
         filter_key_handlers = opts.handlers;
     },
@@ -66,7 +70,7 @@ set_global("padded_widget", {
 set_global("channel", channel);
 set_global("compose_state", compose_state);
 set_global("document", _document);
-set_global("keydown_util", _keydown_util);
+rewiremock("../../static/js/keydown_util").with(_keydown_util);
 set_global("pm_list", _pm_list);
 set_global("popovers", _popovers);
 set_global("resize", _resize);
@@ -76,6 +80,8 @@ set_global("ui", _ui);
 set_global("server_events", {
     check_for_unsuspend() {},
 });
+
+rewiremock.enable();
 
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
@@ -750,3 +756,4 @@ test_ui("test_send_or_receive_no_presence_for_web_public_visitor", () => {
     page_params.is_web_public_visitor = true;
     activity.send_presence_to_server();
 });
+rewiremock.disable();
