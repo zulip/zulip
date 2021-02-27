@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -14,13 +16,16 @@ set_global("resize", {
     resize_stream_filters_container: () => {},
 });
 
+rewiremock.enable();
+
 const hash_util = zrequire("hash_util");
 zrequire("hashchange");
 const compose_state = zrequire("compose_state");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-const stream_topic_history = set_global("stream_topic_history", {});
+const stream_topic_history = {__esModule: true};
+rewiremock("../../static/js/stream_topic_history").with(stream_topic_history);
 const {Filter} = zrequire("Filter", "js/filter");
 const narrow = zrequire("narrow");
 
@@ -372,3 +377,4 @@ run_test("narrow_to_compose_target PMs", (override) => {
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
 });
+rewiremock.disable();

@@ -214,7 +214,6 @@
                 "starred_messages": false,
                 "stream_edit": false,
                 "stream_events": false,
-                "stream_topic_history": false,
                 "stream_list": false,
                 "stream_muting": false,
                 "stream_popover": false,

@@ -10,7 +10,9 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-const stream_topic_history = set_global("stream_topic_history", {});
+const stream_topic_history = {__esModule: true};
+
+rewiremock("../../static/js/stream_topic_history").with(stream_topic_history);
 
 const message_store = set_global("message_store", {
     user_ids: () => [],

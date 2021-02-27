@@ -25,7 +25,6 @@ import "../message_list";
 import "../narrow";
 import "../reload";
 import "../compose_actions";
-import "../stream_topic_history";
 import "../stream_muting";
 import "../stream_events";
 import "../stream_edit";
