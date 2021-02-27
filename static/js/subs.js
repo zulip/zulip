@@ -10,6 +10,7 @@ const render_subscriptions = require("../templates/subscriptions.hbs");
 const components = require("./components");
 const loading = require("./loading");
 const people = require("./people");
+const scroll_util = require("./scroll_util");
 const search_util = require("./search_util");
 const stream_create = require("./stream_create");
 const stream_ui_updates = require("./stream_ui_updates");
