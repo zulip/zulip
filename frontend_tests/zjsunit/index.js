@@ -23,7 +23,11 @@ require("@babel/register")({
             "^" + _.escapeRegExp(path.resolve(__dirname, "../../static/shared/js") + path.sep),
         ),
     ],
-    plugins: ["rewire-ts", ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}]],
+    plugins: [
+        "babel-plugin-lazy-require",
+        "babel-plugin-rewire-ts",
+        ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
+    ],
 });
 
 // Create a helper function to avoid sneaky delays in tests.
