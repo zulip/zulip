@@ -3,7 +3,6 @@
 // remove each declaration when the corresponding module is migrated
 // to TS.
 
-declare let MessageListView: any;
 declare let activity: any;
 declare let admin: any;
 declare let alert_words_ui: any;

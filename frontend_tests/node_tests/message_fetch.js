@@ -16,7 +16,9 @@ const noop = () => {};
 function MessageListView() {
     return {};
 }
-set_global("MessageListView", MessageListView);
+rewiremock("../../static/js/message_list_view").with({
+    MessageListView,
+});
 
 set_global("recent_topics", {
     process_messages: noop,
