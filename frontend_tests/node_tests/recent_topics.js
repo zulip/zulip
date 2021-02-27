@@ -10,7 +10,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-set_global("top_left_corner", {
+rewiremock("../../static/js/top_left_corner").with({
     narrow_to_recent_topics: noop,
 });
 set_global("stream_list", {

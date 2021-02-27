@@ -34,7 +34,7 @@ const overlays = set_global("overlays", {});
 const settings = set_global("settings", {});
 const subs = set_global("subs", {});
 const ui_util = set_global("ui_util", {});
-set_global("top_left_corner", {
+rewiremock("../../static/js/top_left_corner").with({
     handle_narrow_deactivated: () => {},
 });
 
