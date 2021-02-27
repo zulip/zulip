@@ -1,3 +1,5 @@
+import * as reload_state from "./reload_state";
+
 const pending_requests = [];
 
 function add_pending_request(jqXHR) {

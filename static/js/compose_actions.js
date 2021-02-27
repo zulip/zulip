@@ -11,6 +11,7 @@ const drafts = require("./drafts");
 const message_viewport = require("./message_viewport");
 const narrow_state = require("./narrow_state");
 const people = require("./people");
+const reload_state = require("./reload_state");
 
 exports.blur_compose_inputs = function () {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
