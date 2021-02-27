@@ -2,6 +2,7 @@
 
 const channel = require("./channel");
 const people = require("./people");
+const transmit = require("./transmit");
 const util = require("./util");
 
 const deferred_message_types = {

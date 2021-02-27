@@ -120,9 +120,9 @@ run_test("reply_message_stream", () => {
 
     let send_message_args;
 
-    transmit.send_message = (args) => {
+    transmit.__Rewire__("send_message", (args) => {
         send_message_args = args;
-    };
+    });
 
     page_params.user_id = 44;
     page_params.queue_id = 66;
@@ -163,9 +163,9 @@ run_test("reply_message_private", () => {
 
     let send_message_args;
 
-    transmit.send_message = (args) => {
+    transmit.__Rewire__("send_message", (args) => {
         send_message_args = args;
-    };
+    });
 
     page_params.user_id = 155;
     page_params.queue_id = 177;

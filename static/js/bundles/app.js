@@ -25,7 +25,6 @@ import "../message_list";
 import "../narrow";
 import "../reload";
 import "../compose_actions";
-import "../transmit";
 import "../compose";
 import "../upload";
 import "../color_data";

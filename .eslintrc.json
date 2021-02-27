@@ -226,7 +226,6 @@
                 "subs": false,
                 "message_view_header": false,
                 "timerender": false,
-                "transmit": false,
                 "typeahead_helper": false,
                 "typing_events": false,
                 "ui": false,
