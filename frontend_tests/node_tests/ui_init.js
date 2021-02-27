@@ -76,7 +76,11 @@ set_global("hotspots", {initialize() {}});
 // Accesses home_msg_list, which is a lot of complexity to set up
 set_global("message_fetch", {initialize() {}});
 set_global("message_scroll", {initialize() {}});
-const message_viewport = set_global("message_viewport", {initialize() {}});
+const message_viewport = {
+    __esModule: true,
+    initialize() {},
+};
+rewiremock("../../static/js/message_viewport").with(message_viewport);
 set_global("panels", {initialize() {}});
 set_global("popovers", {initialize() {}});
 set_global("reload", {initialize() {}});

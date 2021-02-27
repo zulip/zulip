@@ -1,5 +1,7 @@
 "use strict";
 
+const message_viewport = require("./message_viewport");
+
 /*
 This library implements two related, similar concepts:
 

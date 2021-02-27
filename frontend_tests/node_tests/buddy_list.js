@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
+const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -12,9 +13,11 @@ set_global("padded_widget", {
     update_padding: () => {},
 });
 
-set_global("message_viewport", {
+rewiremock("../../static/js/message_viewport").with({
     height: () => 550,
 });
+
+rewiremock.enable();
 
 const people = zrequire("people");
 zrequire("buddy_data");
@@ -225,3 +228,4 @@ run_test("scrolling", (override) => {
 
     assert(tried_to_fill);
 });
+rewiremock.disable();

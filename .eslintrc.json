@@ -180,7 +180,6 @@
                 "message_scroll": false,
                 "message_store": false,
                 "message_util": false,
-                "message_viewport": false,
                 "narrow": false,
                 "narrow_state": false,
                 "navigate": false,

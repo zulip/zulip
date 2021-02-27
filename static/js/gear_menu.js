@@ -1,5 +1,7 @@
 "use strict";
 
+const message_viewport = require("./message_viewport");
+
 /*
 For various historical reasons there isn't one
 single chunk of code that really makes our gear

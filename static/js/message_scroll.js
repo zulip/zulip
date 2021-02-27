@@ -3,6 +3,7 @@
 const _ = require("lodash");
 
 const loading = require("./loading");
+const message_viewport = require("./message_viewport");
 
 let actively_scrolling = false;
 

@@ -19,7 +19,7 @@ set_global("page_params", {
 });
 const rows = set_global("rows", {});
 
-set_global("message_viewport", {
+rewiremock("../../static/js/message_viewport").with({
     height: () => 500,
 });
 
