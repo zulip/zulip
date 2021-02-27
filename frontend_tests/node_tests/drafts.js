@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -31,12 +33,14 @@ set_global("stream_data", {
         return "#FFFFFF";
     },
 });
-set_global("markdown", {
+rewiremock("../../static/js/markdown").with({
     apply_markdown: noop,
 });
 set_global("page_params", {
     twenty_four_hour_time: false,
 });
+
+rewiremock.enable();
 
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
@@ -301,3 +305,4 @@ run_test("format_drafts", (override) => {
     drafts.launch();
     timerender.render_now = stub_render_now;
 });
+rewiremock.disable();

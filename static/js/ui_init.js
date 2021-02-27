@@ -15,6 +15,7 @@ const drafts = require("./drafts");
 const echo = require("./echo");
 const emojisets = require("./emojisets");
 const invite = require("./invite");
+const markdown = require("./markdown");
 const markdown_config = require("./markdown_config");
 const message_viewport = require("./message_viewport");
 const muting = require("./muting");

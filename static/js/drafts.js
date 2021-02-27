@@ -5,6 +5,7 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as compose_fade from "./compose_fade";
 import {localstorage} from "./localstorage";
+import * as markdown from "./markdown";
 import * as people from "./people";
 import * as util from "./util";
 

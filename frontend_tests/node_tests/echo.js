@@ -3,12 +3,14 @@
 const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
+const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const local_message = set_global("local_message", {});
-const markdown = set_global("markdown", {});
+const markdown = {__esModule: true};
+rewiremock("../../static/js/markdown").with(markdown);
 const page_params = set_global("page_params", {});
 
 const fake_now = 555;
@@ -43,6 +45,8 @@ set_global("home_msg_list", {
 set_global("message_list", {});
 
 set_global("current_msg_list", "");
+
+rewiremock.enable();
 
 const echo = zrequire("echo");
 const people = zrequire("people");
@@ -259,3 +263,4 @@ run_test("insert_local_message PM", (override) => {
 });
 
 MockDate.reset();
+rewiremock.disable();
