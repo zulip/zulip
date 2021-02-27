@@ -7,6 +7,7 @@ const render_edit_bot = require("../templates/edit_bot.hbs");
 const render_settings_edit_embedded_bot_service = require("../templates/settings/edit_embedded_bot_service.hbs");
 const render_settings_edit_outgoing_webhook_service = require("../templates/settings/edit_outgoing_webhook_service.hbs");
 
+const channel = require("./channel");
 const loading = require("./loading");
 const people = require("./people");
 

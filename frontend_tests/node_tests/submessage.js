@@ -2,12 +2,17 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 const widgetize = set_global("widgetize", {});
 const message_store = set_global("message_store", {});
+
+rewiremock.enable();
 
 const submessage = zrequire("submessage");
 
@@ -99,3 +104,4 @@ run_test("handle_event", () => {
 
     assert.deepEqual(message.submessages[0], event);
 });
+rewiremock.disable();

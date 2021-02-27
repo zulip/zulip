@@ -2,11 +2,16 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 const message_list = set_global("message_list", {});
+
+rewiremock.enable();
 
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
@@ -332,3 +337,4 @@ run_test("server_history_end_to_end", () => {
     });
     assert(on_success_called);
 });
+rewiremock.disable();

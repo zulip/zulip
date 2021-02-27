@@ -1,5 +1,7 @@
 "use strict";
 
+const channel = require("./channel");
+
 exports.messages = new Map();
 
 exports.reset_id_state = function () {
@@ -118,7 +120,7 @@ exports.start_tracking_message = function (opts) {
     const state = new exports.MessageState(opts);
 
     exports.messages.set(local_id, state);
-}
+};
 
 exports.get_message_state = function (local_id) {
     const state = exports.messages.get(local_id);

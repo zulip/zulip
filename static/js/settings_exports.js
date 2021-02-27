@@ -2,6 +2,7 @@
 
 const render_admin_export_list = require("../templates/admin_export_list.hbs");
 
+const channel = require("./channel");
 const loading = require("./loading");
 const people = require("./people");
 

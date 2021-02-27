@@ -2,6 +2,8 @@
 
 const _ = require("lodash");
 
+const channel = require("./channel");
+
 function send_flag_update(message, flag, op) {
     channel.post({
         url: "/json/messages/flags",

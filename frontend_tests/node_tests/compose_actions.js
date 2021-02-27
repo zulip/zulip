@@ -57,7 +57,9 @@ set_global("current_msg_list", {
     },
 });
 
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+
+rewiremock("../../static/js/channel").with(channel);
 
 rewiremock.enable();
 
@@ -358,7 +360,7 @@ run_test("quote_and_reply", (override) => {
         raw_content: "Testing.",
     };
 
-    set_global("channel", {
+    rewiremock("../../static/js/channel").with({
         get() {
             assert.fail("channel.get should not be used if raw_content is present");
         },

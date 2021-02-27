@@ -1,5 +1,6 @@
 "use strict";
 
+const channel = require("./channel");
 const people = require("./people");
 
 exports.send_message = function (request, on_success, error) {

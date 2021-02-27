@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -17,7 +19,8 @@ set_global("document", {
 });
 set_global("addEventListener", noop);
 
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 set_global("home_msg_list", {
     select_id: noop,
     selected_id() {
@@ -47,6 +50,8 @@ set_global("ui_report", {
 set_global("$", {
     now() {},
 });
+
+rewiremock.enable();
 
 zrequire("message_store");
 const server_events = zrequire("server_events");
@@ -147,3 +152,4 @@ run_test("event_edit_message_error", () => {
     assert.equal(logs.length, 1);
     assert.equal(logs[0].more_info, undefined);
 });
+rewiremock.disable();

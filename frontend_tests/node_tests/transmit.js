@@ -2,19 +2,24 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const noop = () => {};
 
 const page_params = set_global("page_params", {});
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 const reload = set_global("reload", {});
 const reload_state = set_global("reload_state", {});
 const sent_messages = set_global("sent_messages", {
     start_tracking_message: noop,
     report_server_ack: noop,
 });
+
+rewiremock.enable();
 
 const people = zrequire("people");
 const transmit = zrequire("transmit");
@@ -187,3 +192,4 @@ run_test("reply_message_errors", () => {
         message: bogus_message,
     });
 });
+rewiremock.disable();

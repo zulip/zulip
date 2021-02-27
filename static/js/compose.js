@@ -9,6 +9,7 @@ const render_compose_invite_users = require("../templates/compose_invite_users.h
 const render_compose_not_subscribed = require("../templates/compose_not_subscribed.hbs");
 const render_compose_private_stream_alert = require("../templates/compose_private_stream_alert.hbs");
 
+const channel = require("./channel");
 const common = require("./common");
 const compose_pm_pill = require("./compose_pm_pill");
 const drafts = require("./drafts");

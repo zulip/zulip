@@ -8,6 +8,8 @@ const render_stream_sidebar_actions = require("../templates/stream_sidebar_actio
 const render_topic_sidebar_actions = require("../templates/topic_sidebar_actions.hbs");
 const render_unstar_messages_modal = require("../templates/unstar_messages_modal.hbs");
 
+const channel = require("./channel");
+
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
 let current_stream_sidebar_elem;

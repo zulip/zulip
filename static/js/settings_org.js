@@ -4,6 +4,7 @@ const pygments_data = require("../generated/pygments_data.json");
 const render_settings_admin_auth_methods_list = require("../templates/settings/admin_auth_methods_list.hbs");
 const render_settings_admin_realm_domains_list = require("../templates/settings/admin_realm_domains_list.hbs");
 
+const channel = require("./channel");
 const loading = require("./loading");
 const settings_config = require("./settings_config");
 const settings_ui = require("./settings_ui");

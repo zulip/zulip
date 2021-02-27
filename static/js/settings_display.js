@@ -1,5 +1,6 @@
 "use strict";
 
+const channel = require("./channel");
 const emojisets = require("./emojisets");
 const loading = require("./loading");
 const settings_config = require("./settings_config");

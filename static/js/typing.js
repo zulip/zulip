@@ -1,5 +1,6 @@
 import * as typing_status from "../shared/js/typing_status";
 
+import * as channel from "./channel";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as people from "./people";
 

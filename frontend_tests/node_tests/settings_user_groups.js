@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
+const rewiremock = require("rewiremock/node");
 
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
@@ -19,7 +20,8 @@ const pills = {
 
 let create_item_handler;
 
-const channel = set_global("channel", {});
+const channel = {__esModule: true};
+rewiremock("../../static/js/channel").with(channel);
 const typeahead_helper = set_global("typeahead_helper", {});
 const user_groups = set_global("user_groups", {
     get_user_group_from_id: noop,
@@ -29,6 +31,8 @@ const user_groups = set_global("user_groups", {
 const ui_report = set_global("ui_report", {});
 
 const page_params = set_global("page_params", {});
+
+rewiremock.enable();
 
 const user_pill = zrequire("user_pill");
 const settings_user_groups = zrequire("settings_user_groups");
@@ -868,3 +872,4 @@ test_ui("on_events", () => {
         assert(api_endpoint_called);
     })();
 });
+rewiremock.disable();
