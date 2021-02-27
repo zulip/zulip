@@ -39,7 +39,9 @@ const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);
 const message_viewport = {__esModule: true};
 rewiremock("../../static/js/message_viewport").with(message_viewport);
-const topic_list = set_global("topic_list", {});
+const topic_list = {__esModule: true};
+
+rewiremock("../../static/js/topic_list").with(topic_list);
 
 rewiremock.enable();
 

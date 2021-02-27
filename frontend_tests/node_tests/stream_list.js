@@ -18,7 +18,8 @@ const page_params = set_global("page_params", {
 
 const noop = () => {};
 
-const topic_list = set_global("topic_list", {});
+const topic_list = {__esModule: true};
+rewiremock("../../static/js/topic_list").with(topic_list);
 set_global("overlays", {});
 set_global("popovers", {});
 

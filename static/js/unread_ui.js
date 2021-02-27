@@ -1,3 +1,5 @@
+import * as topic_list from "./topic_list";
+
 let last_mention_count = 0;
 
 function do_new_messages_animation(li) {
