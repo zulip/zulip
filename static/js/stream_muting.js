@@ -1,3 +1,4 @@
+import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
 
 export function update_is_muted(sub, value) {

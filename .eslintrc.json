@@ -163,7 +163,6 @@
                 "message_fetch": false,
                 "message_flags": false,
                 "message_list": false,
-                "message_scroll": false,
                 "message_store": false,
                 "message_util": false,
                 "narrow": false,

@@ -2,15 +2,19 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const rewiremock = require("rewiremock/node");
+
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("message_scroll", {
+rewiremock("../../static/js/message_scroll").with({
     hide_loading_older: () => {},
     show_loading_older: () => {},
     hide_loading_newer: () => {},
     show_loading_newer: () => {},
 });
+
+rewiremock.enable();
 
 const {FetchStatus} = zrequire("fetch_status");
 
@@ -176,3 +180,4 @@ run_test("basics", () => {
     can_load_older();
     blocked_newer();
 });
+rewiremock.disable();

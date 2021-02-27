@@ -32,7 +32,7 @@ rewiremock("../../static/js/ui_report").with({
 const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);
 set_global("document", "document-stub");
-set_global("message_scroll", {
+rewiremock("../../static/js/message_scroll").with({
     show_loading_older: noop,
     hide_loading_older: noop,
     show_loading_newer: noop,

@@ -25,7 +25,8 @@ const message_list = set_global("message_list", {
         this.narrowed = value;
     },
 });
-const message_scroll = set_global("message_scroll", {});
+const message_scroll = {__esModule: true};
+rewiremock("../../static/js/message_scroll").with(message_scroll);
 set_global("message_util", {});
 const notifications = set_global("notifications", {});
 set_global("page_params", {});

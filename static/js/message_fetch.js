@@ -3,6 +3,7 @@
 const channel = require("./channel");
 const {Filter} = require("./filter");
 const huddle_data = require("./huddle_data");
+const message_scroll = require("./message_scroll");
 const people = require("./people");
 const pm_list = require("./pm_list");
 const stream_data = require("./stream_data");
