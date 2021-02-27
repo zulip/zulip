@@ -8,6 +8,7 @@ const render_topic_edit_form = require("../templates/topic_edit_form.hbs");
 const channel = require("./channel");
 const echo = require("./echo");
 const loading = require("./loading");
+const message_viewport = require("./message_viewport");
 
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];

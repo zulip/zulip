@@ -1,5 +1,7 @@
 "use strict";
 
+const message_viewport = require("./message_viewport");
+
 exports.update_is_muted = function (sub, value) {
     sub.is_muted = value;
 

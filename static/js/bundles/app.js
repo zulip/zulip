@@ -18,7 +18,6 @@ import "../fold_dict";
 import "../input_pill";
 import "../setup";
 import "../unread_ops";
-import "../message_viewport";
 import "../rows";
 import "../user_groups";
 import "../unread";

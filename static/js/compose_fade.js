@@ -2,6 +2,7 @@
 
 const _ = require("lodash");
 
+const message_viewport = require("./message_viewport");
 const people = require("./people");
 const util = require("./util");
 
