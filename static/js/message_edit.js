@@ -10,6 +10,7 @@ import * as echo from "./echo";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_viewport from "./message_viewport";
+import * as resize from "./resize";
 import * as rows from "./rows";
 import * as stream_data from "./stream_data";
 import * as upload from "./upload";

@@ -19,6 +19,7 @@ import * as markdown from "./markdown";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
+import * as resize from "./resize";
 import * as rtl from "./rtl";
 import * as sent_messages from "./sent_messages";
 import * as settings_config from "./settings_config";

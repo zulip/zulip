@@ -26,7 +26,6 @@ import "../narrow";
 import "../reload";
 import "../compose_actions";
 import "../subs";
-import "../resize";
 import "../list_widget";
 import "../floating_recipient_bar";
 import "../lightbox";

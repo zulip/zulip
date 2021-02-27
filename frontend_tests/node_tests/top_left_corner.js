@@ -8,7 +8,7 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("resize", {
+rewiremock("../../static/js/resize").with({
     resize_stream_filters_container: () => {},
 });
 rewiremock.enable();
