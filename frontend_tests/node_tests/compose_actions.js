@@ -33,7 +33,7 @@ const compose_fade = set_global("compose_fade", {
     clear_compose: noop,
 });
 
-set_global("drafts", {
+rewiremock("../../static/js/drafts").with({
     update_draft: noop,
 });
 

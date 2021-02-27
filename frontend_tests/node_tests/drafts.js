@@ -164,9 +164,9 @@ run_test("initialize", () => {
     window.addEventListener = (event_name, f) => {
         assert.equal(event_name, "beforeunload");
         let called = false;
-        drafts.update_draft = () => {
+        drafts.__Rewire__("update_draft", () => {
             called = true;
-        };
+        });
         f();
         assert(called);
     };
@@ -295,7 +295,7 @@ run_test("format_drafts", (override) => {
     });
 
     override(drafts, "open_overlay", noop);
-    drafts.set_initial_element = noop;
+    drafts.__Rewire__("set_initial_element", noop);
 
     $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();

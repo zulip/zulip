@@ -10,6 +10,7 @@ const render_edit_content_button = require("../templates/edit_content_button.hbs
 
 const alert_words = require("./alert_words");
 const copy_and_paste = require("./copy_and_paste");
+const drafts = require("./drafts");
 const echo = require("./echo");
 const emojisets = require("./emojisets");
 const invite = require("./invite");

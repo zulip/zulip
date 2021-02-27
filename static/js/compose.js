@@ -10,6 +10,7 @@ const render_compose_not_subscribed = require("../templates/compose_not_subscrib
 const render_compose_private_stream_alert = require("../templates/compose_private_stream_alert.hbs");
 
 const common = require("./common");
+const drafts = require("./drafts");
 const echo = require("./echo");
 const loading = require("./loading");
 const peer_data = require("./peer_data");

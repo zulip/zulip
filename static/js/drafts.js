@@ -1,13 +1,11 @@
-"use strict";
+import {subDays} from "date-fns";
+import Handlebars from "handlebars/runtime";
 
-const {subDays} = require("date-fns");
-const Handlebars = require("handlebars/runtime");
+import render_draft_table_body from "../templates/draft_table_body.hbs";
 
-const render_draft_table_body = require("../templates/draft_table_body.hbs");
-
-const {localstorage} = require("./localstorage");
-const people = require("./people");
-const util = require("./util");
+import {localstorage} from "./localstorage";
+import * as people from "./people";
+import * as util from "./util";
 
 function set_count(count) {
     const draft_count = count.toString();
@@ -15,7 +13,7 @@ function set_count(count) {
     $(".compose_drafts_button").text(text);
 }
 
-const draft_model = (function () {
+export const draft_model = (function () {
     const exports = {};
 
     // the key that the drafts are stored under.
@@ -75,9 +73,7 @@ const draft_model = (function () {
     return exports;
 })();
 
-exports.draft_model = draft_model;
-
-exports.snapshot_message = function () {
+export function snapshot_message() {
     if (!compose_state.composing() || compose_state.message_content().length <= 2) {
         // If you aren't in the middle of composing the body of a
         // message or the message is shorter than 2 characters long, don't try to snapshot.
@@ -98,9 +94,9 @@ exports.snapshot_message = function () {
         message.topic = compose_state.topic();
     }
     return message;
-};
+}
 
-exports.restore_message = function (draft) {
+export function restore_message(draft) {
     // This is kinda the inverse of snapshot_message, and
     // we are essentially making a deep copy of the draft,
     // being explicit about which fields we send to the compose
@@ -123,15 +119,15 @@ exports.restore_message = function (draft) {
     }
 
     return compose_args;
-};
+}
 
 function draft_notify() {
     $(".alert-draft").css("display", "inline-block");
     $(".alert-draft").delay(1000).fadeOut(500);
 }
 
-exports.update_draft = function () {
-    const draft = exports.snapshot_message();
+export function update_draft() {
+    const draft = snapshot_message();
 
     if (draft === undefined) {
         // The user cleared the compose box, which means
@@ -157,23 +153,23 @@ exports.update_draft = function () {
     const new_draft_id = draft_model.addDraft(draft);
     $("#compose-textarea").data("draft-id", new_draft_id);
     draft_notify();
-};
+}
 
-exports.delete_draft_after_send = function () {
+export function delete_draft_after_send() {
     const draft_id = $("#compose-textarea").data("draft-id");
     if (draft_id) {
         draft_model.deleteDraft(draft_id);
     }
     $("#compose-textarea").removeData("draft-id");
-};
+}
 
-exports.restore_draft = function (draft_id) {
+export function restore_draft(draft_id) {
     const draft = draft_model.getDraft(draft_id);
     if (!draft) {
         return;
     }
 
-    const compose_args = exports.restore_message(draft);
+    const compose_args = restore_message(draft);
 
     if (compose_args.type === "stream") {
         if (draft.stream !== "") {
@@ -204,11 +200,11 @@ exports.restore_draft = function (draft_id) {
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-textarea").data("draft-id", draft_id);
-};
+}
 
 const DRAFT_LIFETIME = 30;
 
-exports.remove_old_drafts = function () {
+export function remove_old_drafts() {
     const old_date = subDays(new Date(), DRAFT_LIFETIME).getTime();
     const drafts = draft_model.get();
     for (const [id, draft] of Object.entries(drafts)) {
@@ -216,9 +212,9 @@ exports.remove_old_drafts = function () {
             draft_model.deleteDraft(id);
         }
     }
-};
+}
 
-exports.format_draft = function (draft) {
+export function format_draft(draft) {
     const id = draft.id;
     let formatted;
     const time = new Date(draft.updatedAt);
@@ -291,7 +287,7 @@ exports.format_draft = function (draft) {
     }
 
     return formatted;
-};
+}
 
 function row_with_focus() {
     const focused_draft = $(".draft-info-box:focus")[0];
@@ -312,7 +308,7 @@ function remove_draft(draft_row) {
     // Deletes the draft and removes it from the list
     const draft_id = draft_row.data("draft-id");
 
-    exports.draft_model.deleteDraft(draft_id);
+    draft_model.deleteDraft(draft_id);
 
     draft_row.remove();
 
@@ -321,7 +317,7 @@ function remove_draft(draft_row) {
     }
 }
 
-exports.launch = function () {
+export function launch() {
     function format_drafts(data) {
         for (const [id, draft] of Object.entries(data)) {
             draft.id = id;
@@ -334,7 +330,7 @@ exports.launch = function () {
         );
 
         const sorted_formatted_drafts = sorted_raw_drafts
-            .map((draft_row) => exports.format_draft(draft_row))
+            .map((draft_row) => format_draft(draft_row))
             .filter(Boolean);
 
         return sorted_formatted_drafts;
@@ -362,7 +358,7 @@ exports.launch = function () {
 
             const draft_row = $(this).closest(".draft-row");
             const draft_id = draft_row.data("draft-id");
-            exports.restore_draft(draft_id);
+            restore_draft(draft_id);
         });
 
         $(".draft_controls .delete-draft").on("click", function () {
@@ -372,7 +368,7 @@ exports.launch = function () {
         });
     }
 
-    exports.remove_old_drafts();
+    remove_old_drafts();
     const drafts = format_drafts(draft_model.get());
     render_widgets(drafts);
 
@@ -380,10 +376,10 @@ exports.launch = function () {
     // element in order for the CSS transition to take effect.
     $("#draft_overlay").css("opacity");
 
-    exports.open_overlay();
-    exports.set_initial_element(drafts);
+    open_overlay();
+    set_initial_element(drafts);
     setup_event_handlers();
-};
+}
 
 function activate_element(elem) {
     $(".draft-info-box").removeClass("active");
@@ -457,7 +453,7 @@ function drafts_scroll(next_focus_draft_row) {
     }
 }
 
-exports.drafts_handle_events = function (e, event_key) {
+export function drafts_handle_events(e, event_key) {
     const draft_arrow = draft_model.get();
     const draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
     drafts_initialize_focus(event_key);
@@ -504,15 +500,15 @@ exports.drafts_handle_events = function (e, event_key) {
     // It restores draft that is focused.
     if (event_key === "enter") {
         if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
-            exports.restore_draft(focused_draft_id);
+            restore_draft(focused_draft_id);
         } else {
             const first_draft = draft_id_arrow[draft_id_arrow.length - 1];
-            exports.restore_draft(first_draft);
+            restore_draft(first_draft);
         }
     }
-};
+}
 
-exports.open_overlay = function () {
+export function open_overlay() {
     overlays.open_overlay({
         name: "drafts",
         overlay: $("#draft_overlay"),
@@ -520,9 +516,9 @@ exports.open_overlay = function () {
             hashchange.exit_overlay();
         },
     });
-};
+}
 
-exports.set_initial_element = function (drafts) {
+export function set_initial_element(drafts) {
     if (drafts.length > 0) {
         const curr_draft_id = drafts[0].draft_id;
         const selector = '[data-draft-id="' + curr_draft_id + '"]';
@@ -531,20 +527,18 @@ exports.set_initial_element = function (drafts) {
         activate_element(focus_element);
         $(".drafts-list")[0].scrollTop = 0;
     }
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     window.addEventListener("beforeunload", () => {
-        exports.update_draft();
+        update_draft();
     });
 
     set_count(Object.keys(draft_model.get()).length);
 
-    $("#compose-textarea").on("focusout", exports.update_draft);
+    $("#compose-textarea").on("focusout", update_draft);
 
     $("body").on("focus", ".draft-info-box", (e) => {
         activate_element(e.target);
     });
-};
-
-window.drafts = exports;
+}

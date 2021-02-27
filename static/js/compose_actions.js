@@ -5,6 +5,7 @@ const autosize = require("autosize");
 const fenced_code = require("../shared/js/fenced_code");
 
 const common = require("./common");
+const drafts = require("./drafts");
 const people = require("./people");
 
 exports.blur_compose_inputs = function () {

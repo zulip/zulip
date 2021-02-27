@@ -150,7 +150,6 @@
                 "confirm_dialog": false,
                 "csrf_token": false,
                 "current_msg_list": true,
-                "drafts": false,
                 "dropdown_list_widget": false,
                 "emoji_picker": false,
                 "favicon": false,
