@@ -3,6 +3,7 @@
 const channel = require("./channel");
 const huddle_data = require("./huddle_data");
 const people = require("./people");
+const pm_list = require("./pm_list");
 
 const consts = {
     backfill_idle_time: 10 * 1000,

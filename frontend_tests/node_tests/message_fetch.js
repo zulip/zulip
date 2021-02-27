@@ -40,7 +40,8 @@ set_global("message_scroll", {
 const message_util = set_global("message_util", {});
 const message_store = set_global("message_store", {});
 const narrow_state = set_global("narrow_state", {});
-const pm_list = set_global("pm_list", {});
+const pm_list = {__esModule: true};
+rewiremock("../../static/js/pm_list").with(pm_list);
 const server_events = set_global("server_events", {});
 const stream_list = set_global("stream_list", {
     maybe_scroll_narrow_into_view: () => {},

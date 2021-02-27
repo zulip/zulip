@@ -1,6 +1,7 @@
 "use strict";
 
 const people = require("./people");
+const pm_list = require("./pm_list");
 const unread_ui = require("./unread_ui");
 
 exports.update_count_in_dom = function (unread_count_elem, count) {

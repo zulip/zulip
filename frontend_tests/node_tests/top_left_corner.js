@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -9,6 +11,7 @@ const $ = require("../zjsunit/zjquery");
 set_global("resize", {
     resize_stream_filters_container: () => {},
 });
+rewiremock.enable();
 const Filter = zrequire("Filter", "js/filter");
 const people = zrequire("people");
 
@@ -20,7 +23,7 @@ run_test("narrowing", () => {
     let pm_expanded;
     let pm_closed;
 
-    set_global("pm_list", {
+    rewiremock("../../static/js/pm_list").with({
         close() {
             pm_closed = true;
         },
@@ -135,3 +138,4 @@ run_test("update_count_in_dom", () => {
     assert.equal($("<mentioned-value>").text(), "");
     assert.equal($("<starred-value>").text(), "");
 });
+rewiremock.disable();

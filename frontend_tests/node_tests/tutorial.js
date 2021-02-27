@@ -23,7 +23,8 @@ set_global("page_params", {});
 
 const activity = set_global("activity", {});
 const message_live_update = set_global("message_live_update", {});
-const pm_list = set_global("pm_list", {});
+const pm_list = {__esModule: true};
+rewiremock("../../static/js/pm_list").with(pm_list);
 const settings_users = set_global("settings_users", {});
 const home_msg_list = set_global("home_msg_list", {});
 const message_list = set_global("message_list", {});
