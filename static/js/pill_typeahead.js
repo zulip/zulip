@@ -1,6 +1,7 @@
 import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as stream_pill from "./stream_pill";
+import * as user_pill from "./user_pill";
 
 export function set_up(input, pills, opts) {
     let source = opts.source;

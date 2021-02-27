@@ -11,6 +11,7 @@ const typeahead = require("../shared/js/typeahead");
 
 const people = require("./people");
 const settings_data = require("./settings_data");
+const user_pill = require("./user_pill");
 
 //************************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS

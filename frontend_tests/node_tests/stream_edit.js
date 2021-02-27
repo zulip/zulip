@@ -246,7 +246,7 @@ test_ui("subscriber_pills", () => {
 
     // Only Denmark stream pill is created and a
     // request is sent to add all it's subscribers.
-    user_pill.get_user_ids = () => [];
+    user_pill.__Rewire__("get_user_ids", () => []);
     expected_user_ids = potential_denmark_stream_subscribers;
     add_subscribers_handler(event);
 
@@ -258,14 +258,14 @@ test_ui("subscriber_pills", () => {
 
     // No request is sent if we try to subscribe ourselves
     // only and are already subscribed to the stream.
-    user_pill.get_user_ids = () => [me.user_id];
+    user_pill.__Rewire__("get_user_ids", () => [me.user_id]);
     add_subscribers_handler(event);
     assert(!add_subscribers_request);
 
     // Denmark stream pill and fred and mark user pills are created.
     // But only one request for mark is sent even though a mark user
     // pill is created and mark is also a subscriber of Denmark stream.
-    user_pill.get_user_ids = () => [mark.user_id, fred.user_id];
+    user_pill.__Rewire__("get_user_ids", () => [mark.user_id, fred.user_id]);
     stream_pill.get_user_ids = () => peer_data.get_subscribers(denmark.stream_id);
     expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);

@@ -10,7 +10,6 @@ const people = zrequire("people");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
 const input_pill = zrequire("input_pill");
-zrequire("user_pill");
 const compose_actions = set_global("compose_actions", {});
 
 let pills = {

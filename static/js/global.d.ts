@@ -134,7 +134,6 @@ declare let upload: any;
 declare let upload_widget: any;
 declare let user_events: any;
 declare let user_groups: any;
-declare let user_pill: any;
 declare let widgetize: any;
 
 interface JQuery {
