@@ -2,6 +2,7 @@
 
 const render_message_view_header = require("../templates/message_view_header.hbs");
 
+const narrow_state = require("./narrow_state");
 const peer_data = require("./peer_data");
 const rendered_markdown = require("./rendered_markdown");
 

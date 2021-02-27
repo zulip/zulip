@@ -14,7 +14,8 @@ set_global("page_params", {
 
 const noop = () => {};
 
-const narrow_state = set_global("narrow_state", {});
+const narrow_state = {__esModule: true};
+rewiremock("../../static/js/narrow_state").with(narrow_state);
 const search_suggestion = set_global("search_suggestion", {});
 set_global("ui_util", {
     change_tab_to: noop,

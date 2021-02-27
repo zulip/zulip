@@ -46,7 +46,6 @@ rewiremock.enable();
 
 zrequire("hash_util");
 zrequire("narrow");
-zrequire("narrow_state");
 const people = zrequire("people");
 zrequire("presence");
 zrequire("buddy_data");

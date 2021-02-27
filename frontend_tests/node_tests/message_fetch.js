@@ -41,7 +41,8 @@ set_global("message_scroll", {
 });
 const message_util = set_global("message_util", {});
 const message_store = set_global("message_store", {});
-const narrow_state = set_global("narrow_state", {});
+const narrow_state = {__esModule: true};
+rewiremock("../../static/js/narrow_state").with(narrow_state);
 const pm_list = {__esModule: true};
 rewiremock("../../static/js/pm_list").with(pm_list);
 const server_events = set_global("server_events", {});

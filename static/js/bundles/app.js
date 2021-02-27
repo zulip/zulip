@@ -22,7 +22,6 @@ import "../unread";
 import "../stream_list";
 import "../widgetize";
 import "../message_list";
-import "../narrow_state";
 import "../narrow";
 import "../reload_state";
 import "../reload";

@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
+const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -11,10 +12,12 @@ let page_params = set_global("page_params", {
     realm_push_notifications_enabled: false,
 });
 
-set_global("narrow_state", {});
+rewiremock("../../static/js/narrow_state").with({});
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
 const message_store = set_global("message_store", {});
+
+rewiremock.enable();
 
 const muting = zrequire("muting");
 const people = zrequire("people");
@@ -693,3 +696,4 @@ run_test("errors", () => {
     assert.equal(counts.private_message_count, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
+rewiremock.disable();

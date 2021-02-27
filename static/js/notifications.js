@@ -9,6 +9,7 @@ const alert_words = require("./alert_words");
 const channel = require("./channel");
 const favicon = require("./favicon");
 const muting = require("./muting");
+const narrow_state = require("./narrow_state");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const spoilers = require("./spoilers");

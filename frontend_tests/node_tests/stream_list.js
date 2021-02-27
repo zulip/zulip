@@ -383,12 +383,12 @@ let narrow_state;
 test_ui("narrowing", () => {
     initialize_stream_data();
 
-    narrow_state = set_global("narrow_state", {
+    narrow_state = rewiremock("../../static/js/narrow_state").with({
         stream() {
             return "devel";
         },
         topic: noop,
-    });
+    }).mock.value;
 
     topic_list.close = noop;
     topic_list.rebuild = noop;

@@ -38,7 +38,7 @@ rewiremock("../../static/js/pm_list").with({
     update_private_messages() {},
 });
 
-set_global("narrow_state", {
+rewiremock("../../static/js/narrow_state").with({
     update_email() {},
 });
 

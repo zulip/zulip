@@ -7,6 +7,7 @@ import render_recipient_row from "../templates/recipient_row.hbs";
 import render_single_message from "../templates/single_message.hbs";
 
 import * as message_viewport from "./message_viewport";
+import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";

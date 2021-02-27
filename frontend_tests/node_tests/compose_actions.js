@@ -39,9 +39,12 @@ rewiremock("../../static/js/drafts").with({
     update_draft: noop,
 });
 
-const narrow_state = set_global("narrow_state", {
+const narrow_state = {
+    __esModule: true,
     set_compose_defaults: noop,
-});
+};
+
+rewiremock("../../static/js/narrow_state").with(narrow_state);
 
 set_global("unread_ops", {
     notify_server_message_read: noop,

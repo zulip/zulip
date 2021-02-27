@@ -168,7 +168,6 @@ set_global("stream_data", {
 rewiremock.enable();
 
 zrequire("message_util");
-zrequire("narrow_state");
 const people = zrequire("people");
 let rt = zrequire("recent_topics");
 

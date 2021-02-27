@@ -5,6 +5,7 @@ const Handlebars = require("handlebars/runtime");
 const common = require("./common");
 const {Filter} = require("./filter");
 const huddle_data = require("./huddle_data");
+const narrow_state = require("./narrow_state");
 const people = require("./people");
 const settings_data = require("./settings_data");
 
