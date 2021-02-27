@@ -48,7 +48,7 @@ rewiremock("../../static/js/rows").with({
 rewiremock.enable();
 
 const {Filter} = zrequire("Filter", "js/filter");
-const MessageListView = zrequire("MessageListView", "js/message_list_view");
+const {MessageListView} = zrequire("MessageListView", "js/message_list_view");
 const message_list = zrequire("message_list");
 
 let next_timestamp = 1500000000;

@@ -21,7 +21,6 @@ import "../unread_ops";
 import "../unread";
 import "../stream_list";
 import "../widgetize";
-import "../message_list_view";
 import "../message_list";
 import "../message_live_update";
 import "../narrow_state";

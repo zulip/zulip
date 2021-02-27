@@ -35,7 +35,6 @@ set_global("recent_topics", {
 rewiremock.enable();
 
 const muting = zrequire("muting");
-zrequire("MessageListView", "js/message_list_view");
 const {MessageList} = zrequire("message_list");
 
 function accept_all_filter() {
