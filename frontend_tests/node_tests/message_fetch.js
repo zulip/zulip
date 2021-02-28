@@ -40,7 +40,8 @@ rewiremock("../../static/js/message_scroll").with({
     update_top_of_narrow_notices: () => {},
 });
 const message_util = set_global("message_util", {});
-const message_store = set_global("message_store", {});
+const message_store = {__esModule: true};
+rewiremock("../../static/js/message_store").with(message_store);
 const narrow_state = {__esModule: true};
 rewiremock("../../static/js/narrow_state").with(narrow_state);
 const pm_list = {__esModule: true};

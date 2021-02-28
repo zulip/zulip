@@ -54,12 +54,16 @@ const message = {
     ],
 };
 
-const message_store = set_global("message_store", {
+const message_store = {
+    __esModule: true,
+
     get(message_id) {
         assert.equal(message_id, 1001);
         return message;
     },
-});
+};
+
+rewiremock("../../static/js/message_store").with(message_store);
 
 set_global("current_msg_list", {
     selected_message() {

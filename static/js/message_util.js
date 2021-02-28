@@ -1,6 +1,7 @@
 "use strict";
 
 const loading = require("./loading");
+const message_store = require("./message_store");
 const resize = require("./resize");
 const unread_ui = require("./unread_ui");
 

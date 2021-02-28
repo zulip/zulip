@@ -7,7 +7,8 @@ const rewiremock = require("rewiremock/node");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_store = set_global("message_store", {});
+const message_store = {__esModule: true};
+rewiremock("../../static/js/message_store").with(message_store);
 set_global("page_params", {});
 
 rewiremock("../../static/js/muting").with({

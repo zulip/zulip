@@ -14,9 +14,12 @@ const stream_topic_history = {__esModule: true};
 
 rewiremock("../../static/js/stream_topic_history").with(stream_topic_history);
 
-const message_store = set_global("message_store", {
+const message_store = {
+    __esModule: true,
     user_ids: () => [],
-});
+};
+
+rewiremock("../../static/js/message_store").with(message_store);
 
 const page_params = set_global("page_params", {});
 const channel = {__esModule: true};

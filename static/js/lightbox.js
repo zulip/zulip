@@ -1,4 +1,5 @@
 import {LightboxCanvas} from "./lightbox_canvas";
+import * as message_store from "./message_store";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as popovers from "./popovers";

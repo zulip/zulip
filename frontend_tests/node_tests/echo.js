@@ -30,7 +30,7 @@ rewiremock("../../static/js/sent_messages").with({
     },
 });
 
-set_global("message_store", {
+rewiremock("../../static/js/message_store").with({
     get: () => ({failed_request: true}),
     update_booleans: () => {},
 });

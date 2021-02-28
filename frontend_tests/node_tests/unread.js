@@ -15,7 +15,9 @@ let page_params = set_global("page_params", {
 rewiremock("../../static/js/narrow_state").with({});
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
-const message_store = set_global("message_store", {});
+const message_store = {__esModule: true};
+
+rewiremock("../../static/js/message_store").with(message_store);
 
 rewiremock.enable();
 

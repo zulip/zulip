@@ -8,6 +8,7 @@ const render_emoji_popover_content = require("../templates/emoji_popover_content
 const render_emoji_popover_search_results = require("../templates/emoji_popover_search_results.hbs");
 const render_emoji_showcase = require("../templates/emoji_showcase.hbs");
 
+const message_store = require("./message_store");
 const popovers = require("./popovers");
 const rows = require("./rows");
 

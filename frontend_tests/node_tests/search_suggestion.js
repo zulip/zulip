@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
@@ -9,11 +11,13 @@ const page_params = set_global("page_params", {
     search_pills_enabled: true,
 });
 
-set_global("message_store", {
+rewiremock("../../static/js/message_store").with({
     user_ids: () => [],
 });
 
 set_global("narrow", {});
+
+rewiremock.enable();
 
 const settings_config = zrequire("settings_config");
 page_params.realm_email_address_visibility =
@@ -966,3 +970,4 @@ run_test("multiple_operators_without_pills", () => {
     expected = ["is:alerted sender:ted@zulip.com abc"];
     assert.deepEqual(suggestions.strings, expected);
 });
+rewiremock.disable();

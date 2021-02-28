@@ -146,7 +146,7 @@ set_global("message_list", {
         },
     },
 });
-set_global("message_store", {
+rewiremock("../../static/js/message_store").with({
     get: (msg_id) => messages[msg_id - 1],
 });
 rewiremock("../../static/js/stream_data").with({
