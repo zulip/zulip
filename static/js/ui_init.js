@@ -13,6 +13,7 @@ import * as bot_data from "./bot_data";
 import * as click_handlers from "./click_handlers";
 import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as drafts from "./drafts";
