@@ -100,7 +100,7 @@ const settings_bots = zrequire("settings_bots");
 const stream_data = zrequire("stream_data");
 const settings_account = zrequire("settings_account");
 const settings_org = zrequire("settings_org");
-const dropdown_list_widget = zrequire("dropdown_list_widget");
+const {DropdownListWidget: dropdown_list_widget} = zrequire("dropdown_list_widget");
 
 run_test("unloaded", () => {
     // This test mostly gets us line coverage, and makes

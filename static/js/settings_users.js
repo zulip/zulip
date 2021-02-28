@@ -5,6 +5,7 @@ import render_admin_user_list from "../templates/admin_user_list.hbs";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
+import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";

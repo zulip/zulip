@@ -130,7 +130,6 @@
                 "$": false,
                 "csrf_token": false,
                 "current_msg_list": true,
-                "dropdown_list_widget": false,
                 "favicon": false,
                 "flatpickr": false,
                 "history": false,
