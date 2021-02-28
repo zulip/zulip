@@ -6,6 +6,7 @@ import WinChan from "winchan";
 import render_buddy_list_tooltip from "../templates/buddy_list_tooltip.hbs";
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
+import * as activity from "./activity";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";

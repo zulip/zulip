@@ -3,7 +3,6 @@
 // remove each declaration when the corresponding module is migrated
 // to TS.
 
-declare let activity: any;
 declare let admin: any;
 declare let avatar: any;
 declare let blueslip: any;

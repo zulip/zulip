@@ -20,7 +20,8 @@ const typing_person1 = events.typing_person1;
 
 set_global("setTimeout", (func) => func());
 
-const activity = set_global("activity", {});
+const activity = {__esModule: true};
+rewiremock("../../static/js/activity").with(activity);
 const alert_words_ui = {__esModule: true};
 rewiremock("../../static/js/alert_words_ui").with(alert_words_ui);
 const attachments_ui = {__esModule: true};
