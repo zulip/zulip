@@ -49,7 +49,6 @@ declare let realm_icon: any;
 declare let realm_logo: any;
 declare let recent_topics: any;
 declare let reminder: any;
-declare let search: any;
 declare let search_pill_widget: any;
 declare let server_events: any;
 declare let settings: any;

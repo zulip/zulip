@@ -15,7 +15,7 @@ set_global("location", {
 });
 set_global("to_$", () => window_stub);
 
-set_global("search", {
+rewiremock("../../static/js/search").with({
     update_button_visibility: () => {},
 });
 set_global("document", "document-stub");

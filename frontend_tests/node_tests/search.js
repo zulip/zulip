@@ -195,7 +195,7 @@ run_test("initialize", () => {
             assert(!is_blurred);
             assert(is_append_search_string_called);
 
-            search.is_using_input_method = true;
+            search.__Rewire__("is_using_input_method", true);
             _setup("stream:Verona");
 
             assert.equal(opts.updater("stream:Verona"), "stream:Verona");
@@ -222,7 +222,7 @@ run_test("initialize", () => {
     searchbox.trigger("focusout");
     assert.deepEqual(searchbox.css(), {"box-shadow": "unset"});
 
-    search.is_using_input_method = false;
+    search.__Rewire__("is_using_input_method", false);
     searchbox_form.trigger("compositionend");
     assert(search.is_using_input_method);
 
@@ -303,7 +303,7 @@ run_test("initialize", () => {
     assert(is_blurred);
 
     _setup("ver");
-    search.is_using_input_method = true;
+    search.__Rewire__("is_using_input_method", true);
     searchbox_form.trigger(ev);
     // No change on Enter keyup event when using input tool
     assert(!is_blurred);
