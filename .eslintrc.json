@@ -162,7 +162,6 @@
                 "message_store": false,
                 "message_util": false,
                 "narrow": false,
-                "notifications": false,
                 "padded_widget": false,
                 "page_params": false,
                 "panels": false,

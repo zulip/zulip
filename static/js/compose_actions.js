@@ -13,6 +13,7 @@ const compose_state = require("./compose_state");
 const drafts = require("./drafts");
 const message_viewport = require("./message_viewport");
 const narrow_state = require("./narrow_state");
+const notifications = require("./notifications");
 const people = require("./people");
 const reload_state = require("./reload_state");
 const stream_data = require("./stream_data");

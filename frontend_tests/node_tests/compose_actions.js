@@ -27,7 +27,7 @@ rewiremock("../../static/js/reload_state").with({
     is_in_progress: () => false,
 });
 
-set_global("notifications", {
+rewiremock("../../static/js/notifications").with({
     clear_compose_notifications: noop,
 });
 

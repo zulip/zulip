@@ -3,6 +3,7 @@ import * as compose from "./compose";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as narrow_state from "./narrow_state";
+import * as notifications from "./notifications";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";

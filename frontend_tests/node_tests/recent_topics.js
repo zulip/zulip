@@ -22,7 +22,7 @@ set_global("compose_actions", {
 set_global("narrow", {
     narrow_title: "",
 });
-set_global("notifications", {
+rewiremock("../../static/js/notifications").with({
     redraw_title: noop,
 });
 set_global("message_view_header", {

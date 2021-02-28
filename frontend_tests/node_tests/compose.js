@@ -42,6 +42,7 @@ const sent_messages = {
     start_tracking_message: noop,
 };
 const _notifications = {
+    __esModule: true,
     notify_above_composebox: noop,
     clear_compose_notifications: noop,
 };
@@ -52,7 +53,7 @@ const reminder = {
 set_global("document", _document);
 rewiremock("../../static/js/drafts").with(_drafts);
 set_global("navigator", _navigator);
-set_global("notifications", _notifications);
+rewiremock("../../static/js/notifications").with(_notifications);
 set_global("reminder", reminder);
 rewiremock("../../static/js/sent_messages").with(sent_messages);
 rewiremock("../../static/js/rendered_markdown").with({

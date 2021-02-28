@@ -3,6 +3,7 @@
 const render_stream_specific_notification_row = require("../templates/settings/stream_specific_notification_row.hbs");
 
 const channel = require("./channel");
+const notifications = require("./notifications");
 const settings_config = require("./settings_config");
 const settings_ui = require("./settings_ui");
 const stream_data = require("./stream_data");
