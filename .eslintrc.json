@@ -152,7 +152,6 @@
                 "localStorage": false,
                 "location": false,
                 "message_events": false,
-                "message_fetch": false,
                 "message_list": false,
                 "narrow": false,
                 "padded_widget": false,

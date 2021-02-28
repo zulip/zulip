@@ -8,6 +8,7 @@ const condense = require("./condense");
 const {Filter} = require("./filter");
 const hashchange = require("./hashchange");
 const message_edit = require("./message_edit");
+const message_fetch = require("./message_fetch");
 const {MessageListData} = require("./message_list_data");
 const message_scroll = require("./message_scroll");
 const message_store = require("./message_store");

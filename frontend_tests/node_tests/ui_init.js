@@ -76,7 +76,7 @@ rewiremock("../../static/js/gear_menu").with({initialize() {}});
 rewiremock("../../static/js/hashchange").with({initialize() {}});
 set_global("hotspots", {initialize() {}});
 // Accesses home_msg_list, which is a lot of complexity to set up
-set_global("message_fetch", {initialize() {}});
+rewiremock("../../static/js/message_fetch").with({initialize() {}});
 rewiremock("../../static/js/message_scroll").with({initialize() {}});
 const message_viewport = {
     __esModule: true,

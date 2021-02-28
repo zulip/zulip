@@ -20,7 +20,8 @@ set_global("current_msg_list", {});
 const hashchange = {__esModule: true};
 rewiremock("../../static/js/hashchange").with(hashchange);
 set_global("home_msg_list", {});
-const message_fetch = set_global("message_fetch", {});
+const message_fetch = {__esModule: true};
+rewiremock("../../static/js/message_fetch").with(message_fetch);
 const message_list = set_global("message_list", {
     set_narrowed(value) {
         this.narrowed = value;
