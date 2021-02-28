@@ -54,7 +54,7 @@ function reset_test_setup(pill_container_stub) {
         assert(create_item_handler);
         return pills;
     }
-    set_global("input_pill", {
+    rewiremock("../../static/js/input_pill").with({
         create: input_pill_stub,
     });
 }

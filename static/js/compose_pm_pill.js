@@ -1,3 +1,4 @@
+import * as input_pill from "./input_pill";
 import * as people from "./people";
 import * as user_pill from "./user_pill";
 import * as util from "./util";

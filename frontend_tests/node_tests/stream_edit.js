@@ -36,7 +36,6 @@ const ui = set_global("ui", {
 
 rewiremock.enable();
 
-zrequire("input_pill");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 zrequire("subs");

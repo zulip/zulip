@@ -11,7 +11,6 @@ declare let emoji: any;
 declare let favicon: any;
 declare let home_msg_list: any;
 declare let i18n: any;
-declare let input_pill: any;
 declare let message_events: any;
 declare let message_list: any;
 declare let narrow: any;
