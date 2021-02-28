@@ -1,69 +1,67 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import generated_emoji_codes from "../generated/emoji/emoji_codes.json";
+import generated_pygments_data from "../generated/pygments_data.json";
+import * as emoji from "../shared/js/emoji";
+import * as fenced_code from "../shared/js/fenced_code";
+import render_edit_content_button from "../templates/edit_content_button.hbs";
 
-const generated_emoji_codes = require("../generated/emoji/emoji_codes.json");
-const generated_pygments_data = require("../generated/pygments_data.json");
-const emoji = require("../shared/js/emoji");
-const fenced_code = require("../shared/js/fenced_code");
-const render_edit_content_button = require("../templates/edit_content_button.hbs");
-
-const activity = require("./activity");
-const alert_words = require("./alert_words");
-const bot_data = require("./bot_data");
-const click_handlers = require("./click_handlers");
-const compose = require("./compose");
-const compose_pm_pill = require("./compose_pm_pill");
-const condense = require("./condense");
-const copy_and_paste = require("./copy_and_paste");
-const drafts = require("./drafts");
-const echo = require("./echo");
-const emojisets = require("./emojisets");
-const gear_menu = require("./gear_menu");
-const hashchange = require("./hashchange");
-const hotspots = require("./hotspots");
-const invite = require("./invite");
-const lightbox = require("./lightbox");
-const markdown = require("./markdown");
-const markdown_config = require("./markdown_config");
-const message_edit = require("./message_edit");
-const message_fetch = require("./message_fetch");
-const message_scroll = require("./message_scroll");
-const message_view_header = require("./message_view_header");
-const message_viewport = require("./message_viewport");
-const muting = require("./muting");
-const navigate = require("./navigate");
-const notifications = require("./notifications");
-const overlays = require("./overlays");
-const people = require("./people");
-const pm_conversations = require("./pm_conversations");
-const pm_list = require("./pm_list");
-const presence = require("./presence");
-const reload = require("./reload");
-const resize = require("./resize");
-const rows = require("./rows");
-const scroll_bar = require("./scroll_bar");
-const search = require("./search");
-const sent_messages = require("./sent_messages");
-const server_events = require("./server_events");
-const settings_panel_menu = require("./settings_panel_menu");
-const settings_sections = require("./settings_sections");
-const settings_toggle = require("./settings_toggle");
-const spoilers = require("./spoilers");
-const starred_messages = require("./starred_messages");
-const stream_color = require("./stream_color");
-const stream_data = require("./stream_data");
-const stream_edit = require("./stream_edit");
-const timerender = require("./timerender");
-const topic_list = require("./topic_list");
-const topic_zoom = require("./topic_zoom");
-const tutorial = require("./tutorial");
-const typing = require("./typing");
-const ui_util = require("./ui_util");
-const unread_ui = require("./unread_ui");
-const user_groups = require("./user_groups");
-const user_status = require("./user_status");
-const user_status_ui = require("./user_status_ui");
+import * as activity from "./activity";
+import * as alert_words from "./alert_words";
+import * as bot_data from "./bot_data";
+import * as click_handlers from "./click_handlers";
+import * as compose from "./compose";
+import * as compose_pm_pill from "./compose_pm_pill";
+import * as condense from "./condense";
+import * as copy_and_paste from "./copy_and_paste";
+import * as drafts from "./drafts";
+import * as echo from "./echo";
+import * as emojisets from "./emojisets";
+import * as gear_menu from "./gear_menu";
+import * as hashchange from "./hashchange";
+import * as hotspots from "./hotspots";
+import * as invite from "./invite";
+import * as lightbox from "./lightbox";
+import * as markdown from "./markdown";
+import * as markdown_config from "./markdown_config";
+import * as message_edit from "./message_edit";
+import * as message_fetch from "./message_fetch";
+import * as message_scroll from "./message_scroll";
+import * as message_view_header from "./message_view_header";
+import * as message_viewport from "./message_viewport";
+import * as muting from "./muting";
+import * as navigate from "./navigate";
+import * as notifications from "./notifications";
+import * as overlays from "./overlays";
+import * as people from "./people";
+import * as pm_conversations from "./pm_conversations";
+import * as pm_list from "./pm_list";
+import * as presence from "./presence";
+import * as reload from "./reload";
+import * as resize from "./resize";
+import * as rows from "./rows";
+import * as scroll_bar from "./scroll_bar";
+import * as search from "./search";
+import * as sent_messages from "./sent_messages";
+import * as server_events from "./server_events";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_sections from "./settings_sections";
+import * as settings_toggle from "./settings_toggle";
+import * as spoilers from "./spoilers";
+import * as starred_messages from "./starred_messages";
+import * as stream_color from "./stream_color";
+import * as stream_data from "./stream_data";
+import * as stream_edit from "./stream_edit";
+import * as timerender from "./timerender";
+import * as topic_list from "./topic_list";
+import * as topic_zoom from "./topic_zoom";
+import * as tutorial from "./tutorial";
+import * as typing from "./typing";
+import * as ui_util from "./ui_util";
+import * as unread_ui from "./unread_ui";
+import * as user_groups from "./user_groups";
+import * as user_status from "./user_status";
+import * as user_status_ui from "./user_status_ui";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -110,7 +108,7 @@ function message_hover(message_row) {
     message_row.find(".edit_content").html(render_edit_content_button(args));
 }
 
-exports.initialize_kitchen_sink_stuff = function () {
+export function initialize_kitchen_sink_stuff() {
     // TODO:
     //      This function is a historical dumping ground
     //      for lots of miscellaneous setup.  Almost all of
@@ -352,9 +350,9 @@ exports.initialize_kitchen_sink_stuff = function () {
     if (page_params.realm_presence_disabled) {
         $("#user-list").hide();
     }
-};
+}
 
-exports.initialize_everything = function () {
+export function initialize_everything() {
     /*
         When we initialize our various modules, a lot
         of them will consume data from the server
@@ -472,7 +470,7 @@ exports.initialize_everything = function () {
     people.initialize(page_params.user_id, people_params);
     scroll_bar.initialize();
     message_viewport.initialize();
-    exports.initialize_kitchen_sink_stuff();
+    initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_color.initialize();
     stream_edit.initialize();
@@ -531,10 +529,10 @@ exports.initialize_everything = function () {
     starred_messages.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
-};
+}
 
 $(() => {
     blueslip.measure_time("initialize_everything", () => {
-        exports.initialize_everything();
+        initialize_everything();
     });
 });
