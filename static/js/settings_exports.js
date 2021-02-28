@@ -1,21 +1,19 @@
-"use strict";
+import render_admin_export_list from "../templates/admin_export_list.hbs";
 
-const render_admin_export_list = require("../templates/admin_export_list.hbs");
-
-const channel = require("./channel");
-const ListWidget = require("./list_widget");
-const loading = require("./loading");
-const people = require("./people");
-const timerender = require("./timerender");
-const ui_report = require("./ui_report");
+import * as channel from "./channel";
+import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
+import * as people from "./people";
+import * as timerender from "./timerender";
+import * as ui_report from "./ui_report";
 
 const meta = {
     loaded: false,
 };
 
-exports.reset = function () {
+export function reset() {
     meta.loaded = false;
-};
+}
 
 function sort_user(a, b) {
     const a_name = people.get_full_name(a.acting_user_id).toLowerCase();
@@ -28,7 +26,7 @@ function sort_user(a, b) {
     return -1;
 }
 
-exports.populate_exports_table = function (exports) {
+export function populate_exports_table(exports) {
     if (!meta.loaded) {
         return;
     }
@@ -90,9 +88,9 @@ exports.populate_exports_table = function (exports) {
     } else {
         loading.destroy_indicator(spinner);
     }
-};
+}
 
-exports.set_up = function () {
+export function set_up() {
     meta.loaded = true;
 
     $("#export-data").on("click", (e) => {
@@ -119,7 +117,7 @@ exports.set_up = function () {
     channel.get({
         url: "/json/export/realm",
         success(data) {
-            exports.populate_exports_table(data.exports);
+            populate_exports_table(data.exports);
         },
     });
 
@@ -136,6 +134,4 @@ exports.set_up = function () {
             // No success function, since UI updates are done via server_events
         });
     });
-};
-
-window.settings_exports = exports;
+}

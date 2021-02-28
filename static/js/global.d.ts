@@ -28,7 +28,6 @@ declare let reactions: any;
 declare let recent_topics: any;
 declare let search_pill_widget: any;
 declare let settings: any;
-declare let settings_exports: any;
 declare let settings_invites: any;
 declare let settings_linkifiers: any;
 declare let settings_org: any;
