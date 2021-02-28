@@ -40,7 +40,10 @@ rewiremock("../../static/js/overlays").with(overlays);
 const resize = {__esModule: true};
 rewiremock("../../static/js/resize").with(resize);
 let stream_list = set_global("stream_list", {});
-let unread_ops = set_global("unread_ops", {});
+let unread_ops = {
+    __esModule: true,
+};
+rewiremock("../../static/js/unread_ops").with(unread_ops);
 const unread_ui = {__esModule: true};
 rewiremock("../../static/js/unread_ui").with(unread_ui);
 const channel = {__esModule: true};

@@ -44,7 +44,10 @@ const typing_events = {__esModule: true};
 rewiremock("../../static/js/typing_events").with(typing_events);
 const ui_util = {__esModule: true};
 rewiremock("../../static/js/ui_util").with(ui_util);
-const unread_ops = set_global("unread_ops", {});
+const unread_ops = {
+    __esModule: true,
+};
+rewiremock("../../static/js/unread_ops").with(unread_ops);
 rewiremock("../../static/js/search_pill_widget").with({
     widget: {
         clear() {

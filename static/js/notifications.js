@@ -16,6 +16,7 @@ import * as settings_config from "./settings_config";
 import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
 import * as stream_ui_updates from "./stream_ui_updates";
+import * as unread_ops from "./unread_ops";
 
 const notice_memory = new Map();
 

@@ -92,7 +92,10 @@ rewiremock("../../static/js/submessage").with(submessage);
 const typing_events = {__esModule: true};
 rewiremock("../../static/js/typing_events").with(typing_events);
 const ui = set_global("ui", {});
-const unread_ops = set_global("unread_ops", {});
+const unread_ops = {
+    __esModule: true,
+};
+rewiremock("../../static/js/unread_ops").with(unread_ops);
 const user_events = {__esModule: true};
 rewiremock("../../static/js/user_events").with(user_events);
 const user_groups = {__esModule: true};
