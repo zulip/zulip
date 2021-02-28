@@ -38,7 +38,9 @@ const ui_report = {__esModule: true};
 rewiremock("../../static/js/ui_report").with(ui_report);
 
 const page_params = set_global("page_params", {});
-const input_pill = set_global("input_pill", {});
+const input_pill = {__esModule: true};
+
+rewiremock("../../static/js/input_pill").with(input_pill);
 
 rewiremock.enable();
 
