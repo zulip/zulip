@@ -4,10 +4,13 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_list = set_global("message_list", {});
+const message_list = {
+    __esModule: true,
+};
+rewiremock("../../static/js/message_list").with(message_list);
 rewiremock("../../static/js/muting").with({
     is_topic_muted: () => false,
 });

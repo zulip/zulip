@@ -12,7 +12,10 @@ rewiremock("../../static/js/condense").with(condense);
 set_global("current_msg_list", {});
 const message_edit = {__esModule: true};
 rewiremock("../../static/js/message_edit").with(message_edit);
-const message_list = set_global("message_list", {});
+const message_list = {
+    __esModule: true,
+};
+rewiremock("../../static/js/message_list").with(message_list);
 const notifications = {__esModule: true};
 rewiremock("../../static/js/notifications").with(notifications);
 const page_params = set_global("page_params", {});

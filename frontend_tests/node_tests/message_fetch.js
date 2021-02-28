@@ -96,7 +96,7 @@ function make_all_list() {
 function reset_lists() {
     set_global("home_msg_list", make_home_msg_list());
     set_global("current_msg_list", home_msg_list);
-    message_list.all = make_all_list();
+    message_list.__Rewire__("all", make_all_list());
     stub_message_view(home_msg_list);
     stub_message_view(message_list.all);
 }

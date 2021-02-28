@@ -43,7 +43,7 @@ set_global("home_msg_list", {
     },
 });
 
-set_global("message_list", {});
+rewiremock("../../static/js/message_list").with({});
 
 set_global("current_msg_list", "");
 

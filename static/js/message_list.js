@@ -1,17 +1,16 @@
-"use strict";
+import autosize from "autosize";
 
-const autosize = require("autosize");
+import * as blueslip from "./blueslip";
+import {MessageListData} from "./message_list_data";
+import {MessageListView} from "./message_list_view";
+import * as narrow_state from "./narrow_state";
+import * as stream_data from "./stream_data";
 
-const blueslip = require("./blueslip");
-const {MessageListData} = require("./message_list_data");
-const {MessageListView} = require("./message_list_view");
-const narrow_state = require("./narrow_state");
-const stream_data = require("./stream_data");
+export let narrowed;
 
-exports.narrowed = undefined;
-exports.set_narrowed = function (value) {
-    exports.narrowed = value;
-};
+export function set_narrowed(value) {
+    narrowed = value;
+}
 
 class MessageList {
     constructor(opts) {
@@ -67,14 +66,14 @@ class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (this === exports.narrowed && !this.empty()) {
+        if (this === narrowed && !this.empty()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow.hide_empty_narrow_message();
         }
 
-        if (this === exports.narrowed && !this.empty() && this.selected_id() === -1) {
+        if (this === narrowed && !this.empty() && this.selected_id() === -1) {
             // And also select the newly arrived message.
             this.select_id(this.selected_id(), {then_scroll: true, use_closest: true});
         }
@@ -362,7 +361,7 @@ class MessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        if (this === exports.narrowed) {
+        if (this === narrowed) {
             if (this.empty()) {
                 narrow.show_empty_narrow_message();
             } else {
@@ -415,10 +414,8 @@ class MessageList {
         return this.data.get_last_message_sent_by_me();
     }
 }
-exports.MessageList = MessageList;
+export {MessageList};
 
-exports.all = new MessageList({
+export const all = new MessageList({
     excludes_muted_topics: false,
 });
-
-window.message_list = exports;

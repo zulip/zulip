@@ -22,11 +22,14 @@ rewiremock("../../static/js/hashchange").with(hashchange);
 set_global("home_msg_list", {});
 const message_fetch = {__esModule: true};
 rewiremock("../../static/js/message_fetch").with(message_fetch);
-const message_list = set_global("message_list", {
+const message_list = {
+    __esModule: true,
+
     set_narrowed(value) {
         this.narrowed = value;
     },
-});
+};
+rewiremock("../../static/js/message_list").with(message_list);
 const message_scroll = {__esModule: true};
 rewiremock("../../static/js/message_scroll").with(message_scroll);
 rewiremock("../../static/js/message_util").with({});

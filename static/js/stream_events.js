@@ -1,5 +1,6 @@
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
+import * as message_list from "./message_list";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";

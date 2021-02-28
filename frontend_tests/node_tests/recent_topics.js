@@ -139,7 +139,7 @@ const sender2 = 2;
 
 const messages = [];
 
-set_global("message_list", {
+rewiremock("../../static/js/message_list").with({
     all: {
         all_messages() {
             return messages;
@@ -694,7 +694,7 @@ run_test("test_delete_messages", () => {
     rt.set_filter("all");
     rt.process_messages(messages);
 
-    set_global("message_list", {
+    rewiremock("../../static/js/message_list").with({
         all: {
             all_messages() {
                 // messages[0] was removed.
@@ -718,7 +718,7 @@ run_test("test_delete_messages", () => {
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2",
     );
 
-    set_global("message_list", {
+    rewiremock("../../static/js/message_list").with({
         all: {
             all_messages() {
                 // messages[0], messages[1] and message[2] were removed.
@@ -742,7 +742,7 @@ run_test("test_delete_messages", () => {
 });
 
 run_test("test_topic_edit", () => {
-    set_global("message_list", {
+    rewiremock("../../static/js/message_list").with({
         all: {
             all_messages() {
                 return messages;

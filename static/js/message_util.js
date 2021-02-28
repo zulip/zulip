@@ -1,4 +1,5 @@
 import * as loading from "./loading";
+import * as message_list from "./message_list";
 import * as message_store from "./message_store";
 import * as resize from "./resize";
 import * as unread from "./unread";

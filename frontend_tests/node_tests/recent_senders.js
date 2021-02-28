@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let next_id = 0;
@@ -13,7 +13,7 @@ const messages = [];
 rewiremock("../../static/js/message_store").with({
     get: (msg_id) => messages[msg_id - 1],
 });
-set_global("message_list", {
+rewiremock("../../static/js/message_list").with({
     all: {
         all_messages() {
             return messages;
@@ -211,7 +211,7 @@ run_test("process_message_for_senders", () => {
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
     assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "2,3");
 
-    set_global("message_list", {
+    rewiremock("../../static/js/message_list").with({
         all: {
             all_messages() {
                 // messages[0] (message1) and messages[4] (message5) were removed.
