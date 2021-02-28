@@ -23,7 +23,7 @@ set_global("settings_profile_fields", {
 set_global("settings_streams", {
     maybe_disable_widgets() {},
 });
-set_global("settings_users", {
+rewiremock("../../static/js/settings_users").with({
     update_user_data() {},
 });
 
