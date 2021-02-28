@@ -4,7 +4,6 @@
 // to TS.
 
 declare let admin: any;
-declare let avatar: any;
 declare let blueslip: any;
 declare let bot_data: any;
 declare let compose_actions: any;

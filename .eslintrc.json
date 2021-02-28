@@ -126,7 +126,6 @@
             "globals": {
                 "$": false,
                 "admin": false,
-                "avatar": false,
                 "blueslip": false,
                 "bot_data": false,
                 "compose_actions": false,

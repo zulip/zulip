@@ -6,6 +6,7 @@ const render_settings_api_key_modal = require("../templates/settings/api_key_mod
 const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
 const render_settings_dev_env_email_access = require("../templates/settings/dev_env_email_access.hbs");
 
+const avatar = require("./avatar");
 const channel = require("./channel");
 const common = require("./common");
 const overlays = require("./overlays");
