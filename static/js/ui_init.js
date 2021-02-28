@@ -10,6 +10,7 @@ const render_edit_content_button = require("../templates/edit_content_button.hbs
 
 const activity = require("./activity");
 const alert_words = require("./alert_words");
+const bot_data = require("./bot_data");
 const click_handlers = require("./click_handlers");
 const compose = require("./compose");
 const compose_pm_pill = require("./compose_pm_pill");

@@ -37,7 +37,6 @@ import "../templates";
 import "../dropdown_list_widget";
 import "../settings_profile_fields";
 import "../settings";
-import "../bot_data";
 import "../reactions";
 import "../typing_events";
 import "../ui_init";
