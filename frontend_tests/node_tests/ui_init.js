@@ -115,7 +115,6 @@ const util = zrequire("util");
 
 zrequire("search_pill_widget");
 zrequire("unread");
-zrequire("bot_data");
 const upload = zrequire("upload");
 const compose = zrequire("compose");
 zrequire("composebox_typeahead");

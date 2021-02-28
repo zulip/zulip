@@ -6,6 +6,7 @@ import render_settings_edit_embedded_bot_service from "../templates/settings/edi
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
 
 import * as avatar from "./avatar";
+import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
