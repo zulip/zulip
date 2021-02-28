@@ -7,6 +7,24 @@ let jwindow;
 const dimensions = {};
 let in_stoppable_autoscroll = false;
 
+function make_dimen_wrapper(dimen_name, dimen_func) {
+    dimensions[dimen_name] = new util.CachedValue({
+        compute_value() {
+            return dimen_func.call(exports.message_pane);
+        },
+    });
+    return function viewport_dimension_wrapper(...args) {
+        if (args.length !== 0) {
+            dimensions[dimen_name].reset();
+            return dimen_func.apply(exports.message_pane, args);
+        }
+        return dimensions[dimen_name].get();
+    };
+}
+
+exports.height = make_dimen_wrapper("height", $(exports.message_pane).height);
+exports.width = make_dimen_wrapper("width", $(exports.message_pane).width);
+
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
 exports.last_movement_direction = 1;
@@ -278,24 +296,6 @@ exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
     }
     return ret;
 };
-
-function make_dimen_wrapper(dimen_name, dimen_func) {
-    dimensions[dimen_name] = new util.CachedValue({
-        compute_value() {
-            return dimen_func.call(exports.message_pane);
-        },
-    });
-    return function viewport_dimension_wrapper(...args) {
-        if (args.length !== 0) {
-            dimensions[dimen_name].reset();
-            return dimen_func.apply(exports.message_pane, args);
-        }
-        return dimensions[dimen_name].get();
-    };
-}
-
-exports.height = make_dimen_wrapper("height", $(exports.message_pane).height);
-exports.width = make_dimen_wrapper("width", $(exports.message_pane).width);
 
 exports.stop_auto_scrolling = function () {
     if (in_stoppable_autoscroll) {
