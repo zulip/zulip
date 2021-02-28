@@ -14,6 +14,7 @@ import * as message_edit_history from "./message_edit_history";
 import * as muting_ui from "./muting_ui";
 import * as rows from "./rows";
 import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_toggle from "./settings_toggle";
 import * as stream_edit from "./stream_edit";
 import * as ui_util from "./ui_util";
 import * as user_status_ui from "./user_status_ui";

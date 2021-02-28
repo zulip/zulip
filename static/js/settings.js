@@ -6,6 +6,7 @@ const render_settings_tab = require("../templates/settings_tab.hbs");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_panel_menu = require("./settings_panel_menu");
+const settings_toggle = require("./settings_toggle");
 
 $("body").ready(() => {
     $("#settings_overlay_container").on("click", (e) => {
