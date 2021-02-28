@@ -161,7 +161,6 @@
                 "settings_profile_fields": false,
                 "settings_streams": false,
                 "settings_user_groups": false,
-                "settings_users": false,
                 "stream_list": false,
                 "StripeCheckout": false,
                 "subs": false,
