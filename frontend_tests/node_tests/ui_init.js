@@ -68,7 +68,7 @@ page_params.starred_messages = [];
 page_params.presences = [];
 
 set_global("activity", {initialize() {}});
-set_global("click_handlers", {initialize() {}});
+rewiremock("../../static/js/click_handlers").with({initialize() {}});
 rewiremock("../../static/js/compose_pm_pill").with({initialize() {}});
 rewiremock("../../static/js/drafts").with({initialize() {}});
 set_global("emoji_picker", {initialize() {}});
