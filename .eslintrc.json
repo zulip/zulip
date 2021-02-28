@@ -130,7 +130,6 @@
                 "avatar": false,
                 "blueslip": false,
                 "bot_data": false,
-                "buddy_list": false,
                 "compose_actions": false,
                 "compose_ui": false,
                 "composebox_typeahead": false,

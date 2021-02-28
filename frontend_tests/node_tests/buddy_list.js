@@ -20,7 +20,7 @@ rewiremock("../../static/js/message_viewport").with({
 rewiremock.enable();
 
 const people = zrequire("people");
-const buddy_list = zrequire("buddy_list");
+const {buddy_list} = zrequire("buddy_list");
 zrequire("ui");
 
 function init_simulated_scrolling() {

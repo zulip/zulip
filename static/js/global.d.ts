@@ -8,7 +8,6 @@ declare let admin: any;
 declare let avatar: any;
 declare let blueslip: any;
 declare let bot_data: any;
-declare let buddy_list: any;
 declare let compose_actions: any;
 declare let composebox_typeahead: any;
 declare let compose_ui: any;

@@ -3,6 +3,7 @@
 const _ = require("lodash");
 
 const buddy_data = require("./buddy_data");
+const {buddy_list} = require("./buddy_list");
 const channel = require("./channel");
 const keydown_util = require("./keydown_util");
 const {ListCursor} = require("./list_cursor");

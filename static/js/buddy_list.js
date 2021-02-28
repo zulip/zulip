@@ -1,11 +1,9 @@
-"use strict";
+import render_user_presence_row from "../templates/user_presence_row.hbs";
+import render_user_presence_rows from "../templates/user_presence_rows.hbs";
 
-const render_user_presence_row = require("../templates/user_presence_row.hbs");
-const render_user_presence_rows = require("../templates/user_presence_rows.hbs");
-
-const buddy_data = require("./buddy_data");
-const message_viewport = require("./message_viewport");
-const padded_widget = require("./padded_widget");
+import * as buddy_data from "./buddy_data";
+import * as message_viewport from "./message_viewport";
+import * as padded_widget from "./padded_widget";
 
 class BuddyListConf {
     container_sel = "#user_presences";
@@ -308,8 +306,4 @@ class BuddyList extends BuddyListConf {
     }
 }
 
-const buddy_list = new BuddyList();
-
-module.exports = buddy_list;
-
-window.buddy_list = buddy_list;
+export const buddy_list = new BuddyList();
