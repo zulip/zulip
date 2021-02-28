@@ -72,7 +72,8 @@ rewiremock("../../static/js/settings_notifications").with(settings_notifications
 const settings_org = {__esModule: true};
 rewiremock("../../static/js/settings_org").with(settings_org);
 const settings_profile_fields = set_global("settings_profile_fields", {});
-const settings_streams = set_global("settings_streams", {});
+const settings_streams = {__esModule: true};
+rewiremock("../../static/js/settings_streams").with(settings_streams);
 const settings_user_groups = set_global("settings_user_groups", {});
 const settings_users = {__esModule: true};
 rewiremock("../../static/js/settings_users").with(settings_users);
