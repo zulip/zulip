@@ -47,6 +47,7 @@ const _notifications = {
     clear_compose_notifications: noop,
 };
 const reminder = {
+    __esModule: true,
     is_deferred_delivery: noop,
 };
 
@@ -54,7 +55,7 @@ set_global("document", _document);
 rewiremock("../../static/js/drafts").with(_drafts);
 set_global("navigator", _navigator);
 rewiremock("../../static/js/notifications").with(_notifications);
-set_global("reminder", reminder);
+rewiremock("../../static/js/reminder").with(reminder);
 rewiremock("../../static/js/sent_messages").with(sent_messages);
 rewiremock("../../static/js/rendered_markdown").with({
     update_elements: () => {},

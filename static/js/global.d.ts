@@ -27,7 +27,6 @@ declare let panels: any;
 declare let pointer: any;
 declare let reactions: any;
 declare let recent_topics: any;
-declare let reminder: any;
 declare let search_pill_widget: any;
 declare let settings: any;
 declare let settings_account: any;
