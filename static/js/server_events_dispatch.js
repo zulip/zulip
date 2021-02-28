@@ -12,6 +12,7 @@ import * as hotspots from "./hotspots";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
+import * as message_list from "./message_list";
 import * as muting_ui from "./muting_ui";
 import * as narrow_state from "./narrow_state";
 import * as night_mode from "./night_mode";

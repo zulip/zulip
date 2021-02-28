@@ -1,3 +1,4 @@
+import * as message_list from "./message_list";
 import * as message_store from "./message_store";
 import * as people from "./people";
 

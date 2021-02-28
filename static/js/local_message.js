@@ -1,3 +1,5 @@
+import * as message_list from "./message_list";
+
 function truncate_precision(float) {
     return Number.parseFloat(float.toFixed(3));
 }

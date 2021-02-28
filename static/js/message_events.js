@@ -8,6 +8,7 @@ const condense = require("./condense");
 const huddle_data = require("./huddle_data");
 const message_edit = require("./message_edit");
 const message_edit_history = require("./message_edit_history");
+const message_list = require("./message_list");
 const message_store = require("./message_store");
 const message_util = require("./message_util");
 const narrow_state = require("./narrow_state");

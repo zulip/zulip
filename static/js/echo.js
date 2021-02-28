@@ -2,6 +2,7 @@ import * as alert_words from "./alert_words";
 import * as compose from "./compose";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
+import * as message_list from "./message_list";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";

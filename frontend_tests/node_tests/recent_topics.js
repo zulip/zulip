@@ -136,13 +136,16 @@ const sender2 = 2;
 
 const messages = [];
 
-const message_list = set_global("message_list", {
+const message_list = {
+    __esModule: true,
+
     all: {
         all_messages() {
             return messages;
         },
     },
-});
+};
+rewiremock("../../static/js/message_list").with(message_list);
 rewiremock("../../static/js/message_store").with({
     get: (msg_id) => messages[msg_id - 1],
 });

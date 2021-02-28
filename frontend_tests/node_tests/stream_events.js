@@ -31,7 +31,7 @@ rewiremock("../../static/js/recent_topics").with({
     complete_rerender: () => {},
 });
 
-set_global("message_list", {
+rewiremock("../../static/js/message_list").with({
     all: {
         all_messages() {
             return ["msg"];

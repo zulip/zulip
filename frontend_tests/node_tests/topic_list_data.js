@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const narrow_state = {
@@ -21,7 +21,7 @@ const muting = {
     },
 };
 rewiremock("../../static/js/muting").with(muting);
-set_global("message_list", {});
+rewiremock("../../static/js/message_list").with({});
 
 rewiremock.enable();
 
