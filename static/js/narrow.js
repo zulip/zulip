@@ -100,42 +100,46 @@ exports.save_pre_narrow_offset_for_reload = function () {
     }
 };
 
+exports.narrow_title = "home";
+
+exports.set_narrow_title = function (title) {
+    exports.narrow_title = title;
+    notifications.redraw_title();
+};
+
 function update_narrow_title(filter) {
     // Take the most detailed part of the narrow to use as the title.
     // If the operator is something other than "stream", "topic", or
     // "is", we shouldn't update the narrow title
     if (filter.has_operator("stream")) {
         if (filter.has_operator("topic")) {
-            exports.narrow_title = filter.operands("topic")[0];
+            exports.set_narrow_title(filter.operands("topic")[0]);
         } else {
-            exports.narrow_title = filter.operands("stream")[0];
+            exports.set_narrow_title(filter.operands("stream")[0]);
         }
     } else if (filter.has_operator("is")) {
-        let title = filter.operands("is")[0];
-        title = title.charAt(0).toUpperCase() + title.slice(1) + " messages";
-        exports.narrow_title = title;
+        const title = filter.operands("is")[0];
+        exports.set_narrow_title(title.charAt(0).toUpperCase() + title.slice(1) + " messages");
     } else if (filter.has_operator("pm-with") || filter.has_operator("group-pm-with")) {
         const emails = filter.public_operators()[0].operand;
         const user_ids = people.emails_strings_to_user_ids_string(emails);
         if (user_ids !== undefined) {
             const names = people.get_recipients(user_ids);
             if (filter.has_operator("pm-with")) {
-                exports.narrow_title = names;
+                exports.set_narrow_title(names);
             } else {
-                exports.narrow_title = names + " and others";
+                exports.set_narrow_title(names + " and others");
             }
         } else {
             if (emails.includes(",")) {
-                exports.narrow_title = "Invalid users";
+                exports.set_narrow_title("Invalid users");
             } else {
-                exports.narrow_title = "Invalid user";
+                exports.set_narrow_title("Invalid user");
             }
         }
     }
-    notifications.redraw_title();
 }
 
-exports.narrow_title = "home";
 exports.activate = function (raw_operators, opts) {
     /* Main entrypoint for switching to a new view / message list.
        Note that for historical reasons related to the current
