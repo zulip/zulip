@@ -382,6 +382,10 @@ function update_dependent_subsettings(property_name) {
     }
 }
 
+exports.default_code_language_widget = null;
+exports.notifications_stream_widget = null;
+exports.signup_notifications_stream_widget = null;
+
 function discard_property_element_changes(elem) {
     elem = $(elem);
     const property_name = exports.extract_property_name(elem);
@@ -591,10 +595,6 @@ exports.save_discard_widget_status_handler = (subsection) => {
     const button_state = show_change_process_button ? "unsaved" : "discarded";
     exports.change_save_button_state(save_btn_controls, button_state);
 };
-
-exports.default_code_language_widget = null;
-exports.notifications_stream_widget = null;
-exports.signup_notifications_stream_widget = null;
 
 exports.init_dropdown_widgets = () => {
     const streams = stream_data.get_streams_for_settings_page();
