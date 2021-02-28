@@ -151,7 +151,6 @@
                 "subs": false,
                 "ui": false,
                 "ui_init": false,
-                "widgetize": false,
                 "zxcvbn": false
             }
         },
