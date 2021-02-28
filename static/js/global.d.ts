@@ -20,7 +20,6 @@ declare let pointer: any;
 declare let settings_profile_fields: any;
 declare let subs: any;
 declare let ui: any;
-declare let widgetize: any;
 declare let zulip_test: any;
 
 interface JQuery {

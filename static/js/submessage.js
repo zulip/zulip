@@ -1,5 +1,6 @@
 import * as channel from "./channel";
 import * as message_store from "./message_store";
+import * as widgetize from "./widgetize";
 
 export function get_message_events(message) {
     if (message.locally_echoed) {
