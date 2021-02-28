@@ -9,6 +9,7 @@ const ListWidget = require("./list_widget");
 const loading = require("./loading");
 const people = require("./people");
 const ui_report = require("./ui_report");
+const upload_widget = require("./upload_widget");
 
 const meta = {
     loaded: false,

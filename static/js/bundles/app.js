@@ -34,7 +34,6 @@ import "../message_events";
 import "../server_events";
 import "../zulip";
 import "../templates";
-import "../upload_widget";
 import "../avatar";
 import "../realm_icon";
 import "../realm_logo";

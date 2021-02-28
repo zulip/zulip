@@ -2,6 +2,7 @@
 
 const channel = require("./channel");
 const settings_config = require("./settings_config");
+const upload_widget = require("./upload_widget");
 
 exports.build_realm_logo_widget = function (upload_function, is_night) {
     let logo_section_id = "#realm-day-logo-upload-widget";
