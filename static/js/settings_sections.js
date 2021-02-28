@@ -1,17 +1,15 @@
-"use strict";
-
-const alert_words_ui = require("./alert_words_ui");
-const attachments_ui = require("./attachments_ui");
-const settings_account = require("./settings_account");
-const settings_bots = require("./settings_bots");
-const settings_display = require("./settings_display");
-const settings_muting = require("./settings_muting");
-const settings_notifications = require("./settings_notifications");
+import * as alert_words_ui from "./alert_words_ui";
+import * as attachments_ui from "./attachments_ui";
+import * as settings_account from "./settings_account";
+import * as settings_bots from "./settings_bots";
+import * as settings_display from "./settings_display";
+import * as settings_muting from "./settings_muting";
+import * as settings_notifications from "./settings_notifications";
 
 const load_func_dict = new Map(); // group -> function
 const loaded_groups = new Set();
 
-exports.get_group = function (section) {
+export function get_group(section) {
     // Sometimes several sections all share the same code.
 
     switch (section) {
@@ -31,9 +29,9 @@ exports.get_group = function (section) {
         default:
             return section;
     }
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     // personal
     load_func_dict.set("your-account", settings_account.set_up);
     load_func_dict.set("display-settings", settings_display.set_up);
@@ -54,10 +52,10 @@ exports.initialize = function () {
     load_func_dict.set("user-groups-admin", settings_user_groups.set_up);
     load_func_dict.set("profile-field-settings", settings_profile_fields.set_up);
     load_func_dict.set("data-exports-admin", settings_exports.set_up);
-};
+}
 
-exports.load_settings_section = function (section) {
-    const group = exports.get_group(section);
+export function load_settings_section(section) {
+    const group = get_group(section);
 
     if (!load_func_dict.has(group)) {
         blueslip.error("Unknown section " + section);
@@ -75,9 +73,9 @@ exports.load_settings_section = function (section) {
     // Do the real work here!
     load_func();
     loaded_groups.add(group);
-};
+}
 
-exports.reset_sections = function () {
+export function reset_sections() {
     loaded_groups.clear();
     settings_emoji.reset();
     settings_exports.reset();
@@ -89,6 +87,4 @@ exports.reset_sections = function () {
     settings_user_groups.reset();
     settings_muting.reset();
     // settings_users doesn't need a reset()
-};
-
-window.settings_sections = exports;
+}

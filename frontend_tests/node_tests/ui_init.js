@@ -92,7 +92,7 @@ const server_events = {
     initialize() {},
 };
 rewiremock("../../static/js/server_events").with(server_events);
-set_global("settings_sections", {initialize() {}});
+rewiremock("../../static/js/settings_sections").with({initialize() {}});
 rewiremock("../../static/js/settings_panel_menu").with({initialize() {}});
 rewiremock("../../static/js/settings_toggle").with({initialize() {}});
 set_global("subs", {initialize() {}});

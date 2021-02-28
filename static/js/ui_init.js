@@ -45,6 +45,7 @@ const search = require("./search");
 const sent_messages = require("./sent_messages");
 const server_events = require("./server_events");
 const settings_panel_menu = require("./settings_panel_menu");
+const settings_sections = require("./settings_sections");
 const settings_toggle = require("./settings_toggle");
 const spoilers = require("./spoilers");
 const starred_messages = require("./starred_messages");
