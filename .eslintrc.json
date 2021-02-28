@@ -184,7 +184,6 @@
                 "ui_init": false,
                 "unread": false,
                 "unread_ops": false,
-                "upload_widget": false,
                 "widgetize": false,
                 "zxcvbn": false
             }

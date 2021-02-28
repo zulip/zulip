@@ -1,6 +1,7 @@
 "use strict";
 
 const channel = require("./channel");
+const upload_widget = require("./upload_widget");
 
 exports.build_bot_create_widget = function () {
     // We have to do strange gyrations with the file input to clear it,

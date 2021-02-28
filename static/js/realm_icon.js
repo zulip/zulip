@@ -1,6 +1,7 @@
 "use strict";
 
 const channel = require("./channel");
+const upload_widget = require("./upload_widget");
 
 exports.build_realm_icon_widget = function (upload_function) {
     const get_file_input = function () {
