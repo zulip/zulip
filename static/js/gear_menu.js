@@ -1,4 +1,5 @@
 import * as message_viewport from "./message_viewport";
+import * as navigate from "./navigate";
 
 /*
 For various historical reasons there isn't one

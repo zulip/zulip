@@ -2,6 +2,7 @@ import autosize from "autosize";
 
 import * as condense from "./condense";
 import * as message_viewport from "./message_viewport";
+import * as navigate from "./navigate";
 import * as popovers from "./popovers";
 import * as util from "./util";
 

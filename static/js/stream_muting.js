@@ -1,5 +1,6 @@
 import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
+import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 
 export function update_is_muted(sub, value) {

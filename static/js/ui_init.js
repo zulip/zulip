@@ -26,6 +26,7 @@ const message_edit = require("./message_edit");
 const message_scroll = require("./message_scroll");
 const message_viewport = require("./message_viewport");
 const muting = require("./muting");
+const navigate = require("./navigate");
 const overlays = require("./overlays");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
