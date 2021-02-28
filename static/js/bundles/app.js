@@ -34,7 +34,6 @@ import "../message_events";
 import "../server_events";
 import "../zulip";
 import "../templates";
-import "../reminder";
 import "../confirm_dialog";
 import "../dropdown_list_widget";
 import "../settings_account";

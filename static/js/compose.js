@@ -19,6 +19,7 @@ import * as markdown from "./markdown";
 import * as notifications from "./notifications";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rtl from "./rtl";
