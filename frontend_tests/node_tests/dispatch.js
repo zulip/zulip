@@ -94,7 +94,10 @@ const submessage = {__esModule: true};
 rewiremock("../../static/js/submessage").with(submessage);
 const typing_events = {__esModule: true};
 rewiremock("../../static/js/typing_events").with(typing_events);
-const ui = set_global("ui", {});
+const ui = {
+    __esModule: true,
+};
+rewiremock("../../static/js/ui").with(ui);
 const unread_ops = {
     __esModule: true,
 };

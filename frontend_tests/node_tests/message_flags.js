@@ -16,7 +16,10 @@ rewiremock.enable();
 
 const message_flags = zrequire("message_flags");
 
-const ui = set_global("ui", {});
+const ui = {
+    __esModule: true,
+};
+rewiremock("../../static/js/ui").with(ui);
 const channel = {__esModule: true};
 
 rewiremock("../../static/js/channel").with(channel);

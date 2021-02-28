@@ -36,7 +36,6 @@ const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const scroll_util = zrequire("scroll_util");
 const stream_list = zrequire("stream_list");
-zrequire("ui");
 
 stream_color.initialize();
 
@@ -395,7 +394,7 @@ test_ui("narrowing", () => {
     topic_list.get_stream_li = noop;
     scroll_util.__Rewire__("scroll_element_into_container", noop);
 
-    set_global("ui", {
+    rewiremock("../../static/js/ui").with({
         get_scroll_element: (element) => element,
     });
 

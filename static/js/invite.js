@@ -11,6 +11,7 @@ import * as common from "./common";
 import * as hashchange from "./hashchange";
 import * as overlays from "./overlays";
 import * as stream_data from "./stream_data";
+import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 function reset_error_messages() {

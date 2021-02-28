@@ -29,6 +29,7 @@ import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as subs from "./subs";
 import * as topic_zoom from "./topic_zoom";
+import * as ui from "./ui";
 
 function do_narrow_action(action) {
     action(current_msg_list.selected_id(), {trigger: "hotkey"});

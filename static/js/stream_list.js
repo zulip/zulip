@@ -17,6 +17,7 @@ import * as stream_popover from "./stream_popover";
 import * as stream_sort from "./stream_sort";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
+import * as ui from "./ui";
 import * as unread from "./unread";
 
 export let stream_cursor;

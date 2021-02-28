@@ -17,6 +17,7 @@ import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_ui from "./settings_ui";
 import * as timerender from "./timerender";
+import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
 

@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const blueslip = require("../../static/js/blueslip");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -15,7 +17,11 @@ function Element() {
     return {};
 }
 set_global("Element", Element);
-const ui = set_global("ui", {});
+const ui = {
+    __esModule: true,
+};
+
+rewiremock("../../static/js/ui").with(ui);
 
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.
@@ -32,6 +38,8 @@ set_global("$", (arg) => {
         html: () => arg,
     };
 });
+
+rewiremock.enable();
 
 const ListWidget = zrequire("list_widget");
 
@@ -775,3 +783,4 @@ run_test("render item", () => {
     widget_3.render_item(item);
     blueslip.reset();
 });
+rewiremock.disable();
