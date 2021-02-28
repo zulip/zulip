@@ -11,6 +11,7 @@ const overlays = require("./overlays");
 const people = require("./people");
 const presence = require("./presence");
 const settings_account = require("./settings_account");
+const settings_bots = require("./settings_bots");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
 const settings_panel_menu = require("./settings_panel_menu");

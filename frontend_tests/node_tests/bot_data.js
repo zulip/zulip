@@ -2,14 +2,19 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const rewiremock = require("rewiremock/node");
+
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const _settings_bots = {
+    __esModule: true,
     render_bots: () => {},
 };
 
-set_global("settings_bots", _settings_bots);
+rewiremock("../../static/js/settings_bots").with(_settings_bots);
+
+rewiremock.enable();
 
 const bot_data = zrequire("bot_data");
 const people = zrequire("people");
@@ -171,3 +176,4 @@ run_test("test_basics", () => {
         assert.equal(bots[1].email, "bot2@zulip.com");
     })();
 });
+rewiremock.disable();
