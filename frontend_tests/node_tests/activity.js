@@ -95,7 +95,7 @@ const narrow = zrequire("narrow");
 const presence = zrequire("presence");
 const people = zrequire("people");
 const buddy_data = zrequire("buddy_data");
-const buddy_list = zrequire("buddy_list");
+const {buddy_list} = zrequire("buddy_list");
 const user_status = zrequire("user_status");
 const activity = zrequire("activity");
 
