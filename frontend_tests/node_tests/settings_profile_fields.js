@@ -40,7 +40,7 @@ page_params.custom_profile_field_types = {
     },
 };
 
-rewiremock("sortablejs").with({default: {create: () => {}}});
+rewiremock("sortablejs").with({Sortable: {create: () => {}}});
 
 rewiremock.enable();
 
