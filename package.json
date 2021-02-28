@@ -89,7 +89,6 @@
     "@types/webpack-dev-server": "^3.1.6",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
-    "babel-plugin-lazy-require": "^1.0.3",
     "babel-plugin-rewire-ts": "^1.4.0",
     "difflib": "^0.2.4",
     "eslint": "^7.2.0",

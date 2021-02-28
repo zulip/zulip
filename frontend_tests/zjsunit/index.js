@@ -24,7 +24,6 @@ require("@babel/register")({
         ),
     ],
     plugins: [
-        "babel-plugin-lazy-require",
         "babel-plugin-rewire-ts",
         ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
     ],
