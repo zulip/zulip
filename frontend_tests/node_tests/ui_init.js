@@ -113,7 +113,6 @@ rewiremock.enable();
 
 const util = zrequire("util");
 
-zrequire("unread");
 const upload = zrequire("upload");
 const compose = zrequire("compose");
 zrequire("composebox_typeahead");

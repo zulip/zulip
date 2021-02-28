@@ -14,7 +14,6 @@ rewiremock("../../static/js/starred_messages").with({
 
 rewiremock.enable();
 
-zrequire("unread");
 const message_flags = zrequire("message_flags");
 
 const ui = set_global("ui", {});

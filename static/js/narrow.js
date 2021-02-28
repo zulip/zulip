@@ -28,6 +28,7 @@ const top_left_corner = require("./top_left_corner");
 const topic_generator = require("./topic_generator");
 const typing_events = require("./typing_events");
 const ui_util = require("./ui_util");
+const unread = require("./unread");
 const unread_ops = require("./unread_ops");
 const util = require("./util");
 

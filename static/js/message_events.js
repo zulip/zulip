@@ -18,6 +18,7 @@ const recent_topics = require("./recent_topics");
 const resize = require("./resize");
 const stream_data = require("./stream_data");
 const stream_topic_history = require("./stream_topic_history");
+const unread = require("./unread");
 const unread_ops = require("./unread_ops");
 const unread_ui = require("./unread_ui");
 const util = require("./util");

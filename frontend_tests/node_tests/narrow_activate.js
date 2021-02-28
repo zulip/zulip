@@ -80,7 +80,6 @@ rewiremock.enable();
 const util = zrequire("util");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
-zrequire("unread");
 const narrow = zrequire("narrow");
 
 const denmark = {

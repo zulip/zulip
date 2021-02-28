@@ -14,7 +14,6 @@ const page_params = set_global("page_params", {});
 
 rewiremock.enable();
 
-zrequire("unread");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {Filter} = zrequire("Filter", "js/filter");

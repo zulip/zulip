@@ -16,7 +16,10 @@ set_global("ui", {
 rewiremock("../../static/js/stream_popover").with({
     hide_topic_popover() {},
 });
-const unread = set_global("unread", {});
+const unread = {
+    __esModule: true,
+};
+rewiremock("../../static/js/unread").with(unread);
 const unread_ui = {__esModule: true};
 rewiremock("../../static/js/unread_ui").with(unread_ui);
 const vdom = {

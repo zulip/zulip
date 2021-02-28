@@ -14,7 +14,6 @@ set_global("setTimeout", (f, delay) => {
 });
 
 const muting = zrequire("muting");
-zrequire("unread");
 const {MessageListData} = zrequire("MessageListData", "js/message_list_data");
 
 function make_msg(msg_id) {

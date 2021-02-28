@@ -13,7 +13,7 @@ const narrow_state = {
     topic() {},
 };
 rewiremock("../../static/js/narrow_state").with(narrow_state);
-set_global("unread", {});
+rewiremock("../../static/js/unread").with({});
 const muting = {
     __esModule: true,
 
