@@ -1,30 +1,28 @@
-"use strict";
-
-const alert_words = require("./alert_words");
-const channel = require("./channel");
-const compose_fade = require("./compose_fade");
-const compose_state = require("./compose_state");
-const condense = require("./condense");
-const huddle_data = require("./huddle_data");
-const message_edit = require("./message_edit");
-const message_edit_history = require("./message_edit_history");
-const message_list = require("./message_list");
-const message_store = require("./message_store");
-const message_util = require("./message_util");
-const narrow = require("./narrow");
-const narrow_state = require("./narrow_state");
-const notifications = require("./notifications");
-const pm_list = require("./pm_list");
-const recent_senders = require("./recent_senders");
-const recent_topics = require("./recent_topics");
-const resize = require("./resize");
-const stream_data = require("./stream_data");
-const stream_list = require("./stream_list");
-const stream_topic_history = require("./stream_topic_history");
-const unread = require("./unread");
-const unread_ops = require("./unread_ops");
-const unread_ui = require("./unread_ui");
-const util = require("./util");
+import * as alert_words from "./alert_words";
+import * as channel from "./channel";
+import * as compose_fade from "./compose_fade";
+import * as compose_state from "./compose_state";
+import * as condense from "./condense";
+import * as huddle_data from "./huddle_data";
+import * as message_edit from "./message_edit";
+import * as message_edit_history from "./message_edit_history";
+import * as message_list from "./message_list";
+import * as message_store from "./message_store";
+import * as message_util from "./message_util";
+import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
+import * as notifications from "./notifications";
+import * as pm_list from "./pm_list";
+import * as recent_senders from "./recent_senders";
+import * as recent_topics from "./recent_topics";
+import * as resize from "./resize";
+import * as stream_data from "./stream_data";
+import * as stream_list from "./stream_list";
+import * as stream_topic_history from "./stream_topic_history";
+import * as unread from "./unread";
+import * as unread_ops from "./unread_ops";
+import * as unread_ui from "./unread_ui";
+import * as util from "./util";
 
 function maybe_add_narrowed_messages(messages, msg_list) {
     const ids = [];
@@ -85,7 +83,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
     });
 }
 
-exports.insert_new_messages = function insert_new_messages(messages, sent_by_this_client) {
+export function insert_new_messages(messages, sent_by_this_client) {
     messages = messages.map((message) => message_store.add_message_metadata(message));
 
     unread.process_loaded_messages(messages);
@@ -129,9 +127,9 @@ exports.insert_new_messages = function insert_new_messages(messages, sent_by_thi
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
     recent_topics.process_messages(messages);
-};
+}
 
-exports.update_messages = function update_messages(events) {
+export function update_messages(events) {
     const msgs_to_rerender = [];
     let topic_edited = false;
     let changed_narrow = false;
@@ -416,9 +414,9 @@ exports.update_messages = function update_messages(events) {
     unread_ui.update_unread_counts();
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-};
+}
 
-exports.remove_messages = function (message_ids) {
+export function remove_messages(message_ids) {
     for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
         if (list === undefined) {
             continue;
@@ -427,6 +425,4 @@ exports.remove_messages = function (message_ids) {
     }
     recent_senders.update_topics_of_deleted_message_ids(message_ids);
     recent_topics.update_topics_of_deleted_message_ids(message_ids);
-};
-
-window.message_events = exports;
+}
