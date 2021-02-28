@@ -18,7 +18,7 @@ rewiremock("../../static/js/settings_linkifiers").with({
 rewiremock("../../static/js/settings_org").with({
     maybe_disable_widgets() {},
 });
-set_global("settings_profile_fields", {
+rewiremock("../../static/js/settings_profile_fields").with({
     maybe_disable_widgets() {},
 });
 rewiremock("../../static/js/settings_streams").with({

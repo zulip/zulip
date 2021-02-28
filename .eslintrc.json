@@ -143,7 +143,6 @@
                 "page_params": false,
                 "pointer": false,
                 "realm_night_logo": false,
-                "settings_profile_fields": false,
                 "StripeCheckout": false,
                 "ui_init": false,
                 "zxcvbn": false

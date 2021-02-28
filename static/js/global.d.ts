@@ -12,7 +12,6 @@ declare let i18n: any;
 declare let narrow: any;
 declare let page_params: any;
 declare let pointer: any;
-declare let settings_profile_fields: any;
 
 interface JQuery {
     expectOne(): JQuery;
