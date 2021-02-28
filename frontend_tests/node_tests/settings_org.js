@@ -766,11 +766,10 @@ run_test("set_up", (override) => {
         upload_realm_logo_or_icon = f;
     };
 
-    const dropdown_list_widget_backup = dropdown_list_widget;
-    window.dropdown_list_widget = () => ({
+    override(dropdown_list_widget, "DropdownListWidget", () => ({
         render: noop,
         update: noop,
-    });
+    }));
     $("#id_realm_message_content_edit_limit_minutes").set_parent(
         $.create("<stub edit limit parent>"),
     );
@@ -822,8 +821,6 @@ run_test("set_up", (override) => {
             ".subsection-header .subsection-changes-discard .button",
         ),
     );
-
-    window.dropdown_list_widget = dropdown_list_widget_backup;
 });
 
 run_test("test get_organization_settings_options", () => {

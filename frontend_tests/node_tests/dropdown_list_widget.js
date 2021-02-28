@@ -17,7 +17,7 @@ rewiremock("../../static/js/list_widget").with(_ListWidget);
 
 rewiremock.enable();
 
-const dropdown_list_widget = zrequire("dropdown_list_widget");
+const {DropdownListWidget: dropdown_list_widget} = zrequire("dropdown_list_widget");
 
 const setup_zjquery_data = (name) => {
     const input_group = $(".input_group");

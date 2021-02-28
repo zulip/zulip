@@ -8,6 +8,7 @@ import render_settings_edit_outgoing_webhook_service from "../templates/settings
 import * as avatar from "./avatar";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
+import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as people from "./people";
