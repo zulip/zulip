@@ -39,7 +39,8 @@ rewiremock("../../static/js/message_scroll").with({
     hide_loading_newer: noop,
     update_top_of_narrow_notices: () => {},
 });
-const message_util = set_global("message_util", {});
+const message_util = {__esModule: true};
+rewiremock("../../static/js/message_util").with(message_util);
 const message_store = {__esModule: true};
 rewiremock("../../static/js/message_store").with(message_store);
 const narrow_state = {__esModule: true};

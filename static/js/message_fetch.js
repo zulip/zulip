@@ -5,6 +5,7 @@ const {Filter} = require("./filter");
 const huddle_data = require("./huddle_data");
 const message_scroll = require("./message_scroll");
 const message_store = require("./message_store");
+const message_util = require("./message_util");
 const people = require("./people");
 const pm_list = require("./pm_list");
 const stream_data = require("./stream_data");

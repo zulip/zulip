@@ -27,7 +27,6 @@ declare let input_pill: any;
 declare let message_events: any;
 declare let message_fetch: any;
 declare let message_list: any;
-declare let message_util: any;
 declare let narrow: any;
 declare let padded_widget: any;
 declare let page_params: any;

@@ -9,6 +9,7 @@ const hash_util = require("./hash_util");
 const ListWidget = require("./list_widget");
 const {localstorage} = require("./localstorage");
 const message_store = require("./message_store");
+const message_util = require("./message_util");
 const muting = require("./muting");
 const narrow_state = require("./narrow_state");
 const navigate = require("./navigate");

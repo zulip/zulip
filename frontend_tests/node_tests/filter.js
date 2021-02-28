@@ -17,7 +17,6 @@ rewiremock.enable();
 zrequire("unread");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
-zrequire("message_util", "js/message_util");
 const {Filter} = zrequire("Filter", "js/filter");
 
 const me = {

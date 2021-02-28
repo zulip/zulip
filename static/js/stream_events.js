@@ -1,4 +1,5 @@
 import * as color_data from "./color_data";
+import * as message_util from "./message_util";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";

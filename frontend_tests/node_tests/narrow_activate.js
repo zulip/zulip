@@ -28,7 +28,7 @@ const message_list = set_global("message_list", {
 });
 const message_scroll = {__esModule: true};
 rewiremock("../../static/js/message_scroll").with(message_scroll);
-set_global("message_util", {});
+rewiremock("../../static/js/message_util").with({});
 const notifications = {__esModule: true};
 rewiremock("../../static/js/notifications").with(notifications);
 set_global("page_params", {});
