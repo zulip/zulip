@@ -46,7 +46,9 @@ rewiremock("../../static/js/ui_report").with({
     },
 });
 
-const message_events = set_global("message_events", {});
+const message_events = {__esModule: true};
+
+rewiremock("../../static/js/message_events").with(message_events);
 
 // Turn off $.now so we can import server_events.
 set_global("$", {

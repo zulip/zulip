@@ -20,7 +20,6 @@ import "../message_list";
 import "../reload";
 import "../hotkey";
 import "../notifications";
-import "../message_events";
 import "../server_events";
 import "../zulip";
 import "../templates";

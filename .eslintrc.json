@@ -138,7 +138,6 @@
                 "jQuery": false,
                 "localStorage": false,
                 "location": false,
-                "message_events": false,
                 "page_params": false,
                 "pointer": false,
                 "realm_night_logo": false,
