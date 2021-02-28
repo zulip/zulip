@@ -16,7 +16,8 @@ const noop = () => {};
 
 const narrow_state = {__esModule: true};
 rewiremock("../../static/js/narrow_state").with(narrow_state);
-const search_suggestion = set_global("search_suggestion", {});
+const search_suggestion = {__esModule: true};
+rewiremock("../../static/js/search_suggestion").with(search_suggestion);
 rewiremock("../../static/js/ui_util").with({
     change_tab_to: noop,
 });

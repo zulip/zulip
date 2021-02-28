@@ -119,7 +119,6 @@ const upload = zrequire("upload");
 const compose = zrequire("compose");
 zrequire("composebox_typeahead");
 zrequire("narrow");
-zrequire("search_suggestion");
 zrequire("search");
 zrequire("notifications");
 zrequire("stream_list");
