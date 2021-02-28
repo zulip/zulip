@@ -28,7 +28,6 @@ import "../compose_actions";
 import "../subs";
 import "../ui";
 import "../composebox_typeahead";
-import "../list_util";
 import "../hotkey";
 import "../notifications";
 import "../hash_util";

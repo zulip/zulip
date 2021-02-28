@@ -84,7 +84,8 @@ const hashchange = set_global("hashchange", {
 rewiremock("../../static/js/info_overlay").with({});
 const lightbox = {__esModule: true};
 rewiremock("../../static/js/lightbox").with(lightbox);
-const list_util = set_global("list_util", {});
+const list_util = {__esModule: true};
+rewiremock("../../static/js/list_util").with(list_util);
 const message_edit = {__esModule: true};
 rewiremock("../../static/js/message_edit").with(message_edit);
 const muting_ui = {__esModule: true};
