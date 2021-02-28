@@ -5,6 +5,7 @@ import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
 import * as channel from "./channel";
 import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
 import * as condense from "./condense";
 import * as echo from "./echo";
 import * as loading from "./loading";

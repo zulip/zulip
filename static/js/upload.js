@@ -3,6 +3,7 @@ import ProgressBar from "@uppy/progress-bar";
 import XHRUpload from "@uppy/xhr-upload";
 
 import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 

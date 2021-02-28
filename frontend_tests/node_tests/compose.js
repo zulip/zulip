@@ -20,7 +20,7 @@ set_global("DOMParser", new JSDOM().window.DOMParser);
 let compose_actions_start_checked;
 let compose_actions_expected_opts;
 
-set_global("compose_actions", {
+rewiremock("../../static/js/compose_actions").with({
     update_placeholder_text: noop,
     start(msg_type, opts) {
         assert.equal(msg_type, "stream");

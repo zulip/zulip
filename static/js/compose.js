@@ -9,6 +9,7 @@ import render_compose_private_stream_alert from "../templates/compose_private_st
 
 import * as channel from "./channel";
 import * as common from "./common";
+import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";

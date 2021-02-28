@@ -3,6 +3,7 @@ import * as emoji from "../shared/js/emoji";
 import * as activity from "./activity";
 import * as common from "./common";
 import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
