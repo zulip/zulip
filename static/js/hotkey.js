@@ -13,6 +13,7 @@ const gear_menu = require("./gear_menu");
 const lightbox = require("./lightbox");
 const message_edit = require("./message_edit");
 const muting_ui = require("./muting_ui");
+const navigate = require("./navigate");
 const overlays = require("./overlays");
 const popovers = require("./popovers");
 const search = require("./search");

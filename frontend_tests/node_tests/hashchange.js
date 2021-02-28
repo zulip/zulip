@@ -48,7 +48,6 @@ const people = zrequire("people");
 const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
 const stream_data = zrequire("stream_data");
-zrequire("navigate");
 
 const recent_topics = zrequire("recent_topics");
 recent_topics.show = () => {};

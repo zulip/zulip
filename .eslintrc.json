@@ -163,7 +163,6 @@
                 "message_store": false,
                 "message_util": false,
                 "narrow": false,
-                "navigate": false,
                 "notifications": false,
                 "padded_widget": false,
                 "page_params": false,
