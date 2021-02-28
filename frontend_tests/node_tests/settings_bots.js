@@ -29,7 +29,9 @@ const bot_data_params = {
     ],
 };
 
-const avatar = set_global("avatar", {});
+const avatar = {__esModule: true};
+
+rewiremock("../../static/js/avatar").with(avatar);
 
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
