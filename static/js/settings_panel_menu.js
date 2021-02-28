@@ -1,6 +1,7 @@
 import * as hashchange from "./hashchange";
 import * as keydown_util from "./keydown_util";
 import * as popovers from "./popovers";
+import * as settings from "./settings";
 import * as settings_sections from "./settings_sections";
 
 export let normal_settings;
