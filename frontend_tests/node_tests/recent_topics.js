@@ -29,7 +29,7 @@ set_global("message_view_header", {
     render_title_area: noop,
 });
 
-set_global("timerender", {
+rewiremock("../../static/js/timerender").with({
     last_seen_status_from_date: () => "Just now",
     get_full_datetime: () => ({
         date: "date",

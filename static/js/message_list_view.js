@@ -22,6 +22,7 @@ import * as rows from "./rows";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as submessage from "./submessage";
+import * as timerender from "./timerender";
 import * as util from "./util";
 
 function same_day(earlier_msg, later_msg) {

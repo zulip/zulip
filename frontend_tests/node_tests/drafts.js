@@ -289,7 +289,7 @@ run_test("format_drafts", (override) => {
     assert.deepEqual(draft_model.get(), data);
 
     const stub_render_now = timerender.render_now;
-    timerender.render_now = (time) => stub_render_now(time, new Date(1549958107000));
+    timerender.__Rewire__("render_now", (time) => stub_render_now(time, new Date(1549958107000)));
 
     stub_templates((template_name, data) => {
         assert.equal(template_name, "draft_table_body");
@@ -303,6 +303,6 @@ run_test("format_drafts", (override) => {
 
     $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();
-    timerender.render_now = stub_render_now;
+    timerender.__Rewire__("render_now", stub_render_now);
 });
 rewiremock.disable();

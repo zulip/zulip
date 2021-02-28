@@ -180,7 +180,6 @@
                 "StripeCheckout": false,
                 "subs": false,
                 "message_view_header": false,
-                "timerender": false,
                 "typing_events": false,
                 "ui": false,
                 "ui_init": false,

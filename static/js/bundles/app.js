@@ -33,7 +33,6 @@ import "../notifications";
 import "../message_events";
 import "../server_events";
 import "../zulip";
-import "../timerender";
 import "../hotspots";
 import "../templates";
 import "../upload_widget";

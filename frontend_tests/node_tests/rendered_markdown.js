@@ -19,7 +19,6 @@ const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
-zrequire("timerender");
 
 const iago = {
     email: "iago@zulip.com",

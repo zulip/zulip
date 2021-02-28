@@ -2,6 +2,7 @@ import * as compose_fade from "./compose_fade";
 import * as hash_util from "./hash_util";
 import * as people from "./people";
 import * as presence from "./presence";
+import * as timerender from "./timerender";
 import * as user_status from "./user_status";
 import * as util from "./util";
 

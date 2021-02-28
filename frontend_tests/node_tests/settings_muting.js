@@ -13,7 +13,6 @@ const muting_ui = {__esModule: true};
 rewiremock("../../static/js/muting_ui").with(muting_ui);
 rewiremock.enable();
 
-zrequire("timerender");
 const settings_muting = zrequire("settings_muting");
 const stream_data = zrequire("stream_data");
 const muting = zrequire("muting");

@@ -51,7 +51,6 @@ declare let settings_users: any;
 declare let stream_list: any;
 declare let subs: any;
 declare let message_view_header: any;
-declare let timerender: any;
 declare let typing_events: any;
 declare let ui: any;
 declare let unread: any;
