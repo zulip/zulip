@@ -9,7 +9,6 @@ declare let bot_data: any;
 declare let compose_actions: any;
 declare let composebox_typeahead: any;
 declare let compose_ui: any;
-declare let confirm_dialog: any;
 declare let csrf_token: any;
 declare let current_msg_list: any;
 declare let emoji: any;

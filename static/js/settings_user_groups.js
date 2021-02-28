@@ -6,6 +6,7 @@ const render_admin_user_group_list = require("../templates/admin_user_group_list
 const render_confirm_delete_user = require("../templates/confirm_delete_user.hbs");
 
 const channel = require("./channel");
+const confirm_dialog = require("./confirm_dialog");
 const people = require("./people");
 const pill_typeahead = require("./pill_typeahead");
 const ui_report = require("./ui_report");
