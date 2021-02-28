@@ -36,7 +36,8 @@ const message_view_header = set_global("message_view_header", {});
 const top_left_corner = {__esModule: true};
 rewiremock("../../static/js/top_left_corner").with(top_left_corner);
 const typing_events = set_global("typing_events", {});
-const ui_util = set_global("ui_util", {});
+const ui_util = {__esModule: true};
+rewiremock("../../static/js/ui_util").with(ui_util);
 const unread_ops = set_global("unread_ops", {});
 set_global("search_pill_widget", {
     widget: {

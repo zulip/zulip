@@ -84,7 +84,6 @@ declare let timerender: any;
 declare let typeahead_helper: any;
 declare let typing_events: any;
 declare let ui: any;
-declare let ui_util: any;
 declare let unread: any;
 declare let unread_ops: any;
 declare let upload_widget: any;

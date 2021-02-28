@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -11,13 +13,15 @@ set_global("document", {});
 const noop = () => {};
 const example_img_link = "http://example.com/example.png";
 
-set_global("ui_util", {
+rewiremock("../../static/js/ui_util").with({
     place_caret_at_end: noop,
 });
 
 set_global("getSelection", () => ({
     anchorOffset: 0,
 }));
+
+rewiremock.enable();
 
 zrequire("templates");
 const input_pill = zrequire("input_pill");
@@ -595,3 +599,4 @@ run_test("clear", () => {
     assert.deepEqual(removed_colors, ["blue", "yellow", "red"]);
     assert.equal(pill_input[0].textContent, "");
 });
+rewiremock.disable();

@@ -14,6 +14,7 @@ import * as resize from "./resize";
 import * as rows from "./rows";
 import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
+import * as ui_util from "./ui_util";
 import * as upload from "./upload";
 
 const currently_editing_messages = new Map();

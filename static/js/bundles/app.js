@@ -27,7 +27,6 @@ import "../reload";
 import "../compose_actions";
 import "../subs";
 import "../ui";
-import "../ui_util";
 import "../click_handlers";
 import "../settings_panel_menu";
 import "../settings_toggle";

@@ -35,7 +35,8 @@ const narrow = set_global("narrow", {});
 const overlays = set_global("overlays", {});
 const settings = set_global("settings", {});
 const subs = set_global("subs", {});
-const ui_util = set_global("ui_util", {});
+const ui_util = {__esModule: true};
+rewiremock("../../static/js/ui_util").with(ui_util);
 rewiremock("../../static/js/top_left_corner").with({
     handle_narrow_deactivated: () => {},
 });
