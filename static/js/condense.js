@@ -1,3 +1,4 @@
+import * as message_flags from "./message_flags";
 import * as message_viewport from "./message_viewport";
 import * as rows from "./rows";
 

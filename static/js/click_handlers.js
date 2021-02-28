@@ -13,6 +13,7 @@ import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
+import * as message_flags from "./message_flags";
 import * as muting_ui from "./muting_ui";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";

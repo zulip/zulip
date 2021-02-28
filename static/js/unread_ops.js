@@ -1,6 +1,7 @@
 "use strict";
 
 const channel = require("./channel");
+const message_flags = require("./message_flags");
 const message_viewport = require("./message_viewport");
 const notifications = require("./notifications");
 const overlays = require("./overlays");

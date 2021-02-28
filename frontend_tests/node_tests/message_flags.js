@@ -84,7 +84,7 @@ run_test("read", () => {
     };
 
     // For testing purpose limit the batch size value to 5 instead of 1000
-    message_flags._unread_batch_size = 5;
+    message_flags.__Rewire__("_unread_batch_size", 5);
     let msgs_to_flag_read = [
         {locally_echoed: false, id: 1},
         {locally_echoed: false, id: 2},
