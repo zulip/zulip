@@ -23,7 +23,6 @@ import "../notifications";
 import "../server_events";
 import "../zulip";
 import "../templates";
-import "../settings_profile_fields";
 import "../settings";
 import "../ui_init";
 import "../desktop_integration";
