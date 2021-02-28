@@ -114,7 +114,6 @@ rewiremock.enable();
 const util = zrequire("util");
 
 zrequire("message_view_header");
-zrequire("presence");
 zrequire("search_pill_widget");
 zrequire("unread");
 zrequire("bot_data");

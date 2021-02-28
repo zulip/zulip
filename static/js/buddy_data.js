@@ -3,6 +3,7 @@
 const compose_fade = require("./compose_fade");
 const hash_util = require("./hash_util");
 const people = require("./people");
+const presence = require("./presence");
 const user_status = require("./user_status");
 const util = require("./util");
 /*

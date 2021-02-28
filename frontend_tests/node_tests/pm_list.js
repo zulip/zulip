@@ -30,7 +30,6 @@ rewiremock("../../static/js/pm_list_dom").with(pm_list_dom);
 
 rewiremock.enable();
 
-zrequire("presence");
 zrequire("buddy_data");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");

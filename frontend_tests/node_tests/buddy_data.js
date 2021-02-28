@@ -116,7 +116,7 @@ run_test("huddle_fraction_present", () => {
     presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
     // jill not in list
     presence_info.set(mark.user_id, {status: "offline"}); // does not count
-    presence.presence_info = presence_info;
+    presence.__Rewire__("presence_info", presence_info);
 
     assert.equal(buddy_data.huddle_fraction_present(huddle), 0.5);
 
@@ -124,7 +124,7 @@ run_test("huddle_fraction_present", () => {
     for (const user of [alice, fred, jill, mark]) {
         presence_info.set(user.user_id, {status: "active"}); // counts as present
     }
-    presence.presence_info = presence_info;
+    presence.__Rewire__("presence_info", presence_info);
 
     assert.equal(buddy_data.huddle_fraction_present(huddle), 1);
 
@@ -135,7 +135,7 @@ run_test("huddle_fraction_present", () => {
     presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
     // jill not in list
     presence_info.set(mark.user_id, {status: "offline"}); // does not count
-    presence.presence_info = presence_info;
+    presence.__Rewire__("presence_info", presence_info);
 
     assert.equal(buddy_data.huddle_fraction_present(huddle), undefined);
 });
