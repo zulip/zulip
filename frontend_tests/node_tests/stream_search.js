@@ -35,14 +35,14 @@ function expand_sidebar() {
 function make_cursor_helper() {
     const events = [];
 
-    stream_list.stream_cursor = {
+    stream_list.__Rewire__("stream_cursor", {
         reset: () => {
             events.push("reset");
         },
         clear: () => {
             events.push("clear");
         },
-    };
+    });
 
     return {
         events,
@@ -102,9 +102,9 @@ run_test("basics", () => {
 
     function verify_list_updated(f) {
         let updated;
-        stream_list.update_streams_sidebar = () => {
+        stream_list.__Rewire__("update_streams_sidebar", () => {
             updated = true;
-        };
+        });
 
         f();
         assert(updated);

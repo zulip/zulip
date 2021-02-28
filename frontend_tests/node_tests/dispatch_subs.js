@@ -36,7 +36,11 @@ const settings_org = {__esModule: true};
 rewiremock("../../static/js/settings_org").with(settings_org);
 const settings_streams = {__esModule: true};
 rewiremock("../../static/js/settings_streams").with(settings_streams);
-const stream_list = set_global("stream_list", {});
+const stream_list = {
+    __esModule: true,
+};
+
+rewiremock("../../static/js/stream_list").with(stream_list);
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 

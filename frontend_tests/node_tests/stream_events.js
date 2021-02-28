@@ -24,7 +24,10 @@ const message_util = {__esModule: true};
 rewiremock("../../static/js/message_util").with(message_util);
 const stream_color = {__esModule: true};
 rewiremock("../../static/js/stream_color").with(stream_color);
-const stream_list = set_global("stream_list", {});
+const stream_list = {
+    __esModule: true,
+};
+rewiremock("../../static/js/stream_list").with(stream_list);
 const stream_muting = {__esModule: true};
 rewiremock("../../static/js/stream_muting").with(stream_muting);
 let subs = set_global("subs", {});

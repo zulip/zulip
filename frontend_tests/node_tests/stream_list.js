@@ -681,10 +681,10 @@ test_ui("rename_stream", () => {
     });
 
     let count_updated;
-    stream_list.update_count_in_dom = (li) => {
+    stream_list.__Rewire__("update_count_in_dom", (li) => {
         assert.equal(li, li_stub);
         count_updated = true;
-    };
+    });
 
     stream_list.rename_stream(sub);
     assert(count_updated);
@@ -712,14 +712,14 @@ test_ui("refresh_pin", () => {
 
     stub_templates(() => ({to_$: () => li_stub}));
 
-    stream_list.update_count_in_dom = noop;
+    stream_list.__Rewire__("update_count_in_dom", noop);
     $("#stream_filters").append = noop;
 
     let scrolled;
-    stream_list.scroll_stream_into_view = (li) => {
+    stream_list.__Rewire__("scroll_stream_into_view", (li) => {
         assert.equal(li, li_stub);
         scrolled = true;
-    };
+    });
 
     stream_list.refresh_pinned_or_unpinned_stream(pinned_sub);
     assert(scrolled);
@@ -730,14 +730,14 @@ test_ui("create_initial_sidebar_rows", () => {
 
     const html_dict = new Map();
 
-    stream_list.stream_sidebar = {
+    stream_list.__Rewire__("stream_sidebar", {
         has_row_for: () => false,
         set_row(stream_id, widget) {
             html_dict.set(stream_id, widget.get_li().html());
         },
-    };
+    });
 
-    stream_list.update_count_in_dom = noop;
+    stream_list.__Rewire__("update_count_in_dom", noop);
 
     stub_templates((template_name, data) => {
         assert.equal(template_name, "stream_sidebar_row");

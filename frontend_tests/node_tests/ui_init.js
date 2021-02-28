@@ -117,7 +117,6 @@ const upload = zrequire("upload");
 const compose = zrequire("compose");
 zrequire("composebox_typeahead");
 zrequire("narrow");
-zrequire("stream_list");
 
 run_test("initialize_everything", () => {
     util.is_mobile = () => false;

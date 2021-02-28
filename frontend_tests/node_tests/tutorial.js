@@ -39,7 +39,10 @@ const overlays = {__esModule: true};
 rewiremock("../../static/js/overlays").with(overlays);
 const resize = {__esModule: true};
 rewiremock("../../static/js/resize").with(resize);
-let stream_list = set_global("stream_list", {});
+let stream_list = {
+    __esModule: true,
+};
+rewiremock("../../static/js/stream_list").with(stream_list);
 let unread_ops = {
     __esModule: true,
 };

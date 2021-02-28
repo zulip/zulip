@@ -9,6 +9,7 @@ import * as pm_list from "./pm_list";
 import * as recent_topics from "./recent_topics";
 import * as server_events from "./server_events";
 import * as stream_data from "./stream_data";
+import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
 
 const consts = {

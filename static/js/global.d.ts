@@ -17,7 +17,6 @@ declare let narrow: any;
 declare let page_params: any;
 declare let pointer: any;
 declare let settings_profile_fields: any;
-declare let stream_list: any;
 declare let subs: any;
 declare let ui: any;
 declare let widgetize: any;

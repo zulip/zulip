@@ -42,6 +42,7 @@ import * as settings_users from "./settings_users";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
+import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
