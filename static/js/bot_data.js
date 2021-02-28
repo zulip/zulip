@@ -3,6 +3,7 @@
 const _ = require("lodash");
 
 const people = require("./people");
+const settings_bots = require("./settings_bots");
 
 const bots = new Map();
 
