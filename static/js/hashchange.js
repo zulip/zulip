@@ -1,17 +1,15 @@
-"use strict";
-
-const drafts = require("./drafts");
-const floating_recipient_bar = require("./floating_recipient_bar");
-const hash_util = require("./hash_util");
-const info_overlay = require("./info_overlay");
-const invite = require("./invite");
-const message_viewport = require("./message_viewport");
-const navigate = require("./navigate");
-const overlays = require("./overlays");
-const search = require("./search");
-const settings_panel_menu = require("./settings_panel_menu");
-const top_left_corner = require("./top_left_corner");
-const ui_util = require("./ui_util");
+import * as drafts from "./drafts";
+import * as floating_recipient_bar from "./floating_recipient_bar";
+import * as hash_util from "./hash_util";
+import * as info_overlay from "./info_overlay";
+import * as invite from "./invite";
+import * as message_viewport from "./message_viewport";
+import * as navigate from "./navigate";
+import * as overlays from "./overlays";
+import * as search from "./search";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as top_left_corner from "./top_left_corner";
+import * as ui_util from "./ui_util";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
@@ -55,26 +53,26 @@ function maybe_hide_recent_topics() {
     return false;
 }
 
-exports.in_recent_topics_hash = function () {
+export function in_recent_topics_hash() {
     return ["recent_topics", "#", ""].includes(window.location.hash);
-};
+}
 
-exports.changehash = function (newhash) {
+export function changehash(newhash) {
     if (changing_hash) {
         return;
     }
     maybe_hide_recent_topics();
     message_viewport.stop_auto_scrolling();
     set_hash(newhash);
-};
+}
 
-exports.save_narrow = function (operators) {
+export function save_narrow(operators) {
     if (changing_hash) {
         return;
     }
     const new_hash = hash_util.operators_to_hash(operators);
-    exports.changehash(new_hash);
-};
+    changehash(new_hash);
+}
 
 function activate_home_tab() {
     const coming_from_recent_topics = maybe_hide_recent_topics();
@@ -294,7 +292,7 @@ function hashchanged(from_reload, e) {
     return ret;
 }
 
-exports.update_browser_history = function (new_hash) {
+export function update_browser_history(new_hash) {
     const old_hash = window.location.hash;
 
     if (!new_hash.startsWith("#")) {
@@ -314,9 +312,9 @@ exports.update_browser_history = function (new_hash) {
     state.old_hash = old_hash;
     state.is_internal_change = true;
     window.location.hash = new_hash;
-};
+}
 
-exports.replace_hash = function (hash) {
+export function replace_hash(hash) {
     if (!window.history.replaceState) {
         // We may have strange behavior with the back button.
         blueslip.warn("browser does not support replaceState");
@@ -325,30 +323,28 @@ exports.replace_hash = function (hash) {
 
     const url = get_full_url(hash);
     window.history.replaceState(null, null, url);
-};
+}
 
-exports.go_to_location = function (hash) {
+export function go_to_location(hash) {
     // Call this function when you WANT the hashchanged
     // function to run.
     window.location.hash = hash;
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     $(window).on("hashchange", (e) => {
         hashchanged(false, e.originalEvent);
     });
     hashchanged(true);
-};
+}
 
-exports.exit_overlay = function (callback) {
+export function exit_overlay(callback) {
     if (is_overlay_hash(window.location.hash)) {
         ui_util.blur_active_element();
         const new_hash = state.hash_before_overlay || "#";
-        exports.update_browser_history(new_hash);
+        update_browser_history(new_hash);
         if (typeof callback === "function") {
             callback();
         }
     }
-};
-
-window.hashchange = exports;
+}

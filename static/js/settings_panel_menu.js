@@ -1,3 +1,4 @@
+import * as hashchange from "./hashchange";
 import * as keydown_util from "./keydown_util";
 import * as popovers from "./popovers";
 

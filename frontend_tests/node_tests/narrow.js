@@ -19,7 +19,6 @@ rewiremock("../../static/js/resize").with({
 rewiremock.enable();
 
 const hash_util = zrequire("hash_util");
-zrequire("hashchange");
 const compose_state = zrequire("compose_state");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");

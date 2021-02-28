@@ -1,3 +1,4 @@
+import * as hashchange from "./hashchange";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 

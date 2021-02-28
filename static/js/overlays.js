@@ -1,3 +1,4 @@
+import * as hashchange from "./hashchange";
 import * as popovers from "./popovers";
 
 let active_overlay;
