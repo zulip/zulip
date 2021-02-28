@@ -1,3 +1,4 @@
+import * as activity from "./activity";
 import * as compose from "./compose";
 import * as compose_state from "./compose_state";
 import * as hashchange from "./hashchange";

@@ -21,7 +21,8 @@ const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {});
 
-const activity = set_global("activity", {});
+const activity = {__esModule: true};
+rewiremock("../../static/js/activity").with(activity);
 const message_live_update = {__esModule: true};
 rewiremock("../../static/js/message_live_update").with(message_live_update);
 const pm_list = {__esModule: true};

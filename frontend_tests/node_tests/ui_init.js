@@ -67,7 +67,7 @@ page_params.realm_filters = [];
 page_params.starred_messages = [];
 page_params.presences = [];
 
-set_global("activity", {initialize() {}});
+rewiremock("../../static/js/activity").with({initialize() {}});
 rewiremock("../../static/js/click_handlers").with({initialize() {}});
 rewiremock("../../static/js/compose_pm_pill").with({initialize() {}});
 rewiremock("../../static/js/drafts").with({initialize() {}});

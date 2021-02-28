@@ -689,7 +689,7 @@ test_ui("initialize", (override) => {
         scroll_handler_started = true;
     };
 
-    activity.client_is_active = false;
+    activity.__Rewire__("client_is_active", false);
 
     $(window).off("focus");
     activity.initialize();
@@ -734,25 +734,25 @@ run_test("away_status", () => {
 });
 
 test_ui("electron_bridge", () => {
-    activity.client_is_active = false;
+    activity.__Rewire__("client_is_active", false);
     window.electron_bridge = undefined;
     assert.equal(activity.compute_active_status(), activity.IDLE);
 
-    activity.client_is_active = true;
+    activity.__Rewire__("client_is_active", true);
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
 
     window.electron_bridge = {
         get_idle_on_system: () => true,
     };
     assert.equal(activity.compute_active_status(), activity.IDLE);
-    activity.client_is_active = false;
+    activity.__Rewire__("client_is_active", false);
     assert.equal(activity.compute_active_status(), activity.IDLE);
 
     window.electron_bridge = {
         get_idle_on_system: () => false,
     };
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
-    activity.client_is_active = true;
+    activity.__Rewire__("client_is_active", true);
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
 });
 

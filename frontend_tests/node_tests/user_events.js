@@ -7,7 +7,7 @@ const rewiremock = require("rewiremock/node");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("activity", {
+rewiremock("../../static/js/activity").with({
     redraw() {},
 });
 

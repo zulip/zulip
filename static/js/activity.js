@@ -1,19 +1,20 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import * as buddy_data from "./buddy_data";
+import {buddy_list} from "./buddy_list";
+import * as channel from "./channel";
+import * as keydown_util from "./keydown_util";
+import {ListCursor} from "./list_cursor";
+import * as people from "./people";
+import * as pm_list from "./pm_list";
+import * as popovers from "./popovers";
+import * as presence from "./presence";
+import * as server_events from "./server_events";
+import {UserSearch} from "./user_search";
+import * as user_status from "./user_status";
 
-const buddy_data = require("./buddy_data");
-const {buddy_list} = require("./buddy_list");
-const channel = require("./channel");
-const keydown_util = require("./keydown_util");
-const {ListCursor} = require("./list_cursor");
-const people = require("./people");
-const pm_list = require("./pm_list");
-const popovers = require("./popovers");
-const presence = require("./presence");
-const server_events = require("./server_events");
-const {UserSearch} = require("./user_search");
-const user_status = require("./user_status");
+export let user_cursor;
+export let user_filter;
 
 /*
     Helpers for detecting user activity and managing user idle states
@@ -25,24 +26,26 @@ const DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 const ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 
 /* Keep in sync with views.py:update_active_status_backend() */
-exports.ACTIVE = "active";
-exports.IDLE = "idle";
+export const ACTIVE = "active";
+
+export const IDLE = "idle";
 
 // When you open Zulip in a new browser window, client_is_active
 // should be true.  When a server-initiated reload happens, however,
 // it should be initialized to false.  We handle this with a check for
 // whether the window is focused at initialization time.
-exports.client_is_active = document.hasFocus && document.hasFocus();
+export let client_is_active = document.hasFocus && document.hasFocus();
 
 // new_user_input is a more strict version of client_is_active used
 // primarily for analytics.  We initialize this to true, to count new
 // page loads, but set it to false in the onload function in reload.js
 // if this was a server-initiated-reload to avoid counting a
 // server-initiated reload as user activity.
-exports.new_user_input = true;
-exports.set_new_user_input = function (value) {
-    exports.new_user_input = value;
-};
+export let new_user_input = true;
+
+export function set_new_user_input(value) {
+    new_user_input = value;
+}
 
 function update_pm_count_in_dom(count_span, value_span, count) {
     const li = count_span.parents("li");
@@ -71,7 +74,7 @@ function set_pm_count(user_ids_string, count) {
     update_pm_count_in_dom(count_span, value_span, count);
 }
 
-exports.update_dom_with_unread_counts = function (counts) {
+export function update_dom_with_unread_counts(counts) {
     // counts is just a data object that gets calculated elsewhere
     // Our job is to update some DOM elements.
 
@@ -82,21 +85,21 @@ exports.update_dom_with_unread_counts = function (counts) {
             set_pm_count(user_ids_string, count);
         }
     }
-};
+}
 
 function mark_client_idle() {
     // When we become idle, we don't immediately send anything to the
     // server; instead, we wait for our next periodic update, since
     // this data is fundamentally not timely.
-    exports.client_is_active = false;
+    client_is_active = false;
 }
 
-exports.redraw_user = function (user_id) {
+export function redraw_user(user_id) {
     if (page_params.realm_presence_disabled) {
         return;
     }
 
-    const filter_text = exports.get_filter_text();
+    const filter_text = get_filter_text();
 
     if (!buddy_data.matches_filter(filter_text, user_id)) {
         return;
@@ -108,18 +111,18 @@ exports.redraw_user = function (user_id) {
         key: user_id,
         item: info,
     });
-};
+}
 
-exports.searching = function () {
-    return exports.user_filter && exports.user_filter.searching();
-};
+export function searching() {
+    return user_filter && user_filter.searching();
+}
 
-exports.build_user_sidebar = function () {
+export function build_user_sidebar() {
     if (page_params.realm_presence_disabled) {
         return undefined;
     }
 
-    const filter_text = exports.get_filter_text();
+    const filter_text = get_filter_text();
 
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
@@ -128,19 +131,19 @@ exports.build_user_sidebar = function () {
     });
 
     return user_ids; // for testing
-};
+}
 
 function do_update_users_for_search() {
     // Hide all the popovers but not userlist sidebar
     // when the user is searching.
     popovers.hide_all_except_sidebars();
-    exports.build_user_sidebar();
-    exports.user_cursor.reset();
+    build_user_sidebar();
+    user_cursor.reset();
 }
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
 
-exports.compute_active_status = function () {
+export function compute_active_status() {
     // The overall algorithm intent for the `status` field is to send
     // `ACTIVE` (aka green circle) if we know the user is at their
     // computer, and IDLE (aka orange circle) if the user might not
@@ -157,18 +160,18 @@ exports.compute_active_status = function () {
         window.electron_bridge.get_idle_on_system !== undefined
     ) {
         if (window.electron_bridge.get_idle_on_system()) {
-            return exports.IDLE;
+            return IDLE;
         }
-        return exports.ACTIVE;
+        return ACTIVE;
     }
 
-    if (exports.client_is_active) {
-        return exports.ACTIVE;
+    if (client_is_active) {
+        return ACTIVE;
     }
-    return exports.IDLE;
-};
+    return IDLE;
+}
 
-exports.send_presence_to_server = function (want_redraw) {
+export function send_presence_to_server(want_redraw) {
     // Zulip has 2 data feeds coming from the server to the client:
     // The server_events data, and this presence feed.  Data from
     // server_events is nicely serialized, but if we've been offline
@@ -194,9 +197,9 @@ exports.send_presence_to_server = function (want_redraw) {
     channel.post({
         url: "/json/users/me/presence",
         data: {
-            status: exports.compute_active_status(),
+            status: compute_active_status(),
             ping_only: !want_redraw,
-            new_user_input: exports.new_user_input,
+            new_user_input,
             slim_presence: true,
         },
         idempotent: true,
@@ -208,26 +211,26 @@ exports.send_presence_to_server = function (want_redraw) {
                 $("#zephyr-mirror-error").removeClass("show");
             }
 
-            exports.new_user_input = false;
+            new_user_input = false;
 
             if (want_redraw) {
                 presence.set_info(data.presences, data.server_timestamp);
-                exports.redraw();
+                redraw();
             }
         },
     });
-};
+}
 
 function mark_client_active() {
-    if (!exports.client_is_active) {
-        exports.client_is_active = true;
-        exports.send_presence_to_server(false);
+    if (!client_is_active) {
+        client_is_active = true;
+        send_presence_to_server(false);
     }
 }
 
-exports.initialize = function () {
+export function initialize() {
     $("html").on("mousemove", () => {
-        exports.new_user_input = true;
+        new_user_input = true;
     });
 
     $(window).on("focus", mark_client_active);
@@ -238,91 +241,91 @@ exports.initialize = function () {
         keepTracking: true,
     });
 
-    exports.set_cursor_and_filter();
+    set_cursor_and_filter();
 
-    exports.build_user_sidebar();
+    build_user_sidebar();
 
     buddy_list.start_scroll_handler();
 
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
-    exports.send_presence_to_server(false);
+    send_presence_to_server(false);
 
     function get_full_presence_list_update() {
-        exports.send_presence_to_server(true);
+        send_presence_to_server(true);
     }
 
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
-};
+}
 
-exports.update_presence_info = function (user_id, info, server_time) {
+export function update_presence_info(user_id, info, server_time) {
     presence.update_info_from_event(user_id, info, server_time);
-    exports.redraw_user(user_id);
+    redraw_user(user_id);
     pm_list.update_private_messages();
-};
+}
 
-exports.on_set_away = function (user_id) {
+export function on_set_away(user_id) {
     user_status.set_away(user_id);
-    exports.redraw_user(user_id);
+    redraw_user(user_id);
     pm_list.update_private_messages();
-};
+}
 
-exports.on_revoke_away = function (user_id) {
+export function on_revoke_away(user_id) {
     user_status.revoke_away(user_id);
-    exports.redraw_user(user_id);
+    redraw_user(user_id);
     pm_list.update_private_messages();
-};
+}
 
-exports.redraw = function () {
-    exports.build_user_sidebar();
-    exports.user_cursor.redraw();
+export function redraw() {
+    build_user_sidebar();
+    user_cursor.redraw();
     pm_list.update_private_messages();
-};
+}
 
-exports.reset_users = function () {
+export function reset_users() {
     // Call this when we're leaving the search widget.
-    exports.build_user_sidebar();
-    exports.user_cursor.clear();
-};
+    build_user_sidebar();
+    user_cursor.clear();
+}
 
-exports.narrow_for_user = function (opts) {
+export function narrow_for_user(opts) {
     const user_id = buddy_list.get_key_from_li({li: opts.li});
-    return exports.narrow_for_user_id({user_id});
-};
+    return narrow_for_user_id({user_id});
+}
 
-exports.narrow_for_user_id = function (opts) {
+export function narrow_for_user_id(opts) {
     const person = people.get_by_user_id(opts.user_id);
     const email = person.email;
 
     narrow.by("pm-with", email, {trigger: "sidebar"});
-    exports.user_filter.clear_and_hide_search();
-};
+    user_filter.clear_and_hide_search();
+}
 
 function keydown_enter_key() {
-    const user_id = exports.user_cursor.get_key();
+    const user_id = user_cursor.get_key();
     if (user_id === undefined) {
         return;
     }
 
-    exports.narrow_for_user_id({user_id});
+    narrow_for_user_id({user_id});
     popovers.hide_all();
 }
 
-exports.set_cursor_and_filter = function () {
-    exports.user_cursor = new ListCursor({
+export function set_cursor_and_filter() {
+    user_cursor = new ListCursor({
         list: buddy_list,
         highlight_class: "highlighted_user",
     });
 
-    exports.user_filter = new UserSearch({
+    user_filter = new UserSearch({
         update_list: update_users_for_search,
-        reset_items: exports.reset_users,
-        on_focus: () => exports.user_cursor.reset(),
+        reset_items: reset_users,
+        on_focus: () => user_cursor.reset(),
     });
 
-    const $input = exports.user_filter.input_field();
+    const $input = user_filter.input_field();
 
-    $input.on("blur", () => exports.user_cursor.clear());
+    $input.on("blur", () => user_cursor.clear());
 
     keydown_util.handle({
         elem: $input,
@@ -332,31 +335,31 @@ exports.set_cursor_and_filter = function () {
                 return true;
             },
             up_arrow() {
-                exports.user_cursor.prev();
+                user_cursor.prev();
                 return true;
             },
             down_arrow() {
-                exports.user_cursor.next();
+                user_cursor.next();
                 return true;
             },
         },
     });
-};
+}
 
-exports.initiate_search = function () {
-    if (exports.user_filter) {
-        exports.user_filter.initiate_search();
+export function initiate_search() {
+    if (user_filter) {
+        user_filter.initiate_search();
     }
-};
+}
 
-exports.escape_search = function () {
-    if (exports.user_filter) {
-        exports.user_filter.escape_search();
+export function escape_search() {
+    if (user_filter) {
+        user_filter.escape_search();
     }
-};
+}
 
-exports.get_filter_text = function () {
-    if (!exports.user_filter) {
+export function get_filter_text() {
+    if (!user_filter) {
         // This may be overly defensive, but there may be
         // situations where get called before everything is
         // fully initialized.  The empty string is a fine
@@ -365,7 +368,5 @@ exports.get_filter_text = function () {
         return "";
     }
 
-    return exports.user_filter.text();
-};
-
-window.activity = exports;
+    return user_filter.text();
+}
