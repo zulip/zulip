@@ -10,6 +10,7 @@ import * as drafts from "./drafts";
 import * as feedback_widget from "./feedback_widget";
 import * as gear_menu from "./gear_menu";
 import * as hashchange from "./hashchange";
+import * as hotspots from "./hotspots";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";

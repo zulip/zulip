@@ -13,6 +13,7 @@ import * as compose from "./compose";
 import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
+import * as hotspots from "./hotspots";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_flags from "./message_flags";

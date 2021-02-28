@@ -74,7 +74,7 @@ rewiremock("../../static/js/drafts").with({initialize() {}});
 set_global("emoji_picker", {initialize() {}});
 rewiremock("../../static/js/gear_menu").with({initialize() {}});
 rewiremock("../../static/js/hashchange").with({initialize() {}});
-set_global("hotspots", {initialize() {}});
+rewiremock("../../static/js/hotspots").with({initialize() {}});
 // Accesses home_msg_list, which is a lot of complexity to set up
 rewiremock("../../static/js/message_fetch").with({initialize() {}});
 rewiremock("../../static/js/message_scroll").with({initialize() {}});

@@ -37,7 +37,7 @@ rewiremock("../../static/js/stream_popover").with({
 const emoji_picker = set_global("emoji_picker", {
     reactions_popped: () => false,
 });
-set_global("hotspots", {
+rewiremock("../../static/js/hotspots").with({
     is_open: () => false,
 });
 const gear_menu = {
