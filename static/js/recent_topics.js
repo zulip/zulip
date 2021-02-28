@@ -16,6 +16,7 @@ import * as panels from "./panels";
 import * as people from "./people";
 import * as recent_senders from "./recent_senders";
 import * as stream_data from "./stream_data";
+import * as stream_list from "./stream_list";
 import * as timerender from "./timerender";
 import * as top_left_corner from "./top_left_corner";
 import * as unread from "./unread";

@@ -8,6 +8,7 @@ import * as recent_topics from "./recent_topics";
 import * as settings_notifications from "./settings_notifications";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
 
 // In theory, this function should apply the account-level defaults,

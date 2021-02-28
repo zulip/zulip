@@ -47,9 +47,12 @@ const pm_list = {__esModule: true};
 rewiremock("../../static/js/pm_list").with(pm_list);
 const server_events = {__esModule: true};
 rewiremock("../../static/js/server_events").with(server_events);
-const stream_list = set_global("stream_list", {
+const stream_list = {
+    __esModule: true,
     maybe_scroll_narrow_into_view: () => {},
-});
+};
+
+rewiremock("../../static/js/stream_list").with(stream_list);
 
 rewiremock.enable();
 
