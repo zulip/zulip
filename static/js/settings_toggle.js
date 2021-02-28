@@ -1,6 +1,7 @@
 "use strict";
 
 const components = require("./components");
+const settings_panel_menu = require("./settings_panel_menu");
 
 let toggler;
 

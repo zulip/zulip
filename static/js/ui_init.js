@@ -32,6 +32,7 @@ const reload = require("./reload");
 const resize = require("./resize");
 const rows = require("./rows");
 const sent_messages = require("./sent_messages");
+const settings_panel_menu = require("./settings_panel_menu");
 const spoilers = require("./spoilers");
 const stream_color = require("./stream_color");
 const stream_data = require("./stream_data");
