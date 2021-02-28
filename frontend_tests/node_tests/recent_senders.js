@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let next_id = 0;
@@ -13,13 +13,17 @@ const messages = [];
 rewiremock("../../static/js/message_store").with({
     get: (msg_id) => messages[msg_id - 1],
 });
-const message_list = set_global("message_list", {
+const message_list = {
+    __esModule: true,
+
     all: {
         all_messages() {
             return messages;
         },
     },
-});
+};
+
+rewiremock("../../static/js/message_list").with(message_list);
 
 rewiremock.enable();
 

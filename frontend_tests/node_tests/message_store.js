@@ -343,7 +343,7 @@ run_test("message_id_change", () => {
         },
     });
 
-    set_global("message_list", {});
+    rewiremock("../../static/js/message_list").with({});
     set_global("home_msg_list", {});
 
     const opts = {

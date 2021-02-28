@@ -141,7 +141,6 @@
                 "localStorage": false,
                 "location": false,
                 "message_events": false,
-                "message_list": false,
                 "narrow": false,
                 "page_params": false,
                 "pointer": false,
