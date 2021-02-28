@@ -34,9 +34,11 @@ rewiremock("../../static/js/stream_popover").with({
     all_messages_popped: () => false,
     starred_messages_popped: () => false,
 });
-const emoji_picker = set_global("emoji_picker", {
+const emoji_picker = {
+    __esModule: true,
     reactions_popped: () => false,
-});
+};
+rewiremock("../../static/js/emoji_picker").with(emoji_picker);
 rewiremock("../../static/js/hotspots").with({
     is_open: () => false,
 });

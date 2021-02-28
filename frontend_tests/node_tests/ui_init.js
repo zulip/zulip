@@ -71,7 +71,7 @@ rewiremock("../../static/js/activity").with({initialize() {}});
 rewiremock("../../static/js/click_handlers").with({initialize() {}});
 rewiremock("../../static/js/compose_pm_pill").with({initialize() {}});
 rewiremock("../../static/js/drafts").with({initialize() {}});
-set_global("emoji_picker", {initialize() {}});
+rewiremock("../../static/js/emoji_picker").with({initialize() {}});
 rewiremock("../../static/js/gear_menu").with({initialize() {}});
 rewiremock("../../static/js/hashchange").with({initialize() {}});
 rewiremock("../../static/js/hotspots").with({initialize() {}});

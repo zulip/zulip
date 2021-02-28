@@ -7,6 +7,7 @@ import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as drafts from "./drafts";
+import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
 import * as gear_menu from "./gear_menu";
 import * as hashchange from "./hashchange";

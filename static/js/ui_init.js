@@ -16,6 +16,7 @@ import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
+import * as emoji_picker from "./emoji_picker";
 import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
 import * as hashchange from "./hashchange";
