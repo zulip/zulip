@@ -156,7 +156,6 @@
                 "stream_list": false,
                 "StripeCheckout": false,
                 "subs": false,
-                "typing_events": false,
                 "ui": false,
                 "ui_init": false,
                 "unread": false,
