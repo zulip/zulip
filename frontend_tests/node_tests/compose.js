@@ -16,8 +16,17 @@ const events = require("./lib/events");
 const noop = () => {};
 
 set_global("DOMParser", new JSDOM().window.DOMParser);
+
+let compose_actions_start_checked;
+let compose_actions_expected_opts;
+
 set_global("compose_actions", {
     update_placeholder_text: noop,
+    start(msg_type, opts) {
+        assert.equal(msg_type, "stream");
+        assert.deepEqual(opts, compose_actions_expected_opts);
+        compose_actions_start_checked = true;
+    },
 });
 
 const _navigator = {
@@ -1092,18 +1101,9 @@ test_ui("initialize", () => {
     assert(!$("#compose #attach_files").hasClass("notdisplayed"));
     assert(setup_upload_called);
 
-    let compose_actions_start_checked;
-
     function set_up_compose_start_mock(expected_opts) {
         compose_actions_start_checked = false;
-
-        set_global("compose_actions", {
-            start(msg_type, opts) {
-                assert.equal(msg_type, "stream");
-                assert.deepEqual(opts, expected_opts);
-                compose_actions_start_checked = true;
-            },
-        });
+        compose_actions_expected_opts = expected_opts;
     }
 
     (function test_page_params_narrow_path() {

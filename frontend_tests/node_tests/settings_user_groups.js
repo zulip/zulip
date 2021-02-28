@@ -38,6 +38,7 @@ const ui_report = {__esModule: true};
 rewiremock("../../static/js/ui_report").with(ui_report);
 
 const page_params = set_global("page_params", {});
+const input_pill = set_global("input_pill", {});
 
 rewiremock.enable();
 
@@ -53,9 +54,7 @@ function reset_test_setup(pill_container_stub) {
         assert(create_item_handler);
         return pills;
     }
-    set_global("input_pill", {
-        create: input_pill_stub,
-    });
+    input_pill.create = input_pill_stub;
 }
 
 function test_ui(label, f) {

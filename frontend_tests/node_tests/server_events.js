@@ -46,6 +46,8 @@ rewiremock("../../static/js/ui_report").with({
     },
 });
 
+const message_events = set_global("message_events", {});
+
 // Turn off $.now so we can import server_events.
 set_global("$", {
     now() {},
@@ -59,7 +61,7 @@ set_global("$", $);
 
 server_events.home_view_loaded();
 
-run_test("message_event", () => {
+run_test("message_event", (override) => {
     const event = {
         type: "message",
         message: {
@@ -69,11 +71,9 @@ run_test("message_event", () => {
     };
 
     let inserted;
-    set_global("message_events", {
-        insert_new_messages(messages) {
-            assert.equal(messages[0].content, event.message.content);
-            inserted = true;
-        },
+    override(message_events, "insert_new_messages", (messages) => {
+        assert.equal(messages[0].content, event.message.content);
+        inserted = true;
     });
 
     server_events._get_events_success([event]);
@@ -84,14 +84,12 @@ run_test("message_event", () => {
 
 const setup = () => {
     server_events.home_view_loaded();
-    set_global("message_events", {
-        insert_new_messages() {
-            throw new Error("insert error");
-        },
-        update_messages() {
-            throw new Error("update error");
-        },
-    });
+    message_events.insert_new_messages = () => {
+        throw new Error("insert error");
+    };
+    message_events.update_messages = () => {
+        throw new Error("update error");
+    };
     rewiremock("../../static/js/stream_events").with({
         update_property() {
             throw new Error("subs update error");
