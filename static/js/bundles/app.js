@@ -27,7 +27,6 @@ import "../reload";
 import "../compose_actions";
 import "../subs";
 import "../ui";
-import "../scroll_bar";
 import "../gear_menu";
 import "../stream_popover";
 import "../popovers";

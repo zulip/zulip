@@ -31,6 +31,7 @@ const pm_list = require("./pm_list");
 const reload = require("./reload");
 const resize = require("./resize");
 const rows = require("./rows");
+const scroll_bar = require("./scroll_bar");
 const sent_messages = require("./sent_messages");
 const settings_panel_menu = require("./settings_panel_menu");
 const settings_toggle = require("./settings_toggle");

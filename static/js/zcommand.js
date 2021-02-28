@@ -4,6 +4,7 @@ import * as channel from "./channel";
 import * as common from "./common";
 import * as feedback_widget from "./feedback_widget";
 import * as night_mode from "./night_mode";
+import * as scroll_bar from "./scroll_bar";
 
 /*
 
