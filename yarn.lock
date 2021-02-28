@@ -2187,11 +2187,6 @@ babel-plugin-dynamic-import-node@^2.3.3:
   dependencies:
     object.assign "^4.1.0"
 
-babel-plugin-lazy-require@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/babel-plugin-lazy-require/-/babel-plugin-lazy-require-1.0.3.tgz#8307b3572c6546799a9ef69637da9711043b29e0"
-  integrity sha512-EtHlh2iB6724cpJaGNvuRwN6zkLXIA+xLKUwIqJwczT9xAA70fPv9XWs0NQKs5zkLppAT5wLn6nK6hwINXOSZg==
-
 babel-plugin-rewire-ts@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-rewire-ts/-/babel-plugin-rewire-ts-1.4.0.tgz#6c814d5aa3ef3d8c0d0c7a27891877fb28930e5b"
