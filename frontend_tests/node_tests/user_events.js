@@ -14,7 +14,7 @@ rewiremock("../../static/js/activity").with({
 set_global("settings_linkifiers", {
     maybe_disable_widgets() {},
 });
-set_global("settings_org", {
+rewiremock("../../static/js/settings_org").with({
     maybe_disable_widgets() {},
 });
 set_global("settings_profile_fields", {

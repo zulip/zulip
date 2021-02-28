@@ -11,6 +11,7 @@ import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
+import * as settings_org from "./settings_org";
 
 export const update_person = function update(person) {
     const person_obj = people.get_by_user_id(person.user_id);

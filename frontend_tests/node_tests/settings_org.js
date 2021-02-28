@@ -738,9 +738,9 @@ function test_discard_changes_button(discard_changes) {
     $("#org-discard-msg-editing").closest = () => discard_button_parent;
 
     const stubbed_function = settings_org.change_save_button_state;
-    settings_org.change_save_button_state = (save_button_controls, state) => {
+    settings_org.__Rewire__("change_save_button_state", (save_button_controls, state) => {
         assert.equal(state, "discarded");
-    };
+    });
 
     discard_changes(ev);
 
@@ -751,7 +751,7 @@ function test_discard_changes_button(discard_changes) {
     assert.equal(msg_delete_limit_setting.val(), "upto_two_min");
     assert.equal(message_content_delete_limit_minutes.val(), "2");
 
-    settings_org.change_save_button_state = stubbed_function;
+    settings_org.__Rewire__("change_save_button_state", stubbed_function);
 }
 
 run_test("set_up", (override) => {

@@ -7,6 +7,7 @@ import * as settings_emoji from "./settings_emoji";
 import * as settings_exports from "./settings_exports";
 import * as settings_muting from "./settings_muting";
 import * as settings_notifications from "./settings_notifications";
+import * as settings_org from "./settings_org";
 
 const load_func_dict = new Map(); // group -> function
 const loaded_groups = new Set();

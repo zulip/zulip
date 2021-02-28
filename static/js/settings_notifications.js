@@ -3,6 +3,7 @@ import render_stream_specific_notification_row from "../templates/settings/strea
 import * as channel from "./channel";
 import * as notifications from "./notifications";
 import * as settings_config from "./settings_config";
+import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";

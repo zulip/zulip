@@ -28,6 +28,7 @@ import * as settings_display from "./settings_display";
 import * as settings_emoji from "./settings_emoji";
 import * as settings_exports from "./settings_exports";
 import * as settings_notifications from "./settings_notifications";
+import * as settings_org from "./settings_org";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";

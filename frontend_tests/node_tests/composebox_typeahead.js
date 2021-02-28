@@ -58,7 +58,6 @@ const stream_data = zrequire("stream_data");
 const user_pill = zrequire("user_pill");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const composebox_typeahead = zrequire("composebox_typeahead");
-zrequire("settings_org");
 const settings_config = zrequire("settings_config");
 const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 

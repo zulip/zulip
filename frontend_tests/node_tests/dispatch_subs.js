@@ -31,7 +31,8 @@ rewiremock("../../static/js/narrow_state").with(narrow_state);
 const page_params = set_global("page_params", {});
 const overlays = {__esModule: true};
 rewiremock("../../static/js/overlays").with(overlays);
-const settings_org = set_global("settings_org", {});
+const settings_org = {__esModule: true};
+rewiremock("../../static/js/settings_org").with(settings_org);
 const settings_streams = set_global("settings_streams", {});
 const stream_list = set_global("stream_list", {});
 
