@@ -1,3 +1,5 @@
+import * as helpers from "./helpers";
+
 export const initialize = () => {
     helpers.set_tab("upgrade");
 
