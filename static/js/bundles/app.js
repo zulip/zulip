@@ -30,7 +30,6 @@ import "../ui";
 import "../composebox_typeahead";
 import "../hotkey";
 import "../notifications";
-import "../alert_words_ui";
 import "../attachments_ui";
 import "../message_store";
 import "../message_util";

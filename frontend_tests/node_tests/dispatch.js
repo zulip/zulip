@@ -21,7 +21,8 @@ const typing_person1 = events.typing_person1;
 set_global("setTimeout", (func) => func());
 
 const activity = set_global("activity", {});
-const alert_words_ui = set_global("alert_words_ui", {});
+const alert_words_ui = {__esModule: true};
+rewiremock("../../static/js/alert_words_ui").with(alert_words_ui);
 const attachments_ui = set_global("attachments_ui", {});
 const bot_data = set_global("bot_data", {});
 rewiremock("../../static/js/compose").with({});

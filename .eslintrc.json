@@ -127,7 +127,6 @@
                 "$": false,
                 "activity": false,
                 "admin": false,
-                "alert_words_ui": false,
                 "attachments_ui": false,
                 "avatar": false,
                 "blueslip": false,
