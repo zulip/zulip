@@ -89,7 +89,7 @@ rewiremock("../../static/js/reload").with({initialize() {}});
 set_global("scroll_bar", {initialize() {}});
 const server_events = set_global("server_events", {initialize() {}});
 set_global("settings_sections", {initialize() {}});
-set_global("settings_panel_menu", {initialize() {}});
+rewiremock("../../static/js/settings_panel_menu").with({initialize() {}});
 set_global("settings_toggle", {initialize() {}});
 set_global("subs", {initialize() {}});
 set_global("timerender", {initialize() {}});

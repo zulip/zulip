@@ -67,7 +67,6 @@ declare let settings_invites: any;
 declare let settings_linkifiers: any;
 declare let settings_notifications: any;
 declare let settings_org: any;
-declare let settings_panel_menu: any;
 declare let settings_profile_fields: any;
 declare let settings_sections: any;
 declare let settings_streams: any;
