@@ -5,6 +5,7 @@ import * as settings_bots from "./settings_bots";
 import * as settings_display from "./settings_display";
 import * as settings_emoji from "./settings_emoji";
 import * as settings_exports from "./settings_exports";
+import * as settings_invites from "./settings_invites";
 import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_muting from "./settings_muting";
 import * as settings_notifications from "./settings_notifications";
