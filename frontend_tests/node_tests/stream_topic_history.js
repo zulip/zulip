@@ -61,7 +61,7 @@ run_test("basics", () => {
     assert.deepEqual(history, ["Topic1", "topic2"]);
     assert.deepEqual(max_message_id, 104);
 
-    set_global("message_util", {
+    rewiremock("../../static/js/message_util").with({
         get_messages_in_topic: () => [{id: 101}, {id: 102}],
         get_max_message_id_in_stream: () => 103,
     });
@@ -78,7 +78,7 @@ run_test("basics", () => {
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(max_message_id, 103);
 
-    set_global("message_util", {
+    rewiremock("../../static/js/message_util").with({
         get_messages_in_topic: () => [{id: 102}],
         get_max_message_id_in_stream: () => 103,
     });

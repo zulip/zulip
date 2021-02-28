@@ -171,7 +171,6 @@ rewiremock("../../static/js/stream_data").with({
 
 rewiremock.enable();
 
-zrequire("message_util");
 const people = zrequire("people");
 let rt = zrequire("recent_topics");
 

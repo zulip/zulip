@@ -1,4 +1,5 @@
 import {FoldDict} from "./fold_dict";
+import * as message_util from "./message_util";
 
 // topic_senders[stream_id][topic_id][sender_id] = latest_message_id
 const topic_senders = new Map();

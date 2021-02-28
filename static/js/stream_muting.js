@@ -1,4 +1,5 @@
 import * as message_scroll from "./message_scroll";
+import * as message_util from "./message_util";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";

@@ -154,7 +154,6 @@
                 "message_events": false,
                 "message_fetch": false,
                 "message_list": false,
-                "message_util": false,
                 "narrow": false,
                 "padded_widget": false,
                 "page_params": false,
