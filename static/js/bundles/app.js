@@ -27,7 +27,6 @@ import "../reload";
 import "../compose_actions";
 import "../subs";
 import "../ui";
-import "../overlays";
 import "../typeahead_helper";
 import "../search_suggestion";
 import "../search";

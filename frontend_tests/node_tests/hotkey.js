@@ -16,14 +16,17 @@ const popovers = {
     user_info_popped: () => false,
 };
 rewiremock("../../static/js/popovers").with(popovers);
-const overlays = set_global("overlays", {
+const overlays = {
+    __esModule: true,
     is_active: () => false,
     settings_open: () => false,
     streams_open: () => false,
     lightbox_open: () => false,
     drafts_open: () => false,
     info_overlay_open: () => false,
-});
+};
+
+rewiremock("../../static/js/overlays").with(overlays);
 
 rewiremock("../../static/js/stream_popover").with({
     stream_popped: () => false,

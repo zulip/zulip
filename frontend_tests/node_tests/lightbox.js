@@ -9,7 +9,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 set_global("Image", class Image {});
-set_global("overlays", {
+rewiremock("../../static/js/overlays").with({
     close_overlay: () => {},
     close_active: () => {},
     open_overlay: () => {},

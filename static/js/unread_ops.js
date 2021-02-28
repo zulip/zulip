@@ -2,6 +2,7 @@
 
 const channel = require("./channel");
 const message_viewport = require("./message_viewport");
+const overlays = require("./overlays");
 const reload = require("./reload");
 const unread_ui = require("./unread_ui");
 

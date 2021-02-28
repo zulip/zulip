@@ -6,6 +6,7 @@ const render_settings_admin_realm_domains_list = require("../templates/settings/
 
 const channel = require("./channel");
 const loading = require("./loading");
+const overlays = require("./overlays");
 const settings_config = require("./settings_config");
 const settings_ui = require("./settings_ui");
 const stream_data = require("./stream_data");

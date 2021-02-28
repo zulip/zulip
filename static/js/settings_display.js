@@ -3,6 +3,7 @@
 const channel = require("./channel");
 const emojisets = require("./emojisets");
 const loading = require("./loading");
+const overlays = require("./overlays");
 const settings_config = require("./settings_config");
 const settings_ui = require("./settings_ui");
 const ui_report = require("./ui_report");

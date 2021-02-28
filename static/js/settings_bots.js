@@ -9,6 +9,7 @@ const render_settings_edit_outgoing_webhook_service = require("../templates/sett
 
 const channel = require("./channel");
 const loading = require("./loading");
+const overlays = require("./overlays");
 const people = require("./people");
 
 exports.hide_errors = function () {

@@ -7,6 +7,7 @@ const render_admin_user_list = require("../templates/admin_user_list.hbs");
 const channel = require("./channel");
 const ListWidget = require("./list_widget");
 const loading = require("./loading");
+const overlays = require("./overlays");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");

@@ -38,7 +38,7 @@ set_global("message_list", {
 });
 
 subs = set_global("subs", {update_settings_for_subscribed: noop});
-set_global("overlays", {streams_open: () => true});
+rewiremock("../../static/js/overlays").with({streams_open: () => true});
 
 rewiremock.enable();
 
