@@ -78,9 +78,11 @@ const condense = {__esModule: true};
 rewiremock("../../static/js/condense").with(condense);
 const drafts = {__esModule: true};
 rewiremock("../../static/js/drafts").with(drafts);
-const hashchange = set_global("hashchange", {
+const hashchange = {
+    __esModule: true,
     in_recent_topics_hash: () => false,
-});
+};
+rewiremock("../../static/js/hashchange").with(hashchange);
 rewiremock("../../static/js/info_overlay").with({});
 const lightbox = {__esModule: true};
 rewiremock("../../static/js/lightbox").with(lightbox);

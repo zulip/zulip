@@ -144,7 +144,6 @@
                 "emoji_picker": false,
                 "favicon": false,
                 "flatpickr": false,
-                "hashchange": false,
                 "helpers": false,
                 "history": false,
                 "home_msg_list": false,

@@ -18,6 +18,7 @@ const drafts = require("./drafts");
 const echo = require("./echo");
 const emojisets = require("./emojisets");
 const gear_menu = require("./gear_menu");
+const hashchange = require("./hashchange");
 const invite = require("./invite");
 const lightbox = require("./lightbox");
 const markdown = require("./markdown");

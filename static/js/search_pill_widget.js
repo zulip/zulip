@@ -1,5 +1,6 @@
 "use strict";
 
+const hashchange = require("./hashchange");
 const search_pill = require("./search_pill");
 
 exports.initialize = function () {

@@ -73,7 +73,7 @@ rewiremock("../../static/js/compose_pm_pill").with({initialize() {}});
 rewiremock("../../static/js/drafts").with({initialize() {}});
 set_global("emoji_picker", {initialize() {}});
 rewiremock("../../static/js/gear_menu").with({initialize() {}});
-set_global("hashchange", {initialize() {}});
+rewiremock("../../static/js/hashchange").with({initialize() {}});
 set_global("hotspots", {initialize() {}});
 // Accesses home_msg_list, which is a lot of complexity to set up
 set_global("message_fetch", {initialize() {}});

@@ -6,6 +6,7 @@ import render_subscription_stream_privacy_modal from "../templates/subscription_
 
 import * as channel from "./channel";
 import * as hash_util from "./hash_util";
+import * as hashchange from "./hashchange";
 import * as ListWidget from "./list_widget";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
