@@ -5,7 +5,6 @@
 
 declare let activity: any;
 declare let admin: any;
-declare let attachments_ui: any;
 declare let avatar: any;
 declare let blueslip: any;
 declare let bot_data: any;
