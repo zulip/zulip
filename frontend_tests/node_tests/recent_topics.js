@@ -13,7 +13,7 @@ const noop = () => {};
 rewiremock("../../static/js/top_left_corner").with({
     narrow_to_recent_topics: noop,
 });
-set_global("stream_list", {
+rewiremock("../../static/js/stream_list").with({
     handle_narrow_deactivated: noop,
 });
 set_global("compose_actions", {

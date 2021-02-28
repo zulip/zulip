@@ -3,6 +3,7 @@ import * as message_util from "./message_util";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
+import * as stream_list from "./stream_list";
 
 export function update_is_muted(sub, value) {
     sub.is_muted = value;

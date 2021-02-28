@@ -39,7 +39,8 @@ const overlays = {__esModule: true};
 rewiremock("../../static/js/overlays").with(overlays);
 const resize = {__esModule: true};
 rewiremock("../../static/js/resize").with(resize);
-let stream_list = set_global("stream_list", {});
+let stream_list = {__esModule: true};
+rewiremock("../../static/js/stream_list").with(stream_list);
 let unread_ops = {__esModule: true};
 rewiremock("../../static/js/unread_ops").with(unread_ops);
 const unread_ui = {__esModule: true};
@@ -696,6 +697,7 @@ run_test("unread_ops", (override) => {
 
 */
 
+rewiremock("../../static/js/stream_list").disable();
 stream_list = zrequire("stream_list");
 
 const social_stream = {

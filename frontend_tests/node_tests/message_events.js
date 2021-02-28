@@ -18,7 +18,8 @@ rewiremock("../../static/js/notifications").with(notifications);
 const page_params = set_global("page_params", {});
 const pm_list = {__esModule: true};
 rewiremock("../../static/js/pm_list").with(pm_list);
-const stream_list = set_global("stream_list", {});
+const stream_list = {__esModule: true};
+rewiremock("../../static/js/stream_list").with(stream_list);
 const unread_ui = {__esModule: true};
 
 rewiremock("../../static/js/unread_ui").with(unread_ui);

@@ -9,6 +9,7 @@ import * as overlays from "./overlays";
 import * as recent_topics from "./recent_topics";
 import * as settings_muting from "./settings_muting";
 import * as stream_data from "./stream_data";
+import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as unread_ui from "./unread_ui";
 

@@ -100,7 +100,8 @@ const reactions = {__esModule: true};
 rewiremock("../../static/js/reactions").with(reactions);
 const search = {__esModule: true};
 rewiremock("../../static/js/search").with(search);
-const stream_list = set_global("stream_list", {});
+const stream_list = {__esModule: true};
+rewiremock("../../static/js/stream_list").with(stream_list);
 const subs = set_global("subs", {});
 
 set_global("current_msg_list", {

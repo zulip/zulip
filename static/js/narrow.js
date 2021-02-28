@@ -22,6 +22,7 @@ const search = require("./search");
 const search_pill = require("./search_pill");
 const search_pill_widget = require("./search_pill_widget");
 const stream_data = require("./stream_data");
+const stream_list = require("./stream_list");
 const stream_topic_history = require("./stream_topic_history");
 const top_left_corner = require("./top_left_corner");
 const topic_generator = require("./topic_generator");
