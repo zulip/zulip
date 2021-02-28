@@ -12,7 +12,6 @@ import * as message_view_header from "./message_view_header";
 import * as muting from "./muting";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
-import * as notifications from "./notifications";
 import * as panels from "./panels";
 import * as people from "./people";
 import * as recent_senders from "./recent_senders";
@@ -496,9 +495,8 @@ export function show() {
     // with no compose box.
     compose_actions.cancel();
 
-    narrow.narrow_title = "Recent topics";
-    narrow_state.set_current_filter(undefined);
-    notifications.redraw_title();
+    narrow_state.reset_current_filter();
+    narrow.set_narrow_title("Recent topics");
     message_view_header.render_title_area();
 
     complete_rerender();

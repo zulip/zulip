@@ -20,10 +20,7 @@ set_global("compose_actions", {
     cancel: noop,
 });
 set_global("narrow", {
-    narrow_title: "",
-});
-rewiremock("../../static/js/notifications").with({
-    redraw_title: noop,
+    set_narrow_title: noop,
 });
 rewiremock("../../static/js/message_view_header").with({
     render_title_area: noop,
