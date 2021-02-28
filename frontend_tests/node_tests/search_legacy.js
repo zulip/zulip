@@ -33,7 +33,6 @@ set_global("setTimeout", (func) => func());
 rewiremock.enable();
 
 const search = zrequire("search");
-zrequire("message_view_header");
 
 run_test("update_button_visibility", () => {
     const search_query = $("#search_query");

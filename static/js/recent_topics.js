@@ -10,6 +10,7 @@ const ListWidget = require("./list_widget");
 const {localstorage} = require("./localstorage");
 const message_store = require("./message_store");
 const message_util = require("./message_util");
+const message_view_header = require("./message_view_header");
 const muting = require("./muting");
 const narrow_state = require("./narrow_state");
 const navigate = require("./navigate");

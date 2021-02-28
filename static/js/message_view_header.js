@@ -1,11 +1,9 @@
-"use strict";
+import render_message_view_header from "../templates/message_view_header.hbs";
 
-const render_message_view_header = require("../templates/message_view_header.hbs");
-
-const narrow_state = require("./narrow_state");
-const peer_data = require("./peer_data");
-const rendered_markdown = require("./rendered_markdown");
-const search = require("./search");
+import * as narrow_state from "./narrow_state";
+import * as peer_data from "./peer_data";
+import * as rendered_markdown from "./rendered_markdown";
+import * as search from "./search";
 
 function get_formatted_sub_count(sub_count) {
     if (sub_count >= 1000) {
@@ -59,13 +57,13 @@ function make_message_view_header(filter) {
     return message_view_header;
 }
 
-exports.colorize_message_view_header = function () {
+export function colorize_message_view_header() {
     const filter = narrow_state.filter();
     if (filter === undefined || !filter._sub) {
         return;
     }
     $("#message_view_header .stream > .fa").css("color", filter._sub.color);
-};
+}
 
 function append_and_display_title_area(message_view_header_data) {
     const message_view_header_elem = $("#message_view_header");
@@ -73,7 +71,7 @@ function append_and_display_title_area(message_view_header_data) {
     const rendered = render_message_view_header(message_view_header_data);
     message_view_header_elem.append(rendered);
     if (message_view_header_data.stream_settings_link) {
-        exports.colorize_message_view_header();
+        colorize_message_view_header();
     }
     message_view_header_elem.removeClass("notdisplayed");
     const content = message_view_header_elem.find("span.rendered_markdown");
@@ -119,22 +117,22 @@ function build_message_view_header(filter) {
     // This makes sure we don't waste time appending
     // message_view_header on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
-        exports.open_search_bar_and_close_narrow_description();
+        open_search_bar_and_close_narrow_description();
     } else {
         const message_view_header_data = make_message_view_header(filter);
         append_and_display_title_area(message_view_header_data);
         bind_title_area_handlers();
         if (page_params.search_pills_enabled && $("#search_query").is(":focus")) {
-            exports.open_search_bar_and_close_narrow_description();
+            open_search_bar_and_close_narrow_description();
         } else {
-            exports.close_search_bar_and_open_narrow_description();
+            close_search_bar_and_open_narrow_description();
         }
     }
 }
 
 // we rely entirely on this function to ensure
 // the searchbar has the right text.
-exports.reset_searchbox_text = function () {
+export function reset_searchbox_text() {
     let search_string = narrow_state.search_string();
     if (search_string !== "") {
         if (!page_params.search_pills_enabled && !narrow_state.filter().is_search()) {
@@ -143,58 +141,56 @@ exports.reset_searchbox_text = function () {
         }
         $("#search_query").val(search_string);
     }
-};
+}
 
-exports.exit_search = function () {
+export function exit_search() {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
-        exports.close_search_bar_and_open_narrow_description();
+        close_search_bar_and_open_narrow_description();
     } else {
         // for "searching narrows", we redirect
         window.location.href = filter.generate_redirect_url();
     }
     $(".app").trigger("focus");
-};
+}
 
-exports.initialize = function () {
-    exports.render_title_area();
+export function initialize() {
+    render_title_area();
 
     // register searchbar click handler
     $("#search_exit").on("click", (e) => {
-        message_view_header.exit_search();
+        exit_search();
         e.preventDefault();
         e.stopPropagation();
     });
-};
+}
 
-exports.render_title_area = function () {
+export function render_title_area() {
     const filter = narrow_state.filter();
     build_message_view_header(filter);
-};
+}
 
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
 // narrowed (filter._sub) and rerenders if necessary
-exports.maybe_rerender_title_area_for_stream = function (modified_sub) {
+export function maybe_rerender_title_area_for_stream(modified_sub) {
     const filter = narrow_state.filter();
     if (filter && filter._sub && filter._sub.stream_id === modified_sub.stream_id) {
-        message_view_header.render_title_area();
+        render_title_area();
     }
-};
+}
 
-exports.open_search_bar_and_close_narrow_description = function () {
-    exports.reset_searchbox_text();
+export function open_search_bar_and_close_narrow_description() {
+    reset_searchbox_text();
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
-};
+}
 
-exports.close_search_bar_and_open_narrow_description = function () {
+export function close_search_bar_and_open_narrow_description() {
     const filter = narrow_state.filter();
     if (!(filter && !filter.is_common_narrow())) {
         $(".navbar-search").removeClass("expanded");
         $("#message_view_header").removeClass("hidden");
     }
-};
-
-window.message_view_header = exports;
+}
