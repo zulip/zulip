@@ -595,8 +595,6 @@ run_test("explore make_stub", (override) => {
 
 */
 
-zrequire("message_flags");
-
 unread_ops = zrequire("unread_ops");
 
 run_test("unread_ops", (override) => {

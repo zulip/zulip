@@ -5,6 +5,7 @@ import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
+import * as message_flags from "./message_flags";
 import * as muting_ui from "./muting_ui";
 import * as narrow_state from "./narrow_state";
 import * as night_mode from "./night_mode";

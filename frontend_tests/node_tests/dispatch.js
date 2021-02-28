@@ -90,7 +90,6 @@ const alert_words = zrequire("alert_words");
 zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list = zrequire("stream_list");
-zrequire("message_flags");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const starred_messages = zrequire("starred_messages");
