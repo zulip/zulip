@@ -30,7 +30,10 @@ const stream_list = {
 rewiremock("../../static/js/stream_list").with(stream_list);
 const stream_muting = {__esModule: true};
 rewiremock("../../static/js/stream_muting").with(stream_muting);
-let subs = set_global("subs", {});
+let subs = {
+    __esModule: true,
+};
+rewiremock("../../static/js/subs").with(subs);
 rewiremock("../../static/js/recent_topics").with({
     complete_rerender: () => {},
 });
@@ -43,7 +46,7 @@ rewiremock("../../static/js/message_list").with({
     },
 });
 
-subs = set_global("subs", {update_settings_for_subscribed: noop});
+subs = rewiremock("../../static/js/subs").with({update_settings_for_subscribed: noop}).mock.value;
 rewiremock("../../static/js/overlays").with({streams_open: () => true});
 
 rewiremock.enable();

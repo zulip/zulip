@@ -77,7 +77,10 @@ rewiremock("../../static/js/loading").with(loading);
 const page_params = set_global("page_params", {});
 const resize = {__esModule: true};
 rewiremock("../../static/js/resize").with(resize);
-const subs = set_global("subs", {});
+const subs = {
+    __esModule: true,
+};
+rewiremock("../../static/js/subs").with(subs);
 const ui_util = {__esModule: true};
 
 rewiremock("../../static/js/ui_util").with(ui_util);

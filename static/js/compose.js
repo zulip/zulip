@@ -31,6 +31,7 @@ import * as server_events from "./server_events";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as subs from "./subs";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";

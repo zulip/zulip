@@ -22,6 +22,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
 import * as stream_ui_updates from "./stream_ui_updates";
+import * as subs from "./subs";
 import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
 import * as util from "./util";
