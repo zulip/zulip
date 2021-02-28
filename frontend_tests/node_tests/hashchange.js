@@ -21,7 +21,8 @@ rewiremock("../../static/js/search").with({
 set_global("document", "document-stub");
 const history = set_global("history", {});
 
-const admin = set_global("admin", {});
+const admin = {__esModule: true};
+rewiremock("../../static/js/admin").with(admin);
 const drafts = {__esModule: true};
 rewiremock("../../static/js/drafts").with(drafts);
 set_global("favicon", {});
