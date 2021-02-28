@@ -27,6 +27,7 @@ import * as settings_config from "./settings_config";
 import * as settings_display from "./settings_display";
 import * as settings_emoji from "./settings_emoji";
 import * as settings_exports from "./settings_exports";
+import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
 import * as settings_streams from "./settings_streams";

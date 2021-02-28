@@ -11,7 +11,7 @@ rewiremock("../../static/js/activity").with({
     redraw() {},
 });
 
-set_global("settings_linkifiers", {
+rewiremock("../../static/js/settings_linkifiers").with({
     maybe_disable_widgets() {},
 });
 rewiremock("../../static/js/settings_org").with({
