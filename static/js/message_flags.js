@@ -3,6 +3,7 @@ import _ from "lodash";
 import * as channel from "./channel";
 import * as message_store from "./message_store";
 import * as starred_messages from "./starred_messages";
+import * as unread_ops from "./unread_ops";
 
 function send_flag_update(message, flag, op) {
     channel.post({

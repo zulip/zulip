@@ -18,6 +18,7 @@ import * as resize from "./resize";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
+import * as unread_ops from "./unread_ops";
 
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
