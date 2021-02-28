@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const blueslip = require("../../static/js/blueslip");
 const {stub_templates} = require("../zjsunit/handlebars");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");

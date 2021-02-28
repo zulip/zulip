@@ -1,3 +1,5 @@
+import * as blueslip from "./blueslip";
+
 function truncate_precision(float) {
     return Number.parseFloat(float.toFixed(3));
 }

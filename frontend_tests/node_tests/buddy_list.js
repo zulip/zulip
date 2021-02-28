@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 const rewiremock = require("rewiremock/node");
 
+const blueslip = require("../../static/js/blueslip");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");

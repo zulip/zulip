@@ -1,5 +1,6 @@
 "use strict";
 
+const blueslip = require("./blueslip");
 const channel = require("./channel");
 const compose = require("./compose");
 const compose_fade = require("./compose_fade");

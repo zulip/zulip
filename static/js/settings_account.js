@@ -5,6 +5,7 @@ import render_settings_custom_user_profile_field from "../templates/settings/cus
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as avatar from "./avatar";
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as overlays from "./overlays";

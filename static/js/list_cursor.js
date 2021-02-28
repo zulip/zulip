@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as scroll_util from "./scroll_util";
 
 export class ListCursor {

@@ -1,5 +1,6 @@
 "use strict";
 
+const blueslip = require("./blueslip");
 const narrow_state = require("./narrow_state");
 const poll_widget = require("./poll_widget");
 const todo_widget = require("./todo_widget");

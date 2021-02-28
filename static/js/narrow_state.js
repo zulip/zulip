@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import {Filter} from "./filter";
 import * as people from "./people";
 import * as stream_data from "./stream_data";

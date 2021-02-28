@@ -4,6 +4,7 @@ import render_compose_notification from "../templates/compose_notification.hbs";
 import render_notification from "../templates/notification.hbs";
 
 import * as alert_words from "./alert_words";
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as favicon from "./favicon";
 import * as message_store from "./message_store";

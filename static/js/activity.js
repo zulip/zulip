@@ -1,5 +1,6 @@
 import _ from "lodash";
 
+import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import {buddy_list} from "./buddy_list";
 import * as channel from "./channel";

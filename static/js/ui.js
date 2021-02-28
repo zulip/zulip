@@ -2,6 +2,7 @@
 
 const SimpleBar = require("simplebar/dist/simplebar");
 
+const blueslip = require("./blueslip");
 const common = require("./common");
 const {localstorage} = require("./localstorage");
 

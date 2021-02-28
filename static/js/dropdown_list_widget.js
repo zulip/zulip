@@ -2,6 +2,7 @@
 
 const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
 
+const blueslip = require("./blueslip");
 const ListWidget = require("./list_widget");
 
 const DropdownListWidget = function (opts) {

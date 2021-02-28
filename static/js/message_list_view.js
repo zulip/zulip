@@ -7,6 +7,7 @@ import render_recipient_row from "../templates/recipient_row.hbs";
 import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity";
+import * as blueslip from "./blueslip";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";

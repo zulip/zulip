@@ -3,6 +3,7 @@ import ClipboardJS from "clipboard";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as condense from "./condense";

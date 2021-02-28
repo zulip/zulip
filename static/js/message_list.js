@@ -2,6 +2,7 @@
 
 const autosize = require("autosize");
 
+const blueslip = require("./blueslip");
 const {MessageListData} = require("./message_list_data");
 const {MessageListView} = require("./message_list_view");
 const narrow_state = require("./narrow_state");

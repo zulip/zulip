@@ -3,6 +3,7 @@
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
 import * as activity from "./activity";
+import * as blueslip from "./blueslip";
 import * as compose from "./compose";
 import * as gear_menu from "./gear_menu";
 import * as message_live_update from "./message_live_update";

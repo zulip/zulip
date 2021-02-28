@@ -6,6 +6,7 @@ import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.h
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
 import render_unstar_messages_modal from "../templates/unstar_messages_modal.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";

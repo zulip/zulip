@@ -4,6 +4,7 @@ import _ from "lodash";
 
 import * as typeahead from "../shared/js/typeahead";
 
+import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
 import * as reload_state from "./reload_state";

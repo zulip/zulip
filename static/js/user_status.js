@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 
 const away_user_ids = new Set();

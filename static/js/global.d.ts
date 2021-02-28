@@ -3,7 +3,6 @@
 // remove each declaration when the corresponding module is migrated
 // to TS.
 
-declare let blueslip: any;
 declare let compose_actions: any;
 declare let composebox_typeahead: any;
 declare let csrf_token: any;

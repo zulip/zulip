@@ -1,3 +1,5 @@
+import * as blueslip from "./blueslip";
+
 export class LazySet {
     /*
         This class is optimized for a very

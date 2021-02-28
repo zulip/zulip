@@ -7,6 +7,7 @@ const render_subscription_settings = require("../templates/subscription_settings
 const render_subscription_table_body = require("../templates/subscription_table_body.hbs");
 const render_subscriptions = require("../templates/subscriptions.hbs");
 
+const blueslip = require("./blueslip");
 const channel = require("./channel");
 const components = require("./components");
 const compose_state = require("./compose_state");

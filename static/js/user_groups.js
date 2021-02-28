@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 
 let user_group_name_dict;

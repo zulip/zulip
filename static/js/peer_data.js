@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as stream_data from "./stream_data";
 
 const {LazySet} = require("./lazy_set");

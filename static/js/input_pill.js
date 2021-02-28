@@ -2,6 +2,7 @@
 
 const render_input_pill = require("../templates/input_pill.hbs");
 
+const blueslip = require("./blueslip");
 const ui_util = require("./ui_util");
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html

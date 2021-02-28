@@ -128,7 +128,6 @@
             "files": ["static/js/**"],
             "globals": {
                 "$": false,
-                "blueslip": false,
                 "compose_actions": false,
                 "composebox_typeahead": false,
                 "csrf_token": false,

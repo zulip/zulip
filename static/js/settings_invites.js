@@ -1,6 +1,7 @@
 import render_admin_invites_list from "../templates/admin_invites_list.hbs";
 import render_settings_revoke_invite_modal from "../templates/settings/revoke_invite_modal.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";

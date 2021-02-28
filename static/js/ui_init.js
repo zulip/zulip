@@ -8,6 +8,7 @@ import render_edit_content_button from "../templates/edit_content_button.hbs";
 
 import * as activity from "./activity";
 import * as alert_words from "./alert_words";
+import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as click_handlers from "./click_handlers";
 import * as compose from "./compose";

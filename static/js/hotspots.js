@@ -4,6 +4,7 @@ import render_hotspot_icon from "../templates/hotspot_icon.hbs";
 import render_hotspot_overlay from "../templates/hotspot_overlay.hbs";
 import render_intro_reply_hotspot from "../templates/intro_reply_hotspot.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as popovers from "./popovers";
 

@@ -4,6 +4,7 @@ import render_stream_subscription_info from "../templates/stream_subscription_in
 import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_stream_privacy_modal from "../templates/subscription_stream_privacy_modal.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";

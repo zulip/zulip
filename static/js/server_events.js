@@ -1,5 +1,6 @@
 import _ from "lodash";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as echo from "./echo";
 import * as message_store from "./message_store";

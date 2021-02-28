@@ -1,3 +1,5 @@
+import * as blueslip from "./blueslip";
+
 const ls = {
     // parse JSON without throwing an error.
     parseJSON(str) {

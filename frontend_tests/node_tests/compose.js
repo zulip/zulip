@@ -6,6 +6,7 @@ const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
 const rewiremock = require("rewiremock/node");
 
+const blueslip = require("../../static/js/blueslip");
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
