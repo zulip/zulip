@@ -29,7 +29,6 @@ declare let recent_topics: any;
 declare let search_pill_widget: any;
 declare let settings: any;
 declare let settings_profile_fields: any;
-declare let settings_user_groups: any;
 declare let stream_list: any;
 declare let subs: any;
 declare let message_view_header: any;
