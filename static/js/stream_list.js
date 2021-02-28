@@ -6,6 +6,7 @@ import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import * as hash_util from "./hash_util";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
+import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import * as resize from "./resize";

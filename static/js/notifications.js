@@ -8,6 +8,7 @@ import * as channel from "./channel";
 import * as favicon from "./favicon";
 import * as message_store from "./message_store";
 import * as muting from "./muting";
+import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import * as people from "./people";

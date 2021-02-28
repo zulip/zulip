@@ -20,6 +20,7 @@ import * as message_edit_history from "./message_edit_history";
 import * as message_flags from "./message_flags";
 import * as message_store from "./message_store";
 import * as muting_ui from "./muting_ui";
+import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";

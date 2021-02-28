@@ -5,6 +5,7 @@ import * as hash_util from "./hash_util";
 import * as info_overlay from "./info_overlay";
 import * as invite from "./invite";
 import * as message_viewport from "./message_viewport";
+import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import * as recent_topics from "./recent_topics";

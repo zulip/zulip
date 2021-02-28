@@ -46,7 +46,6 @@ rewiremock("clipboard").with(ClipboardJS);
 
 rewiremock.enable();
 
-zrequire("narrow");
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");

@@ -10,6 +10,7 @@ import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
 import * as muting from "./muting";
+import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import * as panels from "./panels";

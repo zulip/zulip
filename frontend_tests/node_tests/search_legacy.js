@@ -21,7 +21,8 @@ rewiremock("../../static/js/search_suggestion").with(search_suggestion);
 rewiremock("../../static/js/ui_util").with({
     change_tab_to: noop,
 });
-const narrow = set_global("narrow", {});
+const narrow = {__esModule: true};
+rewiremock("../../static/js/narrow").with(narrow);
 const Filter = {};
 
 rewiremock("../../static/js/filter").with({

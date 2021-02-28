@@ -17,7 +17,6 @@ import "../i18n";
 import "../fold_dict";
 import "../setup";
 import "../message_list";
-import "../narrow";
 import "../reload";
 import "../compose_actions";
 import "../subs";

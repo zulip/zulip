@@ -10,6 +10,7 @@ import * as compose_ui from "./compose_ui";
 import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
+import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as stream_color from "./stream_color";
