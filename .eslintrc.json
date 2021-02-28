@@ -158,7 +158,6 @@
                 "settings": false,
                 "settings_linkifiers": false,
                 "settings_invites": false,
-                "settings_org": false,
                 "settings_profile_fields": false,
                 "settings_streams": false,
                 "settings_user_groups": false,
