@@ -7,6 +7,7 @@ import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
 import * as muting_ui from "./muting_ui";
 import * as narrow_state from "./narrow_state";
+import * as night_mode from "./night_mode";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as reload from "./reload";
