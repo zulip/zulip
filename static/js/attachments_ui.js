@@ -4,6 +4,7 @@ import render_uploaded_files_list from "../templates/uploaded_files_list.hbs";
 import * as channel from "./channel";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
+import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 
 let attachments;

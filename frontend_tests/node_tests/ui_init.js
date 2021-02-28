@@ -96,7 +96,7 @@ set_global("settings_sections", {initialize() {}});
 rewiremock("../../static/js/settings_panel_menu").with({initialize() {}});
 rewiremock("../../static/js/settings_toggle").with({initialize() {}});
 set_global("subs", {initialize() {}});
-set_global("timerender", {initialize() {}});
+rewiremock("../../static/js/timerender").with({initialize() {}});
 const ui = set_global("ui", {initialize() {}});
 rewiremock("../../static/js/unread_ui").with({initialize() {}});
 

@@ -4,6 +4,7 @@ import render_archive_message_group from "../templates/archive_message_group.hbs
 
 import * as color_data from "./color_data";
 import * as floating_recipient_bar from "./floating_recipient_bar";
+import * as timerender from "./timerender";
 
 const {format, isSameDay} = require("date-fns");
 

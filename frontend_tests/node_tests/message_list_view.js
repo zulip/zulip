@@ -18,7 +18,7 @@ const page_params = set_global("page_params", {
 set_global("home_msg_list", "stub");
 set_global("unread", {message_unread() {}});
 // timerender calls setInterval when imported
-set_global("timerender", {
+rewiremock("../../static/js/timerender").with({
     render_date(time1, time2) {
         if (time2 === undefined) {
             return [{outerHTML: String(time1.getTime())}];
