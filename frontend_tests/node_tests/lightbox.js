@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -12,9 +14,11 @@ set_global("overlays", {
     close_active: () => {},
     open_overlay: () => {},
 });
-set_global("popovers", {
+rewiremock("../../static/js/popovers").with({
     hide_all: () => {},
 });
+
+rewiremock.enable();
 
 const rows = zrequire("rows");
 const lightbox = zrequire("lightbox");
@@ -84,3 +88,4 @@ run_test("youtube", (override) => {
     lightbox.open(img);
     assert.equal($(".image-actions .open").attr("href"), href);
 });
+rewiremock.disable();

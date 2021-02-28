@@ -12,6 +12,7 @@ import * as compose_state from "./compose_state";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as muting_ui from "./muting_ui";
+import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";

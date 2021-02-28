@@ -1,4 +1,5 @@
 import * as keydown_util from "./keydown_util";
+import * as popovers from "./popovers";
 
 export let normal_settings;
 export let org_settings;

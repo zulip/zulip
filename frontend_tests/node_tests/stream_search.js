@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -18,7 +18,8 @@ rewiremock("../../static/js/resize").with({
     resize_stream_filters_container: noop,
 });
 
-const popovers = set_global("popovers", {});
+const popovers = {__esModule: true};
+rewiremock("../../static/js/popovers").with(popovers);
 const stream_popover = {__esModule: true};
 
 rewiremock("../../static/js/stream_popover").with(stream_popover);

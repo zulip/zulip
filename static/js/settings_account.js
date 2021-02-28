@@ -10,6 +10,7 @@ const channel = require("./channel");
 const common = require("./common");
 const people = require("./people");
 const pill_typeahead = require("./pill_typeahead");
+const popovers = require("./popovers");
 const settings_ui = require("./settings_ui");
 const setup = require("./setup");
 const ui_report = require("./ui_report");

@@ -8,12 +8,14 @@ const {set_global, with_field, with_overrides, zrequire} = require("../zjsunit/n
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
-const popovers = set_global("popovers", {
+const popovers = {
+    __esModule: true,
     actions_popped: () => false,
     message_info_popped: () => false,
     user_sidebar_popped: () => false,
     user_info_popped: () => false,
-});
+};
+rewiremock("../../static/js/popovers").with(popovers);
 const overlays = set_global("overlays", {
     is_active: () => false,
     settings_open: () => false,
