@@ -127,7 +127,6 @@
             "globals": {
                 "$": false,
                 "blueslip": false,
-                "compose_actions": false,
                 "composebox_typeahead": false,
                 "csrf_token": false,
                 "current_msg_list": true,

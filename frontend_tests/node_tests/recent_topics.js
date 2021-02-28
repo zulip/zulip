@@ -16,7 +16,7 @@ rewiremock("../../static/js/top_left_corner").with({
 rewiremock("../../static/js/stream_list").with({
     handle_narrow_deactivated: noop,
 });
-set_global("compose_actions", {
+rewiremock("../../static/js/compose_actions").with({
     cancel: noop,
 });
 rewiremock("../../static/js/narrow").with({

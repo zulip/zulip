@@ -2,15 +2,21 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const rewiremock = require("rewiremock/node");
+
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+
+rewiremock.enable();
 
 const people = zrequire("people");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
 const input_pill = zrequire("input_pill");
-const compose_actions = set_global("compose_actions", {});
+const compose_actions = {__esModule: true};
+
+rewiremock("../../static/js/compose_actions").with(compose_actions);
 
 let pills = {
     pill: {},
@@ -193,3 +199,4 @@ run_test("has_unconverted_data", () => {
     // we have some unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), true);
 });
+rewiremock.disable();

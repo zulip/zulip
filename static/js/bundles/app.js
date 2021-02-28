@@ -18,7 +18,6 @@ import "../fold_dict";
 import "../setup";
 import "../message_list";
 import "../reload";
-import "../compose_actions";
 import "../subs";
 import "../ui";
 import "../composebox_typeahead";
