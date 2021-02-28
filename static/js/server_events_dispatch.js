@@ -41,6 +41,7 @@ import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_topic_history from "./stream_topic_history";
 import * as submessage from "./submessage";
+import * as typing_events from "./typing_events";
 import * as user_events from "./user_events";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
