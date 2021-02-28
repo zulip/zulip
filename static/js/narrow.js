@@ -20,6 +20,7 @@ const recent_topics = require("./recent_topics");
 const resize = require("./resize");
 const search = require("./search");
 const search_pill = require("./search_pill");
+const search_pill_widget = require("./search_pill_widget");
 const stream_data = require("./stream_data");
 const stream_topic_history = require("./stream_topic_history");
 const top_left_corner = require("./top_left_corner");

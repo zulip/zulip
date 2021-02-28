@@ -45,6 +45,7 @@ import * as resize from "./resize";
 import * as rows from "./rows";
 import * as scroll_bar from "./scroll_bar";
 import * as search from "./search";
+import * as search_pill_widget from "./search_pill_widget";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as settings_panel_menu from "./settings_panel_menu";

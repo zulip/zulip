@@ -26,7 +26,7 @@ rewiremock("../../static/js/ui_util").with({
     place_caret_at_end: noop,
 });
 const narrow = set_global("narrow", {});
-set_global("search_pill_widget", {
+rewiremock("../../static/js/search_pill_widget").with({
     widget: {
         getByID: () => true,
     },
