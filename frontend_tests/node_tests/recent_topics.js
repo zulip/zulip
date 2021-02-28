@@ -394,7 +394,7 @@ run_test("test_filter_all", () => {
     i = row_data.length;
     rt = reset_module("recent_topics");
     stub_out_filter_buttons();
-    rt.is_visible = () => true;
+    rt.__Rewire__("is_visible", () => true);
     rt.set_filter("all");
     rt.process_messages([messages[0]]);
 
@@ -435,7 +435,7 @@ run_test("test_filter_unread", () => {
     let i = 0;
 
     rt = reset_module("recent_topics");
-    rt.is_visible = () => true;
+    rt.__Rewire__("is_visible", () => true);
     rt.set_default_focus();
 
     stub_templates(() => "<recent_topics table stub>");
@@ -502,7 +502,7 @@ run_test("test_filter_participated", () => {
     let i = 0;
 
     rt = reset_module("recent_topics");
-    rt.is_visible = () => true;
+    rt.__Rewire__("is_visible", () => true);
     rt.set_default_focus();
     stub_templates(() => "<recent_topics table stub>");
     stub_out_filter_buttons();
@@ -561,7 +561,7 @@ stub_templates(() => "<recent_topics table stub>");
 run_test("basic assertions", () => {
     rt = reset_module("recent_topics");
     stub_out_filter_buttons();
-    rt.is_visible = () => true;
+    rt.__Rewire__("is_visible", () => true);
     rt.set_default_focus();
     rt.set_filter("all");
     rt.process_messages(messages);
@@ -642,7 +642,7 @@ run_test("basic assertions", () => {
 run_test("test_reify_local_echo_message", () => {
     rt = reset_module("recent_topics");
     stub_out_filter_buttons();
-    rt.is_visible = () => true;
+    rt.__Rewire__("is_visible", () => true);
     rt.set_filter("all");
     rt.process_messages(messages);
 
@@ -807,7 +807,7 @@ run_test("test_topic_edit", () => {
 
 run_test("test_search", () => {
     rt = reset_module("recent_topics");
-    rt.is_visible = () => true;
+    rt.__Rewire__("is_visible", () => true);
     assert.equal(rt.topic_in_search_results("t", "general", "Recent Topic"), true);
     assert.equal(rt.topic_in_search_results("T", "general", "Recent Topic"), true);
     assert.equal(rt.topic_in_search_results("to", "general", "Recent Topic"), true);

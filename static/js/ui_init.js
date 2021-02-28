@@ -39,6 +39,7 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";
 import * as presence from "./presence";
+import * as recent_topics from "./recent_topics";
 import * as reload from "./reload";
 import * as resize from "./resize";
 import * as rows from "./rows";

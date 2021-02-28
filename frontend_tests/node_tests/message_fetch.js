@@ -20,7 +20,7 @@ rewiremock("../../static/js/message_list_view").with({
     MessageListView,
 });
 
-set_global("recent_topics", {
+rewiremock("../../static/js/recent_topics").with({
     process_messages: noop,
 });
 // Still required for page_params.initial_pointer

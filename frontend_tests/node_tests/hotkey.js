@@ -122,7 +122,7 @@ set_global("current_msg_list", {
         return 101;
     },
 });
-set_global("recent_topics", {
+rewiremock("../../static/js/recent_topics").with({
     is_visible: () => false,
 });
 

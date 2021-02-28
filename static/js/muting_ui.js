@@ -6,6 +6,7 @@ import * as feedback_widget from "./feedback_widget";
 import * as ListWidget from "./list_widget";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
+import * as recent_topics from "./recent_topics";
 import * as settings_muting from "./settings_muting";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";

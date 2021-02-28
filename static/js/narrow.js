@@ -16,6 +16,7 @@ const message_view_header = require("./message_view_header");
 const narrow_state = require("./narrow_state");
 const notifications = require("./notifications");
 const people = require("./people");
+const recent_topics = require("./recent_topics");
 const resize = require("./resize");
 const search = require("./search");
 const search_pill = require("./search_pill");

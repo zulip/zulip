@@ -30,7 +30,7 @@ const narrow_state = {__esModule: true};
 rewiremock("../../static/js/narrow_state").with(narrow_state);
 const stream_data = {__esModule: true};
 rewiremock("../../static/js/stream_data").with(stream_data);
-set_global("recent_topics", {
+rewiremock("../../static/js/recent_topics").with({
     is_visible: () => false,
 });
 

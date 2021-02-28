@@ -27,7 +27,7 @@ const stream_list = set_global("stream_list", {});
 const stream_muting = {__esModule: true};
 rewiremock("../../static/js/stream_muting").with(stream_muting);
 let subs = set_global("subs", {});
-set_global("recent_topics", {
+rewiremock("../../static/js/recent_topics").with({
     complete_rerender: () => {},
 });
 

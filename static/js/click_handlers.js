@@ -24,6 +24,7 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
+import * as recent_topics from "./recent_topics";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_panel_menu from "./settings_panel_menu";
