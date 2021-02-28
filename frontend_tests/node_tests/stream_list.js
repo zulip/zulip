@@ -20,8 +20,6 @@ const noop = () => {};
 
 const topic_list = {__esModule: true};
 rewiremock("../../static/js/topic_list").with(topic_list);
-rewiremock("../../static/js/overlays").with({});
-rewiremock("../../static/js/popovers").with({});
 
 rewiremock("../../static/js/keydown_util").with({
     handle: noop,

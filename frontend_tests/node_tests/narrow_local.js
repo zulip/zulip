@@ -2,17 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const message_list = set_global("message_list", {});
-rewiremock("../../static/js/muting").with({
-    is_topic_muted: () => false,
-});
-
-rewiremock.enable();
 
 const {Filter} = zrequire("Filter", "js/filter");
 const {MessageListData} = zrequire("MessageListData", "js/message_list_data");
@@ -452,4 +445,3 @@ run_test("final corner case", () => {
 
     test_with(fixture);
 });
-rewiremock.disable();

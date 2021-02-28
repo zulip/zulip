@@ -11,10 +11,6 @@ const $ = require("../zjsunit/zjquery");
 set_global("page_params", {
     stop_words: ["what", "about"],
 });
-rewiremock("../../static/js/resize").with({
-    resize_page_components: () => {},
-    resize_stream_filters_container: () => {},
-});
 
 rewiremock.enable();
 

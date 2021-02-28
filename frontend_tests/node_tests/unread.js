@@ -12,7 +12,6 @@ let page_params = set_global("page_params", {
     realm_push_notifications_enabled: false,
 });
 
-rewiremock("../../static/js/narrow_state").with({});
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
 const message_store = {__esModule: true};

@@ -85,7 +85,6 @@ const hashchange = {
     in_recent_topics_hash: () => false,
 };
 rewiremock("../../static/js/hashchange").with(hashchange);
-rewiremock("../../static/js/info_overlay").with({});
 const lightbox = {__esModule: true};
 rewiremock("../../static/js/lightbox").with(lightbox);
 const list_util = {__esModule: true};

@@ -29,7 +29,6 @@ const message_list = set_global("message_list", {
 });
 const message_scroll = {__esModule: true};
 rewiremock("../../static/js/message_scroll").with(message_scroll);
-rewiremock("../../static/js/message_util").with({});
 const notifications = {__esModule: true};
 rewiremock("../../static/js/notifications").with(notifications);
 set_global("page_params", {});
@@ -45,16 +44,6 @@ rewiremock("../../static/js/typing_events").with(typing_events);
 const ui_util = {__esModule: true};
 rewiremock("../../static/js/ui_util").with(ui_util);
 const unread_ops = set_global("unread_ops", {});
-rewiremock("../../static/js/search_pill_widget").with({
-    widget: {
-        clear() {
-            return true;
-        },
-        appendValue() {
-            return true;
-        },
-    },
-});
 rewiremock("../../static/js/recent_topics").with({
     hide: () => {},
     is_visible: () => {},
