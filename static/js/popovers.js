@@ -30,6 +30,7 @@ const resize = require("./resize");
 const rows = require("./rows");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
+const stream_popover = require("./stream_popover");
 const user_groups = require("./user_groups");
 const user_status = require("./user_status");
 const user_status_ui = require("./user_status_ui");

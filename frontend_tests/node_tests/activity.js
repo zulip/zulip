@@ -58,6 +58,7 @@ const _popovers = {
 };
 
 const _stream_popover = {
+    __esModule: true,
     show_streamlist_sidebar() {},
 };
 
@@ -78,7 +79,7 @@ rewiremock("../../static/js/pm_list").with(_pm_list);
 set_global("popovers", _popovers);
 rewiremock("../../static/js/resize").with(_resize);
 rewiremock("../../static/js/scroll_util").with(_scroll_util);
-set_global("stream_popover", _stream_popover);
+rewiremock("../../static/js/stream_popover").with(_stream_popover);
 set_global("ui", _ui);
 set_global("server_events", {
     check_for_unsuspend() {},

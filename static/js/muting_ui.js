@@ -7,6 +7,7 @@ import * as ListWidget from "./list_widget";
 import * as muting from "./muting";
 import * as settings_muting from "./settings_muting";
 import * as stream_data from "./stream_data";
+import * as stream_popover from "./stream_popover";
 import * as unread_ui from "./unread_ui";
 
 function timestamp_ms() {

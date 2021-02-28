@@ -13,7 +13,7 @@ rewiremock("../../static/js/narrow_state").with(narrow_state);
 set_global("ui", {
     get_content_element: (element) => element,
 });
-set_global("stream_popover", {
+rewiremock("../../static/js/stream_popover").with({
     hide_topic_popover() {},
 });
 const unread = set_global("unread", {});

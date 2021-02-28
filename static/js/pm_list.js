@@ -2,6 +2,7 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list_dom from "./pm_list_dom";
+import * as stream_popover from "./stream_popover";
 import * as unread_ui from "./unread_ui";
 import * as vdom from "./vdom";
 

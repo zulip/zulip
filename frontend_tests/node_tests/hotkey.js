@@ -23,7 +23,7 @@ const overlays = set_global("overlays", {
     info_overlay_open: () => false,
 });
 
-set_global("stream_popover", {
+rewiremock("../../static/js/stream_popover").with({
     stream_popped: () => false,
     topic_popped: () => false,
     all_messages_popped: () => false,
