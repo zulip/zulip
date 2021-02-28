@@ -1,19 +1,17 @@
-"use strict";
-
 // This module is kind of small, but it will help us keep
 // server_events.js simple while breaking some circular
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
-const activity = require("./activity");
-const compose = require("./compose");
-const gear_menu = require("./gear_menu");
-const message_live_update = require("./message_live_update");
-const narrow_state = require("./narrow_state");
-const people = require("./people");
-const pm_list = require("./pm_list");
-const settings_config = require("./settings_config");
+import * as activity from "./activity";
+import * as compose from "./compose";
+import * as gear_menu from "./gear_menu";
+import * as message_live_update from "./message_live_update";
+import * as narrow_state from "./narrow_state";
+import * as people from "./people";
+import * as pm_list from "./pm_list";
+import * as settings_config from "./settings_config";
 
-exports.update_person = function update(person) {
+export const update_person = function update(person) {
     const person_obj = people.get_by_user_id(person.user_id);
 
     if (!person_obj) {
@@ -106,5 +104,3 @@ exports.update_person = function update(person) {
         person_obj.bot_owner_id = person.bot_owner_id;
     }
 };
-
-window.user_events = exports;

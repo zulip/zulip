@@ -57,7 +57,6 @@ declare let ui: any;
 declare let unread: any;
 declare let unread_ops: any;
 declare let upload_widget: any;
-declare let user_events: any;
 declare let widgetize: any;
 
 interface JQuery {

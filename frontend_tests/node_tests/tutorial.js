@@ -373,8 +373,6 @@ run_test("add_user_event", () => {
 
 const noop = () => {};
 
-zrequire("user_events");
-
 run_test("update_user_event", (override) => {
     const new_bob = {
         email: "bob@example.com",
