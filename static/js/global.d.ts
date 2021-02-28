@@ -25,7 +25,6 @@ declare let hotspots: any;
 declare let i18n: any;
 declare let input_pill: any;
 declare let message_events: any;
-declare let message_fetch: any;
 declare let message_list: any;
 declare let narrow: any;
 declare let padded_widget: any;

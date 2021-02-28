@@ -31,7 +31,6 @@ import "../composebox_typeahead";
 import "../hotkey";
 import "../notifications";
 import "../message_events";
-import "../message_fetch";
 import "../server_events";
 import "../zulip";
 import "../presence";
