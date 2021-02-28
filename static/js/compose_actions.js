@@ -20,6 +20,7 @@ const people = require("./people");
 const reload_state = require("./reload_state");
 const stream_data = require("./stream_data");
 const ui_util = require("./ui_util");
+const unread_ops = require("./unread_ops");
 
 exports.blur_compose_inputs = function () {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");

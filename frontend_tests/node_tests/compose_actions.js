@@ -51,7 +51,7 @@ const narrow_state = {
 
 rewiremock("../../static/js/narrow_state").with(narrow_state);
 
-set_global("unread_ops", {
+rewiremock("../../static/js/unread_ops").with({
     notify_server_message_read: noop,
 });
 
