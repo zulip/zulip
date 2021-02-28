@@ -19,7 +19,9 @@ rewiremock("../../static/js/resize").with({
 });
 
 const popovers = set_global("popovers", {});
-const stream_popover = set_global("stream_popover", {});
+const stream_popover = {__esModule: true};
+
+rewiremock("../../static/js/stream_popover").with(stream_popover);
 
 rewiremock.enable();
 

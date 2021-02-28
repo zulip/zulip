@@ -1,4 +1,5 @@
 import * as resize from "./resize";
+import * as stream_popover from "./stream_popover";
 
 export class UserSearch {
     // This is mostly view code to manage the user search widget

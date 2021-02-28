@@ -1,21 +1,19 @@
-"use strict";
+import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
+import render_delete_topic_modal from "../templates/delete_topic_modal.hbs";
+import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
+import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
+import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.hbs";
+import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
+import render_unstar_messages_modal from "../templates/unstar_messages_modal.hbs";
 
-const render_all_messages_sidebar_actions = require("../templates/all_messages_sidebar_actions.hbs");
-const render_delete_topic_modal = require("../templates/delete_topic_modal.hbs");
-const render_move_topic_to_stream = require("../templates/move_topic_to_stream.hbs");
-const render_starred_messages_sidebar_actions = require("../templates/starred_messages_sidebar_actions.hbs");
-const render_stream_sidebar_actions = require("../templates/stream_sidebar_actions.hbs");
-const render_topic_sidebar_actions = require("../templates/topic_sidebar_actions.hbs");
-const render_unstar_messages_modal = require("../templates/unstar_messages_modal.hbs");
-
-const channel = require("./channel");
-const message_edit = require("./message_edit");
-const muting = require("./muting");
-const muting_ui = require("./muting_ui");
-const resize = require("./resize");
-const stream_color = require("./stream_color");
-const stream_data = require("./stream_data");
-const ui_util = require("./ui_util");
+import * as channel from "./channel";
+import * as message_edit from "./message_edit";
+import * as muting from "./muting";
+import * as muting_ui from "./muting_ui";
+import * as resize from "./resize";
+import * as stream_color from "./stream_color";
+import * as stream_data from "./stream_data";
+import * as ui_util from "./ui_util";
 
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
@@ -38,25 +36,25 @@ function get_popover_menu_items(sidebar_elem) {
     return $("li:not(.divider):visible > a", popover_data.$tip);
 }
 
-exports.stream_sidebar_menu_handle_keyboard = (key) => {
+export function stream_sidebar_menu_handle_keyboard(key) {
     const items = get_popover_menu_items(current_stream_sidebar_elem);
     popovers.popover_items_handle_keyboard(key, items);
-};
+}
 
-exports.topic_sidebar_menu_handle_keyboard = (key) => {
+export function topic_sidebar_menu_handle_keyboard(key) {
     const items = get_popover_menu_items(current_topic_sidebar_elem);
     popovers.popover_items_handle_keyboard(key, items);
-};
+}
 
-exports.all_messages_sidebar_menu_handle_keyboard = (key) => {
+export function all_messages_sidebar_menu_handle_keyboard(key) {
     const items = get_popover_menu_items(all_messages_sidebar_elem);
     popovers.popover_items_handle_keyboard(key, items);
-};
+}
 
-exports.starred_messages_sidebar_menu_handle_keyboard = (key) => {
+export function starred_messages_sidebar_menu_handle_keyboard(key) {
     const items = get_popover_menu_items(starred_messages_sidebar_elem);
     popovers.popover_items_handle_keyboard(key, items);
-};
+}
 
 function elem_to_stream_id(elem) {
     const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
@@ -72,61 +70,61 @@ function topic_popover_stream_id(e) {
     return elem_to_stream_id($(e.currentTarget));
 }
 
-exports.stream_popped = function () {
+export function stream_popped() {
     return current_stream_sidebar_elem !== undefined;
-};
+}
 
-exports.topic_popped = function () {
+export function topic_popped() {
     return current_topic_sidebar_elem !== undefined;
-};
+}
 
-exports.all_messages_popped = function () {
+export function all_messages_popped() {
     return all_messages_sidebar_elem !== undefined;
-};
+}
 
-exports.starred_messages_popped = function () {
+export function starred_messages_popped() {
     return starred_messages_sidebar_elem !== undefined;
-};
+}
 
-exports.hide_stream_popover = function () {
-    if (exports.stream_popped()) {
+export function hide_stream_popover() {
+    if (stream_popped()) {
         $(current_stream_sidebar_elem).popover("destroy");
         current_stream_sidebar_elem = undefined;
     }
-};
+}
 
-exports.hide_topic_popover = function () {
-    if (exports.topic_popped()) {
+export function hide_topic_popover() {
+    if (topic_popped()) {
         $(current_topic_sidebar_elem).popover("destroy");
         current_topic_sidebar_elem = undefined;
     }
-};
+}
 
-exports.hide_all_messages_popover = function () {
-    if (exports.all_messages_popped()) {
+export function hide_all_messages_popover() {
+    if (all_messages_popped()) {
         $(all_messages_sidebar_elem).popover("destroy");
         all_messages_sidebar_elem = undefined;
     }
-};
+}
 
-exports.hide_starred_messages_popover = function () {
-    if (exports.starred_messages_popped()) {
+export function hide_starred_messages_popover() {
+    if (starred_messages_popped()) {
         $(starred_messages_sidebar_elem).popover("destroy");
         starred_messages_sidebar_elem = undefined;
     }
-};
+}
 
 // These are the only two functions that is really shared by the
 // two popovers, so we could split out topic stuff to
 // another module pretty easily.
-exports.show_streamlist_sidebar = function () {
+export function show_streamlist_sidebar() {
     $(".app-main .column-left").addClass("expanded");
     resize.resize_page_components();
-};
+}
 
-exports.hide_streamlist_sidebar = function () {
+export function hide_streamlist_sidebar() {
     $(".app-main .column-left").removeClass("expanded");
-};
+}
 
 function stream_popover_sub(e) {
     const elem = $(e.currentTarget).parents("ul");
@@ -173,14 +171,14 @@ function build_stream_popover(opts) {
     const elt = opts.elt;
     const stream_id = opts.stream_id;
 
-    if (exports.stream_popped() && current_stream_sidebar_elem === elt) {
+    if (stream_popped() && current_stream_sidebar_elem === elt) {
         // If the popover is already shown, clicking again should toggle it.
-        exports.hide_stream_popover();
+        hide_stream_popover();
         return;
     }
 
     popovers.hide_all();
-    exports.show_streamlist_sidebar();
+    show_streamlist_sidebar();
 
     const content = render_stream_sidebar_actions({
         stream: stream_data.get_sub_by_id(stream_id),
@@ -209,9 +207,9 @@ function build_topic_popover(opts) {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
 
-    if (exports.topic_popped() && current_topic_sidebar_elem === elt) {
+    if (topic_popped() && current_topic_sidebar_elem === elt) {
         // If the popover is already shown, clicking again should toggle it.
-        exports.hide_topic_popover();
+        hide_topic_popover();
         return;
     }
 
@@ -222,7 +220,7 @@ function build_topic_popover(opts) {
     }
 
     popovers.hide_all();
-    exports.show_streamlist_sidebar();
+    show_streamlist_sidebar();
 
     const is_muted = muting.is_topic_muted(sub.stream_id, topic_name);
     const can_mute_topic = !is_muted;
@@ -253,8 +251,8 @@ function build_topic_popover(opts) {
 function build_all_messages_popover(e) {
     const elt = e.target;
 
-    if (exports.all_messages_popped() && all_messages_sidebar_elem === elt) {
-        exports.hide_all_messages_popover();
+    if (all_messages_popped() && all_messages_sidebar_elem === elt) {
+        hide_all_messages_popover();
         e.stopPropagation();
         return;
     }
@@ -278,8 +276,8 @@ function build_all_messages_popover(e) {
 function build_starred_messages_popover(e) {
     const elt = e.target;
 
-    if (exports.starred_messages_popped() && starred_messages_sidebar_elem === elt) {
-        exports.hide_starred_messages_popover();
+    if (starred_messages_popped() && starred_messages_sidebar_elem === elt) {
+        hide_starred_messages_popover();
         e.stopPropagation();
         return;
     }
@@ -323,7 +321,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
         notify_old_thread: message_edit.notify_old_thread_default,
     };
 
-    exports.hide_topic_popover();
+    hide_topic_popover();
 
     $("#move-a-topic-modal-holder").html(render_move_topic_to_stream(args));
 
@@ -339,7 +337,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     $("#move_topic_modal").modal("show");
 }
 
-exports.register_click_handlers = function () {
+export function register_click_handlers() {
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", (e) => {
         e.stopPropagation();
 
@@ -376,15 +374,15 @@ exports.register_click_handlers = function () {
         build_starred_messages_popover,
     );
 
-    exports.register_stream_handlers();
-    exports.register_topic_handlers();
-};
+    register_stream_handlers();
+    register_topic_handlers();
+}
 
-exports.register_stream_handlers = function () {
+export function register_stream_handlers() {
     // Stream settings
     $("body").on("click", ".open_stream_settings", (e) => {
         const sub = stream_popover_sub(e);
-        exports.hide_stream_popover();
+        hide_stream_popover();
 
         const stream_edit_hash = hash_util.stream_edit_uri(sub);
         hashchange.go_to_location(stream_edit_hash);
@@ -393,7 +391,7 @@ exports.register_stream_handlers = function () {
     // Pin/unpin
     $("body").on("click", ".pin_to_top", (e) => {
         const sub = stream_popover_sub(e);
-        exports.hide_stream_popover();
+        hide_stream_popover();
         subs.toggle_pin_to_top_stream(sub);
         e.stopPropagation();
     });
@@ -401,21 +399,21 @@ exports.register_stream_handlers = function () {
     // Mark all messages in stream as read
     $("body").on("click", ".mark_stream_as_read", (e) => {
         const sub = stream_popover_sub(e);
-        exports.hide_stream_popover();
+        hide_stream_popover();
         unread_ops.mark_stream_as_read(sub.stream_id);
         e.stopPropagation();
     });
 
     // Mark all messages as read
     $("body").on("click", "#mark_all_messages_as_read", (e) => {
-        exports.hide_all_messages_popover();
+        hide_all_messages_popover();
         unread_ops.mark_all_as_read();
         e.stopPropagation();
     });
 
     // Unstar all messages
     $("body").on("click", "#unstar_all_messages", (e) => {
-        exports.hide_starred_messages_popover();
+        hide_starred_messages_popover();
         e.preventDefault();
         e.stopPropagation();
         $(".left-sidebar-modal-holder").empty();
@@ -431,7 +429,7 @@ exports.register_stream_handlers = function () {
 
     // Toggle displaying starred message count
     $("body").on("click", "#toggle_display_starred_msg_count", (e) => {
-        exports.hide_starred_messages_popover();
+        hide_starred_messages_popover();
         e.preventDefault();
         e.stopPropagation();
         const starred_msg_counts = page_params.starred_message_counts;
@@ -445,7 +443,7 @@ exports.register_stream_handlers = function () {
     // Mute/unmute
     $("body").on("click", ".toggle_stream_muted", (e) => {
         const sub = stream_popover_sub(e);
-        exports.hide_stream_popover();
+        hide_stream_popover();
         subs.set_muted(sub, !sub.is_muted);
         e.stopPropagation();
     });
@@ -477,14 +475,14 @@ exports.register_stream_handlers = function () {
         });
 
         $(".streams_popover").on("click", "a.sp-cancel", () => {
-            exports.hide_stream_popover();
+            hide_stream_popover();
         });
         if ($(window).width() <= 768) {
             $(".popover-inner").hide().fadeIn(300);
             $(".popover").addClass("colorpicker-popover");
         }
     });
-};
+}
 
 function topic_popover_sub(e) {
     const stream_id = topic_popover_stream_id(e);
@@ -501,10 +499,10 @@ function topic_popover_sub(e) {
     return sub;
 }
 
-exports.register_topic_handlers = function () {
+export function register_topic_handlers() {
     // Narrow to topic
     $("body").on("click", ".narrow_to_topic", (e) => {
-        exports.hide_topic_popover();
+        hide_topic_popover();
 
         const sub = topic_popover_sub(e);
         if (!sub) {
@@ -556,7 +554,7 @@ exports.register_topic_handlers = function () {
         }
 
         const topic = $(e.currentTarget).attr("data-topic-name");
-        exports.hide_topic_popover();
+        hide_topic_popover();
         unread_ops.mark_topic_as_read(stream_id, topic);
         e.stopPropagation();
     });
@@ -573,7 +571,7 @@ exports.register_topic_handlers = function () {
             topic_name: topic,
         };
 
-        exports.hide_topic_popover();
+        hide_topic_popover();
 
         $("#delete-topic-modal-holder").html(render_delete_topic_modal(args));
 
@@ -687,6 +685,4 @@ exports.register_topic_handlers = function () {
             },
         });
     });
-};
-
-window.stream_popover = exports;
+}

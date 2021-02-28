@@ -199,7 +199,6 @@
                 "settings_users": false,
                 "starred_messages": false,
                 "stream_list": false,
-                "stream_popover": false,
                 "StripeCheckout": false,
                 "subs": false,
                 "message_view_header": false,

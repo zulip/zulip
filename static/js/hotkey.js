@@ -13,6 +13,7 @@ const gear_menu = require("./gear_menu");
 const lightbox = require("./lightbox");
 const message_edit = require("./message_edit");
 const muting_ui = require("./muting_ui");
+const stream_popover = require("./stream_popover");
 const topic_zoom = require("./topic_zoom");
 
 function do_narrow_action(action) {

@@ -29,7 +29,7 @@ set_global("emoji_picker", {
     hide_emoji_popover: noop,
 });
 
-set_global("stream_popover", {
+rewiremock("../../static/js/stream_popover").with({
     hide_stream_popover: noop,
     hide_topic_popover: noop,
     hide_all_messages_popover: noop,
