@@ -9,6 +9,7 @@ const huddle_data = require("./huddle_data");
 const message_edit = require("./message_edit");
 const message_edit_history = require("./message_edit_history");
 const narrow_state = require("./narrow_state");
+const notifications = require("./notifications");
 const pm_list = require("./pm_list");
 const recent_senders = require("./recent_senders");
 const resize = require("./resize");

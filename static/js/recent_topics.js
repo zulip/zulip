@@ -10,6 +10,7 @@ const {localstorage} = require("./localstorage");
 const muting = require("./muting");
 const narrow_state = require("./narrow_state");
 const navigate = require("./navigate");
+const notifications = require("./notifications");
 const people = require("./people");
 const recent_senders = require("./recent_senders");
 const stream_data = require("./stream_data");

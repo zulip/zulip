@@ -10,6 +10,7 @@ const message_edit = require("./message_edit");
 const {MessageListData} = require("./message_list_data");
 const message_scroll = require("./message_scroll");
 const narrow_state = require("./narrow_state");
+const notifications = require("./notifications");
 const people = require("./people");
 const resize = require("./resize");
 const search = require("./search");

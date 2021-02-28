@@ -1,6 +1,7 @@
 "use strict";
 
 const {localstorage} = require("./localstorage");
+const notifications = require("./notifications");
 const unread_ui = require("./unread_ui");
 const util = require("./util");
 

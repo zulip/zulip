@@ -2,6 +2,7 @@
 
 const channel = require("./channel");
 const compose = require("./compose");
+const notifications = require("./notifications");
 const people = require("./people");
 const transmit = require("./transmit");
 const util = require("./util");
