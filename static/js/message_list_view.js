@@ -17,6 +17,7 @@ import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as popovers from "./popovers";
+import * as reactions from "./reactions";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as stream_color from "./stream_color";

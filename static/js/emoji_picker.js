@@ -10,6 +10,7 @@ const render_emoji_showcase = require("../templates/emoji_showcase.hbs");
 
 const message_store = require("./message_store");
 const popovers = require("./popovers");
+const reactions = require("./reactions");
 const rows = require("./rows");
 
 // Emoji picker is of fixed width and height. Update these
