@@ -4,6 +4,7 @@ const render_admin_tab = require("../templates/admin_tab.hbs");
 const render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
 
 const overlays = require("./overlays");
+const settings = require("./settings");
 const settings_bots = require("./settings_bots");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");

@@ -7,6 +7,7 @@ import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import * as search from "./search";
+import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_util from "./ui_util";
