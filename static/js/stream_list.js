@@ -18,6 +18,7 @@ const stream_popover = require("./stream_popover");
 const stream_sort = require("./stream_sort");
 const topic_list = require("./topic_list");
 const topic_zoom = require("./topic_zoom");
+const unread = require("./unread");
 
 let has_scrolled = false;
 

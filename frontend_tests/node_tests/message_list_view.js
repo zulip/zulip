@@ -16,7 +16,7 @@ const page_params = set_global("page_params", {
     twenty_four_hour_time: false,
 });
 set_global("home_msg_list", "stub");
-set_global("unread", {message_unread() {}});
+rewiremock("../../static/js/unread").with({message_unread() {}});
 // timerender calls setInterval when imported
 rewiremock("../../static/js/timerender").with({
     render_date(time1, time2) {

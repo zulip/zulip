@@ -100,8 +100,9 @@ run_test("topics", () => {
 
     stream_data.__Rewire__("is_stream_muted_by_name", (stream_name) => stream_name === "muted");
 
-    unread.topic_has_any_unread = (stream_id) =>
-        [devel_stream_id, muted_stream_id].includes(stream_id);
+    unread.__Rewire__("topic_has_any_unread", (stream_id) =>
+        [devel_stream_id, muted_stream_id].includes(stream_id),
+    );
 
     muting.__Rewire__("is_topic_muted", (stream_name, topic) => topic === "muted");
 
@@ -121,7 +122,7 @@ run_test("topics", () => {
 run_test("get_next_unread_pm_string", () => {
     pm_conversations.recent.get_strings = () => ["1", "read", "2,3", "4", "unk"];
 
-    unread.num_unread_for_person = (user_ids_string) => {
+    unread.__Rewire__("num_unread_for_person", (user_ids_string) => {
         if (user_ids_string === "unk") {
             return undefined;
         }
@@ -131,7 +132,7 @@ run_test("get_next_unread_pm_string", () => {
         }
 
         return 5; // random non-zero value
-    };
+    });
 
     assert.equal(tg.get_next_unread_pm_string(), "1");
     assert.equal(tg.get_next_unread_pm_string("4"), "1");
@@ -141,7 +142,7 @@ run_test("get_next_unread_pm_string", () => {
     assert.equal(tg.get_next_unread_pm_string("read"), "2,3");
     assert.equal(tg.get_next_unread_pm_string("2,3"), "4");
 
-    unread.num_unread_for_person = () => 0;
+    unread.__Rewire__("num_unread_for_person", () => 0);
 
     assert.equal(tg.get_next_unread_pm_string("2,3"), undefined);
 });

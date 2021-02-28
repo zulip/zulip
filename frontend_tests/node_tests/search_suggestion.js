@@ -29,7 +29,6 @@ const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
-zrequire("unread");
 const search = zrequire("search_suggestion");
 
 search.__Rewire__("max_num_of_search_results", 15);

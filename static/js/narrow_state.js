@@ -1,6 +1,7 @@
 import {Filter} from "./filter";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
+import * as unread from "./unread";
 
 let current_filter;
 

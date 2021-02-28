@@ -18,6 +18,7 @@ import * as recent_senders from "./recent_senders";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as top_left_corner from "./top_left_corner";
+import * as unread from "./unread";
 
 const topics = new Map(); // Key is stream-id:topic.
 let topics_widget;

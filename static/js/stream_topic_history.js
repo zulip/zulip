@@ -2,6 +2,7 @@ import * as channel from "./channel";
 import {FoldDict} from "./fold_dict";
 import * as message_util from "./message_util";
 import * as stream_data from "./stream_data";
+import * as unread from "./unread";
 
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object
 const fetched_stream_ids = new Set();
