@@ -4,10 +4,11 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const server_events = set_global("server_events", {});
+const server_events = {__esModule: true};
+rewiremock("../../static/js/server_events").with(server_events);
 const reload_state = {
     __esModule: true,
     is_in_progress: () => false,

@@ -82,7 +82,7 @@ rewiremock("../../static/js/resize").with(_resize);
 rewiremock("../../static/js/scroll_util").with(_scroll_util);
 rewiremock("../../static/js/stream_popover").with(_stream_popover);
 set_global("ui", _ui);
-set_global("server_events", {
+rewiremock("../../static/js/server_events").with({
     check_for_unsuspend() {},
 });
 

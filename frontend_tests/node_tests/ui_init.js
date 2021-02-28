@@ -87,7 +87,11 @@ set_global("panels", {initialize() {}});
 rewiremock("../../static/js/popovers").with({initialize() {}});
 rewiremock("../../static/js/reload").with({initialize() {}});
 rewiremock("../../static/js/scroll_bar").with({initialize() {}});
-const server_events = set_global("server_events", {initialize() {}});
+const server_events = {
+    __esModule: true,
+    initialize() {},
+};
+rewiremock("../../static/js/server_events").with(server_events);
 set_global("settings_sections", {initialize() {}});
 rewiremock("../../static/js/settings_panel_menu").with({initialize() {}});
 rewiremock("../../static/js/settings_toggle").with({initialize() {}});

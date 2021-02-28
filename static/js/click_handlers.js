@@ -20,6 +20,7 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 import * as rows from "./rows";
+import * as server_events from "./server_events";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
 import * as stream_edit from "./stream_edit";

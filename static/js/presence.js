@@ -2,6 +2,7 @@
 
 const people = require("./people");
 const reload_state = require("./reload_state");
+const server_events = require("./server_events");
 
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.

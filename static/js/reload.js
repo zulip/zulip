@@ -4,6 +4,7 @@ import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
 import * as narrow_state from "./narrow_state";
 import * as reload_state from "./reload_state";
+import * as server_events from "./server_events";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 

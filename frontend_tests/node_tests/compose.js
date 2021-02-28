@@ -735,7 +735,7 @@ test_ui("send_message", () => {
     set_global("setTimeout", (func) => {
         func();
     });
-    set_global("server_events", {
+    rewiremock("../../static/js/server_events").with({
         assert_get_events_running() {
             stub_state.get_events_running_called += 1;
         },
