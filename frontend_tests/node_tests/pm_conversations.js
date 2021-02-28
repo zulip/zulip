@@ -2,10 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const pmc = zrequire("pm_conversations");
+const {people, pm_conversations} = use("fold_dict", "people", "pm_conversations");
+const pmc = pm_conversations;
 
 run_test("partners", () => {
     const user1_id = 1;
@@ -19,8 +20,6 @@ run_test("partners", () => {
     assert.equal(pmc.is_partner(user2_id), false);
     assert.equal(pmc.is_partner(user3_id), true);
 });
-
-const people = zrequire("people");
 
 run_test("insert_recent_private_message", () => {
     const params = {

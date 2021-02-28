@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -26,7 +24,6 @@ const _FormData = function () {
 };
 
 const _loading = {
-    __esModule: true,
     make_indicator: noop,
     destroy_indicator: noop,
 };
@@ -40,11 +37,8 @@ const page_params = set_global("page_params", {
     realm_authentication_methods: {},
 });
 
-const realm_icon = {__esModule: true};
-rewiremock("../../static/js/realm_icon").with(realm_icon);
-const channel = {__esModule: true};
-
-rewiremock("../../static/js/channel").with(channel);
+const realm_icon = rewiremock("../../static/js/realm_icon").with({});
+const channel = rewiremock("../../static/js/channel").with({});
 
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
@@ -54,13 +48,9 @@ stub_templates((name, data) => {
     throw new Error(`Unknown template ${name}`);
 });
 
-const overlays = {__esModule: true};
-
-rewiremock("../../static/js/overlays").with(overlays);
+const overlays = rewiremock("../../static/js/overlays").with({});
 
 const _ui_report = {
-    __esModule: true,
-
     success(msg, elem) {
         elem.val(msg);
     },
@@ -71,7 +61,6 @@ const _ui_report = {
 };
 
 const _ListWidget = {
-    __esModule: true,
     create: () => ({init: noop}),
 };
 
@@ -82,14 +71,17 @@ rewiremock("../../static/js/loading").with(_loading);
 rewiremock("../../static/js/ui_report").with(_ui_report);
 rewiremock("../../static/js/list_widget").with(_ListWidget);
 
-rewiremock.enable();
-
-const settings_config = zrequire("settings_config");
-const settings_bots = zrequire("settings_bots");
-const stream_data = zrequire("stream_data");
-const settings_account = zrequire("settings_account");
-const settings_org = zrequire("settings_org");
-const dropdown_list_widget = zrequire("dropdown_list_widget");
+const {settings_account, settings_bots, settings_config, settings_org, stream_data} = use(
+    "fold_dict",
+    "settings_config",
+    "dropdown_list_widget",
+    "settings_ui",
+    "../generated/pygments_data.json",
+    "settings_bots",
+    "stream_data",
+    "settings_account",
+    "settings_org",
+);
 
 run_test("unloaded", () => {
     // This test mostly gets us line coverage, and makes
@@ -766,7 +758,7 @@ run_test("set_up", (override) => {
         upload_realm_logo_or_icon = f;
     };
 
-    override(dropdown_list_widget, "DropdownListWidget", () => ({
+    override(settings_org, "dropdown_list_widget", () => ({
         render: noop,
         update: noop,
     }));
@@ -1053,5 +1045,3 @@ run_test("misc", () => {
     assert.equal(elem.text(), "translated: Disabled");
     assert(elem.hasClass("text-warning"));
 });
-
-rewiremock.disable();

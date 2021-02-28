@@ -2,23 +2,19 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const message_list = {__esModule: true};
-rewiremock("../../static/js/message_list").with(message_list);
-const message_util = {__esModule: true};
-rewiremock("../../static/js/message_util").with(message_util);
+const channel = rewiremock("../../static/js/channel").with({});
+const message_list = rewiremock("../../static/js/message_list").with({});
+const message_util = rewiremock("../../static/js/message_util").with({});
 
-rewiremock.enable();
-
-const unread = zrequire("unread");
-const stream_data = zrequire("stream_data");
-const stream_topic_history = zrequire("stream_topic_history");
+const {stream_data, stream_topic_history, unread} = use(
+    "fold_dict",
+    "unread",
+    "stream_data",
+    "stream_topic_history",
+);
 
 run_test("basics", () => {
     const stream_id = 55;
@@ -335,4 +331,3 @@ run_test("server_history_end_to_end", () => {
     });
     assert(on_success_called);
 });
-rewiremock.disable();

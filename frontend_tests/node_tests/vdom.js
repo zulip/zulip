@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const vdom = zrequire("vdom");
+const {vdom} = use("vdom");
 
 run_test("basics", () => {
     const opts = {

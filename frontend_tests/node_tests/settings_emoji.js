@@ -2,16 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const upload_widget = {__esModule: true};
-rewiremock("../../static/js/upload_widget").with(upload_widget);
-rewiremock.enable();
-const settings_emoji = zrequire("settings_emoji");
+const upload_widget = rewiremock("../../static/js/upload_widget").with({});
+const {settings_emoji} = use("settings_emoji");
 
 run_test("build_emoji_upload_widget", () => {
     let build_widget_stub = false;
@@ -32,4 +28,3 @@ run_test("build_emoji_upload_widget", () => {
     settings_emoji.build_emoji_upload_widget();
     assert(build_widget_stub);
 });
-rewiremock.disable();

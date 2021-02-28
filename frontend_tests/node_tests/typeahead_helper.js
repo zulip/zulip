@@ -3,32 +3,53 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {realm_is_zephyr_mirror_realm: false});
 
-const settings_config = zrequire("settings_config");
-const pm_conversations = zrequire("pm_conversations");
+const {
+    composebox_typeahead,
+    emoji,
+    peer_data,
+    people,
+    pm_conversations,
+    pygments_data,
+    recent_senders,
+    settings_config,
+    stream_data,
+    typeahead_helper,
+} = use(
+    "fold_dict",
+    "util",
+    "settings_config",
+    "settings_data",
+    "people",
+    "lazy_set",
+    "peer_data",
+    "presence",
+    "user_status",
+    "buddy_data",
+    "stream_data",
+    "hash_util",
+    "filter",
+    "message_list_data",
+    "pm_conversations",
+    "recent_senders",
+    "narrow",
+    "../shared/js/emoji",
+    "../generated/pygments_data.json",
+    "../shared/js/typeahead",
+    "composebox_typeahead",
+    "typeahead_helper",
+);
+const th = typeahead_helper;
+const ct = composebox_typeahead;
 
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
-const recent_senders = zrequire("recent_senders");
-const peer_data = zrequire("peer_data");
-const people = zrequire("people");
-const stream_data = zrequire("stream_data");
-zrequire("narrow");
-zrequire("user_status");
-zrequire("presence");
-zrequire("buddy_data");
-zrequire("hash_util");
-
-const emoji = zrequire("emoji", "shared/js/emoji");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 const actual_pygments_data = {...pygments_data};
-const ct = zrequire("composebox_typeahead");
-const th = zrequire("typeahead_helper");
 
 let next_id = 0;
 

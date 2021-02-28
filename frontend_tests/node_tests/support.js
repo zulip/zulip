@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -14,7 +14,7 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
 run_test("scrub_realm", () => {
-    zrequire("support", "js/analytics/support");
+    use("analytics/support");
     const click_handler = $("body").get_on_handler("click", ".scrub-realm-button");
 
     const fake_this = $.create("fake-.scrub-realm-button");

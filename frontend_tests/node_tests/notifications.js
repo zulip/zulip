@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 // Dependencies
@@ -24,13 +24,19 @@ const _navigator = {
 };
 set_global("navigator", _navigator);
 
-const muting = zrequire("muting");
-const stream_data = zrequire("stream_data");
-const ui = zrequire("ui");
-const spoilers = zrequire("spoilers");
-spoilers.hide_spoilers_in_notification = () => {};
+const {muting, notifications, spoilers, stream_data, ui} = use(
+    "fold_dict",
+    "localstorage",
+    "people",
+    "alert_words",
+    "muting",
+    "stream_data",
+    "ui",
+    "spoilers",
+    "notifications",
+);
 
-const notifications = zrequire("notifications");
+spoilers.__Rewire__("hide_spoilers_in_notification", () => {});
 
 // Not muted streams
 const general = {

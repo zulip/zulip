@@ -2,20 +2,19 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const muting_ui = {__esModule: true};
+const muting_ui = rewiremock("../../static/js/muting_ui").with({});
 
-rewiremock("../../static/js/muting_ui").with(muting_ui);
-rewiremock.enable();
-
-const settings_muting = zrequire("settings_muting");
-const stream_data = zrequire("stream_data");
-const muting = zrequire("muting");
+const {muting, settings_muting, stream_data} = use(
+    "fold_dict",
+    "timerender",
+    "settings_muting",
+    "stream_data",
+    "muting",
+);
 
 const noop = () => {};
 
@@ -92,4 +91,3 @@ run_test("reset", () => {
     settings_muting.reset();
     assert.equal(settings_muting.loaded, false);
 });
-rewiremock.disable();

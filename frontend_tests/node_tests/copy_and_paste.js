@@ -4,15 +4,14 @@ const {strict: assert} = require("assert");
 
 const jquery = require("jquery");
 const {JSDOM} = require("jsdom");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {
     development_environment: true,
 });
-const compose_ui = {__esModule: true};
+const compose_ui = {};
 
 rewiremock("../../static/js/compose_ui").with(compose_ui);
 
@@ -23,9 +22,7 @@ const $ = set_global("$", jquery(window));
 set_global("DOMParser", DOMParser);
 set_global("document", document);
 
-rewiremock.enable();
-
-const copy_and_paste = zrequire("copy_and_paste");
+const {copy_and_paste} = use("copy_and_paste");
 
 // Super stripped down version of the code in the drag-mock library
 // https://github.com/andywer/drag-mock/blob/6d46c7c0ffd6a4d685e6612a90cd58cda80f30fc/src/DataTransfer.js
@@ -116,4 +113,3 @@ run_test("paste_handler", () => {
     copy_and_paste.paste_handler(event);
     assert(!insert_syntax_and_focus_called);
 });
-rewiremock.disable();

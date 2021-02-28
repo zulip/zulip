@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {
@@ -13,13 +13,32 @@ const page_params = set_global("page_params", {
     is_guest: false,
 });
 
-const color_data = zrequire("color_data");
-const stream_topic_history = zrequire("stream_topic_history");
-const people = zrequire("people");
-const stream_color = zrequire("stream_color");
-const stream_data = zrequire("stream_data");
-const message_list = zrequire("message_list");
-const settings_config = zrequire("settings_config");
+const {
+    color_data,
+    message_list,
+    people,
+    settings_config,
+    stream_color,
+    stream_data,
+    stream_topic_history,
+} = use(
+    "util",
+    "fold_dict",
+    "lazy_set",
+    "settings_config",
+    "people",
+    "fetch_status",
+    "hash_util",
+    "color_data",
+    "stream_color",
+    "stream_data",
+    "filter",
+    "message_list_data",
+    "message_list_view",
+    "peer_data",
+    "stream_topic_history",
+    "message_list",
+);
 
 const me = {
     email: "me@zulip.com",

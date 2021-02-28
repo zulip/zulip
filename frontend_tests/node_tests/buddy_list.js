@@ -3,9 +3,8 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -17,10 +16,10 @@ rewiremock("../../static/js/message_viewport").with({
     height: () => 550,
 });
 
-rewiremock.enable();
-
-const people = zrequire("people");
-const {buddy_list} = zrequire("buddy_list");
+const {
+    buddy_list: {buddy_list},
+    people,
+} = use("../shared/js/typeahead", "fold_dict", "buddy_list", "people", "localstorage", "ui");
 
 function init_simulated_scrolling() {
     const elem = {
@@ -226,4 +225,3 @@ run_test("scrolling", (override) => {
 
     assert(tried_to_fill);
 });
-rewiremock.disable();

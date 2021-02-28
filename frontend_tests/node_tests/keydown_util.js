@@ -1,10 +1,10 @@
 "use strict";
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const keydown_util = zrequire("keydown_util");
+const {keydown_util} = use("keydown_util");
 
 run_test("test_early_returns", () => {
     const stub = $.create("stub");

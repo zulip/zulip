@@ -4,10 +4,9 @@ const {strict: assert} = require("assert");
 
 const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
-const rewiremock = require("rewiremock/node");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -26,6 +25,7 @@ rewiremock("../../static/js/compose_actions").with({
         compose_actions_start_checked = true;
     },
 });
+const server_events = rewiremock("../../static/js/server_events").with({});
 
 const _navigator = {
     platform: "",
@@ -40,21 +40,17 @@ const _document = {
 };
 
 const _drafts = {
-    __esModule: true,
     delete_draft_after_send: noop,
 };
 
 const sent_messages = {
-    __esModule: true,
     start_tracking_message: noop,
 };
 const _notifications = {
-    __esModule: true,
     notify_above_composebox: noop,
     clear_compose_notifications: noop,
 };
 const reminder = {
-    __esModule: true,
     is_deferred_delivery: noop,
 };
 
@@ -68,26 +64,16 @@ rewiremock("../../static/js/rendered_markdown").with({
     update_elements: () => {},
 });
 
-const local_message = {__esModule: true};
-rewiremock("../../static/js/local_message").with(local_message);
-const transmit = {__esModule: true};
-rewiremock("../../static/js/transmit").with(transmit);
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const stream_edit = {__esModule: true};
-rewiremock("../../static/js/stream_edit").with(stream_edit);
-const markdown = {__esModule: true};
-rewiremock("../../static/js/markdown").with(markdown);
-const loading = {__esModule: true};
-rewiremock("../../static/js/loading").with(loading);
+const local_message = rewiremock("../../static/js/local_message").with({});
+const transmit = rewiremock("../../static/js/transmit").with({});
+const channel = rewiremock("../../static/js/channel").with({});
+const stream_edit = rewiremock("../../static/js/stream_edit").with({});
+const markdown = rewiremock("../../static/js/markdown").with({});
+const loading = rewiremock("../../static/js/loading").with({});
 const page_params = set_global("page_params", {});
-const resize = {__esModule: true};
-rewiremock("../../static/js/resize").with(resize);
-const subs = {__esModule: true};
-rewiremock("../../static/js/subs").with(subs);
-const ui_util = {__esModule: true};
-
-rewiremock("../../static/js/ui_util").with(ui_util);
+const resize = rewiremock("../../static/js/resize").with({});
+const subs = rewiremock("../../static/js/subs").with({});
+const ui_util = rewiremock("../../static/js/ui_util").with({});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -97,19 +83,42 @@ document.location.host = "foo.com";
 const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));
 
-rewiremock.enable();
-
-const peer_data = zrequire("peer_data");
-const util = zrequire("util");
-const rtl = zrequire("rtl");
-const stream_data = zrequire("stream_data");
-const compose_state = zrequire("compose_state");
-const people = zrequire("people");
-const compose_pm_pill = zrequire("compose_pm_pill");
-const echo = zrequire("echo");
-const compose = zrequire("compose");
-const upload = zrequire("upload");
-const settings_config = zrequire("settings_config");
+const {
+    compose,
+    compose_fade,
+    compose_pm_pill,
+    compose_state,
+    echo,
+    peer_data,
+    people,
+    rtl,
+    settings_config,
+    stream_data,
+    upload,
+    util,
+} = use(
+    "common",
+    "fold_dict",
+    "util",
+    "people",
+    "lazy_set",
+    "zcommand",
+    "buddy_list",
+    "compose_ui",
+    "peer_data",
+    "rtl",
+    "settings_config",
+    "stream_data",
+    "compose_fade",
+    "compose_state",
+    "user_pill",
+    "compose_pm_pill",
+    "echo",
+    "compose",
+    "upload",
+    "server_events_dispatch",
+    "input_pill",
+);
 
 people.small_avatar_url_for_person = () => "http://example.com/example.png";
 
@@ -716,7 +725,7 @@ test_ui("send_message_success", () => {
     assert(reify_message_id_checked);
 });
 
-test_ui("send_message", () => {
+test_ui("send_message", (override) => {
     // This is the common setup stuff for all of the four tests.
     let stub_state;
     function initialize_state_stub_dict() {
@@ -730,10 +739,9 @@ test_ui("send_message", () => {
     set_global("setTimeout", (func) => {
         func();
     });
-    rewiremock("../../static/js/server_events").with({
-        assert_get_events_running() {
-            stub_state.get_events_running_called += 1;
-        },
+
+    override(server_events, "assert_get_events_running", () => {
+        stub_state.get_events_running_called += 1;
     });
 
     // Tests start here.
@@ -1105,7 +1113,7 @@ test_ui("initialize", (override) => {
     })();
 });
 
-test_ui("update_fade", () => {
+test_ui("update_fade", (override) => {
     const selector =
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
     const keyup_handler_func = $(selector).get_on_handler("keyup");
@@ -1113,14 +1121,13 @@ test_ui("update_fade", () => {
     let set_focused_recipient_checked = false;
     let update_all_called = false;
 
-    rewiremock("../../static/js/compose_fade").with({
-        set_focused_recipient(msg_type) {
-            assert.equal(msg_type, "private");
-            set_focused_recipient_checked = true;
-        },
-        update_all() {
-            update_all_called = true;
-        },
+    override(compose_fade, "set_focused_recipient", (msg_type) => {
+        assert.equal(msg_type, "private");
+        set_focused_recipient_checked = true;
+    });
+
+    override(compose_fade, "update_all", () => {
+        update_all_called = true;
     });
 
     compose_state.set_message_type(false);
@@ -1729,5 +1736,3 @@ test_ui("narrow_button_titles", () => {
 });
 
 MockDate.reset();
-
-rewiremock.disable();

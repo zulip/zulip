@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -10,7 +10,7 @@ const noop = () => {};
 
 set_global("document", {});
 
-const common = zrequire("common");
+const {common} = use("common");
 
 run_test("basics", () => {
     common.autofocus("#home");

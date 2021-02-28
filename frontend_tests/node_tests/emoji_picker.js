@@ -4,13 +4,15 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const emoji = zrequire("emoji", "shared/js/emoji");
-const emoji_picker = zrequire("emoji_picker");
-
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+const {emoji, emoji_codes, emoji_picker} = use(
+    "../shared/js/typeahead",
+    "../shared/js/emoji",
+    "emoji_picker",
+    "../generated/emoji/emoji_codes.json",
+);
 
 run_test("initialize", () => {
     emoji.initialize({

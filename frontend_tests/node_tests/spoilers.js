@@ -2,11 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const spoilers = zrequire("spoilers");
+const {spoilers} = use("spoilers");
 
 // This function is taken from rendered_markdown.js and slightly modified.
 const $array = (array) => {

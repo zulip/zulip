@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, with_field, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -17,9 +15,7 @@ set_global("page_params", {
     realm_email_address_visibility: 3,
     custom_profile_fields: [],
 });
-const rows = {__esModule: true};
-
-rewiremock("../../static/js/rows").with(rows);
+const rows = rewiremock("../../static/js/rows").with({});
 
 rewiremock("../../static/js/message_viewport").with({
     height: () => 500,
@@ -37,21 +33,30 @@ rewiremock("../../static/js/stream_popover").with({
     hide_streamlist_sidebar: noop,
 });
 
-const stream_data = {__esModule: true};
-
-rewiremock("../../static/js/stream_data").with(stream_data);
-
-const ClipboardJS = noop;
-rewiremock("clipboard").with(ClipboardJS);
-
-rewiremock.enable();
-
-const people = zrequire("people");
-const user_status = zrequire("user_status");
-const message_edit = zrequire("message_edit");
+const stream_data = rewiremock("../../static/js/stream_data").with({});
 
 // Bypass some scary code that runs when we import the module.
-const popovers = with_field($.fn, "popover", noop, () => zrequire("popovers"));
+const {people, user_status, message_edit, popovers} = with_field($.fn, "popover", noop, () =>
+    use(
+        "feature_flags",
+        "fold_dict",
+        "settings_config",
+        "settings_data",
+        "people",
+        "filter",
+        "narrow_state",
+        "hash_util",
+        "user_status",
+        "presence",
+        "buddy_data",
+        "message_list_data",
+        "narrow",
+        "message_edit",
+        "popovers",
+    ),
+);
+
+popovers.__Rewire__("ClipboardJS", noop);
 
 const alice = {
     email: "alice@example.com",
@@ -264,5 +269,3 @@ test_ui("actions_popover", (override) => {
 
     handler.call(target, e);
 });
-
-rewiremock.disable();

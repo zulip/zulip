@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 // We need these stubs to get by instanceof checks.
@@ -16,9 +14,8 @@ function Element() {
     return {};
 }
 set_global("Element", Element);
-const ui = {__esModule: true};
 
-rewiremock("../../static/js/ui").with(ui);
+const ui = rewiremock("../../static/js/ui").with({});
 
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.
@@ -36,9 +33,8 @@ set_global("$", (arg) => {
     };
 });
 
-rewiremock.enable();
-
-const ListWidget = zrequire("list_widget");
+const {list_widget} = use("list_widget");
+const ListWidget = list_widget;
 
 // We build objects here that simulate jQuery containers.
 // The main thing to do at first is simulate that our
@@ -780,4 +776,3 @@ run_test("render item", () => {
     widget_3.render_item(item);
     blueslip.reset();
 });
-rewiremock.disable();

@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const user_groups = zrequire("user_groups");
+const {user_groups} = use("fold_dict", "user_groups");
 
 run_test("user_groups", () => {
     const students = {

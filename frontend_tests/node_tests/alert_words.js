@@ -2,15 +2,14 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const params = {
     alert_words: ["alertone", "alerttwo", "alertthree", "al*rt.*s", ".+", "emoji"],
 };
 
-const people = zrequire("people");
-const alert_words = zrequire("alert_words");
+const {alert_words, people} = use("fold_dict", "people", "alert_words");
 
 alert_words.initialize(params);
 

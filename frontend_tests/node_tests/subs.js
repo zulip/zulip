@@ -2,19 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const ui = {
-    __esModule: true,
+const ui = rewiremock("../../static/js/ui").with({
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
-};
-rewiremock("../../static/js/ui").with(ui);
+});
 set_global("page_params", {});
 
 const denmark_stream_id = 101;
@@ -27,10 +23,15 @@ rewiremock("../../static/js/hash_util").with({
     by_stream_uri: () => {},
 });
 
-rewiremock.enable();
-
-const stream_data = zrequire("stream_data");
-const subs = zrequire("subs");
+const {stream_data, subs} = use(
+    "fold_dict",
+    "lazy_set",
+    "search_util",
+    "settings_config",
+    "peer_data",
+    "stream_data",
+    "subs",
+);
 
 run_test("redraw_left_panel", (override) => {
     override(subs, "add_tooltip_to_left_panel_row", () => {});
@@ -211,4 +212,3 @@ run_test("redraw_left_panel", (override) => {
     assert(!$(".right .settings").visible());
     assert($(".nothing-selected").visible());
 });
-rewiremock.disable();

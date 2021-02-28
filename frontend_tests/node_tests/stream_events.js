@@ -2,31 +2,23 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 const _settings_notifications = {
-    __esModule: true,
     update_page: () => {},
 };
 rewiremock("../../static/js/settings_notifications").with(_settings_notifications);
 
-const color_data = {__esModule: true};
-rewiremock("../../static/js/color_data").with(color_data);
+const color_data = rewiremock("../../static/js/color_data").with({});
 set_global("current_msg_list", {});
-const message_util = {__esModule: true};
-rewiremock("../../static/js/message_util").with(message_util);
-const stream_color = {__esModule: true};
-rewiremock("../../static/js/stream_color").with(stream_color);
-const stream_list = {__esModule: true};
-rewiremock("../../static/js/stream_list").with(stream_list);
-const stream_muting = {__esModule: true};
-rewiremock("../../static/js/stream_muting").with(stream_muting);
+const message_util = rewiremock("../../static/js/message_util").with({});
+const stream_color = rewiremock("../../static/js/stream_color").with({});
+const stream_list = rewiremock("../../static/js/stream_list").with({});
+const stream_muting = rewiremock("../../static/js/stream_muting").with({});
 rewiremock("../../static/js/recent_topics").with({
     complete_rerender: () => {},
 });
@@ -39,22 +31,29 @@ rewiremock("../../static/js/message_list").with({
     },
 });
 
-const subs = {
-    __esModule: true,
-    update_settings_for_subscribed: noop,
-};
-rewiremock("../../static/js/subs").with(subs);
+const subs = rewiremock("../../static/js/subs").with({update_settings_for_subscribed: noop});
 rewiremock("../../static/js/overlays").with({streams_open: () => true});
 
-rewiremock.enable();
-
-const peer_data = zrequire("peer_data");
-const people = zrequire("people");
-const stream_data = zrequire("stream_data");
-const stream_events = zrequire("stream_events");
-const {Filter} = zrequire("Filter", "js/filter");
-const narrow_state = zrequire("narrow_state");
-const message_view_header = zrequire("message_view_header");
+const {
+    filter: {Filter},
+    message_view_header,
+    narrow_state,
+    peer_data,
+    people,
+    stream_data,
+    stream_events,
+} = use(
+    "fold_dict",
+    "lazy_set",
+    "util",
+    "people",
+    "peer_data",
+    "stream_data",
+    "filter",
+    "narrow_state",
+    "message_view_header",
+    "stream_events",
+);
 
 const george = {
     email: "george@zulip.com",
@@ -410,4 +409,3 @@ run_test("remove_deactivated_user_from_all_streams", () => {
     // verify that we issue a call to update subscriber count/list UI
     assert.equal(subs_stub.num_calls, 1);
 });
-rewiremock.disable();

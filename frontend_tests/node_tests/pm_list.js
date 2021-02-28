@@ -2,38 +2,35 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {with_field, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, with_field, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const narrow_state = {__esModule: true};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
 rewiremock("../../static/js/ui").with({
     get_content_element: (element) => element,
 });
 rewiremock("../../static/js/stream_popover").with({
     hide_topic_popover() {},
 });
-const unread = {__esModule: true};
-rewiremock("../../static/js/unread").with(unread);
-const unread_ui = {__esModule: true};
-rewiremock("../../static/js/unread_ui").with(unread_ui);
+const unread = rewiremock("../../static/js/unread").with({});
+const unread_ui = rewiremock("../../static/js/unread_ui").with({});
 const vdom = {
-    __esModule: true,
     render: () => "fake-dom-for-pm-list",
 };
 rewiremock("../../static/js/vdom").with(vdom);
-const pm_list_dom = {__esModule: true};
+const pm_list_dom = rewiremock("../../static/js/pm_list_dom").with({});
 
-rewiremock("../../static/js/pm_list_dom").with(pm_list_dom);
-
-rewiremock.enable();
-
-const people = zrequire("people");
-const pm_conversations = zrequire("pm_conversations");
-const pm_list = zrequire("pm_list");
+const {people, pm_conversations, pm_list} = use(
+    "fold_dict",
+    "people",
+    "hash_util",
+    "user_status",
+    "presence",
+    "buddy_data",
+    "pm_conversations",
+    "pm_list",
+);
 
 const alice = {
     email: "alice@zulip.com",
@@ -296,4 +293,3 @@ run_test("ensure coverage", (override) => {
         },
     );
 });
-rewiremock.disable();

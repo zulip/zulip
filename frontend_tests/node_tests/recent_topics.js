@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -52,7 +50,6 @@ rewiremock("../../static/js/recent_senders").with({
     get_topic_recent_senders: () => [1, 2],
 });
 const ListWidget = {
-    __esModule: true,
     modifier: noop,
 
     create: (container, mapped_topic_values, opts) => {
@@ -136,16 +133,13 @@ const sender2 = 2;
 
 const messages = [];
 
-const message_list = {
-    __esModule: true,
-
+const message_list = rewiremock("../../static/js/message_list").with({
     all: {
         all_messages() {
             return messages;
         },
     },
-};
-rewiremock("../../static/js/message_list").with(message_list);
+});
 rewiremock("../../static/js/message_store").with({
     get: (msg_id) => messages[msg_id - 1],
 });
@@ -169,10 +163,15 @@ rewiremock("../../static/js/stream_data").with({
     id_is_subscribed: () => true,
 });
 
-rewiremock.enable();
-
-const people = zrequire("people");
-const rt = zrequire("recent_topics");
+const {people, recent_topics} = use(
+    "localstorage",
+    "fold_dict",
+    "people",
+    "message_util",
+    "narrow_state",
+    "recent_topics",
+);
+const rt = recent_topics;
 
 people.is_my_user_id = (id) => id === 1;
 people.sender_info_with_small_avatar_urls_for_sender_ids = (ids) => ids;
@@ -819,4 +818,3 @@ run_test("test_search", () => {
     assert.equal(rt.topic_in_search_results("\\", "general", "\\"), true);
     assert.equal(rt.topic_in_search_results("\\", "general", "\\\\"), true);
 });
-rewiremock.disable();

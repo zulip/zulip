@@ -3,19 +3,14 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const narrow_state = {
-    __esModule: true,
+const narrow_state = rewiremock("../../static/js/narrow_state").with({
     topic() {},
-};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
+});
 const muting = {
-    __esModule: true,
-
     is_topic_muted() {
         return false;
     },
@@ -23,12 +18,14 @@ const muting = {
 rewiremock("../../static/js/muting").with(muting);
 rewiremock("../../static/js/message_list").with({});
 
-rewiremock.enable();
-
-const stream_data = zrequire("stream_data");
-const unread = zrequire("unread");
-const stream_topic_history = zrequire("stream_topic_history");
-const topic_list_data = zrequire("topic_list_data");
+const {stream_data, stream_topic_history, topic_list_data, unread} = use(
+    "fold_dict",
+    "hash_util",
+    "stream_data",
+    "unread",
+    "stream_topic_history",
+    "topic_list_data",
+);
 
 const general = {
     stream_id: 556,
@@ -152,4 +149,3 @@ run_test("get_list_info unreads", (override) => {
         ["topic 0", "topic 1", "topic 2", "topic 3", "topic 5", "topic 6", "topic 7", "topic 8"],
     );
 });
-rewiremock.disable();

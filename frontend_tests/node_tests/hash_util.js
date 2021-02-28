@@ -2,13 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const ui_report = {
-    __esModule: true,
     displayed_error: false,
 
     error: () => {
@@ -22,13 +19,13 @@ set_global("location", {
     pathname: "/",
 });
 
-rewiremock.enable();
-
-const hash_util = zrequire("hash_util");
-const stream_data = zrequire("stream_data");
-const people = zrequire("people");
-const {Filter} = zrequire("Filter", "js/filter");
-const narrow_state = zrequire("narrow_state");
+const {
+    filter: {Filter},
+    hash_util,
+    narrow_state,
+    people,
+    stream_data,
+} = use("fold_dict", "util", "people", "stream_data", "filter", "narrow_state", "hash_util");
 
 const hamlet = {
     user_id: 15,
@@ -179,4 +176,3 @@ run_test("test_search_public_streams_notice_url", () => {
         "#narrow/streams/public/sender/15-hamlet",
     );
 });
-rewiremock.disable();

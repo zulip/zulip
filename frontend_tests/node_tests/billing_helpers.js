@@ -5,9 +5,8 @@ const fs = require("fs");
 
 const jQueryFactory = require("jquery");
 const {JSDOM} = require("jsdom");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -16,8 +15,7 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const jquery = jQueryFactory(dom.window);
 
 const page_params = set_global("page_params", {});
-const loading = {__esModule: true};
-rewiremock("../../static/js/loading").with(loading);
+const loading = rewiremock("../../static/js/loading").with({});
 const history = set_global("history", {});
 set_global("document", {
     title: "Zulip",
@@ -28,9 +26,7 @@ set_global("location", {
     hash: "#billing",
 });
 
-rewiremock.enable();
-
-const helpers = zrequire("helpers", "js/billing/helpers");
+const {helpers} = use("billing/helpers");
 
 run_test("create_ajax_request", (override) => {
     const form_loading_indicator = "#autopay_loading_indicator";
@@ -290,4 +286,3 @@ run_test("set_tab", () => {
     assert.equal(state.show_tab_payment_method, 1);
     assert.equal(state.scrollTop, 2);
 });
-rewiremock.disable();

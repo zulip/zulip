@@ -2,32 +2,23 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const noop = () => {};
 
 const page_params = set_global("page_params", {});
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const reload = {__esModule: true};
-rewiremock("../../static/js/reload").with(reload);
-const reload_state = {__esModule: true};
-rewiremock("../../static/js/reload_state").with(reload_state);
+const channel = rewiremock("../../static/js/channel").with({});
+const reload = rewiremock("../../static/js/reload").with({});
+const reload_state = rewiremock("../../static/js/reload_state").with({});
 const sent_messages = {
-    __esModule: true,
     start_tracking_message: noop,
     report_server_ack: noop,
 };
 
 rewiremock("../../static/js/sent_messages").with(sent_messages);
 
-rewiremock.enable();
-
-const people = zrequire("people");
-const transmit = zrequire("transmit");
+const {people, transmit} = use("fold_dict", "people", "transmit");
 
 run_test("transmit_message_ajax", () => {
     let success_func_called;
@@ -197,4 +188,3 @@ run_test("reply_message_errors", () => {
         message: bogus_message,
     });
 });
-rewiremock.disable();

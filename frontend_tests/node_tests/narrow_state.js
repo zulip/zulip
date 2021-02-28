@@ -2,15 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {});
 
-const people = zrequire("people");
-const {Filter} = zrequire("Filter", "js/filter");
-const stream_data = zrequire("stream_data");
-const narrow_state = zrequire("narrow_state");
+const {
+    filter: {Filter},
+    narrow_state,
+    people,
+    stream_data,
+} = use("fold_dict", "util", "people", "filter", "stream_data", "narrow_state");
 
 function set_filter(operators) {
     operators = operators.map((op) => ({

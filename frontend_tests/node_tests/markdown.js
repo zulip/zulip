@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 const markdown_assert = require("../zjsunit/markdown_assert");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("location", {
@@ -32,16 +32,33 @@ set_global("Image", Image);
 const doc = "";
 set_global("document", doc);
 
-const emoji = zrequire("emoji", "shared/js/emoji");
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
-const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
-const markdown_config = zrequire("markdown_config");
-const marked = zrequire("marked", "third/marked/lib/marked");
-const markdown = zrequire("markdown");
-const people = zrequire("people");
-const stream_data = zrequire("stream_data");
-const user_groups = zrequire("user_groups");
+const {
+    emoji,
+    emoji_codes,
+    fenced_code,
+    markdown,
+    markdown_config,
+    marked,
+    people,
+    pygments_data,
+    stream_data,
+    user_groups,
+} = use(
+    "fold_dict",
+    "util",
+    "people",
+    "hash_util",
+    "stream_data",
+    "message_store",
+    "../shared/js/emoji",
+    "../generated/emoji/emoji_codes.json",
+    "../generated/pygments_data.json",
+    "../shared/js/fenced_code",
+    "markdown_config",
+    "../third/marked/lib/marked",
+    "markdown",
+    "user_groups",
+);
 
 const emoji_params = {
     realm_emoji: {

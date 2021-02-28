@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 // We download our translations in `page_params` (which
@@ -20,8 +20,7 @@ set_global("page_params", {
 // We use `i18n.js` to initialize `i18next` and
 // to set `i18n` to `i18next` on the global namespace
 // for `templates.js`.
-zrequire("i18n");
-zrequire("templates");
+use("i18n", "templates");
 
 run_test("t_tag", () => {
     const args = {

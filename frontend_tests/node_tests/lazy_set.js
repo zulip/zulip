@@ -2,10 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const {LazySet} = zrequire("lazy_set");
+const {
+    lazy_set: {LazySet},
+} = use("lazy_set");
 
 /*
     We mostly test LazySet indirectly.  This code

@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -17,11 +15,11 @@ set_global("document", {
     to_$: () => $("document-stub"),
 });
 
-const compose_pm_pill = {__esModule: true};
+const compose_pm_pill = {};
 
 rewiremock("../../static/js/compose_pm_pill").with(compose_pm_pill);
 
-const hash_util = {__esModule: true};
+const hash_util = {};
 
 rewiremock("../../static/js/hash_util").with(hash_util);
 
@@ -34,7 +32,6 @@ rewiremock("../../static/js/notifications").with({
 });
 
 const compose_fade = {
-    __esModule: true,
     clear_compose: noop,
 };
 
@@ -45,7 +42,6 @@ rewiremock("../../static/js/drafts").with({
 });
 
 const narrow_state = {
-    __esModule: true,
     set_compose_defaults: noop,
 };
 
@@ -65,18 +61,18 @@ set_global("current_msg_list", {
     },
 });
 
-const channel = {__esModule: true};
+const channel = rewiremock("../../static/js/channel").with({});
 
-rewiremock("../../static/js/channel").with(channel);
-
-rewiremock.enable();
-
-const people = zrequire("people");
-const compose_ui = zrequire("compose_ui");
-const compose = zrequire("compose");
-const compose_state = zrequire("compose_state");
-const compose_actions = zrequire("compose_actions");
-const stream_data = zrequire("stream_data");
+const {compose, compose_actions, compose_state, compose_ui, people, stream_data} = use(
+    "fold_dict",
+    "../shared/js/fenced_code",
+    "people",
+    "stream_data",
+    "compose_ui",
+    "compose",
+    "compose_state",
+    "compose_actions",
+);
 
 compose_actions.__Rewire__("update_placeholder_text", noop);
 
@@ -502,4 +498,3 @@ run_test("on_narrow", (override) => {
     });
     assert(cancel_called);
 });
-rewiremock.disable();

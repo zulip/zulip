@@ -2,17 +2,14 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-rewiremock.enable();
 const compose_pm_pill = {__esModule: true};
 
 rewiremock("../../static/js/compose_pm_pill").with(compose_pm_pill);
 
-const compose_state = zrequire("compose_state");
+const {compose_state} = use("compose_state");
 
 run_test("private_message_recipient", (override) => {
     let emails;
@@ -25,4 +22,3 @@ run_test("private_message_recipient", (override) => {
     compose_state.private_message_recipient("fred@fred.org");
     assert.equal(compose_state.private_message_recipient(), "fred@fred.org");
 });
-rewiremock.disable();

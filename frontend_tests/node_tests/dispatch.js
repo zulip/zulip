@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -20,88 +18,49 @@ const typing_person1 = events.typing_person1;
 
 set_global("setTimeout", (func) => func());
 
-const activity = {__esModule: true};
-rewiremock("../../static/js/activity").with(activity);
-const alert_words_ui = {__esModule: true};
-rewiremock("../../static/js/alert_words_ui").with(alert_words_ui);
-const attachments_ui = {__esModule: true};
-rewiremock("../../static/js/attachments_ui").with(attachments_ui);
-const bot_data = {__esModule: true};
-rewiremock("../../static/js/bot_data").with(bot_data);
+const activity = rewiremock("../../static/js/activity").with({});
+const alert_words_ui = rewiremock("../../static/js/alert_words_ui").with({});
+const attachments_ui = rewiremock("../../static/js/attachments_ui").with({});
+const bot_data = rewiremock("../../static/js/bot_data").with({});
 rewiremock("../../static/js/compose").with({});
-const composebox_typeahead = {__esModule: true};
-rewiremock("../../static/js/composebox_typeahead").with(composebox_typeahead);
+const composebox_typeahead = rewiremock("../../static/js/composebox_typeahead").with({});
 set_global("current_msg_list", {});
-const emoji_picker = {__esModule: true};
-rewiremock("../../static/js/emoji_picker").with(emoji_picker);
+const emoji_picker = rewiremock("../../static/js/emoji_picker").with({});
 set_global("home_msg_list", {});
-const hotspots = {__esModule: true};
-rewiremock("../../static/js/hotspots").with(hotspots);
-const markdown = {__esModule: true};
-rewiremock("../../static/js/markdown").with(markdown);
-const message_edit = {__esModule: true};
-rewiremock("../../static/js/message_edit").with(message_edit);
-const message_events = {__esModule: true};
-rewiremock("../../static/js/message_events").with(message_events);
-const message_list = {__esModule: true};
-rewiremock("../../static/js/message_list").with(message_list);
-const muting_ui = {__esModule: true};
-rewiremock("../../static/js/muting_ui").with(muting_ui);
-const night_mode = {__esModule: true};
-rewiremock("../../static/js/night_mode").with(night_mode);
-const notifications = {__esModule: true};
-rewiremock("../../static/js/notifications").with(notifications);
-const reactions = {__esModule: true};
-rewiremock("../../static/js/reactions").with(reactions);
-const realm_icon = {__esModule: true};
-rewiremock("../../static/js/realm_icon").with(realm_icon);
-const realm_logo = {__esModule: true};
-rewiremock("../../static/js/realm_logo").with(realm_logo);
-const reload = {__esModule: true};
-rewiremock("../../static/js/reload").with(reload);
-const scroll_bar = {__esModule: true};
-rewiremock("../../static/js/scroll_bar").with(scroll_bar);
-const settings_account = {__esModule: true};
-rewiremock("../../static/js/settings_account").with(settings_account);
-const settings_bots = {__esModule: true};
-rewiremock("../../static/js/settings_bots").with(settings_bots);
-const settings_display = {__esModule: true};
-rewiremock("../../static/js/settings_display").with(settings_display);
-const settings_emoji = {__esModule: true};
-rewiremock("../../static/js/settings_emoji").with(settings_emoji);
-const settings_exports = {__esModule: true};
-rewiremock("../../static/js/settings_exports").with(settings_exports);
-const settings_invites = {__esModule: true};
-rewiremock("../../static/js/settings_invites").with(settings_invites);
-const settings_linkifiers = {__esModule: true};
-rewiremock("../../static/js/settings_linkifiers").with(settings_linkifiers);
-const settings_notifications = {__esModule: true};
-rewiremock("../../static/js/settings_notifications").with(settings_notifications);
-const settings_org = {__esModule: true};
-rewiremock("../../static/js/settings_org").with(settings_org);
-const settings_profile_fields = {__esModule: true};
-rewiremock("../../static/js/settings_profile_fields").with(settings_profile_fields);
-const settings_streams = {__esModule: true};
-rewiremock("../../static/js/settings_streams").with(settings_streams);
-const settings_user_groups = {__esModule: true};
-rewiremock("../../static/js/settings_user_groups").with(settings_user_groups);
-const settings_users = {__esModule: true};
-rewiremock("../../static/js/settings_users").with(settings_users);
-const stream_data = {__esModule: true};
-rewiremock("../../static/js/stream_data").with(stream_data);
-const stream_events = {__esModule: true};
-rewiremock("../../static/js/stream_events").with(stream_events);
-const submessage = {__esModule: true};
-rewiremock("../../static/js/submessage").with(submessage);
-const typing_events = {__esModule: true};
-rewiremock("../../static/js/typing_events").with(typing_events);
-const ui = {__esModule: true};
-rewiremock("../../static/js/ui").with(ui);
-const unread_ops = {__esModule: true};
-rewiremock("../../static/js/unread_ops").with(unread_ops);
-const user_events = {__esModule: true};
-rewiremock("../../static/js/user_events").with(user_events);
-const user_groups = {__esModule: true};
+const hotspots = rewiremock("../../static/js/hotspots").with({});
+const markdown = rewiremock("../../static/js/markdown").with({});
+const message_edit = rewiremock("../../static/js/message_edit").with({});
+const message_events = rewiremock("../../static/js/message_events").with({});
+const message_list = rewiremock("../../static/js/message_list").with({});
+const muting_ui = rewiremock("../../static/js/muting_ui").with({});
+const night_mode = rewiremock("../../static/js/night_mode").with({});
+const notifications = rewiremock("../../static/js/notifications").with({});
+const reactions = rewiremock("../../static/js/reactions").with({});
+const realm_icon = rewiremock("../../static/js/realm_icon").with({});
+const realm_logo = rewiremock("../../static/js/realm_logo").with({});
+const reload = rewiremock("../../static/js/reload").with({});
+const scroll_bar = rewiremock("../../static/js/scroll_bar").with({});
+const settings_account = rewiremock("../../static/js/settings_account").with({});
+const settings_bots = rewiremock("../../static/js/settings_bots").with({});
+const settings_display = rewiremock("../../static/js/settings_display").with({});
+const settings_emoji = rewiremock("../../static/js/settings_emoji").with({});
+const settings_exports = rewiremock("../../static/js/settings_exports").with({});
+const settings_invites = rewiremock("../../static/js/settings_invites").with({});
+const settings_linkifiers = rewiremock("../../static/js/settings_linkifiers").with({});
+const settings_notifications = rewiremock("../../static/js/settings_notifications").with({});
+const settings_org = rewiremock("../../static/js/settings_org").with({});
+const settings_profile_fields = rewiremock("../../static/js/settings_profile_fields").with({});
+const settings_streams = rewiremock("../../static/js/settings_streams").with({});
+const settings_user_groups = rewiremock("../../static/js/settings_user_groups").with({});
+const settings_users = rewiremock("../../static/js/settings_users").with({});
+const stream_data = rewiremock("../../static/js/stream_data").with({});
+const stream_events = rewiremock("../../static/js/stream_events").with({});
+const submessage = rewiremock("../../static/js/submessage").with({});
+const typing_events = rewiremock("../../static/js/typing_events").with({});
+const ui = rewiremock("../../static/js/ui").with({});
+const unread_ops = rewiremock("../../static/js/unread_ops").with({});
+const user_events = rewiremock("../../static/js/user_events").with({});
+const user_groups = {};
 
 rewiremock("../../static/js/user_groups").with(user_groups);
 
@@ -112,20 +71,36 @@ const page_params = set_global("page_params", {
     realm_description: "already set description",
 });
 
-rewiremock.enable();
-
-// For data-oriented modules, just use them, don't stub them.
-const alert_words = zrequire("alert_words");
-const stream_topic_history = zrequire("stream_topic_history");
-const stream_list = zrequire("stream_list");
-const message_store = zrequire("message_store");
-const people = zrequire("people");
-const starred_messages = zrequire("starred_messages");
-const user_status = zrequire("user_status");
-
-const emoji = zrequire("emoji", "shared/js/emoji");
-
-const server_events_dispatch = zrequire("server_events_dispatch");
+const {
+    alert_words,
+    emoji,
+    emoji_codes,
+    message_store,
+    people,
+    server_events_dispatch,
+    starred_messages,
+    stream_list,
+    stream_topic_history,
+    user_status,
+} = use(
+    "util",
+    "fold_dict",
+    "message_store",
+    "people",
+    "list_cursor",
+    "alert_words",
+    "message_flags",
+    "stream_topic_history",
+    "stream_list",
+    "panels",
+    "settings_config",
+    "starred_messages",
+    "user_status",
+    "../generated/emoji/emoji_codes.json",
+    "../shared/js/emoji",
+    "unread",
+    "server_events_dispatch",
+);
 
 function dispatch(ev) {
     server_events_dispatch.dispatch_normal_event(ev);
@@ -137,7 +112,6 @@ people.add_active_user(test_user);
 message_store.add_message_metadata(test_message);
 
 const realm_emoji = {};
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 
 emoji.initialize({realm_emoji, emoji_codes});
 
@@ -893,4 +867,3 @@ run_test("realm_export", (override) => {
     const args = stub.get_args("exports");
     assert.equal(args.exports, event.exports);
 });
-rewiremock.disable();

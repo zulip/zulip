@@ -2,11 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("zxcvbn", zrequire("zxcvbn", "zxcvbn"));
-const common = zrequire("common");
+set_global("zxcvbn", require("zxcvbn"));
+
+const {common} = use("common");
 
 run_test("basics", () => {
     let accepted;

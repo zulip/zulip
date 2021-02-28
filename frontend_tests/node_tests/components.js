@@ -4,10 +4,10 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const components = zrequire("components");
+const {components} = use("components", "keydown_util");
 
 const noop = () => {};
 

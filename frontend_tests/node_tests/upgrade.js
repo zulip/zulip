@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use, with_field} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -25,7 +25,15 @@ set_global("page_params", {
     percent_off: 20,
 });
 
-const helpers = zrequire("helpers", "js/billing/helpers");
+let initialize;
+const {helpers} = with_field(
+    global,
+    "$",
+    (f) => {
+        initialize = f;
+    },
+    () => use("billing/helpers", "billing/upgrade"),
+);
 
 run_test("initialize", () => {
     let token_func;
@@ -101,7 +109,7 @@ run_test("initialize", () => {
     $("#autopay-form").data = (key) =>
         document.querySelector("#autopay-form").getAttribute("data-" + key);
 
-    zrequire("upgrade", "js/billing/upgrade");
+    initialize();
 
     const e = {
         preventDefault: noop,

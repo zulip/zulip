@@ -3,22 +3,25 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {});
 
-const timerender = {__esModule: true};
+const timerender = {};
 
 rewiremock("../../static/js/timerender").with(timerender);
-rewiremock.enable();
 
-const people = zrequire("people");
-const presence = zrequire("presence");
-const user_status = zrequire("user_status");
-const buddy_data = zrequire("buddy_data");
+const {buddy_data, people, presence, user_status} = use(
+    "util",
+    "fold_dict",
+    "../shared/js/typeahead",
+    "people",
+    "presence",
+    "user_status",
+    "buddy_data",
+);
 
 // The buddy_data module is mostly tested indirectly through
 // activity.js, but we should feel free to add direct tests
@@ -355,4 +358,3 @@ run_test("error handling", (override) => {
     blueslip.expect("warn", "Got user_id in presence but not people: 42");
     buddy_data.get_filtered_and_sorted_user_ids();
 });
-rewiremock.disable();

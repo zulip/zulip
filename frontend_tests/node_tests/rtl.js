@@ -2,11 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const rtl = zrequire("rtl");
+const {rtl} = use("util", "rtl");
 
 run_test("get_direction", () => {
     // These characters are strong R or AL:    ا ب پ ج ض و د ؛

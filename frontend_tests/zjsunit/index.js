@@ -1,5 +1,6 @@
 "use strict";
 
+const fs = require("fs");
 const Module = require("module");
 const path = require("path");
 
@@ -23,10 +24,7 @@ require("@babel/register")({
             "^" + _.escapeRegExp(path.resolve(__dirname, "../../static/shared/js") + path.sep),
         ),
     ],
-    plugins: [
-        "babel-plugin-rewire-ts",
-        ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
-    ],
+    plugins: ["babel-plugin-rewire-ts"],
 });
 
 // Create a helper function to avoid sneaky delays in tests.
@@ -59,11 +57,41 @@ Module.prototype.hot = {
 };
 
 function short_tb(tb) {
-    const lines = tb.split("\n");
+    let lines = tb.split("\n");
 
-    const i = lines.findIndex((line) => line.includes("Module._compile"));
+    try {
+        let failing_line;
 
-    if (i === -1) {
+        for (const line of lines) {
+            if (line.includes("static/js") || line.includes("frontend_tests/node_tests")) {
+                failing_line = line;
+                break;
+            }
+        }
+        const re = /(\/.*?):(.*?):/;
+        const arr = re.exec(failing_line);
+        const fn = arr[1];
+        const line_number = Number.parseInt(arr[2], 10);
+
+        const file_lines = fs.readFileSync(fn, "utf8").split("\n");
+        const begin = Math.max(line_number - 3, 0);
+        const end = line_number + 3;
+
+        const bad_lines = file_lines.slice(begin, end);
+
+        lines = [...bad_lines, "", ...lines];
+    } catch {
+        // do nothing
+    }
+
+    let i;
+    for (i = lines.length - 1; i >= 0; i -= 1) {
+        if (lines[i].includes("frontend_tests/node_tests")) {
+            break;
+        }
+    }
+
+    if (i <= 0) {
         return tb;
     }
 
@@ -81,6 +109,7 @@ test.set_verbose(files.length === 1);
 
 try {
     for (const file of files) {
+        namespace.clear();
         namespace.set_global("window", window);
         namespace.set_global("to_$", () => window);
         namespace.set_global("location", {

@@ -2,54 +2,35 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 rewiremock("../../static/js/resize").with({
     resize_stream_filters_container: () => {},
 });
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const compose = {__esModule: true};
-rewiremock("../../static/js/compose").with(compose);
-const compose_actions = {__esModule: true};
-rewiremock("../../static/js/compose_actions").with(compose_actions);
+const channel = rewiremock("../../static/js/channel").with({});
+const compose = rewiremock("../../static/js/compose").with({});
+const compose_actions = rewiremock("../../static/js/compose_actions").with({});
 set_global("current_msg_list", {});
-const hashchange = {__esModule: true};
-rewiremock("../../static/js/hashchange").with(hashchange);
+const hashchange = rewiremock("../../static/js/hashchange").with({});
 set_global("home_msg_list", {});
-const message_fetch = {__esModule: true};
-rewiremock("../../static/js/message_fetch").with(message_fetch);
-const message_list = {
-    __esModule: true,
-
+const message_fetch = rewiremock("../../static/js/message_fetch").with({});
+const message_list = rewiremock("../../static/js/message_list").with({
     set_narrowed(value) {
         message_list.narrowed = value;
     },
-};
-rewiremock("../../static/js/message_list").with(message_list);
-const message_scroll = {__esModule: true};
-rewiremock("../../static/js/message_scroll").with(message_scroll);
-const notifications = {__esModule: true};
-rewiremock("../../static/js/notifications").with(notifications);
+});
+const message_scroll = rewiremock("../../static/js/message_scroll").with({});
+const notifications = rewiremock("../../static/js/notifications").with({});
 set_global("page_params", {});
-const search = {__esModule: true};
-rewiremock("../../static/js/search").with(search);
-const stream_list = {__esModule: true};
-rewiremock("../../static/js/stream_list").with(stream_list);
-const message_view_header = {__esModule: true};
-rewiremock("../../static/js/message_view_header").with(message_view_header);
-const top_left_corner = {__esModule: true};
-rewiremock("../../static/js/top_left_corner").with(top_left_corner);
-const typing_events = {__esModule: true};
-rewiremock("../../static/js/typing_events").with(typing_events);
-const ui_util = {__esModule: true};
-rewiremock("../../static/js/ui_util").with(ui_util);
-const unread_ops = {__esModule: true};
-rewiremock("../../static/js/unread_ops").with(unread_ops);
+const search = rewiremock("../../static/js/search").with({});
+const stream_list = rewiremock("../../static/js/stream_list").with({});
+const message_view_header = rewiremock("../../static/js/message_view_header").with({});
+const top_left_corner = rewiremock("../../static/js/top_left_corner").with({});
+const typing_events = rewiremock("../../static/js/typing_events").with({});
+const ui_util = rewiremock("../../static/js/ui_util").with({});
+const unread_ops = rewiremock("../../static/js/unread_ops").with({});
 rewiremock("../../static/js/recent_topics").with({
     hide: () => {},
     is_visible: () => {},
@@ -67,12 +48,17 @@ rewiremock("../../static/js/muting").with({
     is_topic_muted: () => false,
 });
 
-rewiremock.enable();
-
-const util = zrequire("util");
-const narrow_state = zrequire("narrow_state");
-const stream_data = zrequire("stream_data");
-const narrow = zrequire("narrow");
+const {narrow, narrow_state, stream_data, util} = use(
+    "fold_dict",
+    "util",
+    "stream_data",
+    "filter",
+    "fetch_status",
+    "message_list_data",
+    "narrow_state",
+    "unread",
+    "narrow",
+);
 
 const denmark = {
     subscribed: false,
@@ -83,19 +69,18 @@ const denmark = {
 };
 stream_data.add_sub(denmark);
 
-function test_helper() {
+function test_helper(override) {
     let events = [];
 
     function stub(module, func_name) {
-        module[func_name] = () => {
+        override(module, func_name, () => {
             events.push([module, func_name]);
-        };
+        });
     }
 
     stub(compose_actions, "on_narrow");
     stub(hashchange, "save_narrow");
     stub(message_scroll, "hide_indicators");
-    stub(message_scroll, "show_loading_older");
     stub(message_scroll, "hide_top_of_narrow_notices");
     stub(notifications, "clear_compose_notifications");
     stub(notifications, "redraw_title");
@@ -149,10 +134,10 @@ function stub_message_list() {
     };
 }
 
-run_test("basics", () => {
+run_test("basics", (override) => {
     stub_message_list();
 
-    const helper = test_helper();
+    const helper = test_helper(override);
     const terms = [{operator: "stream", operand: "Denmark"}];
 
     const selected_id = 1000;
@@ -245,4 +230,3 @@ run_test("basics", () => {
     cont();
     helper.assert_events(["report narrow times"]);
 });
-rewiremock.disable();

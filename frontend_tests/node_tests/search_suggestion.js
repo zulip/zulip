@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {
@@ -15,23 +13,36 @@ rewiremock("../../static/js/message_store").with({
     user_ids: () => [],
 });
 
-rewiremock("../../static/js/narrow").with({});
+const {
+    huddle_data,
+    narrow_state,
+    people,
+    search_suggestion,
+    settings_config,
+    stream_data,
+    stream_topic_history,
+} = use(
+    "util",
+    "fold_dict",
+    "settings_config",
+    "settings_data",
+    "people",
+    "common",
+    "filter",
+    "stream_data",
+    "../shared/js/typeahead",
+    "typeahead_helper",
+    "huddle_data",
+    "narrow_state",
+    "stream_topic_history",
+    "unread",
+    "search_suggestion",
+);
 
-rewiremock.enable();
-
-const settings_config = zrequire("settings_config");
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
-const huddle_data = zrequire("huddle_data");
-
-const narrow_state = zrequire("narrow_state");
-const stream_data = zrequire("stream_data");
-const stream_topic_history = zrequire("stream_topic_history");
-const people = zrequire("people");
-const search = zrequire("search_suggestion");
-
-search.__Rewire__("max_num_of_search_results", 15);
+search_suggestion.__Rewire__("max_num_of_search_results", 15);
 
 const me = {
     email: "myself@zulip.com",
@@ -82,7 +93,7 @@ page_params.is_admin = true;
 stream_topic_history.reset();
 
 function get_suggestions(base_query, query) {
-    return search.get_suggestions(base_query, query);
+    return search_suggestion.get_suggestions(base_query, query);
 }
 
 run_test("basic_get_suggestions", () => {
@@ -969,4 +980,3 @@ run_test("multiple_operators_without_pills", () => {
     expected = ["is:alerted sender:ted@zulip.com abc"];
     assert.deepEqual(suggestions.strings, expected);
 });
-rewiremock.disable();

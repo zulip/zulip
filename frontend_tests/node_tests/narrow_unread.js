@@ -2,27 +2,24 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_store = {__esModule: true};
-rewiremock("../../static/js/message_store").with(message_store);
+const message_store = rewiremock("../../static/js/message_store").with({});
 set_global("page_params", {});
 
 rewiremock("../../static/js/muting").with({
     is_topic_muted: () => false,
 });
 
-rewiremock.enable();
-
-const {Filter} = zrequire("Filter", "js/filter");
-const people = zrequire("people");
-const stream_data = zrequire("stream_data");
-const unread = zrequire("unread");
 // The main code we are testing lives here.
-const narrow_state = zrequire("narrow_state");
+const {
+    filter: {Filter},
+    narrow_state,
+    people,
+    stream_data,
+    unread,
+} = use("fold_dict", "util", "people", "filter", "stream_data", "unread", "narrow_state");
 
 const alice = {
     email: "alice@example.com",
@@ -212,4 +209,3 @@ run_test("defensive code", () => {
         flavor: "cannot_compute",
     });
 });
-rewiremock.disable();

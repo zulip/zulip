@@ -2,12 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const typing = zrequire("typing");
-const compose_pm_pill = zrequire("compose_pm_pill");
-const typing_status = zrequire("typing_status", "shared/js/typing_status");
+const {compose_pm_pill, typing, typing_status} = use(
+    "fold_dict",
+    "people",
+    "typing",
+    "compose_pm_pill",
+    "../shared/js/typing_status",
+);
 
 function make_time(secs) {
     // make times semi-realistic

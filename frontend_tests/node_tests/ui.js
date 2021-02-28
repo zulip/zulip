@@ -2,14 +2,14 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("navigator", {
     userAgent: "",
 });
 
-const ui = zrequire("ui");
+const {ui} = use("localstorage", "ui");
 
 run_test("get_hotkey_deprecation_notice", () => {
     const expected =

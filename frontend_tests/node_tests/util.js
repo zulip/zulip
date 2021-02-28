@@ -5,12 +5,12 @@ const {strict: assert} = require("assert");
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("DOMParser", new JSDOM().window.DOMParser);
 set_global("document", {});
-const util = zrequire("util");
+const {util} = use("util");
 
 run_test("CachedValue", () => {
     let x = 5;

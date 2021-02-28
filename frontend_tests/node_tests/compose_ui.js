@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const autosize = require("autosize");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -14,9 +14,7 @@ set_global("document", {
     },
 });
 
-const compose_ui = zrequire("compose_ui");
-const people = zrequire("people");
-const user_status = zrequire("user_status");
+const {compose_ui, people, user_status} = use("fold_dict", "people", "user_status", "compose_ui");
 
 const alice = {
     email: "alice@zulip.com",

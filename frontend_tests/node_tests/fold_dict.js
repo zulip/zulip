@@ -2,10 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const {FoldDict} = zrequire("fold_dict");
+const {
+    fold_dict: {FoldDict},
+} = use("fold_dict");
 
 run_test("basic", () => {
     const d = new FoldDict();

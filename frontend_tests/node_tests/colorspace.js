@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const colorspace = zrequire("colorspace");
+const {colorspace} = use("colorspace");
 
 run_test("sRGB_to_linear", () => {
     let srgb_color = 0.0042;

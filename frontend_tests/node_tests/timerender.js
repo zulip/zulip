@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {add} = require("date-fns");
 const MockDate = require("mockdate");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -13,7 +13,7 @@ let page_params = set_global("page_params", {
     twenty_four_hour_time: true,
 });
 
-const timerender = zrequire("timerender");
+const {timerender} = use("timerender");
 
 run_test("render_now_returns_today", () => {
     const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)

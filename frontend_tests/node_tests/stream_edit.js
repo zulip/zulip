@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -27,23 +25,26 @@ rewiremock("../../static/js/settings_notifications").with({
 rewiremock("../../static/js/stream_color").with({
     set_colorpicker_color: noop,
 });
-const typeahead_helper = {__esModule: true};
-rewiremock("../../static/js/typeahead_helper").with(typeahead_helper);
-const ui = {
-    __esModule: true,
+const typeahead_helper = rewiremock("../../static/js/typeahead_helper").with({});
+const ui = rewiremock("../../static/js/ui").with({
     get_scroll_element: noop,
-};
+});
 
-rewiremock("../../static/js/ui").with(ui);
-
-rewiremock.enable();
-
-const peer_data = zrequire("peer_data");
-const people = zrequire("people");
-const stream_edit = zrequire("stream_edit");
-const stream_data = zrequire("stream_data");
-const stream_pill = zrequire("stream_pill");
-const user_pill = zrequire("user_pill");
+const {peer_data, people, stream_data, stream_edit, stream_pill, user_pill} = use(
+    "fold_dict",
+    "lazy_set",
+    "people",
+    "settings_config",
+    "input_pill",
+    "user_pill",
+    "peer_data",
+    "stream_data",
+    "stream_ui_updates",
+    "stream_edit",
+    "subs",
+    "stream_pill",
+    "pill_typeahead",
+);
 
 stream_edit.__Rewire__("sort_but_pin_current_user_on_top", noop);
 
@@ -275,4 +276,3 @@ test_ui("subscriber_pills", () => {
     expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);
 });
-rewiremock.disable();

@@ -2,13 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {});
 
-const people = zrequire("people");
-const user_pill = zrequire("user_pill");
+const {people, user_pill} = use("fold_dict", "people", "user_pill");
 
 const alice = {
     email: "alice@example.com",

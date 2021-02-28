@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -18,15 +16,10 @@ rewiremock("../../static/js/resize").with({
     resize_stream_filters_container: noop,
 });
 
-const popovers = {__esModule: true};
-rewiremock("../../static/js/popovers").with(popovers);
-const stream_popover = {__esModule: true};
+const popovers = rewiremock("../../static/js/popovers").with({});
+const stream_popover = rewiremock("../../static/js/stream_popover").with({});
 
-rewiremock("../../static/js/stream_popover").with(stream_popover);
-
-rewiremock.enable();
-
-const stream_list = zrequire("stream_list");
+const {stream_list} = use("list_cursor", "stream_list");
 
 function expand_sidebar() {
     $(".app-main .column-left").addClass("expanded");
@@ -196,4 +189,3 @@ run_test("expanding_sidebar", () => {
 
     assert.deepEqual(events, ["popovers.hide_all", "stream_popover.show_streamlist_sidebar"]);
 });
-rewiremock.disable();

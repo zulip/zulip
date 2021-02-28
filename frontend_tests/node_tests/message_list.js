@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -26,15 +24,19 @@ set_global("document", {
     },
 });
 
-const narrow_state = {__esModule: true};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
-const stream_data = {__esModule: true};
-rewiremock("../../static/js/stream_data").with(stream_data);
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
+const stream_data = rewiremock("../../static/js/stream_data").with({});
 
-rewiremock.enable();
-
-const muting = zrequire("muting");
-const {MessageList} = zrequire("message_list");
+const {message_list, muting} = use(
+    "fold_dict",
+    "util",
+    "fetch_status",
+    "muting",
+    "message_list_data",
+    "message_list_view",
+    "message_list",
+);
+const MessageList = message_list.MessageList;
 
 function accept_all_filter() {
     const filter = {
@@ -444,4 +446,3 @@ run_test("add_remove_rerender", () => {
         assert.equal(list.num_items(), 0);
     }
 });
-rewiremock.disable();

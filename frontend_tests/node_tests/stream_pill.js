@@ -2,12 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const peer_data = zrequire("peer_data");
-const stream_data = zrequire("stream_data");
-const stream_pill = zrequire("stream_pill");
+const {peer_data, stream_data, stream_pill} = use(
+    "fold_dict",
+    "lazy_set",
+    "peer_data",
+    "stream_data",
+    "stream_pill",
+);
 
 const denmark = {
     stream_id: 1,

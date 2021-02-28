@@ -3,15 +3,12 @@
 const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const local_message = {__esModule: true};
-rewiremock("../../static/js/local_message").with(local_message);
-const markdown = {__esModule: true};
-rewiremock("../../static/js/markdown").with(markdown);
+const local_message = rewiremock("../../static/js/local_message").with({});
+const markdown = rewiremock("../../static/js/markdown").with({});
 const page_params = set_global("page_params", {});
 
 const fake_now = 555;
@@ -47,10 +44,7 @@ rewiremock("../../static/js/message_list").with({});
 
 set_global("current_msg_list", "");
 
-rewiremock.enable();
-
-const echo = zrequire("echo");
-const people = zrequire("people");
+const {echo, people} = use("util", "fold_dict", "people", "alert_words", "echo");
 
 run_test("process_from_server for un-echoed messages", () => {
     const waiting_for_ack = new Map();
@@ -264,4 +258,3 @@ run_test("insert_local_message PM", (override) => {
 });
 
 MockDate.reset();
-rewiremock.disable();

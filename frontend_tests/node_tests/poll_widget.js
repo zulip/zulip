@@ -3,13 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const poll_widget = zrequire("poll_widget");
-
-const people = zrequire("people");
+const {people, poll_widget} = use("fold_dict", "people", "poll_widget");
 
 run_test("PollData my question", () => {
     const is_my_poll = true;

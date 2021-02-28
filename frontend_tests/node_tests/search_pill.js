@@ -2,11 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const search_pill = zrequire("search_pill");
-const input_pill = zrequire("input_pill");
+const {input_pill, search_pill} = use("util", "filter", "search_pill", "input_pill");
 
 const is_starred_item = {
     display_value: "is:starred",

@@ -2,30 +2,25 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-const stream_topic_history = {__esModule: true};
+const stream_topic_history = {};
 
 rewiremock("../../static/js/stream_topic_history").with(stream_topic_history);
 
 const message_store = {
-    __esModule: true,
     user_ids: () => [],
 };
 
 rewiremock("../../static/js/message_store").with(message_store);
 
 const page_params = set_global("page_params", {});
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
+const channel = rewiremock("../../static/js/channel").with({});
 const compose = {
-    __esModule: true,
     finish: noop,
 };
 
@@ -45,25 +40,41 @@ set_global("setTimeout", (f, time) => {
 });
 set_global("document", "document-stub");
 
-rewiremock.enable();
-
-const emoji = zrequire("emoji", "shared/js/emoji");
-const typeahead = zrequire("typeahead", "shared/js/typeahead");
-const compose_state = zrequire("compose_state");
-zrequire("user_status");
-zrequire("presence");
-zrequire("buddy_data");
-zrequire("pm_conversations");
-zrequire("templates");
-const typeahead_helper = zrequire("typeahead_helper");
-const people = zrequire("people");
-const user_groups = zrequire("user_groups");
-const stream_data = zrequire("stream_data");
-const user_pill = zrequire("user_pill");
-const compose_pm_pill = zrequire("compose_pm_pill");
-const composebox_typeahead = zrequire("composebox_typeahead");
-const settings_config = zrequire("settings_config");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
+const {
+    compose_pm_pill,
+    compose_state,
+    composebox_typeahead,
+    emoji,
+    people,
+    pygments_data,
+    settings_config,
+    stream_data,
+    typeahead,
+    typeahead_helper,
+    user_groups,
+    user_pill,
+} = use(
+    "fold_dict",
+    "util",
+    "settings_config",
+    "settings_data",
+    "presence",
+    "user_status",
+    "buddy_data",
+    "people",
+    "stream_data",
+    "templates",
+    "../shared/js/emoji",
+    "../shared/js/typeahead",
+    "compose_state",
+    "typeahead_helper",
+    "user_groups",
+    "user_pill",
+    "compose_pm_pill",
+    "composebox_typeahead",
+    "pm_conversations",
+    "../generated/pygments_data.json",
+);
 
 // To be eliminated in next commit:
 stream_data.__Rewire__("update_calculated_fields", () => {});
@@ -1567,4 +1578,3 @@ run_test("message people", () => {
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hamletcharacters, hal]);
 });
-rewiremock.disable();

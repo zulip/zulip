@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, with_field, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -12,17 +10,28 @@ set_global("page_params", {
     stop_words: ["what", "about"],
 });
 
-rewiremock.enable();
-
-const hash_util = zrequire("hash_util");
-const compose_state = zrequire("compose_state");
-const narrow_state = zrequire("narrow_state");
-const people = zrequire("people");
-const stream_data = zrequire("stream_data");
-const stream_topic_history = {__esModule: true};
-rewiremock("../../static/js/stream_topic_history").with(stream_topic_history);
-const {Filter} = zrequire("Filter", "js/filter");
-const narrow = zrequire("narrow");
+const stream_topic_history = rewiremock("../../static/js/stream_topic_history").with({});
+const {
+    compose_state,
+    filter: {Filter},
+    hash_util,
+    narrow,
+    narrow_state,
+    people,
+    stream_data,
+} = use(
+    "fold_dict",
+    "util",
+    "settings_config",
+    "people",
+    "compose_state",
+    "hash_util",
+    "stream_data",
+    "filter",
+    "narrow_state",
+    "message_list_data",
+    "narrow",
+);
 
 function set_filter(operators) {
     operators = operators.map((op) => ({
@@ -372,4 +381,3 @@ run_test("narrow_to_compose_target PMs", (override) => {
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
 });
-rewiremock.disable();

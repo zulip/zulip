@@ -3,16 +3,13 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const confirm_dialog = {__esModule: true};
-
-rewiremock("../../static/js/confirm_dialog").with(confirm_dialog);
+const confirm_dialog = rewiremock("../../static/js/confirm_dialog").with({});
 
 const noop = () => {};
 
@@ -22,32 +19,29 @@ const pills = {
 
 let create_item_handler;
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const typeahead_helper = {__esModule: true};
-rewiremock("../../static/js/typeahead_helper").with(typeahead_helper);
+const channel = rewiremock("../../static/js/channel").with({});
+const typeahead_helper = rewiremock("../../static/js/typeahead_helper").with({});
 const user_groups = {
-    __esModule: true,
     get_user_group_from_id: noop,
     remove: noop,
     add: noop,
 };
 rewiremock("../../static/js/user_groups").with(user_groups);
-const ui_report = {__esModule: true};
-
-rewiremock("../../static/js/ui_report").with(ui_report);
+const ui_report = rewiremock("../../static/js/ui_report").with({});
 
 const page_params = set_global("page_params", {});
-const input_pill = {__esModule: true};
 
-rewiremock("../../static/js/input_pill").with(input_pill);
+const input_pill = rewiremock("../../static/js/input_pill").with({});
 
-rewiremock.enable();
-
-const user_pill = zrequire("user_pill");
-const settings_user_groups = zrequire("settings_user_groups");
-const settings_config = zrequire("settings_config");
-const people = zrequire("people");
+const {people, settings_config, settings_user_groups, user_pill} = use(
+    "fold_dict",
+    "settings_config",
+    "settings_data",
+    "people",
+    "pill_typeahead",
+    "user_pill",
+    "settings_user_groups",
+);
 
 function reset_test_setup(pill_container_stub) {
     function input_pill_stub(opts) {
@@ -880,4 +874,3 @@ test_ui("on_events", () => {
         assert(api_endpoint_called);
     })();
 });
-rewiremock.disable();

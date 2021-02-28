@@ -2,18 +2,30 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const pm_conversations = zrequire("pm_conversations");
-pm_conversations.recent = {};
+const {
+    muting,
+    pm_conversations,
+    stream_data,
+    stream_sort,
+    stream_topic_history,
+    topic_generator,
+    unread,
+} = use(
+    "fold_dict",
+    "pm_conversations",
+    "unread",
+    "stream_data",
+    "muting",
+    "stream_topic_history",
+    "stream_sort",
+    "topic_generator",
+);
+const tg = topic_generator;
 
-const muting = zrequire("muting");
-const unread = zrequire("unread");
-const stream_data = zrequire("stream_data");
-const stream_topic_history = zrequire("stream_topic_history");
-const stream_sort = zrequire("stream_sort");
-const tg = zrequire("topic_generator");
+pm_conversations.recent = {};
 
 run_test("streams", () => {
     function assert_next_stream(curr_stream, expected) {

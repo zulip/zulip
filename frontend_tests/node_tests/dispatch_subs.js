@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -13,35 +11,26 @@ const events = require("./lib/events");
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
-const compose_fade = {__esModule: true};
-rewiremock("../../static/js/compose_fade").with(compose_fade);
-const stream_events = {__esModule: true};
-rewiremock("../../static/js/stream_events").with(stream_events);
-const subs = {__esModule: true};
-
-rewiremock("../../static/js/subs").with(subs);
-
-rewiremock.enable();
-
-const peer_data = zrequire("peer_data");
-const people = zrequire("people");
-const stream_data = zrequire("stream_data");
+const compose_fade = rewiremock("../../static/js/compose_fade").with({});
+const stream_events = rewiremock("../../static/js/stream_events").with({});
+const subs = rewiremock("../../static/js/subs").with({});
 
 set_global("current_msg_list", {});
-const narrow_state = {__esModule: true};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
 const page_params = set_global("page_params", {});
-const overlays = {__esModule: true};
-rewiremock("../../static/js/overlays").with(overlays);
-const settings_org = {__esModule: true};
-rewiremock("../../static/js/settings_org").with(settings_org);
-const settings_streams = {__esModule: true};
-rewiremock("../../static/js/settings_streams").with(settings_streams);
-const stream_list = {__esModule: true};
+const overlays = rewiremock("../../static/js/overlays").with({});
+const settings_org = rewiremock("../../static/js/settings_org").with({});
+const settings_streams = rewiremock("../../static/js/settings_streams").with({});
+const stream_list = rewiremock("../../static/js/stream_list").with({});
 
-rewiremock("../../static/js/stream_list").with(stream_list);
-
-const server_events_dispatch = zrequire("server_events_dispatch");
+const {peer_data, people, server_events_dispatch, stream_data} = use(
+    "fold_dict",
+    "people",
+    "lazy_set",
+    "peer_data",
+    "stream_data",
+    "server_events_dispatch",
+);
 
 const noop = () => {};
 
@@ -280,4 +269,3 @@ test("stream delete (special streams)", (override) => {
     assert.equal(page_params.realm_notifications_stream_id, -1);
     assert.equal(page_params.realm_signup_notifications_stream_id, -1);
 });
-rewiremock.disable();

@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 rewiremock("../../static/js/activity").with({
@@ -47,22 +45,20 @@ rewiremock("../../static/js/compose").with({
 });
 
 const settings_account = {
-    __esModule: true,
     update_email() {},
     update_full_name() {},
 };
 
 rewiremock("../../static/js/settings_account").with(settings_account);
 
-const message_live_update = {__esModule: true};
+const message_live_update = rewiremock("../../static/js/message_live_update").with({});
 
-rewiremock("../../static/js/message_live_update").with(message_live_update);
-
-rewiremock.enable();
-
-const people = zrequire("people");
-const settings_config = zrequire("settings_config");
-const user_events = zrequire("user_events");
+const {people, settings_config, user_events} = use(
+    "fold_dict",
+    "people",
+    "settings_config",
+    "user_events",
+);
 
 const me = {
     email: "me@example.com",
@@ -216,4 +212,3 @@ run_test("updates", () => {
     person = people.get_by_email(test_bot.email);
     assert.equal(person.bot_owner_id, me.user_id);
 });
-rewiremock.disable();

@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
+const {fenced_code} = use("../shared/js/fenced_code");
 
 run_test("get_unused_fence", () => {
     assert.equal(fenced_code.get_unused_fence("```js\nsomething\n```"), "`".repeat(4));

@@ -9,9 +9,7 @@
 // become clear as you keep reading.
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, with_field, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -21,52 +19,74 @@ const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {});
 
-const activity = {__esModule: true};
-rewiremock("../../static/js/activity").with(activity);
-const message_live_update = {__esModule: true};
-rewiremock("../../static/js/message_live_update").with(message_live_update);
-const pm_list = {__esModule: true};
-rewiremock("../../static/js/pm_list").with(pm_list);
-const settings_users = {__esModule: true};
-rewiremock("../../static/js/settings_users").with(settings_users);
+// We will also set up stubs for certain modules.
+const activity = rewiremock("../../static/js/activity").with({});
+const channel = rewiremock("../../static/js/channel").with({});
 const home_msg_list = set_global("home_msg_list", {});
-const message_list = {__esModule: true};
-rewiremock("../../static/js/message_list").with(message_list);
-const message_util = {__esModule: true};
-rewiremock("../../static/js/message_util").with(message_util);
-const notifications = {__esModule: true};
-rewiremock("../../static/js/notifications").with(notifications);
-const overlays = {__esModule: true};
-rewiremock("../../static/js/overlays").with(overlays);
-const resize = {__esModule: true};
-rewiremock("../../static/js/resize").with(resize);
-let stream_list = {__esModule: true};
-rewiremock("../../static/js/stream_list").with(stream_list);
-let unread_ops = {__esModule: true};
-rewiremock("../../static/js/unread_ops").with(unread_ops);
-const unread_ui = {__esModule: true};
-rewiremock("../../static/js/unread_ui").with(unread_ui);
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const message_viewport = {__esModule: true};
-rewiremock("../../static/js/message_viewport").with(message_viewport);
-const topic_list = {__esModule: true};
+const message_list = rewiremock("../../static/js/message_list").with({});
+const message_live_update = rewiremock("../../static/js/message_live_update").with({});
+const message_util = rewiremock("../../static/js/message_util").with({});
+const message_viewport = rewiremock("../../static/js/message_viewport").with({});
+const notifications = rewiremock("../../static/js/notifications").with({});
+const overlays = rewiremock("../../static/js/overlays").with({});
+const pm_list = rewiremock("../../static/js/pm_list").with({});
+const resize = rewiremock("../../static/js/resize").with({});
+const settings_users = rewiremock("../../static/js/settings_users").with({});
+const topic_list = rewiremock("../../static/js/topic_list").with({});
+const unread_ui = rewiremock("../../static/js/unread_ui").with({});
 
-rewiremock("../../static/js/topic_list").with(topic_list);
-
-rewiremock.enable();
+// And we'll use some real code.
+const {
+    filter: {Filter},
+    huddle_data,
+    message_events,
+    message_store,
+    narrow_state,
+    people,
+    recent_topics,
+    server_events_dispatch,
+    stream_data,
+    stream_list,
+    stream_topic_history,
+    unread,
+    unread_ops,
+    util,
+} = use(
+    "fold_dict",
+    "util",
+    "stream_topic_history",
+    "message_store",
+    "people",
+    "unread",
+    "stream_data",
+    "list_cursor",
+    "filter",
+    "narrow_state",
+    "stream_sort",
+    "stream_list",
+    "topic_zoom",
+    "recent_senders",
+    "alert_words",
+    "user_events",
+    "localstorage",
+    "message_flags",
+    "unread_ops",
+    "recent_topics",
+    "server_events_dispatch",
+    "huddle_data",
+    "message_events",
+);
 
 // Let's start with testing a function from util.js.
 //
-// We will use our special zrequire helper to import the
-// code from util. We use zrequire instead of require,
+// We will use our special use helper to import the
+// code from util. We use use instead of require,
 // because it has some magic to clear state when we move
 // on to the next test.
 //
 // The most basic unit tests load up code, call functions,
 // and assert truths:
 
-const util = zrequire("util");
 assert(!util.find_wildcard_mentions("boring text"));
 assert(util.find_wildcard_mentions("mention @**everyone**"));
 
@@ -75,7 +95,6 @@ assert(util.find_wildcard_mentions("mention @**everyone**"));
 //  * change the data
 //  * get a true value
 
-const people = zrequire("people");
 const isaac = {
     email: "isaac@example.com",
     user_id: 30,
@@ -111,13 +130,11 @@ const denmark_stream = {
     subscribed: false,
 };
 
-// We use both set_global and zrequire here for test isolation.
+// We use both set_global and use here for test isolation.
 //
 // We also introduce the run_test helper, which mostly just causes
 // a line of output to go to the console. It does a little more than
 // that, which we will see later.
-
-const stream_data = zrequire("stream_data");
 
 run_test("verify stream_data persists stream color", () => {
     assert.equal(stream_data.get_sub_by_name("Denmark"), undefined);
@@ -148,12 +165,8 @@ const messages = {
 // We are going to test a core module called messages_store.js next.
 // This is an example of a deep unit test, where our dependencies
 // are easy to test.  Start by requiring the dependencies:
-const unread = zrequire("unread");
-const stream_topic_history = zrequire("stream_topic_history");
-const recent_topics = zrequire("recent_topics");
 
 // And finally require the module that we will test directly:
-const message_store = zrequire("message_store");
 
 run_test("message_store", () => {
     const in_message = {...messages.isaac_to_denmark_stream};
@@ -195,9 +208,8 @@ run_test("unread", () => {
 // narrows more broadly, but first let's test out a core piece of
 // code that makes things work.
 
-// We use the second argument of zrequire to find the location of the
+// We use the second argument of use to find the location of the
 // Filter class.
-const {Filter} = zrequire("Filter", "js/filter");
 
 run_test("filter", () => {
     const filter_terms = [
@@ -236,8 +248,6 @@ run_test("filter", () => {
 // We have a "narrow" abstraction that sits roughly on top of the
 // "filter" abstraction.  If you are in a narrow, we track the
 // state with the narrow_state module.
-
-const narrow_state = zrequire("narrow_state");
 
 run_test("narrow_state", () => {
     // As we often do, first make assertions about the starting
@@ -282,7 +292,7 @@ run_test("narrow_state", () => {
 
     We can quickly review some testing concepts:
 
-        zrequire - bring in real code
+        use - bring in real code
         set_global - create stubs
         assert.equal - verify results
 
@@ -310,7 +320,7 @@ run_test("narrow_state", () => {
     reader what your testing boundaries are between "real"
     code and "simulated" code.  Finally, and perhaps most
     importantly, the test runner will prevent this state
-    from leaking into the next test (and "zrequire" has
+    from leaking into the next test (and "use" has
     the same behavior attached to it as well).
 
     ------
@@ -334,8 +344,6 @@ run_test("narrow_state", () => {
     Let's just get started...
 
 */
-
-const server_events_dispatch = zrequire("server_events_dispatch");
 
 // We will use Bob in several tests.
 const bob = {
@@ -450,11 +458,10 @@ function test_helper() {
 
 */
 
-const huddle_data = zrequire("huddle_data");
-const message_events = zrequire("message_events");
-
 run_test("insert_message", (override) => {
     override(pm_list, "update_private_messages", noop);
+    override(overlays, "is_active", () => true);
+    override(stream_list, "update_streams_sidebar", noop);
 
     const helper = test_helper();
     recent_topics.is_visible = () => false;
@@ -471,8 +478,6 @@ run_test("insert_message", (override) => {
     helper.redirect(message_util, "add_new_messages");
     helper.redirect(notifications, "received_messages");
     helper.redirect(resize, "resize_page_components");
-    helper.redirect(stream_list, "update_streams_sidebar");
-    helper.redirect(unread_ops, "process_visible");
     helper.redirect(unread_ui, "update_unread_counts");
 
     narrow_state.reset_current_filter();
@@ -489,9 +494,7 @@ run_test("insert_message", (override) => {
         [message_util, "add_new_messages"],
         [unread_ui, "update_unread_counts"],
         [resize, "resize_page_components"],
-        [unread_ops, "process_visible"],
         [notifications, "received_messages"],
-        [stream_list, "update_streams_sidebar"],
     ]);
 
     // Despite all of our stubbing/mocking, the call to
@@ -599,9 +602,6 @@ run_test("explore make_stub", (override) => {
 
 */
 
-rewiremock("../../static/js/unread_ops").disable();
-unread_ops = zrequire("unread_ops");
-
 run_test("unread_ops", (override) => {
     (function set_up() {
         const test_messages = [
@@ -697,9 +697,6 @@ run_test("unread_ops", (override) => {
     stream_list to manipulate DOM.
 
 */
-
-rewiremock("../../static/js/stream_list").disable();
-stream_list = zrequire("stream_list");
 
 const social_stream = {
     color: "red",
@@ -835,4 +832,3 @@ run_test("stream_list", (override) => {
     sidebar_helper.verify_actions();
     topic_list_helper.verify_actions();
 });
-rewiremock.disable();

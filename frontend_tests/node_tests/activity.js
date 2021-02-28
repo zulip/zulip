@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -19,85 +17,90 @@ const page_params = set_global("page_params", {
     user_id: 999,
 });
 
-const _document = {
+set_global("document", {
     hasFocus() {
         return true;
     },
-};
+});
 
-const channel = {__esModule: true};
+const channel = {};
 
-const _ui = {
-    __esModule: true,
+rewiremock("../../static/js/ui").with({
     get_content_element: (element) => element,
-};
+});
 
-const _keydown_util = {
-    __esModule: true,
-
+rewiremock("../../static/js/keydown_util").with({
     handle: (opts) => {
         filter_key_handlers = opts.handlers;
     },
-};
+});
 
-const compose_state = {__esModule: true};
+const compose_state = {};
 
-const _scroll_util = {
-    __esModule: true,
+rewiremock("../../static/js/scroll_util").with({
     scroll_element_into_container: () => {},
-};
+});
 
-const _pm_list = {
-    __esModule: true,
+rewiremock("../../static/js/pm_list").with({
     update_private_messages: () => {},
-};
+});
 
-const _popovers = {
-    __esModule: true,
+rewiremock("../../static/js/popovers").with({
     hide_all_except_sidebars() {},
     hide_all() {},
     show_userlist_sidebar() {},
-};
+});
 
-const _stream_popover = {
-    __esModule: true,
+rewiremock("../../static/js/stream_popover").with({
     show_streamlist_sidebar() {},
-};
+});
 
-const _resize = {
-    __esModule: true,
+rewiremock("../../static/js/resize").with({
     resize_sidebars: () => {},
     resize_page_components: () => {},
-};
+});
 
 rewiremock("../../static/js/padded_widget").with({
     update_padding: () => {},
 });
 rewiremock("../../static/js/channel").with(channel);
 rewiremock("../../static/js/compose_state").with(compose_state);
-set_global("document", _document);
-rewiremock("../../static/js/keydown_util").with(_keydown_util);
-rewiremock("../../static/js/pm_list").with(_pm_list);
-rewiremock("../../static/js/popovers").with(_popovers);
-rewiremock("../../static/js/resize").with(_resize);
-rewiremock("../../static/js/scroll_util").with(_scroll_util);
-rewiremock("../../static/js/stream_popover").with(_stream_popover);
-rewiremock("../../static/js/ui").with(_ui);
 rewiremock("../../static/js/server_events").with({
     check_for_unsuspend() {},
 });
 
-rewiremock.enable();
-
-const huddle_data = zrequire("huddle_data");
-const compose_fade = zrequire("compose_fade");
-const narrow = zrequire("narrow");
-const presence = zrequire("presence");
-const people = zrequire("people");
-const buddy_data = zrequire("buddy_data");
-const {buddy_list} = zrequire("buddy_list");
-const user_status = zrequire("user_status");
-const activity = zrequire("activity");
+const {
+    activity,
+    buddy_data,
+    buddy_list: {buddy_list},
+    compose_fade,
+    huddle_data,
+    narrow,
+    people,
+    presence,
+    user_status,
+} = use(
+    "fold_dict",
+    "util",
+    "people",
+    "hash_util",
+    "unread",
+    "filter",
+    "list_cursor",
+    "user_pill",
+    "compose_pm_pill",
+    "../shared/js/typeahead",
+    "user_search",
+    "message_list_data",
+    "huddle_data",
+    "presence",
+    "user_status",
+    "buddy_data",
+    "buddy_list",
+    "compose_fade",
+    "narrow",
+    "activity",
+);
 
 const me = {
     email: "me@zulip.com",
@@ -760,4 +763,3 @@ test_ui("test_send_or_receive_no_presence_for_web_public_visitor", () => {
     page_params.is_web_public_visitor = true;
     activity.send_presence_to_server();
 });
-rewiremock.disable();

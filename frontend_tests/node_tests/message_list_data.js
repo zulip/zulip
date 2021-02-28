@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {});
@@ -12,8 +12,10 @@ set_global("setTimeout", (f, delay) => {
     return f();
 });
 
-const muting = zrequire("muting");
-const {MessageListData} = zrequire("MessageListData", "js/message_list_data");
+const {
+    message_list_data: {MessageListData},
+    muting,
+} = use("fold_dict", "util", "fetch_status", "filter", "muting", "unread", "message_list_data");
 
 function make_msg(msg_id) {
     return {

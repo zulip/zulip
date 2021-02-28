@@ -2,14 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, with_field, with_overrides, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, with_field, with_overrides, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
 const popovers = {
-    __esModule: true,
     actions_popped: () => false,
     message_info_popped: () => false,
     user_sidebar_popped: () => false,
@@ -17,7 +14,6 @@ const popovers = {
 };
 rewiremock("../../static/js/popovers").with(popovers);
 const overlays = {
-    __esModule: true,
     is_active: () => false,
     settings_open: () => false,
     streams_open: () => false,
@@ -35,7 +31,6 @@ rewiremock("../../static/js/stream_popover").with({
     starred_messages_popped: () => false,
 });
 const emoji_picker = {
-    __esModule: true,
     reactions_popped: () => false,
 };
 rewiremock("../../static/js/emoji_picker").with(emoji_picker);
@@ -43,7 +38,6 @@ rewiremock("../../static/js/hotspots").with({
     is_open: () => false,
 });
 const gear_menu = {
-    __esModule: true,
     is_open: () => false,
 };
 
@@ -75,38 +69,23 @@ const page_params = set_global("page_params", {});
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
 
-const compose_actions = {__esModule: true};
-rewiremock("../../static/js/compose_actions").with(compose_actions);
-const condense = {__esModule: true};
-rewiremock("../../static/js/condense").with(condense);
-const drafts = {__esModule: true};
-rewiremock("../../static/js/drafts").with(drafts);
+const compose_actions = rewiremock("../../static/js/compose_actions").with({});
+const condense = rewiremock("../../static/js/condense").with({});
+const drafts = rewiremock("../../static/js/drafts").with({});
 const hashchange = {
-    __esModule: true,
     in_recent_topics_hash: () => false,
 };
 rewiremock("../../static/js/hashchange").with(hashchange);
-const lightbox = {__esModule: true};
-rewiremock("../../static/js/lightbox").with(lightbox);
-const list_util = {__esModule: true};
-rewiremock("../../static/js/list_util").with(list_util);
-const message_edit = {__esModule: true};
-rewiremock("../../static/js/message_edit").with(message_edit);
-const muting_ui = {__esModule: true};
-rewiremock("../../static/js/muting_ui").with(muting_ui);
-const narrow = {__esModule: true};
-rewiremock("../../static/js/narrow").with(narrow);
-const navigate = {__esModule: true};
-rewiremock("../../static/js/navigate").with(navigate);
-const reactions = {__esModule: true};
-rewiremock("../../static/js/reactions").with(reactions);
-const search = {__esModule: true};
-rewiremock("../../static/js/search").with(search);
-const stream_list = {__esModule: true};
-rewiremock("../../static/js/stream_list").with(stream_list);
-const subs = {__esModule: true};
-
-rewiremock("../../static/js/subs").with(subs);
+const lightbox = rewiremock("../../static/js/lightbox").with({});
+const list_util = rewiremock("../../static/js/list_util").with({});
+const message_edit = rewiremock("../../static/js/message_edit").with({});
+const muting_ui = rewiremock("../../static/js/muting_ui").with({});
+const narrow = rewiremock("../../static/js/narrow").with({});
+const navigate = rewiremock("../../static/js/navigate").with({});
+const reactions = rewiremock("../../static/js/reactions").with({});
+const search = rewiremock("../../static/js/search").with({});
+const stream_list = rewiremock("../../static/js/stream_list").with({});
+const subs = rewiremock("../../static/js/subs").with({});
 
 set_global("current_msg_list", {
     empty() {
@@ -130,12 +109,13 @@ rewiremock("../../static/js/recent_topics").with({
     is_visible: () => false,
 });
 
-rewiremock.enable();
-
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-const emoji = zrequire("emoji", "shared/js/emoji");
-const activity = zrequire("activity");
-const hotkey = zrequire("hotkey");
+const {activity, emoji, emoji_codes, hotkey} = use(
+    "../generated/emoji/emoji_codes.json",
+    "../shared/js/emoji",
+    "activity",
+    "common",
+    "hotkey",
+);
 
 emoji.initialize({
     realm_emoji: {},
@@ -522,4 +502,3 @@ run_test("motion_keys", () => {
     overlays.is_active = () => false;
     overlays.drafts_open = () => false;
 });
-rewiremock.disable();

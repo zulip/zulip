@@ -2,17 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const page_params = set_global("page_params", {});
-const loading = {__esModule: true};
-
-rewiremock("../../static/js/loading").with(loading);
+const loading = rewiremock("../../static/js/loading").with({});
 
 const SHORT_TEXT_ID = 1;
 const CHOICE_ID = 3;
@@ -40,11 +36,9 @@ page_params.custom_profile_field_types = {
     },
 };
 
-rewiremock("sortablejs").with({Sortable: {create: () => {}}});
+const {settings_profile_fields} = use("settings_profile_fields");
 
-rewiremock.enable();
-
-const settings_profile_fields = zrequire("settings_profile_fields");
+settings_profile_fields.__Rewire__("Sortable", {create: () => {}});
 
 function test_populate(opts) {
     const fields_data = opts.fields_data;
@@ -190,5 +184,3 @@ run_test("populate_profile_fields", () => {
         is_admin: true,
     });
 });
-
-rewiremock.disable();

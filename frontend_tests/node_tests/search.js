@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -15,18 +13,15 @@ set_global("page_params", {
 const noop = () => {};
 
 const narrow_state = {
-    __esModule: true,
     filter: () => false,
 };
 rewiremock("../../static/js/narrow_state").with(narrow_state);
-const search_suggestion = {__esModule: true};
-rewiremock("../../static/js/search_suggestion").with(search_suggestion);
+const search_suggestion = rewiremock("../../static/js/search_suggestion").with({});
 rewiremock("../../static/js/ui_util").with({
     change_tab_to: noop,
     place_caret_at_end: noop,
 });
-const narrow = {__esModule: true};
-rewiremock("../../static/js/narrow").with(narrow);
+const narrow = rewiremock("../../static/js/narrow").with({});
 rewiremock("../../static/js/search_pill_widget").with({
     widget: {
         getByID: () => true,
@@ -35,11 +30,11 @@ rewiremock("../../static/js/search_pill_widget").with({
 
 set_global("setTimeout", (func) => func());
 
-rewiremock.enable();
-
-const search = zrequire("search");
-const search_pill = zrequire("search_pill");
-const {Filter} = zrequire("Filter", "js/filter");
+const {
+    filter: {Filter},
+    search,
+    search_pill,
+} = use("message_view_header", "filter", "search", "search_pill");
 
 run_test("clear_search_form", () => {
     $("#search_query").val("noise");
@@ -350,4 +345,3 @@ run_test("initiate_search", () => {
     assert(is_searchbox_text_selected);
     assert(is_searchbox_focused);
 });
-rewiremock.disable();

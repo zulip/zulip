@@ -8,12 +8,18 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const peer_data = zrequire("peer_data");
-const people = zrequire("people");
-const stream_data = zrequire("stream_data");
+const {peer_data, people, stream_data} = use(
+    "fold_dict",
+    "lazy_set",
+    "settings_config",
+    "people",
+    "stream_data",
+    "hash_util",
+    "peer_data",
+);
 
 set_global("page_params", {
     is_admin: false,

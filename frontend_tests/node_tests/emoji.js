@@ -2,14 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 
 const events = require("./lib/events");
 
-const emoji = zrequire("emoji", "shared/js/emoji");
+const {emoji, emoji_codes} = use(
+    "../shared/js/typeahead",
+    "../shared/js/emoji",
+    "../generated/emoji/emoji_codes.json",
+);
 
 const realm_emoji = events.test_realm_emojis;
 

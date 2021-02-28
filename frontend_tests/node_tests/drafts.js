@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -26,8 +24,7 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
-const compose_state = {__esModule: true};
-rewiremock("../../static/js/compose_state").with(compose_state);
+const compose_state = rewiremock("../../static/js/compose_state").with({});
 rewiremock("../../static/js/stream_data").with({
     get_color() {
         return "#FFFFFF";
@@ -40,11 +37,20 @@ set_global("page_params", {
     twenty_four_hour_time: false,
 });
 
-rewiremock.enable();
-
-const {localstorage} = zrequire("localstorage");
-const drafts = zrequire("drafts");
-const timerender = zrequire("timerender");
+const {
+    drafts,
+    localstorage: {localstorage},
+    timerender,
+} = use(
+    "fold_dict",
+    "util",
+    "people",
+    "localstorage",
+    "timerender",
+    "drafts",
+    "colorspace",
+    "stream_color",
+);
 
 const legacy_draft = {
     stream: "stream",
@@ -304,4 +310,3 @@ run_test("format_drafts", (override) => {
     drafts.launch();
     timerender.__Rewire__("render_now", stub_render_now);
 });
-rewiremock.disable();

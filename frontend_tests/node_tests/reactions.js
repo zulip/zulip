@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -17,10 +15,8 @@ set_global("page_params", {
     user_id: alice_user_id,
 });
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
+const channel = rewiremock("../../static/js/channel").with({});
 const emoji_picker = {
-    __esModule: true,
     hide_emoji_popover() {},
 };
 
@@ -58,8 +54,6 @@ const message = {
 };
 
 const message_store = {
-    __esModule: true,
-
     get(message_id) {
         assert.equal(message_id, 1001);
         return message;
@@ -80,12 +74,13 @@ set_global("current_msg_list", {
     },
 });
 
-rewiremock.enable();
-
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-const emoji = zrequire("emoji", "shared/js/emoji");
-const people = zrequire("people");
-const reactions = zrequire("reactions");
+const {emoji, emoji_codes, people, reactions} = use(
+    "fold_dict",
+    "../generated/emoji/emoji_codes.json",
+    "../shared/js/emoji",
+    "people",
+    "reactions",
+);
 
 const emoji_params = {
     realm_emoji: {
@@ -996,4 +991,3 @@ run_test("process_reaction_click bad local id", (override) => {
     );
     reactions.process_reaction_click("some-msg-id", "bad-local-id");
 });
-rewiremock.disable();

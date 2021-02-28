@@ -3,9 +3,8 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -29,8 +28,7 @@ rewiremock("../../static/js/ui_report").with({
     hide_error: noop,
 });
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
+const channel = rewiremock("../../static/js/channel").with({});
 set_global("document", "document-stub");
 rewiremock("../../static/js/message_scroll").with({
     show_loading_older: noop,
@@ -39,27 +37,30 @@ rewiremock("../../static/js/message_scroll").with({
     hide_loading_newer: noop,
     update_top_of_narrow_notices: () => {},
 });
-const message_util = {__esModule: true};
-rewiremock("../../static/js/message_util").with(message_util);
-const message_store = {__esModule: true};
-rewiremock("../../static/js/message_store").with(message_store);
-const pm_list = {__esModule: true};
-rewiremock("../../static/js/pm_list").with(pm_list);
-const server_events = {__esModule: true};
-rewiremock("../../static/js/server_events").with(server_events);
-const stream_list = {
-    __esModule: true,
+const message_util = rewiremock("../../static/js/message_util").with({});
+const message_store = rewiremock("../../static/js/message_store").with({});
+const pm_list = rewiremock("../../static/js/pm_list").with({});
+const server_events = rewiremock("../../static/js/server_events").with({});
+const stream_list = rewiremock("../../static/js/stream_list").with({
     maybe_scroll_narrow_into_view: () => {},
-};
+});
 
-rewiremock("../../static/js/stream_list").with(stream_list);
-
-rewiremock.enable();
-
-const message_fetch = zrequire("message_fetch");
-const {Filter} = zrequire("Filter", "js/filter");
-const message_list = zrequire("message_list");
-const people = zrequire("people");
+const {
+    filter: {Filter},
+    message_fetch,
+    message_list,
+    people,
+} = use(
+    "util",
+    "fold_dict",
+    "people",
+    "huddle_data",
+    "fetch_status",
+    "filter",
+    "message_list_data",
+    "message_fetch",
+    "message_list",
+);
 
 const alice = {
     email: "alice@example.com",
@@ -482,4 +483,3 @@ run_test("loading_newer", () => {
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
     })();
 });
-rewiremock.disable();

@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -21,39 +19,31 @@ rewiremock("../../static/js/search").with({
 set_global("document", "document-stub");
 const history = set_global("history", {});
 
-const admin = {__esModule: true};
-rewiremock("../../static/js/admin").with(admin);
-const drafts = {__esModule: true};
-rewiremock("../../static/js/drafts").with(drafts);
+const admin = rewiremock("../../static/js/admin").with({});
+const drafts = rewiremock("../../static/js/drafts").with({});
 set_global("favicon", {});
-const floating_recipient_bar = {__esModule: true};
-rewiremock("../../static/js/floating_recipient_bar").with(floating_recipient_bar);
-const info_overlay = {__esModule: true};
-rewiremock("../../static/js/info_overlay").with(info_overlay);
-const message_viewport = {__esModule: true};
-rewiremock("../../static/js/message_viewport").with(message_viewport);
-const narrow = {__esModule: true};
-rewiremock("../../static/js/narrow").with(narrow);
-const overlays = {__esModule: true};
-rewiremock("../../static/js/overlays").with(overlays);
-const settings = {__esModule: true};
-rewiremock("../../static/js/settings").with(settings);
-const subs = {__esModule: true};
-rewiremock("../../static/js/subs").with(subs);
-const ui_util = {__esModule: true};
-rewiremock("../../static/js/ui_util").with(ui_util);
+const floating_recipient_bar = rewiremock("../../static/js/floating_recipient_bar").with({});
+const info_overlay = rewiremock("../../static/js/info_overlay").with({});
+const message_viewport = rewiremock("../../static/js/message_viewport").with({});
+const narrow = rewiremock("../../static/js/narrow").with({});
+const overlays = rewiremock("../../static/js/overlays").with({});
+const settings = rewiremock("../../static/js/settings").with({});
+const subs = rewiremock("../../static/js/subs").with({});
+const ui_util = rewiremock("../../static/js/ui_util").with({});
 rewiremock("../../static/js/top_left_corner").with({
     handle_narrow_deactivated: () => {},
 });
 
-rewiremock.enable();
+const {hash_util, hashchange, people, recent_topics, stream_data} = use(
+    "localstorage",
+    "fold_dict",
+    "people",
+    "hash_util",
+    "hashchange",
+    "stream_data",
+    "recent_topics",
+);
 
-const people = zrequire("people");
-const hash_util = zrequire("hash_util");
-const hashchange = zrequire("hashchange");
-const stream_data = zrequire("stream_data");
-
-const recent_topics = zrequire("recent_topics");
 recent_topics.__Rewire__("show", () => {});
 recent_topics.__Rewire__("is_visible", () => false);
 
@@ -317,4 +307,3 @@ run_test("save_narrow", () => {
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://example.com/#narrow/is/starred");
 });
-rewiremock.disable();

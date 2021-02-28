@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -18,23 +16,39 @@ const page_params = set_global("page_params", {
 
 const noop = () => {};
 
-const topic_list = {__esModule: true};
-rewiremock("../../static/js/topic_list").with(topic_list);
+const topic_list = rewiremock("../../static/js/topic_list").with({});
 
 rewiremock("../../static/js/keydown_util").with({
     handle: noop,
 });
 
-rewiremock.enable();
-
-const {Filter} = zrequire("Filter", "js/filter");
-const stream_sort = zrequire("stream_sort");
-const stream_color = zrequire("stream_color");
-const unread = zrequire("unread");
-const stream_data = zrequire("stream_data");
-const scroll_util = zrequire("scroll_util");
-const stream_list = zrequire("stream_list");
 rewiremock("../../static/js/ui").with({get_scroll_element: (element) => element});
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
+
+const {
+    filter: {Filter},
+    scroll_util,
+    stream_color,
+    stream_data,
+    stream_list,
+    stream_sort,
+    unread,
+} = use(
+    "fold_dict",
+    "topic_zoom",
+    "util",
+    "colorspace",
+    "localstorage",
+    "list_cursor",
+    "stream_color",
+    "unread",
+    "stream_data",
+    "stream_sort",
+    "hash_util",
+    "filter",
+    "scroll_util",
+    "stream_list",
+);
 
 stream_color.initialize();
 
@@ -376,16 +390,8 @@ test_ui("zoom_in_and_zoom_out", () => {
     assert($("#streams_list").hasClass("zoom-out"));
 });
 
-let narrow_state;
 test_ui("narrowing", () => {
     initialize_stream_data();
-
-    narrow_state = rewiremock("../../static/js/narrow_state").with({
-        stream() {
-            return "devel";
-        },
-        topic: noop,
-    }).mock.value;
 
     topic_list.close = noop;
     topic_list.rebuild = noop;
@@ -744,4 +750,3 @@ test_ui("create_initial_sidebar_rows", () => {
     assert.equal(html_dict.get(1000), "<div>stub-html-devel");
     assert.equal(html_dict.get(5000), "<div>stub-html-Denmark");
 });
-rewiremock.disable();

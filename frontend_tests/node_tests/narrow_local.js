@@ -2,20 +2,26 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_list = {__esModule: true};
+const message_list = rewiremock("../../static/js/message_list").with({});
 
-rewiremock("../../static/js/message_list").with(message_list);
-rewiremock.enable();
-
-const {Filter} = zrequire("Filter", "js/filter");
-const {MessageListData} = zrequire("MessageListData", "js/message_list_data");
-const narrow_state = zrequire("narrow_state");
-const narrow = zrequire("narrow");
+const {
+    filter: {Filter},
+    message_list_data: {MessageListData},
+    narrow,
+    narrow_state,
+} = use(
+    "fold_dict",
+    "util",
+    "fetch_status",
+    "filter",
+    "stream_data",
+    "message_list_data",
+    "narrow_state",
+    "narrow",
+);
 
 function test_with(fixture) {
     const filter = new Filter(fixture.filter_terms);
@@ -450,4 +456,3 @@ run_test("final corner case", () => {
 
     test_with(fixture);
 });
-rewiremock.disable();

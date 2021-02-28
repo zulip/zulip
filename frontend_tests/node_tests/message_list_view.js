@@ -3,9 +3,8 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("document", "document-stub");
@@ -45,11 +44,11 @@ rewiremock("../../static/js/rows").with({
     },
 });
 
-rewiremock.enable();
-
-const {Filter} = zrequire("Filter", "js/filter");
-const {MessageListView} = zrequire("MessageListView", "js/message_list_view");
-const message_list = zrequire("message_list");
+const {
+    filter: {Filter},
+    message_list,
+    message_list_view: {MessageListView},
+} = use("util", "fetch_status", "filter", "message_list_data", "message_list_view", "message_list");
 
 let next_timestamp = 1500000000;
 
@@ -545,4 +544,3 @@ run_test("render_windows", () => {
     verify_move(197, [0, 400]);
     verify_no_move_range(0, 350);
 });
-rewiremock.disable();

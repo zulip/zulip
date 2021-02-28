@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 rewiremock("../../static/js/message_scroll").with({
@@ -14,9 +12,8 @@ rewiremock("../../static/js/message_scroll").with({
     show_loading_newer: () => {},
 });
 
-rewiremock.enable();
-
-const {FetchStatus} = zrequire("fetch_status");
+const objs = use("fetch_status");
+const FetchStatus = objs.fetch_status.FetchStatus;
 
 let fetch_status = new FetchStatus();
 
@@ -180,4 +177,3 @@ run_test("basics", () => {
     can_load_older();
     blocked_newer();
 });
-rewiremock.disable();

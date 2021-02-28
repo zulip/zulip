@@ -3,12 +3,11 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const reload = {__esModule: true};
+const reload = {};
 
 rewiremock("../../static/js/reload").with(reload);
 
@@ -17,9 +16,7 @@ set_global("setTimeout", (f, delay) => {
     f();
 });
 
-rewiremock.enable();
-
-const channel = zrequire("channel");
+const {channel} = use("channel", "reload_state");
 
 const default_stub_xhr = "default-stub-xhr";
 
@@ -315,4 +312,3 @@ run_test("xhr_error_message", () => {
     msg = "some message";
     assert.equal(channel.xhr_error_message(msg, xhr), "some message: file not found");
 });
-rewiremock.disable();

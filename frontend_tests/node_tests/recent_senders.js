@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let next_id = 0;
@@ -13,22 +11,16 @@ const messages = [];
 rewiremock("../../static/js/message_store").with({
     get: (msg_id) => messages[msg_id - 1],
 });
-const message_list = {
-    __esModule: true,
-
+const message_list = rewiremock("../../static/js/message_list").with({
     all: {
         all_messages() {
             return messages;
         },
     },
-};
+});
 
-rewiremock("../../static/js/message_list").with(message_list);
-
-rewiremock.enable();
-
-const rs = zrequire("recent_senders");
-zrequire("message_util.js");
+const {recent_senders} = use("fold_dict", "recent_senders", "message_util.js");
+const rs = recent_senders;
 
 run_test("process_message_for_senders", (override) => {
     const stream1 = 1;
@@ -228,4 +220,3 @@ run_test("process_message_for_senders", (override) => {
     // no changes should take place in this case.
     rs.update_topics_of_deleted_message_ids([-1]);
 });
-rewiremock.disable();

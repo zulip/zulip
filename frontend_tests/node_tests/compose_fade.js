@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("$", (selector) => {
@@ -24,10 +24,15 @@ set_global("$", (selector) => {
     }
 });
 
-const stream_data = zrequire("stream_data");
-const peer_data = zrequire("peer_data");
-const people = zrequire("people");
-const compose_fade = zrequire("compose_fade");
+const {compose_fade, peer_data, people, stream_data} = use(
+    "fold_dict",
+    "util",
+    "lazy_set",
+    "people",
+    "stream_data",
+    "peer_data",
+    "compose_fade",
+);
 
 const me = {
     email: "me@example.com",

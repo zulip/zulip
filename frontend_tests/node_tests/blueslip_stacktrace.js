@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const blueslip_stacktrace = zrequire("blueslip_stacktrace");
+const {blueslip_stacktrace} = use("blueslip_stacktrace");
 
 run_test("clean_path", () => {
     // Local file

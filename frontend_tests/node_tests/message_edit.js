@@ -2,14 +2,14 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let page_params = set_global("page_params", {
     realm_community_topic_editing_limit_seconds: 259200,
 });
 
-const message_edit = zrequire("message_edit");
+const {message_edit} = use("message_edit");
 
 const get_editability = message_edit.get_editability;
 const editability_types = message_edit.editability_types;

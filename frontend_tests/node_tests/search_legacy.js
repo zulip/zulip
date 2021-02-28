@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -14,15 +12,12 @@ set_global("page_params", {
 
 const noop = () => {};
 
-const narrow_state = {__esModule: true};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
-const search_suggestion = {__esModule: true};
-rewiremock("../../static/js/search_suggestion").with(search_suggestion);
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
+const search_suggestion = rewiremock("../../static/js/search_suggestion").with({});
 rewiremock("../../static/js/ui_util").with({
     change_tab_to: noop,
 });
-const narrow = {__esModule: true};
-rewiremock("../../static/js/narrow").with(narrow);
+const narrow = rewiremock("../../static/js/narrow").with({});
 const Filter = {};
 
 rewiremock("../../static/js/filter").with({
@@ -31,9 +26,7 @@ rewiremock("../../static/js/filter").with({
 
 set_global("setTimeout", (func) => func());
 
-rewiremock.enable();
-
-const search = zrequire("search");
+const {search} = use("message_view_header", "search");
 
 run_test("update_button_visibility", () => {
     const search_query = $("#search_query");
@@ -303,4 +296,3 @@ run_test("initiate_search", () => {
     search.initiate_search();
     assert.equal($("#search_query").val(), "ver ");
 });
-rewiremock.disable();

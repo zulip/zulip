@@ -2,13 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {});
 
-const muting = zrequire("muting");
-const stream_data = zrequire("stream_data");
+const {muting, stream_data} = use("fold_dict", "timerender", "muting", "stream_data");
 
 run_test("edge_cases", () => {
     // private messages

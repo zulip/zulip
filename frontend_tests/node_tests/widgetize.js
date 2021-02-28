@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -54,13 +52,10 @@ rewiremock("../../static/js/poll_widget").with({
 });
 set_global("document", "document-stub");
 
-const narrow_state = {__esModule: true};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
 set_global("current_msg_list", {});
 
-rewiremock.enable();
-
-const widgetize = zrequire("widgetize");
+const {widgetize} = use("widgetize");
 
 run_test("activate", (override) => {
     // Both widgetize.activate and widgetize.handle_event are tested
@@ -181,4 +176,3 @@ run_test("activate", (override) => {
     });
     widgetize.set_widgets_for_list();
 });
-rewiremock.disable();
