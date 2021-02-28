@@ -397,7 +397,7 @@ export function set_up() {
         }
     });
 
-    $("#change_password").on("click", (e) => {
+    $("#change_password").on("click", async (e) => {
         e.preventDefault();
         e.stopPropagation();
         overlays.open_modal("#change_password_modal");
@@ -405,10 +405,9 @@ export function set_up() {
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            require(["zxcvbn"], (zxcvbn) => {
-                window.zxcvbn = zxcvbn;
-                $("#pw_strength .bar").removeClass("fade");
-            });
+            const {default: zxcvbn} = await import("zxcvbn");
+            window.zxcvbn = zxcvbn;
+            $("#pw_strength .bar").removeClass("fade");
         }
     });
 

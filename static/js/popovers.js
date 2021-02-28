@@ -1,4 +1,5 @@
 import ClipboardJS from "clipboard";
+import {parseISO, formatISO, add, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
@@ -39,8 +40,6 @@ import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
-
-const {parseISO, formatISO, add, set} = require("date-fns");
 
 let current_actions_popover_elem;
 let current_flatpickr_instance;

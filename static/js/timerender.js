@@ -1,4 +1,4 @@
-const {
+import {
     differenceInMinutes,
     differenceInCalendarDays,
     format,
@@ -6,7 +6,7 @@ const {
     isValid,
     parseISO,
     startOfToday,
-} = require("date-fns");
+} from "date-fns";
 
 let next_timerender_id = 0;
 
