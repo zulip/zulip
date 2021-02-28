@@ -90,7 +90,7 @@ set_global("scroll_bar", {initialize() {}});
 const server_events = set_global("server_events", {initialize() {}});
 set_global("settings_sections", {initialize() {}});
 rewiremock("../../static/js/settings_panel_menu").with({initialize() {}});
-set_global("settings_toggle", {initialize() {}});
+rewiremock("../../static/js/settings_toggle").with({initialize() {}});
 set_global("subs", {initialize() {}});
 set_global("timerender", {initialize() {}});
 const ui = set_global("ui", {initialize() {}});

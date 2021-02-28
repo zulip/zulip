@@ -1,17 +1,15 @@
-"use strict";
-
-const components = require("./components");
-const settings_panel_menu = require("./settings_panel_menu");
+import * as components from "./components";
+import * as settings_panel_menu from "./settings_panel_menu";
 
 let toggler;
 
-exports.highlight_toggle = function (tab_name) {
+export function highlight_toggle(tab_name) {
     if (toggler) {
         toggler.goto(tab_name);
     }
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
@@ -30,10 +28,10 @@ exports.initialize = function () {
     settings_panel_menu.set_key_handlers(toggler);
 
     $("#settings_overlay_container .tab-container").append(toggler.get());
-};
+}
 
 // Handles the collapse/reveal of some tabs in the org settings for non-admins.
-exports.toggle_org_setting_collapse = function () {
+export function toggle_org_setting_collapse() {
     const is_collapsed = $(".collapse-org-settings").hasClass("hide-org-settings");
     const show_fewer_settings_text = i18n.t("Show fewer");
     const show_more_settings_text = i18n.t("Show more");
@@ -63,6 +61,4 @@ exports.toggle_org_setting_collapse = function () {
     if (current_tab.hasClass("hide-org-settings")) {
         $(location).attr("href", "/#organization/organization-profile");
     }
-};
-
-window.settings_toggle = exports;
+}
