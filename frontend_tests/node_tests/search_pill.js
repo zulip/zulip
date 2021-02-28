@@ -73,10 +73,10 @@ run_test("get_items", () => {
 run_test("create_pills", () => {
     let input_pill_create_called = false;
 
-    input_pill.create = () => {
+    input_pill.__Rewire__("create", () => {
         input_pill_create_called = true;
         return {dummy: "dummy"};
-    };
+    });
 
     const pills = search_pill.create_pills({});
     assert(input_pill_create_called);

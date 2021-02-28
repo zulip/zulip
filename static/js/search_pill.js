@@ -1,4 +1,5 @@
 import {Filter} from "./filter";
+import * as input_pill from "./input_pill";
 
 export function create_item_from_search_string(search_string) {
     const operator = Filter.parse(search_string);

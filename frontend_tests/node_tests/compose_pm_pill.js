@@ -122,7 +122,7 @@ run_test("pills", (override) => {
         return pills;
     }
 
-    input_pill.create = input_pill_stub;
+    input_pill.__Rewire__("create", input_pill_stub);
 
     // We stub the return value of input_pill.create(), manually add widget functions to it.
     pills.onPillCreate = (callback) => {

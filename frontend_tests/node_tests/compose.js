@@ -107,7 +107,6 @@ const rtl = zrequire("rtl");
 const stream_data = zrequire("stream_data");
 const compose_state = zrequire("compose_state");
 const people = zrequire("people");
-zrequire("input_pill");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const echo = zrequire("echo");
 const compose = zrequire("compose");

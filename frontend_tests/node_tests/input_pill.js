@@ -31,10 +31,10 @@ run_test("set_up_ids", () => {
     // just get coverage on a simple one-liner:
     input_pill.random_id();
 
-    input_pill.random_id = () => {
+    input_pill.__Rewire__("random_id", () => {
         id_seq += 1;
         return "some_id" + id_seq;
-    };
+    });
 });
 
 function pill_html(value, data_id, img_src) {
