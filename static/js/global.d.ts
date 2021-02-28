@@ -22,7 +22,6 @@ declare let emoji: any;
 declare let emoji_picker: any;
 declare let favicon: any;
 declare let hashchange: any;
-declare let hash_util: any;
 declare let helpers: any;
 declare let home_msg_list: any;
 declare let hotspots: any;

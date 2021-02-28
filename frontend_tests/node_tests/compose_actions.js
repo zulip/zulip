@@ -21,7 +21,9 @@ const compose_pm_pill = {__esModule: true};
 
 rewiremock("../../static/js/compose_pm_pill").with(compose_pm_pill);
 
-const hash_util = set_global("hash_util", {});
+const hash_util = {__esModule: true};
+
+rewiremock("../../static/js/hash_util").with(hash_util);
 
 rewiremock("../../static/js/reload_state").with({
     is_in_progress: () => false,

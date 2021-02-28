@@ -7,6 +7,7 @@ import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs
 import render_unstar_messages_modal from "../templates/unstar_messages_modal.hbs";
 
 import * as channel from "./channel";
+import * as hash_util from "./hash_util";
 import * as message_edit from "./message_edit";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";

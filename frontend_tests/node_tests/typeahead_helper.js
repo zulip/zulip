@@ -19,7 +19,6 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 zrequire("narrow");
-zrequire("hash_util");
 
 const emoji = zrequire("emoji", "shared/js/emoji");
 const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");

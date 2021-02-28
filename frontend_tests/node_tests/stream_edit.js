@@ -14,7 +14,7 @@ stub_templates(() => noop);
 
 rewiremock("../../static/js/channel").with({});
 set_global("hashchange", {update_browser_history: noop});
-set_global("hash_util", {
+rewiremock("../../static/js/hash_util").with({
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });

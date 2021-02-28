@@ -46,7 +46,6 @@ rewiremock("clipboard").with(ClipboardJS);
 
 rewiremock.enable();
 
-zrequire("hash_util");
 zrequire("narrow");
 const people = zrequire("people");
 zrequire("presence");

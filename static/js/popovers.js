@@ -16,6 +16,7 @@ import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as feature_flags from "./feature_flags";
+import * as hash_util from "./hash_util";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_viewport from "./message_viewport";

@@ -22,7 +22,6 @@ rewiremock("katex").with({
 rewiremock.enable();
 
 const markdown_config = zrequire("markdown_config");
-zrequire("hash_util");
 zrequire("message_store");
 
 const markdown = zrequire("markdown");

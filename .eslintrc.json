@@ -144,7 +144,6 @@
                 "emoji_picker": false,
                 "favicon": false,
                 "flatpickr": false,
-                "hash_util": false,
                 "hashchange": false,
                 "helpers": false,
                 "history": false,

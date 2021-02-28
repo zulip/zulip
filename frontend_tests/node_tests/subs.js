@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {stub_templates} = require("../zjsunit/handlebars");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -19,9 +21,11 @@ set_global("location", {
     hash: `#streams/${denmark_stream_id}/announce`,
 });
 
-set_global("hash_util", {
+rewiremock("../../static/js/hash_util").with({
     by_stream_uri: () => {},
 });
+
+rewiremock.enable();
 
 const stream_data = zrequire("stream_data");
 const subs = zrequire("subs");
@@ -205,3 +209,4 @@ run_test("redraw_left_panel", (override) => {
     assert(!$(".right .settings").visible());
     assert($(".nothing-selected").visible());
 });
+rewiremock.disable();
