@@ -23,6 +23,7 @@ import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rtl from "./rtl";
 import * as sent_messages from "./sent_messages";
+import * as server_events from "./server_events";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";

@@ -47,7 +47,8 @@ const narrow_state = {__esModule: true};
 rewiremock("../../static/js/narrow_state").with(narrow_state);
 const pm_list = {__esModule: true};
 rewiremock("../../static/js/pm_list").with(pm_list);
-const server_events = set_global("server_events", {});
+const server_events = {__esModule: true};
+rewiremock("../../static/js/server_events").with(server_events);
 const stream_list = set_global("stream_list", {
     maybe_scroll_narrow_into_view: () => {},
 });

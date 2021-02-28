@@ -1,15 +1,14 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import * as channel from "./channel";
+import * as echo from "./echo";
+import * as message_store from "./message_store";
+import * as reload from "./reload";
+import * as reload_state from "./reload_state";
+import * as sent_messages from "./sent_messages";
+import * as server_events_dispatch from "./server_events_dispatch";
+import * as ui_report from "./ui_report";
 
-const channel = require("./channel");
-const echo = require("./echo");
-const message_store = require("./message_store");
-const reload = require("./reload");
-const reload_state = require("./reload_state");
-const sent_messages = require("./sent_messages");
-const server_events_dispatch = require("./server_events_dispatch");
-const ui_report = require("./ui_report");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
 let waiting_on_homeview_load = true;
@@ -25,7 +24,7 @@ const get_events_params = {};
 // force-reconnect to the events server due to suspecting we are
 // offline.  It is important for avoiding races with the presence
 // system when coming back from unsuspend.
-exports.suspect_offline = false;
+export let suspect_offline = false;
 
 function get_events_success(events) {
     let messages = [];
@@ -192,7 +191,7 @@ function get_events(options) {
         // that means it's fairly likely that this client has been off
         // the Internet and thus may have stale state (which is
         // important for potential presence issues).
-        exports.suspect_offline = true;
+        suspect_offline = true;
     }
     if (get_events_params.queue_id === undefined) {
         get_events_params.queue_id = page_params.queue_id;
@@ -216,7 +215,7 @@ function get_events(options) {
         idempotent: true,
         timeout: page_params.poll_timeout,
         success(data) {
-            exports.suspect_offline = false;
+            suspect_offline = false;
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
@@ -279,29 +278,30 @@ function get_events(options) {
     });
 }
 
-exports.assert_get_events_running = function assert_get_events_running(error_message) {
+export function assert_get_events_running(error_message) {
     if (get_events_xhr === undefined && get_events_timeout === undefined) {
-        exports.restart_get_events({dont_block: true});
+        restart_get_events({dont_block: true});
         blueslip.error(error_message);
     }
-};
+}
 
-exports.restart_get_events = function restart_get_events(options) {
+export function restart_get_events(options) {
     get_events(options);
-};
+}
 
-exports.force_get_events = function force_get_events() {
+export function force_get_events() {
     get_events_timeout = setTimeout(get_events, 0);
-};
+}
 
-exports.home_view_loaded = function home_view_loaded() {
+export function home_view_loaded() {
     waiting_on_homeview_load = false;
     get_events_success([]);
     $(document).trigger("home_view_loaded.zulip");
-};
+}
 
 let watchdog_time = $.now();
-exports.check_for_unsuspend = function () {
+
+export function check_for_unsuspend() {
     const new_time = $.now();
     if (new_time - watchdog_time > 20000) {
         // 20 seconds.
@@ -313,20 +313,21 @@ exports.check_for_unsuspend = function () {
         $(document).trigger("unsuspend");
     }
     watchdog_time = new_time;
-};
-setInterval(exports.check_for_unsuspend, 5000);
+}
 
-exports.initialize = function () {
+setInterval(check_for_unsuspend, 5000);
+
+export function initialize() {
     $(document).on("unsuspend", () => {
         // Immediately poll for new events on unsuspend
         blueslip.log("Restarting get_events due to unsuspend");
         get_events_failures = 0;
-        exports.restart_get_events({dont_block: true});
+        restart_get_events({dont_block: true});
     });
     get_events();
-};
+}
 
-exports.cleanup_event_queue = function cleanup_event_queue() {
+export function cleanup_event_queue() {
     // Submit a request to the server to cleanup our event queue
     if (page_params.event_queue_expired === true || page_params.no_event_queue === true) {
         return;
@@ -339,13 +340,11 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
         data: {queue_id: page_params.queue_id},
         ignore_reload: true,
     });
-};
+}
 
 window.addEventListener("beforeunload", () => {
-    exports.cleanup_event_queue();
+    cleanup_event_queue();
 });
 
 // For unit testing
-exports._get_events_success = get_events_success;
-
-window.server_events = exports;
+export const _get_events_success = get_events_success;
