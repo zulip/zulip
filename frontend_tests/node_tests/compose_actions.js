@@ -343,9 +343,9 @@ run_test("quote_and_reply", (override) => {
 
     current_msg_list.selected_id = () => 100;
 
-    compose_ui.insert_syntax_and_focus = (syntax) => {
+    compose_ui.__Rewire__("insert_syntax_and_focus", (syntax) => {
         assert.equal(syntax, "[Quoting…]\n");
-    };
+    });
 
     const opts = {
         reply_type: "personal",

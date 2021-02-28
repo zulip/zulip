@@ -4,6 +4,7 @@ import XHRUpload from "@uppy/xhr-upload";
 
 import * as compose from "./compose";
 import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 
 export function make_upload_absolute(uri) {
     if (uri.startsWith(compose.uploads_path)) {

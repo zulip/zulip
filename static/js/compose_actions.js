@@ -10,6 +10,7 @@ const compose = require("./compose");
 const compose_fade = require("./compose_fade");
 const compose_pm_pill = require("./compose_pm_pill");
 const compose_state = require("./compose_state");
+const compose_ui = require("./compose_ui");
 const drafts = require("./drafts");
 const hash_util = require("./hash_util");
 const message_viewport = require("./message_viewport");

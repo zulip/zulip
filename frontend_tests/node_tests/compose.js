@@ -1567,9 +1567,9 @@ test_ui("on_events", () => {
             },
         };
 
-        compose_ui.insert_syntax_and_focus = () => {
+        compose_ui.__Rewire__("insert_syntax_and_focus", () => {
             called = true;
-        };
+        });
 
         const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
@@ -1591,10 +1591,10 @@ test_ui("on_events", () => {
             },
         };
 
-        compose_ui.insert_syntax_and_focus = (syntax) => {
+        compose_ui.__Rewire__("insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
-        };
+        });
 
         const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
@@ -1627,10 +1627,10 @@ test_ui("on_events", () => {
             },
         };
 
-        compose_ui.insert_syntax_and_focus = (syntax) => {
+        compose_ui.__Rewire__("insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
-        };
+        });
 
         const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
@@ -1672,10 +1672,10 @@ test_ui("on_events", () => {
             },
         };
 
-        compose_ui.insert_syntax_and_focus = (syntax) => {
+        compose_ui.__Rewire__("insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
-        };
+        });
 
         const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");

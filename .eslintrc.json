@@ -127,7 +127,6 @@
                 "$": false,
                 "blueslip": false,
                 "compose_actions": false,
-                "compose_ui": false,
                 "composebox_typeahead": false,
                 "csrf_token": false,
                 "current_msg_list": true,
