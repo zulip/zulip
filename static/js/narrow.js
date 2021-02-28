@@ -3,6 +3,7 @@
 const blueslip = require("./blueslip");
 const channel = require("./channel");
 const compose = require("./compose");
+const compose_actions = require("./compose_actions");
 const compose_fade = require("./compose_fade");
 const compose_state = require("./compose_state");
 const condense = require("./condense");

@@ -75,7 +75,10 @@ const page_params = set_global("page_params", {});
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
 
-const compose_actions = set_global("compose_actions", {});
+const compose_actions = {
+    __esModule: true,
+};
+rewiremock("../../static/js/compose_actions").with(compose_actions);
 const condense = {__esModule: true};
 rewiremock("../../static/js/condense").with(condense);
 const drafts = {__esModule: true};

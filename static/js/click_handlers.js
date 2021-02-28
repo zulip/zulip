@@ -11,6 +11,7 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";

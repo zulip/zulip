@@ -509,9 +509,9 @@ run_test("uppy_events", () => {
         },
     };
     let compose_actions_start_called = false;
-    compose_actions.start = () => {
+    compose_actions.__Rewire__("start", () => {
         compose_actions_start_called = true;
-    };
+    });
     let compose_ui_replace_syntax_called = false;
     compose_ui.__Rewire__("replace_syntax", (old_syntax, new_syntax, textarea) => {
         compose_ui_replace_syntax_called = true;

@@ -78,7 +78,7 @@ const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
 const stream_data = zrequire("stream_data");
 
-compose_actions.update_placeholder_text = noop;
+compose_actions.__Rewire__("update_placeholder_text", noop);
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
@@ -128,12 +128,12 @@ run_test("initial_state", () => {
 });
 
 run_test("start", (override) => {
-    compose_actions.autosize_message_content = noop;
-    compose_actions.expand_compose_box = noop;
-    compose_actions.set_focus = noop;
-    compose_actions.complete_starting_tasks = noop;
-    compose_actions.blur_compose_inputs = noop;
-    compose_actions.clear_textarea = noop;
+    compose_actions.__Rewire__("autosize_message_content", noop);
+    compose_actions.__Rewire__("expand_compose_box", noop);
+    compose_actions.__Rewire__("set_focus", noop);
+    compose_actions.__Rewire__("complete_starting_tasks", noop);
+    compose_actions.__Rewire__("blur_compose_inputs", noop);
+    compose_actions.__Rewire__("clear_textarea", noop);
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -447,18 +447,18 @@ run_test("on_narrow", (override) => {
     override(compose_state, "has_message_content", () => has_message_content);
 
     let cancel_called = false;
-    compose_actions.cancel = () => {
+    compose_actions.__Rewire__("cancel", () => {
         cancel_called = true;
-    };
+    });
     compose_actions.on_narrow({
         force_close: true,
     });
     assert(cancel_called);
 
     let on_topic_narrow_called = false;
-    compose_actions.on_topic_narrow = () => {
+    compose_actions.__Rewire__("on_topic_narrow", () => {
         on_topic_narrow_called = true;
-    };
+    });
     narrowed_by_topic_reply = true;
     compose_actions.on_narrow({
         force_close: false,
@@ -478,9 +478,9 @@ run_test("on_narrow", (override) => {
 
     has_message_content = false;
     let start_called = false;
-    compose_actions.start = () => {
+    compose_actions.__Rewire__("start", () => {
         start_called = true;
-    };
+    });
     narrowed_by_pm_reply = true;
     compose_actions.on_narrow({
         force_close: false,

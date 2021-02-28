@@ -17,7 +17,7 @@ const events = require("./lib/events");
 const noop = () => {};
 
 set_global("DOMParser", new JSDOM().window.DOMParser);
-set_global("compose_actions", {
+rewiremock("../../static/js/compose_actions").with({
     update_placeholder_text: noop,
 });
 
@@ -1097,7 +1097,7 @@ test_ui("initialize", () => {
     function set_up_compose_start_mock(expected_opts) {
         compose_actions_start_checked = false;
 
-        set_global("compose_actions", {
+        rewiremock("../../static/js/compose_actions").with({
             start(msg_type, opts) {
                 assert.equal(msg_type, "stream");
                 assert.deepEqual(opts, expected_opts);
