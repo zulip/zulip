@@ -38,7 +38,6 @@ import "../dropdown_list_widget";
 import "../settings_profile_fields";
 import "../settings";
 import "../ui_init";
-import "../emoji_picker";
 import "../compose_ui";
 import "../panels";
 import "../recent_topics";

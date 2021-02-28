@@ -4,6 +4,7 @@ import * as emoji from "../shared/js/emoji";
 import render_message_reaction from "../templates/message_reaction.hbs";
 
 import * as channel from "./channel";
+import * as emoji_picker from "./emoji_picker";
 import * as message_store from "./message_store";
 import * as people from "./people";
 

@@ -19,9 +19,12 @@ set_global("page_params", {
 
 const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);
-const emoji_picker = set_global("emoji_picker", {
+const emoji_picker = {
+    __esModule: true,
     hide_emoji_popover() {},
-});
+};
+
+rewiremock("../../static/js/emoji_picker").with(emoji_picker);
 
 const message = {
     id: 1001,

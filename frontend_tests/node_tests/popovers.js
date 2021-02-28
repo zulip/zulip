@@ -25,7 +25,7 @@ rewiremock("../../static/js/message_viewport").with({
     height: () => 500,
 });
 
-set_global("emoji_picker", {
+rewiremock("../../static/js/emoji_picker").with({
     hide_emoji_popover: noop,
 });
 
