@@ -2,6 +2,7 @@ import * as emoji from "../shared/js/emoji";
 
 import * as alert_words from "./alert_words";
 import * as alert_words_ui from "./alert_words_ui";
+import * as attachments_ui from "./attachments_ui";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as markdown from "./markdown";
