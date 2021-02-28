@@ -6,6 +6,7 @@ const channel = require("./channel");
 const ListWidget = require("./list_widget");
 const loading = require("./loading");
 const stream_data = require("./stream_data");
+const typeahead_helper = require("./typeahead_helper");
 const ui_report = require("./ui_report");
 
 const meta = {

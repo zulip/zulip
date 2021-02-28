@@ -22,7 +22,8 @@ let create_item_handler;
 
 const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);
-const typeahead_helper = set_global("typeahead_helper", {});
+const typeahead_helper = {__esModule: true};
+rewiremock("../../static/js/typeahead_helper").with(typeahead_helper);
 const user_groups = {
     __esModule: true,
     get_user_group_from_id: noop,
