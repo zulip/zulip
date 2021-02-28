@@ -9,6 +9,7 @@ import * as message_live_update from "./message_live_update";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
+import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
 
 export const update_person = function update(person) {

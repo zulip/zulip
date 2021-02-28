@@ -46,10 +46,13 @@ rewiremock("../../static/js/compose").with({
     update_email() {},
 });
 
-const settings_account = set_global("settings_account", {
+const settings_account = {
+    __esModule: true,
     update_email() {},
     update_full_name() {},
-});
+};
+
+rewiremock("../../static/js/settings_account").with(settings_account);
 
 const message_live_update = {__esModule: true};
 
