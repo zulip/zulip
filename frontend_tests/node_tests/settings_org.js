@@ -40,7 +40,8 @@ const page_params = set_global("page_params", {
     realm_authentication_methods: {},
 });
 
-const realm_icon = set_global("realm_icon", {});
+const realm_icon = {__esModule: true};
+rewiremock("../../static/js/realm_icon").with(realm_icon);
 const channel = {__esModule: true};
 
 rewiremock("../../static/js/channel").with(channel);
