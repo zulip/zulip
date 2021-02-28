@@ -13,6 +13,7 @@ import render_user_info_popover_content from "../templates/user_info_popover_con
 import render_user_info_popover_title from "../templates/user_info_popover_title.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 
+import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as feature_flags from "./feature_flags";

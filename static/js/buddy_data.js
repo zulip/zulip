@@ -1,11 +1,10 @@
-"use strict";
+import * as compose_fade from "./compose_fade";
+import * as hash_util from "./hash_util";
+import * as people from "./people";
+import * as presence from "./presence";
+import * as user_status from "./user_status";
+import * as util from "./util";
 
-const compose_fade = require("./compose_fade");
-const hash_util = require("./hash_util");
-const people = require("./people");
-const presence = require("./presence");
-const user_status = require("./user_status");
-const util = require("./util");
 /*
 
    This is the main model code for building the buddy list.
@@ -15,7 +14,7 @@ const util = require("./util");
 
 */
 
-exports.max_size_before_shrinking = 600;
+export const max_size_before_shrinking = 600;
 
 const fade_config = {
     get_user_id(item) {
@@ -29,8 +28,8 @@ const fade_config = {
     },
 };
 
-exports.get_user_circle_class = function (user_id) {
-    const status = exports.buddy_status(user_id);
+export function get_user_circle_class(user_id) {
+    const status = buddy_status(user_id);
 
     switch (status) {
         case "active":
@@ -43,10 +42,10 @@ exports.get_user_circle_class = function (user_id) {
         default:
             return "user_circle_empty";
     }
-};
+}
 
-exports.status_description = function (user_id) {
-    const status = exports.buddy_status(user_id);
+export function status_description(user_id) {
+    const status = buddy_status(user_id);
 
     switch (status) {
         case "active":
@@ -59,15 +58,15 @@ exports.status_description = function (user_id) {
         default:
             return i18n.t("Offline");
     }
-};
+}
 
-exports.level = function (user_id) {
+export function level(user_id) {
     if (people.is_my_user_id(user_id)) {
         // Always put current user at the top.
         return 0;
     }
 
-    const status = exports.buddy_status(user_id);
+    const status = buddy_status(user_id);
 
     switch (status) {
         case "active":
@@ -79,9 +78,9 @@ exports.level = function (user_id) {
         default:
             return 3;
     }
-};
+}
 
-exports.buddy_status = function (user_id) {
+export function buddy_status(user_id) {
     if (user_status.is_away(user_id)) {
         if (people.is_my_user_id(user_id)) {
             return "away_me";
@@ -92,11 +91,11 @@ exports.buddy_status = function (user_id) {
 
     // get active/idle/etc.
     return presence.get_status(user_id);
-};
+}
 
-exports.compare_function = function (a, b) {
-    const level_a = exports.level(a);
-    const level_b = exports.level(b);
+export function compare_function(a, b) {
+    const level_a = level(a);
+    const level_b = level(b);
     const diff = level_a - level_b;
     if (diff !== 0) {
         return diff;
@@ -110,13 +109,13 @@ exports.compare_function = function (a, b) {
     const full_name_b = person_b ? person_b.full_name : "";
 
     return util.strcmp(full_name_a, full_name_b);
-};
+}
 
-exports.sort_users = function (user_ids) {
+export function sort_users(user_ids) {
     // TODO sort by unread count first, once we support that
-    user_ids.sort(exports.compare_function);
+    user_ids.sort(compare_function);
     return user_ids;
-};
+}
 
 function filter_user_ids(user_filter_text, user_ids) {
     if (user_filter_text === "") {
@@ -134,17 +133,17 @@ function filter_user_ids(user_filter_text, user_ids) {
     return Array.from(user_id_dict.keys());
 }
 
-exports.matches_filter = function (user_filter_text, user_id) {
+export function matches_filter(user_filter_text, user_id) {
     // This is a roundabout way of checking a user if you look
     // too hard at it, but it should be fine for now.
     return filter_user_ids(user_filter_text, [user_id]).length === 1;
-};
+}
 
 function get_num_unread(user_id) {
     return unread.num_unread_for_person(user_id.toString());
 }
 
-exports.get_my_user_status = function (user_id) {
+export function get_my_user_status(user_id) {
     if (!people.is_my_user_id(user_id)) {
         return undefined;
     }
@@ -154,9 +153,9 @@ exports.get_my_user_status = function (user_id) {
     }
 
     return i18n.t("(you)");
-};
+}
 
-exports.user_last_seen_time_status = function (user_id) {
+export function user_last_seen_time_status(user_id) {
     const status = presence.get_status(user_id);
     if (status === "active") {
         return i18n.t("Active now");
@@ -178,13 +177,13 @@ exports.user_last_seen_time_status = function (user_id) {
         return i18n.t("More than 2 weeks ago");
     }
     return timerender.last_seen_status_from_date(last_active_date);
-};
+}
 
-exports.info_for = function (user_id) {
-    const user_circle_class = exports.get_user_circle_class(user_id);
+export function info_for(user_id) {
+    const user_circle_class = get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
-    const my_user_status = exports.get_my_user_status(user_id);
-    const user_circle_status = exports.status_description(user_id);
+    const my_user_status = get_my_user_status(user_id);
+    const user_circle_status = status_description(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
@@ -196,7 +195,7 @@ exports.info_for = function (user_id) {
         user_circle_class,
         user_circle_status,
     };
-};
+}
 
 function get_last_seen(active_status, last_seen) {
     if (active_status === "active") {
@@ -207,7 +206,7 @@ function get_last_seen(active_status, last_seen) {
     return last_seen_text;
 }
 
-exports.get_title_data = function (user_ids_string, is_group) {
+export function get_title_data(user_ids_string, is_group) {
     if (is_group === true) {
         // For groups, just return a string with recipient names.
         return {
@@ -245,7 +244,7 @@ exports.get_title_data = function (user_ids_string, is_group) {
     // For buddy list and individual PMS.  Since is_group=False, it's
     // a single, human, user.
     const active_status = presence.get_status(user_id);
-    const last_seen = exports.user_last_seen_time_status(user_id);
+    const last_seen = user_last_seen_time_status(user_id);
 
     // Users has a status.
     if (user_status.get_status_text(user_id)) {
@@ -262,21 +261,21 @@ exports.get_title_data = function (user_ids_string, is_group) {
         second_line: get_last_seen(active_status, last_seen),
         third_line: "",
     };
-};
+}
 
-exports.get_item = function (user_id) {
-    const info = exports.info_for(user_id);
+export function get_item(user_id) {
+    const info = info_for(user_id);
     compose_fade.update_user_info([info], fade_config);
     return info;
-};
+}
 
 function user_is_recently_active(user_id) {
     // return true if the user has a green/orange circle
-    return exports.level(user_id) <= 2;
+    return level(user_id) <= 2;
 }
 
 function maybe_shrink_list(user_ids, user_filter_text) {
-    if (user_ids.length <= exports.max_size_before_shrinking) {
+    if (user_ids.length <= max_size_before_shrinking) {
         return user_ids;
     }
 
@@ -323,20 +322,20 @@ function get_user_id_list(user_filter_text) {
     return user_ids;
 }
 
-exports.get_filtered_and_sorted_user_ids = function (user_filter_text) {
+export function get_filtered_and_sorted_user_ids(user_filter_text) {
     let user_ids;
     user_ids = get_user_id_list(user_filter_text);
     user_ids = maybe_shrink_list(user_ids, user_filter_text);
-    return exports.sort_users(user_ids);
-};
+    return sort_users(user_ids);
+}
 
-exports.get_items_for_users = function (user_ids) {
-    const user_info = user_ids.map((user_id) => exports.info_for(user_id));
+export function get_items_for_users(user_ids) {
+    const user_info = user_ids.map((user_id) => info_for(user_id));
     compose_fade.update_user_info(user_info, fade_config);
     return user_info;
-};
+}
 
-exports.huddle_fraction_present = function (huddle) {
+export function huddle_fraction_present(huddle) {
     const user_ids = huddle.split(",").map((s) => Number.parseInt(s, 10));
 
     let num_present = 0;
@@ -353,6 +352,4 @@ exports.huddle_fraction_present = function (huddle) {
         return 0.5;
     }
     return undefined;
-};
-
-window.buddy_data = exports;
+}

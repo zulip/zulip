@@ -645,7 +645,7 @@ test_ui("update_presence_info", () => {
         },
     };
 
-    buddy_data.matches_filter = () => true;
+    buddy_data.__Rewire__("matches_filter", () => true);
 
     const alice_li = $.create("alice stub");
     buddy_list_add(alice.user_id, alice_li);
