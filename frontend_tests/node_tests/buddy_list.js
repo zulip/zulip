@@ -20,7 +20,6 @@ rewiremock("../../static/js/message_viewport").with({
 rewiremock.enable();
 
 const people = zrequire("people");
-zrequire("buddy_data");
 const buddy_list = zrequire("buddy_list");
 zrequire("ui");
 

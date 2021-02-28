@@ -280,7 +280,7 @@ run_test("bulk_data_hacks", () => {
 
     // Make our shrink limit higher, and go back to an empty search.
     // We won't get all 1000 users, just the present ones.
-    buddy_data.max_size_before_shrinking = 50000;
+    buddy_data.__Rewire__("max_size_before_shrinking", 50000);
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
     assert.equal(user_ids.length, 700);
