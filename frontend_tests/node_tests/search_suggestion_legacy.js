@@ -13,7 +13,7 @@ const page_params = set_global("page_params", {
 rewiremock("../../static/js/message_store").with({
     user_ids: () => [],
 });
-set_global("narrow", {});
+rewiremock("../../static/js/narrow").with({});
 
 rewiremock.enable();
 

@@ -19,7 +19,7 @@ rewiremock("../../static/js/stream_list").with({
 set_global("compose_actions", {
     cancel: noop,
 });
-set_global("narrow", {
+rewiremock("../../static/js/narrow").with({
     set_narrow_title: noop,
 });
 rewiremock("../../static/js/message_view_header").with({

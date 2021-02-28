@@ -5,6 +5,7 @@ import * as hash_util from "./hash_util";
 import * as loading from "./loading";
 import * as message_fetch from "./message_fetch";
 import * as message_viewport from "./message_viewport";
+import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as recent_topics from "./recent_topics";
 import * as unread_ops from "./unread_ops";

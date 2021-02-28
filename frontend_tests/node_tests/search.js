@@ -25,7 +25,8 @@ rewiremock("../../static/js/ui_util").with({
     change_tab_to: noop,
     place_caret_at_end: noop,
 });
-const narrow = set_global("narrow", {});
+const narrow = {__esModule: true};
+rewiremock("../../static/js/narrow").with(narrow);
 rewiremock("../../static/js/search_pill_widget").with({
     widget: {
         getByID: () => true,

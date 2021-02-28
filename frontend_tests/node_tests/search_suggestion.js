@@ -15,7 +15,7 @@ rewiremock("../../static/js/message_store").with({
     user_ids: () => [],
 });
 
-set_global("narrow", {});
+rewiremock("../../static/js/narrow").with({});
 
 rewiremock.enable();
 
