@@ -1,7 +1,5 @@
-"use strict";
-
-const {Filter} = require("./filter");
-const message_list = require("./message_list");
+import {Filter} from "./filter";
+import * as message_list from "./message_list";
 
 // This file is being eliminated as part of the general purge of
 // global variables from Zulip (everything is being moved into
