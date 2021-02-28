@@ -20,7 +20,7 @@ MockDate.set(new Date(fake_now * 1000));
 let disparities = [];
 let messages_to_rerender = [];
 
-set_global("ui", {
+rewiremock("../../static/js/ui").with({
     show_failed_message_success: () => {},
 });
 

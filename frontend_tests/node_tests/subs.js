@@ -9,10 +9,12 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const ui = set_global("ui", {
+const ui = {
+    __esModule: true,
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
-});
+};
+rewiremock("../../static/js/ui").with(ui);
 set_global("page_params", {});
 
 const denmark_stream_id = 101;

@@ -1,3 +1,5 @@
+import * as ui from "./ui";
+
 export function scroll_delta(opts) {
     const elem_top = opts.elem_top;
     const container_height = opts.container_height;

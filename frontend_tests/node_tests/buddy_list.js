@@ -21,7 +21,6 @@ rewiremock.enable();
 
 const people = zrequire("people");
 const {buddy_list} = zrequire("buddy_list");
-zrequire("ui");
 
 function init_simulated_scrolling() {
     const elem = {

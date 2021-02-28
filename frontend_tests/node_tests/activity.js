@@ -28,6 +28,7 @@ const _document = {
 const channel = {__esModule: true};
 
 const _ui = {
+    __esModule: true,
     get_content_element: (element) => element,
 };
 
@@ -81,7 +82,7 @@ rewiremock("../../static/js/popovers").with(_popovers);
 rewiremock("../../static/js/resize").with(_resize);
 rewiremock("../../static/js/scroll_util").with(_scroll_util);
 rewiremock("../../static/js/stream_popover").with(_stream_popover);
-set_global("ui", _ui);
+rewiremock("../../static/js/ui").with(_ui);
 rewiremock("../../static/js/server_events").with({
     check_for_unsuspend() {},
 });

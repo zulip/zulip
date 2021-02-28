@@ -34,7 +34,7 @@ const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const scroll_util = zrequire("scroll_util");
 const stream_list = zrequire("stream_list");
-set_global("ui", {get_scroll_element: (element) => element});
+rewiremock("../../static/js/ui").with({get_scroll_element: (element) => element});
 
 stream_color.initialize();
 

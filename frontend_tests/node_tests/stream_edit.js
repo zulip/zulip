@@ -29,9 +29,12 @@ rewiremock("../../static/js/stream_color").with({
 });
 const typeahead_helper = {__esModule: true};
 rewiremock("../../static/js/typeahead_helper").with(typeahead_helper);
-const ui = set_global("ui", {
+const ui = {
+    __esModule: true,
     get_scroll_element: noop,
-});
+};
+
+rewiremock("../../static/js/ui").with(ui);
 
 rewiremock.enable();
 

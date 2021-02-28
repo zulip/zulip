@@ -5,6 +5,7 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as people from "./people";
 import * as timerender from "./timerender";
+import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 const meta = {

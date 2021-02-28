@@ -3,6 +3,7 @@ import render_admin_filter_list from "../templates/admin_filter_list.hbs";
 import * as channel from "./channel";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
+import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 const meta = {

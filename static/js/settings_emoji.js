@@ -6,6 +6,7 @@ import * as channel from "./channel";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as people from "./people";
+import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
 

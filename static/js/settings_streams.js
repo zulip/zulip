@@ -5,6 +5,7 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as stream_data from "./stream_data";
 import * as typeahead_helper from "./typeahead_helper";
+import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 const meta = {

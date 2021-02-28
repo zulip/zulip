@@ -4,6 +4,7 @@ import render_user_presence_rows from "../templates/user_presence_rows.hbs";
 import * as buddy_data from "./buddy_data";
 import * as message_viewport from "./message_viewport";
 import * as padded_widget from "./padded_widget";
+import * as ui from "./ui";
 
 class BuddyListConf {
     container_sel = "#user_presences";
