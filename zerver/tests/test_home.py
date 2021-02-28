@@ -615,7 +615,7 @@ class HomeTest(ZulipTestCase):
                         is_guest=False,
                     ),
                     dict(
-                        avatar_version=email_gateway_bot.avatar_version,
+                        avatar_version=notification_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
                         email=notification_bot.email,
@@ -629,7 +629,7 @@ class HomeTest(ZulipTestCase):
                         is_guest=False,
                     ),
                     dict(
-                        avatar_version=email_gateway_bot.avatar_version,
+                        avatar_version=welcome_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
                         email=welcome_bot.email,
