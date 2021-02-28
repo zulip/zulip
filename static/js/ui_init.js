@@ -39,6 +39,7 @@ const topic_list = require("./topic_list");
 const topic_zoom = require("./topic_zoom");
 const tutorial = require("./tutorial");
 const typing = require("./typing");
+const ui_util = require("./ui_util");
 const unread_ui = require("./unread_ui");
 const user_groups = require("./user_groups");
 const user_status = require("./user_status");

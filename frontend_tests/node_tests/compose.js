@@ -75,7 +75,9 @@ const page_params = set_global("page_params", {});
 const resize = {__esModule: true};
 rewiremock("../../static/js/resize").with(resize);
 const subs = set_global("subs", {});
-const ui_util = set_global("ui_util", {});
+const ui_util = {__esModule: true};
+
+rewiremock("../../static/js/ui_util").with(ui_util);
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.

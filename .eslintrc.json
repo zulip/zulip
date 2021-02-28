@@ -213,7 +213,6 @@
                 "typing_events": false,
                 "ui": false,
                 "ui_init": false,
-                "ui_util": false,
                 "unread": false,
                 "unread_ops": false,
                 "upload_widget": false,

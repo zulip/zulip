@@ -17,6 +17,7 @@ const stream_data = require("./stream_data");
 const stream_topic_history = require("./stream_topic_history");
 const top_left_corner = require("./top_left_corner");
 const topic_generator = require("./topic_generator");
+const ui_util = require("./ui_util");
 const util = require("./util");
 
 let unnarrow_times;
