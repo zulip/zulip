@@ -142,8 +142,8 @@ function stubbing(module, func_name_to_stub, test_function) {
 }
 
 // Set up defaults for most tests.
-hotkey.in_content_editable_widget = () => false;
-hotkey.processing_text = () => false;
+hotkey.__Rewire__("in_content_editable_widget", () => false);
+hotkey.__Rewire__("processing_text", () => false);
 
 run_test("mappings", () => {
     function map_press(which, shiftKey) {
@@ -492,10 +492,10 @@ run_test("motion_keys", () => {
     assert_mapping("right_arrow", lightbox, "next");
     overlays.lightbox_open = () => false;
 
-    hotkey.in_content_editable_widget = () => true;
+    hotkey.__Rewire__("in_content_editable_widget", () => true);
     assert_unmapped("down_arrow");
     assert_unmapped("up_arrow");
-    hotkey.in_content_editable_widget = () => false;
+    hotkey.__Rewire__("in_content_editable_widget", () => false);
 
     overlays.settings_open = () => true;
     assert_unmapped("end");
