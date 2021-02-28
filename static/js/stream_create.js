@@ -443,14 +443,38 @@ export function set_up_handlers() {
             html: true,
             trigger: "manual",
         });
-        announce_stream_docs.popover("show");
-        announce_stream_docs.data("popover").tip().css("z-index", 2000);
         announce_stream_docs
             .data("popover")
             .tip()
             .find(".popover-content")
             .css("margin", "9px 14px");
+        announce_stream_docs.popover("show");
+        announce_stream_docs.data("popover").tip().css("z-index", 2000);
         e.stopPropagation();
+        // simple hack to fix the issue
+        // for 2 lines
+        let mul = 0;
+        const popover_height = Number.parseFloat(
+            announce_stream_docs.data("popover").tip().css("height"),
+        );
+        // for 3 lines
+        if (popover_height > 66.5) {
+            mul = 0.1;
+        }
+        // for 4 lines
+        if (popover_height > 105) {
+            mul = 0.15;
+        }
+        // TODO n lines
+        announce_stream_docs
+            .data("popover")
+            .tip()
+            .css(
+                "top",
+                announce_stream_docs.data("popover").tip().position().top -
+                    Number.parseFloat(announce_stream_docs.data("popover").tip().css("height")) *
+                        mul,
+            );
     });
     container.on("mouseout", "#announce-stream-docs", (e) => {
         $("#announce-stream-docs").popover("hide");
