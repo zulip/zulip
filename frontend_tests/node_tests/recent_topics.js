@@ -25,7 +25,7 @@ set_global("narrow", {
 rewiremock("../../static/js/notifications").with({
     redraw_title: noop,
 });
-set_global("message_view_header", {
+rewiremock("../../static/js/message_view_header").with({
     render_title_area: noop,
 });
 

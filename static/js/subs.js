@@ -14,6 +14,7 @@ const hash_util = require("./hash_util");
 const hashchange = require("./hashchange");
 const loading = require("./loading");
 const message_live_update = require("./message_live_update");
+const message_view_header = require("./message_view_header");
 const overlays = require("./overlays");
 const people = require("./people");
 const scroll_util = require("./scroll_util");

@@ -28,6 +28,7 @@ const markdown_config = require("./markdown_config");
 const message_edit = require("./message_edit");
 const message_fetch = require("./message_fetch");
 const message_scroll = require("./message_scroll");
+const message_view_header = require("./message_view_header");
 const message_viewport = require("./message_viewport");
 const muting = require("./muting");
 const navigate = require("./navigate");

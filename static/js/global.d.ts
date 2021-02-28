@@ -29,7 +29,6 @@ declare let search_pill_widget: any;
 declare let settings_profile_fields: any;
 declare let stream_list: any;
 declare let subs: any;
-declare let message_view_header: any;
 declare let typing_events: any;
 declare let ui: any;
 declare let unread: any;

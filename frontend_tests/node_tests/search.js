@@ -39,7 +39,6 @@ rewiremock.enable();
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
 const {Filter} = zrequire("Filter", "js/filter");
-zrequire("message_view_header");
 
 run_test("clear_search_form", () => {
     $("#search_query").val("noise");

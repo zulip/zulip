@@ -12,6 +12,7 @@ const message_fetch = require("./message_fetch");
 const {MessageListData} = require("./message_list_data");
 const message_scroll = require("./message_scroll");
 const message_store = require("./message_store");
+const message_view_header = require("./message_view_header");
 const narrow_state = require("./narrow_state");
 const notifications = require("./notifications");
 const people = require("./people");
