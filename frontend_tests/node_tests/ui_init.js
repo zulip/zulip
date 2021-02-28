@@ -86,7 +86,7 @@ rewiremock("../../static/js/message_viewport").with(message_viewport);
 set_global("panels", {initialize() {}});
 set_global("popovers", {initialize() {}});
 rewiremock("../../static/js/reload").with({initialize() {}});
-set_global("scroll_bar", {initialize() {}});
+rewiremock("../../static/js/scroll_bar").with({initialize() {}});
 const server_events = set_global("server_events", {initialize() {}});
 set_global("settings_sections", {initialize() {}});
 rewiremock("../../static/js/settings_panel_menu").with({initialize() {}});
