@@ -92,7 +92,8 @@ rewiremock("../../static/js/muting_ui").with(muting_ui);
 const narrow = set_global("narrow", {});
 const navigate = set_global("navigate", {});
 const reactions = set_global("reactions", {});
-const search = set_global("search", {});
+const search = {__esModule: true};
+rewiremock("../../static/js/search").with(search);
 const stream_list = set_global("stream_list", {});
 const subs = set_global("subs", {});
 

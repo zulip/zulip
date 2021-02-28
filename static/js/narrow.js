@@ -12,6 +12,7 @@ const message_scroll = require("./message_scroll");
 const narrow_state = require("./narrow_state");
 const people = require("./people");
 const resize = require("./resize");
+const search = require("./search");
 const search_pill = require("./search_pill");
 const stream_data = require("./stream_data");
 const stream_topic_history = require("./stream_topic_history");
