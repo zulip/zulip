@@ -12,7 +12,6 @@ const $ = require("../zjsunit/zjquery");
 const noop = () => {};
 stub_templates(() => noop);
 
-rewiremock("../../static/js/channel").with({});
 rewiremock("../../static/js/hashchange").with({update_browser_history: noop});
 rewiremock("../../static/js/hash_util").with({
     stream_edit_uri: noop,

@@ -84,7 +84,6 @@ const message_viewport = {
 };
 rewiremock("../../static/js/message_viewport").with(message_viewport);
 rewiremock("../../static/js/panels").with({initialize() {}});
-rewiremock("../../static/js/popovers").with({initialize() {}});
 rewiremock("../../static/js/reload").with({initialize() {}});
 rewiremock("../../static/js/scroll_bar").with({initialize() {}});
 const server_events = {
@@ -104,7 +103,6 @@ server_events.home_view_loaded = () => true;
 
 resize.watch_manual_resize = () => {};
 
-rewiremock("../../static/js/favicon").with({});
 rewiremock("../../static/js/emojisets").with({
     initialize: () => {},
 });

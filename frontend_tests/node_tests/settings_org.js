@@ -70,11 +70,6 @@ const _ui_report = {
     },
 };
 
-const _realm_logo = {
-    __esModule: true,
-    build_realm_logo_widget: noop,
-};
-
 const _ListWidget = {
     __esModule: true,
     create: () => ({init: noop}),
@@ -84,13 +79,8 @@ set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 set_global("jQuery", _jQuery);
 rewiremock("../../static/js/loading").with(_loading);
-rewiremock("../../static/js/realm_logo").with(_realm_logo);
 rewiremock("../../static/js/ui_report").with(_ui_report);
 rewiremock("../../static/js/list_widget").with(_ListWidget);
-
-// setup is only imported to set the
-// setup.password_change_in_progress flag.
-rewiremock("../../static/js/setup").with({});
 
 rewiremock.enable();
 

@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
@@ -25,9 +23,6 @@ const _navigator = {
     userAgent: "Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36",
 };
 set_global("navigator", _navigator);
-rewiremock("../../static/js/favicon").with({});
-
-rewiremock.enable();
 
 const muting = zrequire("muting");
 const stream_data = zrequire("stream_data");
@@ -360,5 +355,3 @@ run_test("basic_notifications", (override) => {
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_2.id);
 });
-
-rewiremock.disable();

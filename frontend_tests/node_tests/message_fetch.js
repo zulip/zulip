@@ -43,8 +43,6 @@ const message_util = {__esModule: true};
 rewiremock("../../static/js/message_util").with(message_util);
 const message_store = {__esModule: true};
 rewiremock("../../static/js/message_store").with(message_store);
-const narrow_state = {__esModule: true};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
 const pm_list = {__esModule: true};
 rewiremock("../../static/js/pm_list").with(pm_list);
 const server_events = {__esModule: true};
@@ -311,8 +309,6 @@ function simulate_narrow() {
         predicate: () => () => false,
         public_operators: () => [{operator: "pm-with", operand: alice.email}],
     };
-
-    narrow_state.active = () => true;
 
     const msg_list = new message_list.MessageList({
         table_name: "zfilt",
