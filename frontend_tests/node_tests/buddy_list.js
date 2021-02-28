@@ -5,11 +5,11 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("padded_widget", {
+rewiremock("../../static/js/padded_widget").with({
     update_padding: () => {},
 });
 

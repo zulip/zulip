@@ -153,7 +153,6 @@
                 "message_events": false,
                 "message_list": false,
                 "narrow": false,
-                "padded_widget": false,
                 "page_params": false,
                 "panels": false,
                 "pointer": false,

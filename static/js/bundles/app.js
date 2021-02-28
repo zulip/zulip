@@ -33,7 +33,6 @@ import "../notifications";
 import "../message_events";
 import "../server_events";
 import "../zulip";
-import "../padded_widget";
 import "../buddy_list";
 import "../activity";
 import "../user_events";

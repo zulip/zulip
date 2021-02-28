@@ -69,7 +69,7 @@ const _resize = {
     resize_page_components: () => {},
 };
 
-set_global("padded_widget", {
+rewiremock("../../static/js/padded_widget").with({
     update_padding: () => {},
 });
 rewiremock("../../static/js/channel").with(channel);
