@@ -70,7 +70,7 @@ run_test("message_event", () => {
     };
 
     let inserted;
-    set_global("message_events", {
+    rewiremock("../../static/js/message_events").with({
         insert_new_messages(messages) {
             assert.equal(messages[0].content, event.message.content);
             inserted = true;
@@ -85,7 +85,7 @@ run_test("message_event", () => {
 
 const setup = () => {
     server_events.home_view_loaded();
-    set_global("message_events", {
+    rewiremock("../../static/js/message_events").with({
         insert_new_messages() {
             throw new Error("insert error");
         },

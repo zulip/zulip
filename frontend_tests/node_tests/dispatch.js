@@ -43,7 +43,10 @@ const markdown = {__esModule: true};
 rewiremock("../../static/js/markdown").with(markdown);
 const message_edit = {__esModule: true};
 rewiremock("../../static/js/message_edit").with(message_edit);
-const message_events = set_global("message_events", {});
+const message_events = {
+    __esModule: true,
+};
+rewiremock("../../static/js/message_events").with(message_events);
 const message_list = {
     __esModule: true,
 };
