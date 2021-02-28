@@ -159,7 +159,6 @@
                 "settings_linkifiers": false,
                 "settings_invites": false,
                 "settings_profile_fields": false,
-                "settings_streams": false,
                 "settings_user_groups": false,
                 "stream_list": false,
                 "StripeCheckout": false,

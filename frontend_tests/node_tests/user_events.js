@@ -20,7 +20,7 @@ rewiremock("../../static/js/settings_org").with({
 set_global("settings_profile_fields", {
     maybe_disable_widgets() {},
 });
-set_global("settings_streams", {
+rewiremock("../../static/js/settings_streams").with({
     maybe_disable_widgets() {},
 });
 rewiremock("../../static/js/settings_users").with({
