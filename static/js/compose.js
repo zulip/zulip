@@ -530,6 +530,10 @@ exports.wildcard_mention_allowed = function () {
     return !page_params.is_guest;
 };
 
+exports.set_wildcard_mention_large_stream_threshold = function (value) {
+    exports.wildcard_mention_large_stream_threshold = value;
+};
+
 function validate_stream_message_mentions(stream_id) {
     const stream_count = peer_data.get_subscriber_count(stream_id) || 0;
 

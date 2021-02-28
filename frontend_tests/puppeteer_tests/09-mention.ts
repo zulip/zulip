@@ -25,7 +25,7 @@ async function test_mention(page: Page): Promise<void> {
     });
     const threshold = await page.evaluate(() => {
         const compose = window.require("./static/js/compose");
-        compose.wildcard_mention_large_stream_threshold = 5;
+        compose.set_wildcard_mention_large_stream_threshold(5);
         return compose.wildcard_mention_large_stream_threshold;
     });
     assert(stream_size > threshold);
