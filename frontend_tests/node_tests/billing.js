@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
+const rewiremock = require("rewiremock/node");
 
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -13,12 +14,16 @@ const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
-const helpers = set_global("helpers", {
+const helpers = {
+    __esModule: true,
     set_tab: () => {},
-});
+};
+rewiremock("../../static/js/billing/helpers").with(helpers);
 const StripeCheckout = set_global("StripeCheckout", {
     configure: () => {},
 });
+
+rewiremock.enable();
 
 run_test("initialize", (override) => {
     let token_func;
@@ -107,3 +112,4 @@ run_test("billing_template", () => {
 
     assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
 });
+rewiremock.disable();
