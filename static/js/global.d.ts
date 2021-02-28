@@ -51,7 +51,6 @@ declare let recent_topics: any;
 declare let reminder: any;
 declare let search: any;
 declare let search_pill_widget: any;
-declare let search_suggestion: any;
 declare let server_events: any;
 declare let settings: any;
 declare let settings_account: any;

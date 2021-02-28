@@ -3,6 +3,7 @@
 const {Filter} = require("./filter");
 const narrow_state = require("./narrow_state");
 const search_pill = require("./search_pill");
+const search_suggestion = require("./search_suggestion");
 const ui_util = require("./ui_util");
 
 // Exported for unit testing

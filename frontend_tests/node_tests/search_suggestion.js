@@ -28,7 +28,7 @@ const people = zrequire("people");
 zrequire("unread");
 const search = zrequire("search_suggestion");
 
-search.max_num_of_search_results = 15;
+search.__Rewire__("max_num_of_search_results", 15);
 
 const me = {
     email: "myself@zulip.com",
