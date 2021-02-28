@@ -53,7 +53,9 @@ stub_templates((name, data) => {
     throw new Error(`Unknown template ${name}`);
 });
 
-const overlays = set_global("overlays", {});
+const overlays = {__esModule: true};
+
+rewiremock("../../static/js/overlays").with(overlays);
 
 const _ui_report = {
     __esModule: true,

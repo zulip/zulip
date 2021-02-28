@@ -2,6 +2,8 @@
 
 const render_confirm_dialog = require("../templates/confirm_dialog.hbs");
 
+const overlays = require("./overlays");
+
 /*
     Look for confirm_dialog in settings_user_groups
     to see an example of how to use this widget.  It's

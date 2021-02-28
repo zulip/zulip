@@ -8,6 +8,7 @@ const render_settings_dev_env_email_access = require("../templates/settings/dev_
 
 const channel = require("./channel");
 const common = require("./common");
+const overlays = require("./overlays");
 const people = require("./people");
 const pill_typeahead = require("./pill_typeahead");
 const popovers = require("./popovers");

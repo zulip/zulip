@@ -1,5 +1,6 @@
 import * as color_data from "./color_data";
 import * as narrow_state from "./narrow_state";
+import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";

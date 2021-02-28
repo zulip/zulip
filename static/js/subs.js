@@ -12,6 +12,7 @@ const components = require("./components");
 const compose_state = require("./compose_state");
 const loading = require("./loading");
 const message_live_update = require("./message_live_update");
+const overlays = require("./overlays");
 const people = require("./people");
 const scroll_util = require("./scroll_util");
 const search_util = require("./search_util");

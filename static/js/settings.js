@@ -3,6 +3,7 @@
 const timezones = require("../generated/timezones.json");
 const render_settings_tab = require("../templates/settings_tab.hbs");
 
+const overlays = require("./overlays");
 const people = require("./people");
 const settings_config = require("./settings_config");
 const settings_panel_menu = require("./settings_panel_menu");

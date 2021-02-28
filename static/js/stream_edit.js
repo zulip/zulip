@@ -7,6 +7,7 @@ import render_subscription_stream_privacy_modal from "../templates/subscription_
 import * as channel from "./channel";
 import * as ListWidget from "./list_widget";
 import * as narrow_state from "./narrow_state";
+import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";

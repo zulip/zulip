@@ -8,6 +8,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 
 import * as channel from "./channel";
 import * as common from "./common";
+import * as overlays from "./overlays";
 import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
 
