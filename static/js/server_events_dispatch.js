@@ -18,6 +18,7 @@ import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as realm_icon from "./realm_icon";
+import * as realm_logo from "./realm_logo";
 import * as reload from "./reload";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_config from "./settings_config";
