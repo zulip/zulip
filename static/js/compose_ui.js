@@ -1,17 +1,15 @@
-"use strict";
+import autosize from "autosize";
 
-const autosize = require("autosize");
+import * as people from "./people";
+import * as user_status from "./user_status";
 
-const people = require("./people");
-const user_status = require("./user_status");
-
-exports.autosize_textarea = function (textarea) {
+export function autosize_textarea(textarea) {
     // Since this supports both compose and file upload, one must pass
     // in the text area to autosize.
     autosize.update(textarea);
-};
+}
 
-exports.smart_insert = function (textarea, syntax) {
+export function smart_insert(textarea, syntax) {
     function is_space(c) {
         return c === " " || c === "\t" || c === "\n";
     }
@@ -54,19 +52,19 @@ exports.smart_insert = function (textarea, syntax) {
     // This should just call exports.autosize_textarea, but it's a bit
     // annoying for the unit tests, so we don't do that.
     autosize.update(textarea);
-};
+}
 
-exports.insert_syntax_and_focus = function (syntax, textarea) {
+export function insert_syntax_and_focus(syntax, textarea) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert.
     if (textarea === undefined) {
         textarea = $("#compose-textarea");
     }
-    exports.smart_insert(textarea, syntax);
-};
+    smart_insert(textarea, syntax);
+}
 
-exports.replace_syntax = function (old_syntax, new_syntax, textarea) {
+export function replace_syntax(old_syntax, new_syntax, textarea) {
     // Replaces `old_syntax` with `new_syntax` text in the compose box. Due to
     // the way that JavaScript handles string replacements, if `old_syntax` is
     // a string it will only replace the first instance. If `old_syntax` is
@@ -87,9 +85,9 @@ exports.replace_syntax = function (old_syntax, new_syntax, textarea) {
                 new_syntax,
         ),
     );
-};
+}
 
-exports.compute_placeholder_text = function (opts) {
+export function compute_placeholder_text(opts) {
     // Computes clear placeholder text for the compose box, depending
     // on what heading values have already been filled out.
     //
@@ -131,6 +129,4 @@ exports.compute_placeholder_text = function (opts) {
         return i18n.t("Message __- recipient_names__", {recipient_names});
     }
     return i18n.t("Compose your message here");
-};
-
-window.compose_ui = exports;
+}

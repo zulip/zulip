@@ -6,6 +6,7 @@ import render_emoji_popover_content from "../templates/emoji_popover_content.hbs
 import render_emoji_popover_search_results from "../templates/emoji_popover_search_results.hbs";
 import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 
+import * as compose_ui from "./compose_ui";
 import * as message_store from "./message_store";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";

@@ -32,7 +32,7 @@ const compose = {
 rewiremock("../../static/js/compose").with(compose);
 
 let autosize_called;
-set_global("compose_ui", {
+rewiremock("../../static/js/compose_ui").with({
     autosize_textarea() {
         autosize_called = true;
     },

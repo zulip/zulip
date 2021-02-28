@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const jquery = require("jquery");
 const {JSDOM} = require("jsdom");
+const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -11,7 +12,9 @@ const {run_test} = require("../zjsunit/test");
 set_global("page_params", {
     development_environment: true,
 });
-const compose_ui = set_global("compose_ui", {});
+const compose_ui = {__esModule: true};
+
+rewiremock("../../static/js/compose_ui").with(compose_ui);
 
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 const {DOMParser, document} = window;
@@ -19,6 +22,8 @@ const $ = set_global("$", jquery(window));
 
 set_global("DOMParser", DOMParser);
 set_global("document", document);
+
+rewiremock.enable();
 
 const copy_and_paste = zrequire("copy_and_paste");
 
@@ -111,3 +116,4 @@ run_test("paste_handler", () => {
     copy_and_paste.paste_handler(event);
     assert(!insert_syntax_and_focus_called);
 });
+rewiremock.disable();

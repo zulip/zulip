@@ -234,15 +234,15 @@ run_test("upload_files", () => {
         on_click_close_button_callback = callback;
     };
     let compose_ui_insert_syntax_and_focus_called = false;
-    compose_ui.insert_syntax_and_focus = (syntax, textarea) => {
+    compose_ui.__Rewire__("insert_syntax_and_focus", (syntax, textarea) => {
         assert.equal(syntax, "[translated: Uploading budapest.png…]()");
         assert.equal(textarea, $("#compose-textarea"));
         compose_ui_insert_syntax_and_focus_called = true;
-    };
+    });
     let compose_ui_autosize_textarea_called = false;
-    compose_ui.autosize_textarea = () => {
+    compose_ui.__Rewire__("autosize_textarea", () => {
         compose_ui_autosize_textarea_called = true;
-    };
+    });
     let markdown_preview_hide_button_clicked = false;
     $("#undo_markdown_preview").on("click", () => {
         markdown_preview_hide_button_clicked = true;
@@ -291,12 +291,12 @@ run_test("upload_files", () => {
             type: "image/png",
         },
     ];
-    compose_ui.replace_syntax = (old_syntax, new_syntax, textarea) => {
+    compose_ui.__Rewire__("replace_syntax", (old_syntax, new_syntax, textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading budapest.png…]()");
         assert.equal(new_syntax, "");
         assert.equal(textarea, $("#compose-textarea"));
-    };
+    });
     on_click_close_button_callback();
     assert(uppy_cancel_all_called);
     assert(hide_upload_status_called);
@@ -513,7 +513,7 @@ run_test("uppy_events", () => {
         compose_actions_start_called = true;
     };
     let compose_ui_replace_syntax_called = false;
-    compose_ui.replace_syntax = (old_syntax, new_syntax, textarea) => {
+    compose_ui.__Rewire__("replace_syntax", (old_syntax, new_syntax, textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(
@@ -521,11 +521,11 @@ run_test("uppy_events", () => {
             "[copenhagen.png](https://foo.com/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
         );
         assert.equal(textarea, $("#compose-textarea"));
-    };
+    });
     let compose_ui_autosize_textarea_called = false;
-    compose_ui.autosize_textarea = () => {
+    compose_ui.__Rewire__("autosize_textarea", () => {
         compose_ui_autosize_textarea_called = true;
-    };
+    });
     on_upload_success_callback(file, response);
     assert(compose_actions_start_called);
     assert(compose_ui_replace_syntax_called);
@@ -614,12 +614,12 @@ run_test("uppy_events", () => {
     on_info_visible_callback();
     assert(uppy_cancel_all_called);
     assert(show_error_message_called);
-    compose_ui.replace_syntax = (old_syntax, new_syntax, textarea) => {
+    compose_ui.__Rewire__("replace_syntax", (old_syntax, new_syntax, textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(new_syntax, "");
         assert.equal(textarea, $("#compose-textarea"));
-    };
+    });
     on_restriction_failed_callback(file, null, null);
     assert(compose_ui_replace_syntax_called);
     compose_ui_replace_syntax_called = false;
