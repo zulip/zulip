@@ -11,6 +11,7 @@ import * as message_store from "./message_store";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
+import * as ui from "./ui";
 
 // Emoji picker is of fixed width and height. Update these
 // whenever these values are changed in `reactions.css`.

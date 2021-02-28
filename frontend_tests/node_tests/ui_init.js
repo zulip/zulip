@@ -96,7 +96,11 @@ rewiremock("../../static/js/settings_panel_menu").with({initialize() {}});
 rewiremock("../../static/js/settings_toggle").with({initialize() {}});
 rewiremock("../../static/js/subs").with({initialize() {}});
 rewiremock("../../static/js/timerender").with({initialize() {}});
-const ui = set_global("ui", {initialize() {}});
+const ui = {
+    __esModule: true,
+    initialize() {},
+};
+rewiremock("../../static/js/ui").with(ui);
 rewiremock("../../static/js/unread_ui").with({initialize() {}});
 
 server_events.home_view_loaded = () => true;

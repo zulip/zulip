@@ -2,12 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const rewiremock = require("rewiremock/node");
+
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("ui", {
+rewiremock("../../static/js/ui").with({
     get_scroll_element: (element) => element,
 });
+
+rewiremock.enable();
 
 const scroll_util = zrequire("scroll_util");
 
@@ -121,3 +125,4 @@ run_test("scroll_element_into_container", () => {
     scroll_util.scroll_element_into_container(elem2, container);
     assert.equal(container.scrollTop(), 250 - 100 + 3 + 15);
 });
+rewiremock.disable();
