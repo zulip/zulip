@@ -120,7 +120,6 @@ const compose = zrequire("compose");
 zrequire("composebox_typeahead");
 zrequire("narrow");
 zrequire("stream_list");
-zrequire("recent_topics");
 
 run_test("initialize_everything", () => {
     util.is_mobile = () => false;

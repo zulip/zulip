@@ -7,6 +7,7 @@ import * as invite from "./invite";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
+import * as recent_topics from "./recent_topics";
 import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";

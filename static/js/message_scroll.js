@@ -6,6 +6,7 @@ import * as loading from "./loading";
 import * as message_fetch from "./message_fetch";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
+import * as recent_topics from "./recent_topics";
 
 let actively_scrolling = false;
 

@@ -52,8 +52,8 @@ const hashchange = zrequire("hashchange");
 const stream_data = zrequire("stream_data");
 
 const recent_topics = zrequire("recent_topics");
-recent_topics.show = () => {};
-recent_topics.is_visible = () => false;
+recent_topics.__Rewire__("show", () => {});
+recent_topics.__Rewire__("is_visible", () => false);
 
 run_test("operators_round_trip", () => {
     let operators;

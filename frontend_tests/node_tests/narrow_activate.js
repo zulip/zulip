@@ -55,7 +55,7 @@ set_global("search_pill_widget", {
         },
     },
 });
-set_global("recent_topics", {
+rewiremock("../../static/js/recent_topics").with({
     hide: () => {},
     is_visible: () => {},
 });

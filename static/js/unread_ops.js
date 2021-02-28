@@ -6,6 +6,7 @@ const message_store = require("./message_store");
 const message_viewport = require("./message_viewport");
 const notifications = require("./notifications");
 const overlays = require("./overlays");
+const recent_topics = require("./recent_topics");
 const reload = require("./reload");
 const unread_ui = require("./unread_ui");
 

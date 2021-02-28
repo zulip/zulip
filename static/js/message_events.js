@@ -14,6 +14,7 @@ const narrow_state = require("./narrow_state");
 const notifications = require("./notifications");
 const pm_list = require("./pm_list");
 const recent_senders = require("./recent_senders");
+const recent_topics = require("./recent_topics");
 const resize = require("./resize");
 const stream_data = require("./stream_data");
 const stream_topic_history = require("./stream_topic_history");
