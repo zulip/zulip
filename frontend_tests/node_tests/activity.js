@@ -91,7 +91,6 @@ rewiremock.enable();
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
 zrequire("unread");
-zrequire("hash_util");
 const narrow = zrequire("narrow");
 const presence = zrequire("presence");
 const people = zrequire("people");

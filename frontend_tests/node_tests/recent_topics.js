@@ -47,7 +47,7 @@ set_global("unread", {
         },
     },
 });
-set_global("hash_util", {
+rewiremock("../../static/js/hash_util").with({
     by_stream_uri: () => "https://www.example.com",
     by_stream_topic_uri: () => "https://www.example.com",
 });

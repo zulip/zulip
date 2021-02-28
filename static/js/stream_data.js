@@ -1,5 +1,6 @@
 import * as color_data from "./color_data";
 import {FoldDict} from "./fold_dict";
+import * as hash_util from "./hash_util";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";

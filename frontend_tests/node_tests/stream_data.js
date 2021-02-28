@@ -14,7 +14,6 @@ const page_params = set_global("page_params", {
 });
 
 const color_data = zrequire("color_data");
-zrequire("hash_util");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
 const stream_color = zrequire("stream_color");

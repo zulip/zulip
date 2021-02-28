@@ -109,7 +109,6 @@ rewiremock.enable();
 
 const util = zrequire("util");
 
-zrequire("hash_util");
 zrequire("message_view_header");
 zrequire("presence");
 zrequire("search_pill_widget");

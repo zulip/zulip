@@ -26,7 +26,6 @@ set_global("message_list", {});
 
 rewiremock.enable();
 
-zrequire("hash_util");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");

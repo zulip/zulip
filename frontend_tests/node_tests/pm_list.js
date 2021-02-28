@@ -32,7 +32,6 @@ rewiremock.enable();
 
 zrequire("presence");
 zrequire("buddy_data");
-zrequire("hash_util");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
 const pm_list = zrequire("pm_list");

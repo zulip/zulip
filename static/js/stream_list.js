@@ -5,6 +5,7 @@ const _ = require("lodash");
 const render_stream_privacy = require("../templates/stream_privacy.hbs");
 const render_stream_sidebar_row = require("../templates/stream_sidebar_row.hbs");
 
+const hash_util = require("./hash_util");
 const keydown_util = require("./keydown_util");
 const {ListCursor} = require("./list_cursor");
 const narrow_state = require("./narrow_state");

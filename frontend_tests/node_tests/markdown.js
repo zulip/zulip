@@ -32,7 +32,6 @@ set_global("Image", Image);
 const doc = "";
 set_global("document", doc);
 
-zrequire("hash_util");
 const emoji = zrequire("emoji", "shared/js/emoji");
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");

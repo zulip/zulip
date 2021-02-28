@@ -32,7 +32,6 @@ rewiremock.enable();
 const {Filter} = zrequire("Filter", "js/filter");
 const stream_sort = zrequire("stream_sort");
 const stream_color = zrequire("stream_color");
-zrequire("hash_util");
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const scroll_util = zrequire("scroll_util");

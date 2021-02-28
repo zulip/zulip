@@ -9,6 +9,7 @@ import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_c
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_state from "./compose_state";
+import * as hash_util from "./hash_util";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as muting_ui from "./muting_ui";
