@@ -1,7 +1,6 @@
+import {LazySet} from "./lazy_set";
+import * as people from "./people";
 import * as stream_data from "./stream_data";
-
-const {LazySet} = require("./lazy_set");
-const people = require("./people");
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map();

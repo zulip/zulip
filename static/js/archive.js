@@ -1,3 +1,4 @@
+import {format, isSameDay} from "date-fns";
 import _ from "lodash";
 
 import render_archive_message_group from "../templates/archive_message_group.hbs";
@@ -5,8 +6,6 @@ import render_archive_message_group from "../templates/archive_message_group.hbs
 import * as color_data from "./color_data";
 import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as timerender from "./timerender";
-
-const {format, isSameDay} = require("date-fns");
 
 function should_separate_into_groups(current_msg_time, next_msg_time) {
     return isSameDay(current_msg_time * 1000, next_msg_time * 1000);
