@@ -371,11 +371,9 @@ run_test("quote_and_reply", (override) => {
         raw_content: "Testing.",
     };
 
-    rewiremock("../../static/js/channel").with({
-        get() {
-            assert.fail("channel.get should not be used if raw_content is present");
-        },
-    });
+    channel.get = () => {
+        assert.fail("channel.get should not be used if raw_content is present");
+    };
 
     replaced = false;
     quote_and_reply(opts);
