@@ -8,8 +8,50 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const poll_widget = {__esModule: true};
-rewiremock("../../static/js/poll_widget").with(poll_widget);
+const events = [
+    {
+        data: {
+            option: "First option",
+            idx: 1,
+            type: "new_option",
+        },
+        sender_id: 101,
+    },
+    {
+        data: {
+            option: "Second option",
+            idx: 1,
+            type: "new_option",
+        },
+        sender_id: 102,
+    },
+    {
+        data: {
+            option: "Third option",
+            idx: 1,
+            type: "new_option",
+        },
+        sender_id: 102,
+    },
+];
+
+let widget_elem;
+let is_event_handled;
+let is_widget_activated;
+rewiremock("../../static/js/poll_widget").with({
+    activate(data) {
+        is_widget_activated = true;
+        widget_elem = data.elem;
+        assert(widget_elem.hasClass("widget-content"));
+        widget_elem.handle_events = (e) => {
+            is_event_handled = true;
+            assert.notDeepStrictEqual(e, events);
+            events.shift();
+            assert.deepStrictEqual(e, events);
+        };
+        data.callback("test_data");
+    },
+});
 set_global("document", "document-stub");
 
 const narrow_state = {__esModule: true};
@@ -31,33 +73,6 @@ run_test("activate", (override) => {
     let narrow_active;
     override(narrow_state, "active", () => narrow_active);
 
-    const events = [
-        {
-            data: {
-                option: "First option",
-                idx: 1,
-                type: "new_option",
-            },
-            sender_id: 101,
-        },
-        {
-            data: {
-                option: "Second option",
-                idx: 1,
-                type: "new_option",
-            },
-            sender_id: 102,
-        },
-        {
-            data: {
-                option: "Third option",
-                idx: 1,
-                type: "new_option",
-            },
-            sender_id: 102,
-        },
-    ];
-
     const opts = {
         events: events.slice(),
         extra_data: "",
@@ -72,23 +87,7 @@ run_test("activate", (override) => {
         widget_type: "poll",
     };
 
-    let widget_elem;
-    let is_event_handled;
-    let is_widget_activated;
     let is_widget_elem_inserted;
-
-    override(poll_widget, "activate", (data) => {
-        is_widget_activated = true;
-        widget_elem = data.elem;
-        assert(widget_elem.hasClass("widget-content"));
-        widget_elem.handle_events = (e) => {
-            is_event_handled = true;
-            assert.notDeepStrictEqual(e, events);
-            events.shift();
-            assert.deepStrictEqual(e, events);
-        };
-        data.callback("test_data");
-    });
 
     message_content.append = (elem) => {
         is_widget_elem_inserted = true;

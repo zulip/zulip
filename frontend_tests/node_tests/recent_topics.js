@@ -139,7 +139,7 @@ const sender2 = 2;
 
 const messages = [];
 
-set_global("message_list", {
+const message_list = set_global("message_list", {
     all: {
         all_messages() {
             return messages;
@@ -688,22 +688,15 @@ run_test("test_reify_local_echo_message", () => {
     );
 });
 
-run_test("test_delete_messages", () => {
+run_test("test_delete_messages", (override) => {
     rt = reset_module("recent_topics");
     stub_out_filter_buttons();
     rt.set_filter("all");
     rt.process_messages(messages);
 
-    set_global("message_list", {
-        all: {
-            all_messages() {
-                // messages[0] was removed.
-                const reduced_msgs = [...messages];
-                reduced_msgs.splice(0, 1);
-                return reduced_msgs;
-            },
-        },
-    });
+    // messages[0] was removed.
+    let reduced_msgs = messages.slice(1);
+    override(message_list.all, "all_messages", () => reduced_msgs);
 
     let all_topics = rt.get();
     assert.equal(
@@ -718,16 +711,8 @@ run_test("test_delete_messages", () => {
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2",
     );
 
-    set_global("message_list", {
-        all: {
-            all_messages() {
-                // messages[0], messages[1] and message[2] were removed.
-                const reduced_msgs = [...messages];
-                reduced_msgs.splice(0, 3);
-                return reduced_msgs;
-            },
-        },
-    });
+    // messages[0], messages[1] and message[2] were removed.
+    reduced_msgs = messages.slice(3);
 
     rt.update_topics_of_deleted_message_ids([messages[1].id, messages[2].id]);
 
@@ -742,13 +727,6 @@ run_test("test_delete_messages", () => {
 });
 
 run_test("test_topic_edit", () => {
-    set_global("message_list", {
-        all: {
-            all_messages() {
-                return messages;
-            },
-        },
-    });
     // NOTE: This test should always run in the end as it modified the messages data.
     rt = reset_module("recent_topics");
     stub_out_filter_buttons();

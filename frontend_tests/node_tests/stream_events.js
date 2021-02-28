@@ -26,7 +26,6 @@ rewiremock("../../static/js/stream_color").with(stream_color);
 const stream_list = set_global("stream_list", {});
 const stream_muting = {__esModule: true};
 rewiremock("../../static/js/stream_muting").with(stream_muting);
-let subs = set_global("subs", {});
 rewiremock("../../static/js/recent_topics").with({
     complete_rerender: () => {},
 });
@@ -39,7 +38,7 @@ set_global("message_list", {
     },
 });
 
-subs = set_global("subs", {update_settings_for_subscribed: noop});
+const subs = set_global("subs", {update_settings_for_subscribed: noop});
 rewiremock("../../static/js/overlays").with({streams_open: () => true});
 
 rewiremock.enable();
