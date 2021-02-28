@@ -53,7 +53,6 @@ set_global("$", {
 
 rewiremock.enable();
 
-zrequire("message_store");
 const server_events = zrequire("server_events");
 
 set_global("$", $);

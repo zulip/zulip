@@ -39,7 +39,6 @@ const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
 const markdown_config = zrequire("markdown_config");
 const marked = zrequire("marked", "third/marked/lib/marked");
 const markdown = zrequire("markdown");
-zrequire("message_store");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");

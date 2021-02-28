@@ -9,6 +9,7 @@ import * as condense from "./condense";
 import * as echo from "./echo";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
+import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as resize from "./resize";
 import * as rows from "./rows";

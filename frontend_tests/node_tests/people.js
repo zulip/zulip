@@ -5,12 +5,16 @@ const {strict: assert} = require("assert");
 const {parseISO} = require("date-fns");
 const _ = require("lodash");
 const MockDate = require("mockdate");
+const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_store = set_global("message_store", {});
+const message_store = {__esModule: true};
+rewiremock("../../static/js/message_store").with(message_store);
 const page_params = set_global("page_params", {});
+
+rewiremock.enable();
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -1113,3 +1117,4 @@ run_test("get_active_message_people", () => {
 
 // reset to native Date()
 MockDate.reset();
+rewiremock.disable();

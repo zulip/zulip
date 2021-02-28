@@ -10,7 +10,9 @@ const {run_test} = require("../zjsunit/test");
 const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);
 const widgetize = set_global("widgetize", {});
-const message_store = set_global("message_store", {});
+const message_store = {__esModule: true};
+
+rewiremock("../../static/js/message_store").with(message_store);
 
 rewiremock.enable();
 

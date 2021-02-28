@@ -13,6 +13,7 @@ const channel = require("./channel");
 const compose = require("./compose");
 const compose_pm_pill = require("./compose_pm_pill");
 const compose_state = require("./compose_state");
+const message_store = require("./message_store");
 const people = require("./people");
 const rows = require("./rows");
 const settings_data = require("./settings_data");

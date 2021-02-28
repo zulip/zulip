@@ -6,6 +6,7 @@ import render_notification from "../templates/notification.hbs";
 import * as alert_words from "./alert_words";
 import * as channel from "./channel";
 import * as favicon from "./favicon";
+import * as message_store from "./message_store";
 import * as muting from "./muting";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";

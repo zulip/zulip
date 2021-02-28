@@ -1,6 +1,7 @@
 "use strict";
 
 const {FoldDict} = require("./fold_dict");
+const message_store = require("./message_store");
 const muting = require("./muting");
 const people = require("./people");
 const stream_data = require("./stream_data");

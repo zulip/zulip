@@ -1,3 +1,4 @@
+import * as message_store from "./message_store";
 import * as people from "./people";
 
 function rerender_messages_view() {

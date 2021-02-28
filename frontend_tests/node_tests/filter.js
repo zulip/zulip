@@ -2,12 +2,17 @@
 
 const {strict: assert} = require("assert");
 
+const rewiremock = require("rewiremock/node");
+
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const message_store = set_global("message_store", {});
+const message_store = {__esModule: true};
+rewiremock("../../static/js/message_store").with(message_store);
 const page_params = set_global("page_params", {});
+
+rewiremock.enable();
 
 zrequire("unread");
 const stream_data = zrequire("stream_data");
@@ -1553,3 +1558,4 @@ run_test("error_cases", () => {
     const predicate = get_predicate([["pm-with", "Joe@example.com"]]);
     assert(!predicate({type: "private"}));
 });
+rewiremock.disable();
