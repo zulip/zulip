@@ -24,7 +24,7 @@ const message_fetch = {__esModule: true};
 rewiremock("../../static/js/message_fetch").with(message_fetch);
 const message_list = set_global("message_list", {
     set_narrowed(value) {
-        this.narrowed = value;
+        message_list.narrowed = value;
     },
 });
 const message_scroll = {__esModule: true};
