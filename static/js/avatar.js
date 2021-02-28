@@ -1,4 +1,5 @@
 import * as channel from "./channel";
+import * as settings_account from "./settings_account";
 import * as upload_widget from "./upload_widget";
 
 export function build_bot_create_widget() {

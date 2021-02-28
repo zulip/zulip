@@ -21,6 +21,7 @@ import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
 import * as reload from "./reload";
 import * as scroll_bar from "./scroll_bar";
+import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";

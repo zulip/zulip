@@ -1,32 +1,30 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
+import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
+import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
-const render_settings_api_key_modal = require("../templates/settings/api_key_modal.hbs");
-const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
-const render_settings_dev_env_email_access = require("../templates/settings/dev_env_email_access.hbs");
+import * as avatar from "./avatar";
+import * as channel from "./channel";
+import * as common from "./common";
+import * as overlays from "./overlays";
+import * as people from "./people";
+import * as pill_typeahead from "./pill_typeahead";
+import * as popovers from "./popovers";
+import * as settings_ui from "./settings_ui";
+import * as setup from "./setup";
+import * as ui_report from "./ui_report";
+import * as user_pill from "./user_pill";
 
-const avatar = require("./avatar");
-const channel = require("./channel");
-const common = require("./common");
-const overlays = require("./overlays");
-const people = require("./people");
-const pill_typeahead = require("./pill_typeahead");
-const popovers = require("./popovers");
-const settings_ui = require("./settings_ui");
-const setup = require("./setup");
-const ui_report = require("./ui_report");
-const user_pill = require("./user_pill");
-
-exports.update_email = function (new_email) {
+export function update_email(new_email) {
     const email_input = $("#email_value");
 
     if (email_input) {
         email_input.text(new_email);
     }
-};
+}
 
-exports.update_full_name = function (new_full_name) {
+export function update_full_name(new_full_name) {
     const full_name_field = $("#full_name_value");
     if (full_name_field) {
         full_name_field.text(new_full_name);
@@ -39,9 +37,9 @@ exports.update_full_name = function (new_full_name) {
     if (full_name_input) {
         full_name_input.val(new_full_name);
     }
-};
+}
 
-exports.user_can_change_name = function () {
+export function user_can_change_name() {
     if (page_params.is_admin) {
         return true;
     }
@@ -49,9 +47,9 @@ exports.user_can_change_name = function () {
         return false;
     }
     return true;
-};
+}
 
-exports.user_can_change_avatar = function () {
+export function user_can_change_avatar() {
     if (page_params.is_admin) {
         return true;
     }
@@ -59,19 +57,19 @@ exports.user_can_change_avatar = function () {
         return false;
     }
     return true;
-};
+}
 
-exports.update_name_change_display = function () {
-    if (!exports.user_can_change_name()) {
+export function update_name_change_display() {
+    if (!user_can_change_name()) {
         $("#full_name").prop("disabled", true);
         $(".change_name_tooltip").show();
     } else {
         $("#full_name").prop("disabled", false);
         $(".change_name_tooltip").hide();
     }
-};
+}
 
-exports.update_email_change_display = function () {
+export function update_email_change_display() {
     if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
         $("#change_email .button").prop("disabled", true);
         $(".change_email_tooltip").show();
@@ -79,17 +77,17 @@ exports.update_email_change_display = function () {
         $("#change_email .button").prop("disabled", false);
         $(".change_email_tooltip").hide();
     }
-};
+}
 
-exports.update_avatar_change_display = function () {
-    if (!exports.user_can_change_avatar()) {
+export function update_avatar_change_display() {
+    if (!user_can_change_avatar()) {
         $("#user-avatar-upload-widget .image_upload_button").prop("disabled", true);
         $("#user-avatar-upload-widget .image-delete-button .button").prop("disabled", true);
     } else {
         $("#user-avatar-upload-widget .image_upload_button").prop("disabled", false);
         $("#user-avatar-upload-widget .image-delete-button .button").prop("disabled", false);
     }
-};
+}
 
 function display_avatar_upload_complete() {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
@@ -137,7 +135,7 @@ function update_user_custom_profile_fields(fields, method) {
     }
 }
 
-exports.append_custom_profile_fields = function (element_id, user_id) {
+export function append_custom_profile_fields(element_id, user_id) {
     const person = people.get_by_user_id(user_id);
     if (person.is_bot) {
         return;
@@ -188,9 +186,9 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
         });
         $(element_id).append(html);
     }
-};
+}
 
-exports.initialize_custom_date_type_fields = function (element_id) {
+export function initialize_custom_date_type_fields(element_id) {
     $(element_id).find(".custom_user_field .datepicker").flatpickr({
         altInput: true,
         altFormat: "F j, Y",
@@ -212,9 +210,9 @@ exports.initialize_custom_date_type_fields = function (element_id) {
         .on("click", function () {
             $(this).parent().find(".custom_user_field_value").val("");
         });
-};
+}
 
-exports.initialize_custom_user_type_fields = function (
+export function initialize_custom_user_type_fields(
     element_id,
     user_id,
     is_editable,
@@ -282,9 +280,9 @@ exports.initialize_custom_user_type_fields = function (
     }
 
     return user_pills;
-};
+}
 
-exports.add_custom_profile_fields_to_settings = function () {
+export function add_custom_profile_fields_to_settings() {
     if (!overlays.settings_open()) {
         return;
     }
@@ -297,14 +295,14 @@ exports.add_custom_profile_fields_to_settings = function () {
         $("#account-settings #custom-field-header").hide();
     }
 
-    exports.append_custom_profile_fields(element_id, people.my_current_user_id());
-    exports.initialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
-    exports.initialize_custom_date_type_fields(element_id);
-};
+    append_custom_profile_fields(element_id, people.my_current_user_id());
+    initialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
+    initialize_custom_date_type_fields(element_id);
+}
 
-exports.set_up = function () {
+export function set_up() {
     // Add custom profile fields elements to user account settings.
-    exports.add_custom_profile_fields_to_settings();
+    add_custom_profile_fields_to_settings();
     $("#account-settings-status").hide();
 
     const setup_api_key_modal = _.once(() => {
@@ -392,7 +390,7 @@ exports.set_up = function () {
     $("#change_full_name").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (exports.user_can_change_name()) {
+        if (user_can_change_name()) {
             $("#change_full_name_modal").find("input[name='full_name']").val(page_params.full_name);
             overlays.open_modal("#change_full_name_modal");
         }
@@ -684,6 +682,4 @@ exports.set_up = function () {
     if (page_params.realm_name_changes_disabled) {
         $(".name_change_container").hide();
     }
-};
-
-window.settings_account = exports;
+}

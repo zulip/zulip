@@ -35,7 +35,6 @@ import "../server_events";
 import "../zulip";
 import "../templates";
 import "../dropdown_list_widget";
-import "../settings_account";
 import "../settings_display";
 import "../settings_notifications";
 import "../settings_bots";
