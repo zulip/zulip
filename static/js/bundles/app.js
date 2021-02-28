@@ -38,7 +38,6 @@ import "../dropdown_list_widget";
 import "../settings_profile_fields";
 import "../settings";
 import "../ui_init";
-import "../search_pill_widget";
 import "../desktop_integration";
 
 // Import styles

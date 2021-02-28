@@ -19,7 +19,6 @@ declare let message_list: any;
 declare let narrow: any;
 declare let page_params: any;
 declare let pointer: any;
-declare let search_pill_widget: any;
 declare let settings_profile_fields: any;
 declare let stream_list: any;
 declare let subs: any;

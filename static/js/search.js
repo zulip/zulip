@@ -2,6 +2,7 @@ import {Filter} from "./filter";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
 import * as search_pill from "./search_pill";
+import * as search_pill_widget from "./search_pill_widget";
 import * as search_suggestion from "./search_suggestion";
 import * as ui_util from "./ui_util";
 
