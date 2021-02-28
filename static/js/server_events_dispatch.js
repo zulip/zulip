@@ -25,6 +25,7 @@ import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_display from "./settings_display";
+import * as settings_emoji from "./settings_emoji";
 import * as settings_notifications from "./settings_notifications";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";

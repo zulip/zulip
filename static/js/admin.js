@@ -7,6 +7,7 @@ const overlays = require("./overlays");
 const settings_bots = require("./settings_bots");
 const settings_config = require("./settings_config");
 const settings_data = require("./settings_data");
+const settings_emoji = require("./settings_emoji");
 const settings_panel_menu = require("./settings_panel_menu");
 const settings_sections = require("./settings_sections");
 const settings_toggle = require("./settings_toggle");
