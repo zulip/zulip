@@ -16,6 +16,7 @@ import * as people from "./people";
 import * as reload from "./reload";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_config from "./settings_config";
+import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_topic_history from "./stream_topic_history";

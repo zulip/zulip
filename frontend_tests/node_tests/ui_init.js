@@ -119,7 +119,6 @@ const compose = zrequire("compose");
 zrequire("composebox_typeahead");
 zrequire("narrow");
 zrequire("stream_list");
-zrequire("starred_messages");
 zrequire("recent_topics");
 
 run_test("initialize_everything", () => {

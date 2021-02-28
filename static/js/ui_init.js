@@ -42,6 +42,7 @@ const sent_messages = require("./sent_messages");
 const settings_panel_menu = require("./settings_panel_menu");
 const settings_toggle = require("./settings_toggle");
 const spoilers = require("./spoilers");
+const starred_messages = require("./starred_messages");
 const stream_color = require("./stream_color");
 const stream_data = require("./stream_data");
 const stream_edit = require("./stream_edit");

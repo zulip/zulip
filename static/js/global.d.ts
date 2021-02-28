@@ -59,7 +59,6 @@ declare let settings_sections: any;
 declare let settings_streams: any;
 declare let settings_user_groups: any;
 declare let settings_users: any;
-declare let starred_messages: any;
 declare let stream_list: any;
 declare let subs: any;
 declare let message_view_header: any;
