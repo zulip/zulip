@@ -10,7 +10,9 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const confirm_dialog = set_global("confirm_dialog", {});
+const confirm_dialog = {__esModule: true};
+
+rewiremock("../../static/js/confirm_dialog").with(confirm_dialog);
 
 const noop = () => {};
 
