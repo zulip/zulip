@@ -27,7 +27,7 @@ set_global("settings_users", {
     update_user_data() {},
 });
 
-set_global("gear_menu", {
+rewiremock("../../static/js/gear_menu").with({
     update_org_settings_menu_item() {},
 });
 const page_params = set_global("page_params", {

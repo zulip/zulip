@@ -17,6 +17,7 @@ const copy_and_paste = require("./copy_and_paste");
 const drafts = require("./drafts");
 const echo = require("./echo");
 const emojisets = require("./emojisets");
+const gear_menu = require("./gear_menu");
 const invite = require("./invite");
 const lightbox = require("./lightbox");
 const markdown = require("./markdown");
