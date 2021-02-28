@@ -3,6 +3,7 @@ import * as message_util from "./message_util";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";
+import * as settings_notifications from "./settings_notifications";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_muting from "./stream_muting";

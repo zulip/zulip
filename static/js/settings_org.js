@@ -10,6 +10,7 @@ const overlays = require("./overlays");
 const realm_icon = require("./realm_icon");
 const realm_logo = require("./realm_logo");
 const settings_config = require("./settings_config");
+const settings_notifications = require("./settings_notifications");
 const settings_ui = require("./settings_ui");
 const stream_data = require("./stream_data");
 const ui_report = require("./ui_report");

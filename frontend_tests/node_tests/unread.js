@@ -25,7 +25,6 @@ const muting = zrequire("muting");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
-zrequire("settings_notifications");
 const {FoldDict} = zrequire("fold_dict");
 
 const me = {

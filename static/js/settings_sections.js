@@ -5,6 +5,7 @@ const attachments_ui = require("./attachments_ui");
 const settings_account = require("./settings_account");
 const settings_display = require("./settings_display");
 const settings_muting = require("./settings_muting");
+const settings_notifications = require("./settings_notifications");
 
 const load_func_dict = new Map(); // group -> function
 const loaded_groups = new Set();
