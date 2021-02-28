@@ -25,7 +25,6 @@ declare let hashchange: any;
 declare let hash_util: any;
 declare let helpers: any;
 declare let home_msg_list: any;
-declare let hotkey: any;
 declare let hotspots: any;
 declare let i18n: any;
 declare let input_pill: any;

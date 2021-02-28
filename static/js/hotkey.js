@@ -1,25 +1,23 @@
-"use strict";
+import * as emoji from "../shared/js/emoji";
 
-const emoji = require("../shared/js/emoji");
-
-const common = require("./common");
-const compose = require("./compose");
-const compose_state = require("./compose_state");
-const condense = require("./condense");
-const copy_and_paste = require("./copy_and_paste");
-const drafts = require("./drafts");
-const feedback_widget = require("./feedback_widget");
-const gear_menu = require("./gear_menu");
-const lightbox = require("./lightbox");
-const list_util = require("./list_util");
-const message_edit = require("./message_edit");
-const muting_ui = require("./muting_ui");
-const navigate = require("./navigate");
-const overlays = require("./overlays");
-const popovers = require("./popovers");
-const search = require("./search");
-const stream_popover = require("./stream_popover");
-const topic_zoom = require("./topic_zoom");
+import * as common from "./common";
+import * as compose from "./compose";
+import * as compose_state from "./compose_state";
+import * as condense from "./condense";
+import * as copy_and_paste from "./copy_and_paste";
+import * as drafts from "./drafts";
+import * as feedback_widget from "./feedback_widget";
+import * as gear_menu from "./gear_menu";
+import * as lightbox from "./lightbox";
+import * as list_util from "./list_util";
+import * as message_edit from "./message_edit";
+import * as muting_ui from "./muting_ui";
+import * as navigate from "./navigate";
+import * as overlays from "./overlays";
+import * as popovers from "./popovers";
+import * as search from "./search";
+import * as stream_popover from "./stream_popover";
+import * as topic_zoom from "./topic_zoom";
 
 function do_narrow_action(action) {
     action(current_msg_list.selected_id(), {trigger: "hotkey"});
@@ -135,7 +133,7 @@ const keypress_mappings = {
     120: {name: "compose_private_message", message_view_only: true}, // 'x'
 };
 
-exports.get_keydown_hotkey = function (e) {
+export function get_keydown_hotkey(e) {
     if (e.altKey) {
         return undefined;
     }
@@ -175,17 +173,17 @@ exports.get_keydown_hotkey = function (e) {
     }
 
     return keydown_either_mappings[e.which];
-};
+}
 
-exports.get_keypress_hotkey = function (e) {
+export function get_keypress_hotkey(e) {
     if (e.metaKey || e.ctrlKey || e.altKey) {
         return undefined;
     }
 
     return keypress_mappings[e.which];
-};
+}
 
-exports.processing_text = function () {
+export function processing_text() {
     const $focused_elt = $(":focus");
     return (
         $focused_elt.is("input") ||
@@ -195,15 +193,15 @@ exports.processing_text = function () {
         $focused_elt.parents(".pill-container").length >= 1 ||
         $focused_elt.attr("id") === "compose-send-button"
     );
-};
+}
 
-exports.in_content_editable_widget = function (e) {
+export function in_content_editable_widget(e) {
     return $(e.target).is(".editable-section");
-};
+}
 
 // Returns true if we handled it, false if the browser should.
-exports.process_escape_key = function (e) {
-    if (exports.in_content_editable_widget(e)) {
+export function process_escape_key(e) {
+    if (in_content_editable_widget(e)) {
         return false;
     }
 
@@ -232,7 +230,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    if (exports.processing_text()) {
+    if (processing_text()) {
         if (activity.searching()) {
             activity.escape_search();
             return true;
@@ -290,10 +288,10 @@ exports.process_escape_key = function (e) {
 
     hashchange.go_to_location("");
     return true;
-};
+}
 
 // Returns true if we handled it, false if the browser should.
-exports.process_enter_key = function (e) {
+export function process_enter_key(e) {
     if ($(".dropdown.open").length && $(e.target).attr("role") === "menuitem") {
         // on #gear-menu li a[tabindex] elements, force a click and prevent default.
         // this is because these links do not have an href and so don't force a
@@ -311,7 +309,7 @@ exports.process_enter_key = function (e) {
         return emoji_picker.navigate("enter", e);
     }
 
-    if (exports.in_content_editable_widget(e)) {
+    if (in_content_editable_widget(e)) {
         $(e.target).parent().find(".checkmark").trigger("click");
         return false;
     }
@@ -361,7 +359,7 @@ exports.process_enter_key = function (e) {
         return false;
     }
 
-    if (exports.processing_text()) {
+    if (processing_text()) {
         if (stream_list.searching()) {
             // This is sort of funny behavior, but I think
             // the intention is that we want it super easy
@@ -407,9 +405,9 @@ exports.process_enter_key = function (e) {
     // Note that "r" has same effect, but that is handled in process_hotkey().
     compose_actions.respond_to_message({trigger: "hotkey enter"});
     return true;
-};
+}
 
-exports.process_tab_key = function () {
+export function process_tab_key() {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
@@ -436,9 +434,9 @@ exports.process_tab_key = function () {
     }
 
     return false;
-};
+}
 
-exports.process_shift_tab_key = function () {
+export function process_shift_tab_key() {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
@@ -472,12 +470,12 @@ exports.process_shift_tab_key = function () {
     }
 
     return false;
-};
+}
 
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
-exports.process_hotkey = function (e, hotkey) {
+export function process_hotkey(e, hotkey) {
     const event_name = hotkey.name;
 
     // This block needs to be before the `Tab` handler.
@@ -509,13 +507,13 @@ exports.process_hotkey = function (e, hotkey) {
     // We handle the most complex keys in their own functions.
     switch (event_name) {
         case "escape":
-            return exports.process_escape_key(e);
+            return process_escape_key(e);
         case "enter":
-            return exports.process_enter_key(e);
+            return process_enter_key(e);
         case "tab":
-            return exports.process_tab_key();
+            return process_tab_key();
         case "shift_tab":
-            return exports.process_shift_tab_key();
+            return process_shift_tab_key();
     }
 
     // TODO: break out specific handlers for up_arrow,
@@ -532,7 +530,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (hotkey.message_view_only && overlays.is_active()) {
-        if (exports.processing_text()) {
+        if (processing_text()) {
             return false;
         }
         if (event_name === "narrow_by_topic" && overlays.streams_open()) {
@@ -578,7 +576,7 @@ exports.process_hotkey = function (e, hotkey) {
         return subs.switch_rows(event_name);
     }
 
-    if (exports.in_content_editable_widget(e)) {
+    if (in_content_editable_widget(e)) {
         // We handle the Enter key in process_enter_key().
         // We ignore all other keys.
         return false;
@@ -650,7 +648,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button
-    if (exports.processing_text()) {
+    if (processing_text()) {
         // Note that there is special handling for Enter/Esc too, but
         // we handle this in other functions.
 
@@ -880,7 +878,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     return false;
-};
+}
 
 /* We register both a keydown and a keypress function because
    we want to intercept PgUp/PgDn, Esc, etc, and process them
@@ -892,33 +890,31 @@ exports.process_hotkey = function (e, hotkey) {
    so we bail in .keydown if the event is a letter or number and
    instead just let keypress go for it. */
 
-exports.process_keydown = function (e) {
+export function process_keydown(e) {
     activity.set_new_user_input(true);
-    const hotkey = exports.get_keydown_hotkey(e);
+    const hotkey = get_keydown_hotkey(e);
     if (!hotkey) {
         return false;
     }
-    return exports.process_hotkey(e, hotkey);
-};
+    return process_hotkey(e, hotkey);
+}
 
 $(document).on("keydown", (e) => {
-    if (exports.process_keydown(e)) {
+    if (process_keydown(e)) {
         e.preventDefault();
     }
 });
 
-exports.process_keypress = function (e) {
-    const hotkey = exports.get_keypress_hotkey(e);
+export function process_keypress(e) {
+    const hotkey = get_keypress_hotkey(e);
     if (!hotkey) {
         return false;
     }
-    return exports.process_hotkey(e, hotkey);
-};
+    return process_hotkey(e, hotkey);
+}
 
 $(document).on("keypress", (e) => {
-    if (exports.process_keypress(e)) {
+    if (process_keypress(e)) {
         e.preventDefault();
     }
 });
-
-window.hotkey = exports;
