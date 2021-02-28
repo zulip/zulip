@@ -48,7 +48,6 @@ rewiremock.enable();
 
 zrequire("narrow");
 const people = zrequire("people");
-zrequire("presence");
 zrequire("buddy_data");
 const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");

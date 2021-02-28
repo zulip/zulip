@@ -34,6 +34,7 @@ const overlays = require("./overlays");
 const people = require("./people");
 const pm_conversations = require("./pm_conversations");
 const pm_list = require("./pm_list");
+const presence = require("./presence");
 const reload = require("./reload");
 const resize = require("./resize");
 const rows = require("./rows");

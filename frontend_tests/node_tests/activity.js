@@ -151,7 +151,7 @@ presence_info.set(alice.user_id, {status: "inactive"});
 presence_info.set(fred.user_id, {status: "active"});
 presence_info.set(jill.user_id, {status: "active"});
 
-presence.presence_info = presence_info;
+presence.__Rewire__("presence_info", presence_info);
 
 // Simulate a small window by having the
 // fill_screen_with_content render the entire
@@ -226,7 +226,7 @@ run_test("huddle_data.process_loaded_messages", () => {
     assert.deepEqual(huddle_data.get_huddles(), [user_ids_string2, user_ids_string1]);
 });
 
-presence.presence_info = new Map();
+presence.__Rewire__("presence_info", new Map());
 presence.presence_info.set(alice.user_id, {status: activity.IDLE});
 presence.presence_info.set(fred.user_id, {status: activity.ACTIVE});
 presence.presence_info.set(jill.user_id, {status: activity.ACTIVE});
@@ -406,7 +406,7 @@ test_ui("handlers", (override) => {
     })();
 });
 
-presence.presence_info = new Map();
+presence.__Rewire__("presence_info", new Map());
 presence.presence_info.set(alice.user_id, {status: activity.ACTIVE});
 presence.presence_info.set(fred.user_id, {status: activity.ACTIVE});
 presence.presence_info.set(jill.user_id, {status: activity.ACTIVE});
