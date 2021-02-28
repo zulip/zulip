@@ -4,12 +4,15 @@ const {strict: assert} = require("assert");
 
 const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const channel = {__esModule: true};
 rewiremock("../../static/js/channel").with(channel);
-const widgetize = set_global("widgetize", {});
+const widgetize = {
+    __esModule: true,
+};
+rewiremock("../../static/js/widgetize").with(widgetize);
 const message_store = {__esModule: true};
 
 rewiremock("../../static/js/message_store").with(message_store);

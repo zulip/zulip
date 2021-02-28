@@ -32,6 +32,7 @@ const ui_util = require("./ui_util");
 const unread = require("./unread");
 const unread_ops = require("./unread_ops");
 const util = require("./util");
+const widgetize = require("./widgetize");
 
 let unnarrow_times;
 
