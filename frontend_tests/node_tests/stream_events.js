@@ -11,9 +11,10 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 const _settings_notifications = {
+    __esModule: true,
     update_page: () => {},
 };
-set_global("settings_notifications", _settings_notifications);
+rewiremock("../../static/js/settings_notifications").with(_settings_notifications);
 
 const color_data = {__esModule: true};
 rewiremock("../../static/js/color_data").with(color_data);

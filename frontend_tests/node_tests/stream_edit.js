@@ -22,7 +22,7 @@ rewiremock("../../static/js/list_widget").with({
     create: () => ({init: noop}),
 });
 const page_params = set_global("page_params", {});
-set_global("settings_notifications", {
+rewiremock("../../static/js/settings_notifications").with({
     get_notifications_table_row_data: noop,
 });
 rewiremock("../../static/js/stream_color").with({

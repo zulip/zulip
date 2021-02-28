@@ -24,6 +24,7 @@ import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
 import * as settings_display from "./settings_display";
+import * as settings_notifications from "./settings_notifications";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";

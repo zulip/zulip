@@ -4,6 +4,7 @@ const {FoldDict} = require("./fold_dict");
 const message_store = require("./message_store");
 const muting = require("./muting");
 const people = require("./people");
+const settings_notifications = require("./settings_notifications");
 const stream_data = require("./stream_data");
 const util = require("./util");
 

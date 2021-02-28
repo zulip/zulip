@@ -33,7 +33,6 @@ declare let settings_emoji: any;
 declare let settings_exports: any;
 declare let settings_invites: any;
 declare let settings_linkifiers: any;
-declare let settings_notifications: any;
 declare let settings_org: any;
 declare let settings_profile_fields: any;
 declare let settings_sections: any;
