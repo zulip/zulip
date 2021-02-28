@@ -34,7 +34,6 @@ import "../message_events";
 import "../server_events";
 import "../zulip";
 import "../templates";
-import "../realm_icon";
 import "../realm_logo";
 import "../reminder";
 import "../confirm_dialog";

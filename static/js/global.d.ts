@@ -26,7 +26,6 @@ declare let page_params: any;
 declare let panels: any;
 declare let pointer: any;
 declare let reactions: any;
-declare let realm_icon: any;
 declare let realm_logo: any;
 declare let recent_topics: any;
 declare let reminder: any;
