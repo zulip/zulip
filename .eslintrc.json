@@ -145,7 +145,6 @@
                 "realm_night_logo": false,
                 "settings_profile_fields": false,
                 "StripeCheckout": false,
-                "subs": false,
                 "ui": false,
                 "ui_init": false,
                 "zxcvbn": false

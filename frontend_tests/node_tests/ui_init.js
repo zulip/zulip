@@ -94,7 +94,7 @@ rewiremock("../../static/js/server_events").with(server_events);
 rewiremock("../../static/js/settings_sections").with({initialize() {}});
 rewiremock("../../static/js/settings_panel_menu").with({initialize() {}});
 rewiremock("../../static/js/settings_toggle").with({initialize() {}});
-set_global("subs", {initialize() {}});
+rewiremock("../../static/js/subs").with({initialize() {}});
 rewiremock("../../static/js/timerender").with({initialize() {}});
 const ui = set_global("ui", {initialize() {}});
 rewiremock("../../static/js/unread_ui").with({initialize() {}});

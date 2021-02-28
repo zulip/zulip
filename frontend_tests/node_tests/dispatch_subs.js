@@ -17,7 +17,9 @@ const compose_fade = {__esModule: true};
 rewiremock("../../static/js/compose_fade").with(compose_fade);
 const stream_events = {__esModule: true};
 rewiremock("../../static/js/stream_events").with(stream_events);
-const subs = set_global("subs", {});
+const subs = {__esModule: true};
+
+rewiremock("../../static/js/subs").with(subs);
 
 rewiremock.enable();
 

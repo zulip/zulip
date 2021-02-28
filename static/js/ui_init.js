@@ -57,6 +57,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
+import * as subs from "./subs";
 import * as timerender from "./timerender";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";

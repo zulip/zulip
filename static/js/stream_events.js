@@ -11,6 +11,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
+import * as subs from "./subs";
 
 // In theory, this function should apply the account-level defaults,
 // however, they are only called after a manual override, so

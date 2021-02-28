@@ -37,7 +37,6 @@ rewiremock.enable();
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("subs");
 const stream_edit = zrequire("stream_edit");
 const stream_data = zrequire("stream_data");
 const stream_pill = zrequire("stream_pill");

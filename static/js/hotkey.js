@@ -28,6 +28,7 @@ import * as recent_topics from "./recent_topics";
 import * as search from "./search";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
+import * as subs from "./subs";
 import * as topic_zoom from "./topic_zoom";
 
 function do_narrow_action(action) {
