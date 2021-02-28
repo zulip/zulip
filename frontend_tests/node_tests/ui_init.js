@@ -117,7 +117,6 @@ const util = zrequire("util");
 
 const upload = zrequire("upload");
 const compose = zrequire("compose");
-zrequire("composebox_typeahead");
 
 run_test("initialize_everything", () => {
     util.is_mobile = () => false;

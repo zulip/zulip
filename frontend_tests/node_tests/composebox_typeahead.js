@@ -70,7 +70,7 @@ const ct = composebox_typeahead;
 // Use a slightly larger value than what's user-facing
 // to facilitate testing different combinations of
 // broadcast-mentions/persons/groups.
-ct.max_num_items = 15;
+ct.__Rewire__("max_num_items", 15);
 
 const mention_all = ct.broadcast_mentions()[0];
 assert.equal(mention_all.email, "all");
@@ -1146,7 +1146,7 @@ run_test("begins_typeahead", () => {
 
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
-        ct.split_at_cursor = () => [input, rest];
+        ct.__Rewire__("split_at_cursor", () => [input, rest]);
         const values = ct.get_candidates.call(begin_typehead_this, input);
         return values;
     }
@@ -1526,7 +1526,7 @@ run_test("message people", () => {
     let results;
 
     compose_state.__Rewire__("stream_name", () => undefined);
-    ct.max_num_items = 2;
+    ct.__Rewire__("max_num_items", 2);
 
     /*
         We will simulate that we talk to Hal and Harry,
