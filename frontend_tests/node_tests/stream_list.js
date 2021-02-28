@@ -21,7 +21,7 @@ const noop = () => {};
 const topic_list = {__esModule: true};
 rewiremock("../../static/js/topic_list").with(topic_list);
 set_global("overlays", {});
-set_global("popovers", {});
+rewiremock("../../static/js/popovers").with({});
 
 rewiremock("../../static/js/keydown_util").with({
     handle: noop,

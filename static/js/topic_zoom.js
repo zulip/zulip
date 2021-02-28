@@ -1,3 +1,4 @@
+import * as popovers from "./popovers";
 import * as topic_list from "./topic_list";
 
 let zoomed_in = false;

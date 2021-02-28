@@ -1,5 +1,7 @@
 "use strict";
 
+const popovers = require("./popovers");
+
 let active_overlay;
 let close_handler;
 let open_overlay_name;

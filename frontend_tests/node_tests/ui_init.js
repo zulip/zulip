@@ -84,7 +84,7 @@ const message_viewport = {
 };
 rewiremock("../../static/js/message_viewport").with(message_viewport);
 set_global("panels", {initialize() {}});
-set_global("popovers", {initialize() {}});
+rewiremock("../../static/js/popovers").with({initialize() {}});
 rewiremock("../../static/js/reload").with({initialize() {}});
 rewiremock("../../static/js/scroll_bar").with({initialize() {}});
 const server_events = set_global("server_events", {initialize() {}});

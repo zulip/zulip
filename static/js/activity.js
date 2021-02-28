@@ -7,6 +7,7 @@ const keydown_util = require("./keydown_util");
 const {ListCursor} = require("./list_cursor");
 const people = require("./people");
 const pm_list = require("./pm_list");
+const popovers = require("./popovers");
 const {UserSearch} = require("./user_search");
 const user_status = require("./user_status");
 

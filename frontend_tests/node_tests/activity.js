@@ -52,6 +52,7 @@ const _pm_list = {
 };
 
 const _popovers = {
+    __esModule: true,
     hide_all_except_sidebars() {},
     hide_all() {},
     show_userlist_sidebar() {},
@@ -76,7 +77,7 @@ rewiremock("../../static/js/compose_state").with(compose_state);
 set_global("document", _document);
 rewiremock("../../static/js/keydown_util").with(_keydown_util);
 rewiremock("../../static/js/pm_list").with(_pm_list);
-set_global("popovers", _popovers);
+rewiremock("../../static/js/popovers").with(_popovers);
 rewiremock("../../static/js/resize").with(_resize);
 rewiremock("../../static/js/scroll_util").with(_scroll_util);
 rewiremock("../../static/js/stream_popover").with(_stream_popover);
