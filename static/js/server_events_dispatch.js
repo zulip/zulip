@@ -6,6 +6,7 @@ import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
+import * as hotspots from "./hotspots";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
