@@ -83,7 +83,7 @@ const message_viewport = {
     initialize() {},
 };
 rewiremock("../../static/js/message_viewport").with(message_viewport);
-set_global("panels", {initialize() {}});
+rewiremock("../../static/js/panels").with({initialize() {}});
 rewiremock("../../static/js/popovers").with({initialize() {}});
 rewiremock("../../static/js/reload").with({initialize() {}});
 rewiremock("../../static/js/scroll_bar").with({initialize() {}});

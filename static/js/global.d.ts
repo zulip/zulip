@@ -18,7 +18,6 @@ declare let message_events: any;
 declare let message_list: any;
 declare let narrow: any;
 declare let page_params: any;
-declare let panels: any;
 declare let pointer: any;
 declare let recent_topics: any;
 declare let search_pill_widget: any;

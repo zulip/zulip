@@ -34,6 +34,7 @@ import * as muting from "./muting";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import * as panels from "./panels";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";

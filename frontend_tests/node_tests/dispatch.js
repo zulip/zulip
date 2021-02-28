@@ -121,7 +121,6 @@ const user_status = zrequire("user_status");
 const emoji = zrequire("emoji", "shared/js/emoji");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
-zrequire("panels");
 
 function dispatch(ev) {
     server_events_dispatch.dispatch_normal_event(ev);
