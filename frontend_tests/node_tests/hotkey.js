@@ -104,7 +104,9 @@ const search = {__esModule: true};
 rewiremock("../../static/js/search").with(search);
 const stream_list = {__esModule: true};
 rewiremock("../../static/js/stream_list").with(stream_list);
-const subs = set_global("subs", {});
+const subs = {__esModule: true};
+
+rewiremock("../../static/js/subs").with(subs);
 
 set_global("current_msg_list", {
     empty() {

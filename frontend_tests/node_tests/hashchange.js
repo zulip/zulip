@@ -38,7 +38,8 @@ const overlays = {__esModule: true};
 rewiremock("../../static/js/overlays").with(overlays);
 const settings = {__esModule: true};
 rewiremock("../../static/js/settings").with(settings);
-const subs = set_global("subs", {});
+const subs = {__esModule: true};
+rewiremock("../../static/js/subs").with(subs);
 const ui_util = {__esModule: true};
 rewiremock("../../static/js/ui_util").with(ui_util);
 rewiremock("../../static/js/top_left_corner").with({

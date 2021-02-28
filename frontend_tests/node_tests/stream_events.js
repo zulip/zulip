@@ -39,7 +39,11 @@ rewiremock("../../static/js/message_list").with({
     },
 });
 
-const subs = set_global("subs", {update_settings_for_subscribed: noop});
+const subs = {
+    __esModule: true,
+    update_settings_for_subscribed: noop,
+};
+rewiremock("../../static/js/subs").with(subs);
 rewiremock("../../static/js/overlays").with({streams_open: () => true});
 
 rewiremock.enable();
