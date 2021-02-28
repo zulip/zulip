@@ -11,6 +11,7 @@ import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
+import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_org from "./settings_org";
 import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
