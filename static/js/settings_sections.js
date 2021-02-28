@@ -3,6 +3,7 @@
 const alert_words_ui = require("./alert_words_ui");
 const attachments_ui = require("./attachments_ui");
 const settings_account = require("./settings_account");
+const settings_display = require("./settings_display");
 const settings_muting = require("./settings_muting");
 
 const load_func_dict = new Map(); // group -> function
