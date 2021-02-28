@@ -62,6 +62,7 @@ import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
 import * as typing from "./typing";
 import * as ui_util from "./ui_util";
+import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";

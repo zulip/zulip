@@ -33,7 +33,7 @@ rewiremock("../../static/js/timerender").with({
         time: "time",
     }),
 });
-set_global("unread", {
+rewiremock("../../static/js/unread").with({
     unread_topic_counter: {
         get: (stream_id, topic) => {
             if (stream_id === 1 && topic === "topic-1") {

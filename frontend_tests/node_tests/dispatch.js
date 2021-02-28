@@ -111,7 +111,6 @@ rewiremock.enable();
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
-zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list = zrequire("stream_list");
 const message_store = zrequire("message_store");

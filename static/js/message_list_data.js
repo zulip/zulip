@@ -3,6 +3,7 @@ import _ from "lodash";
 import {FetchStatus} from "./fetch_status";
 import {Filter} from "./filter";
 import * as muting from "./muting";
+import * as unread from "./unread";
 import * as util from "./util";
 
 export class MessageListData {
