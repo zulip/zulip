@@ -125,7 +125,6 @@
             "files": ["static/js/**"],
             "globals": {
                 "$": false,
-                "admin": false,
                 "blueslip": false,
                 "bot_data": false,
                 "compose_actions": false,

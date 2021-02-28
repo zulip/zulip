@@ -1,6 +1,7 @@
 import timezones from "../generated/timezones.json";
 import render_settings_tab from "../templates/settings_tab.hbs";
 
+import * as admin from "./admin";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as settings_account from "./settings_account";

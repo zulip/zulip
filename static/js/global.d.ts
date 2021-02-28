@@ -3,7 +3,6 @@
 // remove each declaration when the corresponding module is migrated
 // to TS.
 
-declare let admin: any;
 declare let blueslip: any;
 declare let bot_data: any;
 declare let compose_actions: any;
