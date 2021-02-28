@@ -170,7 +170,7 @@ test_ui("populate_user_groups", () => {
         return undefined;
     };
 
-    settings_user_groups.can_edit = () => true;
+    settings_user_groups.__Rewire__("can_edit", () => true);
 
     const all_pills = new Map();
 
@@ -377,10 +377,10 @@ test_ui("with_external_user", () => {
     user_pill.__Rewire__("append_person", () => noop);
 
     let can_edit_called = 0;
-    settings_user_groups.can_edit = () => {
+    settings_user_groups.__Rewire__("can_edit", () => {
         can_edit_called += 1;
         return false;
-    };
+    });
 
     // Reset zjquery to test stuff with user who cannot edit
     $.clear_all_elements();
@@ -497,9 +497,9 @@ test_ui("with_external_user", () => {
 test_ui("reload", () => {
     $("#user-groups").html("Some text");
     let populate_user_groups_called = false;
-    settings_user_groups.populate_user_groups = () => {
+    settings_user_groups.__Rewire__("populate_user_groups", () => {
         populate_user_groups_called = true;
-    };
+    });
     settings_user_groups.reload();
     assert(populate_user_groups_called);
     assert.equal($("#user-groups").html(), "");
@@ -512,7 +512,7 @@ test_ui("reset", () => {
 });
 
 test_ui("on_events", () => {
-    settings_user_groups.can_edit = () => true;
+    settings_user_groups.__Rewire__("can_edit", () => true);
 
     (function test_admin_user_group_form_submit_triggered() {
         const handler = $(".organization form.admin-user-group-form").get_on_handler("submit");
@@ -590,9 +590,9 @@ test_ui("on_events", () => {
             assert.equal(opts.url, "/json/user_groups/1");
             assert.deepEqual(opts.data, data);
 
-            settings_user_groups.reload = () => {
+            settings_user_groups.__Rewire__("reload", () => {
                 settings_user_groups_reload_called = true;
-            };
+            });
             opts.success();
             assert(settings_user_groups_reload_called);
 
@@ -665,9 +665,9 @@ test_ui("on_events", () => {
 
             // Cancel button triggers blur event.
             let settings_user_groups_reload_called = false;
-            settings_user_groups.reload = () => {
+            settings_user_groups.__Rewire__("reload", () => {
                 settings_user_groups_reload_called = true;
-            };
+            });
             api_endpoint_called = false;
             fake_this.closest = (class_name) => {
                 if (

@@ -32,6 +32,7 @@ import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
 import * as settings_streams from "./settings_streams";
+import * as settings_user_groups from "./settings_user_groups";
 import * as settings_users from "./settings_users";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";

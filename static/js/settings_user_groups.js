@@ -1,39 +1,37 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import render_admin_user_group_list from "../templates/admin_user_group_list.hbs";
+import render_confirm_delete_user from "../templates/confirm_delete_user.hbs";
 
-const render_admin_user_group_list = require("../templates/admin_user_group_list.hbs");
-const render_confirm_delete_user = require("../templates/confirm_delete_user.hbs");
-
-const channel = require("./channel");
-const confirm_dialog = require("./confirm_dialog");
-const people = require("./people");
-const pill_typeahead = require("./pill_typeahead");
-const ui_report = require("./ui_report");
-const user_groups = require("./user_groups");
-const user_pill = require("./user_pill");
+import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
+import * as people from "./people";
+import * as pill_typeahead from "./pill_typeahead";
+import * as ui_report from "./ui_report";
+import * as user_groups from "./user_groups";
+import * as user_pill from "./user_pill";
 
 const meta = {
     loaded: false,
 };
 
-exports.reset = function () {
+export function reset() {
     meta.loaded = false;
-};
+}
 
-exports.reload = function () {
+export function reload() {
     if (!meta.loaded) {
         return;
     }
 
     const user_groups_section = $("#user-groups").expectOne();
     user_groups_section.html("");
-    exports.populate_user_groups();
-};
+    populate_user_groups();
+}
 
 const USER_GROUP_EDIT_POLICY_MEMBERS = 1;
 
-exports.can_edit = function (group_id) {
+export function can_edit(group_id) {
     if (page_params.is_admin) {
         return true;
     }
@@ -47,9 +45,9 @@ exports.can_edit = function (group_id) {
     }
 
     return user_groups.is_member_of(group_id, people.my_current_user_id());
-};
+}
 
-exports.populate_user_groups = function () {
+export function populate_user_groups() {
     const user_groups_section = $("#user-groups").expectOne();
     const user_groups_array = user_groups.get_realm_user_groups();
 
@@ -77,7 +75,7 @@ exports.populate_user_groups = function () {
         }
 
         function update_membership(group_id) {
-            if (exports.can_edit(group_id)) {
+            if (can_edit(group_id)) {
                 return;
             }
             userg.find(".name").attr("contenteditable", "false");
@@ -126,7 +124,7 @@ exports.populate_user_groups = function () {
         }
 
         function update_cancel_button() {
-            if (!exports.can_edit(data.id)) {
+            if (!can_edit(data.id)) {
                 return;
             }
             const cancel_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.btn-danger`);
@@ -236,7 +234,7 @@ exports.populate_user_groups = function () {
         }
 
         function auto_save(class_name, event) {
-            if (!exports.can_edit(data.id)) {
+            if (!can_edit(data.id)) {
                 return;
             }
 
@@ -247,7 +245,7 @@ exports.populate_user_groups = function () {
                 $(event.relatedTarget).closest(`#user-groups #${CSS.escape(data.id)}`) &&
                 $(event.relatedTarget).closest(".save-status.btn-danger").length
             ) {
-                exports.reload();
+                reload();
                 return;
             }
             save_name_desc();
@@ -273,13 +271,13 @@ exports.populate_user_groups = function () {
         });
 
         const input = pill_container.children(".input");
-        if (exports.can_edit(data.id)) {
+        if (can_edit(data.id)) {
             const opts = {update_func: update_cancel_button};
             pill_typeahead.set_up(input, pills, opts);
         }
 
         (function pill_remove() {
-            if (!exports.can_edit(data.id)) {
+            if (!can_edit(data.id)) {
                 return;
             }
             pills.onPillRemove(() => {
@@ -292,11 +290,11 @@ exports.populate_user_groups = function () {
             });
         })();
     }
-};
+}
 
-exports.set_up = function () {
+export function set_up() {
     meta.loaded = true;
-    exports.populate_user_groups();
+    populate_user_groups();
 
     $(".organization form.admin-user-group-form")
         .off("submit")
@@ -336,7 +334,7 @@ exports.set_up = function () {
 
     $("#user-groups").on("click", ".delete", function () {
         const group_id = Number.parseInt($(this).parents(".user-group").attr("id"), 10);
-        if (!exports.can_edit(group_id)) {
+        if (!can_edit(group_id)) {
             return;
         }
         const user_group = user_groups.get_user_group_from_id(group_id);
@@ -350,7 +348,7 @@ exports.set_up = function () {
                 },
                 success() {
                     user_groups.remove(user_group);
-                    exports.reload();
+                    reload();
                 },
                 error() {
                     btn.text(i18n.t("Failed!"));
@@ -379,6 +377,4 @@ exports.set_up = function () {
             e.preventDefault();
         }
     });
-};
-
-window.settings_user_groups = exports;
+}
