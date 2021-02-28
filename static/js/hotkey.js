@@ -9,6 +9,7 @@ const condense = require("./condense");
 const copy_and_paste = require("./copy_and_paste");
 const drafts = require("./drafts");
 const feedback_widget = require("./feedback_widget");
+const gear_menu = require("./gear_menu");
 const lightbox = require("./lightbox");
 const message_edit = require("./message_edit");
 const muting_ui = require("./muting_ui");

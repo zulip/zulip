@@ -35,9 +35,12 @@ const emoji_picker = set_global("emoji_picker", {
 set_global("hotspots", {
     is_open: () => false,
 });
-const gear_menu = set_global("gear_menu", {
+const gear_menu = {
+    __esModule: true,
     is_open: () => false,
-});
+};
+
+rewiremock("../../static/js/gear_menu").with(gear_menu);
 
 // Important note on these tests:
 //
