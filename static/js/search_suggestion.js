@@ -10,6 +10,7 @@ const people = require("./people");
 const settings_data = require("./settings_data");
 const stream_data = require("./stream_data");
 const stream_topic_history = require("./stream_topic_history");
+const typeahead_helper = require("./typeahead_helper");
 
 exports.max_num_of_search_results = 12;
 

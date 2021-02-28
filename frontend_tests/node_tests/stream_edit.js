@@ -28,7 +28,8 @@ set_global("settings_notifications", {
 rewiremock("../../static/js/stream_color").with({
     set_colorpicker_color: noop,
 });
-const typeahead_helper = set_global("typeahead_helper", {});
+const typeahead_helper = {__esModule: true};
+rewiremock("../../static/js/typeahead_helper").with(typeahead_helper);
 const ui = set_global("ui", {
     get_scroll_element: noop,
 });

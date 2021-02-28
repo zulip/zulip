@@ -1365,25 +1365,25 @@ run_test("content_highlighter", () => {
     let fake_this = {completing: "emoji"};
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯"};
     let th_render_typeahead_item_called = false;
-    typeahead_helper.render_emoji = (item) => {
+    typeahead_helper.__Rewire__("render_emoji", (item) => {
         assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, emoji);
 
     fake_this = {completing: "mention"};
     let th_render_person_called = false;
-    typeahead_helper.render_person = (person) => {
+    typeahead_helper.__Rewire__("render_person", (person) => {
         assert.deepEqual(person, othello);
         th_render_person_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, othello);
 
     let th_render_user_group_called = false;
-    typeahead_helper.render_user_group = (user_group) => {
+    typeahead_helper.__Rewire__("render_user_group", (user_group) => {
         assert.deepEqual(user_group, backend);
         th_render_user_group_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, backend);
 
     // We don't have any fancy rendering for slash commands yet.
@@ -1392,28 +1392,28 @@ run_test("content_highlighter", () => {
     const me_slash = {
         text: "/me is excited (Display action text)",
     };
-    typeahead_helper.render_typeahead_item = (item) => {
+    typeahead_helper.__Rewire__("render_typeahead_item", (item) => {
         assert.deepEqual(item, {
             primary: "/me is excited (Display action text)",
         });
         th_render_slash_command_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, me_slash);
 
     fake_this = {completing: "stream"};
     let th_render_stream_called = false;
-    typeahead_helper.render_stream = (stream) => {
+    typeahead_helper.__Rewire__("render_stream", (stream) => {
         assert.deepEqual(stream, denmark_stream);
         th_render_stream_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, denmark_stream);
 
     fake_this = {completing: "syntax"};
     th_render_typeahead_item_called = false;
-    typeahead_helper.render_typeahead_item = (item) => {
+    typeahead_helper.__Rewire__("render_typeahead_item", (item) => {
         assert.deepEqual(item, {primary: "py"});
         th_render_typeahead_item_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, "py");
 
     fake_this = {completing: "something-else"};

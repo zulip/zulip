@@ -11,6 +11,7 @@ const channel = require("./channel");
 const loading = require("./loading");
 const overlays = require("./overlays");
 const people = require("./people");
+const typeahead_helper = require("./typeahead_helper");
 
 exports.hide_errors = function () {
     $("#bot_table_error").hide();
