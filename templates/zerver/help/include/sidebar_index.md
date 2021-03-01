@@ -98,6 +98,7 @@
 * [Use a custom certificate](/help/custom-certificates)
 
 ## Apps
+* [Supported Browsers](/help/supported-browsers)
 * [Desktop installation guides](/help/desktop-app-install-guide)
 * [Zulip in a Terminal](/help/zulip-in-a-terminal)
 
