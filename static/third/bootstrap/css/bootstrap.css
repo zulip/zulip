@@ -4099,23 +4099,7 @@ a.thumbnail:focus {
   border-left-color: #ffffff;
   bottom: -10px;
 }
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 1040;
-  background-color: #000000;
-}
-.modal-backdrop.fade {
-  opacity: 0;
-}
-.modal-backdrop,
-.modal-backdrop.fade.in {
-  opacity: 0.8;
-  filter: alpha(opacity=80);
-}
+
 .modal {
   position: fixed;
   top: 10%;

@@ -122,9 +122,13 @@ exports.open_modal = function (selector) {
         //return;
     //}
 
+    if(exports.is_modal_open()){
+        exports.close_active_modal();
+    }
+
     if (exports.is_modal_open()) {
         blueslip.error(
-            "open_modal() was called while " + exports.active_modal() + " modal was open.",
+           "open_modal() was called while " + exports.active_modal() + " modal was open.",
         );
         return;
     }
