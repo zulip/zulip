@@ -94,6 +94,16 @@ class CommonUtils {
         });
     }
 
+    async page_url_with_fragment(page: Page): Promise<string> {
+        // `page.url()` does not include the url fragment when running
+        // Puppeteer with Firefox: https://github.com/puppeteer/puppeteer/issues/6787.
+        //
+        // This function hacks around that issue; once it's fixed in
+        // puppeteer upstream, we can delete this function and return
+        // its callers to using `page.url()`
+        return await page.evaluate("location.href");
+    }
+
     /**
      * This function takes a params object whose fields
      * are referenced by name attribute of an input field and
@@ -444,7 +454,7 @@ class CommonUtils {
         await page.click(organization_settings);
         await page.waitForSelector("#settings_overlay_container.show", {visible: true});
 
-        const url = page.url();
+        const url = await this.page_url_with_fragment(page);
         assert(/^http:\/\/[^/]+\/#organization/.test(url), "Unexpected manage organization URL");
 
         const organization_settings_data_section = "li[data-section='organization-settings']";
