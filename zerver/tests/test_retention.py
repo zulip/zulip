@@ -34,7 +34,6 @@ from zerver.models import (
     get_realm,
     get_stream,
     get_system_bot,
-    get_user_profile_by_email,
 )
 
 # Class with helper functions useful for testing archiving of reactions:
@@ -134,7 +133,6 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
     def _send_cross_realm_personal_message(self) -> int:
         # Send message from bot to users from different realm.
         bot_email = "notification-bot@zulip.com"
-        get_user_profile_by_email(bot_email)
         zulip_user = self.example_user("hamlet")
         msg_id = internal_send_private_message(
             sender=get_system_bot(bot_email),
