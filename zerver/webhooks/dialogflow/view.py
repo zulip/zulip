@@ -7,7 +7,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.actions import check_send_private_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.models import UserProfile, get_user_profile_by_email
+from zerver.models import UserProfile, get_user
 
 
 @webhook_view("Dialogflow")
@@ -34,6 +34,6 @@ def api_dialogflow_webhook(
         error_status = payload["status"]["errorDetails"]
         body = f"{status} - {error_status}"
 
-    profile = get_user_profile_by_email(email)
-    check_send_private_message(user_profile, request.client, profile, body)
+    receiving_user = get_user(email, user_profile.realm)
+    check_send_private_message(user_profile, request.client, receiving_user, body)
     return json_success()
