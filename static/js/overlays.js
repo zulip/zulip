@@ -117,10 +117,10 @@ exports.open_modal = function (selector) {
         return;
     }
 
-    //if (selector[0] !== "#") {
-        //blueslip.error("Non-id-based selector passed in to open_modal: " + selector);
-        //return;
-    //}
+    if (selector[0] !== "#") {
+        blueslip.error("Non-id-based selector passed in to open_modal: " + selector);
+        return;
+    }
 
     if(exports.is_modal_open()){
         exports.close_active_modal();
