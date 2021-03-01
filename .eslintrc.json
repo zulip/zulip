@@ -115,33 +115,17 @@
             }
         },
         {
-            "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
-            "globals": {
-                "$": false,
-                "current_msg_list": false,
-                "zulip_test": false
-            }
-        },
-        {
             "files": ["static/js/**"],
             "globals": {
                 "$": false,
                 "blueslip": false,
                 "csrf_token": false,
                 "current_msg_list": true,
-                "favicon": false,
-                "flatpickr": false,
-                "history": false,
                 "home_msg_list": false,
                 "i18n": false,
                 "jQuery": false,
-                "localStorage": false,
-                "location": false,
                 "page_params": false,
-                "pointer": false,
-                "realm_night_logo": false,
                 "StripeCheckout": false,
-                "ui_init": false,
                 "zxcvbn": false
             }
         },
