@@ -25,6 +25,7 @@ declare let ui: any;
 declare let unread: any;
 declare let unread_ops: any;
 declare let widgetize: any;
+declare let zulip_test: any;
 
 interface JQuery {
     expectOne(): JQuery;

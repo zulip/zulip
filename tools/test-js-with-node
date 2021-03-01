@@ -164,6 +164,7 @@ EXEMPT_FILES = {
     "static/js/zcommand.js",
     "static/js/zform.js",
     "static/js/zulip.js",
+    "static/js/zulip_test.js",
 }
 
 parser = argparse.ArgumentParser(USAGE)

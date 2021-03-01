@@ -118,7 +118,8 @@
             "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {
                 "$": false,
-                "current_msg_list": false
+                "current_msg_list": false,
+                "zulip_test": false
             }
         },
         {

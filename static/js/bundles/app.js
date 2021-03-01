@@ -39,6 +39,7 @@ import "../settings_profile_fields";
 import "../settings";
 import "../ui_init";
 import "../desktop_integration";
+import "../zulip_test";
 
 // Import styles
 
