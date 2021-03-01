@@ -78,7 +78,7 @@ li.show-more-topics {
 
 #stream_filters {
     overflow: visible;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     margin-right: 12px;
     padding: 0;
     font-weight: normal;
@@ -175,7 +175,6 @@ li.show-more-topics {
 #add-stream-link {
     text-decoration: none;
     margin-left: 10px;
-    margin-bottom: 18px;
     i {
         min-width: 19px;
         text-align: center;
