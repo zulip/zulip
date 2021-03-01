@@ -374,7 +374,7 @@ class CommonUtils {
         await page.click("#compose-send-button");
 
         // Sending should clear compose box content.
-        this.assert_compose_box_content(page, "");
+        await this.assert_compose_box_content(page, "");
 
         if (!outside_view) {
             await this.wait_for_fully_processed_message(page, params.content);
