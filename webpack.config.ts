@@ -185,8 +185,6 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
         // the source snippets with the eval-* options.
         devtool: production ? "source-map" : "cheap-module-source-map",
         optimization: {
-            // Module concatenation interferes with debug-require-webpack-plugin.
-            concatenateModules: false,
             minimizer: [
                 // Based on a comment in NMFR/optimize-css-assets-webpack-plugin#10.
                 // Can be simplified when NMFR/optimize-css-assets-webpack-plugin#87
