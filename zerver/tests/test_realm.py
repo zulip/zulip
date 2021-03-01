@@ -179,10 +179,10 @@ class RealmTest(ZulipTestCase):
         Hamlet, and we end by checking the cache to ensure that his
         realm appears to be deactivated.  You can make this test fail
         by disabling cache.flush_realm()."""
-        self.example_user("hamlet")
+        get_user_profile_by_email("hamlet@zulip.com")
         realm = get_realm("zulip")
         do_deactivate_realm(realm)
-        user = self.example_user("hamlet")
+        user = get_user_profile_by_email("hamlet@zulip.com")
         self.assertTrue(user.realm.deactivated)
 
     def test_do_change_realm_subdomain_clears_user_realm_cache(self) -> None:
