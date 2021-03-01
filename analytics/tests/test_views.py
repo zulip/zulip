@@ -723,7 +723,10 @@ class TestSupportEndpoint(ZulipTestCase):
         self.login("iago")
 
         do_set_realm_property(
-            get_realm("zulip"), "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY
+            get_realm("zulip"),
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=None,
         )
 
         customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id="cus_123")

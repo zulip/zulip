@@ -1515,7 +1515,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     def test_social_auth_registration_without_is_signup_closed_realm(self) -> None:
         """If the user doesn't exist yet in closed realm, give an error"""
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
         email = "nonexisting@phantom.com"
         name = "Full Name"
         account_data_dict = self.get_account_data_dict(email=email, name=name)
@@ -5292,7 +5292,10 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         hamlet = self.example_user("hamlet")
         realm = get_realm("zulip")
         do_set_realm_property(
-            realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
         hamlet.refresh_from_db()
 
@@ -5855,7 +5858,7 @@ class EmailValidatorTestCase(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         realm = inviter.realm
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
         inviter.realm.refresh_from_db()
         error = validate_email_is_valid(
             "fred+5555@zulip.com",

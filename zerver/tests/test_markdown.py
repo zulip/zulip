@@ -1706,25 +1706,25 @@ class MarkdownTest(ZulipTestCase):
         msg_with_none = markdown_convert_wrapper(text.format("none"))
 
         # Render with default=javascript
-        do_set_realm_property(realm, "default_code_block_language", "javascript")
+        do_set_realm_property(realm, "default_code_block_language", "javascript", acting_user=None)
         msg_without_language_default_js = markdown_convert_wrapper(text.format(""))
         msg_with_python_default_js = markdown_convert_wrapper(text.format("python"))
 
         # Render with default=python
-        do_set_realm_property(realm, "default_code_block_language", "python")
+        do_set_realm_property(realm, "default_code_block_language", "python", acting_user=None)
         msg_without_language_default_py = markdown_convert_wrapper(text.format(""))
         msg_with_none_default_py = markdown_convert_wrapper(text.format("none"))
 
         # Render with default=quote
-        do_set_realm_property(realm, "default_code_block_language", "quote")
+        do_set_realm_property(realm, "default_code_block_language", "quote", acting_user=None)
         msg_without_language_default_quote = markdown_convert_wrapper(text.format(""))
 
         # Render with default=math
-        do_set_realm_property(realm, "default_code_block_language", "math")
+        do_set_realm_property(realm, "default_code_block_language", "math", acting_user=None)
         msg_without_language_default_math = markdown_convert_wrapper(text.format(""))
 
         # Render without default language
-        do_set_realm_property(realm, "default_code_block_language", None)
+        do_set_realm_property(realm, "default_code_block_language", None, acting_user=None)
         msg_without_language_final = markdown_convert_wrapper(text.format(""))
 
         self.assertTrue(msg_with_js == msg_without_language_default_js)
@@ -1738,12 +1738,12 @@ class MarkdownTest(ZulipTestCase):
 
         # Test checking inside nested quotes
         nested_text = "````quote\n\n{}\n\n{}````".format(text.format("js"), text.format(""))
-        do_set_realm_property(realm, "default_code_block_language", "javascript")
+        do_set_realm_property(realm, "default_code_block_language", "javascript", acting_user=None)
         rendered = markdown_convert_wrapper(nested_text)
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertTrue(with_language == without_language)
 
-        do_set_realm_property(realm, "default_code_block_language", None)
+        do_set_realm_property(realm, "default_code_block_language", None, acting_user=None)
         rendered = markdown_convert_wrapper(nested_text)
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertFalse(with_language == without_language)

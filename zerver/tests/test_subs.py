@@ -1073,7 +1073,7 @@ class StreamAdminTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
         do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_MEMBER)
 
-        do_set_realm_property(user_profile.realm, "waiting_period_threshold", 10)
+        do_set_realm_property(user_profile.realm, "waiting_period_threshold", 10, acting_user=None)
 
         def test_non_admin(how_old: int, is_new: bool, policy: int) -> None:
             user_profile.date_joined = timezone_now() - timedelta(days=how_old)
@@ -1696,9 +1696,14 @@ class StreamAdminTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
 
         # Allow all members to create streams.
-        do_set_realm_property(user_profile.realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_set_realm_property(
+            user_profile.realm,
+            "create_stream_policy",
+            Realm.POLICY_MEMBERS_ONLY,
+            acting_user=None,
+        )
         # Set waiting period to 10 days.
-        do_set_realm_property(user_profile.realm, "waiting_period_threshold", 10)
+        do_set_realm_property(user_profile.realm, "waiting_period_threshold", 10, acting_user=None)
 
         # Can successfully create stream despite being less than waiting period and not an admin,
         # due to create stream policy.
@@ -1707,7 +1712,12 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Allow only administrators to create streams.
-        do_set_realm_property(user_profile.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY)
+        do_set_realm_property(
+            user_profile.realm,
+            "create_stream_policy",
+            Realm.POLICY_ADMINS_ONLY,
+            acting_user=None,
+        )
 
         # Cannot create stream because not an admin.
         stream_name = ["admins_only"]
@@ -1723,7 +1733,10 @@ class StreamAdminTest(ZulipTestCase):
 
         # Allow users older than the waiting period to create streams.
         do_set_realm_property(
-            user_profile.realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY
+            user_profile.realm,
+            "create_stream_policy",
+            Realm.POLICY_FULL_MEMBERS_ONLY,
+            acting_user=None,
         )
 
         # Can successfully create stream despite being under waiting period because user is admin.
@@ -1761,7 +1774,10 @@ class StreamAdminTest(ZulipTestCase):
         cordelia_user.save()
 
         do_set_realm_property(
-            hamlet_user.realm, "invite_to_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY
+            hamlet_user.realm,
+            "invite_to_stream_policy",
+            Realm.POLICY_FULL_MEMBERS_ONLY,
+            acting_user=None,
         )
         cordelia_user_id = cordelia_user.id
 
@@ -1774,7 +1790,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # Can only invite users to stream if their account is ten days old..
         do_change_user_role(hamlet_user, UserProfile.ROLE_MEMBER)
-        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 10)
+        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 10, acting_user=None)
 
         # Attempt and fail to invite Cordelia to the stream..
         result = self.common_subscribe_to_streams(
@@ -1788,7 +1804,7 @@ class StreamAdminTest(ZulipTestCase):
         )
 
         # Anyone can invite users..
-        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 0)
+        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 0, acting_user=None)
 
         # Attempt and succeed to invite Cordelia to the stream..
         self.common_subscribe_to_streams(
@@ -1796,7 +1812,7 @@ class StreamAdminTest(ZulipTestCase):
         )
 
         # Set threshold to 20 days..
-        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 20)
+        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 20, acting_user=None)
         # Make Hamlet's account 21 days old..
         hamlet_user.date_joined = timezone_now() - timedelta(days=21)
         hamlet_user.save()
@@ -3180,7 +3196,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_user_settings_for_adding_streams(self) -> None:
         do_set_realm_property(
-            self.test_user.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY
+            self.test_user.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
         )
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
             result = self.common_subscribe_to_streams(self.test_user, ["stream1"], allow_fail=True)
@@ -3197,7 +3213,9 @@ class SubscriptionAPITest(ZulipTestCase):
         user_profile = self.example_user("cordelia")
         realm = user_profile.realm
 
-        do_set_realm_property(realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY)
+        do_set_realm_property(
+            realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
         result = self.common_subscribe_to_streams(
             user_profile,
             ["new_stream1"],
@@ -3208,7 +3226,9 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.common_subscribe_to_streams(user_profile, ["new_stream1"])
 
-        do_set_realm_property(realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_set_realm_property(
+            realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
         do_change_user_role(user_profile, UserProfile.ROLE_GUEST)
         result = self.common_subscribe_to_streams(
             user_profile,
@@ -3223,8 +3243,10 @@ class SubscriptionAPITest(ZulipTestCase):
             ["new_stream2"],
         )
 
-        do_set_realm_property(realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
-        do_set_realm_property(realm, "waiting_period_threshold", 100000)
+        do_set_realm_property(
+            realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
         result = self.common_subscribe_to_streams(
             user_profile,
             ["new_stream3"],
@@ -3232,7 +3254,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assert_json_error(result, "Your account is too new to create streams.")
 
-        do_set_realm_property(realm, "waiting_period_threshold", 0)
+        do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream3"])
 
     def test_can_create_streams(self) -> None:
@@ -3241,21 +3263,27 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertTrue(othello.can_create_streams())
 
         do_change_user_role(othello, UserProfile.ROLE_MEMBER)
-        do_set_realm_property(othello.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY)
+        do_set_realm_property(
+            othello.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below admin in the role hierarchy.
         self.assertFalse(othello.is_provisional_member)
         self.assertFalse(othello.can_create_streams())
 
-        do_set_realm_property(othello.realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_set_realm_property(
+            othello.realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
         do_change_user_role(othello, UserProfile.ROLE_GUEST)
         self.assertFalse(othello.can_create_streams())
 
         do_change_user_role(othello, UserProfile.ROLE_MEMBER)
         self.assertTrue(othello.can_create_streams())
 
-        do_set_realm_property(othello.realm, "waiting_period_threshold", 1000)
-        do_set_realm_property(othello.realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
+        do_set_realm_property(othello.realm, "waiting_period_threshold", 1000, acting_user=None)
+        do_set_realm_property(
+            othello.realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+        )
         othello.date_joined = timezone_now() - timedelta(
             days=(othello.realm.waiting_period_threshold - 1)
         )
@@ -3279,8 +3307,12 @@ class SubscriptionAPITest(ZulipTestCase):
         invitee_user_id = user_profile.id
         realm = user_profile.realm
 
-        do_set_realm_property(realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY)
-        do_set_realm_property(realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY)
+        do_set_realm_property(
+            realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+        do_set_realm_property(
+            realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
         result = self.common_subscribe_to_streams(
             self.test_user,
             ["stream1"],
@@ -3294,7 +3326,9 @@ class SubscriptionAPITest(ZulipTestCase):
             self.test_user, ["stream1"], {"principals": orjson.dumps([invitee_user_id]).decode()}
         )
 
-        do_set_realm_property(realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_set_realm_property(
+            realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
         do_change_user_role(self.test_user, UserProfile.ROLE_GUEST)
         result = self.common_subscribe_to_streams(
             self.test_user,
@@ -3312,8 +3346,13 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.unsubscribe(user_profile, "stream2")
 
-        do_set_realm_property(realm, "invite_to_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
-        do_set_realm_property(realm, "waiting_period_threshold", 100000)
+        do_set_realm_property(
+            realm,
+            "invite_to_stream_policy",
+            Realm.POLICY_FULL_MEMBERS_ONLY,
+            acting_user=None,
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
         result = self.common_subscribe_to_streams(
             self.test_user,
             ["stream2"],
@@ -3324,7 +3363,7 @@ class SubscriptionAPITest(ZulipTestCase):
             result, "Your account is too new to modify other users' subscriptions."
         )
 
-        do_set_realm_property(realm, "waiting_period_threshold", 0)
+        do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
         self.common_subscribe_to_streams(
             self.test_user, ["stream2"], {"principals": orjson.dumps([invitee_user_id]).decode()}
         )
@@ -3338,23 +3377,30 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(othello.can_subscribe_other_users())
 
-        do_set_realm_property(othello.realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY)
+        do_set_realm_property(
+            othello.realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
         do_change_user_role(othello, UserProfile.ROLE_MEMBER)
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below admin in the role hierarchy.
         self.assertFalse(othello.is_provisional_member)
         self.assertFalse(othello.can_subscribe_other_users())
 
-        do_set_realm_property(othello.realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_set_realm_property(
+            othello.realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
         do_change_user_role(othello, UserProfile.ROLE_GUEST)
         self.assertFalse(othello.can_subscribe_other_users())
 
         do_change_user_role(othello, UserProfile.ROLE_MEMBER)
         self.assertTrue(othello.can_subscribe_other_users())
 
-        do_set_realm_property(othello.realm, "waiting_period_threshold", 1000)
+        do_set_realm_property(othello.realm, "waiting_period_threshold", 1000, acting_user=None)
         do_set_realm_property(
-            othello.realm, "invite_to_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY
+            othello.realm,
+            "invite_to_stream_policy",
+            Realm.POLICY_FULL_MEMBERS_ONLY,
+            acting_user=None,
         )
         othello.date_joined = timezone_now() - timedelta(
             days=(othello.realm.waiting_period_threshold - 1)
@@ -3602,7 +3648,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.register(new_member_email, "test")
         new_member = self.nonreg_user("test")
 
-        do_set_realm_property(new_member.realm, "waiting_period_threshold", 10)
+        do_set_realm_property(new_member.realm, "waiting_period_threshold", 10, acting_user=None)
         self.assertTrue(new_member.is_provisional_member)
 
         stream = self.make_stream("stream1")

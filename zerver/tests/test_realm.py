@@ -59,10 +59,9 @@ class RealmTest(ZulipTestCase):
         """The main complicated thing about setting realm names is fighting the
         cache, and we start by populating the cache for Hamlet, and we end
         by checking the cache to ensure that the new value is there."""
-        self.example_user("hamlet")
         realm = get_realm("zulip")
         new_name = "Zed You Elle Eye Pea"
-        do_set_realm_property(realm, "name", new_name)
+        do_set_realm_property(realm, "name", new_name, acting_user=None)
         self.assertEqual(get_realm(realm.string_id).name, new_name)
         self.assert_user_profile_cache_gets_new_name(self.example_user("hamlet"), new_name)
 
@@ -71,7 +70,7 @@ class RealmTest(ZulipTestCase):
         new_name = "Puliz"
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            do_set_realm_property(realm, "name", new_name)
+            do_set_realm_property(realm, "name", new_name, acting_user=None)
         event = events[0]["event"]
         self.assertEqual(
             event,
@@ -88,7 +87,7 @@ class RealmTest(ZulipTestCase):
         new_description = "zulip dev group"
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            do_set_realm_property(realm, "description", new_description)
+            do_set_realm_property(realm, "description", new_description, acting_user=None)
         event = events[0]["event"]
         self.assertEqual(
             event,
@@ -159,7 +158,7 @@ class RealmTest(ZulipTestCase):
         data = {"full_name": "Sir Hamlet"}
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
-        do_set_realm_property(user_profile.realm, "name_changes_disabled", True)
+        do_set_realm_property(user_profile.realm, "name_changes_disabled", True, acting_user=None)
         url = "/json/settings"
         result = self.client_patch(url, data)
         self.assertEqual(result.status_code, 200)

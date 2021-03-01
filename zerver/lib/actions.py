@@ -769,7 +769,7 @@ def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
 
 
 def do_set_realm_property(
-    realm: Realm, name: str, value: Any, acting_user: Optional[UserProfile] = None
+    realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
     value to update and and the user who initiated the update.

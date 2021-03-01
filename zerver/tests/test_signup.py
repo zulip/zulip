@@ -1362,7 +1362,7 @@ earl-test@zulip.com""",
         Tests inviting with various missing or invalid parameters.
         """
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
 
         self.login("hamlet")
         invitee_emails = "foo@zulip.com"
@@ -3052,7 +3052,7 @@ class UserSignUpTest(InviteUserBase):
         password = "newpassword"
         timezone = "US/Mountain"
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "default_language", "de")
+        do_set_realm_property(realm, "default_language", "de", acting_user=None)
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
@@ -3084,7 +3084,7 @@ class UserSignUpTest(InviteUserBase):
         email = self.nonreg_email("newguy")
         password = "newpassword"
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "default_twenty_four_hour_time", True)
+        do_set_realm_property(realm, "default_twenty_four_hour_time", True, acting_user=None)
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
@@ -3595,8 +3595,8 @@ class UserSignUpTest(InviteUserBase):
 
     def test_failed_signup_due_to_restricted_domain(self) -> None:
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "invite_required", False)
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "invite_required", False, acting_user=None)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
 
         email = "user@acme.com"
         form = HomepageForm({"email": email}, realm=realm)
