@@ -57,6 +57,12 @@ const ls = localstorage();
 
 let filters = new Set();
 
+export function clear_for_tests() {
+    filters.clear();
+    topics.clear();
+    topics_widget = undefined;
+}
+
 export function save_filters() {
     ls.set(ls_key, Array.from(filters));
 }

@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const rewiremock = require("rewiremock/node");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {reset_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -172,7 +172,7 @@ rewiremock("../../static/js/stream_data").with({
 rewiremock.enable();
 
 const people = zrequire("people");
-let rt = zrequire("recent_topics");
+const rt = zrequire("recent_topics");
 
 people.is_my_user_id = (id) => id === 1;
 people.sender_info_with_small_avatar_urls_for_sender_ids = (ids) => ids;
@@ -358,7 +358,7 @@ run_test("test_recent_topics_show", () => {
 
     stub_out_filter_buttons();
 
-    rt = reset_module("recent_topics");
+    rt.clear_for_tests();
     rt.process_messages(messages);
 
     rt.show();
@@ -392,7 +392,7 @@ run_test("test_filter_all", () => {
     // topic is not muted
     row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
     i = row_data.length;
-    rt = reset_module("recent_topics");
+    rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.__Rewire__("is_visible", () => true);
     rt.set_filter("all");
@@ -434,7 +434,7 @@ run_test("test_filter_unread", () => {
     ]);
     let i = 0;
 
-    rt = reset_module("recent_topics");
+    rt.clear_for_tests();
     rt.__Rewire__("is_visible", () => true);
     rt.set_default_focus();
 
@@ -501,7 +501,7 @@ run_test("test_filter_participated", () => {
     ]);
     let i = 0;
 
-    rt = reset_module("recent_topics");
+    rt.clear_for_tests();
     rt.__Rewire__("is_visible", () => true);
     rt.set_default_focus();
     stub_templates(() => "<recent_topics table stub>");
@@ -544,7 +544,7 @@ run_test("test_filter_participated", () => {
 });
 
 run_test("test_update_unread_count", () => {
-    rt = reset_module("recent_topics");
+    rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
     stub_templates(() => "<recent_topics table stub>");
@@ -559,7 +559,7 @@ run_test("test_update_unread_count", () => {
 stub_templates(() => "<recent_topics table stub>");
 
 run_test("basic assertions", () => {
-    rt = reset_module("recent_topics");
+    rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.__Rewire__("is_visible", () => true);
     rt.set_default_focus();
@@ -640,7 +640,7 @@ run_test("basic assertions", () => {
 });
 
 run_test("test_reify_local_echo_message", () => {
-    rt = reset_module("recent_topics");
+    rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.__Rewire__("is_visible", () => true);
     rt.set_filter("all");
@@ -689,7 +689,7 @@ run_test("test_reify_local_echo_message", () => {
 });
 
 run_test("test_delete_messages", (override) => {
-    rt = reset_module("recent_topics");
+    rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
     rt.process_messages(messages);
@@ -728,7 +728,7 @@ run_test("test_delete_messages", (override) => {
 
 run_test("test_topic_edit", () => {
     // NOTE: This test should always run in the end as it modified the messages data.
-    rt = reset_module("recent_topics");
+    rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
     rt.process_messages(messages);
@@ -784,7 +784,7 @@ run_test("test_topic_edit", () => {
 });
 
 run_test("test_search", () => {
-    rt = reset_module("recent_topics");
+    rt.clear_for_tests();
     rt.__Rewire__("is_visible", () => true);
     assert.equal(rt.topic_in_search_results("t", "general", "Recent Topic"), true);
     assert.equal(rt.topic_in_search_results("T", "general", "Recent Topic"), true);
