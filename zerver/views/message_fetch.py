@@ -43,6 +43,7 @@ from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
     can_access_stream_history_by_id,
     can_access_stream_history_by_name,
+    get_history_public_streams_queryset,
     get_public_streams_queryset,
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
@@ -306,6 +307,8 @@ class NarrowBuilder:
             recipient_queryset = get_public_streams_queryset(self.realm)
         elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
+        elif operand == "all":
+            recipient_queryset = get_history_public_streams_queryset(self.realm)
         else:
             raise BadNarrowOperator("unknown streams operand " + operand)
 
@@ -694,11 +697,17 @@ def ok_to_include_history(
                     include_history = can_access_stream_history_by_name(user_profile, operand)
                 else:
                     include_history = can_access_stream_history_by_id(user_profile, operand)
-            elif (
-                term["operator"] == "streams"
-                and term["operand"] == "public"
-                and not term.get("negated", False)
-                and user_profile.can_access_public_streams()
+            elif term["operator"] == "streams" and (
+                (
+                    term["operand"] == "public"
+                    and not term.get("negated", False)
+                    and user_profile.can_access_public_streams()
+                )
+                or (
+                    term["operand"] == "all"
+                    and not term.get("negated", False)
+                    and user_profile.can_access_public_streams()
+                )
             ):
                 include_history = True
         # Disable historical messages if the user is narrowing on anything

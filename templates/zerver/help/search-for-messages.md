@@ -33,7 +33,8 @@ Here is the **full list of search operators**.
 * `id:12345`: Show only message `12345`.
 * `streams:public`: Search the history of all [public
   streams](/help/change-the-privacy-of-a-stream) in the organization.
-
+* `streams:all`: Search the history of [public and private streams
+  with shared history](/help/change-the-privacy-of-a-stream) in the organization.
 * `is:alerted`: See [alert words](/help/add-an-alert-word).
 * `is:mentioned`: See [mentions](/help/mention-a-user-or-group).
 * `is:starred`: See [starred messages](/help/star-a-message).
