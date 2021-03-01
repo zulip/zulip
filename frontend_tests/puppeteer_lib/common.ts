@@ -14,6 +14,7 @@ type Message = Record<string, string | boolean> & {recipient?: string; content: 
 class CommonUtils {
     browser: Browser | null = null;
     screenshot_id = 0;
+    is_firefox = process.env.PUPPETEER_PRODUCT === "firefox";
     realm_url = "http://zulip.zulipdev.com:9981/";
     pm_recipient = {
         async set(page: Page, recipient: string): Promise<void> {
