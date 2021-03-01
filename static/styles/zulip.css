@@ -111,9 +111,6 @@ p.n-margin {
     border-radius: 4px;
 }
 
-.modal-backdrop {
-    z-index: 102;
-}
 
 .history-limited-box {
     color: hsl(16, 60%, 45%);
