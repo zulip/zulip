@@ -232,7 +232,10 @@ def stdout_suppressed() -> Iterator[IO[str]]:
 def reset_emails_in_zulip_realm() -> None:
     realm = get_realm("zulip")
     do_set_realm_property(
-        realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        realm,
+        "email_address_visibility",
+        Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        acting_user=None,
     )
 
 

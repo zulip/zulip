@@ -239,7 +239,7 @@ class MessagePOSTTest(ZulipTestCase):
         admin_profile = self.example_user("iago")
         self.login_user(admin_profile)
 
-        do_set_realm_property(admin_profile.realm, "waiting_period_threshold", 10)
+        do_set_realm_property(admin_profile.realm, "waiting_period_threshold", 10, acting_user=None)
         admin_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
         admin_profile.save()
         self.assertTrue(admin_profile.is_provisional_member)
@@ -1629,12 +1629,18 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(shiva, stream_name)
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_EVERYONE
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+            acting_user=None,
         )
         self.send_and_verify_wildcard_mention_message("polonius")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_MEMBERS
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_MEMBERS,
+            acting_user=None,
         )
         self.send_and_verify_wildcard_mention_message("polonius", test_fails=True)
         # There is no restriction on small streams.
@@ -1642,9 +1648,12 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_wildcard_mention_message("cordelia")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+            acting_user=None,
         )
-        do_set_realm_property(realm, "waiting_period_threshold", 10)
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
         iago.date_joined = timezone_now()
         iago.save()
         shiva.date_joined = timezone_now()
@@ -1662,7 +1671,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_wildcard_mention_message("cordelia")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS,
+            acting_user=None,
         )
         # TODO: Change this when we implement stream administrators
         self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
@@ -1673,7 +1685,7 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS
+            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
         )
         self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
         # There is no restriction on small streams.
@@ -1681,7 +1693,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_wildcard_mention_message("iago")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY
+            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
         )
         self.send_and_verify_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_wildcard_mention_message("iago", sub_count=10)
@@ -1691,7 +1703,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.login_user(cordelia)
 
         self.subscribe(cordelia, "test_stream")
-        do_set_realm_property(cordelia.realm, "wildcard_mention_policy", 10)
+        do_set_realm_property(cordelia.realm, "wildcard_mention_policy", 10, acting_user=None)
         content = "@**all** test wildcard mention"
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=16):
             with self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"):
@@ -1865,7 +1877,10 @@ class PersonalMessageSendTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         do_set_realm_property(
-            user_profile.realm, "private_message_policy", Realm.PRIVATE_MESSAGE_POLICY_DISABLED
+            user_profile.realm,
+            "private_message_policy",
+            Realm.PRIVATE_MESSAGE_POLICY_DISABLED,
+            acting_user=None,
         )
         with self.assertRaises(JsonableError):
             self.send_personal_message(user_profile, self.example_user("cordelia"))
@@ -2116,7 +2131,7 @@ class InternalPrepTest(ZulipTestCase):
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain: str) -> Realm:
         realm = do_create_realm(string_id=domain, name=domain)
-        do_set_realm_property(realm, "invite_required", False)
+        do_set_realm_property(realm, "invite_required", False, acting_user=None)
         RealmDomain.objects.create(realm=realm, domain=domain)
         return realm
 

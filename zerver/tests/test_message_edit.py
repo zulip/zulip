@@ -246,7 +246,7 @@ class EditMessageTest(ZulipTestCase):
 
     def test_edit_message_history_disabled(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(user_profile.realm, "allow_edit_history", False)
+        do_set_realm_property(user_profile.realm, "allow_edit_history", False, acting_user=None)
         self.login("hamlet")
 
         # Single-line edit

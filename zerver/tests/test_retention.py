@@ -953,16 +953,20 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
         archiving_enabled_zephyr_stream.save()
 
         no_archiving_realm = do_create_realm(string_id="no_archiving", name="no_archiving")
-        do_set_realm_property(no_archiving_realm, "invite_required", False)
-        do_set_realm_property(no_archiving_realm, "message_retention_days", -1)
+        do_set_realm_property(no_archiving_realm, "invite_required", False, acting_user=None)
+        do_set_realm_property(no_archiving_realm, "message_retention_days", -1, acting_user=None)
 
         # Realm for testing the edge case where it has a default retention policy,
         # but all streams disable it.
         realm_all_streams_archiving_disabled = do_create_realm(
             string_id="with_archiving", name="with_archiving"
         )
-        do_set_realm_property(realm_all_streams_archiving_disabled, "invite_required", False)
-        do_set_realm_property(realm_all_streams_archiving_disabled, "message_retention_days", 1)
+        do_set_realm_property(
+            realm_all_streams_archiving_disabled, "invite_required", False, acting_user=None
+        )
+        do_set_realm_property(
+            realm_all_streams_archiving_disabled, "message_retention_days", 1, acting_user=None
+        )
         Stream.objects.filter(realm=realm_all_streams_archiving_disabled).update(
             message_retention_days=-1
         )

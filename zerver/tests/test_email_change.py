@@ -66,6 +66,7 @@ class EmailChangeTestCase(ZulipTestCase):
             user_profile.realm,
             "email_address_visibility",
             Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
         )
 
         old_email = user_profile.delivery_email
@@ -138,7 +139,12 @@ class EmailChangeTestCase(ZulipTestCase):
         data = {"email": "hamlet-new@zulip.com"}
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
-        do_set_realm_property(user_profile.realm, "email_changes_disabled", True)
+        do_set_realm_property(
+            user_profile.realm,
+            "email_changes_disabled",
+            True,
+            acting_user=None,
+        )
         url = "/json/settings"
         result = self.client_patch(url, data)
         self.assertEqual(len(mail.outbox), 0)
@@ -179,7 +185,12 @@ class EmailChangeTestCase(ZulipTestCase):
         body = email_message.body
         self.assertIn("We received a request to change the email", body)
 
-        do_set_realm_property(user_profile.realm, "email_changes_disabled", True)
+        do_set_realm_property(
+            user_profile.realm,
+            "email_changes_disabled",
+            True,
+            acting_user=None,
+        )
 
         activation_url = [s for s in body.split("\n") if s][2]
         response = self.client_get(activation_url)
@@ -207,7 +218,10 @@ class EmailChangeTestCase(ZulipTestCase):
     def test_change_delivery_email_end_to_end_with_admins_visibility(self) -> None:
         user_profile = self.example_user("hamlet")
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
 
         self.login_user(user_profile)
