@@ -492,6 +492,9 @@ class Filter {
         if (_.isEqual(term_types, ["streams-public"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["streams-all"])) {
+            return true;
+        }
         return false;
     }
 
@@ -542,6 +545,8 @@ class Filter {
                     return "/#narrow/is/mentioned";
                 case "streams-public":
                     return "/#narrow/streams/public";
+                case "streams-all":
+                    return "/#narrow/streams/all";
                 case "pm-with":
                     // join is used to transform the array to a comma separated string
                     return (
@@ -608,6 +613,8 @@ class Filter {
                     return i18n.t("All messages including muted streams");
                 case "streams-public":
                     return i18n.t("Public stream messages in organization");
+                case "streams-all":
+                    return i18n.t("All stream messages with shared history in organization");
                 case "stream":
                     if (!this._sub) {
                         return i18n.t("Unknown stream");
@@ -684,7 +691,11 @@ class Filter {
             return false;
         }
 
-        if (this.has_operator("streams") || this.has_negated_operand("streams", "public")) {
+        if (
+            this.has_operator("streams") ||
+            this.has_negated_operand("streams", "public") ||
+            this.has_negated_operand("streams", "all")
+        ) {
             return false;
         }
 
@@ -830,6 +841,7 @@ class Filter {
         const levels = [
             "in",
             "streams-public",
+            "streams-all",
             "stream",
             "topic",
             "pm-with",

@@ -438,7 +438,20 @@ function get_streams_filter_suggestions(last, operators) {
                 {operator: "streams"},
             ],
         },
+        {
+            search_string: "streams:all",
+            description: "All public and private streams with shared history in organisation",
+            invalid: [
+                {operator: "is", operand: "private"},
+                {operator: "stream"},
+                {operator: "group-pm-with"},
+                {operator: "pm-with"},
+                {operator: "in"},
+                {operator: "streams"},
+            ],
+        },
     ];
+
     return get_special_filter_suggestions(last, operators, suggestions);
 }
 function get_is_filter_suggestions(last, operators) {

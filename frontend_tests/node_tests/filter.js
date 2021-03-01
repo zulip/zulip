@@ -147,6 +147,25 @@ run_test("basics", () => {
     assert(filter.includes_full_stream_history());
     assert(!filter.is_personal_filter());
 
+    operators = [{operator: "streams", operand: "all", negated: true}];
+    filter = new Filter(operators);
+    assert(!filter.contains_only_private_messages());
+    assert(!filter.has_operator("streams"));
+    assert(!filter.can_mark_messages_read());
+    assert(filter.has_negated_operand("streams", "all"));
+    assert(!filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
+
+    operators = [{operator: "streams", operand: "all"}];
+    filter = new Filter(operators);
+    assert(!filter.contains_only_private_messages());
+    assert(filter.has_operator("streams"));
+    assert(!filter.can_mark_messages_read());
+    assert(!filter.has_negated_operand("streams", "all"));
+    assert(!filter.can_apply_locally());
+    assert(filter.includes_full_stream_history());
+    assert(!filter.is_personal_filter());
+
     operators = [{operator: "is", operand: "private"}];
     filter = new Filter(operators);
     assert(filter.contains_only_private_messages());
@@ -578,6 +597,9 @@ run_test("predicate_basics", () => {
     predicate = get_predicate([["streams", "public"]]);
     assert(predicate({}));
 
+    predicate = get_predicate([["streams", "all"]]);
+    assert(predicate({}));
+
     predicate = get_predicate([["is", "starred"]]);
     assert(predicate({starred: true}));
     assert(!predicate({starred: false}));
@@ -914,12 +936,27 @@ run_test("parse", () => {
     ];
     _test();
 
+    string = "text streams:all more text";
+    operators = [
+        {operator: "streams", operand: "all"},
+        {operator: "search", operand: "text more text"},
+    ];
+    _test();
+
     string = "streams:public";
     operators = [{operator: "streams", operand: "public"}];
     _test();
 
     string = "-streams:public";
     operators = [{operator: "streams", operand: "public", negated: true}];
+    _test();
+
+    string = "streams:all";
+    operators = [{operator: "streams", operand: "all"}];
+    _test();
+
+    string = "-streams:all";
+    operators = [{operator: "streams", operand: "all", negated: true}];
     _test();
 
     string = "stream:foo :emoji: are cool";
@@ -983,6 +1020,22 @@ run_test("unparse", () => {
     string = "-streams:public";
     assert.deepEqual(Filter.unparse(operators), string);
 
+    operators = [
+        {operator: "streams", operand: "all"},
+        {operator: "search", operand: "text"},
+    ];
+
+    string = "streams:all text";
+    assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [{operator: "streams", operand: "all"}];
+    string = "streams:all";
+    assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [{operator: "streams", operand: "all", negated: true}];
+    string = "-streams:all";
+    assert.deepEqual(Filter.unparse(operators), string);
+
     operators = [{operator: "id", operand: 50}];
     string = "id:50";
     assert.deepEqual(Filter.unparse(operators), string);
@@ -1006,6 +1059,14 @@ run_test("describe", () => {
 
     narrow = [{operator: "streams", operand: "public", negated: true}];
     string = "exclude streams public";
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [{operator: "streams", operand: "all"}];
+    string = "streams all";
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [{operator: "streams", operand: "all", negated: true}];
+    string = "exclude streams all";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
@@ -1341,6 +1402,7 @@ run_test("navbar_helpers", () => {
     const is_private = [{operator: "is", operand: "private"}];
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
     const streams_public = [{operator: "streams", operand: "public"}];
+    const streams_all = [{operator: "streams", operand: "all"}];
     const stream_topic_operators = [
         {operator: "stream", operand: "foo"},
         {operator: "topic", operand: "bar"},
@@ -1411,6 +1473,13 @@ run_test("navbar_helpers", () => {
             icon: undefined,
             title: "translated: Public stream messages in organization",
             redirect_url_with_search: "/#narrow/streams/public",
+        },
+        {
+            operator: streams_all,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: All stream messages with shared history in organization",
+            redirect_url_with_search: "/#narrow/streams/all",
         },
         {
             operator: stream_operator,

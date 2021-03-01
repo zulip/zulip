@@ -383,6 +383,7 @@ run_test("empty_query_suggestions", () => {
     const expected = [
         "",
         "streams:public",
+        "streams:all",
         "is:private",
         "is:starred",
         "is:mentioned",
@@ -531,7 +532,7 @@ run_test("check_is_suggestions", () => {
 
     query = "st";
     suggestions = get_suggestions("", query);
-    expected = ["st", "streams:public", "is:starred", "stream:"];
+    expected = ["st", "streams:public", "streams:all", "is:starred", "stream:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "stream:Denmark has:link is:sta";
@@ -837,7 +838,7 @@ run_test("operator_suggestions", () => {
 
     query = "st";
     suggestions = get_suggestions("", query);
-    expected = ["st", "streams:public", "is:starred", "stream:"];
+    expected = ["st", "streams:public", "streams:all", "is:starred", "stream:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "group-";
@@ -847,7 +848,14 @@ run_test("operator_suggestions", () => {
 
     query = "-s";
     suggestions = get_suggestions("", query);
-    expected = ["-s", "-streams:public", "-sender:myself@zulip.com", "-stream:", "-sender:"];
+    expected = [
+        "-s",
+        "-streams:public",
+        "-streams:all",
+        "-sender:myself@zulip.com",
+        "-stream:",
+        "-sender:",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "stream:Denmark is:alerted -f";
