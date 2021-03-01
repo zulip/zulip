@@ -364,6 +364,10 @@ def get_public_streams_queryset(realm: Realm) -> "QuerySet[Stream]":
     return Stream.objects.filter(realm=realm, invite_only=False, history_public_to_subscribers=True)
 
 
+def get_history_public_streams_queryset(realm: Realm) -> "QuerySet[Stream]":
+    return Stream.objects.filter(realm=realm, history_public_to_subscribers=True)
+
+
 def get_web_public_streams_queryset(realm: Realm) -> "QuerySet[Stream]":
     # In theory, is_web_public=True implies invite_only=False and
     # history_public_to_subscribers=True, but it's safer to include
