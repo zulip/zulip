@@ -38,6 +38,11 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
         module: {
             rules: [
                 {
+                    test: require.resolve("./static/js/zulip_test"),
+                    loader: "expose-loader",
+                    options: {exposes: "zulip_test"},
+                },
+                {
                     test: require.resolve("./tools/debug-require"),
                     loader: "expose-loader",
                     options: {exposes: "require"},
