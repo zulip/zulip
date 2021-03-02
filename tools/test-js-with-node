@@ -176,7 +176,7 @@ parser.add_argument("args", nargs=argparse.REMAINDER)
 options = parser.parse_args()
 individual_files = options.args
 
-assert_provisioning_status_ok(options.force)
+assert_provisioning_status_ok(options.skip_provision_check)
 
 
 def get_dev_host() -> str:

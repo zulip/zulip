@@ -59,7 +59,7 @@ parser.add_argument(
 add_provision_check_override_param(parser)
 options = parser.parse_args()
 
-assert_provisioning_status_ok(options.force)
+assert_provisioning_status_ok(options.skip_provision_check)
 
 if options.interface is None:
     user_id = os.getuid()

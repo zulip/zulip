@@ -16,7 +16,7 @@ def run() -> None:
 
     options = parser.parse_args()
 
-    assert_provisioning_status_ok(options.force)
+    assert_provisioning_status_ok(options.skip_provision_check)
 
 
 if __name__ == "__main__":

@@ -122,7 +122,7 @@ or report and ask for help in chat.zulip.org""",
 
 
 external_host = "zulipdev.com:9981"
-assert_provisioning_status_ok(options.force)
+assert_provisioning_status_ok(options.skip_provision_check)
 prepare_puppeteer_run()
 run_tests(options.tests, external_host)
 print(f"{OKGREEN}All tests passed!{ENDC}")
