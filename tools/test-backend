@@ -368,7 +368,7 @@ def main() -> None:
             full_suite = False
         os.environ["GENERATE_STRIPE_FIXTURES"] = "1"
 
-    assert_provisioning_status_ok(options.force)
+    assert_provisioning_status_ok(options.skip_provision_check)
 
     if options.coverage:
         import coverage

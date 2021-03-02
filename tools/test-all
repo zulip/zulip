@@ -10,8 +10,8 @@ eval set -- "$TEMP"
 # extract options.
 while true; do
     case "$1" in
-        -f | --force)
-            FORCEARG="--force"
+        -f | --skip-provision-check)
+            FORCEARG="--skip-provision-check"
             shift
             ;;
         --)

@@ -30,8 +30,7 @@ parser.add_argument(
 add_provision_check_override_param(parser)
 parser.add_argument("--quiet", action="store_true", help="suppress mypy summary output")
 args = parser.parse_args()
-
-assert_provisioning_status_ok(args.force)
+assert_provisioning_status_ok(args.skip_provision_check)
 
 command_name = "mypy"
 

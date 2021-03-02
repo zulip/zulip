@@ -36,7 +36,7 @@ def run() -> None:
 
     os.chdir(root_dir)
 
-    assert_provisioning_status_ok(args.force)
+    assert_provisioning_status_ok(args.skip_provision_check)
 
     # Invoke the appropriate lint checker for each language,
     # and also check files for extra whitespace.
@@ -107,8 +107,8 @@ def run() -> None:
         description="Formats shell scripts",
     )
     command = ["tools/run-mypy", "--quiet"]
-    if args.force:
-        command.append("--force")
+    if args.skip_provision_check:
+        command.append("--skip-provision-check")
     linter_config.external_linter(
         "mypy",
         command,
