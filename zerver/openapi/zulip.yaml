@@ -9773,8 +9773,11 @@ components:
         subject:
           type: string
           description: |
-            The `topic` of the message (only present for stream
-            messages).  The field name is a legacy holdover from when topics were
+            The `topic` of the message.  Currently always `""` for private messages,
+            though this could change if Zulip adds support for topics in private
+            message conversations.
+
+            The field name is a legacy holdover from when topics were
             called "subjects" and will eventually change.
         topic_links:
           type: array
