@@ -48,6 +48,17 @@
                 cursor: pointer;
                 color: hsl(0, 0%, 0%) !important;
             }
+
+            /*
+            Hover does not work for touch-based devices like mobile phones.
+            Hence the the icons does not appear, making the user unaware of its
+            presence on such devices. The following media property displays the
+            icon by default for such behaviour.
+            */
+
+            @media (hover: none) {
+                display: inline;
+            }
         }
 
         &:hover {
