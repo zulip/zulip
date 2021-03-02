@@ -197,23 +197,24 @@ developing locally.
 
 - [rmate](https://github.com/textmate/rmate) for TextMate + VS Code:
 1. Install the extension
-[Remote VSCode](https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode).
+   [Remote VSCode](https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode).
 2. On your remote machine, run:
-```
-$ mkdir -p ~/bin
-$ curl -Lo ~/bin/rmate https://raw.githubusercontent.com/textmate/rmate/master/bin/rmate
-$ chmod a+x ~/bin/rmate
-```
-3. Make sure the remote server is running in VS Code (you can force-start through the Command Palette).
+   ```
+   $ mkdir -p ~/bin
+   $ curl -Lo ~/bin/rmate https://raw.githubusercontent.com/textmate/rmate/master/bin/rmate
+   $ chmod a+x ~/bin/rmate
+   ```
+3. Make sure the remote server is running in VS Code (you can
+   force-start through the Command Palette).
 4. SSH to your remote machine using
-```
-$ ssh -R 52698:localhost:52698 user@example.org
-```
+   ```
+   $ ssh -R 52698:localhost:52698 user@example.org
+   ```
 5. On your remote machine, run
-```
-$ rmate [options] file
-```
-and the file should open up in VS Code. Any changes you make now will be saved remotely.
+   ```
+   $ rmate [options] file
+   ```
+   and the file should open up in VS Code. Any changes you make now will be saved remotely.
 
 ##### Command line editors
 
