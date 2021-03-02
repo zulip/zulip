@@ -95,7 +95,11 @@ def add_provision_check_override_param(parser: ArgumentParser) -> None:
     """
     Registers --skip-provision-check argument to be used with various commands/tests in our tools.
     """
-    parser.add_argument("--skip-provision-check", action="store_true", help="Run tests despite possible problems.")
+    parser.add_argument(
+        "--skip-provision-check",
+        action="store_true",
+        help="Skip check that provision has been run; useful to save time if you know the dependency changes are not relevant to this command and will not cause it to fail",
+    )
 
 
 def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
