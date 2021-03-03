@@ -378,10 +378,12 @@ isodate==0.6.0 \
     #   openapi-core
     #   openapi-schema-validator
     #   python3-saml
-jedi==0.18.0 \
-    --hash=sha256:18456d83f65f400ab0c2d3319e48520420ef43b23a086fdc05dff34132f0fb93 \
-    --hash=sha256:92550a404bad8afed881a137ec9a461fed49eca661414be45059329614ed0707
-    # via ipython
+jedi==0.17.2 \
+    --hash=sha256:86ed7d9b750603e4ba582ea8edc678657fb4007894a12bcf6f4bb97892f31d20 \
+    --hash=sha256:98cc583fa0f2f8304968199b01b6b4b94f469a1f4a74c1560506ca2a211378b5
+    # via
+    #   -r requirements/common.in
+    #   ipython
 jinja2==2.11.3 \
     --hash=sha256:03e47ad063331dd6a3f04a43eddca8a966a26ba0c5b7207a9a9e4e08f1b29419 \
     --hash=sha256:a6d58433de0ae800347cab1fa3043cebbabe8baa9d29e668f1c768cb87a333c6
@@ -600,9 +602,9 @@ orjson==3.5.0 \
 parse==1.19.0 \
     --hash=sha256:9ff82852bcb65d139813e2a5197627a94966245c897796760a3a2a8eb66f020b
     # via openapi-core
-parso==0.8.1 \
-    --hash=sha256:15b00182f472319383252c18d5913b69269590616c947747bc50bf4ac768f410 \
-    --hash=sha256:8519430ad07087d4c997fda3a7918f7cfa27cb58972a8c89c2a0295a1c940e9e
+parso==0.7.1 \
+    --hash=sha256:97218d9159b2520ff45eb78028ba8b50d2bc61dcc062a9682666f2dc4bd331ea \
+    --hash=sha256:caba44724b994a8a5e086460bb212abc5a8bc46951bf4a9a1210745953622eb9
     # via jedi
 pexpect==4.8.0 \
     --hash=sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937 \
