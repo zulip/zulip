@@ -25,15 +25,6 @@ usage = """test-js-with-puppeteer [options]
     test-js-with-puppeteer 09 # Run a single test file 09-navigation.js
     test-js-with-puppeteer 01-login.js 03-narrow.js # Run a few test files
     test-js-with-puppeteer 01 03 # Run a few test files, 01-login.js and 03-narrow.js here"""
-parser = argparse.ArgumentParser(usage)
-
-parser.add_argument("--interactive", action="store_true", help="Run tests interactively")
-parser.add_argument("--force", action="store_true", help="Run tests despite possible problems.")
-parser.add_argument(
-    "tests", nargs=argparse.REMAINDER, help="Specific tests to run; by default, runs all tests"
-)
-
-options = parser.parse_args()
 
 sys.path.insert(0, ZULIP_PATH)
 
@@ -45,11 +36,22 @@ sanity_check.check_venv(__file__)
 from typing import Iterable, Tuple
 
 from tools.lib.test_script import (
+    add_provision_check_override_param,
     assert_provisioning_status_ok,
     find_js_test_files,
     prepare_puppeteer_run,
 )
 from tools.lib.test_server import test_server_running
+
+parser = argparse.ArgumentParser(usage)
+
+parser.add_argument("--interactive", action="store_true", help="Run tests interactively")
+add_provision_check_override_param(parser)
+parser.add_argument(
+    "tests", nargs=argparse.REMAINDER, help="Specific tests to run; by default, runs all tests"
+)
+
+options = parser.parse_args()
 
 
 def run_tests(files: Iterable[str], external_host: str) -> None:

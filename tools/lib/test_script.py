@@ -2,6 +2,7 @@ import glob
 import os
 import subprocess
 import sys
+from argparse import ArgumentParser
 from distutils.version import LooseVersion
 from typing import Iterable, List, Optional, Tuple
 
@@ -86,6 +87,13 @@ def assert_provisioning_status_ok(force: bool) -> None:
             print(msg)
             print("If you really know what you are doing, use --force to run anyway.")
             sys.exit(1)
+
+
+def add_provision_check_override_param(parser: ArgumentParser) -> None:
+    """
+    Registers --force argument to be used with various commands/tests in our tools.
+    """
+    parser.add_argument("--force", action="store_true", help="Run tests despite possible problems.")
 
 
 def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
