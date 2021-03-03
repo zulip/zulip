@@ -849,16 +849,11 @@ input[type="checkbox"] {
     margin: 0;
     padding: 0;
 
-    label,
-    button.dropdown-toggle {
+    label {
         text-transform: uppercase;
         font-weight: 600;
         color: hsl(0, 0%, 67%);
         margin-top: 5px;
-    }
-
-    button.dropdown-toggle {
-        text-transform: none;
     }
 
     .buttons {
