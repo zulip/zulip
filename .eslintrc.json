@@ -131,11 +131,7 @@
         },
         {
             "files": ["**/*.ts"],
-            "extends": [
-                "plugin:@typescript-eslint/recommended",
-                "plugin:import/typescript",
-                "prettier/@typescript-eslint"
-            ],
+            "extends": ["plugin:@typescript-eslint/recommended", "plugin:import/typescript"],
             "parserOptions": {
                 "project": "tsconfig.json"
             },
