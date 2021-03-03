@@ -693,7 +693,7 @@ def missedmessage_hook(
     """The receiver_is_off_zulip logic used to determine whether a user
     has no active client suffers from a somewhat fundamental race
     condition.  If the client is no longer on the Internet,
-    receiver_is_off_zulip will still return true for
+    receiver_is_off_zulip will still return False for
     DEFAULT_EVENT_QUEUE_TIMEOUT_SECS, until the queue is
     garbage-collected.  This would cause us to reliably miss
     push/email notifying users for messages arriving during the
