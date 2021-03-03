@@ -9,6 +9,7 @@ from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.actions import (
     check_change_bot_full_name,
+    check_change_bot_type,
     check_change_full_name,
     check_remove_custom_profile_field_value,
     do_change_avatar_fields,
@@ -49,6 +50,7 @@ from zerver.lib.users import (
     check_valid_bot_type,
     check_valid_interface_type,
     get_api_key,
+    get_bots_by_owner,
     get_raw_user_data,
     validate_user_custom_profile_data,
 )

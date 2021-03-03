@@ -302,6 +302,12 @@ def get_accounts_for_email(email: str) -> List[Accounts]:
     return accounts
 
 
+def get_bots_by_owner(user_profile: UserProfile) -> List[UserProfile]:
+    # user_profile is profile of bot_owner.
+    bots = list(UserProfile.objects.filter(is_bot=True, bot_owner=user_profile).select_related())
+    return bots
+
+
 def get_api_key(user_profile: UserProfile) -> str:
     return user_profile.api_key
 
