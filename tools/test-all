@@ -4,13 +4,13 @@ set -e
 cd "$(dirname "$0")"/..
 
 # read the options
-TEMP=$(getopt -o f --long force -- "$@")
+TEMP=$(getopt -o "" --long skip-provision-check -- "$@")
 eval set -- "$TEMP"
 
 # extract options.
 while true; do
     case "$1" in
-        -f | --skip-provision-check)
+        --skip-provision-check)
             FORCEARG="--skip-provision-check"
             shift
             ;;
