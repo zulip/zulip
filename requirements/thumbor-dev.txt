@@ -1,7 +1,7 @@
 #
 # This file is GENERATED.  Don't edit directly.
 #
-# To update, edit the non-"lock" files in requirements/*.txt, then:
+# To update, edit the non-"lock" files in requirements/*.in, then:
 #
 #    tools/update-locked-requirements
 #
