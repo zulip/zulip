@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -12,15 +12,15 @@ set_global("page_params", {
 
 const noop = () => {};
 
-const narrow_state = rewiremock("../../static/js/narrow_state").with({});
-const search_suggestion = rewiremock("../../static/js/search_suggestion").with({});
-rewiremock("../../static/js/ui_util").with({
+const narrow_state = mock_module("narrow_state", {});
+const search_suggestion = mock_module("search_suggestion", {});
+mock_module("ui_util", {
     change_tab_to: noop,
 });
-const narrow = rewiremock("../../static/js/narrow").with({});
+const narrow = mock_module("narrow", {});
 const Filter = {};
 
-rewiremock("../../static/js/filter").with({
+mock_module("filter", {
     Filter,
 });
 

@@ -3,13 +3,13 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, use} = require("../zjsunit/namespace");
+const {mock_module, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const channel = {};
 
-rewiremock("../../static/js/channel").with(channel);
+mock_module("channel", channel);
 
 const {alert_words, alert_words_ui} = use("alert_words", "alert_words_ui");
 

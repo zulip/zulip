@@ -2,12 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, use} = require("../zjsunit/namespace");
+const {mock_module, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const compose_pm_pill = {__esModule: true};
 
-rewiremock("../../static/js/compose_pm_pill").with(compose_pm_pill);
+mock_module("compose_pm_pill", compose_pm_pill);
 
 const {compose_state} = use("compose_state");
 

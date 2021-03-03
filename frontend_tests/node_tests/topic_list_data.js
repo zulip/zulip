@@ -4,10 +4,10 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {rewiremock, use} = require("../zjsunit/namespace");
+const {mock_module, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const narrow_state = rewiremock("../../static/js/narrow_state").with({
+const narrow_state = mock_module("narrow_state", {
     topic() {},
 });
 const muting = {
@@ -15,8 +15,8 @@ const muting = {
         return false;
     },
 };
-rewiremock("../../static/js/muting").with(muting);
-rewiremock("../../static/js/message_list").with({});
+mock_module("muting", muting);
+mock_module("message_list", {});
 
 const {stream_data, stream_topic_history, topic_list_data, unread} = use(
     "fold_dict",

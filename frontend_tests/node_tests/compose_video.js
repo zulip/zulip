@@ -2,23 +2,18 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const events = require("./lib/events");
 
-const resize = {
-    __esModule: true,
+mock_module("resize", {
     watch_manual_resize() {},
-};
-rewiremock("../../static/js/resize").with(resize);
+});
 
-const upload = {__esModule: true};
-rewiremock("../../static/js/upload").with(upload);
-
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
+const upload = mock_module("upload", {});
+const channel = mock_module("channel", {});
 
 const page_params = set_global("page_params", {});
 

@@ -2,14 +2,14 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, use} = require("../zjsunit/namespace");
+const {mock_module, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const reload_state = {
     is_in_progress: () => false,
 };
 
-rewiremock("../../static/js/reload_state").with(reload_state);
+mock_module("reload_state", reload_state);
 
 const {people} = use("fold_dict", "people");
 

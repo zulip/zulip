@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, use} = require("../zjsunit/namespace");
+const {mock_module, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-rewiremock("../../static/js/ui").with({
+mock_module("ui", {
     get_scroll_element: (element) => element,
 });
 

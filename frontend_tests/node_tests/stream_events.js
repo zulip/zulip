@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -11,19 +11,19 @@ const noop = () => {};
 const _settings_notifications = {
     update_page: () => {},
 };
-rewiremock("../../static/js/settings_notifications").with(_settings_notifications);
+mock_module("settings_notifications", _settings_notifications);
 
-const color_data = rewiremock("../../static/js/color_data").with({});
+const color_data = mock_module("color_data", {});
 set_global("current_msg_list", {});
-const message_util = rewiremock("../../static/js/message_util").with({});
-const stream_color = rewiremock("../../static/js/stream_color").with({});
-const stream_list = rewiremock("../../static/js/stream_list").with({});
-const stream_muting = rewiremock("../../static/js/stream_muting").with({});
-rewiremock("../../static/js/recent_topics").with({
+const message_util = mock_module("message_util", {});
+const stream_color = mock_module("stream_color", {});
+const stream_list = mock_module("stream_list", {});
+const stream_muting = mock_module("stream_muting", {});
+mock_module("recent_topics", {
     complete_rerender: () => {},
 });
 
-rewiremock("../../static/js/message_list").with({
+mock_module("message_list", {
     all: {
         all_messages() {
             return ["msg"];
@@ -31,8 +31,8 @@ rewiremock("../../static/js/message_list").with({
     },
 });
 
-const subs = rewiremock("../../static/js/subs").with({update_settings_for_subscribed: noop});
-rewiremock("../../static/js/overlays").with({streams_open: () => true});
+const subs = mock_module("subs", {update_settings_for_subscribed: noop});
+mock_module("overlays", {streams_open: () => true});
 
 const {
     filter: {Filter},

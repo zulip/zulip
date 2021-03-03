@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -37,8 +37,8 @@ const page_params = set_global("page_params", {
     realm_authentication_methods: {},
 });
 
-const realm_icon = rewiremock("../../static/js/realm_icon").with({});
-const channel = rewiremock("../../static/js/channel").with({});
+const realm_icon = mock_module("realm_icon", {});
+const channel = mock_module("channel", {});
 
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
@@ -48,7 +48,7 @@ stub_templates((name, data) => {
     throw new Error(`Unknown template ${name}`);
 });
 
-const overlays = rewiremock("../../static/js/overlays").with({});
+const overlays = mock_module("overlays", {});
 
 const _ui_report = {
     success(msg, elem) {
@@ -67,9 +67,9 @@ const _ListWidget = {
 set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 set_global("jQuery", _jQuery);
-rewiremock("../../static/js/loading").with(_loading);
-rewiremock("../../static/js/ui_report").with(_ui_report);
-rewiremock("../../static/js/list_widget").with(_ListWidget);
+mock_module("loading", _loading);
+mock_module("ui_report", _ui_report);
+mock_module("list_widget", _ListWidget);
 
 const {settings_account, settings_bots, settings_config, settings_org, stream_data} = use(
     "fold_dict",

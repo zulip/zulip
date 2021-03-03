@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, use} = require("../zjsunit/namespace");
+const {mock_module, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -10,7 +10,7 @@ const noop = () => {};
 const _ListWidget = {
     create: () => ({init: noop}),
 };
-rewiremock("../../static/js/list_widget").with(_ListWidget);
+mock_module("list_widget", _ListWidget);
 
 const {
     dropdown_list_widget: {DropdownListWidget},

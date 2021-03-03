@@ -2,11 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, use} = require("../zjsunit/namespace");
+const {mock_module, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const muting_ui = rewiremock("../../static/js/muting_ui").with({});
+const muting_ui = mock_module("muting_ui", {});
 
 const {muting, settings_muting, stream_data} = use(
     "fold_dict",

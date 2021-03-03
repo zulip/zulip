@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -27,7 +27,7 @@ const bot_data_params = {
     ],
 };
 
-const avatar = rewiremock("../../static/js/avatar").with({});
+const avatar = mock_module("avatar", {});
 
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");

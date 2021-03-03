@@ -2,24 +2,24 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, with_field, use} = require("../zjsunit/namespace");
+const {mock_module, with_field, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const narrow_state = rewiremock("../../static/js/narrow_state").with({});
-rewiremock("../../static/js/ui").with({
+const narrow_state = mock_module("narrow_state", {});
+mock_module("ui", {
     get_content_element: (element) => element,
 });
-rewiremock("../../static/js/stream_popover").with({
+mock_module("stream_popover", {
     hide_topic_popover() {},
 });
-const unread = rewiremock("../../static/js/unread").with({});
-const unread_ui = rewiremock("../../static/js/unread_ui").with({});
+const unread = mock_module("unread", {});
+const unread_ui = mock_module("unread_ui", {});
 const vdom = {
     render: () => "fake-dom-for-pm-list",
 };
-rewiremock("../../static/js/vdom").with(vdom);
-const pm_list_dom = rewiremock("../../static/js/pm_list_dom").with({});
+mock_module("vdom", vdom);
+const pm_list_dom = mock_module("pm_list_dom", {});
 
 const {people, pm_conversations, pm_list} = use(
     "fold_dict",

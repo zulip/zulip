@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, use} = require("../zjsunit/namespace");
+const {mock_module, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_list = rewiremock("../../static/js/message_list").with({});
+const message_list = mock_module("message_list", {});
 
 const {
     filter: {Filter},

@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -25,11 +25,11 @@ set_global("document", {
 
 const channel = {};
 
-rewiremock("../../static/js/ui").with({
+mock_module("ui", {
     get_content_element: (element) => element,
 });
 
-rewiremock("../../static/js/keydown_util").with({
+mock_module("keydown_util", {
     handle: (opts) => {
         filter_key_handlers = opts.handlers;
     },
@@ -37,35 +37,35 @@ rewiremock("../../static/js/keydown_util").with({
 
 const compose_state = {};
 
-rewiremock("../../static/js/scroll_util").with({
+mock_module("scroll_util", {
     scroll_element_into_container: () => {},
 });
 
-rewiremock("../../static/js/pm_list").with({
+mock_module("pm_list", {
     update_private_messages: () => {},
 });
 
-rewiremock("../../static/js/popovers").with({
+mock_module("popovers", {
     hide_all_except_sidebars() {},
     hide_all() {},
     show_userlist_sidebar() {},
 });
 
-rewiremock("../../static/js/stream_popover").with({
+mock_module("stream_popover", {
     show_streamlist_sidebar() {},
 });
 
-rewiremock("../../static/js/resize").with({
+mock_module("resize", {
     resize_sidebars: () => {},
     resize_page_components: () => {},
 });
 
-rewiremock("../../static/js/padded_widget").with({
+mock_module("padded_widget", {
     update_padding: () => {},
 });
-rewiremock("../../static/js/channel").with(channel);
-rewiremock("../../static/js/compose_state").with(compose_state);
-rewiremock("../../static/js/server_events").with({
+mock_module("channel", channel);
+mock_module("compose_state", compose_state);
+mock_module("server_events", {
     check_for_unsuspend() {},
 });
 

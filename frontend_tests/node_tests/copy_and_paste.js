@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const jquery = require("jquery");
 const {JSDOM} = require("jsdom");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {
@@ -13,7 +13,7 @@ set_global("page_params", {
 });
 const compose_ui = {};
 
-rewiremock("../../static/js/compose_ui").with(compose_ui);
+mock_module("compose_ui", compose_ui);
 
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 const {DOMParser, document} = window;

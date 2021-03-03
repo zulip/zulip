@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {rewiremock, set_global, with_field, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -16,7 +16,7 @@ const document = dom.window.document;
 const helpers = {
     set_tab: () => {},
 };
-rewiremock("../../static/js/billing/helpers").with(helpers);
+mock_module("billing/helpers", helpers);
 const StripeCheckout = set_global("StripeCheckout", {
     configure: () => {},
 });

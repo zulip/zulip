@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, with_field, with_overrides, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, with_overrides, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -12,7 +12,7 @@ const popovers = {
     user_sidebar_popped: () => false,
     user_info_popped: () => false,
 };
-rewiremock("../../static/js/popovers").with(popovers);
+mock_module("popovers", popovers);
 const overlays = {
     is_active: () => false,
     settings_open: () => false,
@@ -22,9 +22,9 @@ const overlays = {
     info_overlay_open: () => false,
 };
 
-rewiremock("../../static/js/overlays").with(overlays);
+mock_module("overlays", overlays);
 
-rewiremock("../../static/js/stream_popover").with({
+mock_module("stream_popover", {
     stream_popped: () => false,
     topic_popped: () => false,
     all_messages_popped: () => false,
@@ -33,15 +33,15 @@ rewiremock("../../static/js/stream_popover").with({
 const emoji_picker = {
     reactions_popped: () => false,
 };
-rewiremock("../../static/js/emoji_picker").with(emoji_picker);
-rewiremock("../../static/js/hotspots").with({
+mock_module("emoji_picker", emoji_picker);
+mock_module("hotspots", {
     is_open: () => false,
 });
 const gear_menu = {
     is_open: () => false,
 };
 
-rewiremock("../../static/js/gear_menu").with(gear_menu);
+mock_module("gear_menu", gear_menu);
 
 // Important note on these tests:
 //
@@ -69,23 +69,23 @@ const page_params = set_global("page_params", {});
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
 
-const compose_actions = rewiremock("../../static/js/compose_actions").with({});
-const condense = rewiremock("../../static/js/condense").with({});
-const drafts = rewiremock("../../static/js/drafts").with({});
+const compose_actions = mock_module("compose_actions", {});
+const condense = mock_module("condense", {});
+const drafts = mock_module("drafts", {});
 const hashchange = {
     in_recent_topics_hash: () => false,
 };
-rewiremock("../../static/js/hashchange").with(hashchange);
-const lightbox = rewiremock("../../static/js/lightbox").with({});
-const list_util = rewiremock("../../static/js/list_util").with({});
-const message_edit = rewiremock("../../static/js/message_edit").with({});
-const muting_ui = rewiremock("../../static/js/muting_ui").with({});
-const narrow = rewiremock("../../static/js/narrow").with({});
-const navigate = rewiremock("../../static/js/navigate").with({});
-const reactions = rewiremock("../../static/js/reactions").with({});
-const search = rewiremock("../../static/js/search").with({});
-const stream_list = rewiremock("../../static/js/stream_list").with({});
-const subs = rewiremock("../../static/js/subs").with({});
+mock_module("hashchange", hashchange);
+const lightbox = mock_module("lightbox", {});
+const list_util = mock_module("list_util", {});
+const message_edit = mock_module("message_edit", {});
+const muting_ui = mock_module("muting_ui", {});
+const narrow = mock_module("narrow", {});
+const navigate = mock_module("navigate", {});
+const reactions = mock_module("reactions", {});
+const search = mock_module("search", {});
+const stream_list = mock_module("stream_list", {});
+const subs = mock_module("subs", {});
 
 set_global("current_msg_list", {
     empty() {
@@ -105,7 +105,7 @@ set_global("current_msg_list", {
         return 101;
     },
 });
-rewiremock("../../static/js/recent_topics").with({
+mock_module("recent_topics", {
     is_visible: () => false,
 });
 

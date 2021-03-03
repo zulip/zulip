@@ -9,7 +9,7 @@
 // become clear as you keep reading.
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, with_field, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -20,20 +20,20 @@ const {run_test} = require("../zjsunit/test");
 set_global("page_params", {});
 
 // We will also set up stubs for certain modules.
-const activity = rewiremock("../../static/js/activity").with({});
-const channel = rewiremock("../../static/js/channel").with({});
+const activity = mock_module("activity", {});
+const channel = mock_module("channel", {});
 const home_msg_list = set_global("home_msg_list", {});
-const message_list = rewiremock("../../static/js/message_list").with({});
-const message_live_update = rewiremock("../../static/js/message_live_update").with({});
-const message_util = rewiremock("../../static/js/message_util").with({});
-const message_viewport = rewiremock("../../static/js/message_viewport").with({});
-const notifications = rewiremock("../../static/js/notifications").with({});
-const overlays = rewiremock("../../static/js/overlays").with({});
-const pm_list = rewiremock("../../static/js/pm_list").with({});
-const resize = rewiremock("../../static/js/resize").with({});
-const settings_users = rewiremock("../../static/js/settings_users").with({});
-const topic_list = rewiremock("../../static/js/topic_list").with({});
-const unread_ui = rewiremock("../../static/js/unread_ui").with({});
+const message_list = mock_module("message_list", {});
+const message_live_update = mock_module("message_live_update", {});
+const message_util = mock_module("message_util", {});
+const message_viewport = mock_module("message_viewport", {});
+const notifications = mock_module("notifications", {});
+const overlays = mock_module("overlays", {});
+const pm_list = mock_module("pm_list", {});
+const resize = mock_module("resize", {});
+const settings_users = mock_module("settings_users", {});
+const topic_list = mock_module("topic_list", {});
+const unread_ui = mock_module("unread_ui", {});
 
 // And we'll use some real code.
 const {

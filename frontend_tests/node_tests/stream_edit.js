@@ -3,30 +3,30 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 stub_templates(() => noop);
 
-rewiremock("../../static/js/hashchange").with({update_browser_history: noop});
-rewiremock("../../static/js/hash_util").with({
+mock_module("hashchange", {update_browser_history: noop});
+mock_module("hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });
-rewiremock("../../static/js/list_widget").with({
+mock_module("list_widget", {
     create: () => ({init: noop}),
 });
 const page_params = set_global("page_params", {});
-rewiremock("../../static/js/settings_notifications").with({
+mock_module("settings_notifications", {
     get_notifications_table_row_data: noop,
 });
-rewiremock("../../static/js/stream_color").with({
+mock_module("stream_color", {
     set_colorpicker_color: noop,
 });
-const typeahead_helper = rewiremock("../../static/js/typeahead_helper").with({});
-const ui = rewiremock("../../static/js/ui").with({
+const typeahead_helper = mock_module("typeahead_helper", {});
+const ui = mock_module("ui", {
     get_scroll_element: noop,
 });
 

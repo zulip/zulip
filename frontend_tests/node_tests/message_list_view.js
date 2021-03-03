@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("document", "document-stub");
@@ -15,9 +15,9 @@ const page_params = set_global("page_params", {
     twenty_four_hour_time: false,
 });
 set_global("home_msg_list", "stub");
-rewiremock("../../static/js/unread").with({message_unread() {}});
+mock_module("unread", {message_unread() {}});
 // timerender calls setInterval when imported
-rewiremock("../../static/js/timerender").with({
+mock_module("timerender", {
     render_date(time1, time2) {
         if (time2 === undefined) {
             return [{outerHTML: String(time1.getTime())}];
@@ -32,7 +32,7 @@ rewiremock("../../static/js/timerender").with({
     },
 });
 
-rewiremock("../../static/js/rows").with({
+mock_module("rows", {
     get_table() {
         return {
             children() {

@@ -3,11 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const ui = rewiremock("../../static/js/ui").with({
+const ui = mock_module("ui", {
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
 });
@@ -19,7 +19,7 @@ set_global("location", {
     hash: `#streams/${denmark_stream_id}/announce`,
 });
 
-rewiremock("../../static/js/hash_util").with({
+mock_module("hash_util", {
     by_stream_uri: () => {},
 });
 

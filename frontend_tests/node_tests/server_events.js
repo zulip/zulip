@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const noop = () => {};
@@ -16,7 +16,7 @@ set_global("document", {
 });
 set_global("addEventListener", noop);
 
-const channel = rewiremock("../../static/js/channel").with({});
+const channel = mock_module("channel", {});
 set_global("home_msg_list", {
     select_id: noop,
     selected_id() {
@@ -24,7 +24,7 @@ set_global("home_msg_list", {
     },
 });
 set_global("page_params", {test_suite: false});
-rewiremock("../../static/js/reload_state").with({
+mock_module("reload_state", {
     is_in_progress() {
         return false;
     },
@@ -33,7 +33,7 @@ rewiremock("../../static/js/reload_state").with({
 // we also directly write to pointer
 set_global("pointer", {});
 
-rewiremock("../../static/js/ui_report").with({
+mock_module("ui_report", {
     hide_error() {
         return false;
     },
@@ -42,13 +42,13 @@ rewiremock("../../static/js/ui_report").with({
     },
 });
 
-rewiremock("../../static/js/stream_events").with({
+mock_module("stream_events", {
     update_property() {
         throw new Error("subs update error");
     },
 });
 
-const message_events = rewiremock("../../static/js/message_events").with({
+const message_events = mock_module("message_events", {
     insert_new_messages() {
         throw new Error("insert error");
     },

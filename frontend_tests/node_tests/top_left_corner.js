@@ -2,11 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-rewiremock("../../static/js/resize").with({
+mock_module("resize", {
     resize_stream_filters_container: () => {},
 });
 

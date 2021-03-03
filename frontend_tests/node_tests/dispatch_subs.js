@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -11,17 +11,17 @@ const events = require("./lib/events");
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
-const compose_fade = rewiremock("../../static/js/compose_fade").with({});
-const stream_events = rewiremock("../../static/js/stream_events").with({});
-const subs = rewiremock("../../static/js/subs").with({});
+const compose_fade = mock_module("compose_fade", {});
+const stream_events = mock_module("stream_events", {});
+const subs = mock_module("subs", {});
 
 set_global("current_msg_list", {});
-const narrow_state = rewiremock("../../static/js/narrow_state").with({});
+const narrow_state = mock_module("narrow_state", {});
 const page_params = set_global("page_params", {});
-const overlays = rewiremock("../../static/js/overlays").with({});
-const settings_org = rewiremock("../../static/js/settings_org").with({});
-const settings_streams = rewiremock("../../static/js/settings_streams").with({});
-const stream_list = rewiremock("../../static/js/stream_list").with({});
+const overlays = mock_module("overlays", {});
+const settings_org = mock_module("settings_org", {});
+const settings_streams = mock_module("settings_streams", {});
+const stream_list = mock_module("stream_list", {});
 
 const {peer_data, people, server_events_dispatch, stream_data} = use(
     "fold_dict",

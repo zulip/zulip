@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -15,33 +15,33 @@ const noop = () => {};
 function MessageListView() {
     return {};
 }
-rewiremock("../../static/js/message_list_view").with({
+mock_module("message_list_view", {
     MessageListView,
 });
 
-rewiremock("../../static/js/recent_topics").with({
+mock_module("recent_topics", {
     process_messages: noop,
 });
 // Still required for page_params.initial_pointer
 set_global("page_params", {});
-rewiremock("../../static/js/ui_report").with({
+mock_module("ui_report", {
     hide_error: noop,
 });
 
-const channel = rewiremock("../../static/js/channel").with({});
+const channel = mock_module("channel", {});
 set_global("document", "document-stub");
-rewiremock("../../static/js/message_scroll").with({
+mock_module("message_scroll", {
     show_loading_older: noop,
     hide_loading_older: noop,
     show_loading_newer: noop,
     hide_loading_newer: noop,
     update_top_of_narrow_notices: () => {},
 });
-const message_util = rewiremock("../../static/js/message_util").with({});
-const message_store = rewiremock("../../static/js/message_store").with({});
-const pm_list = rewiremock("../../static/js/pm_list").with({});
-const server_events = rewiremock("../../static/js/server_events").with({});
-const stream_list = rewiremock("../../static/js/stream_list").with({
+const message_util = mock_module("message_util", {});
+const message_store = mock_module("message_store", {});
+const pm_list = mock_module("pm_list", {});
+const server_events = mock_module("server_events", {});
+const stream_list = mock_module("stream_list", {
     maybe_scroll_narrow_into_view: () => {},
 });
 

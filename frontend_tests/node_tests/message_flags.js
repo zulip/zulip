@@ -2,16 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-rewiremock("../../static/js/starred_messages").with({
+mock_module("starred_messages", {
     add: () => {},
     remove: () => {},
 });
 
-const ui = rewiremock("../../static/js/ui").with({});
-const channel = rewiremock("../../static/js/channel").with({});
+const ui = mock_module("ui", {});
+const channel = mock_module("channel", {});
 const {message_flags} = use("fold_dict", "unread", "unread_ops", "message_flags");
 
 run_test("starred", () => {

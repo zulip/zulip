@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, use} = require("../zjsunit/namespace");
+const {mock_module, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -11,13 +11,13 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-rewiremock("../../static/js/resize").with({
+mock_module("resize", {
     resize_page_components: noop,
     resize_stream_filters_container: noop,
 });
 
-const popovers = rewiremock("../../static/js/popovers").with({});
-const stream_popover = rewiremock("../../static/js/stream_popover").with({});
+const popovers = mock_module("popovers", {});
+const stream_popover = mock_module("stream_popover", {});
 
 const {stream_list} = use("list_cursor", "stream_list");
 

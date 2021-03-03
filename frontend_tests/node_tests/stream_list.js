@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -16,14 +16,14 @@ const page_params = set_global("page_params", {
 
 const noop = () => {};
 
-const topic_list = rewiremock("../../static/js/topic_list").with({});
+const topic_list = mock_module("topic_list", {});
 
-rewiremock("../../static/js/keydown_util").with({
+mock_module("keydown_util", {
     handle: noop,
 });
 
-rewiremock("../../static/js/ui").with({get_scroll_element: (element) => element});
-const narrow_state = rewiremock("../../static/js/narrow_state").with({});
+mock_module("ui", {get_scroll_element: (element) => element});
+const narrow_state = mock_module("narrow_state", {});
 
 const {
     filter: {Filter},

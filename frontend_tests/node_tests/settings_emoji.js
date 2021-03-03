@@ -2,11 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, use} = require("../zjsunit/namespace");
+const {mock_module, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const upload_widget = rewiremock("../../static/js/upload_widget").with({});
+const upload_widget = mock_module("upload_widget", {});
 const {settings_emoji} = use("settings_emoji");
 
 run_test("build_emoji_upload_widget", () => {

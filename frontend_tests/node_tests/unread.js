@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let page_params = set_global("page_params", {
@@ -13,7 +13,7 @@ let page_params = set_global("page_params", {
 
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
-const message_store = rewiremock("../../static/js/message_store").with({});
+const message_store = mock_module("message_store", {});
 
 const {
     fold_dict: {FoldDict},

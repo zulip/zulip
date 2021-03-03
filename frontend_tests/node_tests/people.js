@@ -6,10 +6,10 @@ const {parseISO} = require("date-fns");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
-const {rewiremock, set_global, use} = require("../zjsunit/namespace");
+const {mock_module, set_global, use} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_store = rewiremock("../../static/js/message_store").with({});
+const message_store = mock_module("message_store", {});
 const page_params = set_global("page_params", {});
 
 const {people, settings_config} = use(
