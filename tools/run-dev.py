@@ -19,7 +19,7 @@ from tornado.ioloop import IOLoop
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
-from tools.lib.test_script import assert_provisioning_status_ok
+from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
 if "posix" in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")
@@ -51,12 +51,12 @@ parser.add_argument(
     help="Do not clear memcached on startup",
 )
 parser.add_argument("--streamlined", action="store_true", help="Avoid thumbor, etc.")
-parser.add_argument("--force", action="store_true", help="Run command despite possible problems.")
 parser.add_argument(
     "--enable-tornado-logging",
     action="store_true",
     help="Enable access logs from tornado proxy server.",
 )
+add_provision_check_override_param(parser)
 options = parser.parse_args()
 
 assert_provisioning_status_ok(options.force)
