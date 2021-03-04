@@ -1,4 +1,4 @@
-access_log /var/log/nginx/access.log;
+access_log /var/log/nginx/access.log combined_with_host_and_time;
 error_log /var/log/nginx/error.log;
 
 include /etc/nginx/zulip-include/headers;
