@@ -38,8 +38,6 @@ page_params.custom_profile_field_types = {
 
 const {settings_profile_fields} = use("settings_profile_fields");
 
-settings_profile_fields.__Rewire__("Sortable", {create: () => {}});
-
 function test_populate(opts) {
     const fields_data = opts.fields_data;
 
@@ -75,7 +73,8 @@ function test_populate(opts) {
     assert.equal(num_appends, fields_data.length);
 }
 
-run_test("populate_profile_fields", () => {
+run_test("populate_profile_fields", (override) => {
+    override(settings_profile_fields, "create_sortable", () => {});
     const fields_data = [
         {
             type: SHORT_TEXT_ID,
