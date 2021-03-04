@@ -68,9 +68,5 @@ $(() => {
             }
             return this;
         };
-
-        $.fn.within = function (sel) {
-            return $(this).is(sel) || $(this).closest(sel).length;
-        };
     }
 });
