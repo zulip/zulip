@@ -58,7 +58,7 @@ export function check_profile_incomplete() {
     // since their organization might not have a logo yet.
     if (
         page_params.realm_description === "" ||
-        page_params.realm_description.startsWith("Organization imported from")
+        /^Organization imported from [A-Za-z]+[!.]$/.test(page_params.realm_description)
     ) {
         $("[data-process='profile-incomplete']").show();
     } else {
