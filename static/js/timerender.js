@@ -191,24 +191,20 @@ export function update_timestamps() {
             // The element might not exist any more (because it
             // was in the zfilt table, or because we added
             // messages above it and re-collapsed).
-            if (elements !== null) {
+            if (elements.length > 0) {
+                const time = entry.time;
+                const time_above = entry.time_above;
+                const rendered_time = render_now(time, today);
+                const rendered_time_above = time_above ? render_now(time_above, today) : undefined;
                 for (const element of elements) {
-                    const time = entry.time;
-                    const time_above = entry.time_above;
-                    const rendered_time = render_now(time, today);
-                    if (time_above) {
-                        const rendered_time_above = render_now(time_above, today);
-                        render_date_span($(element), rendered_time, rendered_time_above);
-                    } else {
-                        render_date_span($(element), rendered_time);
-                    }
-                    maybe_add_update_list_entry({
-                        needs_update: rendered_time.needs_update,
-                        className,
-                        time,
-                        time_above,
-                    });
+                    render_date_span($(element), rendered_time, rendered_time_above);
                 }
+                maybe_add_update_list_entry({
+                    needs_update: rendered_time.needs_update,
+                    className,
+                    time,
+                    time_above,
+                });
             }
         }
 
