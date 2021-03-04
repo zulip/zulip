@@ -244,10 +244,19 @@ strength allowed is controlled by two settings in
   messages when a message contains a link to an image.  You can
   control this using the `INLINE_IMAGE_PREVIEW` setting.
 
-* A Zulip server can make outgoing HTTP requests through features like
-  outgoing webhooks and embedded video previews. End users have
-  (limited) control the content of these HTTP requests. As a result,
-  Zulip supports routing these outgoing requests [through
+* Zulip may make outgoing HTTP connections to other servers in a
+  number of cases:
+
+  * Outgoing webhook bots (creation of which can be restricted)
+  * Inline image previews in messages (enabled by default, but can be disabled)
+  * Inline webpage previews and embeds (must be configured to be enabled)
+  * Twitter message previews (must be configured to be enabled)
+  * BigBlueButton and Zoom API requests (must be configured to be enabled)
+  * Mobile push notifications (must be configured to be enabled)
+
+* Notably, these first 3 features give end users (limited) control to cause
+  the Zulip server to make HTTP requests on their behalf.  As a result,
+  Zulip supports routing all outgoing outgoing HTTP requests [through
   Smokescreen][smokescreen-setup] to ensure that Zulip cannot be
   used to execute [SSRF attacks][SSRF] against other systems on an
   internal corporate network.  The default Smokescreen configuration
