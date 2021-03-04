@@ -333,7 +333,8 @@ test("quote_and_reply", (override) => {
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
     };
-    hash_util.by_conversation_and_time_uri = () => "link_to_message";
+    hash_util.by_conversation_and_time_uri = () =>
+        "https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado";
 
     let success_function;
     override(channel, "get", (opts) => {
@@ -356,7 +357,7 @@ test("quote_and_reply", (override) => {
 
     replaced = false;
     expected_replacement =
-        "@_**Steve Stephenson|90** [said](link_to_message):\n```quote\nTesting.\n```";
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting.\n```";
 
     quote_and_reply(opts);
 
@@ -395,7 +396,7 @@ test("quote_and_reply", (override) => {
 
     replaced = false;
     expected_replacement =
-        "@_**Steve Stephenson|90** [said](link_to_message):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
     quote_and_reply(opts);
     assert(replaced);
 });
