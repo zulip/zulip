@@ -105,6 +105,20 @@ run_test("test_get_hash_section", () => {
     assert.deepEqual(hash_util.get_current_hash_section(), "your-account");
 });
 
+run_test("build_reload_url", () => {
+    location.hash = "#settings/your-account";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=settings%2Fyour-account");
+
+    location.hash = "#test";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=test");
+
+    location.hash = "#";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=");
+
+    location.hash = "";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=");
+});
+
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
         {negated: false, operator: "stream", operand: "frontend"},

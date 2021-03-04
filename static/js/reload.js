@@ -6,6 +6,7 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import {csrf_token} from "./csrf";
+import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";
@@ -78,11 +79,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         }
     }
 
-    let oldhash = window.location.hash;
-    if (oldhash.length !== 0 && oldhash[0] === "#") {
-        oldhash = oldhash.slice(1);
-    }
-    url += "+oldhash=" + encodeURIComponent(oldhash);
+    url += hash_util.build_reload_url();
 
     const ls = localstorage();
     // Delete all the previous preserved states.

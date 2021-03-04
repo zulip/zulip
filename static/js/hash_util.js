@@ -45,6 +45,14 @@ export function encodeHashComponent(str) {
     return encodeURIComponent(str).replace(/[%().]/g, (matched) => hashReplacements.get(matched));
 }
 
+export function build_reload_url() {
+    let hash = window.location.hash;
+    if (hash.length !== 0 && hash[0] === "#") {
+        hash = hash.slice(1);
+    }
+    return "+oldhash=" + encodeURIComponent(hash);
+}
+
 export function encode_operand(operator, operand) {
     if (operator === "group-pm-with" || operator === "pm-with" || operator === "sender") {
         const slug = people.emails_to_slug(operand);
