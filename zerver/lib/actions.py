@@ -70,7 +70,7 @@ from zerver.lib.cache import (
     flush_user_profile,
     to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
-    user_profile_by_email_cache_key,
+    user_profile_delivery_email_cache_key,
 )
 from zerver.lib.create_user import create_user, get_display_email_address
 from zerver.lib.email_mirror_helpers import encode_email_address, encode_email_address_helper
@@ -1344,7 +1344,8 @@ def compute_jabber_user_fullname(email: str) -> str:
 
 
 @cache_with_key(
-    lambda realm, email, f: user_profile_by_email_cache_key(email), timeout=3600 * 24 * 7
+    lambda realm, email, f: user_profile_delivery_email_cache_key(email, realm),
+    timeout=3600 * 24 * 7,
 )
 def create_mirror_user_if_needed(
     realm: Realm, email: str, email_to_fullname: Callable[[str], str]
