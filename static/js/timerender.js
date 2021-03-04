@@ -3,6 +3,7 @@ import {
     differenceInCalendarDays,
     format,
     formatISO,
+    isEqual,
     isValid,
     parseISO,
     startOfToday,
@@ -181,7 +182,7 @@ export function render_markdown_timestamp(time, text) {
 // testing purposes.
 export function update_timestamps() {
     const today = startOfToday();
-    if (today !== last_update) {
+    if (!isEqual(today, last_update)) {
         const to_process = update_list;
         update_list = [];
 
