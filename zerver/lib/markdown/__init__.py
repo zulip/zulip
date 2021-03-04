@@ -1393,24 +1393,30 @@ UNICODE_EMOJI_RE = (
 # http://crocodillon.com/blog/parsing-emoji-unicode-in-javascript
 
 
-def make_emoji(codepoint: str, display_string: str) -> Element:
+def make_emoji(codepoint: str, display_string: str, content: Optional[str] = None) -> Element:
     # Replace underscore in emoji's title with space
     title = display_string[1:-1].replace("_", " ")
     span = Element("span")
-    span.set("class", f"emoji emoji-{codepoint}")
     span.set("title", title)
     span.set("role", "img")
     span.set("aria-label", title)
     span.text = markdown.util.AtomicString(display_string)
+    if content_has_only_emoji_syntax(content):
+        span.set("class", f"emoji large-emoji emoji-{codepoint}")
+    else:
+        span.set("class", f"emoji emoji-{codepoint}")
     return span
 
 
-def make_realm_emoji(src: str, display_string: str) -> Element:
+def make_realm_emoji(src: str, display_string: str, content: Optional[str] = None) -> Element:
     elt = Element("img")
     elt.set("src", src)
-    elt.set("class", "emoji")
     elt.set("alt", display_string)
     elt.set("title", display_string[1:-1].replace("_", " "))
+    if content_has_only_emoji_syntax(content):
+        elt.set("class", "emoji large-emoji")
+    else:
+        elt.set("class", "emoji")
     return elt
 
 
@@ -1431,19 +1437,24 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
         if db_data is None or not db_data.translate_emoticons:
             return None
 
+        content = db_data["content"]
         emoticon = match.group("emoticon")
         translated = translate_emoticons(emoticon)
         name = translated[1:-1]
-        return make_emoji(name_to_codepoint[name], translated)
+        return make_emoji(name_to_codepoint[name], translated, content)
 
 
 class UnicodeEmoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
+        db_data = self.md.zulip_db_data
+        content: Optional[str] = None
+        if db_data is not None:
+            content = db_data["content"]
         orig_syntax = match.group("syntax")
         codepoint = unicode_emoji_to_codepoint(orig_syntax)
         if codepoint in codepoint_to_name:
             display_string = ":" + codepoint_to_name[codepoint] + ":"
-            return make_emoji(codepoint, display_string)
+            return make_emoji(codepoint, display_string, content)
         else:
             return None
 
@@ -1459,8 +1470,10 @@ class Emoji(markdown.inlinepatterns.Pattern):
 
         active_realm_emoji: Dict[str, EmojiInfo] = {}
         db_data: Optional[DbData] = self.zmd.zulip_db_data
+        content: Optional[str] = None
         if db_data is not None:
             active_realm_emoji = db_data.active_realm_emoji
+            content = db_data.content
 
         if name in active_realm_emoji:
             return make_realm_emoji(active_realm_emoji[name]["source_url"], orig_syntax)
@@ -1468,16 +1481,37 @@ class Emoji(markdown.inlinepatterns.Pattern):
             # We explicitly do not use staticfiles to generate the URL
             # for this, so that it is portable if exported.
             return make_realm_emoji(
-                "/static/generated/emoji/images/emoji/unicode/zulip.png", orig_syntax
+                "/static/generated/emoji/images/emoji/unicode/zulip.png", orig_syntax, content
             )
         elif name in name_to_codepoint:
-            return make_emoji(name_to_codepoint[name], orig_syntax)
+            return make_emoji(name_to_codepoint[name], orig_syntax, content)
         else:
             return orig_syntax
 
 
 def content_has_emoji_syntax(content: str) -> bool:
     return re.search(EMOJI_REGEX, content) is not None
+
+
+def get_colon_syntax(text: str) -> str:
+    codepoint = unicode_emoji_to_codepoint(text)
+    if codepoint in codepoint_to_name:
+        colon_emoji = ":" + codepoint_to_name[codepoint] + ":"
+        return colon_emoji
+    return text
+
+
+def translate_unicode_emoji(text: str) -> str:
+    return re.sub(unicode_emoji_regex, lambda emoji: get_colon_syntax(emoji.group("syntax")), text)
+
+
+def content_has_only_emoji_syntax(content: Optional[str]) -> bool:
+    if content is not None:
+        text = translate_emoticons(content.replace("\n", " "))
+        text = translate_unicode_emoji(text)
+        if re.fullmatch(fr" *(?:{EMOJI_REGEX} *)+", text):
+            return True
+    return False
 
 
 class Tex(markdown.inlinepatterns.Pattern):
@@ -2222,7 +2256,7 @@ class ZulipMarkdown(markdown.Markdown):
         reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
         reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
         # We get priority 5 from 'nl2br' extension
-        reg.register(UnicodeEmoji(UNICODE_EMOJI_RE), "unicodeemoji", 0)
+        reg.register(UnicodeEmoji(UNICODE_EMOJI_RE, self), "unicodeemoji", 0)
         return reg
 
     def register_linkifiers(self, registry: markdown.util.Registry) -> markdown.util.Registry:
@@ -2559,6 +2593,7 @@ def do_convert(
             sent_by_bot=sent_by_bot,
             stream_names=stream_name_info,
             translate_emoticons=translate_emoticons,
+            content=content,
         )
 
     try:

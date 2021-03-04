@@ -393,7 +393,7 @@ test("marked", () => {
         {
             input: "\uD83D\uDCA9",
             expected:
-                '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
+                '<p><span aria-label="poop" class="emoji large-emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
         {
             input: "Silent mention: @_**Cordelia, Lear's daughter**",
@@ -536,7 +536,7 @@ test("marked", () => {
         {
             input: ":)",
             expected:
-                '<p><span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
+                '<p><span aria-label="smile" class="emoji large-emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
             translate_emoticons: true,
         },
         // Test HTML escaping in custom Zulip rules
@@ -896,7 +896,7 @@ test("missing unicode emojis", ({override}) => {
     markdown.apply_markdown(message);
     assert.equal(
         message.content,
-        '<p><span aria-label="bike" class="emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
+        '<p><span aria-label="bike" class="emoji large-emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
     );
 
     // Now simulate that we don't know this emoji name.
