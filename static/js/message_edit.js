@@ -293,6 +293,7 @@ function timer_text(seconds_left) {
 function edit_message(row, raw_content) {
     row.find(".message_reactions").hide();
     condense.hide_message_expander(row);
+    condense.hide_message_condenser(row);
     const content_top = row.find(".message_top_line")[0].getBoundingClientRect().top;
 
     const message = current_msg_list.get(rows.id(row));
@@ -593,7 +594,11 @@ export function end_message_row_edit(row) {
 
         compose.abort_video_callbacks(message.id);
     }
-    condense.show_message_expander(row);
+    if (row.find(".condensed").length !== 0) {
+        condense.show_message_expander(row);
+    } else {
+        condense.show_message_condenser(row);
+    }
     row.find(".message_reactions").show();
 
     // We have to blur out text fields, or else hotkeys.js
