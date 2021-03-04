@@ -115,6 +115,11 @@
         width: 20px;
     }
 
+    .large-emoji {
+        height: 32px;
+        width: 32px;
+    }
+
     /* Mentions and alert words */
     .user-mention-me :not(.silent) {
         background-color: hsl(112, 88%, 87%);
@@ -477,6 +482,12 @@
             display: block;
             max-width: 100%;
             margin-top: 10px;
+        }
+    }
+    .rendered_markdown {
+        .large-emoji {
+            width: 22px;
+            height: 22px;
         }
     }
 }

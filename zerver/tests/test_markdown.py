@@ -1137,7 +1137,11 @@ class MarkdownTest(ZulipTestCase):
         self.assertTrue(content_has_emoji_syntax(":smile: ::::::"))
 
     def test_realm_emoji(self) -> None:
-        def emoji_img(name: str, file_name: str, realm_id: int) -> str:
+        def emoji_img(name: str, file_name: str, realm_id: int, is_only_emoji_content: bool) -> str:
+            if is_only_emoji_content:
+                return '<img alt="{}" class="emoji large-emoji" src="{}" title="{}">'.format(
+                    name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " ")
+                )
             return '<img alt="{}" class="emoji" src="{}" title="{}">'.format(
                 name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " ")
             )
@@ -1152,7 +1156,17 @@ class MarkdownTest(ZulipTestCase):
         ).get()
         self.assertEqual(
             converted,
-            "<p>{}</p>".format(emoji_img(":green_tick:", realm_emoji.file_name, realm.id)),
+            "<p>{}</p>".format(emoji_img(":green_tick:", realm_emoji.file_name, realm.id, True)),
+        )
+
+        converted = markdown_convert(
+            "Zulip is :green_tick: open source!", message_realm=realm, message=msg
+        )
+        self.assertEqual(
+            converted,
+            "<p>Zulip is {} open source!</p>".format(
+                emoji_img(":green_tick:", realm_emoji.file_name, realm.id, False)
+            ),
         )
 
         # Deactivate realm emoji.
@@ -1174,14 +1188,14 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(msg)
         self.assertEqual(
             converted,
-            '<p><span aria-label="coffee" class="emoji emoji-2615" role="img" title="coffee">:coffee:</span></p>',
+            '<p><span aria-label="coffee" class="emoji large-emoji emoji-2615" role="img" title="coffee">:coffee:</span></p>',
         )
 
         msg = "\u2615\u2615"  # ☕☕
         converted = markdown_convert_wrapper(msg)
         self.assertEqual(
             converted,
-            '<p><span aria-label="coffee" class="emoji emoji-2615" role="img" title="coffee">:coffee:</span><span aria-label="coffee" class="emoji emoji-2615" role="img" title="coffee">:coffee:</span></p>',
+            '<p><span aria-label="coffee" class="emoji large-emoji emoji-2615" role="img" title="coffee">:coffee:</span><span aria-label="coffee" class="emoji large-emoji emoji-2615" role="img" title="coffee">:coffee:</span></p>',
         )
 
     def test_no_translate_emoticons_if_off(self) -> None:

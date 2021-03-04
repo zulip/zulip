@@ -22,6 +22,7 @@ var block = {
   html: /^ *(?:comment *(?:\n|\s*$)|closed *(?:\n{2,}|\s*$)|closing *(?:\n{2,}|\s*$))/,
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
   table: noop,
+  token: noop,
   paragraph: /^((?:[^\n]+\n?(?!hr|heading|blockquote|tag|def))+)\n*/,
   text: /^[^\n]+/
 };
@@ -806,14 +807,14 @@ InlineLexer.prototype.output = function(src) {
     // emoji (gfm)
     if (cap = this.rules.emoji.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.emoji(cap[1]);
+      out += this.emoji(cap[1],block.token);
       continue;
     }
 
     // Unicode emoji
     if (cap = this.rules.unicodeemoji.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.unicodeEmoji(cap[1]);
+      out += this.unicodeEmoji(cap[1],block.token);
       continue;
     }
 
@@ -863,19 +864,19 @@ InlineLexer.prototype.outputLink = function(cap, link) {
     ? this.renderer.link(href, title, this.output(cap[1]))
     : this.renderer.image(href, title, escape(cap[1]));
 };
-InlineLexer.prototype.emoji = function (name) {
+InlineLexer.prototype.emoji = function (name,content) {
   name = escape(name)
   if (typeof this.options.emojiHandler !== 'function')
     return ':' + name + ':';
 
-  return this.options.emojiHandler(name);
+  return this.options.emojiHandler(name,content);
 };
 
-InlineLexer.prototype.unicodeEmoji = function (name) {
+InlineLexer.prototype.unicodeEmoji = function (name,content) {
   name = escape(name)
   if (typeof this.options.unicodeEmojiHandler !== 'function')
     return name;
-  return this.options.unicodeEmojiHandler(name);
+  return this.options.unicodeEmojiHandler(name,content);
 };
 
 InlineLexer.prototype.tex = function (tex, fullmatch) {
@@ -1228,6 +1229,7 @@ Parser.prototype.parseText = function() {
  */
 
 Parser.prototype.tok = function() {
+  block.token = this.token.text;
   switch (this.token.type) {
     case 'space': {
       return '';

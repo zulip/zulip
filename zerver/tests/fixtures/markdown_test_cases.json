@@ -520,7 +520,7 @@
     {
       "name": "translate_emoticons_enabled",
       "input": ":)",
-      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>",
+      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji large-emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>",
       "text_content": "\ud83d\ude42",
       "translate_emoticons": true
     },
@@ -570,18 +570,18 @@
     {
       "name": "random_emoji_1",
       "input": ":airplane:",
-      "expected_output": "<p><span aria-label=\"airplane\" class=\"emoji emoji-2708\" role=\"img\" title=\"airplane\">:airplane:</span></p>"
+      "expected_output": "<p><span aria-label=\"airplane\" class=\"emoji large-emoji emoji-2708\" role=\"img\" title=\"airplane\">:airplane:</span></p>"
     },
     {
       "name": "zulip_emoji",
       "input": ":zulip:",
-      "expected_output": "<p><img alt=\":zulip:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/zulip.png\" title=\"zulip\"></p>",
+      "expected_output": "<p><img alt=\":zulip:\" class=\"emoji large-emoji\" src=\"/static/generated/emoji/images/emoji/unicode/zulip.png\" title=\"zulip\"></p>",
       "text_content": ":zulip:"
     },
     {
       "name": "random_emoji_2",
       "input": ":poop:",
-      "expected_output": "<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>"
+      "expected_output": "<p><span aria-label=\"poop\" class=\"emoji large-emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>"
     },
     {
       "name": "emojis_without_space",
@@ -592,7 +592,7 @@
     {
       "name": "emojis_newline",
       "input": ":cat:\n:dog:",
-      "expected_output": "<p><span aria-label=\"cat\" class=\"emoji emoji-1f408\" role=\"img\" title=\"cat\">:cat:</span><br>\n<span aria-label=\"dog\" class=\"emoji emoji-1f415\" role=\"img\" title=\"dog\">:dog:</span></p>",
+      "expected_output": "<p><span aria-label=\"cat\" class=\"emoji large-emoji emoji-1f408\" role=\"img\" title=\"cat\">:cat:</span><br>\n<span aria-label=\"dog\" class=\"emoji large-emoji emoji-1f415\" role=\"img\" title=\"dog\">:dog:</span></p>",
       "text_content": "\ud83d\udc08\n\ud83d\udc15"
     },
     {
@@ -604,13 +604,13 @@
     {
       "name": "unicode_emoji",
       "input": "\ud83d\udca9",
-      "expected_output":"<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>",
+      "expected_output":"<p><span aria-label=\"poop\" class=\"emoji large-emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>",
       "text_content": "\ud83d\udca9"
     },
     {
       "name": "two_unicode_emoji",
       "input": "\ud83d\udca9\ud83d\udca9",
-      "expected_output":"<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span><\/p>",
+      "expected_output":"<p><span aria-label=\"poop\" class=\"emoji large-emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span><span aria-label=\"poop\" class=\"emoji large-emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span><\/p>",
       "text_content": "\ud83d\udca9\ud83d\udca9"
     },
     {
@@ -628,7 +628,7 @@
     {
       "name": "miscellaneous_and_dingbats_emoji",
       "input": "\u2693\u2797",
-      "expected_output":"<p><span aria-label=\"anchor\" class=\"emoji emoji-2693\" role=\"img\" title=\"anchor\">:anchor:</span><span aria-label=\"division\" class=\"emoji emoji-2797\" role=\"img\" title=\"division\">:division:</span><\/p>"
+      "expected_output":"<p><span aria-label=\"anchor\" class=\"emoji large-emoji emoji-2693\" role=\"img\" title=\"anchor\">:anchor:</span><span aria-label=\"division\" class=\"emoji large-emoji emoji-2797\" role=\"img\" title=\"division\">:division:</span><\/p>"
     },
     {
       "name": "supplemental_symbols_and_pictographs",
@@ -648,7 +648,7 @@
     {
       "name": "unicode_emojis_new_line",
       "input": "\ud83d\udc7d\n\ud83d\udc7d",
-      "expected_output":"<p><span aria-label=\"alien\" class=\"emoji emoji-1f47d\" role=\"img\" title=\"alien\">:alien:</span><br>\n<span aria-label=\"alien\" class=\"emoji emoji-1f47d\" role=\"img\" title=\"alien\">:alien:</span></p>",
+      "expected_output":"<p><span aria-label=\"alien\" class=\"emoji large-emoji emoji-1f47d\" role=\"img\" title=\"alien\">:alien:</span><br>\n<span aria-label=\"alien\" class=\"emoji large-emoji emoji-1f47d\" role=\"img\" title=\"alien\">:alien:</span></p>",
       "text_content": "\ud83d\udc7d\n\ud83d\udc7d"
     },
     {

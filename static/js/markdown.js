@@ -245,26 +245,51 @@ export function is_status_message(raw_content) {
     return raw_content.startsWith("/me ");
 }
 
-function make_emoji_span(codepoint, title, alt_text) {
+function translate_unicode_emoji(text) {
+    const unicode_emoji_regex = new RegExp(
+        "(\uD83C[\uDD00-\uDFFF]|\uD83D[\uDC00-\uDE4F]|" +
+            "\uD83D[\uDE80-\uDEFF]|\uD83E[\uDD00-\uDDFF]|" +
+            "[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|" +
+            "[\u3000-\u303F]|[\u3200-\u32FF])",
+        "g",
+    ); // from third/marked.js
+
+    return text.replace(unicode_emoji_regex, (unicode_emoji) => {
+        const codepoint = unicode_emoji.codePointAt(0).toString(16);
+        return ":" + emoji.get_emoji_name(codepoint) + ":";
+    });
+}
+
+function is_only_emoji_message(message) {
+    const colon_emoji_regex = /^(\s*:([\w+-]+?):\s*)*$/;
+    return colon_emoji_regex.test(translate_unicode_emoji(message));
+}
+
+function make_emoji_span(codepoint, title, alt_text, content) {
+    if (is_only_emoji_message(content)) {
+        return `<span aria-label="${_.escape(title)}" class="emoji large-emoji emoji-${_.escape(
+            codepoint,
+        )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
+    }
     return `<span aria-label="${_.escape(title)}" class="emoji emoji-${_.escape(
         codepoint,
     )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
 }
 
-function handleUnicodeEmoji(unicode_emoji) {
+function handleUnicodeEmoji(unicode_emoji, content) {
     const codepoint = unicode_emoji.codePointAt(0).toString(16);
     const emoji_name = emoji.get_emoji_name(codepoint);
 
     if (emoji_name) {
         const alt_text = ":" + emoji_name + ":";
         const title = emoji_name.split("_").join(" ");
-        return make_emoji_span(codepoint, title, alt_text);
+        return make_emoji_span(codepoint, title, alt_text, content);
     }
 
     return unicode_emoji;
 }
 
-function handleEmoji(emoji_name) {
+function handleEmoji(emoji_name, content) {
     const alt_text = ":" + emoji_name + ":";
     const title = emoji_name.split("_").join(" ");
 
@@ -278,6 +303,11 @@ function handleEmoji(emoji_name) {
     const emoji_url = emoji.get_realm_emoji_url(emoji_name);
 
     if (emoji_url) {
+        if (is_only_emoji_message(content)) {
+            return `<img alt="${_.escape(alt_text)}" class="emoji large-emoji" src="${_.escape(
+                emoji_url,
+            )}" title="${_.escape(title)}">`;
+        }
         return `<img alt="${_.escape(alt_text)}" class="emoji" src="${_.escape(
             emoji_url,
         )}" title="${_.escape(title)}">`;
@@ -285,7 +315,7 @@ function handleEmoji(emoji_name) {
 
     const codepoint = emoji.get_emoji_codepoint(emoji_name);
     if (codepoint) {
-        return make_emoji_span(codepoint, title, alt_text);
+        return make_emoji_span(codepoint, title, alt_text, content);
     }
 
     return alt_text;
