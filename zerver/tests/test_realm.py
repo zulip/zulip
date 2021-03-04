@@ -33,7 +33,6 @@ from zerver.models import (
     UserProfile,
     get_realm,
     get_stream,
-    get_user_profile_by_email,
     get_user_profile_by_id,
 )
 
@@ -179,10 +178,11 @@ class RealmTest(ZulipTestCase):
         Hamlet, and we end by checking the cache to ensure that his
         realm appears to be deactivated.  You can make this test fail
         by disabling cache.flush_realm()."""
-        get_user_profile_by_email("hamlet@zulip.com")
+        hamlet_id = self.example_user("hamlet").id
+        get_user_profile_by_id(hamlet_id)
         realm = get_realm("zulip")
         do_deactivate_realm(realm)
-        user = get_user_profile_by_email("hamlet@zulip.com")
+        user = get_user_profile_by_id(hamlet_id)
         self.assertTrue(user.realm.deactivated)
 
     def test_do_change_realm_subdomain_clears_user_realm_cache(self) -> None:
@@ -191,10 +191,11 @@ class RealmTest(ZulipTestCase):
         Hamlet, and we end by checking the cache to ensure that his
         realm appears to be deactivated.  You can make this test fail
         by disabling cache.flush_realm()."""
-        user = get_user_profile_by_email("hamlet@zulip.com")
+        hamlet_id = self.example_user("hamlet").id
+        user = get_user_profile_by_id(hamlet_id)
         realm = get_realm("zulip")
         do_change_realm_subdomain(realm, "newzulip")
-        user = get_user_profile_by_email("hamlet@zulip.com")
+        user = get_user_profile_by_id(hamlet_id)
         self.assertEqual(user.realm.string_id, "newzulip")
 
         placeholder_realm = get_realm("zulip")
