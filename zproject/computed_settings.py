@@ -100,8 +100,6 @@ else:
 
 # This is overridden in test_settings.py for the test suites
 TEST_SUITE = False
-# The new user tutorial is enabled by default, but disabled for client tests.
-TUTORIAL_ENABLED = True
 # This is overridden in test_settings.py for the test suites
 PUPPETEER_TESTS = False
 # This is overridden in test_settings.py for the test suites
