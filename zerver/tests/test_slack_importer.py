@@ -58,13 +58,15 @@ class MockResponse:
         return self.json_data
 
 # This method will be used by the mock to replace requests.get
-def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> MockResponse:
-    if args[0] == 'https://slack.com/api/users.list?token=xoxp-valid-token':
-        return MockResponse({"ok": True, "members": "user_data"}, 200)
-    elif args[0] == 'https://slack.com/api/users.list?token=xoxp-invalid-token':
-        return MockResponse({"ok": False, "error": "invalid_auth"}, 200)
-    else:
+def mocked_requests_get(*args: str, headers: Dict[str, str]) -> MockResponse:
+    if args != ("https://slack.com/api/users.list",):
         return MockResponse(None, 404)
+
+    if (headers.get("Authorization") != "Bearer xoxp-valid-token"):
+        return MockResponse({"ok": False, "error": "invalid_auth"}, 200)
+
+    return MockResponse({"ok": True, "members": "user_data"}, 200)
+
 
 class SlackImporter(ZulipTestCase):
     logger = logging.getLogger()
