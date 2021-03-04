@@ -6,7 +6,6 @@ const rewiremock = require("rewiremock/node");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
@@ -47,19 +46,11 @@ rewiremock("../../static/js/ui_report").with({
 });
 
 const message_events = {__esModule: true};
-
 rewiremock("../../static/js/message_events").with(message_events);
-
-// Turn off $.now so we can import server_events.
-set_global("$", {
-    now() {},
-});
 
 rewiremock.enable();
 
 const server_events = zrequire("server_events");
-
-set_global("$", $);
 
 server_events.home_view_loaded();
 

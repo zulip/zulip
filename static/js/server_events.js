@@ -300,10 +300,10 @@ export function home_view_loaded() {
     $(document).trigger("home_view_loaded.zulip");
 }
 
-let watchdog_time = $.now();
+let watchdog_time = Date.now();
 
 export function check_for_unsuspend() {
-    const new_time = $.now();
+    const new_time = Date.now();
     if (new_time - watchdog_time > 20000) {
         // 20 seconds.
         // Defensively reset watchdog_time here in case there's an
