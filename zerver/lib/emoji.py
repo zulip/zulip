@@ -1,6 +1,7 @@
 import os
 import re
 from typing import Optional, Tuple
+from typing.re import Match
 
 import orjson
 from django.utils.translation import ugettext as _
@@ -36,12 +37,21 @@ emoticon_regex = (
     + f"))(?![^{terminal_symbols}])"
 )
 
+
+def get_colon_emoji(emoji: Match[str], emoticon: str) -> str:
+    emoticon_present = emoji.group(0)
+    if emoticon in emoji.string.split():
+        return EMOTICON_CONVERSIONS[emoticon_present]
+    return emoticon_present
+
+
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
 def translate_emoticons(text: str) -> str:
     translated = text
-
     for emoticon in EMOTICON_CONVERSIONS:
-        translated = re.sub(re.escape(emoticon), EMOTICON_CONVERSIONS[emoticon], translated)
+        translated = re.sub(
+            re.escape(emoticon), lambda emoji: get_colon_emoji(emoji, emoticon), translated
+        )
 
     return translated
 
