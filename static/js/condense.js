@@ -170,9 +170,21 @@ export function hide_message_expander(row) {
     }
 }
 
+export function hide_message_condenser(row) {
+    if (row.find(".could-be-condensed").length !== 0) {
+        row.find(".message_condenser").hide();
+    }
+}
+
 export function show_message_expander(row) {
     if (row.find(".could-be-condensed").length !== 0) {
         row.find(".message_expander").show();
+    }
+}
+
+export function show_message_condenser(row) {
+    if (row.find(".could-be-condensed").length !== 0) {
+        row.find(".message_condenser").show();
     }
 }
 
