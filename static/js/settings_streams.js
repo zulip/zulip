@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_admin_default_streams_list from "../templates/settings/admin_default_streams_list.hbs";
 
 import * as channel from "./channel";
+import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -63,7 +64,7 @@ export function build_default_stream_table() {
 }
 
 export function update_default_streams_table() {
-    if (/#*organization/.test(window.location.hash) || /#*settings/.test(window.location.hash)) {
+    if (["organization", "settings"].includes(hash_util.get_current_hash_category())) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         build_default_stream_table();
     }
