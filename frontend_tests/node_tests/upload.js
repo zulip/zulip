@@ -35,6 +35,19 @@ const plugin_stub = {
 
 let upload = zrequire("upload");
 
+run_test("feature_check", (override) => {
+    const upload_button = $.create("upload-button-stub");
+    upload_button.addClass("notdisplayed");
+    upload.feature_check(upload_button);
+    assert(upload_button.hasClass("notdisplayed"));
+
+    override(window, "XMLHttpRequest", function () {
+        return {upload: true};
+    });
+    upload.feature_check(upload_button);
+    assert(!upload_button.hasClass("notdisplayed"));
+});
+
 run_test("make_upload_absolute", () => {
     let uri = "/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/kerala.png";
     const expected_uri = "https://foo.com/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/kerala.png";

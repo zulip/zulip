@@ -17,7 +17,7 @@ export function make_upload_absolute(uri) {
 
 // Show the upload button only if the browser supports it.
 export function feature_check(upload_button) {
-    if (window.XMLHttpRequest && new XMLHttpRequest().upload) {
+    if (window.XMLHttpRequest && new window.XMLHttpRequest().upload) {
         upload_button.removeClass("notdisplayed");
     }
 }
