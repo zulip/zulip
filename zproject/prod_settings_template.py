@@ -611,6 +611,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Defaults to True if and only if the Mobile Push Notifications Service is enabled.
 # SUBMIT_USAGE_STATISTICS = True
 
+## Whether to lightly advertise sponsoring Zulip in the gear menu.
+# PROMOTE_SPONSORING_ZULIP = True
+
 ## Controls whether session cookies expire when the browser closes
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 

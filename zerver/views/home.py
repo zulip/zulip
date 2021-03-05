@@ -16,6 +16,7 @@ from zerver.lib.home import (
     build_page_params_for_home_page_load,
     get_billing_info,
     get_user_permission_info,
+    promote_sponsoring_zulip_in_realm,
 )
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
@@ -231,6 +232,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "search_pills_enabled": settings.SEARCH_PILLS_ENABLED,
             "show_invites": show_invites,
             "show_add_streams": show_add_streams,
+            "promote_sponsoring_zulip": promote_sponsoring_zulip_in_realm(realm),
             "show_billing": billing_info.show_billing,
             "corporate_enabled": settings.CORPORATE_ENABLED,
             "show_plans": billing_info.show_plans,

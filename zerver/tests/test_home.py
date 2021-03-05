@@ -805,6 +805,30 @@ class HomeTest(ZulipTestCase):
         result_html = self._get_home_page().content.decode("utf-8")
         self.assertNotIn("Plans", result_html)
 
+    def test_show_support_zulip(self) -> None:
+        realm = get_realm("zulip")
+
+        self.login("hamlet")
+
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertIn("Support Zulip", result_html)
+
+        do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=None)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertIn("Support Zulip", result_html)
+
+        with self.settings(PROMOTE_SPONSORING_ZULIP=False):
+            result_html = self._get_home_page().content.decode("utf-8")
+            self.assertNotIn("Support Zulip", result_html)
+
+        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertNotIn("Support Zulip", result_html)
+
+        do_change_plan_type(realm, Realm.STANDARD, acting_user=None)
+        result_html = self._get_home_page().content.decode("utf-8")
+        self.assertNotIn("Support Zulip", result_html)
+
     def test_desktop_home(self) -> None:
         self.login("hamlet")
         result = self.client_get("/desktop_home")

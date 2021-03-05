@@ -136,6 +136,13 @@
                                 </a>
                             </li>
                             {% endif %}
+                            {% if promote_sponsoring_zulip %}
+                            <li role="presentation">
+                                <a href="https://github.com/sponsors/zulip" target="_blank" role="menuitem">
+                                    <i class="fa fa-heart" aria-hidden="true"></i> {{ _('Support Zulip') }}
+                                </a>
+                            </li>
+                            {% endif %}
                             {% if show_plans %}
                             <li role="presentation">
                                 <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">

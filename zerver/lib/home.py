@@ -101,6 +101,15 @@ def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]
     return bot_types
 
 
+def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
+    if not settings.PROMOTE_SPONSORING_ZULIP:
+        return False
+
+    # If PROMOTE_SPONSORING_ZULIP is enabled, advertise sponsoring
+    # Zulip in the gear menu of non-paying organizations.
+    return realm.plan_type in [Realm.STANDARD_FREE, Realm.SELF_HOSTED]
+
+
 def get_billing_info(user_profile: UserProfile) -> BillingInfo:
     show_billing = False
     show_plans = False
@@ -118,7 +127,10 @@ def get_billing_info(user_profile: UserProfile) -> BillingInfo:
         if not user_profile.is_guest and user_profile.realm.plan_type == Realm.LIMITED:
             show_plans = True
 
-    return BillingInfo(show_billing=show_billing, show_plans=show_plans)
+    return BillingInfo(
+        show_billing=show_billing,
+        show_plans=show_plans,
+    )
 
 
 def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermissionInfo:
