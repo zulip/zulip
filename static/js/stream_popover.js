@@ -19,6 +19,7 @@ import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
+import * as starred_messages from "./starred_messages";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as subs from "./subs";
@@ -296,7 +297,9 @@ function build_starred_messages_popover(e) {
     popovers.hide_all();
     exports.show_streamlist_sidebar();
 
+    const show_unstar_all_button = starred_messages.get_count() > 0;
     const content = render_starred_messages_sidebar_actions({
+        show_unstar_all_button,
         starred_message_counts: page_params.starred_message_counts,
     });
 

@@ -1,3 +1,4 @@
+import * as stream_popover from "./stream_popover";
 import * as top_left_corner from "./top_left_corner";
 
 export const starred_ids = new Set();
@@ -45,4 +46,5 @@ export function rerender_ui() {
     }
 
     top_left_corner.update_starred_count(count);
+    stream_popover.hide_starred_messages_popover();
 }
