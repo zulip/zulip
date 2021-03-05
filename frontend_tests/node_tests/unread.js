@@ -4,22 +4,20 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let page_params = set_global("page_params", {
     realm_push_notifications_enabled: false,
 });
 
-const message_store = mock_esm("../../static/js/message_store", {
-    get() {},
-});
 const muting = zrequire("muting");
 
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
 
 const {FoldDict} = zrequire("fold_dict");
+const message_store = zrequire("message_store");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
@@ -86,7 +84,7 @@ test("empty_counts_while_home", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-test("changing_topics", (override) => {
+test("changing_topics", () => {
     // Summary: change the topic of a message from 'lunch'
     // to 'dinner' using update_unread_topics().
     let count = unread.num_unread_for_topic(social.stream_id, "lunch");
@@ -185,12 +183,9 @@ test("changing_topics", (override) => {
         unread: true,
     };
 
-    const message_dict = new Map();
-    message_dict.set(message.id, message);
-    message_dict.set(other_message.id, other_message);
-    message_dict.set(sticky_message.id, sticky_message);
-
-    override(message_store, "get", (msg_id) => message_dict.get(msg_id));
+    message_store.create_mock_message(message);
+    message_store.create_mock_message(other_message);
+    message_store.create_mock_message(sticky_message);
 
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, "sticky");

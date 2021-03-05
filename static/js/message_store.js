@@ -33,6 +33,12 @@ export function user_ids() {
     return Array.from(message_user_ids);
 }
 
+export function create_mock_message(message) {
+    // For use in tests only. `id` is a required field,
+    // everything else is optional, as required in the test.
+    stored_messages.set(message.id, message);
+}
+
 export function get(message_id) {
     if (message_id === undefined || message_id === null) {
         blueslip.error("message_store.get got bad value: " + message_id);
