@@ -9,7 +9,7 @@ import * as timerender from "./timerender";
 let is_floating_recipient_bar_showing = false;
 
 function top_offset(elem) {
-    return elem.offset().top - $("#message_view_header").safeOuterHeight();
+    return elem.offset().top - $("#message_view_header").safeOuterHeight() - $("#panels").height();
 }
 
 export function first_visible_message(bar) {
