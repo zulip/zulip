@@ -566,7 +566,7 @@ run_test("misc things", () => {
     container_click_handler.call(this_, {target: this_});
 });
 
-run_test("clear", () => {
+run_test("appendValue/clear", () => {
     const pill_input = $.create("pill_input");
     const container = $.create("container");
     container.set_find_results(".input", pill_input);
@@ -582,6 +582,11 @@ run_test("clear", () => {
 
     const widget = input_pill.create(config);
 
+    // First test some early-exit code.
+    widget.appendValue("");
+    assert.deepEqual(widget._get_pills_for_testing(), []);
+
+    // Now set up real data.
     widget.appendValue("red,yellow,blue");
 
     const pills = widget._get_pills_for_testing();

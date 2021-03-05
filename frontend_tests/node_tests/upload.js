@@ -41,9 +41,7 @@ run_test("feature_check", (override) => {
     upload.feature_check(upload_button);
     assert(upload_button.hasClass("notdisplayed"));
 
-    override(window, "XMLHttpRequest", function () {
-        return {upload: true};
-    });
+    override(window, "XMLHttpRequest", () => ({upload: true}));
     upload.feature_check(upload_button);
     assert(!upload_button.hasClass("notdisplayed"));
 });
