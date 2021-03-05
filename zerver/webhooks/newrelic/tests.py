@@ -110,7 +110,7 @@ No details.
                 "",
                 content_type="application/json",
             )
-        self.assertIn("The newrelic webhook expects time in milleseconds.", e.exception.args[0])
+        self.assertIn("The newrelic webhook expects time in milliseconds.", e.exception.args[0])
 
     def test_time_too_large(self) -> None:
         with self.assertRaises(AssertionError) as e:
@@ -120,4 +120,4 @@ No details.
                 "",
                 content_type="application/json",
             )
-        self.assertIn("The newrelic webhook expects time in milleseconds.", e.exception.args[0])
+        self.assertIn("The newrelic webhook expects time in milliseconds.", e.exception.args[0])
