@@ -3516,3 +3516,21 @@ def flush_alert_word(sender: Any, **kwargs: Any) -> None:
 
 post_save.connect(flush_alert_word, sender=AlertWord)
 post_delete.connect(flush_alert_word, sender=AlertWord)
+
+
+class UserExportConsent(models.Model):
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    user: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+
+    YES = 1
+    NO = 0
+
+    response: int = models.SmallIntegerField(default=NO)
+    export_id = models.ForeignKey(RealmAuditLog, on_delete=CASCADE)
+    last_updated: datetime.datetime = models.DateTimeField(default=timezone_now)
+
+    class Meta:
+        unique_together = (
+            "user",
+            "export_id",
+        )
