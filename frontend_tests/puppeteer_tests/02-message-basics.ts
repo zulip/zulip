@@ -316,9 +316,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await page.waitForSelector(await get_stream_li(page, "Verona"), {visible: true});
 
     // Enter the search box and test highlighted suggestion
-    await page.evaluate(() =>
-        $(".stream-list-filter").expectOne().trigger("focus").trigger("click"),
-    );
+    await page.click(".stream-list-filter");
 
     await page.waitForSelector("#stream_filters .highlighted_stream", {visible: true});
     // First stream in list gets highlihted on clicking search.
@@ -351,9 +349,8 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await test_search_venice(page);
 
     // Search for brginning of "Verona".
-    await page.evaluate(() =>
-        $(".stream-list-filter").expectOne().trigger("focus").val("ver").trigger("input"),
-    );
+    await page.click("#streams_header .sidebar-title");
+    await page.type(".stream-list-filter", "ver");
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
     await page.click(await get_stream_li(page, "Verona"));
     await expect_verona_stream(page);
@@ -393,7 +390,7 @@ async function test_users_search(page: Page): Promise<void> {
     await assert_in_list(page, "aaron");
 
     // Enter the search box and test selected suggestion navigation
-    await page.evaluate(() => $("#user_filter_icon").expectOne().trigger("focus").trigger("click"));
+    await page.click("#user_filter_icon");
     await page.waitForSelector("#user_presences .highlighted_user", {visible: true});
     await assert_selected(page, "Desdemona");
     await assert_not_selected(page, "Cordelia Lear");
