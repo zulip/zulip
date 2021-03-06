@@ -76,6 +76,12 @@ async function test_get_api_key(page: Page): Promise<void> {
     await common.fill_form(page, "#api_key_form", {
         password: test_credentials.default_user.password,
     });
+
+    // When typing the password in Firefox, it shows "Not Secure" warning
+    // which was hiding the Get API Key button.
+    // You can see the screenshot of it in https://github.com/zulip/zulip/pull/17136.
+    // Focusing on it will remove the warning.
+    await page.focus(get_api_key_button_selector);
     await page.click(get_api_key_button_selector);
 
     await page.waitForSelector("#show_api_key", {visible: true});
