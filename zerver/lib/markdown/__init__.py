@@ -2189,11 +2189,11 @@ class ZulipMarkdown(markdown.Markdown):
         # space for us to add our own.
         reg = markdown.util.Registry()
         reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), "backtick", 105)
+        reg.register(Tex(TEX_RE, self), "tex", 103)
         reg.register(
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
         )
         reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
-        reg.register(Tex(TEX_RE, self), "tex", 90)
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
         reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
