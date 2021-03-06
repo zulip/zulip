@@ -22,6 +22,15 @@ EXTERNAL_HOST_WITHOUT_PORT = deport(EXTERNAL_HOST)
 # prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
 # install of the Zulip server.
 
+################
+# Public Listing Of Realms.
+#
+# If you need people to be able to list their realms on the
+# communities page, you should set the CUSTOMER_SHOWCASE_ENABLED to True.
+#
+# To avoid spam currently only sponsored realms can be listed publically.
+CUSTOMER_SHOWCASE_ENABLED = False
+
 # Extra HTTP "Host" values to allow (standard ones added in computed_settings.py)
 ALLOWED_HOSTS: List[str] = []
 

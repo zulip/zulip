@@ -92,6 +92,8 @@ RATE_LIMITING_AUTHENTICATE = False
 # real app.
 USING_RABBITMQ = False
 
+CUSTOMER_SHOWCASE_ENABLED = True
+
 # Disable use of memcached for caching
 CACHES["database"] = {
     "BACKEND": "django.core.cache.backends.dummy.DummyCache",

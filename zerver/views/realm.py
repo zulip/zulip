@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional, Union
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -111,6 +112,9 @@ def update_realm(
     email_address_visibility: Optional[int] = REQ(
         json_validator=check_int_in(Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
+    customer_showcase_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.CUSTOMER_SHOWCASE_POLICY_TYPES), default=None
+    ),
     default_twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
     video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
     giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
@@ -138,6 +142,12 @@ def update_realm(
         p["id"] for p in Realm.GIPHY_RATING_OPTIONS.values()
     }:
         return json_error(_("Invalid giphy_rating {}").format(giphy_rating))
+
+    if customer_showcase_policy is not None and realm.plan_type != Realm.STANDARD_FREE:
+        return json_error(_("Your organization does not qualify to enable this feature."))
+
+    if customer_showcase_policy is not None and settings.CUSTOMER_SHOWCASE_ENABLED is False:
+        return json_error(_("The following feature must be enabled on the hosted system."))
 
     message_retention_days: Optional[int] = None
     if message_retention_days_raw is not None:

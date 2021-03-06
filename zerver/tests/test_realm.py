@@ -639,6 +639,7 @@ class RealmTest(ZulipTestCase):
             wildcard_mention_policy=10,
             invite_to_realm_policy=10,
             move_messages_between_streams_policy=10,
+            customer_showcase_policy=10,
         )
 
         # We need an admin user.
@@ -924,6 +925,10 @@ class RealmAPITest(ZulipTestCase):
                 Realm.POLICY_FULL_MEMBERS_ONLY,
                 Realm.POLICY_MODERATORS_ONLY,
             ],
+            customer_showcase_policy=[
+                Realm.CUSTOMER_SHOWCASE_LISTED,
+                Realm.CUSTOMER_SHOWCASE_HIDDEN,
+            ],
         )
 
         vals = test_values.get(name)
@@ -936,6 +941,10 @@ class RealmAPITest(ZulipTestCase):
             self.set_up_db(name, vals[0][name])
             realm = self.update_with_api_multiple_value(vals[0])
             self.assertEqual(getattr(realm, name), orjson.loads(vals[0][name]))
+        elif name == "customer_showcase_policy":
+            self.set_up_db("plan_type", Realm.STANDARD_FREE)
+            realm = self.update_with_api(name, vals[1])
+            self.assertEqual(getattr(realm, name), vals[1])
         else:
             self.set_up_db(name, vals[0])
             realm = self.update_with_api(name, vals[1])
@@ -971,6 +980,43 @@ class RealmAPITest(ZulipTestCase):
         self.assertEqual(realm.allow_message_editing, False)
         self.assertEqual(realm.message_content_edit_limit_seconds, 200)
         self.assertEqual(realm.allow_community_topic_editing, False)
+
+    def test_prevent_realm_public_listing_if_plan_type_is_not_standard_free(self) -> None:
+        realm = get_realm("zulip")
+        realm.customer_showcase_policy = Realm.CUSTOMER_SHOWCASE_HIDDEN
+        realm.save(update_fields=["customer_showcase_policy"])
+        self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
+        result = self.client_patch(
+            "/json/realm", {"customer_showcase_policy": str(Realm.CUSTOMER_SHOWCASE_LISTED)}
+        )
+        self.assertEqual(result.status_code, 400)
+        self.assert_json_error(result, "Your organization does not qualify to enable this feature.")
+
+    def test_realm_ready_for_public_listing_when_conditions_are_satisfied(self) -> None:
+        """
+        When the realm's plan type is STANDARD_FREE and CUSTOMER_SHOWCASE_ENABLED is set
+        as True in settings. We should be able to update the CUSTOMER_showcase_policy.
+        """
+        realm = get_realm("zulip")
+        do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=None)
+        result = self.client_patch(
+            "/json/realm", {"customer_showcase_policy": str(Realm.CUSTOMER_SHOWCASE_LISTED)}
+        )
+        self.assertEqual(result.status_code, 200)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.customer_showcase_policy, Realm.CUSTOMER_SHOWCASE_LISTED)
+
+    def test_prevent_realm_public_listing_if_showcase_setting_is_false(self) -> None:
+        realm = get_realm("zulip")
+        do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=None)
+        with self.settings(CUSTOMER_SHOWCASE_ENABLED=False):
+            result = self.client_patch(
+                "/json/realm", {"customer_showcase_policy": str(Realm.CUSTOMER_SHOWCASE_LISTED)}
+            )
+            self.assertEqual(result.status_code, 400)
+            self.assert_json_error(
+                result, "The following feature must be enabled on the hosted system."
+            )
 
     def test_update_realm_allow_message_deleting(self) -> None:
         """Tests updating the realm property 'allow_message_deleting'."""
