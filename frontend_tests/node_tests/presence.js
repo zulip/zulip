@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const server_events = {__esModule: true};
@@ -15,7 +13,6 @@ const reload_state = {
 };
 
 rewiremock("../../static/js/reload_state").with(reload_state);
-rewiremock.enable();
 
 const people = zrequire("people");
 const presence = zrequire("presence");
@@ -333,4 +330,3 @@ run_test("update_info_from_event", () => {
         last_active: 1000,
     });
 });
-rewiremock.disable();

@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 // We need these stubs to get by instanceof checks.
@@ -35,8 +33,6 @@ set_global("$", (arg) => {
         html: () => arg,
     };
 });
-
-rewiremock.enable();
 
 const ListWidget = zrequire("list_widget");
 
@@ -780,4 +776,3 @@ run_test("render item", () => {
     widget_3.render_item(item);
     blueslip.reset();
 });
-rewiremock.disable();

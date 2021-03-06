@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -46,13 +44,11 @@ const subs = {
 rewiremock("../../static/js/subs").with(subs);
 rewiremock("../../static/js/overlays").with({streams_open: () => true});
 
-rewiremock.enable();
-
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
-const {Filter} = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 const narrow_state = zrequire("narrow_state");
 const message_view_header = zrequire("message_view_header");
 
@@ -410,4 +406,3 @@ run_test("remove_deactivated_user_from_all_streams", () => {
     // verify that we issue a call to update subscriber count/list UI
     assert.equal(subs_stub.num_calls, 1);
 });
-rewiremock.disable();

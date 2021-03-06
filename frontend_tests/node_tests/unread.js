@@ -3,9 +3,8 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let page_params = set_global("page_params", {
@@ -17,8 +16,6 @@ set_global("home_msg_list", {});
 const message_store = {__esModule: true};
 
 rewiremock("../../static/js/message_store").with(message_store);
-
-rewiremock.enable();
 
 const muting = zrequire("muting");
 const people = zrequire("people");
@@ -696,4 +693,3 @@ run_test("errors", () => {
     assert.equal(counts.private_message_count, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
-rewiremock.disable();

@@ -9,9 +9,7 @@
 // become clear as you keep reading.
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -53,8 +51,6 @@ rewiremock("../../static/js/message_viewport").with(message_viewport);
 const topic_list = {__esModule: true};
 
 rewiremock("../../static/js/topic_list").with(topic_list);
-
-rewiremock.enable();
 
 // Let's start with testing a function from util.js.
 //
@@ -197,7 +193,7 @@ run_test("unread", () => {
 
 // We use the second argument of zrequire to find the location of the
 // Filter class.
-const {Filter} = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 
 run_test("filter", () => {
     const filter_terms = [
@@ -599,7 +595,6 @@ run_test("explore make_stub", (override) => {
 
 */
 
-rewiremock("../../static/js/unread_ops").disable();
 unread_ops = zrequire("unread_ops");
 
 run_test("unread_ops", (override) => {
@@ -698,7 +693,6 @@ run_test("unread_ops", (override) => {
 
 */
 
-rewiremock("../../static/js/stream_list").disable();
 stream_list = zrequire("stream_list");
 
 const social_stream = {
@@ -835,4 +829,3 @@ run_test("stream_list", (override) => {
     sidebar_helper.verify_actions();
     topic_list_helper.verify_actions();
 });
-rewiremock.disable();

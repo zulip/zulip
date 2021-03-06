@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {reset_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -33,7 +31,11 @@ const plugin_stub = {
     },
 };
 
-let upload = zrequire("upload");
+const upload = zrequire("upload");
+
+// Even though we stub out Uppy, we need to reference it
+// for line coverage purposes.
+assert(upload.__get__("Uppy"));
 
 run_test("feature_check", (override) => {
     const upload_button = $.create("upload-button-stub");
@@ -323,8 +325,6 @@ run_test("upload_files", () => {
     assert($("#compose-textarea").val(), "user modified text");
 });
 
-rewiremock.enable();
-
 run_test("uppy_config", () => {
     let uppy_stub_called = false;
     let uppy_set_meta_called = false;
@@ -367,8 +367,7 @@ run_test("uppy_config", () => {
         };
     }
     uppy_stub.Plugin = plugin_stub;
-    rewiremock("@uppy/core").with(uppy_stub);
-    upload = reset_module("upload");
+    upload.__Rewire__("Uppy", uppy_stub);
     upload.setup_upload({mode: "compose"});
 
     assert.equal(uppy_stub_called, true);
@@ -505,8 +504,7 @@ run_test("uppy_events", () => {
         };
     }
     uppy_stub.Plugin = plugin_stub;
-    rewiremock("@uppy/core").with(uppy_stub);
-    upload = reset_module("upload");
+    upload.__Rewire__("Uppy", uppy_stub);
     upload.setup_upload({mode: "compose"});
     assert.equal(Object.keys(callbacks).length, 5);
 
@@ -692,5 +690,3 @@ run_test("uppy_events", () => {
     assert(compose_ui_replace_syntax_called);
     assert.equal($("#compose-textarea").val(), "user modified text");
 });
-
-rewiremock.disable();

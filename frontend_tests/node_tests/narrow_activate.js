@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 rewiremock("../../static/js/resize").with({
@@ -66,8 +64,6 @@ set_global("setTimeout", (f, t) => {
 rewiremock("../../static/js/muting").with({
     is_topic_muted: () => false,
 });
-
-rewiremock.enable();
 
 const util = zrequire("util");
 const narrow_state = zrequire("narrow_state");
@@ -245,4 +241,3 @@ run_test("basics", () => {
     cont();
     helper.assert_events(["report narrow times"]);
 });
-rewiremock.disable();

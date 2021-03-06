@@ -4,10 +4,9 @@ const {strict: assert} = require("assert");
 
 const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
-const rewiremock = require("rewiremock/node");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -26,6 +25,8 @@ rewiremock("../../static/js/compose_actions").with({
         compose_actions_start_checked = true;
     },
 });
+
+const server_events = rewiremock("../../static/js/server_events").with({__esModule: true});
 
 const _navigator = {
     platform: "",
@@ -97,8 +98,7 @@ document.location.host = "foo.com";
 const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));
 
-rewiremock.enable();
-
+const compose_fade = zrequire("compose_fade");
 const peer_data = zrequire("peer_data");
 const util = zrequire("util");
 const rtl = zrequire("rtl");
@@ -716,7 +716,7 @@ test_ui("send_message_success", () => {
     assert(reify_message_id_checked);
 });
 
-test_ui("send_message", () => {
+test_ui("send_message", (override) => {
     // This is the common setup stuff for all of the four tests.
     let stub_state;
     function initialize_state_stub_dict() {
@@ -730,10 +730,9 @@ test_ui("send_message", () => {
     set_global("setTimeout", (func) => {
         func();
     });
-    rewiremock("../../static/js/server_events").with({
-        assert_get_events_running() {
-            stub_state.get_events_running_called += 1;
-        },
+
+    override(server_events, "assert_get_events_running", () => {
+        stub_state.get_events_running_called += 1;
     });
 
     // Tests start here.
@@ -1105,7 +1104,7 @@ test_ui("initialize", (override) => {
     })();
 });
 
-test_ui("update_fade", () => {
+test_ui("update_fade", (override) => {
     const selector =
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
     const keyup_handler_func = $(selector).get_on_handler("keyup");
@@ -1113,14 +1112,13 @@ test_ui("update_fade", () => {
     let set_focused_recipient_checked = false;
     let update_all_called = false;
 
-    rewiremock("../../static/js/compose_fade").with({
-        set_focused_recipient(msg_type) {
-            assert.equal(msg_type, "private");
-            set_focused_recipient_checked = true;
-        },
-        update_all() {
-            update_all_called = true;
-        },
+    override(compose_fade, "set_focused_recipient", (msg_type) => {
+        assert.equal(msg_type, "private");
+        set_focused_recipient_checked = true;
+    });
+
+    override(compose_fade, "update_all", () => {
+        update_all_called = true;
     });
 
     compose_state.set_message_type(false);
@@ -1729,5 +1727,3 @@ test_ui("narrow_button_titles", () => {
 });
 
 MockDate.reset();
-
-rewiremock.disable();

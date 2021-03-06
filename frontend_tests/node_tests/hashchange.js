@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -45,8 +43,6 @@ rewiremock("../../static/js/ui_util").with(ui_util);
 rewiremock("../../static/js/top_left_corner").with({
     handle_narrow_deactivated: () => {},
 });
-
-rewiremock.enable();
 
 const people = zrequire("people");
 const hash_util = zrequire("hash_util");
@@ -317,4 +313,3 @@ run_test("save_narrow", () => {
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://example.com/#narrow/is/starred");
 });
-rewiremock.disable();

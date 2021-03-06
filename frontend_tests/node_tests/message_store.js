@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -24,8 +22,6 @@ set_global("page_params", {
     realm_allow_message_editing: true,
     is_admin: true,
 });
-
-rewiremock.enable();
 
 const util = zrequire("util");
 const people = zrequire("people");
@@ -343,7 +339,6 @@ run_test("message_id_change", () => {
         },
     });
 
-    rewiremock("../../static/js/message_list").with({});
     set_global("home_msg_list", {});
 
     const opts = {
@@ -377,4 +372,3 @@ run_test("errors", () => {
     blueslip.expect("error", "message_store.get got bad value: undefined");
     message_store.get(undefined);
 });
-rewiremock.disable();

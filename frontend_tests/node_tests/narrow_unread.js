@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const message_store = {__esModule: true};
@@ -15,9 +13,7 @@ rewiremock("../../static/js/muting").with({
     is_topic_muted: () => false,
 });
 
-rewiremock.enable();
-
-const {Filter} = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
@@ -212,4 +208,3 @@ run_test("defensive code", () => {
         flavor: "cannot_compute",
     });
 });
-rewiremock.disable();

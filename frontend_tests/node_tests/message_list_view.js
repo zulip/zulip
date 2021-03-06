@@ -3,9 +3,8 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("document", "document-stub");
@@ -16,7 +15,6 @@ const page_params = set_global("page_params", {
     twenty_four_hour_time: false,
 });
 set_global("home_msg_list", "stub");
-rewiremock("../../static/js/unread").with({message_unread() {}});
 // timerender calls setInterval when imported
 rewiremock("../../static/js/timerender").with({
     render_date(time1, time2) {
@@ -45,10 +43,8 @@ rewiremock("../../static/js/rows").with({
     },
 });
 
-rewiremock.enable();
-
-const {Filter} = zrequire("Filter", "js/filter");
-const {MessageListView} = zrequire("MessageListView", "js/message_list_view");
+const {Filter} = zrequire("../js/filter");
+const {MessageListView} = zrequire("../js/message_list_view");
 const message_list = zrequire("message_list");
 
 let next_timestamp = 1500000000;
@@ -545,4 +541,3 @@ run_test("render_windows", () => {
     verify_move(197, [0, 400]);
     verify_no_move_range(0, 350);
 });
-rewiremock.disable();

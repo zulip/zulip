@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -12,8 +10,6 @@ rewiremock("../../static/js/rtl").with({
     get_direction: () => "ltr",
 });
 const page_params = set_global("page_params", {emojiset: "apple"});
-
-rewiremock.enable();
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
@@ -273,4 +269,3 @@ run_test("spoiler-header-empty-fill", () => {
     rm.update_elements($content);
     assert.equal(toggle_button_html + "<p>translated: Spoiler</p>", $header.html());
 });
-rewiremock.disable();

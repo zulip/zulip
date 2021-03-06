@@ -3,9 +3,8 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {});
@@ -13,7 +12,6 @@ const page_params = set_global("page_params", {});
 const timerender = {__esModule: true};
 
 rewiremock("../../static/js/timerender").with(timerender);
-rewiremock.enable();
 
 const people = zrequire("people");
 const presence = zrequire("presence");
@@ -355,4 +353,3 @@ run_test("error handling", (override) => {
     blueslip.expect("warn", "Got user_id in presence but not people: 42");
     buddy_data.get_filtered_and_sorted_user_ids();
 });
-rewiremock.disable();

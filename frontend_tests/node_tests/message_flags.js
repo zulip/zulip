@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 rewiremock("../../static/js/starred_messages").with({
@@ -12,15 +10,13 @@ rewiremock("../../static/js/starred_messages").with({
     remove: () => {},
 });
 
-rewiremock.enable();
-
-const message_flags = zrequire("message_flags");
-
 const ui = {__esModule: true};
 rewiremock("../../static/js/ui").with(ui);
 const channel = {__esModule: true};
 
 rewiremock("../../static/js/channel").with(channel);
+
+const message_flags = zrequire("message_flags");
 
 run_test("starred", () => {
     const message = {
@@ -171,4 +167,3 @@ run_test("read", () => {
         success: channel_post_opts.success,
     });
 });
-rewiremock.disable();

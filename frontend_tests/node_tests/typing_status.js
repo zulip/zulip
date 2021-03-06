@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 
 const typing = zrequire("typing");
 const compose_pm_pill = zrequire("compose_pm_pill");
-const typing_status = zrequire("typing_status", "shared/js/typing_status");
+const typing_status = zrequire("../shared/js/typing_status");
 
 function make_time(secs) {
     // make times semi-realistic

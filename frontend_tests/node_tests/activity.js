@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -26,11 +24,6 @@ const _document = {
 };
 
 const channel = {__esModule: true};
-
-const _ui = {
-    __esModule: true,
-    get_content_element: (element) => element,
-};
 
 const _keydown_util = {
     __esModule: true,
@@ -82,12 +75,9 @@ rewiremock("../../static/js/popovers").with(_popovers);
 rewiremock("../../static/js/resize").with(_resize);
 rewiremock("../../static/js/scroll_util").with(_scroll_util);
 rewiremock("../../static/js/stream_popover").with(_stream_popover);
-rewiremock("../../static/js/ui").with(_ui);
 rewiremock("../../static/js/server_events").with({
     check_for_unsuspend() {},
 });
-
-rewiremock.enable();
 
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
@@ -760,4 +750,3 @@ test_ui("test_send_or_receive_no_presence_for_web_public_visitor", () => {
     page_params.is_web_public_visitor = true;
     activity.send_presence_to_server();
 });
-rewiremock.disable();

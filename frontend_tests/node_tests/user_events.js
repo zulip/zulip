@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 rewiremock("../../static/js/activity").with({
@@ -57,8 +55,6 @@ rewiremock("../../static/js/settings_account").with(settings_account);
 const message_live_update = {__esModule: true};
 
 rewiremock("../../static/js/message_live_update").with(message_live_update);
-
-rewiremock.enable();
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -216,4 +212,3 @@ run_test("updates", () => {
     person = people.get_by_email(test_bot.email);
     assert.equal(person.bot_owner_id, me.user_id);
 });
-rewiremock.disable();

@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -80,10 +78,8 @@ set_global("current_msg_list", {
     },
 });
 
-rewiremock.enable();
-
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-const emoji = zrequire("emoji", "shared/js/emoji");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji = zrequire("../shared/js/emoji");
 const people = zrequire("people");
 const reactions = zrequire("reactions");
 
@@ -996,4 +992,3 @@ run_test("process_reaction_click bad local id", (override) => {
     );
     reactions.process_reaction_click("some-msg-id", "bad-local-id");
 });
-rewiremock.disable();

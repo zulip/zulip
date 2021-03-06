@@ -25,7 +25,7 @@ set_global("page_params", {
     percent_off: 20,
 });
 
-const helpers = zrequire("helpers", "js/billing/helpers");
+const helpers = zrequire("../js/billing/helpers");
 
 run_test("initialize", () => {
     let token_func;
@@ -101,7 +101,7 @@ run_test("initialize", () => {
     $("#autopay-form").data = (key) =>
         document.querySelector("#autopay-form").getAttribute("data-" + key);
 
-    zrequire("upgrade", "js/billing/upgrade");
+    zrequire("../js/billing/upgrade");
 
     const e = {
         preventDefault: noop,
