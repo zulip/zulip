@@ -53,7 +53,11 @@ async function test_change_password(page: Page): Promise<void> {
     const change_password_button_selector = "#change_password_button";
     await page.waitForSelector(change_password_button_selector, {visible: true});
 
-    await page.waitForFunction(() => $(":focus").attr("id") === "change_password_modal");
+    // For some strange reason #change_password_modal:focus is not working with Firefox.
+    // The below line is an alternative to that.
+    // TODO: Replace the below line with `await page.waitForSelector("#change_password_modal:focus", {visible: true})`
+    // when the above issue is resolved.
+    await page.waitForFunction(() => document.activeElement!.id === "change_password_modal");
     await page.type("#old_password", test_credentials.default_user.password);
     await page.type("#new_password", "new_password");
     await page.click(change_password_button_selector);
