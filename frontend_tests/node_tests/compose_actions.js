@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -68,8 +66,6 @@ set_global("current_msg_list", {
 const channel = {__esModule: true};
 
 rewiremock("../../static/js/channel").with(channel);
-
-rewiremock.enable();
 
 const people = zrequire("people");
 const compose_ui = zrequire("compose_ui");
@@ -502,4 +498,3 @@ run_test("on_narrow", (override) => {
     });
     assert(cancel_called);
 });
-rewiremock.disable();

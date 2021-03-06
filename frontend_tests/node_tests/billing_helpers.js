@@ -5,9 +5,8 @@ const fs = require("fs");
 
 const jQueryFactory = require("jquery");
 const {JSDOM} = require("jsdom");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -28,9 +27,7 @@ set_global("location", {
     hash: "#billing",
 });
 
-rewiremock.enable();
-
-const helpers = zrequire("helpers", "js/billing/helpers");
+const helpers = zrequire("billing/helpers");
 
 run_test("create_ajax_request", (override) => {
     const form_loading_indicator = "#autopay_loading_indicator";
@@ -290,4 +287,3 @@ run_test("set_tab", () => {
     assert.equal(state.show_tab_payment_method, 1);
     assert.equal(state.scrollTop, 2);
 });
-rewiremock.disable();

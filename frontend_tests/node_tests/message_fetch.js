@@ -3,9 +3,8 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -54,10 +53,8 @@ const stream_list = {
 
 rewiremock("../../static/js/stream_list").with(stream_list);
 
-rewiremock.enable();
-
 const message_fetch = zrequire("message_fetch");
-const {Filter} = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 const message_list = zrequire("message_list");
 const people = zrequire("people");
 
@@ -482,4 +479,3 @@ run_test("loading_newer", () => {
         assert.equal(msg_list.data.fetch_status.can_load_newer_messages(), false);
     })();
 });
-rewiremock.disable();

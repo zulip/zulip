@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -35,8 +33,6 @@ const ui = {
 };
 
 rewiremock("../../static/js/ui").with(ui);
-
-rewiremock.enable();
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -275,4 +271,3 @@ test_ui("subscriber_pills", () => {
     expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);
 });
-rewiremock.disable();

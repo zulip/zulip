@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const noop = () => {};
@@ -45,10 +43,21 @@ rewiremock("../../static/js/ui_report").with({
     },
 });
 
-const message_events = {__esModule: true};
-rewiremock("../../static/js/message_events").with(message_events);
+rewiremock("../../static/js/stream_events").with({
+    update_property() {
+        throw new Error("subs update error");
+    },
+});
 
-rewiremock.enable();
+const message_events = rewiremock("../../static/js/message_events").with({
+    __esModule: true,
+    insert_new_messages() {
+        throw new Error("insert error");
+    },
+    update_messages() {
+        throw new Error("update error");
+    },
+});
 
 const server_events = zrequire("server_events");
 
@@ -77,17 +86,6 @@ run_test("message_event", (override) => {
 
 const setup = () => {
     server_events.home_view_loaded();
-    message_events.insert_new_messages = () => {
-        throw new Error("insert error");
-    };
-    message_events.update_messages = () => {
-        throw new Error("update error");
-    };
-    rewiremock("../../static/js/stream_events").with({
-        update_property() {
-            throw new Error("subs update error");
-        },
-    });
 };
 
 run_test("event_dispatch_error", () => {
@@ -141,4 +139,3 @@ run_test("event_edit_message_error", () => {
     assert.equal(logs.length, 1);
     assert.equal(logs[0].more_info, undefined);
 });
-rewiremock.disable();

@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -35,11 +33,9 @@ rewiremock("../../static/js/search_pill_widget").with({
 
 set_global("setTimeout", (func) => func());
 
-rewiremock.enable();
-
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
-const {Filter} = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 
 run_test("clear_search_form", () => {
     $("#search_query").val("noise");
@@ -350,4 +346,3 @@ run_test("initiate_search", () => {
     assert(is_searchbox_text_selected);
     assert(is_searchbox_focused);
 });
-rewiremock.disable();

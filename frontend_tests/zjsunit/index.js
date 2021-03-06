@@ -81,6 +81,7 @@ test.set_verbose(files.length === 1);
 
 try {
     for (const file of files) {
+        namespace.start();
         namespace.set_global("window", window);
         namespace.set_global("to_$", () => window);
         namespace.set_global("location", {
@@ -100,7 +101,7 @@ try {
             blueslip.reset();
         }
 
-        namespace.restore();
+        namespace.finish();
         Handlebars.HandlebarsEnvironment.call(Handlebars);
     }
 } catch (error) {

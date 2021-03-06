@@ -2,15 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const events = require("./lib/events");
-
-rewiremock.enable();
 
 const resize = {
     __esModule: true,
@@ -253,4 +249,3 @@ run_test("test_video_chat_button_toggle enabled", (override) => {
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), true);
 });
-rewiremock.disable();

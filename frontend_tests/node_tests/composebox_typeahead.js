@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -45,10 +43,8 @@ set_global("setTimeout", (f, time) => {
 });
 set_global("document", "document-stub");
 
-rewiremock.enable();
-
-const emoji = zrequire("emoji", "shared/js/emoji");
-const typeahead = zrequire("typeahead", "shared/js/typeahead");
+const emoji = zrequire("../shared/js/emoji");
+const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
 zrequire("user_status");
 zrequire("presence");
@@ -63,7 +59,7 @@ const user_pill = zrequire("user_pill");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
+const pygments_data = zrequire("../generated/pygments_data.json");
 
 // To be eliminated in next commit:
 stream_data.__Rewire__("update_calculated_fields", () => {});
@@ -1567,4 +1563,3 @@ run_test("message people", () => {
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hamletcharacters, hal]);
 });
-rewiremock.disable();

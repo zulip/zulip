@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -41,17 +39,14 @@ const stream_data = {__esModule: true};
 
 rewiremock("../../static/js/stream_data").with(stream_data);
 
-const ClipboardJS = noop;
-rewiremock("clipboard").with(ClipboardJS);
-
-rewiremock.enable();
-
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");
 
 // Bypass some scary code that runs when we import the module.
 const popovers = with_field($.fn, "popover", noop, () => zrequire("popovers"));
+
+popovers.__Rewire__("ClipboardJS", noop);
 
 const alice = {
     email: "alice@example.com",
@@ -264,5 +259,3 @@ test_ui("actions_popover", (override) => {
 
     handler.call(target, e);
 });
-
-rewiremock.disable();

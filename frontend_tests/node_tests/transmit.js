@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const noop = () => {};
@@ -23,8 +21,6 @@ const sent_messages = {
 };
 
 rewiremock("../../static/js/sent_messages").with(sent_messages);
-
-rewiremock.enable();
 
 const people = zrequire("people");
 const transmit = zrequire("transmit");
@@ -197,4 +193,3 @@ run_test("reply_message_errors", () => {
         message: bogus_message,
     });
 });
-rewiremock.disable();

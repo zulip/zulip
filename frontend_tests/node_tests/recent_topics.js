@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -168,8 +166,6 @@ rewiremock("../../static/js/stream_data").with({
         false,
     id_is_subscribed: () => true,
 });
-
-rewiremock.enable();
 
 const people = zrequire("people");
 const rt = zrequire("recent_topics");
@@ -819,4 +815,3 @@ run_test("test_search", () => {
     assert.equal(rt.topic_in_search_results("\\", "general", "\\"), true);
     assert.equal(rt.topic_in_search_results("\\", "general", "\\\\"), true);
 });
-rewiremock.disable();

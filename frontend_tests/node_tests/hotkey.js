@@ -2,9 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, with_field, with_overrides, zrequire} = require("../zjsunit/namespace");
+const {
+    rewiremock,
+    set_global,
+    with_field,
+    with_overrides,
+    zrequire,
+} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -130,10 +134,8 @@ rewiremock("../../static/js/recent_topics").with({
     is_visible: () => false,
 });
 
-rewiremock.enable();
-
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-const emoji = zrequire("emoji", "shared/js/emoji");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji = zrequire("../shared/js/emoji");
 const activity = zrequire("activity");
 const hotkey = zrequire("hotkey");
 
@@ -522,4 +524,3 @@ run_test("motion_keys", () => {
     overlays.is_active = () => false;
     overlays.drafts_open = () => false;
 });
-rewiremock.disable();

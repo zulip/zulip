@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -18,13 +16,11 @@ rewiremock("../../static/js/popovers").with({
     hide_all: () => {},
 });
 
-rewiremock.enable();
+const message_store = {__esModule: true};
+rewiremock("../../static/js/message_store").with(message_store);
 
 const rows = zrequire("rows");
 const lightbox = zrequire("lightbox");
-const message_store = {__esModule: true};
-
-rewiremock("../../static/js/message_store").with(message_store);
 
 rows.__Rewire__("is_draft_row", () => false);
 
@@ -90,4 +86,3 @@ run_test("youtube", (override) => {
     lightbox.open(img);
     assert.equal($(".image-actions .open").attr("href"), href);
 });
-rewiremock.disable();

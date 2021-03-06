@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {
@@ -13,9 +11,6 @@ const page_params = set_global("page_params", {
 rewiremock("../../static/js/message_store").with({
     user_ids: () => [],
 });
-rewiremock("../../static/js/narrow").with({});
-
-rewiremock.enable();
 
 const settings_config = zrequire("settings_config");
 page_params.realm_email_address_visibility =
@@ -887,4 +882,3 @@ run_test("queries_with_spaces", () => {
     expected = ["stream:offi", "stream:office"];
     assert.deepEqual(suggestions.strings, expected);
 });
-rewiremock.disable();

@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let next_id = 0;
@@ -24,8 +22,6 @@ const message_list = {
 };
 
 rewiremock("../../static/js/message_list").with(message_list);
-
-rewiremock.enable();
 
 const rs = zrequire("recent_senders");
 zrequire("message_util.js");
@@ -228,4 +224,3 @@ run_test("process_message_for_senders", (override) => {
     // no changes should take place in this case.
     rs.update_topics_of_deleted_message_ids([-1]);
 });
-rewiremock.disable();

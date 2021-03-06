@@ -102,7 +102,6 @@
     "openapi-examples-validator": "^4.0.0",
     "prettier": "^2.0.5",
     "puppeteer": "^8.0.0",
-    "rewiremock": "^3.13.9",
     "source-map": "https://github.com/benthemonkey/source-map.git#d95423f77edef6cbb9e21d2d6014c7de85ae220a",
     "stylelint": "^13.0.0",
     "stylelint-config-prettier": "^8.0.2",

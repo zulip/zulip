@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -30,8 +28,6 @@ const narrow_state = {__esModule: true};
 rewiremock("../../static/js/narrow_state").with(narrow_state);
 const stream_data = {__esModule: true};
 rewiremock("../../static/js/stream_data").with(stream_data);
-
-rewiremock.enable();
 
 const muting = zrequire("muting");
 const {MessageList} = zrequire("message_list");
@@ -444,4 +440,3 @@ run_test("add_remove_rerender", () => {
         assert.equal(list.num_items(), 0);
     }
 });
-rewiremock.disable();

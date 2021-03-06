@@ -24,8 +24,8 @@ zrequire("presence");
 zrequire("buddy_data");
 zrequire("hash_util");
 
-const emoji = zrequire("emoji", "shared/js/emoji");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
+const emoji = zrequire("../shared/js/emoji");
+const pygments_data = zrequire("../generated/pygments_data.json");
 const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");

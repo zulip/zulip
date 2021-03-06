@@ -1,9 +1,48 @@
 "use strict";
 
+const actual_load = require("module")._load;
 const path = require("path");
 
 const new_globals = new Set();
 let old_globals = {};
+
+let objs_installed;
+let mock_paths = {};
+let mocked_paths;
+let mock_names;
+
+exports.start = () => {
+    objs_installed = false;
+    mock_paths = {};
+    mocked_paths = new Set();
+    mock_names = new Set();
+};
+
+exports.rewiremock = (fn) => {
+    if (!fn.startsWith("../../static/js/")) {
+        throw new Error(`We only mock static/js files`);
+    }
+    const short_fn = fn.slice("../../static/js/".length);
+    const base_path = path.resolve("./static/js");
+    const long_fn = path.join(base_path, short_fn);
+
+    return {
+        with: (obj) => {
+            if (objs_installed) {
+                throw new Error(`
+                    It is too late to install this mock.  Consider instead:
+
+                        foo.__Rewire__(${short_fn}, ...)
+
+                    Or call this earlier.
+                `);
+            }
+            mock_paths[long_fn] = obj;
+            mock_names.add(short_fn);
+            return obj;
+        },
+    };
+};
 
 exports.set_global = function (name, val) {
     if (val === null) {
@@ -22,31 +61,46 @@ exports.set_global = function (name, val) {
     return val;
 };
 
-function require_path(name, fn) {
-    if (fn === undefined) {
-        fn = "../../static/js/" + name;
-    } else if (/^generated\/|^js\/|^shared\/|^third\//.test(fn)) {
-        // FIXME: Stealing part of the NPM namespace is confusing.
-        fn = "../../static/" + fn;
-    }
+exports.zrequire = function (fn) {
+    objs_installed = true;
 
-    return fn;
-}
+    // Because we do lazy compilation, we don't reset the
+    // _load hook until our test runners calls `finish()`.
+    require("module")._load = (request, parent, isMain) => {
+        const long_fn = path.resolve(path.join(path.dirname(parent.filename), request));
+        if (mock_paths[long_fn]) {
+            mocked_paths.add(long_fn);
+            return mock_paths[long_fn];
+        }
 
-exports.zrequire = function (name, fn) {
-    return require(require_path(name, fn));
-};
-
-exports.reset_module = function (name, fn) {
-    fn = require_path(name, fn);
-    delete require.cache[require.resolve(fn)];
-    return require(fn);
+        return actual_load(request, parent, isMain);
+    };
+    const full_path = path.resolve(path.join("static/js", fn));
+    return require(full_path);
 };
 
 const staticPath = path.resolve(__dirname, "../../static") + path.sep;
 const templatesPath = staticPath + "templates" + path.sep;
 
-exports.restore = function () {
+exports.finish = function () {
+    /*
+        Handle cleanup tasks after we've run one module.
+
+        Note that we currently do lazy compilation of modules,
+        so we need to wait till the module tests finish
+        running to do things like detecting pointless mocks
+        and resetting our _load hook.
+    */
+    for (const fn of Object.keys(mock_paths)) {
+        if (!mocked_paths.has(fn)) {
+            throw new Error(`
+                You asked to mock ${fn} but we never
+                saw it during compilation.
+            `);
+        }
+    }
+
+    require("module")._load = actual_load;
     for (const path of Object.keys(require.cache)) {
         if (path.startsWith(staticPath) && !path.startsWith(templatesPath)) {
             delete require.cache[path];

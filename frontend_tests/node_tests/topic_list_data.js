@@ -3,9 +3,8 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
-const rewiremock = require("rewiremock/node");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const narrow_state = {
@@ -21,9 +20,6 @@ const muting = {
     },
 };
 rewiremock("../../static/js/muting").with(muting);
-rewiremock("../../static/js/message_list").with({});
-
-rewiremock.enable();
 
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
@@ -152,4 +148,3 @@ run_test("get_list_info unreads", (override) => {
         ["topic 0", "topic 1", "topic 2", "topic 3", "topic 5", "topic 6", "topic 7", "topic 8"],
     );
 });
-rewiremock.disable();

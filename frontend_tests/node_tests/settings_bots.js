@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -30,19 +28,15 @@ const bot_data_params = {
 };
 
 const avatar = {__esModule: true};
-
 rewiremock("../../static/js/avatar").with(avatar);
 
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
 }
 
-rewiremock("clipboard").with(ClipboardJS);
-
-rewiremock.enable();
-
 const bot_data = zrequire("bot_data");
 const settings_bots = zrequire("settings_bots");
+settings_bots.__Rewire__("ClipboardJS", ClipboardJS);
 
 bot_data.initialize(bot_data_params);
 
@@ -201,5 +195,3 @@ run_test("can_create_new_bots", () => {
     page_params.realm_bot_creation_policy = 3;
     assert(!settings_bots.can_create_new_bots());
 });
-
-rewiremock.disable();

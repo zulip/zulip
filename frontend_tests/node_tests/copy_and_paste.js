@@ -4,9 +4,8 @@ const {strict: assert} = require("assert");
 
 const jquery = require("jquery");
 const {JSDOM} = require("jsdom");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {
@@ -22,8 +21,6 @@ const $ = set_global("$", jquery(window));
 
 set_global("DOMParser", DOMParser);
 set_global("document", document);
-
-rewiremock.enable();
 
 const copy_and_paste = zrequire("copy_and_paste");
 
@@ -116,4 +113,3 @@ run_test("paste_handler", () => {
     copy_and_paste.paste_handler(event);
     assert(!insert_syntax_and_focus_called);
 });
-rewiremock.disable();

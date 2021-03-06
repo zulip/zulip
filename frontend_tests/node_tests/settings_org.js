@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -81,8 +79,6 @@ set_global("jQuery", _jQuery);
 rewiremock("../../static/js/loading").with(_loading);
 rewiremock("../../static/js/ui_report").with(_ui_report);
 rewiremock("../../static/js/list_widget").with(_ListWidget);
-
-rewiremock.enable();
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
@@ -1053,5 +1049,3 @@ run_test("misc", () => {
     assert.equal(elem.text(), "translated: Disabled");
     assert(elem.hasClass("text-warning"));
 });
-
-rewiremock.disable();

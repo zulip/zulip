@@ -32,12 +32,12 @@ set_global("Image", Image);
 const doc = "";
 set_global("document", doc);
 
-const emoji = zrequire("emoji", "shared/js/emoji");
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
-const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
+const emoji = zrequire("../shared/js/emoji");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const pygments_data = zrequire("../generated/pygments_data.json");
+const fenced_code = zrequire("../shared/js/fenced_code");
 const markdown_config = zrequire("markdown_config");
-const marked = zrequire("marked", "third/marked/lib/marked");
+const marked = zrequire("../third/marked/lib/marked");
 const markdown = zrequire("markdown");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");

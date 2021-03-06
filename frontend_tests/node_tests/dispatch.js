@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -112,8 +110,6 @@ const page_params = set_global("page_params", {
     realm_description: "already set description",
 });
 
-rewiremock.enable();
-
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -123,7 +119,7 @@ const people = zrequire("people");
 const starred_messages = zrequire("starred_messages");
 const user_status = zrequire("user_status");
 
-const emoji = zrequire("emoji", "shared/js/emoji");
+const emoji = zrequire("../shared/js/emoji");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 
@@ -137,7 +133,7 @@ people.add_active_user(test_user);
 message_store.add_message_metadata(test_message);
 
 const realm_emoji = {};
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 
 emoji.initialize({realm_emoji, emoji_codes});
 
@@ -893,4 +889,3 @@ run_test("realm_export", (override) => {
     const args = stub.get_args("exports");
     assert.equal(args.exports, event.exports);
 });
-rewiremock.disable();

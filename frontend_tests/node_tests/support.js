@@ -14,7 +14,7 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
 run_test("scrub_realm", () => {
-    zrequire("support", "js/analytics/support");
+    zrequire("../js/analytics/support");
     const click_handler = $("body").get_on_handler("click", ".scrub-realm-button");
 
     const fake_this = $.create("fake-.scrub-realm-button");

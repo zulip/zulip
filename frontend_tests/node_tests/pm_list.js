@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {with_field, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -28,8 +26,6 @@ rewiremock("../../static/js/vdom").with(vdom);
 const pm_list_dom = {__esModule: true};
 
 rewiremock("../../static/js/pm_list_dom").with(pm_list_dom);
-
-rewiremock.enable();
 
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
@@ -296,4 +292,3 @@ run_test("ensure coverage", (override) => {
         },
     );
 });
-rewiremock.disable();

@@ -4,9 +4,8 @@ const {strict: assert} = require("assert");
 const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
-const rewiremock = require("rewiremock/node");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {rewiremock, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -22,8 +21,6 @@ rewiremock("../../static/js/billing/helpers").with(helpers);
 const StripeCheckout = set_global("StripeCheckout", {
     configure: () => {},
 });
-
-rewiremock.enable();
 
 run_test("initialize", (override) => {
     let token_func;
@@ -72,7 +69,7 @@ run_test("initialize", (override) => {
     $("#payment-method").data = (key) =>
         document.querySelector("#payment-method").getAttribute("data-" + key);
 
-    zrequire("billing", "js/billing/billing");
+    zrequire("billing/billing");
 
     assert(set_tab_called);
     assert(stripe_checkout_configure_called);
@@ -112,4 +109,3 @@ run_test("billing_template", () => {
 
     assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
 });
-rewiremock.disable();
