@@ -580,10 +580,6 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the stream whose subscription details have changed.
-                                name:
-                                  type: string
-                                  description: |
-                                    The name of the stream whose subscription details have changed.
                                 property:
                                   type: string
                                   description: |
@@ -609,7 +605,6 @@ paths:
                                   "property": "pin_to_top",
                                   "value": true,
                                   "stream_id": 11,
-                                  "name": "test_stream",
                                   "id": 0,
                                 }
                             - type: object
