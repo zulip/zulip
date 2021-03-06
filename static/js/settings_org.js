@@ -36,6 +36,11 @@ export function maybe_disable_widgets() {
         return;
     }
 
+    if (page_params.realm_plan_type !== 4) {
+        $("#id_realm_customer_showcase_policy").prop("disabled", true);
+        return;
+    }
+
     $(".organization-box [data-name='auth-methods']")
         .find("input, button, select, checked")
         .prop("disabled", true);
@@ -880,6 +885,11 @@ export function build_page() {
                         data.add_emoji_by_admins_only = false;
                         break;
                 }
+                break;
+            }
+            case "pub_listing": {
+                const customer_showcase_value = $("#id_realm_customer_showcase_policy").val();
+                data.customer_showcase_policy = customer_showcase_value;
                 break;
             }
             case "org_join": {

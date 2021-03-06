@@ -206,6 +206,7 @@ export function dispatch_normal_event(event) {
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: noop,
                 private_message_policy: noop,
+                customer_showcase_policy: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
                 signup_notifications_stream_id: noop,

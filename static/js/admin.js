@@ -107,6 +107,7 @@ export function build_page() {
         realm_night_logo_source: page_params.realm_night_logo_source,
         realm_night_logo_url: page_params.realm_night_logo_url,
         realm_mandatory_topics: page_params.realm_mandatory_topics,
+        realm_plan_type: page_params.plan_type,
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_message_content_allowed_in_email_notifications:
             page_params.realm_message_content_allowed_in_email_notifications,
@@ -128,6 +129,8 @@ export function build_page() {
         ...settings_org.get_organization_settings_options(),
     };
 
+    options.customer_showcase_policy_values = settings_config.customer_showcase_policy_values;
+
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
         // If no night mode logo is specified but a day mode one is,
         // use the day mode one.  See also similar code in realm_logo.js.
@@ -145,6 +148,7 @@ export function build_page() {
     $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
+    $("#id_realm_customer_showcase_policy").val(page_params.realm_customer_showcase_policy);
     $("#id_realm_digest_weekday").val(options.realm_digest_weekday);
 
     // default_twenty_four_hour time is a boolean in the API but a
