@@ -5,7 +5,12 @@ from unittest import mock
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_add_submessage, do_delete_messages, internal_send_private_message
+from zerver.lib.actions import (
+    do_add_submessage,
+    do_create_realm,
+    do_delete_messages,
+    internal_send_private_message,
+)
 from zerver.lib.retention import (
     archive_messages,
     clean_archived_data,
@@ -948,11 +953,23 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
         archiving_enabled_zephyr_stream.message_retention_days = 1
         archiving_enabled_zephyr_stream.save()
 
-        Realm.objects.create(
-            string_id="no_archiving", invite_required=False, message_retention_days=-1
+        no_archiving_realm = do_create_realm(string_id="no_archiving", name="no_archiving")
+        no_archiving_realm.invite_required = False
+        no_archiving_realm.message_retention_days = -1
+        no_archiving_realm.save(update_fields=["invite_required", "message_retention_days"])
+
+        # Realm for testing the edge case where it has a default retention policy,
+        # but all streams disable it.
+        realm_all_streams_archiving_disabled = do_create_realm(
+            string_id="with_archiving", name="with_archiving"
         )
-        empty_realm_with_archiving = Realm.objects.create(
-            string_id="with_archiving", invite_required=False, message_retention_days=1
+        realm_all_streams_archiving_disabled.invite_required = False
+        realm_all_streams_archiving_disabled.message_retention_days = 1
+        realm_all_streams_archiving_disabled.save(
+            update_fields=["invite_required", "message_retention_days"]
+        )
+        Stream.objects.filter(realm=realm_all_streams_archiving_disabled).update(
+            message_retention_days=-1
         )
 
         # We construct a list representing how the result of get_realms_and_streams_for_archiving should be.
@@ -963,7 +980,7 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
         expected_result = [
             (zulip_realm, list(Stream.objects.filter(realm=zulip_realm).exclude(id=verona.id))),
             (zephyr_realm, [archiving_enabled_zephyr_stream]),
-            (empty_realm_with_archiving, []),
+            (realm_all_streams_archiving_disabled, []),
         ]
         self.fix_ordering_of_result(expected_result)
 

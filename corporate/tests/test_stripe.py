@@ -55,6 +55,7 @@ from corporate.models import (
 )
 from zerver.lib.actions import (
     do_activate_user,
+    do_create_realm,
     do_create_user,
     do_deactivate_realm,
     do_deactivate_user,
@@ -1543,7 +1544,7 @@ class StripeTest(StripeTestCase):
         )
         self.assertEqual(get_latest_seat_count(realm), initial_count)
         # Test 1 member and 5 guests
-        realm = Realm.objects.create(string_id="second", name="second")
+        realm = do_create_realm(string_id="second", name="second")
         UserProfile.objects.create(
             realm=realm, email="member@second.com", delivery_email="member@second.com"
         )

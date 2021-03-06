@@ -21,6 +21,7 @@ from zerver.lib.actions import (
     do_change_icon_source,
     do_change_logo_source,
     do_change_plan_type,
+    do_create_realm,
     do_delete_old_unclaimed_attachments,
     do_set_realm_property,
     internal_send_private_message,
@@ -566,7 +567,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         user2_email = "test-og-bot@zulip.com"
         user3_email = "other-user@uploadtest.example.com"
 
-        r1 = Realm.objects.create(string_id=test_subdomain, invite_required=False)
+        r1 = do_create_realm(string_id=test_subdomain, name=test_subdomain)
+        r1.invite_required = False
+        r1.save(update_fields=["invite_required"])
         RealmDomain.objects.create(realm=r1, domain=test_subdomain)
 
         user_1 = create_user(user1_email, test_subdomain)

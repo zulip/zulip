@@ -17,6 +17,7 @@ from zerver.lib.actions import (
     check_send_stream_message,
     do_change_can_forge_sender,
     do_change_stream_post_policy,
+    do_create_realm,
     do_create_user,
     do_deactivate_user,
     do_send_messages,
@@ -2091,7 +2092,9 @@ class InternalPrepTest(ZulipTestCase):
 
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain: str) -> Realm:
-        realm = Realm.objects.create(string_id=domain, invite_required=False)
+        realm = do_create_realm(string_id=domain, name=domain)
+        realm.invite_required = False
+        realm.save(update_fields=["invite_required"])
         RealmDomain.objects.create(realm=realm, domain=domain)
         return realm
 
