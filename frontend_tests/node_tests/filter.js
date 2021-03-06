@@ -6,8 +6,7 @@ const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const message_store = {__esModule: true};
-rewiremock("../../static/js/message_store").with(message_store);
+const message_store = rewiremock("../../static/js/message_store").with({});
 const page_params = set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");

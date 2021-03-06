@@ -7,10 +7,8 @@ const MockDate = require("mockdate");
 const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const local_message = {__esModule: true};
-rewiremock("../../static/js/local_message").with(local_message);
-const markdown = {__esModule: true};
-rewiremock("../../static/js/markdown").with(markdown);
+const local_message = rewiremock("../../static/js/local_message").with({});
+const markdown = rewiremock("../../static/js/markdown").with({});
 const page_params = set_global("page_params", {});
 
 const fake_now = 555;
@@ -31,6 +29,7 @@ rewiremock("../../static/js/sent_messages").with({
 
 rewiremock("../../static/js/message_store").with({
     get: () => ({failed_request: true}),
+
     update_booleans: () => {},
 });
 
@@ -43,7 +42,6 @@ set_global("home_msg_list", {
 });
 
 rewiremock("../../static/js/message_list").with({});
-
 set_global("current_msg_list", "");
 
 const echo = zrequire("echo");

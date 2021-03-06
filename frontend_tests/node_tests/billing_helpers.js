@@ -15,9 +15,8 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const jquery = jQueryFactory(dom.window);
 
 const page_params = set_global("page_params", {});
-const loading = {__esModule: true};
-rewiremock("../../static/js/loading").with(loading);
 const history = set_global("history", {});
+const loading = rewiremock("../../static/js/loading").with({});
 set_global("document", {
     title: "Zulip",
 });

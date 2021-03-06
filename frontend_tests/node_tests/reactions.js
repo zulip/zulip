@@ -15,15 +15,12 @@ set_global("page_params", {
     user_id: alice_user_id,
 });
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
+const channel = rewiremock("../../static/js/channel").with({});
 const emoji_picker = {
-    __esModule: true,
     hide_emoji_popover() {},
 };
 
 rewiremock("../../static/js/emoji_picker").with(emoji_picker);
-
 const message = {
     id: 1001,
     reactions: [
@@ -56,8 +53,6 @@ const message = {
 };
 
 const message_store = {
-    __esModule: true,
-
     get(message_id) {
         assert.equal(message_id, 1001);
         return message;
@@ -65,7 +60,6 @@ const message_store = {
 };
 
 rewiremock("../../static/js/message_store").with(message_store);
-
 set_global("current_msg_list", {
     selected_message() {
         return {sent_by_me: true};

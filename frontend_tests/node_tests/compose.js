@@ -19,6 +19,7 @@ let compose_actions_expected_opts;
 
 rewiremock("../../static/js/compose_actions").with({
     update_placeholder_text: noop,
+
     start(msg_type, opts) {
         assert.equal(msg_type, "stream");
         assert.deepEqual(opts, compose_actions_expected_opts);
@@ -26,8 +27,7 @@ rewiremock("../../static/js/compose_actions").with({
     },
 });
 
-const server_events = rewiremock("../../static/js/server_events").with({__esModule: true});
-
+const server_events = rewiremock("../../static/js/server_events").with({});
 const _navigator = {
     platform: "",
 };
@@ -41,56 +41,44 @@ const _document = {
 };
 
 const _drafts = {
-    __esModule: true,
     delete_draft_after_send: noop,
 };
 
 const sent_messages = {
-    __esModule: true,
     start_tracking_message: noop,
 };
 const _notifications = {
-    __esModule: true,
     notify_above_composebox: noop,
     clear_compose_notifications: noop,
 };
 const reminder = {
-    __esModule: true,
     is_deferred_delivery: noop,
 };
 
 set_global("document", _document);
+const channel = rewiremock("../../static/js/channel").with({});
+const loading = rewiremock("../../static/js/loading").with({});
+const local_message = rewiremock("../../static/js/local_message").with({});
+const markdown = rewiremock("../../static/js/markdown").with({});
+const page_params = set_global("page_params", {});
+const resize = rewiremock("../../static/js/resize").with({});
+const stream_edit = rewiremock("../../static/js/stream_edit").with({});
+const subs = rewiremock("../../static/js/subs").with({});
+const transmit = rewiremock("../../static/js/transmit").with({});
 rewiremock("../../static/js/drafts").with(_drafts);
-set_global("navigator", _navigator);
 rewiremock("../../static/js/notifications").with(_notifications);
 rewiremock("../../static/js/reminder").with(reminder);
-rewiremock("../../static/js/sent_messages").with(sent_messages);
 rewiremock("../../static/js/rendered_markdown").with({
     update_elements: () => {},
 });
+rewiremock("../../static/js/sent_messages").with(sent_messages);
+set_global("navigator", _navigator);
 
-const local_message = {__esModule: true};
-rewiremock("../../static/js/local_message").with(local_message);
-const transmit = {__esModule: true};
-rewiremock("../../static/js/transmit").with(transmit);
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const stream_edit = {__esModule: true};
-rewiremock("../../static/js/stream_edit").with(stream_edit);
-const markdown = {__esModule: true};
-rewiremock("../../static/js/markdown").with(markdown);
-const loading = {__esModule: true};
-rewiremock("../../static/js/loading").with(loading);
-const page_params = set_global("page_params", {});
-const resize = {__esModule: true};
-rewiremock("../../static/js/resize").with(resize);
-const subs = {__esModule: true};
-rewiremock("../../static/js/subs").with(subs);
-const ui_util = {__esModule: true};
+const ui_util = {};
 
 rewiremock("../../static/js/ui_util").with(ui_util);
-
 // Setting these up so that we can test that links to uploads within messages are
+
 // automatically converted to server relative links.
 document.location.protocol = "https:";
 document.location.host = "foo.com";

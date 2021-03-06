@@ -5,25 +5,20 @@ const {strict: assert} = require("assert");
 const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const condense = {__esModule: true};
-rewiremock("../../static/js/condense").with(condense);
-set_global("current_msg_list", {});
-const message_edit = {__esModule: true};
-rewiremock("../../static/js/message_edit").with(message_edit);
-const message_list = {__esModule: true};
-rewiremock("../../static/js/message_list").with(message_list);
-const notifications = {__esModule: true};
-rewiremock("../../static/js/notifications").with(notifications);
+const condense = rewiremock("../../static/js/condense").with({});
+const message_edit = rewiremock("../../static/js/message_edit").with({});
+const message_list = rewiremock("../../static/js/message_list").with({});
+const notifications = rewiremock("../../static/js/notifications").with({});
 const page_params = set_global("page_params", {});
-const pm_list = {__esModule: true};
-rewiremock("../../static/js/pm_list").with(pm_list);
-const stream_list = {__esModule: true};
-rewiremock("../../static/js/stream_list").with(stream_list);
-const unread_ui = {__esModule: true};
+const pm_list = rewiremock("../../static/js/pm_list").with({});
+const stream_list = rewiremock("../../static/js/stream_list").with({});
+set_global("current_msg_list", {});
+
+const unread_ui = {};
 
 rewiremock("../../static/js/unread_ui").with(unread_ui);
-
 const message_events = zrequire("message_events");
+
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");

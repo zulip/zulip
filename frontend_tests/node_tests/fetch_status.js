@@ -7,6 +7,7 @@ const {run_test} = require("../zjsunit/test");
 
 rewiremock("../../static/js/message_scroll").with({
     hide_loading_older: () => {},
+
     show_loading_older: () => {},
     hide_loading_newer: () => {},
     show_loading_newer: () => {},

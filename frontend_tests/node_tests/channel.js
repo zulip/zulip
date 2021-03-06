@@ -7,10 +7,9 @@ const _ = require("lodash");
 const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const reload = {__esModule: true};
+const reload = {};
 
 rewiremock("../../static/js/reload").with(reload);
-
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     f();

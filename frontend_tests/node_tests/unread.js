@@ -13,11 +13,11 @@ let page_params = set_global("page_params", {
 
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
-const message_store = {__esModule: true};
+const message_store = {};
 
 rewiremock("../../static/js/message_store").with(message_store);
-
 const muting = zrequire("muting");
+
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");

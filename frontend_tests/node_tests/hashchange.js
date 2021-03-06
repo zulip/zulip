@@ -19,30 +19,20 @@ rewiremock("../../static/js/search").with({
 set_global("document", "document-stub");
 const history = set_global("history", {});
 
-const admin = {__esModule: true};
-rewiremock("../../static/js/admin").with(admin);
-const drafts = {__esModule: true};
-rewiremock("../../static/js/drafts").with(drafts);
-set_global("favicon", {});
-const floating_recipient_bar = {__esModule: true};
-rewiremock("../../static/js/floating_recipient_bar").with(floating_recipient_bar);
-const info_overlay = {__esModule: true};
-rewiremock("../../static/js/info_overlay").with(info_overlay);
-const message_viewport = {__esModule: true};
-rewiremock("../../static/js/message_viewport").with(message_viewport);
-const narrow = {__esModule: true};
-rewiremock("../../static/js/narrow").with(narrow);
-const overlays = {__esModule: true};
-rewiremock("../../static/js/overlays").with(overlays);
-const settings = {__esModule: true};
-rewiremock("../../static/js/settings").with(settings);
-const subs = {__esModule: true};
-rewiremock("../../static/js/subs").with(subs);
-const ui_util = {__esModule: true};
-rewiremock("../../static/js/ui_util").with(ui_util);
+const admin = rewiremock("../../static/js/admin").with({});
+const drafts = rewiremock("../../static/js/drafts").with({});
+const floating_recipient_bar = rewiremock("../../static/js/floating_recipient_bar").with({});
+const info_overlay = rewiremock("../../static/js/info_overlay").with({});
+const message_viewport = rewiremock("../../static/js/message_viewport").with({});
+const narrow = rewiremock("../../static/js/narrow").with({});
+const overlays = rewiremock("../../static/js/overlays").with({});
+const settings = rewiremock("../../static/js/settings").with({});
+const subs = rewiremock("../../static/js/subs").with({});
+const ui_util = rewiremock("../../static/js/ui_util").with({});
 rewiremock("../../static/js/top_left_corner").with({
     handle_narrow_deactivated: () => {},
 });
+set_global("favicon", {});
 
 const people = zrequire("people");
 const hash_util = zrequire("hash_util");

@@ -6,11 +6,11 @@ const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const muting_ui = {__esModule: true};
+const muting_ui = {};
 
 rewiremock("../../static/js/muting_ui").with(muting_ui);
-
 const settings_muting = zrequire("settings_muting");
+
 const stream_data = zrequire("stream_data");
 const muting = zrequire("muting");
 

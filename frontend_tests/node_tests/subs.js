@@ -8,7 +8,6 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const ui = {
-    __esModule: true,
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
 };

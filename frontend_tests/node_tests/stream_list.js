@@ -16,16 +16,12 @@ const page_params = set_global("page_params", {
 
 const noop = () => {};
 
-const topic_list = {__esModule: true};
-rewiremock("../../static/js/topic_list").with(topic_list);
-
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
+const topic_list = rewiremock("../../static/js/topic_list").with({});
 rewiremock("../../static/js/keydown_util").with({
     handle: noop,
 });
-
 rewiremock("../../static/js/ui").with({get_scroll_element: (element) => element});
-
-const narrow_state = rewiremock("../../static/js/narrow_state").with({__esModule: true});
 
 const {Filter} = zrequire("../js/filter");
 const stream_sort = zrequire("stream_sort");

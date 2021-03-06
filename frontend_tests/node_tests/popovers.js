@@ -15,18 +15,15 @@ set_global("page_params", {
     realm_email_address_visibility: 3,
     custom_profile_fields: [],
 });
-const rows = {__esModule: true};
-
-rewiremock("../../static/js/rows").with(rows);
-
-rewiremock("../../static/js/message_viewport").with({
-    height: () => 500,
-});
+const rows = {};
 
 rewiremock("../../static/js/emoji_picker").with({
     hide_emoji_popover: noop,
 });
-
+rewiremock("../../static/js/message_viewport").with({
+    height: () => 500,
+});
+rewiremock("../../static/js/rows").with(rows);
 rewiremock("../../static/js/stream_popover").with({
     hide_stream_popover: noop,
     hide_topic_popover: noop,
@@ -35,11 +32,11 @@ rewiremock("../../static/js/stream_popover").with({
     hide_streamlist_sidebar: noop,
 });
 
-const stream_data = {__esModule: true};
+const stream_data = {};
 
 rewiremock("../../static/js/stream_data").with(stream_data);
-
 const people = zrequire("people");
+
 const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");
 

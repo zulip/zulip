@@ -6,7 +6,6 @@ const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const ui_report = {
-    __esModule: true,
     displayed_error: false,
 
     error: () => {

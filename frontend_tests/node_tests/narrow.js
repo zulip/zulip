@@ -10,10 +10,9 @@ set_global("page_params", {
     stop_words: ["what", "about"],
 });
 
-const stream_topic_history = {__esModule: true};
-rewiremock("../../static/js/stream_topic_history").with(stream_topic_history);
-
+const stream_topic_history = rewiremock("../../static/js/stream_topic_history").with({});
 const hash_util = zrequire("hash_util");
+
 const compose_state = zrequire("compose_state");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");

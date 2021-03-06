@@ -6,28 +6,25 @@ const {rewiremock, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const narrow_state = {__esModule: true};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
-rewiremock("../../static/js/ui").with({
-    get_content_element: (element) => element,
-});
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
+const unread = rewiremock("../../static/js/unread").with({});
+const unread_ui = rewiremock("../../static/js/unread_ui").with({});
 rewiremock("../../static/js/stream_popover").with({
     hide_topic_popover() {},
 });
-const unread = {__esModule: true};
-rewiremock("../../static/js/unread").with(unread);
-const unread_ui = {__esModule: true};
-rewiremock("../../static/js/unread_ui").with(unread_ui);
+rewiremock("../../static/js/ui").with({
+    get_content_element: (element) => element,
+});
+
 const vdom = {
-    __esModule: true,
     render: () => "fake-dom-for-pm-list",
 };
 rewiremock("../../static/js/vdom").with(vdom);
-const pm_list_dom = {__esModule: true};
+const pm_list_dom = {};
 
 rewiremock("../../static/js/pm_list_dom").with(pm_list_dom);
-
 const people = zrequire("people");
+
 const pm_conversations = zrequire("pm_conversations");
 const pm_list = zrequire("pm_list");
 

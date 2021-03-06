@@ -9,49 +9,34 @@ rewiremock("../../static/js/resize").with({
     resize_stream_filters_container: () => {},
 });
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const compose = {__esModule: true};
-rewiremock("../../static/js/compose").with(compose);
-const compose_actions = {__esModule: true};
-rewiremock("../../static/js/compose_actions").with(compose_actions);
+const channel = rewiremock("../../static/js/channel").with({});
+const compose = rewiremock("../../static/js/compose").with({});
+const compose_actions = rewiremock("../../static/js/compose_actions").with({});
+const hashchange = rewiremock("../../static/js/hashchange").with({});
+const message_fetch = rewiremock("../../static/js/message_fetch").with({});
 set_global("current_msg_list", {});
-const hashchange = {__esModule: true};
-rewiremock("../../static/js/hashchange").with(hashchange);
 set_global("home_msg_list", {});
-const message_fetch = {__esModule: true};
-rewiremock("../../static/js/message_fetch").with(message_fetch);
-const message_list = {
-    __esModule: true,
 
+const message_list = {
     set_narrowed(value) {
         message_list.narrowed = value;
     },
 };
+const message_scroll = rewiremock("../../static/js/message_scroll").with({});
+const message_view_header = rewiremock("../../static/js/message_view_header").with({});
+const notifications = rewiremock("../../static/js/notifications").with({});
+const search = rewiremock("../../static/js/search").with({});
+const stream_list = rewiremock("../../static/js/stream_list").with({});
+const top_left_corner = rewiremock("../../static/js/top_left_corner").with({});
+const typing_events = rewiremock("../../static/js/typing_events").with({});
+const ui_util = rewiremock("../../static/js/ui_util").with({});
+const unread_ops = rewiremock("../../static/js/unread_ops").with({});
 rewiremock("../../static/js/message_list").with(message_list);
-const message_scroll = {__esModule: true};
-rewiremock("../../static/js/message_scroll").with(message_scroll);
-const notifications = {__esModule: true};
-rewiremock("../../static/js/notifications").with(notifications);
-set_global("page_params", {});
-const search = {__esModule: true};
-rewiremock("../../static/js/search").with(search);
-const stream_list = {__esModule: true};
-rewiremock("../../static/js/stream_list").with(stream_list);
-const message_view_header = {__esModule: true};
-rewiremock("../../static/js/message_view_header").with(message_view_header);
-const top_left_corner = {__esModule: true};
-rewiremock("../../static/js/top_left_corner").with(top_left_corner);
-const typing_events = {__esModule: true};
-rewiremock("../../static/js/typing_events").with(typing_events);
-const ui_util = {__esModule: true};
-rewiremock("../../static/js/ui_util").with(ui_util);
-const unread_ops = {__esModule: true};
-rewiremock("../../static/js/unread_ops").with(unread_ops);
 rewiremock("../../static/js/recent_topics").with({
     hide: () => {},
     is_visible: () => {},
 });
+set_global("page_params", {});
 
 //
 // We have strange hacks in narrow.activate to sleep 0

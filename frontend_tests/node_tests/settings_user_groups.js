@@ -9,10 +9,9 @@ const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const confirm_dialog = {__esModule: true};
+const confirm_dialog = {};
 
 rewiremock("../../static/js/confirm_dialog").with(confirm_dialog);
-
 const noop = () => {};
 
 const pills = {
@@ -21,27 +20,25 @@ const pills = {
 
 let create_item_handler;
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const typeahead_helper = {__esModule: true};
-rewiremock("../../static/js/typeahead_helper").with(typeahead_helper);
+const channel = rewiremock("../../static/js/channel").with({});
+const typeahead_helper = rewiremock("../../static/js/typeahead_helper").with({});
+
 const user_groups = {
-    __esModule: true,
     get_user_group_from_id: noop,
     remove: noop,
     add: noop,
 };
 rewiremock("../../static/js/user_groups").with(user_groups);
-const ui_report = {__esModule: true};
-
-rewiremock("../../static/js/ui_report").with(ui_report);
+const ui_report = {};
 
 const page_params = set_global("page_params", {});
-const input_pill = {__esModule: true};
+rewiremock("../../static/js/ui_report").with(ui_report);
+
+const input_pill = {};
 
 rewiremock("../../static/js/input_pill").with(input_pill);
-
 const user_pill = zrequire("user_pill");
+
 const settings_user_groups = zrequire("settings_user_groups");
 const settings_config = zrequire("settings_config");
 const people = zrequire("people");

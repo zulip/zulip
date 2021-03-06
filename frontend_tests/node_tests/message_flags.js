@@ -7,15 +7,14 @@ const {run_test} = require("../zjsunit/test");
 
 rewiremock("../../static/js/starred_messages").with({
     add: () => {},
+
     remove: () => {},
 });
 
-const ui = {__esModule: true};
-rewiremock("../../static/js/ui").with(ui);
-const channel = {__esModule: true};
+const ui = rewiremock("../../static/js/ui").with({});
+const channel = {};
 
 rewiremock("../../static/js/channel").with(channel);
-
 const message_flags = zrequire("message_flags");
 
 run_test("starred", () => {

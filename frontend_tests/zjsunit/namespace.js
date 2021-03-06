@@ -37,6 +37,7 @@ exports.rewiremock = (fn) => {
                     Or call this earlier.
                 `);
             }
+            obj.__esModule = true;
             mock_paths[long_fn] = obj;
             mock_names.add(short_fn);
             return obj;

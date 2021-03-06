@@ -24,15 +24,14 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
-const compose_state = {__esModule: true};
-rewiremock("../../static/js/compose_state").with(compose_state);
+const compose_state = rewiremock("../../static/js/compose_state").with({});
+rewiremock("../../static/js/markdown").with({
+    apply_markdown: noop,
+});
 rewiremock("../../static/js/stream_data").with({
     get_color() {
         return "#FFFFFF";
     },
-});
-rewiremock("../../static/js/markdown").with({
-    apply_markdown: noop,
 });
 set_global("page_params", {
     twenty_four_hour_time: false,

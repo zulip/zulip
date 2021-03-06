@@ -23,42 +23,35 @@ const _document = {
     },
 };
 
-const channel = {__esModule: true};
+const channel = {};
 
 const _keydown_util = {
-    __esModule: true,
-
     handle: (opts) => {
         filter_key_handlers = opts.handlers;
     },
 };
 
-const compose_state = {__esModule: true};
+const compose_state = {};
 
 const _scroll_util = {
-    __esModule: true,
     scroll_element_into_container: () => {},
 };
 
 const _pm_list = {
-    __esModule: true,
     update_private_messages: () => {},
 };
 
 const _popovers = {
-    __esModule: true,
     hide_all_except_sidebars() {},
     hide_all() {},
     show_userlist_sidebar() {},
 };
 
 const _stream_popover = {
-    __esModule: true,
     show_streamlist_sidebar() {},
 };
 
 const _resize = {
-    __esModule: true,
     resize_sidebars: () => {},
     resize_page_components: () => {},
 };
@@ -68,16 +61,16 @@ rewiremock("../../static/js/padded_widget").with({
 });
 rewiremock("../../static/js/channel").with(channel);
 rewiremock("../../static/js/compose_state").with(compose_state);
-set_global("document", _document);
 rewiremock("../../static/js/keydown_util").with(_keydown_util);
 rewiremock("../../static/js/pm_list").with(_pm_list);
 rewiremock("../../static/js/popovers").with(_popovers);
 rewiremock("../../static/js/resize").with(_resize);
 rewiremock("../../static/js/scroll_util").with(_scroll_util);
-rewiremock("../../static/js/stream_popover").with(_stream_popover);
 rewiremock("../../static/js/server_events").with({
     check_for_unsuspend() {},
 });
+rewiremock("../../static/js/stream_popover").with(_stream_popover);
+set_global("document", _document);
 
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");

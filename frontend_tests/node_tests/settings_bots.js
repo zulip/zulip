@@ -27,9 +27,7 @@ const bot_data_params = {
     ],
 };
 
-const avatar = {__esModule: true};
-rewiremock("../../static/js/avatar").with(avatar);
-
+const avatar = rewiremock("../../static/js/avatar").with({});
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
 }

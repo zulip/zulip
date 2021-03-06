@@ -9,6 +9,7 @@ const $ = require("../zjsunit/zjquery");
 set_global("Image", class Image {});
 rewiremock("../../static/js/overlays").with({
     close_overlay: () => {},
+
     close_active: () => {},
     open_overlay: () => {},
 });
@@ -16,10 +17,9 @@ rewiremock("../../static/js/popovers").with({
     hide_all: () => {},
 });
 
-const message_store = {__esModule: true};
-rewiremock("../../static/js/message_store").with(message_store);
-
+const message_store = rewiremock("../../static/js/message_store").with({});
 const rows = zrequire("rows");
+
 const lightbox = zrequire("lightbox");
 
 rows.__Rewire__("is_draft_row", () => false);

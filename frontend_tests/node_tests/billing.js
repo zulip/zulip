@@ -14,13 +14,12 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
 const helpers = {
-    __esModule: true,
     set_tab: () => {},
 };
-rewiremock("../../static/js/billing/helpers").with(helpers);
 const StripeCheckout = set_global("StripeCheckout", {
     configure: () => {},
 });
+rewiremock("../../static/js/billing/helpers").with(helpers);
 
 run_test("initialize", (override) => {
     let token_func;

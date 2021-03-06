@@ -26,6 +26,7 @@ rewiremock("../../static/js/message_view_header").with({
 
 rewiremock("../../static/js/timerender").with({
     last_seen_status_from_date: () => "Just now",
+
     get_full_datetime: () => ({
         date: "date",
         time: "time",
@@ -44,13 +45,13 @@ rewiremock("../../static/js/unread").with({
 });
 rewiremock("../../static/js/hash_util").with({
     by_stream_uri: () => "https://www.example.com",
+
     by_stream_topic_uri: () => "https://www.example.com",
 });
 rewiremock("../../static/js/recent_senders").with({
     get_topic_recent_senders: () => [1, 2],
 });
 const ListWidget = {
-    __esModule: true,
     modifier: noop,
 
     create: (container, mapped_topic_values, opts) => {
@@ -76,10 +77,10 @@ const ListWidget = {
     hard_redraw: noop,
     render_item: (item) => ListWidget.modifier(item),
 };
-rewiremock("../../static/js/list_widget").with(ListWidget);
 rewiremock("../../static/js/drafts").with({
     update_draft: noop,
 });
+rewiremock("../../static/js/list_widget").with(ListWidget);
 
 const ls_container = new Map();
 set_global("localStorage", {
@@ -135,8 +136,6 @@ const sender2 = 2;
 const messages = [];
 
 const message_list = {
-    __esModule: true,
-
     all: {
         all_messages() {
             return messages;

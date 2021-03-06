@@ -5,14 +5,12 @@ const {strict: assert} = require("assert");
 const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const widgetize = {__esModule: true};
-rewiremock("../../static/js/widgetize").with(widgetize);
-const message_store = {__esModule: true};
+const channel = rewiremock("../../static/js/channel").with({});
+const widgetize = rewiremock("../../static/js/widgetize").with({});
+
+const message_store = {};
 
 rewiremock("../../static/js/message_store").with(message_store);
-
 const submessage = zrequire("submessage");
 
 run_test("get_message_events", () => {
