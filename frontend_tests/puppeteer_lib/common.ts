@@ -104,6 +104,14 @@ class CommonUtils {
         return await page.evaluate("location.href");
     }
 
+    // This function will clear the existing value of the element and
+    // replace it with the text.
+    async clear_and_type(page: Page, selector: string, text: string): Promise<void> {
+        // Select all text currently in the element.
+        await page.click(selector, {clickCount: 3});
+        await page.type(selector, text);
+    }
+
     /**
      * This function takes a params object whose fields
      * are referenced by name attribute of an input field and
