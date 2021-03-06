@@ -18,31 +18,42 @@ exports.start = () => {
     mock_names = new Set();
 };
 
-exports.rewiremock = (fn) => {
-    if (!fn.startsWith("../../static/js/")) {
-        throw new Error(`We only mock static/js files`);
+exports.mock_module = (short_fn, obj) => {
+    if (obj === undefined) {
+        obj = {};
     }
-    const short_fn = fn.slice("../../static/js/".length);
+
+    if (typeof obj !== "object") {
+        throw new TypeError("We expect you to stub with an object.");
+    }
+
+    if (mock_names.has(short_fn)) {
+        throw new Error(`You already set up a mock for ${short_fn}`);
+    }
+
+    if (short_fn.startsWith("/") || short_fn.includes(".")) {
+        throw new Error(`
+            There is no need for a path like ${short_fn}.
+            We just assume the file is under static/js.
+        `);
+    }
+    if (objs_installed) {
+        throw new Error(`
+            It is too late to install this mock.  Consider instead:
+
+                foo.__Rewire__("${short_fn}", ...)
+
+            Or call this earlier.
+        `);
+    }
+
     const base_path = path.resolve("./static/js");
     const long_fn = path.join(base_path, short_fn);
 
-    return {
-        with: (obj) => {
-            if (objs_installed) {
-                throw new Error(`
-                    It is too late to install this mock.  Consider instead:
-
-                        foo.__Rewire__(${short_fn}, ...)
-
-                    Or call this earlier.
-                `);
-            }
-            obj.__esModule = true;
-            mock_paths[long_fn] = obj;
-            mock_names.add(short_fn);
-            return obj;
-        },
-    };
+    obj.__esModule = true;
+    mock_paths[long_fn] = obj;
+    mock_names.add(short_fn);
+    return obj;
 };
 
 exports.set_global = function (name, val) {

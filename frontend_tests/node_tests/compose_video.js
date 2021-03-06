@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -11,10 +11,10 @@ const events = require("./lib/events");
 const resize = {
     watch_manual_resize() {},
 };
-const channel = rewiremock("../../static/js/channel").with({});
+const channel = mock_module("channel");
 const page_params = set_global("page_params", {});
-const upload = rewiremock("../../static/js/upload").with({});
-rewiremock("../../static/js/resize").with(resize);
+const upload = mock_module("upload");
+mock_module("resize", resize);
 set_global("csrf_token", "fake-csrf-token");
 set_global("document", {
     execCommand() {

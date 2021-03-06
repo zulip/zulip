@@ -2,12 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = rewiremock("../../static/js/channel").with({});
-const message_list = rewiremock("../../static/js/message_list").with({});
-const message_util = rewiremock("../../static/js/message_util").with({});
+const channel = mock_module("channel");
+const message_list = mock_module("message_list");
+const message_util = mock_module("message_util");
 
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");

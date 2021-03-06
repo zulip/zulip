@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -17,14 +17,14 @@ set_global("page_params", {
 });
 const rows = {};
 
-rewiremock("../../static/js/emoji_picker").with({
+mock_module("emoji_picker", {
     hide_emoji_popover: noop,
 });
-rewiremock("../../static/js/message_viewport").with({
+mock_module("message_viewport", {
     height: () => 500,
 });
-rewiremock("../../static/js/rows").with(rows);
-rewiremock("../../static/js/stream_popover").with({
+mock_module("rows", rows);
+mock_module("stream_popover", {
     hide_stream_popover: noop,
     hide_topic_popover: noop,
     hide_all_messages_popover: noop,
@@ -34,7 +34,7 @@ rewiremock("../../static/js/stream_popover").with({
 
 const stream_data = {};
 
-rewiremock("../../static/js/stream_data").with(stream_data);
+mock_module("stream_data", stream_data);
 const people = zrequire("people");
 
 const user_status = zrequire("user_status");

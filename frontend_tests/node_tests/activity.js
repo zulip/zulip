@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -56,20 +56,20 @@ const _resize = {
     resize_page_components: () => {},
 };
 
-rewiremock("../../static/js/padded_widget").with({
+mock_module("padded_widget", {
     update_padding: () => {},
 });
-rewiremock("../../static/js/channel").with(channel);
-rewiremock("../../static/js/compose_state").with(compose_state);
-rewiremock("../../static/js/keydown_util").with(_keydown_util);
-rewiremock("../../static/js/pm_list").with(_pm_list);
-rewiremock("../../static/js/popovers").with(_popovers);
-rewiremock("../../static/js/resize").with(_resize);
-rewiremock("../../static/js/scroll_util").with(_scroll_util);
-rewiremock("../../static/js/server_events").with({
+mock_module("channel", channel);
+mock_module("compose_state", compose_state);
+mock_module("keydown_util", _keydown_util);
+mock_module("pm_list", _pm_list);
+mock_module("popovers", _popovers);
+mock_module("resize", _resize);
+mock_module("scroll_util", _scroll_util);
+mock_module("server_events", {
     check_for_unsuspend() {},
 });
-rewiremock("../../static/js/stream_popover").with(_stream_popover);
+mock_module("stream_popover", _stream_popover);
 set_global("document", _document);
 
 const huddle_data = zrequire("huddle_data");

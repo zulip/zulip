@@ -2,13 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const muting_ui = {};
 
-rewiremock("../../static/js/muting_ui").with(muting_ui);
+mock_module("muting_ui", muting_ui);
 const settings_muting = zrequire("settings_muting");
 
 const stream_data = zrequire("stream_data");

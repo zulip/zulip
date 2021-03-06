@@ -4,15 +4,15 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {rewiremock, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-rewiremock("../../static/js/padded_widget").with({
+mock_module("padded_widget", {
     update_padding: () => {},
 });
 
-rewiremock("../../static/js/message_viewport").with({
+mock_module("message_viewport", {
     height: () => 550,
 });
 

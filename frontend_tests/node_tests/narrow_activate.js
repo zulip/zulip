@@ -2,18 +2,18 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-rewiremock("../../static/js/resize").with({
+mock_module("resize", {
     resize_stream_filters_container: () => {},
 });
 
-const channel = rewiremock("../../static/js/channel").with({});
-const compose = rewiremock("../../static/js/compose").with({});
-const compose_actions = rewiremock("../../static/js/compose_actions").with({});
-const hashchange = rewiremock("../../static/js/hashchange").with({});
-const message_fetch = rewiremock("../../static/js/message_fetch").with({});
+const channel = mock_module("channel");
+const compose = mock_module("compose");
+const compose_actions = mock_module("compose_actions");
+const hashchange = mock_module("hashchange");
+const message_fetch = mock_module("message_fetch");
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
 
@@ -22,17 +22,17 @@ const message_list = {
         message_list.narrowed = value;
     },
 };
-const message_scroll = rewiremock("../../static/js/message_scroll").with({});
-const message_view_header = rewiremock("../../static/js/message_view_header").with({});
-const notifications = rewiremock("../../static/js/notifications").with({});
-const search = rewiremock("../../static/js/search").with({});
-const stream_list = rewiremock("../../static/js/stream_list").with({});
-const top_left_corner = rewiremock("../../static/js/top_left_corner").with({});
-const typing_events = rewiremock("../../static/js/typing_events").with({});
-const ui_util = rewiremock("../../static/js/ui_util").with({});
-const unread_ops = rewiremock("../../static/js/unread_ops").with({});
-rewiremock("../../static/js/message_list").with(message_list);
-rewiremock("../../static/js/recent_topics").with({
+const message_scroll = mock_module("message_scroll");
+const message_view_header = mock_module("message_view_header");
+const notifications = mock_module("notifications");
+const search = mock_module("search");
+const stream_list = mock_module("stream_list");
+const top_left_corner = mock_module("top_left_corner");
+const typing_events = mock_module("typing_events");
+const ui_util = mock_module("ui_util");
+const unread_ops = mock_module("unread_ops");
+mock_module("message_list", message_list);
+mock_module("recent_topics", {
     hide: () => {},
     is_visible: () => {},
 });
@@ -46,7 +46,7 @@ set_global("setTimeout", (f, t) => {
     f();
 });
 
-rewiremock("../../static/js/muting").with({
+mock_module("muting", {
     is_topic_muted: () => false,
 });
 

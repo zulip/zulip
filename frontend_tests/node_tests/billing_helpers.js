@@ -6,7 +6,7 @@ const fs = require("fs");
 const jQueryFactory = require("jquery");
 const {JSDOM} = require("jsdom");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -16,7 +16,7 @@ const jquery = jQueryFactory(dom.window);
 
 const page_params = set_global("page_params", {});
 const history = set_global("history", {});
-const loading = rewiremock("../../static/js/loading").with({});
+const loading = mock_module("loading");
 set_global("document", {
     title: "Zulip",
 });

@@ -4,11 +4,11 @@ const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const local_message = rewiremock("../../static/js/local_message").with({});
-const markdown = rewiremock("../../static/js/markdown").with({});
+const local_message = mock_module("local_message");
+const markdown = mock_module("markdown");
 const page_params = set_global("page_params", {});
 
 const fake_now = 555;
@@ -17,17 +17,17 @@ MockDate.set(new Date(fake_now * 1000));
 let disparities = [];
 let messages_to_rerender = [];
 
-rewiremock("../../static/js/ui").with({
+mock_module("ui", {
     show_failed_message_success: () => {},
 });
 
-rewiremock("../../static/js/sent_messages").with({
+mock_module("sent_messages", {
     mark_disparity: (local_id) => {
         disparities.push(local_id);
     },
 });
 
-rewiremock("../../static/js/message_store").with({
+mock_module("message_store", {
     get: () => ({failed_request: true}),
 
     update_booleans: () => {},
@@ -41,7 +41,7 @@ set_global("home_msg_list", {
     },
 });
 
-rewiremock("../../static/js/message_list").with({});
+mock_module("message_list");
 set_global("current_msg_list", "");
 
 const echo = zrequire("echo");

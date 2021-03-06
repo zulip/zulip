@@ -4,14 +4,14 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {});
 
 const timerender = {};
 
-rewiremock("../../static/js/timerender").with(timerender);
+mock_module("timerender", timerender);
 const people = zrequire("people");
 
 const presence = zrequire("presence");

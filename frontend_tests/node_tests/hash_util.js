@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const ui_report = {
@@ -12,7 +12,7 @@ const ui_report = {
         ui_report.displayed_error = true;
     },
 };
-rewiremock("../../static/js/ui_report").with(ui_report);
+mock_module("ui_report", ui_report);
 set_global("location", {
     protocol: "https:",
     host: "example.com",

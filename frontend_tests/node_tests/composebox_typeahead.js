@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -10,23 +10,23 @@ const noop = () => {};
 
 const stream_topic_history = {};
 
-rewiremock("../../static/js/stream_topic_history").with(stream_topic_history);
+mock_module("stream_topic_history", stream_topic_history);
 const message_store = {
     user_ids: () => [],
 };
 
-const channel = rewiremock("../../static/js/channel").with({});
+const channel = mock_module("channel");
 const page_params = set_global("page_params", {});
-rewiremock("../../static/js/message_store").with(message_store);
+mock_module("message_store", message_store);
 
 const compose = {
     finish: noop,
 };
 
-rewiremock("../../static/js/compose").with(compose);
+mock_module("compose", compose);
 let autosize_called;
 
-rewiremock("../../static/js/compose_ui").with({
+mock_module("compose_ui", {
     autosize_textarea() {
         autosize_called = true;
     },

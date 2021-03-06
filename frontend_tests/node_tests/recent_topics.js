@@ -3,28 +3,28 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-rewiremock("../../static/js/top_left_corner").with({
+mock_module("top_left_corner", {
     narrow_to_recent_topics: noop,
 });
-rewiremock("../../static/js/stream_list").with({
+mock_module("stream_list", {
     handle_narrow_deactivated: noop,
 });
-rewiremock("../../static/js/compose_actions").with({
+mock_module("compose_actions", {
     cancel: noop,
 });
-rewiremock("../../static/js/narrow").with({
+mock_module("narrow", {
     set_narrow_title: noop,
 });
-rewiremock("../../static/js/message_view_header").with({
+mock_module("message_view_header", {
     render_title_area: noop,
 });
 
-rewiremock("../../static/js/timerender").with({
+mock_module("timerender", {
     last_seen_status_from_date: () => "Just now",
 
     get_full_datetime: () => ({
@@ -32,7 +32,7 @@ rewiremock("../../static/js/timerender").with({
         time: "time",
     }),
 });
-rewiremock("../../static/js/unread").with({
+mock_module("unread", {
     unread_topic_counter: {
         get: (stream_id, topic) => {
             if (stream_id === 1 && topic === "topic-1") {
@@ -43,12 +43,12 @@ rewiremock("../../static/js/unread").with({
         },
     },
 });
-rewiremock("../../static/js/hash_util").with({
+mock_module("hash_util", {
     by_stream_uri: () => "https://www.example.com",
 
     by_stream_topic_uri: () => "https://www.example.com",
 });
-rewiremock("../../static/js/recent_senders").with({
+mock_module("recent_senders", {
     get_topic_recent_senders: () => [1, 2],
 });
 const ListWidget = {
@@ -77,10 +77,10 @@ const ListWidget = {
     hard_redraw: noop,
     render_item: (item) => ListWidget.modifier(item),
 };
-rewiremock("../../static/js/drafts").with({
+mock_module("drafts", {
     update_draft: noop,
 });
-rewiremock("../../static/js/list_widget").with(ListWidget);
+mock_module("list_widget", ListWidget);
 
 const ls_container = new Map();
 set_global("localStorage", {
@@ -119,7 +119,7 @@ const topic8 = "topic-8";
 const topic9 = "topic-9";
 const topic10 = "topic-10";
 
-rewiremock("../../static/js/muting").with({
+mock_module("muting", {
     is_topic_muted: (stream_id, topic) => {
         if (stream_id === stream1 && topic === topic7) {
             return true;
@@ -142,11 +142,11 @@ const message_list = {
         },
     },
 };
-rewiremock("../../static/js/message_list").with(message_list);
-rewiremock("../../static/js/message_store").with({
+mock_module("message_list", message_list);
+mock_module("message_store", {
     get: (msg_id) => messages[msg_id - 1],
 });
-rewiremock("../../static/js/stream_data").with({
+mock_module("stream_data", {
     get_sub_by_id: (stream) => {
         if (stream === stream5) {
             // No data is available for deactivated streams

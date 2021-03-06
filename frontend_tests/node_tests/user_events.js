@@ -2,45 +2,45 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-rewiremock("../../static/js/activity").with({
+mock_module("activity", {
     redraw() {},
 });
 
-rewiremock("../../static/js/settings_linkifiers").with({
+mock_module("settings_linkifiers", {
     maybe_disable_widgets() {},
 });
-rewiremock("../../static/js/settings_org").with({
+mock_module("settings_org", {
     maybe_disable_widgets() {},
 });
-rewiremock("../../static/js/settings_profile_fields").with({
+mock_module("settings_profile_fields", {
     maybe_disable_widgets() {},
 });
-rewiremock("../../static/js/settings_streams").with({
+mock_module("settings_streams", {
     maybe_disable_widgets() {},
 });
-rewiremock("../../static/js/settings_users").with({
+mock_module("settings_users", {
     update_user_data() {},
 });
 
-rewiremock("../../static/js/gear_menu").with({
+mock_module("gear_menu", {
     update_org_settings_menu_item() {},
 });
 const page_params = set_global("page_params", {
     is_admin: true,
 });
 
-rewiremock("../../static/js/pm_list").with({
+mock_module("pm_list", {
     update_private_messages() {},
 });
 
-rewiremock("../../static/js/narrow_state").with({
+mock_module("narrow_state", {
     update_email() {},
 });
 
-rewiremock("../../static/js/compose").with({
+mock_module("compose", {
     update_email() {},
 });
 
@@ -49,10 +49,10 @@ const settings_account = {
     update_full_name() {},
 };
 
-rewiremock("../../static/js/settings_account").with(settings_account);
+mock_module("settings_account", settings_account);
 const message_live_update = {};
 
-rewiremock("../../static/js/message_live_update").with(message_live_update);
+mock_module("message_live_update", message_live_update);
 const people = zrequire("people");
 
 const settings_config = zrequire("settings_config");

@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let page_params = set_global("page_params", {
@@ -15,7 +15,7 @@ set_global("current_msg_list", {});
 set_global("home_msg_list", {});
 const message_store = {};
 
-rewiremock("../../static/js/message_store").with(message_store);
+mock_module("message_store", message_store);
 const muting = zrequire("muting");
 
 const people = zrequire("people");

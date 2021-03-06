@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -10,11 +10,11 @@ const noop = () => {};
 
 set_global("document", "document-stub");
 
-rewiremock("../../static/js/stream_topic_history").with({
+mock_module("stream_topic_history", {
     add_message: noop,
 });
 
-rewiremock("../../static/js/recent_senders").with({
+mock_module("recent_senders", {
     process_message_for_senders: noop,
 });
 

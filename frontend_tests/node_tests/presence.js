@@ -2,15 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const server_events = rewiremock("../../static/js/server_events").with({});
+const server_events = mock_module("server_events");
 const reload_state = {
     is_in_progress: () => false,
 };
 
-rewiremock("../../static/js/reload_state").with(reload_state);
+mock_module("reload_state", reload_state);
 const people = zrequire("people");
 
 const presence = zrequire("presence");

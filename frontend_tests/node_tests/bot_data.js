@@ -2,14 +2,14 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const _settings_bots = {
     render_bots: () => {},
 };
 
-rewiremock("../../static/js/settings_bots").with(_settings_bots);
+mock_module("settings_bots", _settings_bots);
 const bot_data = zrequire("bot_data");
 
 const people = zrequire("people");

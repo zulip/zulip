@@ -4,12 +4,12 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const reload = {};
 
-rewiremock("../../static/js/reload").with(reload);
+mock_module("reload", reload);
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     f();

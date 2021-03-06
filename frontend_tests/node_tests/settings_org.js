@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -37,10 +37,10 @@ const page_params = set_global("page_params", {
     realm_authentication_methods: {},
 });
 
-const realm_icon = rewiremock("../../static/js/realm_icon").with({});
+const realm_icon = mock_module("realm_icon");
 const channel = {};
 
-rewiremock("../../static/js/channel").with(channel);
+mock_module("channel", channel);
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
         assert(data.realm_domain.domain);
@@ -51,7 +51,7 @@ stub_templates((name, data) => {
 
 const overlays = {};
 
-rewiremock("../../static/js/overlays").with(overlays);
+mock_module("overlays", overlays);
 const _ui_report = {
     success(msg, elem) {
         elem.val(msg);
@@ -69,9 +69,9 @@ const _ListWidget = {
 set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 set_global("jQuery", _jQuery);
-rewiremock("../../static/js/list_widget").with(_ListWidget);
-rewiremock("../../static/js/loading").with(_loading);
-rewiremock("../../static/js/ui_report").with(_ui_report);
+mock_module("list_widget", _ListWidget);
+mock_module("loading", _loading);
+mock_module("ui_report", _ui_report);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");

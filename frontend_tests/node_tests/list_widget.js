@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 // We need these stubs to get by instanceof checks.
@@ -16,7 +16,7 @@ function Element() {
 set_global("Element", Element);
 const ui = {};
 
-rewiremock("../../static/js/ui").with(ui);
+mock_module("ui", ui);
 // We only need very simple jQuery wrappers for when the
 
 // "real" code wraps html or sets up click handlers.

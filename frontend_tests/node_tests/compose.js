@@ -6,7 +6,7 @@ const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -17,7 +17,7 @@ set_global("DOMParser", new JSDOM().window.DOMParser);
 let compose_actions_start_checked;
 let compose_actions_expected_opts;
 
-rewiremock("../../static/js/compose_actions").with({
+mock_module("compose_actions", {
     update_placeholder_text: noop,
 
     start(msg_type, opts) {
@@ -27,7 +27,7 @@ rewiremock("../../static/js/compose_actions").with({
     },
 });
 
-const server_events = rewiremock("../../static/js/server_events").with({});
+const server_events = mock_module("server_events");
 const _navigator = {
     platform: "",
 };
@@ -56,27 +56,27 @@ const reminder = {
 };
 
 set_global("document", _document);
-const channel = rewiremock("../../static/js/channel").with({});
-const loading = rewiremock("../../static/js/loading").with({});
-const local_message = rewiremock("../../static/js/local_message").with({});
-const markdown = rewiremock("../../static/js/markdown").with({});
+const channel = mock_module("channel");
+const loading = mock_module("loading");
+const local_message = mock_module("local_message");
+const markdown = mock_module("markdown");
 const page_params = set_global("page_params", {});
-const resize = rewiremock("../../static/js/resize").with({});
-const stream_edit = rewiremock("../../static/js/stream_edit").with({});
-const subs = rewiremock("../../static/js/subs").with({});
-const transmit = rewiremock("../../static/js/transmit").with({});
-rewiremock("../../static/js/drafts").with(_drafts);
-rewiremock("../../static/js/notifications").with(_notifications);
-rewiremock("../../static/js/reminder").with(reminder);
-rewiremock("../../static/js/rendered_markdown").with({
+const resize = mock_module("resize");
+const stream_edit = mock_module("stream_edit");
+const subs = mock_module("subs");
+const transmit = mock_module("transmit");
+mock_module("drafts", _drafts);
+mock_module("notifications", _notifications);
+mock_module("reminder", reminder);
+mock_module("rendered_markdown", {
     update_elements: () => {},
 });
-rewiremock("../../static/js/sent_messages").with(sent_messages);
+mock_module("sent_messages", sent_messages);
 set_global("navigator", _navigator);
 
 const ui_util = {};
 
-rewiremock("../../static/js/ui_util").with(ui_util);
+mock_module("ui_util", ui_util);
 // Setting these up so that we can test that links to uploads within messages are
 
 // automatically converted to server relative links.

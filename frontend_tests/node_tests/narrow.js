@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -10,7 +10,7 @@ set_global("page_params", {
     stop_words: ["what", "about"],
 });
 
-const stream_topic_history = rewiremock("../../static/js/stream_topic_history").with({});
+const stream_topic_history = mock_module("stream_topic_history");
 const hash_util = zrequire("hash_util");
 
 const compose_state = zrequire("compose_state");
