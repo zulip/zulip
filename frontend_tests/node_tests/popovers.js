@@ -43,8 +43,6 @@ const message_edit = zrequire("message_edit");
 // Bypass some scary code that runs when we import the module.
 const popovers = with_field($.fn, "popover", noop, () => zrequire("popovers"));
 
-popovers.__Rewire__("ClipboardJS", noop);
-
 const alice = {
     email: "alice@example.com",
     full_name: "Alice Smith",
@@ -98,6 +96,7 @@ function make_image_stubber() {
 
 function test_ui(label, f) {
     run_test(label, (override) => {
+        override(popovers, "clipboard_enable", noop);
         popovers.register_click_handlers();
         f(override);
     });

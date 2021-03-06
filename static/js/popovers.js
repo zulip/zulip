@@ -54,6 +54,12 @@ let userlist_placement = "right";
 
 let list_of_popovers = [];
 
+export function clipboard_enable(arg) {
+    // arg is a selector or element
+    // We extract this function for testing purpose.
+    return new ClipboardJS(arg);
+}
+
 function elem_to_user_id(elem) {
     return Number.parseInt(elem.attr("data-user-id"), 10);
 }
@@ -115,7 +121,7 @@ function init_email_clipboard() {
             */
             if (copy_email_icon[0]) {
                 copy_email_icon.removeClass("hide_copy_icon");
-                const copy_email_clipboard = new ClipboardJS(copy_email_icon[0]);
+                const copy_email_clipboard = clipboard_enable(copy_email_icon[0]);
                 copy_email_clipboard.on("success", copy_email_handler);
             }
         }
@@ -1251,7 +1257,7 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    new ClipboardJS(".copy_link");
+    clipboard_enable(".copy_link");
 
     $("body").on("click", ".copy_link", function (e) {
         hide_actions_popover();
@@ -1273,7 +1279,7 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    new ClipboardJS(".copy_mention_syntax");
+    clipboard_enable(".copy_mention_syntax");
 
     $("body").on("click", ".copy_mention_syntax", (e) => {
         hide_all();
