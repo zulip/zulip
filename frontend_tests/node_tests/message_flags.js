@@ -2,19 +2,19 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-rewiremock("../../static/js/starred_messages").with({
+mock_module("starred_messages", {
     add: () => {},
 
     remove: () => {},
 });
 
-const ui = rewiremock("../../static/js/ui").with({});
+const ui = mock_module("ui");
 const channel = {};
 
-rewiremock("../../static/js/channel").with(channel);
+mock_module("channel", channel);
 const message_flags = zrequire("message_flags");
 
 run_test("starred", () => {

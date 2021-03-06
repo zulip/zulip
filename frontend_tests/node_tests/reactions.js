@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -15,12 +15,12 @@ set_global("page_params", {
     user_id: alice_user_id,
 });
 
-const channel = rewiremock("../../static/js/channel").with({});
+const channel = mock_module("channel");
 const emoji_picker = {
     hide_emoji_popover() {},
 };
 
-rewiremock("../../static/js/emoji_picker").with(emoji_picker);
+mock_module("emoji_picker", emoji_picker);
 const message = {
     id: 1001,
     reactions: [
@@ -59,7 +59,7 @@ const message_store = {
     },
 };
 
-rewiremock("../../static/js/message_store").with(message_store);
+mock_module("message_store", message_store);
 set_global("current_msg_list", {
     selected_message() {
         return {sent_by_me: true};

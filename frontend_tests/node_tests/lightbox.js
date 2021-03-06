@@ -2,22 +2,22 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 set_global("Image", class Image {});
-rewiremock("../../static/js/overlays").with({
+mock_module("overlays", {
     close_overlay: () => {},
 
     close_active: () => {},
     open_overlay: () => {},
 });
-rewiremock("../../static/js/popovers").with({
+mock_module("popovers", {
     hide_all: () => {},
 });
 
-const message_store = rewiremock("../../static/js/message_store").with({});
+const message_store = mock_module("message_store");
 const rows = zrequire("rows");
 
 const lightbox = zrequire("lightbox");

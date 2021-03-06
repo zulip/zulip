@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -11,7 +11,7 @@ set_global("document", {});
 const noop = () => {};
 const example_img_link = "http://example.com/example.png";
 
-rewiremock("../../static/js/ui_util").with({
+mock_module("ui_util", {
     place_caret_at_end: noop,
 });
 

@@ -4,19 +4,19 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {rewiremock, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const narrow_state = {
     topic() {},
 };
-rewiremock("../../static/js/narrow_state").with(narrow_state);
+mock_module("narrow_state", narrow_state);
 const muting = {
     is_topic_muted() {
         return false;
     },
 };
-rewiremock("../../static/js/muting").with(muting);
+mock_module("muting", muting);
 const stream_data = zrequire("stream_data");
 
 const unread = zrequire("unread");

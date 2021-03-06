@@ -9,7 +9,7 @@
 // become clear as you keep reading.
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -19,29 +19,29 @@ const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {});
 
-const activity = rewiremock("../../static/js/activity").with({});
+const activity = mock_module("activity");
 const home_msg_list = set_global("home_msg_list", {});
-const message_list = rewiremock("../../static/js/message_list").with({});
-const message_live_update = rewiremock("../../static/js/message_live_update").with({});
-const message_util = rewiremock("../../static/js/message_util").with({});
-const notifications = rewiremock("../../static/js/notifications").with({});
-const overlays = rewiremock("../../static/js/overlays").with({});
-const pm_list = rewiremock("../../static/js/pm_list").with({});
-const resize = rewiremock("../../static/js/resize").with({});
-const settings_users = rewiremock("../../static/js/settings_users").with({});
+const message_list = mock_module("message_list");
+const message_live_update = mock_module("message_live_update");
+const message_util = mock_module("message_util");
+const notifications = mock_module("notifications");
+const overlays = mock_module("overlays");
+const pm_list = mock_module("pm_list");
+const resize = mock_module("resize");
+const settings_users = mock_module("settings_users");
 
 let stream_list = {};
-rewiremock("../../static/js/stream_list").with(stream_list);
+mock_module("stream_list", stream_list);
 let unread_ops = {};
 
-const channel = rewiremock("../../static/js/channel").with({});
-const message_viewport = rewiremock("../../static/js/message_viewport").with({});
-const unread_ui = rewiremock("../../static/js/unread_ui").with({});
-rewiremock("../../static/js/unread_ops").with(unread_ops);
+const channel = mock_module("channel");
+const message_viewport = mock_module("message_viewport");
+const unread_ui = mock_module("unread_ui");
+mock_module("unread_ops", unread_ops);
 
 const topic_list = {};
 
-rewiremock("../../static/js/topic_list").with(topic_list);
+mock_module("topic_list", topic_list);
 // Let's start with testing a function from util.js.
 
 //

@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -17,14 +17,14 @@ set_global("document", {
 
 const compose_pm_pill = {};
 
-rewiremock("../../static/js/compose_pm_pill").with(compose_pm_pill);
+mock_module("compose_pm_pill", compose_pm_pill);
 const hash_util = {};
 
-rewiremock("../../static/js/hash_util").with(hash_util);
-rewiremock("../../static/js/notifications").with({
+mock_module("hash_util", hash_util);
+mock_module("notifications", {
     clear_compose_notifications: noop,
 });
-rewiremock("../../static/js/reload_state").with({
+mock_module("reload_state", {
     is_in_progress: () => false,
 });
 
@@ -32,8 +32,8 @@ const compose_fade = {
     clear_compose: noop,
 };
 
-rewiremock("../../static/js/compose_fade").with(compose_fade);
-rewiremock("../../static/js/drafts").with({
+mock_module("compose_fade", compose_fade);
+mock_module("drafts", {
     update_draft: noop,
 });
 
@@ -41,11 +41,11 @@ const narrow_state = {
     set_compose_defaults: noop,
 };
 
-rewiremock("../../static/js/common").with({
+mock_module("common", {
     status_classes: "status_classes",
 });
-rewiremock("../../static/js/narrow_state").with(narrow_state);
-rewiremock("../../static/js/unread_ops").with({
+mock_module("narrow_state", narrow_state);
+mock_module("unread_ops", {
     notify_server_message_read: noop,
 });
 set_global("current_msg_list", {
@@ -56,7 +56,7 @@ set_global("current_msg_list", {
 
 const channel = {};
 
-rewiremock("../../static/js/channel").with(channel);
+mock_module("channel", channel);
 const people = zrequire("people");
 
 const compose_ui = zrequire("compose_ui");

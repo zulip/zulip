@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -13,23 +13,23 @@ set_global("location", {
 });
 set_global("to_$", () => window_stub);
 
-rewiremock("../../static/js/search").with({
+mock_module("search", {
     update_button_visibility: () => {},
 });
 set_global("document", "document-stub");
 const history = set_global("history", {});
 
-const admin = rewiremock("../../static/js/admin").with({});
-const drafts = rewiremock("../../static/js/drafts").with({});
-const floating_recipient_bar = rewiremock("../../static/js/floating_recipient_bar").with({});
-const info_overlay = rewiremock("../../static/js/info_overlay").with({});
-const message_viewport = rewiremock("../../static/js/message_viewport").with({});
-const narrow = rewiremock("../../static/js/narrow").with({});
-const overlays = rewiremock("../../static/js/overlays").with({});
-const settings = rewiremock("../../static/js/settings").with({});
-const subs = rewiremock("../../static/js/subs").with({});
-const ui_util = rewiremock("../../static/js/ui_util").with({});
-rewiremock("../../static/js/top_left_corner").with({
+const admin = mock_module("admin");
+const drafts = mock_module("drafts");
+const floating_recipient_bar = mock_module("floating_recipient_bar");
+const info_overlay = mock_module("info_overlay");
+const message_viewport = mock_module("message_viewport");
+const narrow = mock_module("narrow");
+const overlays = mock_module("overlays");
+const settings = mock_module("settings");
+const subs = mock_module("subs");
+const ui_util = mock_module("ui_util");
+mock_module("top_left_corner", {
     handle_narrow_deactivated: () => {},
 });
 set_global("favicon", {});

@@ -3,14 +3,14 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const page_params = set_global("page_params", {});
 const loading = {};
 
-rewiremock("../../static/js/loading").with(loading);
+mock_module("loading", loading);
 const SHORT_TEXT_ID = 1;
 
 const CHOICE_ID = 3;

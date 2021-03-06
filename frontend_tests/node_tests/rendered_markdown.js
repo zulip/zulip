@@ -2,11 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-rewiremock("../../static/js/rtl").with({
+mock_module("rtl", {
     get_direction: () => "ltr",
 });
 const page_params = set_global("page_params", {emojiset: "apple"});

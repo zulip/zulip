@@ -2,21 +2,21 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const condense = rewiremock("../../static/js/condense").with({});
-const message_edit = rewiremock("../../static/js/message_edit").with({});
-const message_list = rewiremock("../../static/js/message_list").with({});
-const notifications = rewiremock("../../static/js/notifications").with({});
+const condense = mock_module("condense");
+const message_edit = mock_module("message_edit");
+const message_list = mock_module("message_list");
+const notifications = mock_module("notifications");
 const page_params = set_global("page_params", {});
-const pm_list = rewiremock("../../static/js/pm_list").with({});
-const stream_list = rewiremock("../../static/js/stream_list").with({});
+const pm_list = mock_module("pm_list");
+const stream_list = mock_module("stream_list");
 set_global("current_msg_list", {});
 
 const unread_ui = {};
 
-rewiremock("../../static/js/unread_ui").with(unread_ui);
+mock_module("unread_ui", unread_ui);
 const message_events = zrequire("message_events");
 
 const message_store = zrequire("message_store");

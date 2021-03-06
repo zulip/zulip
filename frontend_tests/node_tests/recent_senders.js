@@ -2,13 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let next_id = 0;
 const messages = [];
 
-rewiremock("../../static/js/message_store").with({
+mock_module("message_store", {
     get: (msg_id) => messages[msg_id - 1],
 });
 const message_list = {
@@ -19,7 +19,7 @@ const message_list = {
     },
 };
 
-rewiremock("../../static/js/message_list").with(message_list);
+mock_module("message_list", message_list);
 const rs = zrequire("recent_senders");
 
 zrequire("message_util.js");

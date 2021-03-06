@@ -2,22 +2,22 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const noop = () => {};
 
 const page_params = set_global("page_params", {});
-const channel = rewiremock("../../static/js/channel").with({});
-const reload = rewiremock("../../static/js/reload").with({});
-const reload_state = rewiremock("../../static/js/reload_state").with({});
+const channel = mock_module("channel");
+const reload = mock_module("reload");
+const reload_state = mock_module("reload_state");
 
 const sent_messages = {
     start_tracking_message: noop,
     report_server_ack: noop,
 };
 
-rewiremock("../../static/js/sent_messages").with(sent_messages);
+mock_module("sent_messages", sent_messages);
 const people = zrequire("people");
 
 const transmit = zrequire("transmit");

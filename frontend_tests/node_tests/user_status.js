@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = rewiremock("../../static/js/channel").with({});
+const channel = mock_module("channel");
 const user_status = zrequire("user_status");
 
 function initialize() {

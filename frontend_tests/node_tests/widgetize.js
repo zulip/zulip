@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -36,7 +36,7 @@ const events = [
 let widget_elem;
 let is_event_handled;
 let is_widget_activated;
-rewiremock("../../static/js/poll_widget").with({
+mock_module("poll_widget", {
     activate(data) {
         is_widget_activated = true;
         widget_elem = data.elem;
@@ -52,7 +52,7 @@ rewiremock("../../static/js/poll_widget").with({
 });
 set_global("document", "document-stub");
 
-const narrow_state = rewiremock("../../static/js/narrow_state").with({});
+const narrow_state = mock_module("narrow_state");
 set_global("current_msg_list", {});
 
 const widgetize = zrequire("widgetize");

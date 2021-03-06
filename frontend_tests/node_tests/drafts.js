@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -24,11 +24,11 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
-const compose_state = rewiremock("../../static/js/compose_state").with({});
-rewiremock("../../static/js/markdown").with({
+const compose_state = mock_module("compose_state");
+mock_module("markdown", {
     apply_markdown: noop,
 });
-rewiremock("../../static/js/stream_data").with({
+mock_module("stream_data", {
     get_color() {
         return "#FFFFFF";
     },

@@ -2,13 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {
     search_pills_enabled: false,
 });
-rewiremock("../../static/js/message_store").with({
+mock_module("message_store", {
     user_ids: () => [],
 });
 

@@ -5,13 +5,13 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const confirm_dialog = {};
 
-rewiremock("../../static/js/confirm_dialog").with(confirm_dialog);
+mock_module("confirm_dialog", confirm_dialog);
 const noop = () => {};
 
 const pills = {
@@ -20,23 +20,23 @@ const pills = {
 
 let create_item_handler;
 
-const channel = rewiremock("../../static/js/channel").with({});
-const typeahead_helper = rewiremock("../../static/js/typeahead_helper").with({});
+const channel = mock_module("channel");
+const typeahead_helper = mock_module("typeahead_helper");
 
 const user_groups = {
     get_user_group_from_id: noop,
     remove: noop,
     add: noop,
 };
-rewiremock("../../static/js/user_groups").with(user_groups);
+mock_module("user_groups", user_groups);
 const ui_report = {};
 
 const page_params = set_global("page_params", {});
-rewiremock("../../static/js/ui_report").with(ui_report);
+mock_module("ui_report", ui_report);
 
 const input_pill = {};
 
-rewiremock("../../static/js/input_pill").with(input_pill);
+mock_module("input_pill", input_pill);
 const user_pill = zrequire("user_pill");
 
 const settings_user_groups = zrequire("settings_user_groups");
