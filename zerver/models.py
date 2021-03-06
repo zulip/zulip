@@ -413,6 +413,14 @@ class Realm(models.Model):
     STANDARD_FREE = 4
     plan_type: int = models.PositiveSmallIntegerField(default=SELF_HOSTED)
 
+    # Who in the organization is allowed to create streams.
+    CUSTOMER_SHOWCASE_HIDDEN = 1
+    CUSTOMER_SHOWCASE_LISTED = 2
+    customer_showcase_policy: int = models.PositiveSmallIntegerField(
+        default=CUSTOMER_SHOWCASE_HIDDEN
+    )
+    CUSTOMER_SHOWCASE_POLICY_TYPES = [CUSTOMER_SHOWCASE_HIDDEN, CUSTOMER_SHOWCASE_LISTED]
+
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
     # On updating it here, update it there as well.
     BOT_CREATION_EVERYONE = 1
@@ -492,6 +500,7 @@ class Realm(models.Model):
 
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
+        customer_showcase_policy=int,
         add_emoji_by_admins_only=bool,
         allow_edit_history=bool,
         allow_message_deleting=bool,
