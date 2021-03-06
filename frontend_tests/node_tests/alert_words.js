@@ -67,6 +67,12 @@ const question_word_message = {
     alerted: true,
 };
 
+const typo_word_message = {
+    sender_email: "another@zulip.com",
+    content: "<p>alertones alerttwo alerttwo alertthreez</p>",
+    alerted: true,
+};
+
 const alert_domain_message = {
     sender_email: "another@zulip.com",
     content:
@@ -135,6 +141,11 @@ run_test("munging", () => {
     assert_transform(
         question_word_message,
         "<p>still <span class='alert-word'>alertone</span>? me</p>",
+    );
+
+    assert_transform(
+        typo_word_message,
+        "<p>alertones <span class='alert-word'>alerttwo</span> <span class='alert-word'>alerttwo</span> alertthreez</p>",
     );
 
     assert_transform(
