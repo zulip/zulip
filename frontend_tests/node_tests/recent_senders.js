@@ -12,8 +12,6 @@ rewiremock("../../static/js/message_store").with({
     get: (msg_id) => messages[msg_id - 1],
 });
 const message_list = {
-    __esModule: true,
-
     all: {
         all_messages() {
             return messages;
@@ -22,8 +20,8 @@ const message_list = {
 };
 
 rewiremock("../../static/js/message_list").with(message_list);
-
 const rs = zrequire("recent_senders");
+
 zrequire("message_util.js");
 
 run_test("process_message_for_senders", (override) => {

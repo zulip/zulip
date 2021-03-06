@@ -11,29 +11,24 @@ const events = require("./lib/events");
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
-const compose_fade = {__esModule: true};
-rewiremock("../../static/js/compose_fade").with(compose_fade);
-const stream_events = {__esModule: true};
-rewiremock("../../static/js/stream_events").with(stream_events);
-const subs = {__esModule: true};
+const compose_fade = rewiremock("../../static/js/compose_fade").with({});
+const stream_events = rewiremock("../../static/js/stream_events").with({});
 
-rewiremock("../../static/js/subs").with(subs);
+const subs = {};
 
-set_global("current_msg_list", {});
-const narrow_state = {__esModule: true};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
+const overlays = rewiremock("../../static/js/overlays").with({});
 const page_params = set_global("page_params", {});
-const overlays = {__esModule: true};
-rewiremock("../../static/js/overlays").with(overlays);
-const settings_org = {__esModule: true};
-rewiremock("../../static/js/settings_org").with(settings_org);
-const settings_streams = {__esModule: true};
-rewiremock("../../static/js/settings_streams").with(settings_streams);
-const stream_list = {__esModule: true};
+const settings_org = rewiremock("../../static/js/settings_org").with({});
+const settings_streams = rewiremock("../../static/js/settings_streams").with({});
+rewiremock("../../static/js/subs").with(subs);
+set_global("current_msg_list", {});
+
+const stream_list = {};
 
 rewiremock("../../static/js/stream_list").with(stream_list);
-
 const peer_data = zrequire("peer_data");
+
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 

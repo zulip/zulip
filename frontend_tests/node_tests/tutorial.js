@@ -19,40 +19,31 @@ const {run_test} = require("../zjsunit/test");
 
 set_global("page_params", {});
 
-const activity = {__esModule: true};
-rewiremock("../../static/js/activity").with(activity);
-const message_live_update = {__esModule: true};
-rewiremock("../../static/js/message_live_update").with(message_live_update);
-const pm_list = {__esModule: true};
-rewiremock("../../static/js/pm_list").with(pm_list);
-const settings_users = {__esModule: true};
-rewiremock("../../static/js/settings_users").with(settings_users);
+const activity = rewiremock("../../static/js/activity").with({});
 const home_msg_list = set_global("home_msg_list", {});
-const message_list = {__esModule: true};
-rewiremock("../../static/js/message_list").with(message_list);
-const message_util = {__esModule: true};
-rewiremock("../../static/js/message_util").with(message_util);
-const notifications = {__esModule: true};
-rewiremock("../../static/js/notifications").with(notifications);
-const overlays = {__esModule: true};
-rewiremock("../../static/js/overlays").with(overlays);
-const resize = {__esModule: true};
-rewiremock("../../static/js/resize").with(resize);
-let stream_list = {__esModule: true};
+const message_list = rewiremock("../../static/js/message_list").with({});
+const message_live_update = rewiremock("../../static/js/message_live_update").with({});
+const message_util = rewiremock("../../static/js/message_util").with({});
+const notifications = rewiremock("../../static/js/notifications").with({});
+const overlays = rewiremock("../../static/js/overlays").with({});
+const pm_list = rewiremock("../../static/js/pm_list").with({});
+const resize = rewiremock("../../static/js/resize").with({});
+const settings_users = rewiremock("../../static/js/settings_users").with({});
+
+let stream_list = {};
 rewiremock("../../static/js/stream_list").with(stream_list);
-let unread_ops = {__esModule: true};
+let unread_ops = {};
+
+const channel = rewiremock("../../static/js/channel").with({});
+const message_viewport = rewiremock("../../static/js/message_viewport").with({});
+const unread_ui = rewiremock("../../static/js/unread_ui").with({});
 rewiremock("../../static/js/unread_ops").with(unread_ops);
-const unread_ui = {__esModule: true};
-rewiremock("../../static/js/unread_ui").with(unread_ui);
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const message_viewport = {__esModule: true};
-rewiremock("../../static/js/message_viewport").with(message_viewport);
-const topic_list = {__esModule: true};
+
+const topic_list = {};
 
 rewiremock("../../static/js/topic_list").with(topic_list);
-
 // Let's start with testing a function from util.js.
+
 //
 // We will use our special zrequire helper to import the
 // code from util. We use zrequire instead of require,

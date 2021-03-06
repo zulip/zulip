@@ -6,13 +6,12 @@ const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const _settings_bots = {
-    __esModule: true,
     render_bots: () => {},
 };
 
 rewiremock("../../static/js/settings_bots").with(_settings_bots);
-
 const bot_data = zrequire("bot_data");
+
 const people = zrequire("people");
 
 const me = {

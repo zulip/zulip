@@ -15,59 +15,50 @@ set_global("document", {
     to_$: () => $("document-stub"),
 });
 
-const compose_pm_pill = {__esModule: true};
+const compose_pm_pill = {};
 
 rewiremock("../../static/js/compose_pm_pill").with(compose_pm_pill);
-
-const hash_util = {__esModule: true};
+const hash_util = {};
 
 rewiremock("../../static/js/hash_util").with(hash_util);
-
+rewiremock("../../static/js/notifications").with({
+    clear_compose_notifications: noop,
+});
 rewiremock("../../static/js/reload_state").with({
     is_in_progress: () => false,
 });
 
-rewiremock("../../static/js/notifications").with({
-    clear_compose_notifications: noop,
-});
-
 const compose_fade = {
-    __esModule: true,
     clear_compose: noop,
 };
 
 rewiremock("../../static/js/compose_fade").with(compose_fade);
-
 rewiremock("../../static/js/drafts").with({
     update_draft: noop,
 });
 
 const narrow_state = {
-    __esModule: true,
     set_compose_defaults: noop,
 };
-
-rewiremock("../../static/js/narrow_state").with(narrow_state);
-
-rewiremock("../../static/js/unread_ops").with({
-    notify_server_message_read: noop,
-});
 
 rewiremock("../../static/js/common").with({
     status_classes: "status_classes",
 });
-
+rewiremock("../../static/js/narrow_state").with(narrow_state);
+rewiremock("../../static/js/unread_ops").with({
+    notify_server_message_read: noop,
+});
 set_global("current_msg_list", {
     can_mark_messages_read() {
         return true;
     },
 });
 
-const channel = {__esModule: true};
+const channel = {};
 
 rewiremock("../../static/js/channel").with(channel);
-
 const people = zrequire("people");
+
 const compose_ui = zrequire("compose_ui");
 const compose = zrequire("compose");
 const compose_state = zrequire("compose_state");

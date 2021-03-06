@@ -24,7 +24,6 @@ const _FormData = function () {
 };
 
 const _loading = {
-    __esModule: true,
     make_indicator: noop,
     destroy_indicator: noop,
 };
@@ -38,12 +37,10 @@ const page_params = set_global("page_params", {
     realm_authentication_methods: {},
 });
 
-const realm_icon = {__esModule: true};
-rewiremock("../../static/js/realm_icon").with(realm_icon);
-const channel = {__esModule: true};
+const realm_icon = rewiremock("../../static/js/realm_icon").with({});
+const channel = {};
 
 rewiremock("../../static/js/channel").with(channel);
-
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
         assert(data.realm_domain.domain);
@@ -52,13 +49,10 @@ stub_templates((name, data) => {
     throw new Error(`Unknown template ${name}`);
 });
 
-const overlays = {__esModule: true};
+const overlays = {};
 
 rewiremock("../../static/js/overlays").with(overlays);
-
 const _ui_report = {
-    __esModule: true,
-
     success(msg, elem) {
         elem.val(msg);
     },
@@ -69,16 +63,15 @@ const _ui_report = {
 };
 
 const _ListWidget = {
-    __esModule: true,
     create: () => ({init: noop}),
 };
 
 set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 set_global("jQuery", _jQuery);
+rewiremock("../../static/js/list_widget").with(_ListWidget);
 rewiremock("../../static/js/loading").with(_loading);
 rewiremock("../../static/js/ui_report").with(_ui_report);
-rewiremock("../../static/js/list_widget").with(_ListWidget);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");

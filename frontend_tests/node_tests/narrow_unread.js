@@ -5,13 +5,11 @@ const {strict: assert} = require("assert");
 const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_store = {__esModule: true};
-rewiremock("../../static/js/message_store").with(message_store);
-set_global("page_params", {});
-
+const message_store = rewiremock("../../static/js/message_store").with({});
 rewiremock("../../static/js/muting").with({
     is_topic_muted: () => false,
 });
+set_global("page_params", {});
 
 const {Filter} = zrequire("../js/filter");
 const people = zrequire("people");

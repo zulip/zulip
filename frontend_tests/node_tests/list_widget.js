@@ -14,11 +14,11 @@ function Element() {
     return {};
 }
 set_global("Element", Element);
-const ui = {__esModule: true};
+const ui = {};
 
 rewiremock("../../static/js/ui").with(ui);
-
 // We only need very simple jQuery wrappers for when the
+
 // "real" code wraps html or sets up click handlers.
 // We'll simulate most other objects ourselves.
 set_global("$", (arg) => {

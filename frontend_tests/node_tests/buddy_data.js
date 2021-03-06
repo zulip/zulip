@@ -9,11 +9,11 @@ const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {});
 
-const timerender = {__esModule: true};
+const timerender = {};
 
 rewiremock("../../static/js/timerender").with(timerender);
-
 const people = zrequire("people");
+
 const presence = zrequire("presence");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");

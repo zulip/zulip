@@ -8,11 +8,9 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 const _ListWidget = {
-    __esModule: true,
     create: () => ({init: noop}),
 };
 rewiremock("../../static/js/list_widget").with(_ListWidget);
-
 const {DropdownListWidget: dropdown_list_widget} = zrequire("dropdown_list_widget");
 
 const setup_zjquery_data = (name) => {

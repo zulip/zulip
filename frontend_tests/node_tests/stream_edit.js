@@ -10,31 +10,30 @@ const $ = require("../zjsunit/zjquery");
 const noop = () => {};
 stub_templates(() => noop);
 
-rewiremock("../../static/js/hashchange").with({update_browser_history: noop});
+const page_params = set_global("page_params", {});
+const typeahead_helper = rewiremock("../../static/js/typeahead_helper").with({});
 rewiremock("../../static/js/hash_util").with({
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });
+rewiremock("../../static/js/hashchange").with({update_browser_history: noop});
 rewiremock("../../static/js/list_widget").with({
     create: () => ({init: noop}),
 });
-const page_params = set_global("page_params", {});
 rewiremock("../../static/js/settings_notifications").with({
     get_notifications_table_row_data: noop,
 });
 rewiremock("../../static/js/stream_color").with({
     set_colorpicker_color: noop,
 });
-const typeahead_helper = {__esModule: true};
-rewiremock("../../static/js/typeahead_helper").with(typeahead_helper);
+
 const ui = {
-    __esModule: true,
     get_scroll_element: noop,
 };
 
 rewiremock("../../static/js/ui").with(ui);
-
 const peer_data = zrequire("peer_data");
+
 const people = zrequire("people");
 const stream_edit = zrequire("stream_edit");
 const stream_data = zrequire("stream_data");

@@ -5,16 +5,14 @@ const {strict: assert} = require("assert");
 const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const server_events = {__esModule: true};
-rewiremock("../../static/js/server_events").with(server_events);
+const server_events = rewiremock("../../static/js/server_events").with({});
 const reload_state = {
-    __esModule: true,
     is_in_progress: () => false,
 };
 
 rewiremock("../../static/js/reload_state").with(reload_state);
-
 const people = zrequire("people");
+
 const presence = zrequire("presence");
 
 const OFFLINE_THRESHOLD_SECS = 140;

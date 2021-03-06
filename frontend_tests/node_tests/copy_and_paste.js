@@ -11,11 +11,11 @@ const {run_test} = require("../zjsunit/test");
 set_global("page_params", {
     development_environment: true,
 });
-const compose_ui = {__esModule: true};
+const compose_ui = {};
 
 rewiremock("../../static/js/compose_ui").with(compose_ui);
-
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
+
 const {DOMParser, document} = window;
 const $ = set_global("$", jquery(window));
 

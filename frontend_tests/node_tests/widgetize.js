@@ -52,8 +52,7 @@ rewiremock("../../static/js/poll_widget").with({
 });
 set_global("document", "document-stub");
 
-const narrow_state = {__esModule: true};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
 set_global("current_msg_list", {});
 
 const widgetize = zrequire("widgetize");

@@ -16,8 +16,12 @@ set_global("document", {
 });
 set_global("addEventListener", noop);
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
+const channel = rewiremock("../../static/js/channel").with({});
+rewiremock("../../static/js/reload_state").with({
+    is_in_progress() {
+        return false;
+    },
+});
 set_global("home_msg_list", {
     select_id: noop,
     selected_id() {
@@ -25,11 +29,6 @@ set_global("home_msg_list", {
     },
 });
 set_global("page_params", {test_suite: false});
-rewiremock("../../static/js/reload_state").with({
-    is_in_progress() {
-        return false;
-    },
-});
 
 // we also directly write to pointer
 set_global("pointer", {});
@@ -50,7 +49,6 @@ rewiremock("../../static/js/stream_events").with({
 });
 
 const message_events = rewiremock("../../static/js/message_events").with({
-    __esModule: true,
     insert_new_messages() {
         throw new Error("insert error");
     },

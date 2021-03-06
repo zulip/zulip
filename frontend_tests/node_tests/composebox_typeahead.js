@@ -8,28 +8,24 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-const stream_topic_history = {__esModule: true};
+const stream_topic_history = {};
 
 rewiremock("../../static/js/stream_topic_history").with(stream_topic_history);
-
 const message_store = {
-    __esModule: true,
     user_ids: () => [],
 };
 
+const channel = rewiremock("../../static/js/channel").with({});
+const page_params = set_global("page_params", {});
 rewiremock("../../static/js/message_store").with(message_store);
 
-const page_params = set_global("page_params", {});
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
 const compose = {
-    __esModule: true,
     finish: noop,
 };
 
 rewiremock("../../static/js/compose").with(compose);
-
 let autosize_called;
+
 rewiremock("../../static/js/compose_ui").with({
     autosize_textarea() {
         autosize_called = true;

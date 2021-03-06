@@ -8,21 +8,18 @@ const {run_test} = require("../zjsunit/test");
 const noop = () => {};
 
 const page_params = set_global("page_params", {});
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const reload = {__esModule: true};
-rewiremock("../../static/js/reload").with(reload);
-const reload_state = {__esModule: true};
-rewiremock("../../static/js/reload_state").with(reload_state);
+const channel = rewiremock("../../static/js/channel").with({});
+const reload = rewiremock("../../static/js/reload").with({});
+const reload_state = rewiremock("../../static/js/reload_state").with({});
+
 const sent_messages = {
-    __esModule: true,
     start_tracking_message: noop,
     report_server_ack: noop,
 };
 
 rewiremock("../../static/js/sent_messages").with(sent_messages);
-
 const people = zrequire("people");
+
 const transmit = zrequire("transmit");
 
 run_test("transmit_message_ajax", () => {

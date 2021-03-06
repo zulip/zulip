@@ -24,10 +24,8 @@ set_global("document", {
     },
 });
 
-const narrow_state = {__esModule: true};
-rewiremock("../../static/js/narrow_state").with(narrow_state);
-const stream_data = {__esModule: true};
-rewiremock("../../static/js/stream_data").with(stream_data);
+const narrow_state = rewiremock("../../static/js/narrow_state").with({});
+const stream_data = rewiremock("../../static/js/stream_data").with({});
 
 const muting = zrequire("muting");
 const {MessageList} = zrequire("message_list");

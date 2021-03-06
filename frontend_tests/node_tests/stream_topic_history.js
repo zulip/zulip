@@ -5,12 +5,9 @@ const {strict: assert} = require("assert");
 const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = {__esModule: true};
-rewiremock("../../static/js/channel").with(channel);
-const message_list = {__esModule: true};
-rewiremock("../../static/js/message_list").with(message_list);
-const message_util = {__esModule: true};
-rewiremock("../../static/js/message_util").with(message_util);
+const channel = rewiremock("../../static/js/channel").with({});
+const message_list = rewiremock("../../static/js/message_list").with({});
+const message_util = rewiremock("../../static/js/message_util").with({});
 
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");

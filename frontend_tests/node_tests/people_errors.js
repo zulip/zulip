@@ -6,12 +6,10 @@ const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const reload_state = {
-    __esModule: true,
     is_in_progress: () => false,
 };
 
 rewiremock("../../static/js/reload_state").with(reload_state);
-
 const people = zrequire("people");
 
 const me = {

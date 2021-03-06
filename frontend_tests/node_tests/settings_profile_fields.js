@@ -8,11 +8,11 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const page_params = set_global("page_params", {});
-const loading = {__esModule: true};
+const loading = {};
 
 rewiremock("../../static/js/loading").with(loading);
-
 const SHORT_TEXT_ID = 1;
+
 const CHOICE_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
 

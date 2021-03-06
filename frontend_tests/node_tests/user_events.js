@@ -45,18 +45,16 @@ rewiremock("../../static/js/compose").with({
 });
 
 const settings_account = {
-    __esModule: true,
     update_email() {},
     update_full_name() {},
 };
 
 rewiremock("../../static/js/settings_account").with(settings_account);
-
-const message_live_update = {__esModule: true};
+const message_live_update = {};
 
 rewiremock("../../static/js/message_live_update").with(message_live_update);
-
 const people = zrequire("people");
+
 const settings_config = zrequire("settings_config");
 const user_events = zrequire("user_events");
 

@@ -8,20 +8,17 @@ const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const narrow_state = {
-    __esModule: true,
     topic() {},
 };
 rewiremock("../../static/js/narrow_state").with(narrow_state);
 const muting = {
-    __esModule: true,
-
     is_topic_muted() {
         return false;
     },
 };
 rewiremock("../../static/js/muting").with(muting);
-
 const stream_data = zrequire("stream_data");
+
 const unread = zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");

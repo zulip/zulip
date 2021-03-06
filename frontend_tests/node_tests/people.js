@@ -9,8 +9,7 @@ const MockDate = require("mockdate");
 const {rewiremock, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_store = {__esModule: true};
-rewiremock("../../static/js/message_store").with(message_store);
+const message_store = rewiremock("../../static/js/message_store").with({});
 const page_params = set_global("page_params", {});
 
 const people = zrequire("people");

@@ -13,24 +13,20 @@ set_global("page_params", {
 const noop = () => {};
 
 const narrow_state = {
-    __esModule: true,
     filter: () => false,
 };
+const narrow = rewiremock("../../static/js/narrow").with({});
+const search_suggestion = rewiremock("../../static/js/search_suggestion").with({});
 rewiremock("../../static/js/narrow_state").with(narrow_state);
-const search_suggestion = {__esModule: true};
-rewiremock("../../static/js/search_suggestion").with(search_suggestion);
-rewiremock("../../static/js/ui_util").with({
-    change_tab_to: noop,
-    place_caret_at_end: noop,
-});
-const narrow = {__esModule: true};
-rewiremock("../../static/js/narrow").with(narrow);
 rewiremock("../../static/js/search_pill_widget").with({
     widget: {
         getByID: () => true,
     },
 });
-
+rewiremock("../../static/js/ui_util").with({
+    change_tab_to: noop,
+    place_caret_at_end: noop,
+});
 set_global("setTimeout", (func) => func());
 
 const search = zrequire("search");

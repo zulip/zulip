@@ -6,10 +6,9 @@ const {rewiremock, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const compose_actions = {__esModule: true};
-rewiremock("../../static/js/compose_actions").with(compose_actions);
-
+const compose_actions = rewiremock("../../static/js/compose_actions").with({});
 const people = zrequire("people");
+
 const compose_pm_pill = zrequire("compose_pm_pill");
 const input_pill = zrequire("input_pill");
 

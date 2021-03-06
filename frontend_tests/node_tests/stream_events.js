@@ -9,26 +9,13 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 const _settings_notifications = {
-    __esModule: true,
     update_page: () => {},
 };
-rewiremock("../../static/js/settings_notifications").with(_settings_notifications);
-
-const color_data = {__esModule: true};
-rewiremock("../../static/js/color_data").with(color_data);
-set_global("current_msg_list", {});
-const message_util = {__esModule: true};
-rewiremock("../../static/js/message_util").with(message_util);
-const stream_color = {__esModule: true};
-rewiremock("../../static/js/stream_color").with(stream_color);
-const stream_list = {__esModule: true};
-rewiremock("../../static/js/stream_list").with(stream_list);
-const stream_muting = {__esModule: true};
-rewiremock("../../static/js/stream_muting").with(stream_muting);
-rewiremock("../../static/js/recent_topics").with({
-    complete_rerender: () => {},
-});
-
+const color_data = rewiremock("../../static/js/color_data").with({});
+const message_util = rewiremock("../../static/js/message_util").with({});
+const stream_color = rewiremock("../../static/js/stream_color").with({});
+const stream_list = rewiremock("../../static/js/stream_list").with({});
+const stream_muting = rewiremock("../../static/js/stream_muting").with({});
 rewiremock("../../static/js/message_list").with({
     all: {
         all_messages() {
@@ -36,13 +23,17 @@ rewiremock("../../static/js/message_list").with({
         },
     },
 });
+rewiremock("../../static/js/recent_topics").with({
+    complete_rerender: () => {},
+});
+rewiremock("../../static/js/settings_notifications").with(_settings_notifications);
+set_global("current_msg_list", {});
 
 const subs = {
-    __esModule: true,
     update_settings_for_subscribed: noop,
 };
-rewiremock("../../static/js/subs").with(subs);
 rewiremock("../../static/js/overlays").with({streams_open: () => true});
+rewiremock("../../static/js/subs").with(subs);
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");

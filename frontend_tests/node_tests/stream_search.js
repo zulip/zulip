@@ -13,15 +13,14 @@ const noop = () => {};
 
 rewiremock("../../static/js/resize").with({
     resize_page_components: noop,
+
     resize_stream_filters_container: noop,
 });
 
-const popovers = {__esModule: true};
-rewiremock("../../static/js/popovers").with(popovers);
-const stream_popover = {__esModule: true};
+const popovers = rewiremock("../../static/js/popovers").with({});
+const stream_popover = {};
 
 rewiremock("../../static/js/stream_popover").with(stream_popover);
-
 const stream_list = zrequire("stream_list");
 
 function expand_sidebar() {
