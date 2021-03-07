@@ -23,11 +23,6 @@ const _FormData = function () {
     return form_data;
 };
 
-const _loading = {
-    make_indicator: noop,
-    destroy_indicator: noop,
-};
-
 const page_params = set_global("page_params", {
     is_admin: false,
     realm_domains: [
@@ -38,9 +33,7 @@ const page_params = set_global("page_params", {
 });
 
 const realm_icon = mock_module("realm_icon");
-const channel = {};
 
-mock_module("channel", channel);
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
         assert(data.realm_domain.domain);
@@ -49,10 +42,17 @@ stub_templates((name, data) => {
     throw new Error(`Unknown template ${name}`);
 });
 
-const overlays = {};
+const channel = mock_module("channel");
+const overlays = mock_module("overlays");
 
-mock_module("overlays", overlays);
-const _ui_report = {
+mock_module("list_widget", {
+    create: () => ({init: noop}),
+});
+mock_module("loading", {
+    make_indicator: noop,
+    destroy_indicator: noop,
+});
+mock_module("ui_report", {
     success(msg, elem) {
         elem.val(msg);
     },
@@ -60,18 +60,11 @@ const _ui_report = {
     error(msg, xhr, elem) {
         elem.val(msg);
     },
-};
-
-const _ListWidget = {
-    create: () => ({init: noop}),
-};
+});
 
 set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 set_global("jQuery", _jQuery);
-mock_module("list_widget", _ListWidget);
-mock_module("loading", _loading);
-mock_module("ui_report", _ui_report);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");

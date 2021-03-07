@@ -7,21 +7,19 @@ const _ = require("lodash");
 const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const narrow_state = {
-    topic() {},
-};
-mock_module("narrow_state", narrow_state);
-const muting = {
+const muting = mock_module("muting", {
     is_topic_muted() {
         return false;
     },
-};
-mock_module("muting", muting);
-const stream_data = zrequire("stream_data");
+});
+const narrow_state = mock_module("narrow_state", {
+    topic() {},
+});
 
-const unread = zrequire("unread");
+const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");
+const unread = zrequire("unread");
 
 const general = {
     stream_id: 556,

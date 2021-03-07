@@ -11,17 +11,16 @@ let page_params = set_global("page_params", {
     realm_push_notifications_enabled: false,
 });
 
-set_global("current_msg_list", {});
-set_global("home_msg_list", {});
-const message_store = {};
-
-mock_module("message_store", message_store);
+const message_store = mock_module("message_store");
 const muting = zrequire("muting");
 
+set_global("current_msg_list", {});
+set_global("home_msg_list", {});
+
+const {FoldDict} = zrequire("fold_dict");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
-const {FoldDict} = zrequire("fold_dict");
 
 const me = {
     email: "me@example.com",

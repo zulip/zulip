@@ -9,21 +9,14 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = function () {};
 
-set_global("current_msg_list", {});
-set_global("page_params", {
-    is_admin: false,
-    realm_email_address_visibility: 3,
-    custom_profile_fields: [],
-});
-const rows = {};
-
+const rows = mock_module("rows");
+const stream_data = mock_module("stream_data");
 mock_module("emoji_picker", {
     hide_emoji_popover: noop,
 });
 mock_module("message_viewport", {
     height: () => 500,
 });
-mock_module("rows", rows);
 mock_module("stream_popover", {
     hide_stream_popover: noop,
     hide_topic_popover: noop,
@@ -32,11 +25,14 @@ mock_module("stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
-const stream_data = {};
+set_global("current_msg_list", {});
+set_global("page_params", {
+    is_admin: false,
+    realm_email_address_visibility: 3,
+    custom_profile_fields: [],
+});
 
-mock_module("stream_data", stream_data);
 const people = zrequire("people");
-
 const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");
 

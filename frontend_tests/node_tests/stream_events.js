@@ -8,14 +8,15 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-const _settings_notifications = {
-    update_page: () => {},
-};
 const color_data = mock_module("color_data");
 const message_util = mock_module("message_util");
 const stream_color = mock_module("stream_color");
 const stream_list = mock_module("stream_list");
 const stream_muting = mock_module("stream_muting");
+const subs = mock_module("subs", {
+    update_settings_for_subscribed: noop,
+});
+
 mock_module("message_list", {
     all: {
         all_messages() {
@@ -26,22 +27,20 @@ mock_module("message_list", {
 mock_module("recent_topics", {
     complete_rerender: () => {},
 });
-mock_module("settings_notifications", _settings_notifications);
+mock_module("settings_notifications", {
+    update_page: () => {},
+});
 set_global("current_msg_list", {});
 
-const subs = {
-    update_settings_for_subscribed: noop,
-};
 mock_module("overlays", {streams_open: () => true});
-mock_module("subs", subs);
 
+const {Filter} = zrequire("../js/filter");
+const message_view_header = zrequire("message_view_header");
+const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
-const {Filter} = zrequire("../js/filter");
-const narrow_state = zrequire("narrow_state");
-const message_view_header = zrequire("message_view_header");
 
 const george = {
     email: "george@zulip.com",

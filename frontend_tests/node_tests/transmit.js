@@ -11,15 +11,12 @@ const page_params = set_global("page_params", {});
 const channel = mock_module("channel");
 const reload = mock_module("reload");
 const reload_state = mock_module("reload_state");
-
-const sent_messages = {
+const sent_messages = mock_module("sent_messages", {
     start_tracking_message: noop,
     report_server_ack: noop,
-};
+});
 
-mock_module("sent_messages", sent_messages);
 const people = zrequire("people");
-
 const transmit = zrequire("transmit");
 
 run_test("transmit_message_ajax", () => {

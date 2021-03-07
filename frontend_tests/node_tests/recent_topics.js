@@ -8,50 +8,42 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-mock_module("top_left_corner", {
-    narrow_to_recent_topics: noop,
-});
-mock_module("stream_list", {
-    handle_narrow_deactivated: noop,
-});
-mock_module("compose_actions", {
-    cancel: noop,
-});
-mock_module("narrow", {
-    set_narrow_title: noop,
-});
-mock_module("message_view_header", {
-    render_title_area: noop,
-});
 
-mock_module("timerender", {
-    last_seen_status_from_date: () => "Just now",
+// Custom Data
+const messages = [];
 
-    get_full_datetime: () => ({
-        date: "date",
-        time: "time",
-    }),
-});
-mock_module("unread", {
-    unread_topic_counter: {
-        get: (stream_id, topic) => {
-            if (stream_id === 1 && topic === "topic-1") {
-                // Only stream1, topic-1 is read.
-                return 0;
-            }
-            return 1;
+// sender1 == current user
+// sender2 == any other user
+const sender1 = 1;
+const sender2 = 2;
+
+// New stream
+const stream1 = 1;
+const stream2 = 2;
+const stream3 = 3;
+const stream4 = 4;
+const stream5 = 5; // Deleted stream
+
+// Topics in the stream, all unread except topic1 & stream1.
+const topic1 = "topic-1"; // No Other sender & read.
+const topic2 = "topic-2"; // Other sender
+const topic3 = "topic-3"; // User not present
+const topic4 = "topic-4"; // User not present
+const topic5 = "topic-5"; // other sender
+const topic6 = "topic-6"; // other sender
+const topic7 = "topic-7"; // muted topic
+const topic8 = "topic-8";
+const topic9 = "topic-9";
+const topic10 = "topic-10";
+
+const message_list = mock_module("message_list", {
+    all: {
+        all_messages() {
+            return messages;
         },
     },
 });
-mock_module("hash_util", {
-    by_stream_uri: () => "https://www.example.com",
-
-    by_stream_topic_uri: () => "https://www.example.com",
-});
-mock_module("recent_senders", {
-    get_topic_recent_senders: () => [1, 2],
-});
-const ListWidget = {
+const ListWidget = mock_module("list_widget", {
     modifier: noop,
 
     create: (container, mapped_topic_values, opts) => {
@@ -76,49 +68,28 @@ const ListWidget = {
 
     hard_redraw: noop,
     render_item: (item) => ListWidget.modifier(item),
-};
+});
+
+mock_module("compose_actions", {
+    cancel: noop,
+});
 mock_module("drafts", {
     update_draft: noop,
 });
-mock_module("list_widget", ListWidget);
+mock_module("hash_util", {
+    by_stream_uri: () => "https://www.example.com",
 
-const ls_container = new Map();
-set_global("localStorage", {
-    getItem(key) {
-        return ls_container.get(key);
-    },
-    setItem(key, val) {
-        ls_container.set(key, val);
-    },
-    removeItem(key) {
-        ls_container.delete(key);
-    },
-    clear() {
-        ls_container.clear();
-    },
+    by_stream_topic_uri: () => "https://www.example.com",
 });
-
-// Custom Data
-
-// New stream
-const stream1 = 1;
-const stream2 = 2;
-const stream3 = 3;
-const stream4 = 4;
-const stream5 = 5; // Deleted stream
-
-// Topics in the stream, all unread except topic1 & stream1.
-const topic1 = "topic-1"; // No Other sender & read.
-const topic2 = "topic-2"; // Other sender
-const topic3 = "topic-3"; // User not present
-const topic4 = "topic-4"; // User not present
-const topic5 = "topic-5"; // other sender
-const topic6 = "topic-6"; // other sender
-const topic7 = "topic-7"; // muted topic
-const topic8 = "topic-8";
-const topic9 = "topic-9";
-const topic10 = "topic-10";
-
+mock_module("narrow", {
+    set_narrow_title: noop,
+});
+mock_module("message_store", {
+    get: (msg_id) => messages[msg_id - 1],
+});
+mock_module("message_view_header", {
+    render_title_area: noop,
+});
 mock_module("muting", {
     is_topic_muted: (stream_id, topic) => {
         if (stream_id === stream1 && topic === topic7) {
@@ -127,24 +98,8 @@ mock_module("muting", {
         return false;
     },
 });
-
-// sender1 == current user
-// sender2 == any other user
-const sender1 = 1;
-const sender2 = 2;
-
-const messages = [];
-
-const message_list = {
-    all: {
-        all_messages() {
-            return messages;
-        },
-    },
-};
-mock_module("message_list", message_list);
-mock_module("message_store", {
-    get: (msg_id) => messages[msg_id - 1],
+mock_module("recent_senders", {
+    get_topic_recent_senders: () => [1, 2],
 });
 mock_module("stream_data", {
     get_sub_by_id: (stream) => {
@@ -164,6 +119,47 @@ mock_module("stream_data", {
         // TODO: Make muted streams and test them.
         false,
     id_is_subscribed: () => true,
+});
+mock_module("stream_list", {
+    handle_narrow_deactivated: noop,
+});
+mock_module("timerender", {
+    last_seen_status_from_date: () => "Just now",
+
+    get_full_datetime: () => ({
+        date: "date",
+        time: "time",
+    }),
+});
+mock_module("top_left_corner", {
+    narrow_to_recent_topics: noop,
+});
+mock_module("unread", {
+    unread_topic_counter: {
+        get: (stream_id, topic) => {
+            if (stream_id === 1 && topic === "topic-1") {
+                // Only stream1, topic-1 is read.
+                return 0;
+            }
+            return 1;
+        },
+    },
+});
+
+const ls_container = new Map();
+set_global("localStorage", {
+    getItem(key) {
+        return ls_container.get(key);
+    },
+    setItem(key, val) {
+        ls_container.set(key, val);
+    },
+    removeItem(key) {
+        ls_container.delete(key);
+    },
+    clear() {
+        ls_container.clear();
+    },
 });
 
 const people = zrequire("people");

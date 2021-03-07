@@ -5,11 +5,9 @@ const {strict: assert} = require("assert");
 const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_list = {};
+const message_list = mock_module("message_list");
 
-mock_module("message_list", message_list);
 const {Filter} = zrequire("../js/filter");
-
 const {MessageListData} = zrequire("../js/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const narrow = zrequire("narrow");

@@ -13,13 +13,13 @@ const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
-const helpers = {
-    set_tab: () => {},
-};
 const StripeCheckout = set_global("StripeCheckout", {
     configure: () => {},
 });
-mock_module("billing/helpers", helpers);
+
+const helpers = mock_module("billing/helpers", {
+    set_tab: () => {},
+});
 
 run_test("initialize", (override) => {
     let token_func;

@@ -7,9 +7,8 @@ const _ = require("lodash");
 const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const reload = {};
+const reload = mock_module("reload");
 
-mock_module("reload", reload);
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     f();

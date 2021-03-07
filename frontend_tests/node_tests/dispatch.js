@@ -57,13 +57,11 @@ const typing_events = mock_module("typing_events");
 const ui = mock_module("ui");
 const unread_ops = mock_module("unread_ops");
 const user_events = mock_module("user_events");
+const user_groups = mock_module("user_groups");
 mock_module("compose");
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
 
-const user_groups = {};
-
-mock_module("user_groups", user_groups);
 // page_params is highly coupled to dispatching now
 
 const page_params = set_global("page_params", {

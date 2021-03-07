@@ -8,19 +8,8 @@ const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("document", "document-stub");
-
 const alice_user_id = 5;
-set_global("page_params", {
-    user_id: alice_user_id,
-});
 
-const channel = mock_module("channel");
-const emoji_picker = {
-    hide_emoji_popover() {},
-};
-
-mock_module("emoji_picker", emoji_picker);
 const message = {
     id: 1001,
     reactions: [
@@ -52,14 +41,17 @@ const message = {
     ],
 };
 
-const message_store = {
+const channel = mock_module("channel");
+const emoji_picker = mock_module("emoji_picker", {
+    hide_emoji_popover() {},
+});
+const message_store = mock_module("message_store", {
     get(message_id) {
         assert.equal(message_id, 1001);
         return message;
     },
-};
+});
 
-mock_module("message_store", message_store);
 set_global("current_msg_list", {
     selected_message() {
         return {sent_by_me: true};
@@ -70,6 +62,10 @@ set_global("current_msg_list", {
     selected_id() {
         return 42;
     },
+});
+set_global("document", "document-stub");
+set_global("page_params", {
+    user_id: alice_user_id,
 });
 
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");

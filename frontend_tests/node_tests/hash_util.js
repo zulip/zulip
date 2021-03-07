@@ -5,14 +5,13 @@ const {strict: assert} = require("assert");
 const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const ui_report = {
+const ui_report = mock_module("ui_report", {
     displayed_error: false,
 
     error: () => {
         ui_report.displayed_error = true;
     },
-};
-mock_module("ui_report", ui_report);
+});
 set_global("location", {
     protocol: "https:",
     host: "example.com",

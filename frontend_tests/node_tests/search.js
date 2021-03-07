@@ -6,18 +6,14 @@ const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("page_params", {
-    search_pills_enabled: true,
-});
-
 const noop = () => {};
 
-const narrow_state = {
-    filter: () => false,
-};
 const narrow = mock_module("narrow");
+const narrow_state = mock_module("narrow_state", {
+    filter: () => false,
+});
 const search_suggestion = mock_module("search_suggestion");
-mock_module("narrow_state", narrow_state);
+
 mock_module("search_pill_widget", {
     widget: {
         getByID: () => true,
@@ -26,6 +22,10 @@ mock_module("search_pill_widget", {
 mock_module("ui_util", {
     change_tab_to: noop,
     place_caret_at_end: noop,
+});
+
+set_global("page_params", {
+    search_pills_enabled: true,
 });
 set_global("setTimeout", (func) => func());
 

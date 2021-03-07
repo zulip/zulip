@@ -5,10 +5,27 @@ const {strict: assert} = require("assert");
 const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+const message_live_update = mock_module("message_live_update");
+const settings_account = mock_module("settings_account", {
+    update_email() {},
+    update_full_name() {},
+});
+
 mock_module("activity", {
     redraw() {},
 });
-
+mock_module("compose", {
+    update_email() {},
+});
+mock_module("gear_menu", {
+    update_org_settings_menu_item() {},
+});
+mock_module("narrow_state", {
+    update_email() {},
+});
+mock_module("pm_list", {
+    update_private_messages() {},
+});
 mock_module("settings_linkifiers", {
     maybe_disable_widgets() {},
 });
@@ -25,36 +42,11 @@ mock_module("settings_users", {
     update_user_data() {},
 });
 
-mock_module("gear_menu", {
-    update_org_settings_menu_item() {},
-});
 const page_params = set_global("page_params", {
     is_admin: true,
 });
 
-mock_module("pm_list", {
-    update_private_messages() {},
-});
-
-mock_module("narrow_state", {
-    update_email() {},
-});
-
-mock_module("compose", {
-    update_email() {},
-});
-
-const settings_account = {
-    update_email() {},
-    update_full_name() {},
-};
-
-mock_module("settings_account", settings_account);
-const message_live_update = {};
-
-mock_module("message_live_update", message_live_update);
 const people = zrequire("people");
-
 const settings_config = zrequire("settings_config");
 const user_events = zrequire("user_events");
 

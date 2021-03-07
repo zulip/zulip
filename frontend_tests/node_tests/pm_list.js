@@ -7,8 +7,13 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const narrow_state = mock_module("narrow_state");
+const pm_list_dom = mock_module("pm_list_dom");
 const unread = mock_module("unread");
 const unread_ui = mock_module("unread_ui");
+const vdom = mock_module("vdom", {
+    render: () => "fake-dom-for-pm-list",
+});
+
 mock_module("stream_popover", {
     hide_topic_popover() {},
 });
@@ -16,15 +21,7 @@ mock_module("ui", {
     get_content_element: (element) => element,
 });
 
-const vdom = {
-    render: () => "fake-dom-for-pm-list",
-};
-mock_module("vdom", vdom);
-const pm_list_dom = {};
-
-mock_module("pm_list_dom", pm_list_dom);
 const people = zrequire("people");
-
 const pm_conversations = zrequire("pm_conversations");
 const pm_list = zrequire("pm_list");
 

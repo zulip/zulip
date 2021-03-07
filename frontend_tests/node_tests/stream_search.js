@@ -18,9 +18,8 @@ mock_module("resize", {
 });
 
 const popovers = mock_module("popovers");
-const stream_popover = {};
+const stream_popover = mock_module("stream_popover");
 
-mock_module("stream_popover", stream_popover);
 const stream_list = zrequire("stream_list");
 
 function expand_sidebar() {

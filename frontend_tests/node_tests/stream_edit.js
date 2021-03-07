@@ -12,6 +12,10 @@ stub_templates(() => noop);
 
 const page_params = set_global("page_params", {});
 const typeahead_helper = mock_module("typeahead_helper");
+const ui = mock_module("ui", {
+    get_scroll_element: noop,
+});
+
 mock_module("hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
@@ -27,16 +31,10 @@ mock_module("stream_color", {
     set_colorpicker_color: noop,
 });
 
-const ui = {
-    get_scroll_element: noop,
-};
-
-mock_module("ui", ui);
 const peer_data = zrequire("peer_data");
-
 const people = zrequire("people");
-const stream_edit = zrequire("stream_edit");
 const stream_data = zrequire("stream_data");
+const stream_edit = zrequire("stream_edit");
 const stream_pill = zrequire("stream_pill");
 const user_pill = zrequire("user_pill");
 
