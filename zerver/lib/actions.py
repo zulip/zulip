@@ -824,7 +824,7 @@ def do_set_realm_property(
 
 
 def do_set_realm_authentication_methods(
-    realm: Realm, authentication_methods: Dict[str, bool], acting_user: Optional[UserProfile] = None
+    realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = realm.authentication_methods_dict()
     for key, value in list(authentication_methods.items()):

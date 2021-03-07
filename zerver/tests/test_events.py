@@ -1068,7 +1068,7 @@ class NormalActionsTest(BaseAction):
             with fake_backends():
                 events = self.verify_action(
                     lambda: do_set_realm_authentication_methods(
-                        self.user_profile.realm, auth_method_dict
+                        self.user_profile.realm, auth_method_dict, acting_user=None
                     )
                 )
 

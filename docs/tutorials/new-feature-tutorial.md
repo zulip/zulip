@@ -321,7 +321,9 @@ field and send an event. For example:
 
     # zerver/lib/actions.py
 
-    def do_set_realm_authentication_methods(realm: Realm, authentication_methods: Dict[str, bool]) -> None:
+    def do_set_realm_authentication_methods(
+        realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
+    ) -> None:
         for key, value in list(authentication_methods.items()):
             index = getattr(realm.authentication_methods, key).number
             realm.authentication_methods.set_bit(index, int(value))
