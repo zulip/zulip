@@ -67,8 +67,6 @@ from zerver.models import (
     UserProfile,
     UserTopic,
     get_huddle_hash,
-    get_realm,
-    get_system_bot,
     get_user_profile_by_id,
 )
 
@@ -928,20 +926,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     realm.notifications_stream_id = notifications_stream_id
     realm.signup_notifications_stream_id = signup_notifications_stream_id
     realm.save()
-
-    # Remap the user IDs for notification_bot and friends to their
-    # appropriate IDs on this server
-    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    for item in data["zerver_userprofile_crossrealm"]:
-        logging.info(
-            "Adding to ID map: %s %s",
-            item["id"],
-            get_system_bot(item["email"], internal_realm.id).id,
-        )
-        new_user_id = get_system_bot(item["email"], internal_realm.id).id
-        update_id_map(table="user_profile", old_id=item["id"], new_id=new_user_id)
-        new_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user_id).id
-        update_id_map(table="recipient", old_id=item["recipient_id"], new_id=new_recipient_id)
 
     # Merge in zerver_userprofile_mirrordummy
     data["zerver_userprofile"] = data["zerver_userprofile"] + data["zerver_userprofile_mirrordummy"]

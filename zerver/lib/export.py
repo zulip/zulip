@@ -61,8 +61,6 @@ from zerver.models import (
     UserProfile,
     UserTopic,
     get_display_recipient,
-    get_realm,
-    get_system_bot,
     get_user_profile_by_id,
 )
 
@@ -700,14 +698,6 @@ def get_realm_config() -> Config:
     )
 
     Config(
-        custom_tables=[
-            "zerver_userprofile_crossrealm",
-        ],
-        virtual_parent=user_profile_config,
-        custom_fetch=fetch_user_profile_cross_realm,
-    )
-
-    Config(
         table="zerver_userpresence",
         model=UserPresence,
         normal_parent=user_profile_config,
@@ -886,39 +876,6 @@ def fetch_user_profile(response: TableData, config: Config, context: Context) ->
     response["zerver_userprofile_mirrordummy"] = dummy_rows
 
 
-def fetch_user_profile_cross_realm(response: TableData, config: Config, context: Context) -> None:
-    realm = context["realm"]
-    response["zerver_userprofile_crossrealm"] = []
-
-    bot_name_to_default_email = {
-        "NOTIFICATION_BOT": "notification-bot@zulip.com",
-        "EMAIL_GATEWAY_BOT": "emailgateway@zulip.com",
-        "WELCOME_BOT": "welcome-bot@zulip.com",
-    }
-
-    if realm.string_id == settings.SYSTEM_BOT_REALM:
-        return
-
-    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    for bot in settings.INTERNAL_BOTS:
-        bot_name = bot["var_name"]
-        if bot_name not in bot_name_to_default_email:
-            continue
-
-        bot_email = bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,)
-        bot_default_email = bot_name_to_default_email[bot_name]
-        bot_user_id = get_system_bot(bot_email, internal_realm.id).id
-
-        recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
-        response["zerver_userprofile_crossrealm"].append(
-            dict(
-                email=bot_default_email,
-                id=bot_user_id,
-                recipient_id=recipient_id,
-            )
-        )
-
-
 def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[int]) -> None:
     filter_args = {"realm_id": realm_id}
     query = Attachment.objects.filter(**filter_args)
@@ -1079,9 +1036,7 @@ def export_partial_message_files(
         response["zerver_userprofile"],
     )
     ids_of_our_possible_senders = get_ids(
-        response["zerver_userprofile"]
-        + response["zerver_userprofile_mirrordummy"]
-        + response["zerver_userprofile_crossrealm"]
+        response["zerver_userprofile"] + response["zerver_userprofile_mirrordummy"]
     )
 
     consented_user_ids: Set[int] = set()
@@ -1274,7 +1229,6 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
 
 
 def _check_key_metadata(
-    email_gateway_bot: Optional[UserProfile],
     key: ServiceResource,
     processing_avatars: bool,
     realm: Realm,
@@ -1282,12 +1236,7 @@ def _check_key_metadata(
 ) -> None:
     # Helper function for export_files_from_s3
     if "realm_id" in key.metadata and key.metadata["realm_id"] != str(realm.id):
-        if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
-            email_gateway_bot.id
-        ):
-            raise AssertionError(f"Key metadata problem: {key.name} {key.metadata} / {realm.id}")
-        # Email gateway bot sends messages, potentially including attachments, cross-realm.
-        print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
+        raise AssertionError(f"Key metadata problem: {key.name} {key.metadata} / {realm.id}")
     elif processing_avatars:
         if "user_profile_id" not in key.metadata:
             raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
@@ -1397,14 +1346,6 @@ def export_files_from_s3(
     else:
         object_prefix = f"{realm.id}/"
 
-    if settings.EMAIL_GATEWAY_BOT is not None:
-        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        email_gateway_bot: Optional[UserProfile] = get_system_bot(
-            settings.EMAIL_GATEWAY_BOT, internal_realm.id
-        )
-    else:
-        email_gateway_bot = None
-
     count = 0
     for bkey in bucket.objects.filter(Prefix=object_prefix):
         if processing_avatars and bkey.Object().key not in avatar_hash_values:
@@ -1412,7 +1353,7 @@ def export_files_from_s3(
 
         key = bucket.Object(bkey.key)
         # This can happen if an email address has moved realms
-        _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
+        _check_key_metadata(key, processing_avatars, realm, user_ids)
         record = _get_exported_s3_record(bucket_name, key, processing_emoji)
 
         record["path"] = key.key
@@ -1472,13 +1413,6 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
     records = []
 
     users = list(UserProfile.objects.filter(realm=realm))
-
-    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    users += [
-        get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id),
-        get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id),
-        get_system_bot(settings.WELCOME_BOT, internal_realm.id),
-    ]
     for user in users:
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
             continue
