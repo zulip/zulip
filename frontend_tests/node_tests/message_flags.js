@@ -5,16 +5,15 @@ const {strict: assert} = require("assert");
 const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+const channel = mock_module("channel");
+const ui = mock_module("ui");
+
 mock_module("starred_messages", {
     add: () => {},
 
     remove: () => {},
 });
 
-const ui = mock_module("ui");
-const channel = {};
-
-mock_module("channel", channel);
 const message_flags = zrequire("message_flags");
 
 run_test("starred", () => {

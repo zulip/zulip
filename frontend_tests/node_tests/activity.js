@@ -23,53 +23,38 @@ const _document = {
     },
 };
 
-const channel = {};
-
-const _keydown_util = {
-    handle: (opts) => {
-        filter_key_handlers = opts.handlers;
-    },
-};
-
-const compose_state = {};
-
-const _scroll_util = {
-    scroll_element_into_container: () => {},
-};
-
-const _pm_list = {
-    update_private_messages: () => {},
-};
-
-const _popovers = {
-    hide_all_except_sidebars() {},
-    hide_all() {},
-    show_userlist_sidebar() {},
-};
-
-const _stream_popover = {
-    show_streamlist_sidebar() {},
-};
-
-const _resize = {
-    resize_sidebars: () => {},
-    resize_page_components: () => {},
-};
+const compose_state = mock_module("compose_state");
+const channel = mock_module("channel");
 
 mock_module("padded_widget", {
     update_padding: () => {},
 });
-mock_module("channel", channel);
-mock_module("compose_state", compose_state);
-mock_module("keydown_util", _keydown_util);
-mock_module("pm_list", _pm_list);
-mock_module("popovers", _popovers);
-mock_module("resize", _resize);
-mock_module("scroll_util", _scroll_util);
+mock_module("keydown_util", {
+    handle: (opts) => {
+        filter_key_handlers = opts.handlers;
+    },
+});
+mock_module("pm_list", {
+    update_private_messages: () => {},
+});
+mock_module("popovers", {
+    hide_all_except_sidebars() {},
+    hide_all() {},
+    show_userlist_sidebar() {},
+});
+mock_module("resize", {
+    resize_sidebars: () => {},
+    resize_page_components: () => {},
+});
+mock_module("scroll_util", {
+    scroll_element_into_container: () => {},
+});
 mock_module("server_events", {
     check_for_unsuspend() {},
 });
-mock_module("stream_popover", _stream_popover);
+mock_module("stream_popover", {
+    show_streamlist_sidebar() {},
+});
 set_global("document", _document);
 
 const huddle_data = zrequire("huddle_data");

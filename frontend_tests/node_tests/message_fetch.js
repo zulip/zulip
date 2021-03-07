@@ -33,6 +33,9 @@ const message_store = mock_module("message_store");
 const message_util = mock_module("message_util");
 const pm_list = mock_module("pm_list");
 const server_events = mock_module("server_events");
+const stream_list = mock_module("stream_list", {
+    maybe_scroll_narrow_into_view: () => {},
+});
 mock_module("message_scroll", {
     show_loading_older: noop,
     hide_loading_older: noop,
@@ -42,11 +45,6 @@ mock_module("message_scroll", {
 });
 set_global("document", "document-stub");
 
-const stream_list = {
-    maybe_scroll_narrow_into_view: () => {},
-};
-
-mock_module("stream_list", stream_list);
 const message_fetch = zrequire("message_fetch");
 
 const {Filter} = zrequire("../js/filter");

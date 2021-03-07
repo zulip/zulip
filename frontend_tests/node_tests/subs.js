@@ -7,22 +7,20 @@ const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const ui = {
+const denmark_stream_id = 101;
+
+const ui = mock_module("ui", {
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
-};
-mock_module("ui", ui);
-set_global("page_params", {});
-
-const denmark_stream_id = 101;
+});
 
 set_global("location", {
     hash: `#streams/${denmark_stream_id}/announce`,
 });
-
 mock_module("hash_util", {
     by_stream_uri: () => {},
 });
+set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");
 const subs = zrequire("subs");

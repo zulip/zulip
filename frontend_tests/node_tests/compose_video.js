@@ -8,13 +8,12 @@ const $ = require("../zjsunit/zjquery");
 
 const events = require("./lib/events");
 
-const resize = {
-    watch_manual_resize() {},
-};
 const channel = mock_module("channel");
 const page_params = set_global("page_params", {});
 const upload = mock_module("upload");
-mock_module("resize", resize);
+mock_module("resize", {
+    watch_manual_resize() {},
+});
 set_global("csrf_token", "fake-csrf-token");
 set_global("document", {
     execCommand() {

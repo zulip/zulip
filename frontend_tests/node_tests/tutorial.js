@@ -17,31 +17,26 @@ const {run_test} = require("../zjsunit/test");
 // structure that the server sends down to us when the app starts.  We
 // prefer to test with a clean slate.
 
-set_global("page_params", {});
-
 const activity = mock_module("activity");
+const channel = mock_module("channel");
 const home_msg_list = set_global("home_msg_list", {});
 const message_list = mock_module("message_list");
 const message_live_update = mock_module("message_live_update");
 const message_util = mock_module("message_util");
+const message_viewport = mock_module("message_viewport");
 const notifications = mock_module("notifications");
 const overlays = mock_module("overlays");
 const pm_list = mock_module("pm_list");
 const resize = mock_module("resize");
 const settings_users = mock_module("settings_users");
-
-let stream_list = {};
-mock_module("stream_list", stream_list);
-let unread_ops = {};
-
-const channel = mock_module("channel");
-const message_viewport = mock_module("message_viewport");
+const topic_list = mock_module("topic_list");
 const unread_ui = mock_module("unread_ui");
-mock_module("unread_ops", unread_ops);
 
-const topic_list = {};
+let stream_list = mock_module("stream_list");
+let unread_ops = mock_module("unread_ops");
 
-mock_module("topic_list", topic_list);
+set_global("page_params", {});
+
 // Let's start with testing a function from util.js.
 
 //

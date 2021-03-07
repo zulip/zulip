@@ -12,44 +12,6 @@ const {
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
-const popovers = {
-    actions_popped: () => false,
-    message_info_popped: () => false,
-    user_sidebar_popped: () => false,
-    user_info_popped: () => false,
-};
-mock_module("popovers", popovers);
-const overlays = {
-    is_active: () => false,
-    settings_open: () => false,
-    streams_open: () => false,
-    lightbox_open: () => false,
-    drafts_open: () => false,
-    info_overlay_open: () => false,
-};
-
-mock_module("overlays", overlays);
-
-mock_module("stream_popover", {
-    stream_popped: () => false,
-    topic_popped: () => false,
-    all_messages_popped: () => false,
-    starred_messages_popped: () => false,
-});
-
-const emoji_picker = {
-    reactions_popped: () => false,
-};
-mock_module("emoji_picker", emoji_picker);
-mock_module("hotspots", {
-    is_open: () => false,
-});
-
-const gear_menu = {
-    is_open: () => false,
-};
-
-mock_module("gear_menu", gear_menu);
 // Important note on these tests:
 
 //
@@ -80,27 +42,55 @@ set_global("document", "document-stub");
 const compose_actions = mock_module("compose_actions");
 const condense = mock_module("condense");
 const drafts = mock_module("drafts");
-
-const hashchange = {
+const emoji_picker = mock_module("emoji_picker", {
+    reactions_popped: () => false,
+});
+const gear_menu = mock_module("gear_menu", {
+    is_open: () => false,
+});
+const hashchange = mock_module("hashchange", {
     in_recent_topics_hash: () => false,
-};
+});
 const lightbox = mock_module("lightbox");
 const list_util = mock_module("list_util");
 const message_edit = mock_module("message_edit");
 const muting_ui = mock_module("muting_ui");
 const narrow = mock_module("narrow");
 const navigate = mock_module("navigate");
+const overlays = mock_module("overlays", {
+    is_active: () => false,
+    settings_open: () => false,
+    streams_open: () => false,
+    lightbox_open: () => false,
+    drafts_open: () => false,
+    info_overlay_open: () => false,
+});
+const popovers = mock_module("popovers", {
+    actions_popped: () => false,
+    message_info_popped: () => false,
+    user_sidebar_popped: () => false,
+    user_info_popped: () => false,
+});
 const reactions = mock_module("reactions");
 const search = mock_module("search");
 const stream_list = mock_module("stream_list");
-mock_module("hashchange", hashchange);
+const subs = mock_module("subs");
 
-const subs = {};
+mock_module("stream_popover", {
+    stream_popped: () => false,
+    topic_popped: () => false,
+    all_messages_popped: () => false,
+    starred_messages_popped: () => false,
+});
+
+mock_module("hotspots", {
+    is_open: () => false,
+});
 
 mock_module("recent_topics", {
     is_visible: () => false,
 });
-mock_module("subs", subs);
+
 set_global("current_msg_list", {
     empty() {
         return false;

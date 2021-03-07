@@ -6,11 +6,9 @@ const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const channel = mock_module("channel");
+const message_store = mock_module("message_store");
 const widgetize = mock_module("widgetize");
 
-const message_store = {};
-
-mock_module("message_store", message_store);
 const submessage = zrequire("submessage");
 
 run_test("get_message_events", () => {

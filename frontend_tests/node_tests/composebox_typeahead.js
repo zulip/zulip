@@ -8,22 +8,17 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-const stream_topic_history = {};
-
-mock_module("stream_topic_history", stream_topic_history);
-const message_store = {
-    user_ids: () => [],
-};
-
 const channel = mock_module("channel");
-const page_params = set_global("page_params", {});
-mock_module("message_store", message_store);
-
-const compose = {
+const compose = mock_module("compose", {
     finish: noop,
-};
+});
+const message_store = mock_module("message_store", {
+    user_ids: () => [],
+});
+const stream_topic_history = mock_module("stream_topic_history");
 
-mock_module("compose", compose);
+const page_params = set_global("page_params", {});
+
 let autosize_called;
 
 mock_module("compose_ui", {

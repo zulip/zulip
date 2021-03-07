@@ -14,14 +14,11 @@ const compose = mock_module("compose");
 const compose_actions = mock_module("compose_actions");
 const hashchange = mock_module("hashchange");
 const message_fetch = mock_module("message_fetch");
-set_global("current_msg_list", {});
-set_global("home_msg_list", {});
-
-const message_list = {
+const message_list = mock_module("message_list", {
     set_narrowed(value) {
         message_list.narrowed = value;
     },
-};
+});
 const message_scroll = mock_module("message_scroll");
 const message_view_header = mock_module("message_view_header");
 const notifications = mock_module("notifications");
@@ -31,11 +28,12 @@ const top_left_corner = mock_module("top_left_corner");
 const typing_events = mock_module("typing_events");
 const ui_util = mock_module("ui_util");
 const unread_ops = mock_module("unread_ops");
-mock_module("message_list", message_list);
 mock_module("recent_topics", {
     hide: () => {},
     is_visible: () => {},
 });
+set_global("current_msg_list", {});
+set_global("home_msg_list", {});
 set_global("page_params", {});
 
 //

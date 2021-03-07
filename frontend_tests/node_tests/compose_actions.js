@@ -15,36 +15,27 @@ set_global("document", {
     to_$: () => $("document-stub"),
 });
 
-const compose_pm_pill = {};
-
-mock_module("compose_pm_pill", compose_pm_pill);
-const hash_util = {};
-
-mock_module("hash_util", hash_util);
+const channel = mock_module("channel");
+const compose_fade = mock_module("compose_fade", {
+    clear_compose: noop,
+});
+const compose_pm_pill = mock_module("compose_pm_pill");
+const hash_util = mock_module("hash_util");
+const narrow_state = mock_module("narrow_state", {
+    set_compose_defaults: noop,
+});
 mock_module("notifications", {
     clear_compose_notifications: noop,
 });
 mock_module("reload_state", {
     is_in_progress: () => false,
 });
-
-const compose_fade = {
-    clear_compose: noop,
-};
-
-mock_module("compose_fade", compose_fade);
 mock_module("drafts", {
     update_draft: noop,
 });
-
-const narrow_state = {
-    set_compose_defaults: noop,
-};
-
 mock_module("common", {
     status_classes: "status_classes",
 });
-mock_module("narrow_state", narrow_state);
 mock_module("unread_ops", {
     notify_server_message_read: noop,
 });
@@ -54,9 +45,6 @@ set_global("current_msg_list", {
     },
 });
 
-const channel = {};
-
-mock_module("channel", channel);
 const people = zrequire("people");
 
 const compose_ui = zrequire("compose_ui");

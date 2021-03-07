@@ -9,14 +9,10 @@ const {run_test} = require("../zjsunit/test");
 // The ListWidget library allows you to insert objects
 // that are either jQuery, Element, or just raw HTML
 // strings.  We initially test with raw strings.
+const ui = mock_module("ui");
+set_global("Element", () => {});
 set_global("jQuery", "stub");
-function Element() {
-    return {};
-}
-set_global("Element", Element);
-const ui = {};
 
-mock_module("ui", ui);
 // We only need very simple jQuery wrappers for when the
 
 // "real" code wraps html or sets up click handlers.

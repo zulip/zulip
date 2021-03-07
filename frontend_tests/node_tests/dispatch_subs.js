@@ -12,26 +12,19 @@ const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
 const compose_fade = mock_module("compose_fade");
-const stream_events = mock_module("stream_events");
-
-const subs = {};
-
 const narrow_state = mock_module("narrow_state");
 const overlays = mock_module("overlays");
 const page_params = set_global("page_params", {});
 const settings_org = mock_module("settings_org");
 const settings_streams = mock_module("settings_streams");
-mock_module("subs", subs);
+const stream_events = mock_module("stream_events");
+const stream_list = mock_module("stream_list");
+const subs = mock_module("subs");
 set_global("current_msg_list", {});
 
-const stream_list = {};
-
-mock_module("stream_list", stream_list);
 const peer_data = zrequire("peer_data");
-
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-
 const server_events_dispatch = zrequire("server_events_dispatch");
 
 const noop = () => {};

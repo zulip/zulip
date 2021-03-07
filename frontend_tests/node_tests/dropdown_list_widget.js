@@ -7,10 +7,9 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-const _ListWidget = {
+mock_module("list_widget", {
     create: () => ({init: noop}),
-};
-mock_module("list_widget", _ListWidget);
+});
 const {DropdownListWidget: dropdown_list_widget} = zrequire("dropdown_list_widget");
 
 const setup_zjquery_data = (name) => {

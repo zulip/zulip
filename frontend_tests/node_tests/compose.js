@@ -40,43 +40,35 @@ const _document = {
     to_$: () => $("document-stub"),
 };
 
-const _drafts = {
-    delete_draft_after_send: noop,
-};
-
-const sent_messages = {
-    start_tracking_message: noop,
-};
-const _notifications = {
-    notify_above_composebox: noop,
-    clear_compose_notifications: noop,
-};
-const reminder = {
-    is_deferred_delivery: noop,
-};
-
 set_global("document", _document);
 const channel = mock_module("channel");
 const loading = mock_module("loading");
 const local_message = mock_module("local_message");
 const markdown = mock_module("markdown");
 const page_params = set_global("page_params", {});
+const reminder = mock_module("reminder", {
+    is_deferred_delivery: noop,
+});
 const resize = mock_module("resize");
+const sent_messages = mock_module("sent_messages", {
+    start_tracking_message: noop,
+});
 const stream_edit = mock_module("stream_edit");
 const subs = mock_module("subs");
 const transmit = mock_module("transmit");
-mock_module("drafts", _drafts);
-mock_module("notifications", _notifications);
-mock_module("reminder", reminder);
+const ui_util = mock_module("ui_util");
+mock_module("drafts", {
+    delete_draft_after_send: noop,
+});
+mock_module("notifications", {
+    notify_above_composebox: noop,
+    clear_compose_notifications: noop,
+});
 mock_module("rendered_markdown", {
     update_elements: () => {},
 });
-mock_module("sent_messages", sent_messages);
 set_global("navigator", _navigator);
 
-const ui_util = {};
-
-mock_module("ui_util", ui_util);
 // Setting these up so that we can test that links to uploads within messages are
 
 // automatically converted to server relative links.

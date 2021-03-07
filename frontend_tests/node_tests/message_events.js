@@ -12,15 +12,12 @@ const notifications = mock_module("notifications");
 const page_params = set_global("page_params", {});
 const pm_list = mock_module("pm_list");
 const stream_list = mock_module("stream_list");
+const unread_ui = mock_module("unread_ui");
 set_global("current_msg_list", {});
 
-const unread_ui = {};
-
-mock_module("unread_ui", unread_ui);
-const message_events = zrequire("message_events");
-
-const message_store = zrequire("message_store");
 const people = zrequire("people");
+const message_events = zrequire("message_events");
+const message_store = zrequire("message_store");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const unread = zrequire("unread");
