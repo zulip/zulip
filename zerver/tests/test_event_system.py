@@ -1120,7 +1120,7 @@ class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
         for bot_email in settings.CROSS_REALM_BOT_EMAILS:
             bot_profile = get_system_bot(bot_email)
             self.assertTrue(bot_profile.id in result)
-            self.assertTrue(result[bot_profile.id]["is_cross_realm_bot"])
+            self.assertTrue(result[bot_profile.id]["is_system_bot"])
 
 
 class TestUserPresenceUpdatesDisabled(ZulipTestCase):

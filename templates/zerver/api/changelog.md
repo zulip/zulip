@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 83**
+
+* * [`POST /register`](/api/register-queue): The `cross_realm_bots`
+  section of the response now uses the `is_system_bot` flag to
+  indicate whether the bot is a system bot.
+
 **Feature level 82**
 
 * [`PATCH /settings`](/api/update-settings) now accepts a new

@@ -9656,10 +9656,15 @@ paths:
                                 date_joined: {}
                                 delivery_email: {}
                                 profile_data: {}
-                                is_cross_realm_bot:
+                                is_system_bot:
                                   type: boolean
                                   description: |
-                                    Whether the user is a cross realm bot.
+                                    Whether the user is a system bot.  System bots are special
+                                    bot user accounts that are managed by the system, rather than
+                                    the organization's administrators.
+
+                                    **Changes**: This field was called `is_cross_realm_bot`
+                                    before Zulip 5.0 (feature level 83).
                     example:
                       {
                         "last_event_id": -1,

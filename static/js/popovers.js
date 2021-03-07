@@ -233,10 +233,10 @@ function render_user_info_popover(
     };
 
     if (user.is_bot) {
-        const is_cross_realm_bot = user.is_cross_realm_bot;
+        const is_system_bot = user.is_system_bot;
         const bot_owner_id = user.bot_owner_id;
-        if (is_cross_realm_bot) {
-            args.is_cross_realm_bot = is_cross_realm_bot;
+        if (is_system_bot) {
+            args.is_system_bot = is_system_bot;
         } else if (bot_owner_id) {
             const bot_owner = people.get_by_user_id(bot_owner_id);
             args.bot_owner = bot_owner;

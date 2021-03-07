@@ -429,7 +429,7 @@ def format_user_row(
     if is_bot:
         result["bot_type"] = row["bot_type"]
         if row["email"] in settings.CROSS_REALM_BOT_EMAILS:
-            result["is_cross_realm_bot"] = True
+            result["is_system_bot"] = True
 
         # Note that bot_owner_id can be None with legacy data.
         result["bot_owner_id"] = row["bot_owner_id"]

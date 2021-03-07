@@ -628,7 +628,7 @@ class HomeTest(ZulipTestCase):
                         is_owner=False,
                         is_billing_admin=False,
                         role=email_gateway_bot.role,
-                        is_cross_realm_bot=True,
+                        is_system_bot=True,
                         is_guest=False,
                     ),
                     dict(
@@ -644,7 +644,7 @@ class HomeTest(ZulipTestCase):
                         is_owner=False,
                         is_billing_admin=False,
                         role=notification_bot.role,
-                        is_cross_realm_bot=True,
+                        is_system_bot=True,
                         is_guest=False,
                     ),
                     dict(
@@ -660,7 +660,7 @@ class HomeTest(ZulipTestCase):
                         is_owner=False,
                         is_billing_admin=False,
                         role=welcome_bot.role,
-                        is_cross_realm_bot=True,
+                        is_system_bot=True,
                         is_guest=False,
                     ),
                 ],
