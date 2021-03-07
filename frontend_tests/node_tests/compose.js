@@ -363,7 +363,7 @@ test_ui("test_wildcard_mention_allowed", () => {
     assert(!compose.wildcard_mention_allowed());
 });
 
-test_ui("validate_stream_message", () => {
+test_ui("validate_stream_message", (override) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -394,7 +394,7 @@ test_ui("validate_stream_message", () => {
         compose_content = data;
     };
 
-    compose.__Rewire__("wildcard_mention_allowed", () => true);
+    override(compose, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
     assert(!compose.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -402,7 +402,7 @@ test_ui("validate_stream_message", () => {
     assert.equal(compose_content, "compose_all_everyone_stub");
     assert($("#compose-all-everyone").visible());
 
-    compose.__Rewire__("wildcard_mention_allowed", () => false);
+    override(compose, "wildcard_mention_allowed", () => false);
     assert(!compose.validate());
     assert.equal(
         $("#compose-error-msg").html(),
@@ -473,14 +473,14 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
     page_params.is_guest = false;
 });
 
-test_ui("markdown_rtl", () => {
+test_ui("markdown_rtl", (override) => {
     const textarea = $("#compose-textarea");
 
     const event = {
         keyCode: 65, // A
     };
 
-    rtl.__Rewire__("get_direction", (text) => {
+    override(rtl, "get_direction", (text) => {
         assert.equal(text, " foo");
         return "rtl";
     });
@@ -492,10 +492,6 @@ test_ui("markdown_rtl", () => {
 
     assert.equal(textarea.hasClass("rtl"), true);
 });
-
-// This is important for subsequent tests--put
-// us back to the "normal" ltr case.
-rtl.__Rewire__("get_direction", () => "ltr");
 
 test_ui("markdown_ltr", () => {
     const textarea = $("#compose-textarea");
@@ -721,7 +717,7 @@ test_ui("send_message", (override) => {
         compose_state.topic("");
         compose_state.set_message_type("private");
         page_params.user_id = 101;
-        compose_state.__Rewire__("private_message_recipient", () => "alice@example.com");
+        override(compose_state, "private_message_recipient", () => "alice@example.com");
 
         const server_message_id = 127;
         local_message.insert_message = (message) => {
@@ -847,7 +843,7 @@ test_ui("send_message", (override) => {
     })();
 });
 
-test_ui("enter_with_preview_open", () => {
+test_ui("enter_with_preview_open", (override) => {
     // Test sending a message with content.
     compose_state.set_message_type("stream");
     $("#compose-textarea").val("message me");
@@ -857,7 +853,7 @@ test_ui("enter_with_preview_open", () => {
     $("#markdown_preview").hide();
     page_params.enter_sends = true;
     let send_message_called = false;
-    compose.__Rewire__("send_message", () => {
+    override(compose, "send_message", () => {
         send_message_called = true;
     });
     compose.enter_with_preview_open();
@@ -884,7 +880,7 @@ test_ui("enter_with_preview_open", () => {
     assert.equal($("#compose-error-msg").html(), i18n.t("You have nothing to send!"));
 });
 
-test_ui("finish", () => {
+test_ui("finish", (override) => {
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
@@ -908,14 +904,14 @@ test_ui("finish", () => {
         $("#markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("private");
-        compose_state.__Rewire__("private_message_recipient", () => "bob@example.com");
+        override(compose_state, "private_message_recipient", () => "bob@example.com");
 
         let compose_finished_event_checked = false;
         $(document).on("compose_finished.zulip", () => {
             compose_finished_event_checked = true;
         });
         let send_message_called = false;
-        compose.__Rewire__("send_message", () => {
+        override(compose, "send_message", () => {
             send_message_called = true;
         });
         assert(compose.finish());
@@ -1027,7 +1023,7 @@ test_ui("initialize", (override) => {
 
     let setup_upload_called = false;
     let uppy_cancel_all_called = false;
-    upload.__Rewire__("setup_upload", (config) => {
+    override(upload, "setup_upload", (config) => {
         assert.equal(config.mode, "compose");
         setup_upload_called = true;
         return {
@@ -1112,7 +1108,7 @@ test_ui("update_fade", (override) => {
     assert(update_all_called);
 });
 
-test_ui("trigger_submit_compose_form", () => {
+test_ui("trigger_submit_compose_form", (override) => {
     let prevent_default_checked = false;
     let compose_finish_checked = false;
     const e = {
@@ -1120,7 +1116,7 @@ test_ui("trigger_submit_compose_form", () => {
             prevent_default_checked = true;
         },
     };
-    compose.__Rewire__("finish", () => {
+    override(compose, "finish", () => {
         compose_finish_checked = true;
     });
 
@@ -1167,7 +1163,7 @@ test_ui("needs_subscribe_warning", () => {
     assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
-test_ui("warn_if_mentioning_unsubscribed_user", () => {
+test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
     let mentioned = {
         email: "foo@bar.com",
     };
@@ -1211,7 +1207,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", () => {
     const checks = [
         (function () {
             let called;
-            compose.__Rewire__("needs_subscribe_warning", (user_id, stream_id) => {
+            override(compose, "needs_subscribe_warning", (user_id, stream_id) => {
                 called = true;
                 assert.equal(user_id, 34);
                 assert.equal(stream_id, 111);
@@ -1291,7 +1287,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", () => {
     assert(looked_for_existing);
 });
 
-test_ui("on_events", () => {
+test_ui("on_events", (override) => {
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
         const container = $.create("fake " + container_sel);
         let container_removed = false;
@@ -1335,7 +1331,7 @@ test_ui("on_events", () => {
         $("#compose-send-status").show();
 
         let compose_finish_checked = false;
-        compose.__Rewire__("finish", () => {
+        override(compose, "finish", () => {
             compose_finish_checked = true;
         });
 
@@ -1633,7 +1629,7 @@ test_ui("on_events", () => {
     })();
 });
 
-test_ui("create_message_object", () => {
+test_ui("create_message_object", (override) => {
     const sub = {
         stream_id: 101,
         name: "social",
@@ -1645,7 +1641,7 @@ test_ui("create_message_object", () => {
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");
 
-    compose_state.__Rewire__("get_message_type", () => "stream");
+    override(compose_state, "get_message_type", () => "stream");
 
     let message = compose.create_message_object();
     assert.equal(message.to, sub.stream_id);
@@ -1660,7 +1656,7 @@ test_ui("create_message_object", () => {
     assert.equal(message.topic, "lunch");
     assert.equal(message.content, "burrito");
 
-    compose_state.__Rewire__("get_message_type", () => "private");
+    override(compose_state, "get_message_type", () => "private");
     compose_state.__Rewire__(
         "private_message_recipient",
         () => "alice@example.com, bob@example.com",

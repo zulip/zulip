@@ -164,11 +164,11 @@ test_ui("create_sidebar_row", (override) => {
     assert(!social_li.hasClass("out_of_home_view"));
 
     const row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.__Rewire__("is_active", () => true);
+    override(stream_data, "is_active", () => true);
     row.update_whether_active();
     assert(!social_li.hasClass("inactive_stream"));
 
-    stream_data.__Rewire__("is_active", () => false);
+    override(stream_data, "is_active", () => false);
     row.update_whether_active();
     assert(social_li.hasClass("inactive_stream"));
 
@@ -194,16 +194,16 @@ test_ui("pinned_streams_never_inactive", (override) => {
     const social_sidebar = $("<social sidebar row>");
     let stream_id = social.stream_id;
     let row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.__Rewire__("is_active", () => false);
+    override(stream_data, "is_active", () => false);
 
     stream_list.build_stream_list();
     assert(social_sidebar.hasClass("inactive_stream"));
 
-    stream_data.__Rewire__("is_active", () => true);
+    override(stream_data, "is_active", () => true);
     row.update_whether_active();
     assert(!social_sidebar.hasClass("inactive_stream"));
 
-    stream_data.__Rewire__("is_active", () => false);
+    override(stream_data, "is_active", () => false);
     row.update_whether_active();
     assert(social_sidebar.hasClass("inactive_stream"));
 
@@ -211,7 +211,7 @@ test_ui("pinned_streams_never_inactive", (override) => {
     const devel_sidebar = $("<devel sidebar row>");
     stream_id = devel.stream_id;
     row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.__Rewire__("is_active", () => false);
+    override(stream_data, "is_active", () => false);
 
     stream_list.build_stream_list();
     assert(!devel_sidebar.hasClass("inactive_stream"));
@@ -438,13 +438,13 @@ test_ui("focus_user_filter", () => {
     click_handler(e);
 });
 
-test_ui("sort_streams", () => {
+test_ui("sort_streams", (override) => {
     // Get coverage on early-exit.
     stream_list.build_stream_list();
 
     initialize_stream_data();
 
-    stream_data.__Rewire__("is_active", (sub) => sub.name !== "cars");
+    override(stream_data, "is_active", (sub) => sub.name !== "cars");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -488,7 +488,7 @@ test_ui("sort_streams", () => {
     assert(!stream_list.stream_sidebar.has_row_for(stream_id));
 });
 
-test_ui("separators_only_pinned_and_dormant", () => {
+test_ui("separators_only_pinned_and_dormant", (override) => {
     // Test only pinned and dormant streams
 
     // Get coverage on early-exit.
@@ -522,7 +522,7 @@ test_ui("separators_only_pinned_and_dormant", () => {
     };
     add_row(DenmarkSub);
 
-    stream_data.__Rewire__("is_active", (sub) => sub.name !== "Denmark");
+    override(stream_data, "is_active", (sub) => sub.name !== "Denmark");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -634,7 +634,7 @@ test_ui("update_count_in_dom", () => {
 
 narrow_state.active = () => false;
 
-test_ui("rename_stream", () => {
+test_ui("rename_stream", (override) => {
     initialize_stream_data();
 
     const sub = stream_data.get_sub_by_name("devel");
@@ -662,7 +662,7 @@ test_ui("rename_stream", () => {
     });
 
     let count_updated;
-    stream_list.__Rewire__("update_count_in_dom", (li) => {
+    override(stream_list, "update_count_in_dom", (li) => {
         assert.equal(li, li_stub);
         count_updated = true;
     });
@@ -671,7 +671,7 @@ test_ui("rename_stream", () => {
     assert(count_updated);
 });
 
-test_ui("refresh_pin", () => {
+test_ui("refresh_pin", (override) => {
     initialize_stream_data();
 
     const sub = {
@@ -697,7 +697,7 @@ test_ui("refresh_pin", () => {
     $("#stream_filters").append = noop;
 
     let scrolled;
-    stream_list.__Rewire__("scroll_stream_into_view", (li) => {
+    override(stream_list, "scroll_stream_into_view", (li) => {
         assert.equal(li, li_stub);
         scrolled = true;
     });

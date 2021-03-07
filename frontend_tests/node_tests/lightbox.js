@@ -22,8 +22,6 @@ const rows = zrequire("rows");
 
 const lightbox = zrequire("lightbox");
 
-rows.__Rewire__("is_draft_row", () => false);
-
 run_test("pan_and_zoom", (override) => {
     const img = $.create("img-stub");
     const link = $.create("link-stub");

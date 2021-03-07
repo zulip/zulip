@@ -79,12 +79,12 @@ function get_suggestions(base_query, query) {
     return search.get_suggestions(base_query, query);
 }
 
-run_test("basic_get_suggestions", () => {
+run_test("basic_get_suggestions", (override) => {
     const query = "fred";
 
-    stream_data.__Rewire__("subscribed_streams", () => []);
+    override(stream_data, "subscribed_streams", () => []);
 
-    narrow_state.__Rewire__("stream", () => "office");
+    override(narrow_state, "stream", () => "office");
 
     const suggestions = get_suggestions("", query);
 
@@ -96,10 +96,6 @@ run_test("subset_suggestions", () => {
     const query = "shakespeare";
     const base_query = "stream:Denmark topic:Hamlet";
 
-    stream_data.__Rewire__("subscribed_streams", () => []);
-
-    narrow_state.__Rewire__("stream", () => {});
-
     const suggestions = get_suggestions(base_query, query);
 
     const expected = ["shakespeare"];
@@ -108,10 +104,6 @@ run_test("subset_suggestions", () => {
 });
 
 run_test("private_suggestions", () => {
-    stream_data.__Rewire__("subscribed_streams", () => []);
-
-    narrow_state.__Rewire__("stream", () => {});
-
     let query = "is:private";
     let suggestions = get_suggestions("", query);
     let expected = [
@@ -225,10 +217,6 @@ run_test("private_suggestions", () => {
 });
 
 run_test("group_suggestions", () => {
-    stream_data.__Rewire__("subscribed_streams", () => []);
-
-    narrow_state.__Rewire__("stream", () => {});
-
     // Entering a comma in a pm-with query should immediately generate
     // suggestions for the next person.
     let query = "pm-with:bob@zulip.com,";
@@ -363,12 +351,10 @@ run_test("group_suggestions", () => {
 
 init();
 
-run_test("empty_query_suggestions", () => {
+run_test("empty_query_suggestions", (override) => {
     const query = "";
 
-    stream_data.__Rewire__("subscribed_streams", () => ["devel", "office"]);
-
-    narrow_state.__Rewire__("stream", () => {});
+    override(stream_data, "subscribed_streams", () => ["devel", "office"]);
 
     const suggestions = get_suggestions("", query);
 
@@ -404,12 +390,12 @@ run_test("empty_query_suggestions", () => {
     assert.equal(describe("has:attachment"), "Messages with one or more attachment");
 });
 
-run_test("has_suggestions", () => {
+run_test("has_suggestions", (override) => {
     // Checks that category wise suggestions are displayed instead of a single
     // default suggestion when suggesting `has` operator.
     let query = "h";
-    stream_data.__Rewire__("subscribed_streams", () => ["devel", "office"]);
-    narrow_state.__Rewire__("stream", () => {});
+    override(stream_data, "subscribed_streams", () => ["devel", "office"]);
+    override(narrow_state, "stream", () => {});
 
     let suggestions = get_suggestions("", query);
     let expected = ["h", "has:link", "has:image", "has:attachment"];
@@ -460,10 +446,10 @@ run_test("has_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("check_is_suggestions", () => {
+run_test("check_is_suggestions", (override) => {
     let query = "i";
-    stream_data.__Rewire__("subscribed_streams", () => ["devel", "office"]);
-    narrow_state.__Rewire__("stream", () => {});
+    override(stream_data, "subscribed_streams", () => ["devel", "office"]);
+    override(narrow_state, "stream", () => {});
 
     let suggestions = get_suggestions("", query);
     let expected = [
@@ -564,10 +550,10 @@ run_test("check_is_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("sent_by_me_suggestions", () => {
-    stream_data.__Rewire__("subscribed_streams", () => []);
+run_test("sent_by_me_suggestions", (override) => {
+    override(stream_data, "subscribed_streams", () => []);
 
-    narrow_state.__Rewire__("stream", () => {});
+    override(narrow_state, "stream", () => {});
 
     let query = "";
     let suggestions = get_suggestions("", query);
@@ -640,18 +626,18 @@ run_test("sent_by_me_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("topic_suggestions", () => {
+run_test("topic_suggestions", (override) => {
     let suggestions;
     let expected;
 
-    stream_data.__Rewire__("subscribed_streams", () => ["office"]);
+    override(stream_data, "subscribed_streams", () => ["office"]);
 
-    narrow_state.__Rewire__("stream", () => "office");
+    override(narrow_state, "stream", () => "office");
 
     const devel_id = 44;
     const office_id = 77;
 
-    stream_data.__Rewire__("get_stream_id", (stream_name) => {
+    override(stream_data, "get_stream_id", (stream_name) => {
         switch (stream_name) {
             case "office":
                 return office_id;
@@ -730,12 +716,10 @@ run_test("topic_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("whitespace_glitch", () => {
+run_test("whitespace_glitch", (override) => {
     const query = "stream:office "; // note trailing space
 
-    stream_data.__Rewire__("subscribed_streams", () => ["office"]);
-
-    narrow_state.__Rewire__("stream", () => {});
+    override(stream_data, "subscribed_streams", () => ["office"]);
 
     stream_topic_history.reset();
 
@@ -746,10 +730,10 @@ run_test("whitespace_glitch", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("stream_completion", () => {
-    stream_data.__Rewire__("subscribed_streams", () => ["office", "dev help"]);
+run_test("stream_completion", (override) => {
+    override(stream_data, "subscribed_streams", () => ["office", "dev help"]);
 
-    narrow_state.__Rewire__("stream", () => {});
+    override(narrow_state, "stream", () => {});
 
     stream_topic_history.reset();
 
@@ -770,7 +754,6 @@ run_test("stream_completion", () => {
 });
 
 function people_suggestion_setup() {
-    stream_data.__Rewire__("subscribed_streams", () => []);
     narrow_state.__Rewire__("stream", noop);
 
     const ted = {
@@ -916,10 +899,8 @@ run_test("operator_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("queries_with_spaces", () => {
-    stream_data.__Rewire__("subscribed_streams", () => ["office", "dev help"]);
-
-    narrow_state.__Rewire__("stream", () => {});
+run_test("queries_with_spaces", (override) => {
+    override(stream_data, "subscribed_streams", () => ["office", "dev help"]);
 
     stream_topic_history.reset();
 

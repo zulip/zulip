@@ -97,7 +97,7 @@ const name_selector = `#user-groups #${CSS.escape(1)} .name`;
 const description_selector = `#user-groups #${CSS.escape(1)} .description`;
 const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
-test_ui("populate_user_groups", () => {
+test_ui("populate_user_groups", (override) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -157,7 +157,7 @@ test_ui("populate_user_groups", () => {
         return undefined;
     };
 
-    settings_user_groups.__Rewire__("can_edit", () => true);
+    override(settings_user_groups, "can_edit", () => true);
 
     const all_pills = new Map();
 
@@ -344,7 +344,7 @@ test_ui("populate_user_groups", () => {
         "function",
     );
 });
-test_ui("with_external_user", () => {
+test_ui("with_external_user", (override) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -361,10 +361,10 @@ test_ui("with_external_user", () => {
 
     people.get_by_user_id = () => noop;
 
-    user_pill.__Rewire__("append_person", () => noop);
+    override(user_pill, "append_person", () => noop);
 
     let can_edit_called = 0;
-    settings_user_groups.__Rewire__("can_edit", () => {
+    override(settings_user_groups, "can_edit", () => {
         can_edit_called += 1;
         return false;
     });
@@ -481,10 +481,10 @@ test_ui("with_external_user", () => {
     assert.equal(turned_off["click/whole"], true);
 });
 
-test_ui("reload", () => {
+test_ui("reload", (override) => {
     $("#user-groups").html("Some text");
     let populate_user_groups_called = false;
-    settings_user_groups.__Rewire__("populate_user_groups", () => {
+    override(settings_user_groups, "populate_user_groups", () => {
         populate_user_groups_called = true;
     });
     settings_user_groups.reload();
@@ -498,8 +498,8 @@ test_ui("reset", () => {
     assert.equal(result, undefined);
 });
 
-test_ui("on_events", () => {
-    settings_user_groups.__Rewire__("can_edit", () => true);
+test_ui("on_events", (override) => {
+    override(settings_user_groups, "can_edit", () => true);
 
     (function test_admin_user_group_form_submit_triggered() {
         const handler = $(".organization form.admin-user-group-form").get_on_handler("submit");
@@ -577,7 +577,7 @@ test_ui("on_events", () => {
             assert.equal(opts.url, "/json/user_groups/1");
             assert.deepEqual(opts.data, data);
 
-            settings_user_groups.__Rewire__("reload", () => {
+            override(settings_user_groups, "reload", () => {
                 settings_user_groups_reload_called = true;
             });
             opts.success();
@@ -652,7 +652,7 @@ test_ui("on_events", () => {
 
             // Cancel button triggers blur event.
             let settings_user_groups_reload_called = false;
-            settings_user_groups.__Rewire__("reload", () => {
+            override(settings_user_groups, "reload", () => {
                 settings_user_groups_reload_called = true;
             });
             api_endpoint_called = false;

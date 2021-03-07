@@ -79,7 +79,7 @@ run_test("videos", (override) => {
             },
         };
 
-        compose_ui.__Rewire__("insert_syntax_and_focus", () => {
+        override(compose_ui, "insert_syntax_and_focus", () => {
             called = true;
         });
 
@@ -103,7 +103,7 @@ run_test("videos", (override) => {
             },
         };
 
-        compose_ui.__Rewire__("insert_syntax_and_focus", (syntax) => {
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
         });
@@ -139,7 +139,7 @@ run_test("videos", (override) => {
             },
         };
 
-        compose_ui.__Rewire__("insert_syntax_and_focus", (syntax) => {
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
         });
@@ -184,7 +184,7 @@ run_test("videos", (override) => {
             },
         };
 
-        compose_ui.__Rewire__("insert_syntax_and_focus", (syntax) => {
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
         });

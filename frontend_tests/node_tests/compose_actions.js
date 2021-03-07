@@ -198,7 +198,7 @@ run_test("start", (override) => {
     };
 
     let abort_xhr_called = false;
-    compose.__Rewire__("abort_xhr", () => {
+    override(compose, "abort_xhr", () => {
         abort_xhr_called = true;
     });
 
@@ -318,7 +318,7 @@ run_test("quote_and_reply", (override) => {
 
     current_msg_list.selected_id = () => 100;
 
-    compose_ui.__Rewire__("insert_syntax_and_focus", (syntax) => {
+    override(compose_ui, "insert_syntax_and_focus", (syntax) => {
         assert.equal(syntax, "[Quoting…]\n");
     });
 
@@ -388,18 +388,18 @@ run_test("get_focus_area", () => {
     );
 });
 
-run_test("focus_in_empty_compose", () => {
+run_test("focus_in_empty_compose", (override) => {
     $("#compose-textarea").is = (attr) => {
         assert.equal(attr, ":focus");
         return $("#compose-textarea").is_focused;
     };
 
-    compose_state.__Rewire__("composing", () => true);
+    override(compose_state, "composing", () => true);
     $("#compose-textarea").val("");
     $("#compose-textarea").trigger("focus");
     assert(compose_state.focus_in_empty_compose());
 
-    compose_state.__Rewire__("composing", () => false);
+    override(compose_state, "composing", () => false);
     assert(!compose_state.focus_in_empty_compose());
 
     $("#compose-textarea").val("foo");
@@ -420,7 +420,7 @@ run_test("on_narrow", (override) => {
     override(compose_state, "has_message_content", () => has_message_content);
 
     let cancel_called = false;
-    compose_actions.__Rewire__("cancel", () => {
+    override(compose_actions, "cancel", () => {
         cancel_called = true;
     });
     compose_actions.on_narrow({
@@ -429,7 +429,7 @@ run_test("on_narrow", (override) => {
     assert(cancel_called);
 
     let on_topic_narrow_called = false;
-    compose_actions.__Rewire__("on_topic_narrow", () => {
+    override(compose_actions, "on_topic_narrow", () => {
         on_topic_narrow_called = true;
     });
     narrowed_by_topic_reply = true;
@@ -451,7 +451,7 @@ run_test("on_narrow", (override) => {
 
     has_message_content = false;
     let start_called = false;
-    compose_actions.__Rewire__("start", () => {
+    override(compose_actions, "start", () => {
         start_called = true;
     });
     narrowed_by_pm_reply = true;

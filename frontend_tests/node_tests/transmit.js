@@ -97,7 +97,7 @@ run_test("transmit_message_ajax_reload_pending", () => {
     assert(reload_initiated);
 });
 
-run_test("reply_message_stream", () => {
+run_test("reply_message_stream", (override) => {
     const stream_message = {
         type: "stream",
         stream: "social",
@@ -110,7 +110,7 @@ run_test("reply_message_stream", () => {
 
     let send_message_args;
 
-    transmit.__Rewire__("send_message", (args) => {
+    override(transmit, "send_message", (args) => {
         send_message_args = args;
     });
 
@@ -134,7 +134,7 @@ run_test("reply_message_stream", () => {
     });
 });
 
-run_test("reply_message_private", () => {
+run_test("reply_message_private", (override) => {
     const fred = {
         user_id: 3,
         email: "fred@example.com",
@@ -153,7 +153,7 @@ run_test("reply_message_private", () => {
 
     let send_message_args;
 
-    transmit.__Rewire__("send_message", (args) => {
+    override(transmit, "send_message", (args) => {
         send_message_args = args;
     });
 
