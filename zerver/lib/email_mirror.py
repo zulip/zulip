@@ -36,6 +36,7 @@ from zerver.models import (
     UserProfile,
     get_client,
     get_display_recipient,
+    get_realm,
     get_stream_by_id_in_realm,
     get_system_bot,
     get_user,
@@ -81,8 +82,9 @@ def redact_email_address(error_message: str) -> str:
 def report_to_zulip(error_message: str) -> None:
     if settings.ERROR_BOT is None:
         return
-    error_bot = get_system_bot(settings.ERROR_BOT)
-    error_stream = Stream.objects.get(name="errors", realm=error_bot.realm)
+    error_bot_realm = get_realm(settings.STAFF_SUBDOMAIN)
+    error_bot = get_system_bot(settings.ERROR_BOT, error_bot_realm.id)
+    error_stream = Stream.objects.get(name="errors", realm=error_bot_realm)
     send_zulip(
         error_bot,
         error_stream,
