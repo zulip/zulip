@@ -40,8 +40,6 @@ const hashchange = zrequire("hashchange");
 const stream_data = zrequire("stream_data");
 
 const recent_topics = zrequire("recent_topics");
-recent_topics.__Rewire__("show", () => {});
-recent_topics.__Rewire__("is_visible", () => false);
 
 run_test("operators_round_trip", () => {
     let operators;
@@ -162,7 +160,9 @@ function test_helper() {
     };
 }
 
-run_test("hash_interactions", () => {
+run_test("hash_interactions", (override) => {
+    override(recent_topics, "show", () => {});
+    override(recent_topics, "is_visible", () => false);
     const helper = test_helper();
 
     window.location.hash = "#all_messages";

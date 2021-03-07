@@ -27,9 +27,9 @@ set_global("page_params", {
 
 const helpers = zrequire("../js/billing/helpers");
 
-run_test("initialize", () => {
+run_test("initialize", (override) => {
     let token_func;
-    helpers.__Rewire__("set_tab", (page_name) => {
+    override(helpers, "set_tab", (page_name) => {
         assert.equal(page_name, "upgrade");
     });
 
@@ -82,11 +82,11 @@ run_test("initialize", () => {
         };
     };
 
-    helpers.__Rewire__("show_license_section", (section) => {
+    override(helpers, "show_license_section", (section) => {
         assert.equal(section, "automatic");
     });
 
-    helpers.__Rewire__("update_charged_amount", (prices, schedule) => {
+    override(helpers, "update_charged_amount", (prices, schedule) => {
         assert.equal(prices.annual, 6400);
         assert.equal(prices.monthly, 640);
         assert.equal(schedule, "monthly");
@@ -111,7 +111,7 @@ run_test("initialize", () => {
     const invoice_click_handler = $("#invoice-button").get_on_handler("click");
     const request_sponsorship_click_handler = $("#sponsorship-button").get_on_handler("click");
 
-    helpers.__Rewire__("is_valid_input", () => true);
+    override(helpers, "is_valid_input", () => true);
     add_card_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 1);
     invoice_click_handler(e);
@@ -119,13 +119,13 @@ run_test("initialize", () => {
     request_sponsorship_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 3);
 
-    helpers.__Rewire__("is_valid_input", () => false);
+    override(helpers, "is_valid_input", () => false);
     add_card_click_handler(e);
     invoice_click_handler(e);
     request_sponsorship_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 3);
 
-    helpers.__Rewire__("show_license_section", (section) => {
+    override(helpers, "show_license_section", (section) => {
         assert.equal(section, "manual");
     });
     const license_change_handler = $("input[type=radio][name=license_management]").get_on_handler(
@@ -133,7 +133,7 @@ run_test("initialize", () => {
     );
     license_change_handler.call({value: "manual"});
 
-    helpers.__Rewire__("update_charged_amount", (prices, schedule) => {
+    override(helpers, "update_charged_amount", (prices, schedule) => {
         assert.equal(prices.annual, 6400);
         assert.equal(prices.monthly, 640);
         assert.equal(schedule, "monthly");

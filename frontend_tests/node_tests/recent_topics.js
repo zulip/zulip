@@ -358,7 +358,7 @@ run_test("test_recent_topics_show", () => {
     assert.equal(rt.inplace_rerender("stream_unknown:topic_unknown"), false);
 });
 
-run_test("test_filter_all", () => {
+run_test("test_filter_all", (override) => {
     // Just tests inplace rerender of a message
     // in All topics filter.
     const expected = {
@@ -385,7 +385,7 @@ run_test("test_filter_all", () => {
     i = row_data.length;
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    rt.__Rewire__("is_visible", () => true);
+    override(rt, "is_visible", () => true);
     rt.set_filter("all");
     rt.process_messages([messages[0]]);
 
@@ -403,7 +403,7 @@ run_test("test_filter_all", () => {
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 });
 
-run_test("test_filter_unread", () => {
+run_test("test_filter_unread", (override) => {
     // Tests rerender of all topics when filter changes to "unread".
     const expected = {
         filter_participated: false,
@@ -426,7 +426,7 @@ run_test("test_filter_unread", () => {
     let i = 0;
 
     rt.clear_for_tests();
-    rt.__Rewire__("is_visible", () => true);
+    override(rt, "is_visible", () => true);
     rt.set_default_focus();
 
     stub_templates(() => "<recent_topics table stub>");
@@ -470,7 +470,7 @@ run_test("test_filter_unread", () => {
     rt.set_filter("all");
 });
 
-run_test("test_filter_participated", () => {
+run_test("test_filter_participated", (override) => {
     // Tests rerender of all topics when filter changes to "unread".
     const expected = {
         filter_participated: true,
@@ -493,7 +493,7 @@ run_test("test_filter_participated", () => {
     let i = 0;
 
     rt.clear_for_tests();
-    rt.__Rewire__("is_visible", () => true);
+    override(rt, "is_visible", () => true);
     rt.set_default_focus();
     stub_templates(() => "<recent_topics table stub>");
     stub_out_filter_buttons();
@@ -549,10 +549,10 @@ run_test("test_update_unread_count", () => {
 // template rendering is tested in test_recent_topics_launch.
 stub_templates(() => "<recent_topics table stub>");
 
-run_test("basic assertions", () => {
+run_test("basic assertions", (override) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    rt.__Rewire__("is_visible", () => true);
+    override(rt, "is_visible", () => true);
     rt.set_default_focus();
     rt.set_filter("all");
     rt.process_messages(messages);
@@ -630,10 +630,10 @@ run_test("basic assertions", () => {
     assert.equal(rt.update_topic_is_muted(stream1, "topic-10"), false);
 });
 
-run_test("test_reify_local_echo_message", () => {
+run_test("test_reify_local_echo_message", (override) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    rt.__Rewire__("is_visible", () => true);
+    override(rt, "is_visible", () => true);
     rt.set_filter("all");
     rt.process_messages(messages);
 
@@ -776,7 +776,6 @@ run_test("test_topic_edit", () => {
 
 run_test("test_search", () => {
     rt.clear_for_tests();
-    rt.__Rewire__("is_visible", () => true);
     assert.equal(rt.topic_in_search_results("t", "general", "Recent Topic"), true);
     assert.equal(rt.topic_in_search_results("T", "general", "Recent Topic"), true);
     assert.equal(rt.topic_in_search_results("to", "general", "Recent Topic"), true);

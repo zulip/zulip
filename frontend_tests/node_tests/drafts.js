@@ -158,11 +158,11 @@ run_test("snapshot_message", (override) => {
     assert.equal(drafts.snapshot_message(), undefined);
 });
 
-run_test("initialize", () => {
+run_test("initialize", (override) => {
     window.addEventListener = (event_name, f) => {
         assert.equal(event_name, "beforeunload");
         let called = false;
-        drafts.__Rewire__("update_draft", () => {
+        override(drafts, "update_draft", () => {
             called = true;
         });
         f();
@@ -283,7 +283,7 @@ run_test("format_drafts", (override) => {
     assert.deepEqual(draft_model.get(), data);
 
     const stub_render_now = timerender.render_now;
-    timerender.__Rewire__("render_now", (time) => stub_render_now(time, new Date(1549958107000)));
+    override(timerender, "render_now", (time) => stub_render_now(time, new Date(1549958107000)));
 
     stub_templates((template_name, data) => {
         assert.equal(template_name, "draft_table_body");

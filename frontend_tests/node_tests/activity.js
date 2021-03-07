@@ -602,7 +602,7 @@ test_ui("searching", () => {
     assert.equal(activity.searching(), false);
 });
 
-test_ui("update_presence_info", () => {
+test_ui("update_presence_info", (override) => {
     page_params.realm_presence_disabled = false;
 
     const server_time = 500;
@@ -613,7 +613,7 @@ test_ui("update_presence_info", () => {
         },
     };
 
-    buddy_data.__Rewire__("matches_filter", () => true);
+    override(buddy_data, "matches_filter", () => true);
 
     const alice_li = $.create("alice stub");
     buddy_list_add(alice.user_id, alice_li);

@@ -44,7 +44,7 @@ stream_data.create_streams([
     {name: "Linux", subscribed: true, color: "red", stream_id: 2},
 ]);
 
-run_test("sort_streams", () => {
+run_test("sort_streams", (override) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -83,7 +83,7 @@ run_test("sort_streams", () => {
         },
     ];
 
-    stream_data.__Rewire__("is_active", (sub) => sub.name !== "dead");
+    override(stream_data, "is_active", (sub) => sub.name !== "dead");
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
