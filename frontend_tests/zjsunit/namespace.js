@@ -157,8 +157,6 @@ exports.with_overrides = function (test_function) {
 
     const restore_callbacks = [];
     const unused_funcs = new Map();
-    const funcs = new Map();
-
     const override = function (obj, func_name, f) {
         // Given an object `obj` (which is usually a module object),
         // we re-map `obj[func_name]` to the `f` passed in by the caller.
@@ -182,22 +180,6 @@ exports.with_overrides = function (test_function) {
                 This is almost certainly an error.
             `);
         }
-
-        if (!funcs.has(obj)) {
-            funcs.set(obj, new Map());
-        }
-
-        if (funcs.get(obj).has(func_name)) {
-            // Prevent overriding the same function twice, so that
-            // it's super easy to reason about our logic to restore
-            // the original function.  Usually if somebody sees this
-            // error, it's a symptom of not breaking up tests enough.
-            throw new Error(
-                "You can only override a function one time. Use with_field for more granular control.",
-            );
-        }
-
-        funcs.get(obj).set(func_name, true);
 
         if (!unused_funcs.has(obj)) {
             unused_funcs.set(obj, new Map());
