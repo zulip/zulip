@@ -528,7 +528,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                 len(image_bytes),
                 "image/png",
                 image_bytes,
-                get_system_bot(settings.EMAIL_GATEWAY_BOT),
+                get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
                 target_realm=user_profile.realm,
             )
 
@@ -571,7 +571,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                 len(image_bytes),
                 "image/png",
                 image_bytes,
-                get_system_bot(settings.EMAIL_GATEWAY_BOT),
+                get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
                 target_realm=user_profile.realm,
             )
 
@@ -617,7 +617,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                 len(image_bytes),
                 "image/png",
                 image_bytes,
-                get_system_bot(settings.EMAIL_GATEWAY_BOT),
+                get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
                 target_realm=user_profile.realm,
             )
 
@@ -977,7 +977,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             message.content,
             "Error sending message to stream announce via message notification email reply:\nOnly organization administrators can send to this stream.",
         )
-        self.assertEqual(message.sender, get_system_bot(settings.NOTIFICATION_BOT))
+        self.assertEqual(
+            message.sender, get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+        )
 
     def test_missed_stream_message_email_response_tracks_topic_change(self) -> None:
         self.subscribe(self.example_user("hamlet"), "Denmark")

@@ -228,7 +228,9 @@ def send_mm_reply_to_stream(
             stream=stream.name, error=error.msg
         )
         internal_send_private_message(
-            get_system_bot(settings.NOTIFICATION_BOT), user_profile, error_message
+            get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id),
+            user_profile,
+            error_message,
         )
 
 
@@ -326,7 +328,7 @@ def filter_footer(text: str) -> str:
 
 
 def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
-    user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+    user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
 
     attachment_links = []
     for part in message.walk():
@@ -422,7 +424,7 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
         options["include_quotes"] = is_forwarded(subject_header)
 
     body = construct_zulip_body(message, stream.realm, **options)
-    send_zulip(get_system_bot(settings.EMAIL_GATEWAY_BOT), stream, subject, body)
+    send_zulip(get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id), stream, subject, body)
     logger.info(
         "Successfully processed email to %s (%s)",
         stream.name,
