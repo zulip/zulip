@@ -1205,34 +1205,6 @@ class UserProfileTest(ZulipTestCase):
         hotspots = list(UserHotspot.objects.filter(user=iago).values_list("hotspot", flat=True))
         self.assertEqual(hotspots, hotspots_completed)
 
-    def test_get_user_by_id_in_realm_including_cross_realm(self) -> None:
-        realm = get_realm("zulip")
-        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        hamlet = self.example_user("hamlet")
-        othello = self.example_user("othello")
-        bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
-
-        # Pass in the ID of a cross-realm bot and a valid realm
-        cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(bot.id, realm)
-        self.assertEqual(cross_realm_bot.email, bot.email)
-        self.assertEqual(cross_realm_bot.id, bot.id)
-
-        # Pass in the ID of a cross-realm bot but with a invalid realm,
-        # note that the realm should be irrelevant here
-        cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(bot.id, None)
-        self.assertEqual(cross_realm_bot.email, bot.email)
-        self.assertEqual(cross_realm_bot.id, bot.id)
-
-        # Pass in the ID of a non-cross-realm user with a realm
-        user_profile = get_user_by_id_in_realm_including_cross_realm(othello.id, realm)
-        self.assertEqual(user_profile.email, othello.email)
-        self.assertEqual(user_profile.id, othello.id)
-
-        # If the realm doesn't match, or if the ID is not that of a
-        # cross-realm bot, UserProfile.DoesNotExist is raised
-        with self.assertRaises(UserProfile.DoesNotExist):
-            get_user_by_id_in_realm_including_cross_realm(hamlet.id, None)
-
     def test_get_user_subscription_status(self) -> None:
         self.login("hamlet")
         iago = self.example_user("iago")
