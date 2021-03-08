@@ -59,6 +59,9 @@ export function set_status_text(opts) {
 }
 
 export function initialize(params) {
+    away_user_ids.clear();
+    user_info.clear();
+
     for (const [str_user_id, dct] of Object.entries(params.user_status)) {
         // JSON does not allow integer keys, so we
         // convert them here.
