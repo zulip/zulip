@@ -55,7 +55,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
             integration_name="test_webhook",
             support_email=FromAddress.SUPPORT,
         ).rstrip()
-        self.assertEqual(msg.sender.email, notification_bot.email)
+        self.assertEqual(msg.sender.id, notification_bot.id)
         self.assertEqual(msg.content, expected_message)
 
     def test_notify_bot_owner_on_invalid_json(self) -> None:
@@ -90,7 +90,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
             my_webhook_notify(request)
         msg = self.get_last_message()
         self.assertNotEqual(msg.id, last_message_id)
-        self.assertEqual(msg.sender.email, self.notification_bot().email)
+        self.assertEqual(msg.sender.id, self.notification_bot().id)
         self.assertEqual(msg.content, expected_msg.strip())
 
     @patch("zerver.lib.webhooks.common.importlib.import_module")
@@ -198,11 +198,11 @@ class MissingEventHeaderTestCase(WebhookTestCase):
             integration_name="Groove",
             support_email=FromAddress.SUPPORT,
         ).rstrip()
-        if msg.sender.email != notification_bot.email:  # nocoverage
+        if msg.sender.id != notification_bot.id:  # nocoverage
             # This block seems to fire occasionally; debug output:
             print(msg)
             print(msg.content)
-        self.assertEqual(msg.sender.email, notification_bot.email)
+        self.assertEqual(msg.sender.id, notification_bot.id)
         self.assertEqual(msg.content, expected_message)
 
     def get_body(self, fixture_name: str) -> str:
