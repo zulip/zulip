@@ -234,6 +234,8 @@ function build_topic_popover(opts) {
     const is_muted = muting.is_topic_muted(sub.stream_id, topic_name);
     const can_mute_topic = !is_muted;
     const can_unmute_topic = is_muted;
+    const has_starred_messages =
+        starred_messages.get_starred_message_ids_in_topic(sub.stream_id, topic_name).length > 0;
 
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,
@@ -243,6 +245,7 @@ function build_topic_popover(opts) {
         can_unmute_topic,
         is_realm_admin: sub.is_realm_admin,
         color: sub.color,
+        has_starred_messages,
     });
 
     $(elt).popover({
@@ -430,6 +433,19 @@ export function register_stream_handlers() {
         e.preventDefault();
         e.stopPropagation();
         starred_messages.confirm_unstar_all_messages();
+    });
+
+    // Unstar all messages in topic
+    $("body").on("click", ".sidebar-popover-unstar-all-in-topic", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const topic_name = $(".sidebar-popover-unstar-all-in-topic").attr("data-topic-name");
+        const stream_id = $(".sidebar-popover-unstar-all-in-topic").attr("data-stream-id");
+        hide_topic_popover();
+        starred_messages.confirm_unstar_all_messages_in_topic(
+            Number.parseInt(stream_id, 10),
+            topic_name,
+        );
     });
 
     // Toggle displaying starred message count
