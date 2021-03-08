@@ -605,9 +605,10 @@ class HomeTest(ZulipTestCase):
             del cross_bot["avatar_url"]
             del cross_bot["date_joined"]
 
-        notification_bot = self.notification_bot()
-        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
-        welcome_bot = get_system_bot(settings.WELCOME_BOT)
+        admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        cross_realm_notification_bot = self.notification_bot(admin_realm)
+        cross_realm_email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, admin_realm.id)
+        cross_realm_welcome_bot = get_system_bot(settings.WELCOME_BOT, admin_realm.id)
 
         by_email = lambda d: d["email"]
 
@@ -616,50 +617,50 @@ class HomeTest(ZulipTestCase):
             sorted(
                 [
                     dict(
-                        avatar_version=email_gateway_bot.avatar_version,
+                        avatar_version=cross_realm_email_gateway_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
-                        email=email_gateway_bot.email,
-                        user_id=email_gateway_bot.id,
-                        full_name=email_gateway_bot.full_name,
+                        email=cross_realm_email_gateway_bot.email,
+                        user_id=cross_realm_email_gateway_bot.id,
+                        full_name=cross_realm_email_gateway_bot.full_name,
                         is_active=True,
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
                         is_billing_admin=False,
-                        role=email_gateway_bot.role,
+                        role=cross_realm_email_gateway_bot.role,
                         is_system_bot=True,
                         is_guest=False,
                     ),
                     dict(
-                        avatar_version=notification_bot.avatar_version,
+                        avatar_version=cross_realm_notification_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
-                        email=notification_bot.email,
-                        user_id=notification_bot.id,
-                        full_name=notification_bot.full_name,
+                        email=cross_realm_notification_bot.email,
+                        user_id=cross_realm_notification_bot.id,
+                        full_name=cross_realm_notification_bot.full_name,
                         is_active=True,
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
                         is_billing_admin=False,
-                        role=notification_bot.role,
+                        role=cross_realm_notification_bot.role,
                         is_system_bot=True,
                         is_guest=False,
                     ),
                     dict(
-                        avatar_version=welcome_bot.avatar_version,
+                        avatar_version=cross_realm_welcome_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
-                        email=welcome_bot.email,
-                        user_id=welcome_bot.id,
-                        full_name=welcome_bot.full_name,
+                        email=cross_realm_welcome_bot.email,
+                        user_id=cross_realm_welcome_bot.id,
+                        full_name=cross_realm_welcome_bot.full_name,
                         is_active=True,
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
                         is_billing_admin=False,
-                        role=welcome_bot.role,
+                        role=cross_realm_welcome_bot.role,
                         is_system_bot=True,
                         is_guest=False,
                     ),

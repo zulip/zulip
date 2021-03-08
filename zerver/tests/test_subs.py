@@ -3011,7 +3011,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
-        self.assertEqual(msg.sender_id, self.notification_bot().id)
+        self.assertEqual(msg.recipient.type_id, notifications_stream.id)
+        self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
         expected_msg = (
             f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
         )
@@ -3045,7 +3046,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
-        self.assertEqual(msg.sender_id, self.notification_bot().id)
+        self.assertEqual(msg.recipient.type_id, notifications_stream.id)
+        self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         stream_id = Stream.objects.latest("id").id
         expected_rendered_msg = f'<p><span class="user-mention silent" data-user-id="{user.id}">{user.full_name}</span> created a new stream <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-{invite_streams[0]}">#{invite_streams[0]}</a>.</p>'
         self.assertEqual(msg.rendered_content, expected_rendered_msg)
@@ -3073,7 +3075,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
         msg = self.get_second_to_last_message()
-        self.assertEqual(msg.sender_id, self.notification_bot().id)
+        self.assertEqual(msg.sender_id, self.notification_bot(notifications_stream.realm).id)
         expected_msg = (
             f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
         )
@@ -4564,11 +4566,11 @@ class GetSubscribersTest(ZulipTestCase):
         self.user_profile = self.example_user("hamlet")
         self.login_user(self.user_profile)
 
-    def assert_user_got_subscription_notification(self, expected_msg: str) -> None:
+    def assert_user_got_subscription_notification(self, expected_msg: str, realm: Realm) -> None:
         # verify that the user was sent a message informing them about the subscription
         msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
-        self.assertEqual(msg.sender_id, self.notification_bot().id)
+        self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
 
         def non_ws(s: str) -> str:
             return s.replace("\n", "").replace(" ", "")
@@ -4648,7 +4650,7 @@ class GetSubscribersTest(ZulipTestCase):
             * #**stream_9**
             """
 
-        self.assert_user_got_subscription_notification(msg)
+        self.assert_user_got_subscription_notification(msg, self.user_profile.realm)
 
         # Subscribe ourself first.
         self.common_subscribe_to_streams(
@@ -4670,7 +4672,7 @@ class GetSubscribersTest(ZulipTestCase):
         msg = """
             @**King Hamlet** subscribed you to the stream #**stream_invite_only_1**.
             """
-        self.assert_user_got_subscription_notification(msg)
+        self.assert_user_got_subscription_notification(msg, self.user_profile.realm)
 
         with queries_captured() as queries:
             subscribed_streams, _ = gather_subscriptions(

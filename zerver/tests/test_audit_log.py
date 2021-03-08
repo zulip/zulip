@@ -231,7 +231,7 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_bot_owner(self) -> None:
         now = timezone_now()
         admin = self.example_user("iago")
-        bot = self.notification_bot()
+        bot = self.notification_bot(admin.realm)
         bot_owner = self.example_user("hamlet")
         do_change_bot_owner(bot, bot_owner, admin)
         self.assertEqual(

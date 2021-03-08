@@ -272,11 +272,11 @@ class MessageDictTest(ZulipTestCase):
         # Send messages before and after saving the realm filter from each user.
         assert_topic_links([], get_message(self.example_user("othello"), zulip_realm))
         assert_topic_links([], get_message(self.lear_user("cordelia"), lear_realm))
-        assert_topic_links([], get_message(self.notification_bot(), zulip_realm))
+        assert_topic_links([], get_message(self.notification_bot(zulip_realm), zulip_realm))
         linkifier.save()
         assert_topic_links([links], get_message(self.example_user("othello"), zulip_realm))
         assert_topic_links([], get_message(self.lear_user("cordelia"), lear_realm))
-        assert_topic_links([links], get_message(self.notification_bot(), zulip_realm))
+        assert_topic_links([links], get_message(self.notification_bot(zulip_realm), zulip_realm))
 
     def test_reaction(self) -> None:
         sender = self.example_user("othello")
