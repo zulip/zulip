@@ -1152,7 +1152,10 @@ class NormalActionsTest(BaseAction):
         for notifications_stream, notifications_stream_id in ((stream, stream.id), (None, -1)):
             events = self.verify_action(
                 lambda: do_set_realm_notifications_stream(
-                    self.user_profile.realm, notifications_stream, notifications_stream_id
+                    self.user_profile.realm,
+                    notifications_stream,
+                    notifications_stream_id,
+                    acting_user=None,
                 )
             )
             check_realm_update("events[0]", events[0], "notifications_stream_id")
