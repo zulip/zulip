@@ -1933,7 +1933,7 @@ div.focused_table {
             top: -3px;
         }
 
-        .dropdown-toggle,
+        .dropdown-toggle:hover,
         li.active .dropdown-toggle:hover {
             opacity: 1;
         }
