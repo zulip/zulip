@@ -1756,7 +1756,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(realm.plan_type, Realm.STANDARD_FREE)
 
         expected_message = "Your organization's request for sponsored hosting has been approved! :tada:.\nYou have been upgraded to Zulip Cloud Standard, free of charge."
-        sender = get_system_bot(settings.NOTIFICATION_BOT)
+        sender = get_system_bot(settings.NOTIFICATION_BOT, user.realm_id)
         recipient_id = self.example_user("desdemona").recipient_id
         message = Message.objects.filter(sender=sender.id).first()
         assert message is not None
