@@ -400,6 +400,9 @@ class HomeTest(ZulipTestCase):
             result = self.client_get("/", dict(**kwargs))
         return result
 
+    def assertInHomePage(self, string: str) -> bool:
+        return self.assertIn(string, self._get_home_page().content.decode("utf-8"))
+
     def _sanity_check(self, result: HttpResponse) -> None:
         """
         Use this for tests that are geared toward specific edge cases, but
@@ -697,9 +700,7 @@ class HomeTest(ZulipTestCase):
 
         user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         user_profile.save()
-        result = self._get_home_page()
-        html = result.content.decode("utf-8")
-        self.assertIn("Invite more users", html)
+        self.assertInHomePage("Invite more users")
 
     def test_show_invites_for_guest_users(self) -> None:
         user_profile = self.example_user("polonius")
@@ -735,8 +736,7 @@ class HomeTest(ZulipTestCase):
             tier=CustomerPlan.STANDARD,
             status=CustomerPlan.ENDED,
         )
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertIn("Billing", result_html)
+        self.assertInHomePage("Billing")
 
         # realm admin, with CustomerPlan -> no billing link
         user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
@@ -748,8 +748,7 @@ class HomeTest(ZulipTestCase):
         user.role = UserProfile.ROLE_MEMBER
         user.is_billing_admin = True
         user.save(update_fields=["role", "is_billing_admin"])
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertIn("Billing", result_html)
+        self.assertInHomePage("Billing")
 
         # member, with CustomerPlan -> no billing link
         user.is_billing_admin = False
@@ -774,8 +773,7 @@ class HomeTest(ZulipTestCase):
         # billing admin, with sponsorship pending -> show billing link
         customer.sponsorship_pending = True
         customer.save(update_fields=["sponsorship_pending"])
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertIn("Billing", result_html)
+        self.assertInHomePage("Billing")
 
         # billing admin, no customer object -> make sure it doesn't crash
         customer.delete()
@@ -793,8 +791,7 @@ class HomeTest(ZulipTestCase):
 
         # Show plans link to all other users if plan_type is LIMITED
         self.login("hamlet")
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertIn("Plans", result_html)
+        self.assertInHomePage("Plans")
 
         # Show plans link to no one, including admins, if SELF_HOSTED or STANDARD
         do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=None)
@@ -810,12 +807,10 @@ class HomeTest(ZulipTestCase):
 
         self.login("hamlet")
 
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertIn("Support Zulip", result_html)
+        self.assertInHomePage("Support Zulip")
 
         do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=None)
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertIn("Support Zulip", result_html)
+        self.assertInHomePage("Support Zulip")
 
         with self.settings(PROMOTE_SPONSORING_ZULIP=False):
             result_html = self._get_home_page().content.decode("utf-8")
