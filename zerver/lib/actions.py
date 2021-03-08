@@ -908,10 +908,7 @@ def do_set_realm_message_editing(
 
 
 def do_set_realm_notifications_stream(
-    realm: Realm,
-    stream: Optional[Stream],
-    stream_id: int,
-    acting_user: Optional[UserProfile] = None,
+    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = realm.notifications_stream_id
     realm.notifications_stream = stream
