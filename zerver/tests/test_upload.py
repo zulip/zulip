@@ -587,6 +587,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp_path_id = re.sub("/user_uploads/", "", uri)
         body = f"First message ...[zulip.txt](http://{host}/user_uploads/" + fp_path_id + ")"
         with self.settings(CROSS_REALM_BOT_EMAILS={user_2.email, user_3.email}):
+            user_2.is_bot = True
+            user_2.save(update_fields=["is_bot"])
             internal_send_private_message(
                 sender=get_system_bot(user_2.email, user_2.realm_id),
                 recipient_user=user_1,
@@ -1017,8 +1019,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.email = cordelia.delivery_email
         cordelia.save()
 
-        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        system_bot = get_system_bot(settings.WELCOME_BOT, hamlet.realm_id)
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
@@ -1044,15 +1045,15 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
 
-        # Test cross_realm_bot avatar access using email.
+        # Test system_bot avatar access using email.
         response = self.api_get(hamlet, "/avatar/welcome-bot@zulip.com", {"foo": "bar"})
         redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "&foo=bar"))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(system_bot)) + "&foo=bar"))
 
-        # Test cross_realm_bot avatar access using id.
-        response = self.api_get(hamlet, f"/avatar/{cross_realm_bot.id}", {"foo": "bar"})
+        # Test system_bot avatar access using id.
+        response = self.api_get(hamlet, f"/avatar/{system_bot.id}", {"foo": "bar"})
         redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "&foo=bar"))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(system_bot)) + "&foo=bar"))
 
         response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
         self.assert_json_error(
