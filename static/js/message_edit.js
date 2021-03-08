@@ -259,6 +259,38 @@ function handle_message_row_edit_keydown(e) {
     }
 }
 
+// Enables save button only when content/topic/stream is changed
+function handle_message_row_edit_input(e) {
+    const row = $(e.target).closest(".message_row");
+    const message = current_msg_list.get(rows.id(row));
+    const message_edit_save_button = row.find(".message_edit_save");
+
+    const old_content = currently_editing_messages.get(message.id).raw_content;
+    const new_content = row.find(".message_edit_content").val();
+    const content_changed = new_content !== old_content;
+
+    const old_topic = message.topic;
+    const new_topic = row.find(".message_edit_topic").val();
+    const topic_changed = new_topic !== old_topic && new_topic !== "";
+
+    let stream_changed = false;
+    if (message.type === "stream") {
+        const old_stream_id = message.stream_id;
+        const new_stream_id = Number.parseInt(
+            $(`#select_stream_id_${CSS.escape(message.id)}`).val(),
+            10,
+        );
+        stream_changed = new_stream_id !== old_stream_id;
+    }
+
+    if (content_changed || topic_changed || stream_changed) {
+        message_edit_save_button.prop("disabled", false);
+    } else {
+        message_edit_save_button.prop("disabled", true);
+    }
+    return;
+}
+
 function handle_inline_topic_edit_keydown(e) {
     let row;
     const code = e.keyCode || e.which;
@@ -351,6 +383,7 @@ function edit_message(row, raw_content) {
     current_msg_list.show_edit_message(row, edit_obj);
 
     form.on("keydown", handle_message_row_edit_keydown);
+    form.on("input", handle_message_row_edit_input);
 
     upload.feature_check($(`#attach_files_${CSS.escape(rows.id(row))}`));
 
