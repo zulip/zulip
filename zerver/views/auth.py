@@ -309,7 +309,7 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile, otp: st
         "browser_url": reverse("login_page", kwargs={"template_name": "zerver/login.html"}),
         "realm_icon_url": realm_icon_url(user_profile.realm),
     }
-    return render(request, "zerver/desktop_redirect.html", context=context)
+    return render(request, "zerver/desktop_and_terminal_redirect.html", context=context)
 
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
