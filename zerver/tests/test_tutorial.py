@@ -13,7 +13,7 @@ class TutorialTests(ZulipTestCase):
         # This is only a quick fix - ideally, we would have this message sent by the initialization
         # code in populate_db.py
         user = self.example_user("hamlet")
-        welcome_bot = get_system_bot(settings.WELCOME_BOT)
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         content = "Shortened welcome message."
         internal_send_private_message(welcome_bot, user, content)
 
@@ -34,7 +34,7 @@ class TutorialTests(ZulipTestCase):
 
     def test_single_response_to_pm(self) -> None:
         user = self.example_user("hamlet")
-        bot = get_system_bot(settings.WELCOME_BOT)
+        bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         content = "whatever"
         self.login_user(user)
         self.send_personal_message(user, bot, content)
@@ -52,7 +52,7 @@ class TutorialTests(ZulipTestCase):
     def test_no_response_to_group_pm(self) -> None:
         user1 = self.example_user("hamlet")
         user2 = self.example_user("cordelia")
-        bot = get_system_bot(settings.WELCOME_BOT)
+        bot = get_system_bot(settings.WELCOME_BOT, user1.realm_id)
         content = "whatever"
         self.login_user(user1)
         self.send_huddle_message(user1, [bot, user2], content)
