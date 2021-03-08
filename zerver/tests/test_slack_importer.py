@@ -64,7 +64,7 @@ def mocked_requests_get(*args: str, headers: Dict[str, str]) -> MockResponse:
     if args != ("https://slack.com/api/users.list",):
         return MockResponse(None, 404)
 
-    if (headers.get("Authorization") != "Bearer xoxp-valid-token"):
+    if headers.get("Authorization") != "Bearer xoxp-valid-token":
         return MockResponse({"ok": False, "error": "invalid_auth"}, 200)
 
     return MockResponse({"ok": True, "members": "user_data"}, 200)
