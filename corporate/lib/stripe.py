@@ -887,7 +887,7 @@ def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
             event_type=RealmAuditLog.REALM_SPONSORSHIP_APPROVED,
             event_time=timezone_now(),
         )
-    notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
     for user in realm.get_human_billing_admin_and_realm_owner_users():
         with override_language(user.default_language):
             # Using variable to make life easier for translators if these details change.
