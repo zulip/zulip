@@ -859,7 +859,8 @@ def do_set_realm_message_editing(
     allow_message_editing: bool,
     message_content_edit_limit_seconds: int,
     allow_community_topic_editing: bool,
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     old_values = dict(
         allow_message_editing=realm.allow_message_editing,
