@@ -4383,7 +4383,10 @@ def do_change_stream_message_retention_days(
 
 
 def do_create_realm(
-    string_id: str, name: str, emails_restricted_to_domains: Optional[bool] = None
+    string_id: str,
+    name: str,
+    emails_restricted_to_domains: Optional[bool] = None,
+    date_created: Optional[datetime.datetime] = None,
 ) -> Realm:
     if Realm.objects.filter(string_id=string_id).exists():
         raise AssertionError(f"Realm {string_id} already exists!")
@@ -4394,6 +4397,11 @@ def do_create_realm(
     kwargs: Dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
+    if date_created is not None:
+        # The date_created parameter is intended only for use by test
+        # suites that want to backdate the date of a realm's creation.
+        assert not settings.PRODUCTION
+        kwargs["date_created"] = date_created
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 
