@@ -240,7 +240,7 @@ class MessagePOSTTest(ZulipTestCase):
         )
 
         # Cross realm bots should be allowed
-        notification_bot = get_system_bot("notification-bot@zulip.com")
+        notification_bot = get_system_bot("notification-bot@zulip.com", stream.realm_id)
         internal_send_stream_message(
             notification_bot, stream, "Test topic", "Test message by notification bot"
         )
@@ -319,8 +319,8 @@ class MessagePOSTTest(ZulipTestCase):
             "Only organization administrators and moderators can send to this stream.",
         )
 
-        # Cross realm bots should be allowed
-        notification_bot = get_system_bot("notification-bot@zulip.com")
+        # System bots should be allowed
+        notification_bot = get_system_bot("notification-bot@zulip.com", stream.realm_id)
         internal_send_stream_message(
             notification_bot, stream, "Test topic", "Test message by notification bot"
         )
@@ -425,8 +425,8 @@ class MessagePOSTTest(ZulipTestCase):
         moderator_owned_bot.save()
         self._send_and_verify_message(moderator_owned_bot, stream_name)
 
-        # Cross realm bots should be allowed
-        notification_bot = get_system_bot("notification-bot@zulip.com")
+        # System bots should be allowed
+        notification_bot = get_system_bot("notification-bot@zulip.com", stream.realm_id)
         internal_send_stream_message(
             notification_bot, stream, "Test topic", "Test message by notification bot"
         )
@@ -2058,7 +2058,8 @@ class PersonalMessageSendTest(ZulipTestCase):
             self.send_personal_message(user_profile, self.example_user("cordelia"))
 
         bot_profile = self.create_test_bot("testbot", user_profile)
-        self.send_personal_message(user_profile, get_system_bot(settings.NOTIFICATION_BOT))
+        notification_bot = get_system_bot("notification-bot@zulip.com", user_profile.realm_id)
+        self.send_personal_message(user_profile, notification_bot)
         self.send_personal_message(user_profile, bot_profile)
         self.send_personal_message(bot_profile, user_profile)
 
@@ -2342,7 +2343,9 @@ class TestCrossRealmPMs(ZulipTestCase):
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
         user3 = self.create_user(user3_email)
-        notification_bot = get_system_bot(notification_bot_email)
+
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(notification_bot_email, internal_realm.id)
         with self.settings(
             CROSS_REALM_BOT_EMAILS=["notification-bot@zulip.com", "welcome-bot@zulip.com"]
         ):
@@ -2362,7 +2365,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         # Cross-realm bots in the zulip.com realm can PM any realm
         # (They need lower level APIs to do this.)
         internal_send_private_message(
-            sender=get_system_bot(notification_bot_email),
+            sender=notification_bot,
             recipient_user=get_user(user2_email, r2),
             content="bla",
         )
@@ -2375,7 +2378,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         # be used.
         internal_send_private_message(
             sender=user2,
-            recipient_user=get_system_bot(notification_bot_email),
+            recipient_user=notification_bot,
             content="blabla",
         )
         assert_message_received(notification_bot, user2)

@@ -2834,7 +2834,8 @@ class EmailUnsubscribeTests(ZulipTestCase):
 class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def check_able_to_create_realm(self, email: str, password: str = "test") -> None:
-        notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
         signups_stream, _ = create_stream_if_needed(notification_bot.realm, "signups")
 
         string_id = "zuliptest"

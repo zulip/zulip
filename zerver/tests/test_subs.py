@@ -83,6 +83,7 @@ from zerver.models import (
     get_default_stream_groups,
     get_realm,
     get_stream,
+    get_system_bot,
     get_user,
     get_user_profile_by_id_in_realm,
 )
@@ -278,7 +279,7 @@ class TestCreateStreams(ZulipTestCase):
         self.subscribe(iago, announce_stream.name)
         self.subscribe(hamlet, announce_stream.name)
 
-        notification_bot = UserProfile.objects.get(full_name="Notification Bot")
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
         self.login_user(iago)
 
         initial_message_count = Message.objects.count()
