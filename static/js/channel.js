@@ -3,6 +3,10 @@ import * as reload_state from "./reload_state";
 
 const pending_requests = [];
 
+export function clear_for_tests() {
+    pending_requests.length = 0;
+}
+
 function add_pending_request(jqXHR) {
     pending_requests.push(jqXHR);
     if (pending_requests.length > 50) {

@@ -280,6 +280,7 @@ run_test("retry", () => {
 });
 
 run_test("too_many_pending", () => {
+    channel.clear_for_tests();
     $.ajax = () => {
         const xhr = "stub";
         return xhr;
@@ -290,9 +291,10 @@ run_test("too_many_pending", () => {
         "The length of pending_requests is over 50. " +
             "Most likely they are not being correctly removed.",
     );
-    _.times(50, () => {
+    _.times(51, () => {
         channel.post({});
     });
+    channel.clear_for_tests();
 });
 
 run_test("xhr_error_message", () => {
