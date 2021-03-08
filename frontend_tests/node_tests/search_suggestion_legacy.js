@@ -862,7 +862,7 @@ run_test("people_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:ted sm";
-    expected = ["sender:ted+sm", "sender:ted@zulip.com"];
+    expected = ["sender:ted", "sender:ted@zulip.com"];
     suggestions = get_suggestions("", query);
     assert.deepEqual(suggestions.strings, expected);
 
@@ -872,7 +872,7 @@ run_test("people_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:ted@tulip.com new";
-    expected = ["sender:ted@tulip.com+new"];
+    expected = ["sender:ted@tulip.com"];
     suggestions = get_suggestions("", query);
     assert.deepEqual(suggestions.strings, expected);
 });
