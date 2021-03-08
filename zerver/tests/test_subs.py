@@ -1380,7 +1380,7 @@ class StreamAdminTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
 
-        other_realm = Realm.objects.create(string_id="other")
+        other_realm = do_create_realm(string_id="other", name="other")
         stream = self.make_stream("other_realm_stream", realm=other_realm)
 
         result = self.client_delete("/json/streams/" + str(stream.id))

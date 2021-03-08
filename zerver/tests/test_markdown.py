@@ -12,6 +12,7 @@ from markdown import Markdown
 
 from zerver.lib.actions import (
     do_add_alert_words,
+    do_create_realm,
     do_remove_realm_emoji,
     do_set_realm_property,
     do_set_user_display_setting,
@@ -47,7 +48,6 @@ from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
     Message,
-    Realm,
     RealmEmoji,
     RealmFilter,
     Stream,
@@ -472,7 +472,7 @@ class MarkdownTest(ZulipTestCase):
 
         clear_state_for_testing()
         with self.settings(ENABLE_FILE_LINKS=False):
-            realm = Realm.objects.create(string_id="file_links_test")
+            realm = do_create_realm(string_id="file_links_test", name="file_links_test")
             maybe_update_markdown_engines(realm.id, False)
             converted = markdown_convert(msg, message_realm=realm)
             self.assertEqual(
@@ -2377,7 +2377,9 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(converted, expected_output)
 
-        realm = Realm.objects.create(string_id="code_block_processor_test")
+        realm = do_create_realm(
+            string_id="code_block_processor_test", name="code_block_processor_test"
+        )
         maybe_update_markdown_engines(realm.id, True)
         converted = markdown_convert(msg, message_realm=realm, email_gateway=True)
         expected_output = (

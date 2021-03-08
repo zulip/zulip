@@ -35,6 +35,7 @@ from analytics.models import (
 from zerver.lib.actions import (
     InvitationError,
     do_activate_user,
+    do_create_realm,
     do_create_user,
     do_deactivate_user,
     do_invite_users,
@@ -75,9 +76,10 @@ class AnalyticsTestCase(ZulipTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.default_realm = Realm.objects.create(
+        self.default_realm = do_create_realm(
             string_id="realmtest", name="Realm Test", date_created=self.TIME_ZERO - 2 * self.DAY
         )
+
         # used to generate unique names in self.create_*
         self.name_counter = 100
         # used as defaults in self.assertCountEquals
@@ -440,11 +442,12 @@ class TestCountStats(AnalyticsTestCase):
         # This tests two things for each of the queries/CountStats: Handling
         # more than 1 realm, and the time bounds (time_start and time_end in
         # the queries).
-        self.second_realm = Realm.objects.create(
+        self.second_realm = do_create_realm(
             string_id="second-realm",
             name="Second Realm",
             date_created=self.TIME_ZERO - 2 * self.DAY,
         )
+
         for minutes_ago in [0, 1, 61, 60 * 24 + 1]:
             creation_time = self.TIME_ZERO - minutes_ago * self.MINUTE
             user = self.create_user(
@@ -461,11 +464,12 @@ class TestCountStats(AnalyticsTestCase):
 
         # This realm should not show up in the *Count tables for any of the
         # messages_* CountStats
-        self.no_message_realm = Realm.objects.create(
+        self.no_message_realm = do_create_realm(
             string_id="no-message-realm",
             name="No Message Realm",
             date_created=self.TIME_ZERO - 2 * self.DAY,
         )
+
         self.create_user(realm=self.no_message_realm)
         self.create_stream_with_recipient(realm=self.no_message_realm)
         # This huddle should not show up anywhere
@@ -1195,7 +1199,7 @@ class TestDoIncrementLoggingStat(AnalyticsTestCase):
         # the appropriate *Count table, and that using a different zerver_object
         # results in a new row being created
         self.current_property = "test"
-        second_realm = Realm.objects.create(string_id="moo", name="moo")
+        second_realm = do_create_realm(string_id="moo", name="moo")
         stat = LoggingCountStat("test", RealmCount, CountStat.DAY)
         do_increment_logging_stat(self.default_realm, stat, None, self.TIME_ZERO)
         do_increment_logging_stat(second_realm, stat, None, self.TIME_ZERO)
@@ -1572,7 +1576,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     def test_multiple_users_realms_and_bots(self) -> None:
         user1 = self.create_user()
         user2 = self.create_user()
-        second_realm = Realm.objects.create(string_id="moo", name="moo")
+        second_realm = do_create_realm(string_id="moo", name="moo")
         user3 = self.create_user(realm=second_realm)
         user4 = self.create_user(realm=second_realm, is_bot=True)
         for user in [user1, user2, user3, user4]:
@@ -1617,7 +1621,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     def test_empty_realm_or_user_with_no_relevant_activity(self) -> None:
         self.add_event(RealmAuditLog.USER_SOFT_ACTIVATED, 1)
         self.create_user()  # also test a user with no RealmAuditLog entries
-        Realm.objects.create(string_id="moo", name="moo")
+        do_create_realm(string_id="moo", name="moo")
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, [], [])
 
@@ -1722,7 +1726,7 @@ class TestRealmActiveHumans(AnalyticsTestCase):
     def test_multiple_users_realms_and_times(self) -> None:
         user1 = self.create_user()
         user2 = self.create_user()
-        second_realm = Realm.objects.create(string_id="second", name="second")
+        second_realm = do_create_realm(string_id="second", name="second")
         user3 = self.create_user(realm=second_realm)
         user4 = self.create_user(realm=second_realm)
         user5 = self.create_user(realm=second_realm)
@@ -1752,7 +1756,7 @@ class TestRealmActiveHumans(AnalyticsTestCase):
         self.mark_15day_active(user2, end_time=self.TIME_ZERO + self.DAY)
         self.mark_15day_active(user2, end_time=self.TIME_ZERO - self.DAY)
         self.create_user()
-        third_realm = Realm.objects.create(string_id="third", name="third")
+        third_realm = do_create_realm(string_id="third", name="third")
         self.create_user(realm=third_realm)
 
         RealmCount.objects.all().delete()

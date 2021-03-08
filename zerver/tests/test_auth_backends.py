@@ -5125,7 +5125,7 @@ class TestLDAP(ZulipLDAPTestCase):
     def test_login_success_with_different_subdomain(self) -> None:
         ldap_user_attr_map = {"full_name": "cn"}
 
-        Realm.objects.create(string_id="acme")
+        do_create_realm(string_id="acme", name="acme")
         with self.settings(
             LDAP_APPEND_DOMAIN="zulip.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
         ):
