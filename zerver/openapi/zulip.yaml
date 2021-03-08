@@ -12600,6 +12600,7 @@ components:
           properties:
             email: {}
             is_bot: {}
+            is_system_bot: {}
             avatar_url: {}
             avatar_version: {}
             full_name: {}
@@ -12632,6 +12633,10 @@ components:
           type: boolean
           description: |
             A boolean specifying whether the user is a bot or full account.
+        is_system_bot:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is a system bot.
         avatar_url:
           type: string
           nullable: true
