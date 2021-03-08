@@ -403,6 +403,9 @@ class HomeTest(ZulipTestCase):
     def assertInHomePage(self, string: str) -> bool:
         return self.assertIn(string, self._get_home_page().content.decode("utf-8"))
 
+    def assertNotInHomePage(self, string: str) -> bool:
+        return self.assertNotIn(string, self._get_home_page().content.decode("utf-8"))
+
     def _sanity_check(self, result: HttpResponse) -> None:
         """
         Use this for tests that are geared toward specific edge cases, but
@@ -694,9 +697,7 @@ class HomeTest(ZulipTestCase):
 
         self.login_user(user_profile)
         self.assertFalse(user_profile.is_realm_admin)
-        result = self._get_home_page()
-        html = result.content.decode("utf-8")
-        self.assertNotIn("Invite more users", html)
+        self.assertNotInHomePage("Invite more users")
 
         user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         user_profile.save()
@@ -712,9 +713,7 @@ class HomeTest(ZulipTestCase):
         self.login_user(user_profile)
         self.assertFalse(user_profile.is_realm_admin)
         self.assertEqual(get_realm("zulip").invite_to_realm_policy, Realm.POLICY_MEMBERS_ONLY)
-        result = self._get_home_page()
-        html = result.content.decode("utf-8")
-        self.assertNotIn("Invite more users", html)
+        self.assertNotInHomePage("Invite more users")
 
     def test_show_billing(self) -> None:
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
@@ -724,8 +723,7 @@ class HomeTest(ZulipTestCase):
         user.role = UserProfile.ROLE_REALM_OWNER
         user.save(update_fields=["role"])
         self.login_user(user)
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertNotIn("Billing", result_html)
+        self.assertNotInHomePage("Billing")
 
         # realm owner, with inactive CustomerPlan -> show billing link
         CustomerPlan.objects.create(
@@ -741,8 +739,7 @@ class HomeTest(ZulipTestCase):
         # realm admin, with CustomerPlan -> no billing link
         user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         user.save(update_fields=["role"])
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertNotIn("Billing", result_html)
+        self.assertNotInHomePage("Billing")
 
         # billing admin, with CustomerPlan -> show billing link
         user.role = UserProfile.ROLE_MEMBER
@@ -753,22 +750,19 @@ class HomeTest(ZulipTestCase):
         # member, with CustomerPlan -> no billing link
         user.is_billing_admin = False
         user.save(update_fields=["is_billing_admin"])
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertNotIn("Billing", result_html)
+        self.assertNotInHomePage("Billing")
 
         # guest, with CustomerPlan -> no billing link
         user.role = UserProfile.ROLE_GUEST
         user.save(update_fields=["role"])
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertNotIn("Billing", result_html)
+        self.assertNotInHomePage("Billing")
 
         # billing admin, but no CustomerPlan -> no billing link
         user.role = UserProfile.ROLE_MEMBER
         user.is_billing_admin = True
         user.save(update_fields=["role", "is_billing_admin"])
         CustomerPlan.objects.all().delete()
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertNotIn("Billing", result_html)
+        self.assertNotInHomePage("Billing")
 
         # billing admin, with sponsorship pending -> show billing link
         customer.sponsorship_pending = True
@@ -786,8 +780,7 @@ class HomeTest(ZulipTestCase):
         # Don't show plans to guest users
         self.login("polonius")
         do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertNotIn("Plans", result_html)
+        self.assertNotInHomePage("Plans")
 
         # Show plans link to all other users if plan_type is LIMITED
         self.login("hamlet")
@@ -795,12 +788,10 @@ class HomeTest(ZulipTestCase):
 
         # Show plans link to no one, including admins, if SELF_HOSTED or STANDARD
         do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=None)
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertNotIn("Plans", result_html)
+        self.assertNotInHomePage("Plans")
 
         do_change_plan_type(realm, Realm.STANDARD, acting_user=None)
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertNotIn("Plans", result_html)
+        self.assertNotInHomePage("Plans")
 
     def test_show_support_zulip(self) -> None:
         realm = get_realm("zulip")
@@ -813,16 +804,13 @@ class HomeTest(ZulipTestCase):
         self.assertInHomePage("Support Zulip")
 
         with self.settings(PROMOTE_SPONSORING_ZULIP=False):
-            result_html = self._get_home_page().content.decode("utf-8")
-            self.assertNotIn("Support Zulip", result_html)
+            self.assertNotInHomePage("Support Zulip")
 
         do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertNotIn("Support Zulip", result_html)
+        self.assertNotInHomePage("Support Zulip")
 
         do_change_plan_type(realm, Realm.STANDARD, acting_user=None)
-        result_html = self._get_home_page().content.decode("utf-8")
-        self.assertNotIn("Support Zulip", result_html)
+        self.assertNotInHomePage("Support Zulip")
 
     def test_desktop_home(self) -> None:
         self.login("hamlet")
