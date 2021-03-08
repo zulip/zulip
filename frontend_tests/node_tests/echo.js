@@ -11,9 +11,6 @@ const local_message = mock_module("local_message");
 const markdown = mock_module("markdown");
 const page_params = set_global("page_params", {});
 
-const fake_now = 555;
-MockDate.set(new Date(fake_now * 1000));
-
 let disparities = [];
 let messages_to_rerender = [];
 
@@ -174,6 +171,9 @@ run_test("build_display_recipient", () => {
 });
 
 run_test("insert_local_message streams", (override) => {
+    const fake_now = 555;
+    MockDate.set(new Date(fake_now * 1000));
+
     const local_id_float = 101;
 
     let apply_markdown_called = false;
