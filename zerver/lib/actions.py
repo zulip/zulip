@@ -237,6 +237,7 @@ from zerver.models import (
     get_huddle_recipient,
     get_huddle_user_ids,
     get_old_unclaimed_attachments,
+    get_realm,
     get_realm_playgrounds,
     get_stream,
     get_stream_by_id_in_realm,
@@ -363,7 +364,8 @@ def send_message_to_signup_notification_stream(
 
 def notify_new_user(user_profile: UserProfile) -> None:
     user_count = realm_user_count(user_profile.realm)
-    sender = get_system_bot(settings.NOTIFICATION_BOT)
+    sender_email = settings.NOTIFICATION_BOT
+    sender = get_system_bot(sender_email, user_profile.realm_id)
 
     is_first_user = user_count == 1
     if not is_first_user:
@@ -384,7 +386,8 @@ def notify_new_user(user_profile: UserProfile) -> None:
         send_message_to_signup_notification_stream(sender, user_profile.realm, message)
 
     # We also send a notification to the Zulip administrative realm
-    admin_realm = sender.realm
+    admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
+    admin_realm_sender = get_system_bot(sender_email, admin_realm.id)
     try:
         # Check whether the stream exists
         signups_stream = get_signups_stream(admin_realm)
@@ -393,7 +396,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
             user=f"{user_profile.full_name} <`{user_profile.email}`>", user_count=user_count
         )
         internal_send_stream_message(
-            sender, signups_stream, user_profile.realm.display_subdomain, message
+            admin_realm_sender, signups_stream, user_profile.realm.display_subdomain, message
         )
 
     except Stream.DoesNotExist:
@@ -498,7 +501,7 @@ def process_new_human_user(
         # This is a cross-realm private message.
         with override_language(prereg_user.referred_by.default_language):
             internal_send_private_message(
-                get_system_bot(settings.NOTIFICATION_BOT),
+                get_system_bot(settings.NOTIFICATION_BOT, prereg_user.referred_by.realm_id),
                 prereg_user.referred_by,
                 _("{user} accepted your invitation to join Zulip!").format(
                     user=f"{user_profile.full_name} <`{user_profile.email}`>"
@@ -2065,7 +2068,9 @@ def do_send_messages(
             queue_json_publish("embed_links", event_data)
 
         if send_request.message.recipient.type == Recipient.PERSONAL:
-            welcome_bot_id = get_system_bot(settings.WELCOME_BOT).id
+            welcome_bot_id = get_system_bot(
+                settings.WELCOME_BOT, send_request.message.sender.realm_id
+            ).id
             if (
                 welcome_bot_id in send_request.active_user_ids
                 and welcome_bot_id != send_request.message.sender_id
@@ -3070,7 +3075,9 @@ def send_rate_limited_pm_notification_to_bot_owner(
         return
 
     internal_send_private_message(
-        get_system_bot(settings.NOTIFICATION_BOT), sender.bot_owner, content
+        get_system_bot(settings.NOTIFICATION_BOT, sender.bot_owner.realm_id),
+        sender.bot_owner,
+        content,
     )
 
     sender.last_reminder = timezone_now()
@@ -4829,7 +4836,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
             name=old_name,
         )
         send_event(stream.realm, event, can_access_stream_user_ids(stream))
-    sender = get_system_bot(settings.NOTIFICATION_BOT)
+    sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
         internal_send_stream_message(
             sender,
@@ -4953,8 +4960,8 @@ def do_create_realm(
     if plan_type is None and settings.BILLING_ENABLED:
         do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
 
-    sender = get_system_bot(settings.NOTIFICATION_BOT)
-    admin_realm = sender.realm
+    admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
+    sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
     # Send a notification to the admin realm
     signup_message = _("Signups enabled")
 
@@ -5741,7 +5748,7 @@ def maybe_send_resolve_topic_notifications(
         # not a bug with the "resolve topics" feature.
         return
 
-    sender = get_system_bot(settings.NOTIFICATION_BOT)
+    sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
     user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
     with override_language(stream.realm.default_language):
         internal_send_stream_message(
@@ -5766,7 +5773,7 @@ def send_message_moved_breadcrumbs(
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
     # happened.
-    sender = get_system_bot(settings.NOTIFICATION_BOT)
+    sender = get_system_bot(settings.NOTIFICATION_BOT, old_stream.realm_id)
 
     if new_topic is None:
         new_topic = old_topic
