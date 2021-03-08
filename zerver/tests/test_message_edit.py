@@ -230,6 +230,7 @@ class EditMessageTest(EditMessageTestCase):
         # tested in this class. Hence, its performance is tested here.
         # Generate 2 messages
         user = self.example_user("hamlet")
+        realm = user.realm
         self.login_user(user)
         stream_name = "public_stream"
         self.subscribe(user, stream_name)
@@ -238,9 +239,9 @@ class EditMessageTest(EditMessageTestCase):
         user_2 = self.example_user("cordelia")
         self.subscribe(user_2, stream_name)
         message_ids.append(self.send_stream_message(user_2, stream_name, "Message two"))
-        self.subscribe(self.notification_bot(), stream_name)
+        self.subscribe(self.notification_bot(realm), stream_name)
         message_ids.append(
-            self.send_stream_message(self.notification_bot(), stream_name, "Message three")
+            self.send_stream_message(self.notification_bot(realm), stream_name, "Message three")
         )
         messages = [
             Message.objects.select_related().get(id=message_id) for message_id in message_ids

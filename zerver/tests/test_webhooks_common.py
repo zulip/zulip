@@ -36,9 +36,10 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertEqual(header_value, "custom_value")
 
     def test_webhook_http_header_header_does_not_exist(self) -> None:
-        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
+        realm = get_realm("zulip")
+        webhook_bot = get_user("webhook-bot@zulip.com", realm)
         webhook_bot.last_reminder = None
-        notification_bot = self.notification_bot()
+        notification_bot = self.notification_bot(realm)
         request = HostRequestMock()
         request.user = webhook_bot
         request.path = "some/random/path"
@@ -90,7 +91,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
             my_webhook_notify(request)
         msg = self.get_last_message()
         self.assertNotEqual(msg.id, last_message_id)
-        self.assertEqual(msg.sender.id, self.notification_bot().id)
+        self.assertEqual(msg.sender.id, self.notification_bot(webhook_bot_realm).id)
         self.assertEqual(msg.content, expected_msg.strip())
 
     @patch("zerver.lib.webhooks.common.importlib.import_module")
@@ -187,9 +188,10 @@ class MissingEventHeaderTestCase(WebhookTestCase):
         )
         self.assert_json_error(result, "Missing the HTTP event header 'X_GROOVE_EVENT'")
 
-        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
+        realm = get_realm("zulip")
+        webhook_bot = get_user("webhook-bot@zulip.com", realm)
         webhook_bot.last_reminder = None
-        notification_bot = self.notification_bot()
+        notification_bot = self.notification_bot(realm)
         msg = self.get_last_message()
         expected_message = MISSING_EVENT_HEADER_MESSAGE.format(
             bot_name=webhook_bot.full_name,

@@ -470,8 +470,8 @@ Output:
     def mit_email(self, name: str) -> str:
         return self.mit_user_map[name]
 
-    def notification_bot(self) -> UserProfile:
-        return get_system_bot(settings.NOTIFICATION_BOT)
+    def notification_bot(self, realm: Realm) -> UserProfile:
+        return get_system_bot(settings.NOTIFICATION_BOT, realm.id)
 
     def create_test_bot(
         self, short_name: str, user_profile: UserProfile, full_name: str = "Foo Bot", **extras: Any

@@ -1286,8 +1286,9 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_cross_realm_bots_can_use_api_on_own_subdomain(self) -> None:
         # Cross realm bots should use internal_send_*_message, not the API:
-        notification_bot = self.notification_bot()
-        stream = self.make_stream("notify_channel", get_realm("zulipinternal"))
+        internal_realm = get_realm("zulipinternal")
+        notification_bot = self.notification_bot(internal_realm)
+        stream = self.make_stream("notify_channel", internal_realm)
 
         result = self.api_post(
             notification_bot,
@@ -2516,7 +2517,8 @@ class CheckMessageTest(ZulipTestCase):
         do_change_can_forge_sender(forwarder_user_profile, True)
 
         mit_user = self.mit_user("sipbtest")
-        notification_bot = self.notification_bot()
+        internal_realm = get_realm("zulipinternal")
+        notification_bot = self.notification_bot(internal_realm)
 
         client = make_client(name="test suite")
         stream = get_stream("Denmark", forwarder_user_profile.realm)
@@ -2553,7 +2555,8 @@ class CheckMessageTest(ZulipTestCase):
         do_change_can_forge_sender(forwarder_user_profile, True)
 
         mit_user = self.mit_user("sipbtest")
-        notification_bot = self.notification_bot()
+        internal_realm = get_realm("zulipinternal")
+        notification_bot = self.notification_bot(internal_realm)
 
         client = make_client(name="test suite")
         stream_name = "España y Francia"
