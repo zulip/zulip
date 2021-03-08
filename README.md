@@ -44,7 +44,7 @@ You might be interested in:
   [give us feedback](https://zulip.readthedocs.io/en/latest/overview/contributing.html#user-feedback). We
   would love to hear from you, even if you're just trying the product out.
 
-* **Supporting Zulip**. Advocate for your organization to use Zulip, write a
+* **Supporting Zulip**. Advocate for your organization to use Zulip, become a [sponsor](https://github.com/sponsors/zulip), write a
   review in the mobile app stores, or
   [upvote Zulip](https://zulip.readthedocs.io/en/latest/overview/contributing.html#zulip-outreach) on
   product comparison sites.
