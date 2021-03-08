@@ -603,8 +603,8 @@ def send_messages_for_new_subscribers(
             if not notify_stream_names:
                 continue
 
-            sender = get_system_bot(settings.NOTIFICATION_BOT)
             recipient_user = email_to_user_profile[email]
+            sender = get_system_bot(settings.NOTIFICATION_BOT, recipient_user.realm_id)
 
             msg = you_were_just_subscribed_message(
                 acting_user=user_profile,
@@ -636,7 +636,7 @@ def send_messages_for_new_subscribers(
                 stream_str=", ".join(f"#**{s.name}**" for s in created_streams),
             )
 
-            sender = get_system_bot(settings.NOTIFICATION_BOT)
+            sender = get_system_bot(settings.NOTIFICATION_BOT, notifications_stream.realm_id)
 
             notifications.append(
                 internal_prep_stream_message(
@@ -648,7 +648,7 @@ def send_messages_for_new_subscribers(
             )
 
     if not user_profile.realm.is_zephyr_mirror_realm and len(created_streams) > 0:
-        sender = get_system_bot(settings.NOTIFICATION_BOT)
+        sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
         for stream in created_streams:
             with override_language(stream.realm.default_language):
                 notifications.append(
