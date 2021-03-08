@@ -9,7 +9,9 @@ const {run_test} = require("../zjsunit/test");
 const page_params = set_global("page_params", {});
 
 zrequire("timerender");
+const message_store = zrequire("message_store");
 const starred_messages = zrequire("starred_messages");
+const stream_popover = zrequire("stream_popover");
 const top_left_corner = zrequire("top_left_corner");
 
 run_test("add starred", (override) => {
@@ -38,6 +40,48 @@ run_test("remove starred", (override) => {
     assert.equal(starred_messages.get_count(), 1);
 });
 
+run_test("get starred ids in topic", () => {
+    for (const id of [1, 2, 3, 4, 5]) {
+        starred_messages.starred_ids.add(id);
+    }
+
+    assert.deepEqual(
+        starred_messages.get_starred_message_ids_in_topic(undefined, "topic name"),
+        [],
+    );
+    assert.deepEqual(starred_messages.get_starred_message_ids_in_topic(3, undefined), []);
+
+    // id: 1 isn't inserted, to test handling the case
+    // when message_store.get() returns undefined
+    message_store.create_mock_message({
+        id: 2,
+        type: "private",
+    });
+    message_store.create_mock_message({
+        // Different stream
+        id: 3,
+        type: "stream",
+        stream_id: 19,
+        topic: "topic",
+    });
+    message_store.create_mock_message({
+        // Different topic
+        id: 4,
+        type: "stream",
+        stream_id: 20,
+        topic: "some other topic",
+    });
+    message_store.create_mock_message({
+        // Correct match
+        id: 5,
+        type: "stream",
+        stream_id: 20,
+        topic: "topic",
+    });
+
+    assert.deepEqual(starred_messages.get_starred_message_ids_in_topic(20, "topic"), [5]);
+});
+
 run_test("initialize", (override) => {
     starred_messages.starred_ids.clear();
     for (const id of [1, 2, 3]) {
@@ -59,6 +103,7 @@ run_test("rerender_ui", () => {
     page_params.starred_message_counts = true;
     with_overrides((override) => {
         const stub = make_stub();
+        override(stream_popover, "hide_topic_popover", () => {});
         override(top_left_corner, "update_starred_count", stub.f);
         starred_messages.rerender_ui();
         assert.equal(stub.num_calls, 1);
@@ -69,6 +114,7 @@ run_test("rerender_ui", () => {
     page_params.starred_message_counts = false;
     with_overrides((override) => {
         const stub = make_stub();
+        override(stream_popover, "hide_topic_popover", () => {});
         override(top_left_corner, "update_starred_count", stub.f);
         starred_messages.rerender_ui();
         assert.equal(stub.num_calls, 1);
