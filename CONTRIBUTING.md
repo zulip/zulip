@@ -45,6 +45,7 @@ don't require touching the codebase at all. We list a few of them below:
 * [Reporting issues](#reporting-issues), including both feature requests and
   bug reports.
 * [Giving feedback](#user-feedback) if you are evaluating or using Zulip.
+* [Sponsor Zulip](https://github.com/sponsors/zulip) through the GitHub sponsors program.
 * [Translating](https://zulip.readthedocs.io/en/latest/translating/translating.html)
   Zulip.
 * [Outreach](#zulip-outreach): Star us on GitHub, upvote us
