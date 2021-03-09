@@ -315,12 +315,6 @@ run_test("update_property", () => {
     assert.equal(message2.display_recipient, denmark.name);
 });
 
-run_test("each", () => {
-    message_store.each((message) => {
-        assert(message.alerted !== undefined);
-    });
-});
-
 run_test("message_id_change", () => {
     const message = {
         sender_email: "me@example.com",
