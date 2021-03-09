@@ -600,6 +600,9 @@ export function change_focused_element(e, input_key) {
                 current_focus_elem = $("#recent_topics_search");
                 return true;
             case "escape":
+                if (current_focus_elem === "table") {
+                    return false;
+                }
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
@@ -627,12 +630,20 @@ export function change_focused_element(e, input_key) {
             case "down_arrow":
                 set_table_focus(row_focus, col_focus);
                 return true;
+            case "escape":
+                if (current_focus_elem === "table") {
+                    return false;
+                }
+                set_table_focus(row_focus, col_focus);
+                return true;
         }
     } else if (current_focus_elem === "table") {
         // For arrowing around the table of topics, we implement left/right
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
         switch (input_key) {
+            case "escape":
+                return false;
             case "open_recent_topics":
                 set_default_focus();
                 return true;
@@ -663,8 +674,9 @@ export function change_focused_element(e, input_key) {
         set_table_focus(row_focus, col_focus);
         return true;
     }
-    if (current_focus_elem) {
+    if (current_focus_elem && input_key !== "escape") {
         current_focus_elem.trigger("focus");
+        return true;
     }
 
     return false;
