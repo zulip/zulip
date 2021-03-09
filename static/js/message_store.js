@@ -23,6 +23,11 @@ const stored_messages = new Map();
 */
 const message_user_ids = new Set();
 
+export function clear_for_testing() {
+    stored_messages.clear();
+    message_user_ids.clear();
+}
+
 export function user_ids() {
     return Array.from(message_user_ids);
 }
