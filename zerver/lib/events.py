@@ -312,6 +312,7 @@ def fetch_initial_state_data(
         state["is_guest"] = settings_user.is_guest
         state["user_id"] = settings_user.id
         state["enter_sends"] = settings_user.enter_sends
+        state["final_escape_narrow"] = settings_user.final_escape_narrow
         state["email"] = settings_user.email
         state["delivery_email"] = settings_user.delivery_email
         state["full_name"] = settings_user.full_name

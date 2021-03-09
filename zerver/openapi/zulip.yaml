@@ -6694,6 +6694,13 @@ paths:
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           The color scheme selected by the user.
+                      final_escape_narrow:
+                        type: string
+                        description: |
+                          Present if `update_display_settings` is present in `fetch_event_types`.
+
+                          The narrow rendered when the pressed escape key is unhandled by all other
+                          visible UI elements.
                       default_language:
                         type: string
                         description: |

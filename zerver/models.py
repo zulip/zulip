@@ -1151,6 +1151,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enter_sends: Optional[bool] = models.BooleanField(null=True, default=False)
     left_side_userlist: bool = models.BooleanField(default=False)
 
+    # Allow user to remap escape key. This stores the URL suffix of the final narrow
+    # that will be visible when user hits escape many times (until reaching this view).
+    final_escape_narrow: str = models.TextField(default="")
+
     # display settings
     default_language: str = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
     dense_mode: bool = models.BooleanField(default=True)
@@ -1244,6 +1248,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     property_types = dict(
         color_scheme=int,
         default_language=str,
+        final_escape_narrow=str,
         demote_inactive_streams=int,
         dense_mode=bool,
         emojiset=str,

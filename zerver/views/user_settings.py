@@ -197,6 +197,7 @@ def update_display_settings_backend(
     ),
     translate_emoticons: Optional[bool] = REQ(validator=check_bool, default=None),
     default_language: Optional[str] = REQ(validator=check_string, default=None),
+    final_escape_narrow: Optional[str] = REQ(validator=check_string, default=None),
     left_side_userlist: Optional[bool] = REQ(validator=check_bool, default=None),
     emojiset: Optional[str] = REQ(validator=check_string_in(emojiset_choices), default=None),
     demote_inactive_streams: Optional[int] = REQ(
@@ -210,6 +211,9 @@ def update_display_settings_backend(
     # complete.
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid default_language"))
+
+    if final_escape_narrow is not None and final_escape_narrow.startswith("#"):
+        raise JsonableError(_("Invalid final_escape_narrow"))
 
     request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
     result: Dict[str, Any] = {}

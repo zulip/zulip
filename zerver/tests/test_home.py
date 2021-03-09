@@ -73,6 +73,7 @@ class HomeTest(ZulipTestCase):
         "enable_stream_email_notifications",
         "enable_stream_push_notifications",
         "enter_sends",
+        "final_escape_narrow",
         "first_in_realm",
         "fluid_layout_width",
         "full_name",

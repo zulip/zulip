@@ -1866,6 +1866,7 @@ class UserDisplayActionTest(BaseAction):
             timezone=["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""],
             demote_inactive_streams=[2, 3, 1],
             color_scheme=[2, 3, 1],
+            final_escape_narrow=["all_messages", "", "narrow/is/private", "some/random-02/string"],
         )
 
         num_events = 1

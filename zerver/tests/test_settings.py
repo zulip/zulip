@@ -340,6 +340,7 @@ class ChangeSettingsTest(ZulipTestCase):
             timezone="US/Mountain",
             demote_inactive_streams=2,
             color_scheme=2,
+            final_escape_narrow="all_messages",
         )
 
         self.login("hamlet")
@@ -350,6 +351,8 @@ class ChangeSettingsTest(ZulipTestCase):
 
         if isinstance(test_value, int):
             invalid_value: Any = 100
+        elif setting_name == "final_escape_narrow":
+            invalid_value = "#all_messages"
         else:
             invalid_value = "invalid_" + setting_name
         data = {setting_name: orjson.dumps(test_value).decode()}
