@@ -35,6 +35,7 @@ class zulip::profile::base {
       $base_packages = [
         # Basics
         'python3',
+        'python3-yaml',
         'puppet',
         'git',
         # Used in scripts including install-yarn.sh
@@ -59,6 +60,7 @@ class zulip::profile::base {
       $release_name = "${::operatingsystem}${::operatingsystemmajrelease}"
       $base_packages = [
         'python3',
+        'python3-pyyaml',
         'puppet',
         'git',
         'curl',
