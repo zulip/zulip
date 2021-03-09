@@ -21,6 +21,7 @@
 * [Logging out](/help/logging-out)
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Deactivate your account](/help/deactivate-your-account)
+* [Remap narrow for escape key](/help/remap-escape-key)
 
 ## Sending messages
 * [Open the compose box](/help/open-the-compose-box)

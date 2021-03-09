@@ -21,6 +21,41 @@
             <h3 class="inline-block">{{t "Display settings" }}</h3>
             <div class="alert-notification" id="display-settings-status"></div>
 
+            <form class="form-horizontal final-escape-key">
+                <div class="input-group  grid user-name-parent">
+                    <div class="user-name-section inline-block">
+                        <label for="final_escape_narrow" class="inline-block title">{{t "Set narrow for final escape key" }}</label>
+                        <button type="button" id='change_final_escape_narrow' class="button btn-link small white rounded inline-block" id="final_escape_narrow">
+                            <span id="final_escape_narrow_value">{{page_params.final_escape_narrow}}</span>
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                    </div>
+                    <div id="change_final_escape_narrow_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"
+                      aria-labelledby="change_final_escape_narrow_modal_label" aria-hidden="true">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+                            <h3 class="inline-block" id="change_final_escape_narrow_modal_label">{{t "Change narrow for final escape key" }}</h3>
+                            <div class="alert-notification change_final_escape_narrow_info"></div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="input-group final_escape_narrow_change_container">
+                                <label for="final_escape_narrow">{{t "Enter narrow URL after hash (#)" }}</label>
+                                <ul>
+                                    <li><code>all_messages</code> {{t "For all messages view" }}</li>
+                                    <li>{{t "Leave empty and save for recent topics view (default)"  }}</li>
+                                    <li><code>narrow/is/private</code> {{t "For private messages and so on..." }}</li>
+                                </ul>
+                                <input type="text" name="final_escape_narrow" value="{{ page_params.final_escape_narrow }}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
+                            <button id='change_final_escape_narrow_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
             <div class="input-group">
                 <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}
                 </label>

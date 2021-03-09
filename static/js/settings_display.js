@@ -10,6 +10,22 @@ const meta = {
     loaded: false,
 };
 
+function set_final_escape_narrow(narrow) {
+    // This is important so that user can
+    // remap escape key without a reload.
+    page_params.final_escape_narrow = narrow;
+
+    // Set user friendly text for some narrows
+    if (narrow === "") {
+        narrow = "Recent topics";
+    } else if (narrow === "all_messages") {
+        narrow = "All messages";
+    } else if (narrow === "narrow/is/private") {
+        narrow = "Private messages";
+    }
+    $("#final_escape_narrow_value").text(narrow);
+}
+
 function change_display_setting(data, status_element, success_msg, sticky) {
     const $status_el = $(status_element);
     const status_is_sticky = $status_el.data("is_sticky");
@@ -49,6 +65,8 @@ export function set_up() {
     $("#default_language_modal [data-dismiss]").on("click", () => {
         overlays.close_modal("#default_language_modal");
     });
+
+    set_final_escape_narrow(page_params.final_escape_narrow);
 
     const all_display_settings = settings_config.get_all_display_settings();
     for (const setting of all_display_settings.settings.user_display_settings) {
@@ -97,6 +115,45 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
         overlays.open_modal("#default_language_modal");
+    });
+
+    $("#change_final_escape_narrow").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#change_final_escape_narrow_modal")
+            .find("input[name='final_escape_narrow']")
+            .val(page_params.final_escape_narrow);
+        overlays.open_modal("#change_final_escape_narrow_modal");
+    });
+
+    $("#change_final_escape_narrow_button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const change_final_escape_narrow_error = $("#change_final_escape_narrow_modal")
+            .find(".change_final_escape_narrow_info")
+            .expectOne();
+        const data = {};
+
+        const val = $(".final_escape_narrow_change_container")
+            .find("input[name='final_escape_narrow']")
+            .val();
+        data.final_escape_narrow = JSON.stringify(val);
+
+        const opts = {
+            success_continuation() {
+                // Remap escap evalue.
+                set_final_escape_narrow(val);
+                overlays.close_modal("#change_final_escape_narrow_modal");
+            },
+            error_msg_element: change_final_escape_narrow_error,
+        };
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings/display",
+            data,
+            $("#display-settings-status").expectOne(),
+            opts,
+        );
     });
 
     $("#demote_inactive_streams").on("change", function () {
