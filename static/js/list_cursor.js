@@ -1,3 +1,5 @@
+import * as scroll_util from "./scroll_util";
+
 export class ListCursor {
     constructor({highlight_class, list}) {
         const config_ok =

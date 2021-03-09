@@ -1,3 +1,6 @@
+import * as channel from "./channel";
+import * as narrow from "./narrow";
+
 function set_tutorial_status(status, callback) {
     return channel.post({
         url: "/json/users/me/tutorial_status",

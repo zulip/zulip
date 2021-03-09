@@ -53,7 +53,7 @@ def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> 
 
 @contextmanager
 def test_server_running(
-    force: bool = False,
+    skip_provision_check: bool = False,
     external_host: str = "testserver",
     log_file: Optional[str] = None,
     dots: bool = False,
@@ -72,8 +72,8 @@ def test_server_running(
 
     # Run this not through the shell, so that we have the actual PID.
     run_dev_server_command = ["tools/run-dev.py", "--test", "--streamlined"]
-    if force:
-        run_dev_server_command.append("--force")
+    if skip_provision_check:
+        run_dev_server_command.append("--skip-provision-check")
     server = subprocess.Popen(run_dev_server_command, stdout=log, stderr=log)
 
     try:

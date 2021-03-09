@@ -4,25 +4,23 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-const muting = zrequire("muting");
-const people = zrequire("people");
-const stream_data = zrequire("stream_data");
-const unread = zrequire("unread");
 
 let page_params = set_global("page_params", {
     realm_push_notifications_enabled: false,
 });
-zrequire("settings_notifications");
 
-const {FoldDict} = zrequire("fold_dict");
+const message_store = mock_module("message_store");
+const muting = zrequire("muting");
 
-set_global("narrow_state", {});
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
-const message_store = set_global("message_store", {});
+
+const {FoldDict} = zrequire("fold_dict");
+const people = zrequire("people");
+const stream_data = zrequire("stream_data");
+const unread = zrequire("unread");
 
 const me = {
     email: "me@example.com",
@@ -251,19 +249,19 @@ run_test("muting", () => {
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
 });
 
-run_test("num_unread_for_topic", () => {
+run_test("num_unread_for_topic", (override) => {
     // Test the num_unread_for_topic() function using many
     // messages.
     unread.declare_bankruptcy();
 
     const stream_id = 301;
 
-    stream_data.get_sub_by_id = (arg) => {
+    override(stream_data, "get_sub_by_id", (arg) => {
         if (arg === stream_id) {
             return {name: "Some Stream"};
         }
         throw new Error(`Unknown stream ${arg}`);
-    };
+    });
 
     let count = unread.num_unread_for_topic(stream_id, "lunch");
     assert.equal(count, 0);
@@ -326,15 +324,15 @@ run_test("num_unread_for_topic", () => {
     assert.deepEqual(msg_ids, []);
 });
 
-run_test("home_messages", () => {
-    stream_data.is_subscribed = () => true;
-    stream_data.is_muted = () => false;
+run_test("home_messages", (override) => {
+    override(stream_data, "is_subscribed", () => true);
+    override(stream_data, "is_muted", () => false);
 
     const stream_id = 401;
 
-    stream_data.get_sub_by_id = () => ({
+    override(stream_data, "get_sub_by_id", () => ({
         name: "whatever",
-    });
+    }));
 
     const message = {
         id: 15,
@@ -365,13 +363,13 @@ run_test("home_messages", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 
     // Now unsubscribe all our streams.
-    stream_data.is_subscribed = () => false;
+    override(stream_data, "is_subscribed", () => false);
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-run_test("phantom_messages", () => {
+run_test("phantom_messages", (override) => {
     const message = {
         id: 999,
         type: "stream",
@@ -379,7 +377,7 @@ run_test("phantom_messages", () => {
         topic: "phantom",
     };
 
-    stream_data.get_sub_by_id = () => {};
+    override(stream_data, "get_sub_by_id", () => {});
 
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();

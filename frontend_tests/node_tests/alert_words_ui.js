@@ -3,11 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const channel = set_global("channel", {});
+const channel = mock_module("channel");
 
 const alert_words = zrequire("alert_words");
 const alert_words_ui = zrequire("alert_words_ui");
@@ -131,11 +131,11 @@ run_test("remove_alert_word", (override) => {
     const remove_func = word_list.get_on_handler("click", ".remove-alert-word");
 
     const remove_alert_word = $(".remove-alert-word");
-    const list_item = $("li.alert-word-item");
+    const list_item = $("tr.alert-word-item");
     const val_item = $("span.value");
     val_item.text(i18n.t("zot"));
 
-    remove_alert_word.set_parents_result("li", list_item);
+    remove_alert_word.set_parents_result("tr", list_item);
     list_item.set_find_results(".value", val_item);
 
     const event = {

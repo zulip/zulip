@@ -25,36 +25,39 @@ set_global("page_params", {
     percent_off: 20,
 });
 
-const helpers = zrequire("helpers", "js/billing/helpers");
+const helpers = zrequire("../js/billing/helpers");
 
-run_test("initialize", () => {
+run_test("initialize", (override) => {
     let token_func;
-    helpers.set_tab = (page_name) => {
+    override(helpers, "set_tab", (page_name) => {
         assert.equal(page_name, "upgrade");
-    };
+    });
 
     let create_ajax_request_form_call_count = 0;
-    helpers.create_ajax_request = (url, form_name, stripe_token, numeric_inputs, redirect_to) => {
-        create_ajax_request_form_call_count += 1;
-        if (form_name === "autopay") {
-            assert.equal(url, "/json/billing/upgrade");
-            assert.equal(stripe_token, "stripe_add_card_token");
-            assert.deepEqual(numeric_inputs, ["licenses"]);
-            assert.equal(redirect_to, undefined);
-        } else if (form_name === "invoice") {
-            assert.equal(url, "/json/billing/upgrade");
-            assert.equal(stripe_token, undefined);
-            assert.deepEqual(numeric_inputs, ["licenses"]);
-            assert.equal(redirect_to, undefined);
-        } else if (form_name === "sponsorship") {
-            assert.equal(url, "/json/billing/sponsorship");
-            assert.equal(stripe_token, undefined);
-            assert.equal(numeric_inputs, undefined);
-            assert.equal(redirect_to, "/");
-        } else {
-            throw new Error("Unhandled case");
-        }
-    };
+    helpers.__Rewire__(
+        "create_ajax_request",
+        (url, form_name, stripe_token, numeric_inputs, redirect_to) => {
+            create_ajax_request_form_call_count += 1;
+            if (form_name === "autopay") {
+                assert.equal(url, "/json/billing/upgrade");
+                assert.equal(stripe_token, "stripe_add_card_token");
+                assert.deepEqual(numeric_inputs, ["licenses"]);
+                assert.equal(redirect_to, undefined);
+            } else if (form_name === "invoice") {
+                assert.equal(url, "/json/billing/upgrade");
+                assert.equal(stripe_token, undefined);
+                assert.deepEqual(numeric_inputs, ["licenses"]);
+                assert.equal(redirect_to, undefined);
+            } else if (form_name === "sponsorship") {
+                assert.equal(url, "/json/billing/sponsorship");
+                assert.equal(stripe_token, undefined);
+                assert.equal(numeric_inputs, undefined);
+                assert.equal(redirect_to, "/");
+            } else {
+                throw new Error("Unhandled case");
+            }
+        },
+    );
 
     const open_func = (config_opts) => {
         assert.equal(config_opts.name, "Zulip");
@@ -79,15 +82,15 @@ run_test("initialize", () => {
         };
     };
 
-    helpers.show_license_section = (section) => {
+    override(helpers, "show_license_section", (section) => {
         assert.equal(section, "automatic");
-    };
+    });
 
-    helpers.update_charged_amount = (prices, schedule) => {
+    override(helpers, "update_charged_amount", (prices, schedule) => {
         assert.equal(prices.annual, 6400);
         assert.equal(prices.monthly, 640);
         assert.equal(schedule, "monthly");
-    };
+    });
 
     $("input[type=radio][name=license_management]:checked").val = () =>
         document.querySelector("input[type=radio][name=license_management]:checked").value;
@@ -98,7 +101,7 @@ run_test("initialize", () => {
     $("#autopay-form").data = (key) =>
         document.querySelector("#autopay-form").getAttribute("data-" + key);
 
-    zrequire("upgrade", "js/billing/upgrade");
+    zrequire("../js/billing/upgrade");
 
     const e = {
         preventDefault: noop,
@@ -108,7 +111,7 @@ run_test("initialize", () => {
     const invoice_click_handler = $("#invoice-button").get_on_handler("click");
     const request_sponsorship_click_handler = $("#sponsorship-button").get_on_handler("click");
 
-    helpers.is_valid_input = () => true;
+    override(helpers, "is_valid_input", () => true);
     add_card_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 1);
     invoice_click_handler(e);
@@ -116,25 +119,25 @@ run_test("initialize", () => {
     request_sponsorship_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 3);
 
-    helpers.is_valid_input = () => false;
+    override(helpers, "is_valid_input", () => false);
     add_card_click_handler(e);
     invoice_click_handler(e);
     request_sponsorship_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 3);
 
-    helpers.show_license_section = (section) => {
+    override(helpers, "show_license_section", (section) => {
         assert.equal(section, "manual");
-    };
+    });
     const license_change_handler = $("input[type=radio][name=license_management]").get_on_handler(
         "change",
     );
     license_change_handler.call({value: "manual"});
 
-    helpers.update_charged_amount = (prices, schedule) => {
+    override(helpers, "update_charged_amount", (prices, schedule) => {
         assert.equal(prices.annual, 6400);
         assert.equal(prices.monthly, 640);
         assert.equal(schedule, "monthly");
-    };
+    });
     const schedule_change_handler = $("input[type=radio][name=schedule]").get_on_handler("change");
     schedule_change_handler.call({value: "monthly"});
 

@@ -1,17 +1,15 @@
-"use strict";
-
 // This reloads the module in development rather than refreshing the page
 if (module.hot) {
     module.hot.accept();
 }
 
-exports.status_classes = "alert-error alert-success alert-info alert-warning";
+export const status_classes = "alert-error alert-success alert-info alert-warning";
 
-exports.autofocus = function (selector) {
+export function autofocus(selector) {
     $(() => {
         $(selector).trigger("focus");
     });
-};
+}
 
 // Return a boolean indicating whether the password is acceptable.
 // Also updates a Bootstrap progress bar control (a jQuery object)
@@ -21,7 +19,7 @@ exports.autofocus = function (selector) {
 //
 // This is in common.js because we want to use it from the signup page
 // and also from the in-app password change interface.
-exports.password_quality = function (password, bar, password_field) {
+export function password_quality(password, bar, password_field) {
     // We load zxcvbn.js asynchronously, so the variable might not be set.
     if (typeof zxcvbn === "undefined") {
         return undefined;
@@ -51,9 +49,9 @@ exports.password_quality = function (password, bar, password_field) {
     }
 
     return acceptable;
-};
+}
 
-exports.password_warning = function (password, password_field) {
+export function password_warning(password, password_field) {
     if (typeof zxcvbn === "undefined") {
         return undefined;
     }
@@ -66,9 +64,9 @@ exports.password_warning = function (password, password_field) {
         });
     }
     return zxcvbn(password).feedback.warning || i18n.t("Password is too weak");
-};
+}
 
-exports.phrase_match = function (query, phrase) {
+export function phrase_match(query, phrase) {
     // match "tes" to "test" and "stream test" but not "hostess"
     let i;
     query = query.toLowerCase();
@@ -85,9 +83,9 @@ exports.phrase_match = function (query, phrase) {
         }
     }
     return false;
-};
+}
 
-exports.copy_data_attribute_value = function (elem, key) {
+export function copy_data_attribute_value(elem, key) {
     // function to copy the value of data-key
     // attribute of the element to clipboard
     const temp = $(document.createElement("input"));
@@ -97,14 +95,14 @@ exports.copy_data_attribute_value = function (elem, key) {
     temp.remove();
     elem.fadeOut(250);
     elem.fadeIn(1000);
-};
+}
 
-exports.has_mac_keyboard = function () {
+export function has_mac_keyboard() {
     return /mac/i.test(navigator.platform);
-};
+}
 
-exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
-    if (!exports.has_mac_keyboard()) {
+export function adjust_mac_shortcuts(key_elem_class, require_cmd_style) {
+    if (!has_mac_keyboard()) {
         return;
     }
 
@@ -134,6 +132,4 @@ exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
 
         $(this).text(key_text);
     });
-};
-
-window.common = exports;
+}

@@ -5,36 +5,35 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-
-const user_pill = zrequire("user_pill");
-const settings_user_groups = zrequire("settings_user_groups");
-
-const confirm_dialog = set_global("confirm_dialog", {});
 
 const noop = () => {};
 
 const pills = {
     pill: {},
 };
-const settings_config = zrequire("settings_config");
 
 let create_item_handler;
 
-const channel = set_global("channel", {});
-const typeahead_helper = set_global("typeahead_helper", {});
-const user_groups = set_global("user_groups", {
+const channel = mock_module("channel");
+const confirm_dialog = mock_module("confirm_dialog");
+const input_pill = mock_module("input_pill");
+const typeahead_helper = mock_module("typeahead_helper");
+const user_groups = mock_module("user_groups", {
     get_user_group_from_id: noop,
     remove: noop,
     add: noop,
 });
-const ui_report = set_global("ui_report", {});
-
-const people = zrequire("people");
+const ui_report = mock_module("ui_report");
 
 const page_params = set_global("page_params", {});
+
+const people = zrequire("people");
+const settings_config = zrequire("settings_config");
+const settings_user_groups = zrequire("settings_user_groups");
+const user_pill = zrequire("user_pill");
 
 function reset_test_setup(pill_container_stub) {
     function input_pill_stub(opts) {
@@ -43,9 +42,7 @@ function reset_test_setup(pill_container_stub) {
         assert(create_item_handler);
         return pills;
     }
-    set_global("input_pill", {
-        create: input_pill_stub,
-    });
+    input_pill.create = input_pill_stub;
 }
 
 function test_ui(label, f) {
@@ -100,7 +97,7 @@ const name_selector = `#user-groups #${CSS.escape(1)} .name`;
 const description_selector = `#user-groups #${CSS.escape(1)} .description`;
 const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
-test_ui("populate_user_groups", () => {
+test_ui("populate_user_groups", (override) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -160,7 +157,7 @@ test_ui("populate_user_groups", () => {
         return undefined;
     };
 
-    settings_user_groups.can_edit = () => true;
+    override(settings_user_groups, "can_edit", () => true);
 
     const all_pills = new Map();
 
@@ -347,7 +344,7 @@ test_ui("populate_user_groups", () => {
         "function",
     );
 });
-test_ui("with_external_user", () => {
+test_ui("with_external_user", (override) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -364,13 +361,13 @@ test_ui("with_external_user", () => {
 
     people.get_by_user_id = () => noop;
 
-    user_pill.append_person = () => noop;
+    override(user_pill, "append_person", () => noop);
 
     let can_edit_called = 0;
-    settings_user_groups.can_edit = () => {
+    override(settings_user_groups, "can_edit", () => {
         can_edit_called += 1;
         return false;
-    };
+    });
 
     // Reset zjquery to test stuff with user who cannot edit
     $.clear_all_elements();
@@ -484,12 +481,12 @@ test_ui("with_external_user", () => {
     assert.equal(turned_off["click/whole"], true);
 });
 
-test_ui("reload", () => {
+test_ui("reload", (override) => {
     $("#user-groups").html("Some text");
     let populate_user_groups_called = false;
-    settings_user_groups.populate_user_groups = () => {
+    override(settings_user_groups, "populate_user_groups", () => {
         populate_user_groups_called = true;
-    };
+    });
     settings_user_groups.reload();
     assert(populate_user_groups_called);
     assert.equal($("#user-groups").html(), "");
@@ -501,8 +498,8 @@ test_ui("reset", () => {
     assert.equal(result, undefined);
 });
 
-test_ui("on_events", () => {
-    settings_user_groups.can_edit = () => true;
+test_ui("on_events", (override) => {
+    override(settings_user_groups, "can_edit", () => true);
 
     (function test_admin_user_group_form_submit_triggered() {
         const handler = $(".organization form.admin-user-group-form").get_on_handler("submit");
@@ -580,9 +577,9 @@ test_ui("on_events", () => {
             assert.equal(opts.url, "/json/user_groups/1");
             assert.deepEqual(opts.data, data);
 
-            settings_user_groups.reload = () => {
+            override(settings_user_groups, "reload", () => {
                 settings_user_groups_reload_called = true;
-            };
+            });
             opts.success();
             assert(settings_user_groups_reload_called);
 
@@ -655,9 +652,9 @@ test_ui("on_events", () => {
 
             // Cancel button triggers blur event.
             let settings_user_groups_reload_called = false;
-            settings_user_groups.reload = () => {
+            override(settings_user_groups, "reload", () => {
                 settings_user_groups_reload_called = true;
-            };
+            });
             api_endpoint_called = false;
             fake_this.closest = (class_name) => {
                 if (

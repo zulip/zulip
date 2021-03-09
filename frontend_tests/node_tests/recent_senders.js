@@ -2,26 +2,27 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-const rs = zrequire("recent_senders");
 
 let next_id = 0;
 const messages = [];
 
-set_global("message_store", {
-    get: (msg_id) => messages[msg_id - 1],
-});
-set_global("message_list", {
+const message_list = mock_module("message_list", {
     all: {
         all_messages() {
             return messages;
         },
     },
 });
+mock_module("message_store", {
+    get: (msg_id) => messages[msg_id - 1],
+});
+
+const rs = zrequire("recent_senders");
 zrequire("message_util.js");
-run_test("process_message_for_senders", () => {
+
+run_test("process_message_for_senders", (override) => {
     const stream1 = 1;
     const stream2 = 2;
     const stream3 = 3;
@@ -206,17 +207,9 @@ run_test("process_message_for_senders", () => {
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
     assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "2,3");
 
-    set_global("message_list", {
-        all: {
-            all_messages() {
-                // messages[0] (message1) and messages[4] (message5) were removed.
-                const reduced_msgs = [...messages];
-                reduced_msgs.splice(4, 1);
-                reduced_msgs.splice(0, 1);
-                return reduced_msgs;
-            },
-        },
-    });
+    // messages[0] (message1) and messages[4] (message5) were removed.
+    const reduced_msgs = [...messages.slice(1, 4), ...messages.slice(5)];
+    override(message_list.all, "all_messages", () => reduced_msgs);
     assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2,1");
     // delete message1 and message5 sent by sender1
     rs.update_topics_of_deleted_message_ids([message1.id, message5.id]);

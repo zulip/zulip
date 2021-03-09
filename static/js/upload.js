@@ -1,29 +1,33 @@
-"use strict";
+import Uppy from "@uppy/core";
+import ProgressBar from "@uppy/progress-bar";
+import XHRUpload from "@uppy/xhr-upload";
 
-const Uppy = require("@uppy/core");
-const ProgressBar = require("@uppy/progress-bar");
-const XHRUpload = require("@uppy/xhr-upload");
+import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
+import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 
-exports.make_upload_absolute = function (uri) {
+export function make_upload_absolute(uri) {
     if (uri.startsWith(compose.uploads_path)) {
         // Rewrite the URI to a usable link
         return compose.uploads_domain + uri;
     }
     return uri;
-};
+}
 
 // Show the upload button only if the browser supports it.
-exports.feature_check = function (upload_button) {
-    if (window.XMLHttpRequest && new XMLHttpRequest().upload) {
+export function feature_check(upload_button) {
+    if (window.XMLHttpRequest && new window.XMLHttpRequest().upload) {
         upload_button.removeClass("notdisplayed");
     }
-};
-exports.get_translated_status = function (file) {
+}
+
+export function get_translated_status(file) {
     const status = i18n.t("Uploading __filename__…", {filename: file.name});
     return "[" + status + "]()";
-};
+}
 
-exports.get_item = function (key, config) {
+export function get_item(key, config) {
     if (!config) {
         throw new Error("Missing config");
     }
@@ -87,32 +91,28 @@ exports.get_item = function (key, config) {
     } else {
         throw new Error("Invalid upload mode!");
     }
-};
+}
 
-exports.hide_upload_status = function (config) {
-    exports.get_item("send_button", config).prop("disabled", false);
-    exports.get_item("send_status", config).removeClass("alert-info").hide();
-};
+export function hide_upload_status(config) {
+    get_item("send_button", config).prop("disabled", false);
+    get_item("send_status", config).removeClass("alert-info").hide();
+}
 
-exports.show_error_message = function (config, message) {
+export function show_error_message(config, message) {
     if (!message) {
         message = i18n.t("An unknown error occurred.");
     }
-    exports.get_item("send_button", config).prop("disabled", false);
-    exports
-        .get_item("send_status", config)
-        .addClass("alert-error")
-        .removeClass("alert-info")
-        .show();
-    exports.get_item("send_status_message", config).text(message);
-};
+    get_item("send_button", config).prop("disabled", false);
+    get_item("send_status", config).addClass("alert-error").removeClass("alert-info").show();
+    get_item("send_status_message", config).text(message);
+}
 
-exports.upload_files = function (uppy, config, files) {
+export function upload_files(uppy, config, files) {
     if (files.length === 0) {
         return;
     }
     if (page_params.max_file_upload_size_mib === 0) {
-        exports.show_error_message(
+        show_error_message(
             config,
             i18n.t("File and image uploads have been disabled for this organization."),
         );
@@ -126,42 +126,38 @@ exports.upload_files = function (uppy, config, files) {
     // We implement this transition through triggering a click on the
     // toggle button to take advantage of the existing plumbing for
     // handling the compose and edit UIs.
-    if (exports.get_item("markdown_preview_hide_button", config).is(":visible")) {
-        exports.get_item("markdown_preview_hide_button", config).trigger("click");
+    if (get_item("markdown_preview_hide_button", config).is(":visible")) {
+        get_item("markdown_preview_hide_button", config).trigger("click");
     }
 
-    exports.get_item("send_button", config).prop("disabled", true);
-    exports
-        .get_item("send_status", config)
-        .addClass("alert-info")
-        .removeClass("alert-error")
-        .show();
-    exports.get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
-    exports.get_item("send_status_close_button", config).one("click", () => {
+    get_item("send_button", config).prop("disabled", true);
+    get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
+    get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
+    get_item("send_status_close_button", config).one("click", () => {
         for (const file of uppy.getFiles()) {
             compose_ui.replace_syntax(
-                exports.get_translated_status(file),
+                get_translated_status(file),
                 "",
-                exports.get_item("textarea", config),
+                get_item("textarea", config),
             );
         }
-        compose_ui.autosize_textarea(exports.get_item("textarea", config));
+        compose_ui.autosize_textarea(get_item("textarea", config));
         uppy.cancelAll();
-        exports.get_item("textarea", config).trigger("focus");
+        get_item("textarea", config).trigger("focus");
         setTimeout(() => {
-            exports.hide_upload_status(config);
+            hide_upload_status(config);
         }, 500);
     });
 
     for (const file of files) {
         try {
             compose_ui.insert_syntax_and_focus(
-                exports.get_translated_status(file),
-                exports.get_item("textarea", config),
+                get_translated_status(file),
+                get_item("textarea", config),
             );
-            compose_ui.autosize_textarea(exports.get_item("textarea", config));
+            compose_ui.autosize_textarea(get_item("textarea", config));
             uppy.addFile({
-                source: exports.get_item("source", config),
+                source: get_item("source", config),
                 name: file.name,
                 type: file.type,
                 data: file,
@@ -171,9 +167,9 @@ exports.upload_files = function (uppy, config, files) {
             break;
         }
     }
-};
+}
 
-exports.setup_upload = function (config) {
+export function setup_upload(config) {
     const uppy = new Uppy({
         debug: false,
         autoProceed: true,
@@ -204,24 +200,24 @@ exports.setup_upload = function (config) {
     });
 
     uppy.use(ProgressBar, {
-        target: exports.get_item("send_status_identifier", config),
+        target: get_item("send_status_identifier", config),
         hideAfterFinish: false,
     });
 
-    $("body").on("change", exports.get_item("file_input_identifier", config), (event) => {
+    $("body").on("change", get_item("file_input_identifier", config), (event) => {
         const files = event.target.files;
-        exports.upload_files(uppy, config, files);
+        upload_files(uppy, config, files);
         event.target.value = "";
     });
 
-    const drag_drop_container = exports.get_item("drag_drop_container", config);
+    const drag_drop_container = get_item("drag_drop_container", config);
     drag_drop_container.on("dragover", (event) => event.preventDefault());
     drag_drop_container.on("dragenter", (event) => event.preventDefault());
 
     drag_drop_container.on("drop", (event) => {
         event.preventDefault();
         const files = event.originalEvent.dataTransfer.files;
-        exports.upload_files(uppy, config, files);
+        upload_files(uppy, config, files);
     });
 
     drag_drop_container.on("paste", (event) => {
@@ -238,7 +234,7 @@ exports.setup_upload = function (config) {
             const file = item.getAsFile();
             files.push(file);
         }
-        exports.upload_files(uppy, config, files);
+        upload_files(uppy, config, files);
     });
 
     uppy.on("upload-success", (file, response) => {
@@ -251,14 +247,14 @@ exports.setup_upload = function (config) {
         if (config.mode === "compose" && !compose_state.composing()) {
             compose_actions.start("stream");
         }
-        const absolute_uri = exports.make_upload_absolute(uri);
+        const absolute_uri = make_upload_absolute(uri);
         const filename_uri = "[" + filename + "](" + absolute_uri + ")";
         compose_ui.replace_syntax(
-            exports.get_translated_status(file),
+            get_translated_status(file),
             filename_uri,
-            exports.get_item("textarea", config),
+            get_item("textarea", config),
         );
-        compose_ui.autosize_textarea(exports.get_item("textarea", config));
+        compose_ui.autosize_textarea(get_item("textarea", config));
     });
 
     uppy.on("complete", () => {
@@ -276,10 +272,10 @@ exports.setup_upload = function (config) {
             }
         }
 
-        const has_errors = exports.get_item("send_status", config).hasClass("alert-error");
+        const has_errors = get_item("send_status", config).hasClass("alert-error");
         if (!uploads_in_progress && !has_errors) {
             setTimeout(() => {
-                exports.hide_upload_status(config);
+                hide_upload_status(config);
             }, 500);
         }
     });
@@ -302,32 +298,22 @@ exports.setup_upload = function (config) {
             // The remaining errors are mostly frontend errors like file being too large
             // for upload.
             uppy.cancelAll();
-            exports.show_error_message(config, info.message);
+            show_error_message(config, info.message);
         }
     });
 
     uppy.on("upload-error", (file, error, response) => {
         const message = response ? response.body.msg : null;
         uppy.cancelAll();
-        exports.show_error_message(config, message);
-        compose_ui.replace_syntax(
-            exports.get_translated_status(file),
-            "",
-            exports.get_item("textarea", config),
-        );
-        compose_ui.autosize_textarea(exports.get_item("textarea", config));
+        show_error_message(config, message);
+        compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));
+        compose_ui.autosize_textarea(get_item("textarea", config));
     });
 
     uppy.on("restriction-failed", (file) => {
-        compose_ui.replace_syntax(
-            exports.get_translated_status(file),
-            "",
-            exports.get_item("textarea", config),
-        );
-        compose_ui.autosize_textarea(exports.get_item("textarea", config));
+        compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));
+        compose_ui.autosize_textarea(get_item("textarea", config));
     });
 
     return uppy;
-};
-
-window.upload = exports;
+}

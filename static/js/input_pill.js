@@ -1,13 +1,13 @@
-"use strict";
+import render_input_pill from "../templates/input_pill.hbs";
 
-const render_input_pill = require("../templates/input_pill.hbs");
+import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
-exports.random_id = function () {
+export function random_id() {
     return Math.random().toString(16);
-};
+}
 
-exports.create = function (opts) {
+export function create(opts) {
     // a dictionary of the key codes that are associated with each key
     // to make if/else more human readable.
     const KEY = {
@@ -84,7 +84,7 @@ exports.create = function (opts) {
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
         appendValidatedData(item) {
-            const id = exports.random_id();
+            const id = random_id();
 
             if (!item.display_value) {
                 blueslip.error("no display_value returned");
@@ -401,6 +401,4 @@ exports.create = function (opts) {
     };
 
     return prototype;
-};
-
-window.input_pill = exports;
+}

@@ -9,6 +9,7 @@
 // execution.
 
 const blueslip_stacktrace = require("./blueslip_stacktrace");
+const ui_report = require("./ui_report");
 
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;

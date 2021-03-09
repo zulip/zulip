@@ -1,3 +1,4 @@
+import * as overlays from "./overlays";
 import * as people from "./people";
 import * as user_status from "./user_status";
 

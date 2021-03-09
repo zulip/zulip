@@ -1,3 +1,4 @@
+import * as stream_data from "./stream_data";
 import * as util from "./util";
 
 let previous_pinned;

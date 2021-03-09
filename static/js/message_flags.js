@@ -1,6 +1,10 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import * as channel from "./channel";
+import * as message_store from "./message_store";
+import * as starred_messages from "./starred_messages";
+import * as ui from "./ui";
+import * as unread_ops from "./unread_ops";
 
 function send_flag_update(message, flag, op) {
     channel.post({
@@ -13,8 +17,9 @@ function send_flag_update(message, flag, op) {
         },
     });
 }
-exports._unread_batch_size = 1000;
-exports.send_read = (function () {
+export const _unread_batch_size = 1000;
+
+export const send_read = (function () {
     let queue = [];
     let on_success;
     let start;
@@ -28,7 +33,7 @@ exports.send_read = (function () {
             return;
         }
 
-        const real_msg_ids_batch = real_msg_ids.slice(0, exports._unread_batch_size);
+        const real_msg_ids_batch = real_msg_ids.slice(0, _unread_batch_size);
 
         // We have some real IDs.  If there are any left in the queue when this
         // call finishes, they will be handled in the success callback.
@@ -63,17 +68,17 @@ exports.send_read = (function () {
     return add;
 })();
 
-exports.save_collapsed = function (message) {
+export function save_collapsed(message) {
     send_flag_update(message, "collapsed", "add");
-};
+}
 
-exports.save_uncollapsed = function (message) {
+export function save_uncollapsed(message) {
     send_flag_update(message, "collapsed", "remove");
-};
+}
 
 // This updates the state of the starred flag in local data
 // structures, and triggers a UI rerender.
-exports.update_starred_flag = function (message_id, new_value) {
+export function update_starred_flag(message_id, new_value) {
     const message = message_store.get(message_id);
     if (message === undefined) {
         // If we don't have the message locally, do nothing; if later
@@ -82,9 +87,9 @@ exports.update_starred_flag = function (message_id, new_value) {
     }
     message.starred = new_value;
     ui.update_starred_view(message_id, new_value);
-};
+}
 
-exports.toggle_starred_and_update_server = function (message) {
+export function toggle_starred_and_update_server(message) {
     if (message.locally_echoed) {
         // This is defensive code for when you hit the "*" key
         // before we get a server ack.  It's rare that somebody
@@ -109,15 +114,10 @@ exports.toggle_starred_and_update_server = function (message) {
         send_flag_update(message, "starred", "remove");
         starred_messages.remove([message.id]);
     }
-};
+}
 
-exports.unstar_messages = function (topic_name, stream_id) {
-    let starred_msg_ids;
-    if (topic_name && stream_id) {
-        starred_msg_ids = starred_messages.get_topic_starred_msg_ids(topic_name, stream_id);
-    } else {
-        starred_msg_ids = starred_messages.get_starred_msg_ids();
-    }
+export function unstar_all_messages() {
+    const starred_msg_ids = starred_messages.get_starred_msg_ids();
     channel.post({
         url: "/json/messages/flags",
         idempotent: true,
@@ -127,6 +127,4 @@ exports.unstar_messages = function (topic_name, stream_id) {
             op: "remove",
         },
     });
-};
-
-window.message_flags = exports;
+}

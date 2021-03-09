@@ -1,6 +1,16 @@
-"use strict";
+import * as channel from "./channel";
+import * as message_flags from "./message_flags";
+import * as message_list from "./message_list";
+import * as message_store from "./message_store";
+import * as message_viewport from "./message_viewport";
+import * as notifications from "./notifications";
+import * as overlays from "./overlays";
+import * as recent_topics from "./recent_topics";
+import * as reload from "./reload";
+import * as unread from "./unread";
+import * as unread_ui from "./unread_ui";
 
-exports.mark_all_as_read = function () {
+export function mark_all_as_read() {
     unread.declare_bankruptcy();
     unread_ui.update_unread_counts();
 
@@ -18,7 +28,7 @@ exports.mark_all_as_read = function () {
             });
         },
     });
-};
+}
 
 function process_newly_read_message(message, options) {
     home_msg_list.show_message_as_read(message, options);
@@ -30,7 +40,7 @@ function process_newly_read_message(message, options) {
     recent_topics.update_topic_unread_count(message);
 }
 
-exports.process_read_messages_event = function (message_ids) {
+export function process_read_messages_event(message_ids) {
     /*
         This code has a lot in common with notify_server_messages_read,
         but there are subtle differences due to the fact that the
@@ -62,11 +72,11 @@ exports.process_read_messages_event = function (message_ids) {
     }
 
     unread_ui.update_unread_counts();
-};
+}
 
 // Takes a list of messages and marks them as read.
 // Skips any messages that are already marked as read.
-exports.notify_server_messages_read = function (messages, options) {
+export function notify_server_messages_read(messages, options) {
     options = options || {};
     messages = unread.get_unread_messages(messages);
     if (messages.length === 0) {
@@ -85,44 +95,42 @@ exports.notify_server_messages_read = function (messages, options) {
     }
 
     unread_ui.update_unread_counts();
-};
+}
 
-exports.notify_server_message_read = function (message, options) {
-    exports.notify_server_messages_read([message], options);
-};
+export function notify_server_message_read(message, options) {
+    notify_server_messages_read([message], options);
+}
 
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
-exports.process_visible = function () {
+export function process_visible() {
     if (overlays.is_active() || !notifications.is_window_focused()) {
         return;
     }
 
     if (message_viewport.bottom_message_visible() && current_msg_list.can_mark_messages_read()) {
-        exports.mark_current_list_as_read();
+        mark_current_list_as_read();
     }
-};
+}
 
-exports.mark_current_list_as_read = function (options) {
-    exports.notify_server_messages_read(current_msg_list.all_messages(), options);
-};
+export function mark_current_list_as_read(options) {
+    notify_server_messages_read(current_msg_list.all_messages(), options);
+}
 
-exports.mark_stream_as_read = function (stream_id, cont) {
+export function mark_stream_as_read(stream_id, cont) {
     channel.post({
         url: "/json/mark_stream_as_read",
         idempotent: true,
         data: {stream_id},
         success: cont,
     });
-};
+}
 
-exports.mark_topic_as_read = function (stream_id, topic, cont) {
+export function mark_topic_as_read(stream_id, topic, cont) {
     channel.post({
         url: "/json/mark_topic_as_read",
         idempotent: true,
         data: {stream_id, topic_name: topic},
         success: cont,
     });
-};
-
-window.unread_ops = exports;
+}

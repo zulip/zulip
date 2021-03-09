@@ -2,27 +2,25 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_module, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const narrow_state = set_global("narrow_state", {});
-set_global("ui", {
-    get_content_element: (element) => element,
-});
-set_global("stream_popover", {
-    hide_topic_popover() {},
-});
-const unread = set_global("unread", {});
-const unread_ui = set_global("unread_ui", {});
-const vdom = set_global("vdom", {
+const narrow_state = mock_module("narrow_state");
+const pm_list_dom = mock_module("pm_list_dom");
+const unread = mock_module("unread");
+const unread_ui = mock_module("unread_ui");
+const vdom = mock_module("vdom", {
     render: () => "fake-dom-for-pm-list",
 });
-const pm_list_dom = set_global("pm_list_dom", {});
 
-zrequire("presence");
-zrequire("buddy_data");
-zrequire("hash_util");
+mock_module("stream_popover", {
+    hide_topic_popover() {},
+});
+mock_module("ui", {
+    get_content_element: (element) => element,
+});
+
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
 const pm_list = zrequire("pm_list");

@@ -1,12 +1,15 @@
 import ClipboardJS from "clipboard";
+import {parseISO, isValid} from "date-fns";
 
 import copy_code_button from "../templates/copy_code_button.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as people from "./people";
+import * as rtl from "./rtl";
 import * as settings_config from "./settings_config";
-
-const {parseISO, isValid} = require("date-fns");
+import * as stream_data from "./stream_data";
+import * as timerender from "./timerender";
+import * as user_groups from "./user_groups";
 
 /*
     rendered_markdown

@@ -2,16 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+const compose_actions = mock_module("compose_actions");
 const people = zrequire("people");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
 const input_pill = zrequire("input_pill");
-zrequire("user_pill");
-const compose_actions = set_global("compose_actions", {});
 
 let pills = {
     pill: {},
@@ -123,7 +122,7 @@ run_test("pills", (override) => {
         return pills;
     }
 
-    input_pill.create = input_pill_stub;
+    input_pill.__Rewire__("create", input_pill_stub);
 
     // We stub the return value of input_pill.create(), manually add widget functions to it.
     pills.onPillCreate = (callback) => {
@@ -167,27 +166,27 @@ run_test("pills", (override) => {
 });
 
 run_test("has_unconverted_data", () => {
-    compose_pm_pill.widget = {
+    compose_pm_pill.__Rewire__("widget", {
         is_pending: () => true,
-    };
+    });
 
     // If the pill itself has pending data, we have unconverted
     // data.
     assert.equal(compose_pm_pill.has_unconverted_data(), true);
 
-    compose_pm_pill.widget = {
+    compose_pm_pill.__Rewire__("widget", {
         is_pending: () => false,
         items: () => [{user_id: 99}],
-    };
+    });
 
     // Our pill is complete and all items contain user_id, so
     // we do NOT have unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), false);
 
-    compose_pm_pill.widget = {
+    compose_pm_pill.__Rewire__("widget", {
         is_pending: () => false,
         items: () => [{user_id: 99}, {email: "random@mit.edu"}],
-    };
+    });
 
     // One of our items only knows email (as in a bridge-with-zephyr
     // scenario where we might not have registered the user yet), so

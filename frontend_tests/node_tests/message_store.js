@@ -2,24 +2,19 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
-
-const util = zrequire("util");
-const people = zrequire("people");
-const pm_conversations = zrequire("pm_conversations");
-const message_store = zrequire("message_store");
 
 const noop = () => {};
 
 set_global("document", "document-stub");
 
-set_global("stream_topic_history", {
+mock_module("stream_topic_history", {
     add_message: noop,
 });
 
-set_global("recent_senders", {
+mock_module("recent_senders", {
     process_message_for_senders: noop,
 });
 
@@ -27,6 +22,11 @@ set_global("page_params", {
     realm_allow_message_editing: true,
     is_admin: true,
 });
+
+const util = zrequire("util");
+const people = zrequire("people");
+const pm_conversations = zrequire("pm_conversations");
+const message_store = zrequire("message_store");
 
 const denmark = {
     subscribed: false,
@@ -339,7 +339,6 @@ run_test("message_id_change", () => {
         },
     });
 
-    set_global("message_list", {});
     set_global("home_msg_list", {});
 
     const opts = {

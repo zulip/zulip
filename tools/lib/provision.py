@@ -368,9 +368,13 @@ def main(options: argparse.Namespace) -> "NoReturn":
         try:
             install_system_deps()
         except subprocess.CalledProcessError:
-            # Might be a failure due to network connection issues. Retrying...
-            print(WARNING + "Installing system dependencies failed; retrying..." + ENDC)
-            install_system_deps()
+            try:
+                # Might be a failure due to network connection issues. Retrying...
+                print(WARNING + "Installing system dependencies failed; retrying..." + ENDC)
+                install_system_deps()
+            except BaseException as e:
+                # Suppress exception chaining
+                raise e from None
         with open(apt_hash_file_path, "w") as hash_file:
             hash_file.write(new_apt_dependencies_hash)
     else:

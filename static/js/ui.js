@@ -1,30 +1,30 @@
-"use strict";
+import SimpleBar from "simplebar/dist/simplebar";
 
-const SimpleBar = require("simplebar/dist/simplebar");
-
-const {localstorage} = require("./localstorage");
+import * as common from "./common";
+import {localstorage} from "./localstorage";
+import * as message_list from "./message_list";
 
 // What, if anything, obscures the home tab?
 
-exports.replace_emoji_with_text = function (element) {
+export function replace_emoji_with_text(element) {
     element.find(".emoji").replaceWith(function () {
         if ($(this).is("img")) {
             return $(this).attr("alt");
         }
         return $(this).text();
     });
-};
+}
 
-exports.get_content_element = function (element_selector) {
+export function get_content_element(element_selector) {
     const element = element_selector.expectOne()[0];
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         return $(sb.getContentElement());
     }
     return element_selector;
-};
+}
 
-exports.get_scroll_element = function (element_selector) {
+export function get_scroll_element(element_selector) {
     const element = element_selector.expectOne()[0];
     const sb = SimpleBar.instances.get(element);
     if (sb) {
@@ -35,9 +35,9 @@ exports.get_scroll_element = function (element_selector) {
         return $(new SimpleBar(element).getScrollElement());
     }
     return element_selector;
-};
+}
 
-exports.reset_scrollbar = function (element_selector) {
+export function reset_scrollbar(element_selector) {
     const element = element_selector.expectOne()[0];
     const sb = SimpleBar.instances.get(element);
     if (sb) {
@@ -45,7 +45,7 @@ exports.reset_scrollbar = function (element_selector) {
     } else {
         element.scrollTop = 0;
     }
-};
+}
 
 function update_message_in_all_views(message_id, callback) {
     for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
@@ -62,7 +62,7 @@ function update_message_in_all_views(message_id, callback) {
     }
 }
 
-exports.update_starred_view = function (message_id, new_value) {
+export function update_starred_view(message_id, new_value) {
     const starred = new_value;
 
     // Avoid a full re-render, but update the star in each message
@@ -83,40 +83,41 @@ exports.update_starred_view = function (message_id, new_value) {
             i18n.t("__starred_status__ this message (Ctrl + s)", {starred_status: title_state}),
         );
     });
-};
+}
 
-exports.show_message_failed = function (message_id, failed_msg) {
+export function show_message_failed(message_id, failed_msg) {
     // Failed to send message, so display inline retry/cancel
     update_message_in_all_views(message_id, (row) => {
         const failed_div = row.find(".message_failed");
         failed_div.toggleClass("notvisible", false);
         failed_div.find(".failed_text").attr("title", failed_msg);
     });
-};
+}
 
-exports.show_failed_message_success = function (message_id) {
+export function show_failed_message_success(message_id) {
     // Previously failed message succeeded
     update_message_in_all_views(message_id, (row) => {
         row.find(".message_failed").toggleClass("notvisible", true);
     });
-};
+}
 
-exports.get_hotkey_deprecation_notice = function (originalHotkey, replacementHotkey) {
+export function get_hotkey_deprecation_notice(originalHotkey, replacementHotkey) {
     return i18n.t(
         'We\'ve replaced the "__originalHotkey__" hotkey with "__replacementHotkey__" ' +
             "to make this common shortcut easier to trigger.",
         {originalHotkey, replacementHotkey},
     );
-};
+}
 
 let shown_deprecation_notices = [];
-exports.maybe_show_deprecation_notice = function (key) {
+
+export function maybe_show_deprecation_notice(key) {
     let message;
     const isCmdOrCtrl = common.has_mac_keyboard() ? "Cmd" : "Ctrl";
     if (key === "C") {
-        message = exports.get_hotkey_deprecation_notice("C", "x");
+        message = get_hotkey_deprecation_notice("C", "x");
     } else if (key === "*") {
-        message = exports.get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
+        message = get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
     } else {
         blueslip.error("Unexpected deprecation notice for hotkey:", key);
         return;
@@ -145,13 +146,13 @@ exports.maybe_show_deprecation_notice = function (key) {
             );
         }
     }
-};
+}
 
 // Save the compose content cursor position and restore when we
 // shift-tab back in (see hotkey.js).
 let saved_compose_cursor = 0;
 
-exports.set_compose_textarea_handlers = function () {
+export function set_compose_textarea_handlers() {
     $("#compose-textarea").on("blur", function () {
         saved_compose_cursor = $(this).caret();
     });
@@ -161,14 +162,12 @@ exports.set_compose_textarea_handlers = function () {
     $("body").on(animationEnd, ".fade-in-message", function () {
         $(this).removeClass("fade-in-message");
     });
-};
+}
 
-exports.restore_compose_cursor = function () {
+export function restore_compose_cursor() {
     $("#compose-textarea").trigger("focus").caret(saved_compose_cursor);
-};
+}
 
-exports.initialize = function () {
-    exports.set_compose_textarea_handlers();
-};
-
-window.ui = exports;
+export function initialize() {
+    set_compose_textarea_handlers();
+}

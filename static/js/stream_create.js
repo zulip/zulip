@@ -2,8 +2,13 @@ import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
 import render_new_stream_users from "../templates/new_stream_users.hbs";
 import render_subscription_invites_warning_modal from "../templates/subscription_invites_warning_modal.hbs";
 
+import * as channel from "./channel";
+import * as loading from "./loading";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as stream_data from "./stream_data";
+import * as subs from "./subs";
+import * as ui_report from "./ui_report";
 
 let created_stream;
 

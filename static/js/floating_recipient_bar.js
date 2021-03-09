@@ -1,4 +1,6 @@
-"use strict";
+import * as message_store from "./message_store";
+import * as rows from "./rows";
+import * as timerender from "./timerender";
 
 let is_floating_recipient_bar_showing = false;
 
@@ -6,7 +8,7 @@ function top_offset(elem) {
     return elem.offset().top - $("#message_view_header").safeOuterHeight();
 }
 
-exports.first_visible_message = function (bar) {
+export function first_visible_message(bar) {
     // The first truly visible message would be computed using the
     // bottom of the floating recipient bar; but we want the date from
     // the first visible message were the floating recipient bar not
@@ -14,7 +16,7 @@ exports.first_visible_message = function (bar) {
     // overlaps the floating recipient bar's space (since you ).
 
     const messages = bar.children(".message_row");
-    const frb_bottom = exports.get_frb_bottom();
+    const frb_bottom = get_frb_bottom();
     const frb_top = frb_bottom - 25;
     let result;
 
@@ -75,10 +77,10 @@ exports.first_visible_message = function (bar) {
 
     // If none of the messages are visible, just take the last message.
     return $(messages[messages.length - 1]);
-};
+}
 
-exports.get_date = function (elem) {
-    const message_row = exports.first_visible_message(elem);
+export function get_date(elem) {
+    const message_row = first_visible_message(elem);
 
     if (!message_row || !message_row.length) {
         return undefined;
@@ -101,17 +103,17 @@ exports.get_date = function (elem) {
     const rendered_date = timerender.render_date(time, undefined, today)[0].outerHTML;
 
     return rendered_date;
-};
+}
 
-exports.get_frb_bottom = function () {
+export function get_frb_bottom() {
     const bar = $("#floating_recipient_bar");
     const bar_top = top_offset(bar);
     const bar_bottom = bar_top + bar.safeOuterHeight();
 
     return bar_bottom;
-};
+}
 
-exports.relevant_recipient_bars = function () {
+export function relevant_recipient_bars() {
     let elems = [];
 
     // This line of code does a reverse traversal
@@ -120,7 +122,7 @@ exports.relevant_recipient_bars = function () {
     // not exactly where we want.  The value we get
     // may be be too far up in the feed, but we can
     // deal with that later.
-    let first_elem = exports.candidate_recipient_bar();
+    let first_elem = candidate_recipient_bar();
 
     if (!first_elem) {
         first_elem = $(".focused_table").find(".recipient_row").first();
@@ -183,7 +185,7 @@ exports.relevant_recipient_bars = function () {
         let need_frb;
 
         if (i === 0) {
-            date_html = exports.get_date(elem);
+            date_html = get_date(elem);
             need_frb = top_offset(elem) < 0;
         } else {
             date_html = elem.find(".recipient_row_date").html();
@@ -219,9 +221,9 @@ exports.relevant_recipient_bars = function () {
     }
 
     return items;
-};
+}
 
-exports.candidate_recipient_bar = function () {
+export function candidate_recipient_bar() {
     // Find a recipient bar that is close to being onscreen
     // but above the "top".  This function is guaranteed to
     // return **some** recipient bar that is above the fold,
@@ -255,7 +257,7 @@ exports.candidate_recipient_bar = function () {
     }
 
     return undefined;
-};
+}
 
 function show_floating_recipient_bar() {
     if (!is_floating_recipient_bar_showing) {
@@ -298,35 +300,33 @@ function replace_floating_recipient_bar(source_info) {
     show_floating_recipient_bar();
 }
 
-exports.hide = function () {
+export function hide() {
     if (is_floating_recipient_bar_showing) {
         $("#floating_recipient_bar").css("visibility", "hidden");
         is_floating_recipient_bar_showing = false;
     }
-};
+}
 
-exports.de_clutter_dates = function (items) {
+export function de_clutter_dates(items) {
     for (const item of items) {
         item.elem.find(".recipient_row_date").toggle(item.show_date);
     }
-};
+}
 
-exports.update = function () {
-    const items = exports.relevant_recipient_bars();
+export function update() {
+    const items = relevant_recipient_bars();
 
     if (!items || items.length === 0) {
-        exports.hide();
+        hide();
         return;
     }
 
-    exports.de_clutter_dates(items);
+    de_clutter_dates(items);
 
     if (!items[0].need_frb) {
-        exports.hide();
+        hide();
         return;
     }
 
     replace_floating_recipient_bar(items[0]);
-};
-
-window.floating_recipient_bar = exports;
+}

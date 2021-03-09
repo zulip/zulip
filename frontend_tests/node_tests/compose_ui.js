@@ -8,15 +8,15 @@ const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const compose_ui = zrequire("compose_ui");
-const people = zrequire("people");
-const user_status = zrequire("user_status");
-
 set_global("document", {
     execCommand() {
         return false;
     },
 });
+
+const compose_ui = zrequire("compose_ui");
+const people = zrequire("people");
+const user_status = zrequire("user_status");
 
 const alice = {
     email: "alice@zulip.com",

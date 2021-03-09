@@ -1,13 +1,18 @@
-"use strict";
-
-const search_pill = require("./search_pill");
+import {Filter} from "./filter";
+import * as message_view_header from "./message_view_header";
+import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
+import * as search_pill from "./search_pill";
+import * as search_pill_widget from "./search_pill_widget";
+import * as search_suggestion from "./search_suggestion";
+import * as ui_util from "./ui_util";
 
 // Exported for unit testing
-exports.is_using_input_method = false;
+export let is_using_input_method = false;
 
-exports.narrow_or_search_for_term = function (search_string) {
+export function narrow_or_search_for_term(search_string) {
     const search_query_box = $("#search_query");
-    if (exports.is_using_input_method) {
+    if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
         // `updater` is also triggered when 'enter' is triggered
         // while using input tool
@@ -39,7 +44,7 @@ exports.narrow_or_search_for_term = function (search_string) {
         search_query_box.trigger("blur");
     }
     return search_query_box.val();
-};
+}
 
 function update_buttons_with_focus(focused) {
     const search_query_box = $("#search_query");
@@ -51,11 +56,11 @@ function update_buttons_with_focus(focused) {
     }
 }
 
-exports.update_button_visibility = function () {
+export function update_button_visibility() {
     update_buttons_with_focus($("#search_query").is(":focus"));
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     const search_query_box = $("#search_query");
     const searchbox_form = $("#searchbox_form");
     const searchbox = $("#searchbox");
@@ -96,7 +101,7 @@ exports.initialize = function () {
                 search_pill.append_search_string(search_string, search_pill_widget.widget);
                 return search_query_box.val();
             }
-            return exports.narrow_or_search_for_term(search_string);
+            return narrow_or_search_for_term(search_string);
         },
         sorter(items) {
             return items;
@@ -120,12 +125,12 @@ exports.initialize = function () {
         // we suppress searching triggered by this Enter key by checking
         // `is_using_input_method` before searching.
         // More details in the commit message that added this line.
-        exports.is_using_input_method = true;
+        is_using_input_method = true;
     });
 
     searchbox_form
         .on("keydown", (e) => {
-            exports.update_button_visibility();
+            update_button_visibility();
             const code = e.which;
             if (code === 13 && search_query_box.is(":focus")) {
                 // Don't submit the form so that the typeahead can instead
@@ -135,8 +140,8 @@ exports.initialize = function () {
             }
         })
         .on("keyup", (e) => {
-            if (exports.is_using_input_method) {
-                exports.is_using_input_method = false;
+            if (is_using_input_method) {
+                is_using_input_method = false;
                 return;
             }
             const code = e.which;
@@ -149,7 +154,7 @@ exports.initialize = function () {
                 // indicate that they've done what they need to do)
 
                 // Pill is already added during keydown event of input pills.
-                exports.narrow_or_search_for_term(search_query_box.val());
+                narrow_or_search_for_term(search_query_box.val());
                 search_query_box.trigger("blur");
                 update_buttons_with_focus(false);
             }
@@ -159,7 +164,7 @@ exports.initialize = function () {
     // but the code was moved here from elsewhere, and it would be
     // more work to re-order everything and make them private.
 
-    search_query_box.on("focus", exports.focus_search);
+    search_query_box.on("focus", focus_search);
     search_query_box.on("blur", (e) => {
         // The search query box is a visual cue as to
         // whether search or narrowing is active.  If
@@ -189,7 +194,7 @@ exports.initialize = function () {
             }
         }
         setTimeout(() => {
-            exports.update_button_visibility();
+            update_button_visibility();
         }, 100);
     });
 
@@ -202,14 +207,14 @@ exports.initialize = function () {
             searchbox.css({"box-shadow": "unset"});
         });
     }
-};
+}
 
-exports.focus_search = function () {
+export function focus_search() {
     // The search bar is not focused yet, but will be.
     update_buttons_with_focus(true);
-};
+}
 
-exports.initiate_search = function () {
+export function initiate_search() {
     message_view_header.open_search_bar_and_close_narrow_description();
     $("#searchbox").css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
     $("#search_query").typeahead("lookup").trigger("select");
@@ -217,12 +222,10 @@ exports.initiate_search = function () {
         $("#search_query").trigger("focus");
         ui_util.place_caret_at_end($("#search_query")[0]);
     }
-};
+}
 
-exports.clear_search_form = function () {
+export function clear_search_form() {
     $("#search_query").val("");
     $("#search_query").trigger("blur");
     $(".search_button").prop("disabled", true);
-};
-
-window.search = exports;
+}

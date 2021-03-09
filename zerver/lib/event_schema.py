@@ -1225,8 +1225,6 @@ subscription_update_event = event_dict_type(
         ("property", str),
         ("stream_id", int),
         ("value", value_type),
-        ("name", str),
-        ("email", str),
     ]
 )
 _check_subscription_update = make_checker(subscription_update_event)

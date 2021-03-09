@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.actions import do_change_subscription_property, do_mute_topic
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import POSTRequestMock, mock_queue_publish
+from zerver.lib.test_helpers import HostRequestMock, mock_queue_publish
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import (
     ClientDescriptor,
@@ -288,7 +288,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         user_profile: UserProfile,
         post_data: Dict[str, Any],
     ) -> HttpResponse:
-        request = POSTRequestMock(post_data, user_profile)
+        request = HostRequestMock(post_data, user_profile)
         return view_func(request, user_profile)
 
     def test_stream_watchers(self) -> None:

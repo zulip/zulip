@@ -562,8 +562,6 @@ exports.fixtures = {
     subscription__update: {
         type: "subscription",
         op: "update",
-        email: test_user.email,
-        name: streams.devel.name,
         stream_id: streams.devel.stream_id,
         property: "pin_to_top",
         value: true,

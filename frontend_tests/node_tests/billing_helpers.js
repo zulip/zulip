@@ -6,7 +6,7 @@ const fs = require("fs");
 const jQueryFactory = require("jquery");
 const {JSDOM} = require("jsdom");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -15,8 +15,8 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const jquery = jQueryFactory(dom.window);
 
 const page_params = set_global("page_params", {});
-const loading = set_global("loading", {});
 const history = set_global("history", {});
+const loading = mock_module("loading");
 set_global("document", {
     title: "Zulip",
 });
@@ -26,7 +26,7 @@ set_global("location", {
     hash: "#billing",
 });
 
-const helpers = zrequire("helpers", "js/billing/helpers");
+const helpers = zrequire("billing/helpers");
 
 run_test("create_ajax_request", (override) => {
     const form_loading_indicator = "#autopay_loading_indicator";

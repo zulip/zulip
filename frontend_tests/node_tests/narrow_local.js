@@ -2,19 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const Filter = zrequire("Filter", "js/filter");
-const {MessageListData} = zrequire("MessageListData", "js/message_list_data");
+const message_list = mock_module("message_list");
+
+const {Filter} = zrequire("../js/filter");
+const {MessageListData} = zrequire("../js/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const narrow = zrequire("narrow");
-zrequire("stream_data");
-
-const message_list = set_global("message_list", {});
-set_global("muting", {
-    is_topic_muted: () => false,
-});
 
 function test_with(fixture) {
     const filter = new Filter(fixture.filter_terms);
@@ -63,7 +59,7 @@ function test_with(fixture) {
         },
     };
 
-    narrow_state.get_first_unread_info = () => fixture.unread_info;
+    narrow_state.__Rewire__("get_first_unread_info", () => fixture.unread_info);
 
     narrow.maybe_add_local_messages({
         id_info,

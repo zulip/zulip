@@ -1,11 +1,9 @@
-"use strict";
+import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
+import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
-const render_widgets_poll_widget = require("../templates/widgets/poll_widget.hbs");
-const render_widgets_poll_widget_results = require("../templates/widgets/poll_widget_results.hbs");
+import * as people from "./people";
 
-const people = require("./people");
-
-class PollData {
+export class PollData {
     // This object just holds data for a poll, although it
     // works closely with the widget's concept of how data
     // should be represented for rendering, plus how the
@@ -177,9 +175,8 @@ class PollData {
         return data.some((el) => el.option === latest_option);
     }
 }
-exports.PollData = PollData;
 
-exports.activate = function (opts) {
+export function activate(opts) {
     const elem = opts.elem;
     const callback = opts.callback;
 
@@ -368,6 +365,4 @@ exports.activate = function (opts) {
     build_widget();
     render_question();
     render_results();
-};
-
-window.poll_widget = exports;
+}

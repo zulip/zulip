@@ -1,4 +1,5 @@
 import * as peer_data from "./peer_data";
+import * as stream_data from "./stream_data";
 
 function display_pill(sub) {
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);

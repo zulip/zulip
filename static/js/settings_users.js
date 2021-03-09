@@ -1,13 +1,25 @@
-"use strict";
+import render_admin_bot_form from "../templates/admin_bot_form.hbs";
+import render_admin_human_form from "../templates/admin_human_form.hbs";
+import render_admin_user_list from "../templates/admin_user_list.hbs";
 
-const render_admin_bot_form = require("../templates/admin_bot_form.hbs");
-const render_admin_human_form = require("../templates/admin_human_form.hbs");
-const render_admin_user_list = require("../templates/admin_user_list.hbs");
-
-const people = require("./people");
-const settings_config = require("./settings_config");
-const settings_data = require("./settings_data");
-const settings_ui = require("./settings_ui");
+import * as bot_data from "./bot_data";
+import * as channel from "./channel";
+import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
+import * as overlays from "./overlays";
+import * as people from "./people";
+import * as presence from "./presence";
+import * as settings_account from "./settings_account";
+import * as settings_bots from "./settings_bots";
+import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_ui from "./settings_ui";
+import * as timerender from "./timerender";
+import * as ui from "./ui";
+import * as ui_report from "./ui_report";
+import * as user_pill from "./user_pill";
 
 const section = {
     active: {},
@@ -341,15 +353,15 @@ section.deactivated.create_table = (deactivated_users) => {
     $("#admin_deactivated_users_table").show();
 };
 
-exports.update_bot_data = function (bot_user_id) {
+export function update_bot_data(bot_user_id) {
     if (!bot_list_widget) {
         return;
     }
 
     bot_list_widget.render_item(bot_user_id);
-};
+}
 
-exports.update_user_data = function (user_id, new_data) {
+export function update_user_data(user_id, new_data) {
     const user_row = get_user_info_row(user_id);
 
     if (user_row.length === 0) {
@@ -374,7 +386,7 @@ exports.update_user_data = function (user_id, new_data) {
     if (new_data.role !== undefined) {
         user_row.find(".user_role").text(people.get_user_type(user_id));
     }
-};
+}
 
 function start_data_load() {
     loading.make_indicator($("#admin_page_users_loading_indicator"), {text: "Loading..."});
@@ -685,15 +697,13 @@ section.bots.handle_events = () => {
     handle_bot_form(tbody, status_field);
 };
 
-exports.set_up_humans = function () {
+export function set_up_humans() {
     start_data_load();
     section.active.handle_events();
     section.deactivated.handle_events();
-};
+}
 
-exports.set_up_bots = function () {
+export function set_up_bots() {
     section.bots.handle_events();
     section.bots.create_table();
-};
-
-window.settings_users = exports;
+}

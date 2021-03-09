@@ -208,7 +208,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         return url in EXCLUDED_URLS
 
     def error_callback(self, failure: Failure) -> Optional[Union[Failure, Iterator[Request]]]:
-        if failure.check(HttpError):
+        if isinstance(failure.value, HttpError):
             response = failure.value.response
             if self.exclude_error(response.url):
                 return None

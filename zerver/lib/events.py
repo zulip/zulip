@@ -783,7 +783,7 @@ def apply_event(
 
         elif event["op"] == "update":
             for sub in state["subscriptions"]:
-                if sub["name"].lower() == event["name"].lower():
+                if sub["stream_id"] == event["stream_id"]:
                     sub[event["property"]] = event["value"]
         elif event["op"] == "peer_add":
             if include_subscribers:

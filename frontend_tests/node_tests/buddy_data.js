@@ -4,17 +4,17 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {});
 
+const timerender = mock_module("timerender");
+
 const people = zrequire("people");
 const presence = zrequire("presence");
 const user_status = zrequire("user_status");
-
 const buddy_data = zrequire("buddy_data");
-const timerender = set_global("timerender", {});
 
 // The buddy_data module is mostly tested indirectly through
 // activity.js, but we should feel free to add direct tests
@@ -116,7 +116,7 @@ run_test("huddle_fraction_present", () => {
     presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
     // jill not in list
     presence_info.set(mark.user_id, {status: "offline"}); // does not count
-    presence.presence_info = presence_info;
+    presence.__Rewire__("presence_info", presence_info);
 
     assert.equal(buddy_data.huddle_fraction_present(huddle), 0.5);
 
@@ -124,7 +124,7 @@ run_test("huddle_fraction_present", () => {
     for (const user of [alice, fred, jill, mark]) {
         presence_info.set(user.user_id, {status: "active"}); // counts as present
     }
-    presence.presence_info = presence_info;
+    presence.__Rewire__("presence_info", presence_info);
 
     assert.equal(buddy_data.huddle_fraction_present(huddle), 1);
 
@@ -135,38 +135,23 @@ run_test("huddle_fraction_present", () => {
     presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
     // jill not in list
     presence_info.set(mark.user_id, {status: "offline"}); // does not count
-    presence.presence_info = presence_info;
+    presence.__Rewire__("presence_info", presence_info);
 
     assert.equal(buddy_data.huddle_fraction_present(huddle), undefined);
 });
 
-function activate_people() {
+function set_presence(user_id, status) {
+    presence.presence_info.set(user_id, {
+        status,
+        last_active: 9999,
+    });
+}
+
+run_test("user_circle", () => {
     presence.presence_info.clear();
-
-    function set_presence(user_id, status) {
-        presence.presence_info.set(user_id, {
-            status,
-            last_active: 9999,
-        });
-    }
-
-    // Make 400 of the users active
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
-    for (const user_id of _.range(1000, 1400)) {
-        set_presence(user_id, "active");
-    }
-
-    // And then 300 not active
-    for (const user_id of _.range(1400, 1700)) {
-        set_presence(user_id, "offline");
-    }
-}
-
-activate_people();
-
-run_test("user_circle", () => {
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_green");
     user_status.set_away(selma.user_id);
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_empty_line");
@@ -181,6 +166,10 @@ run_test("user_circle", () => {
 });
 
 run_test("buddy_status", () => {
+    presence.presence_info.clear();
+    set_presence(selma.user_id, "active");
+    set_presence(me.user_id, "active");
+
     assert.equal(buddy_data.buddy_status(selma.user_id), "active");
     user_status.set_away(selma.user_id);
     assert.equal(buddy_data.buddy_status(selma.user_id), "away_them");
@@ -248,12 +237,32 @@ run_test("title_data", () => {
 });
 
 run_test("simple search", () => {
+    presence.presence_info.clear();
+
+    set_presence(selma.user_id, "active");
+    set_presence(me.user_id, "active");
+
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
 
     assert.deepEqual(user_ids, [selma.user_id]);
 });
 
 run_test("bulk_data_hacks", () => {
+    presence.presence_info.clear();
+
+    // Make 400 of the users active
+    set_presence(selma.user_id, "active");
+    set_presence(me.user_id, "active");
+
+    for (const user_id of _.range(1000, 1400)) {
+        set_presence(user_id, "active");
+    }
+
+    // And then 300 not active
+    for (const user_id of _.range(1400, 1700)) {
+        set_presence(user_id, "offline");
+    }
+
     let user_ids;
 
     // Even though we have 1000 users, we only get the 400 active
@@ -280,13 +289,16 @@ run_test("bulk_data_hacks", () => {
 
     // Make our shrink limit higher, and go back to an empty search.
     // We won't get all 1000 users, just the present ones.
-    buddy_data.max_size_before_shrinking = 50000;
-
-    user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
+    with_field(buddy_data, "max_size_before_shrinking", 50000, () => {
+        user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
+    });
     assert.equal(user_ids.length, 700);
 });
 
-run_test("level", () => {
+run_test("user_status", () => {
+    presence.presence_info.clear();
+    user_status.initialize({user_status: []});
+    set_presence(me.user_id, "active");
     assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
     user_status.set_away(me.user_id);
     assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (unavailable)");
@@ -322,6 +334,11 @@ run_test("level", () => {
 });
 
 run_test("user_last_seen_time_status", (override) => {
+    presence.presence_info.clear();
+
+    set_presence(selma.user_id, "active");
+    set_presence(me.user_id, "active");
+
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
     page_params.realm_is_zephyr_mirror_realm = true;
