@@ -8,8 +8,6 @@ const {run_test} = require("../zjsunit/test");
 
 const noop = () => {};
 
-set_global("document", "document-stub");
-
 mock_module("stream_topic_history", {
     add_message: noop,
 });
@@ -18,6 +16,8 @@ mock_module("recent_senders", {
     process_message_for_senders: noop,
 });
 
+set_global("document", "document-stub");
+set_global("home_msg_list", {});
 set_global("page_params", {
     realm_allow_message_editing: true,
     is_admin: true,
@@ -331,15 +331,6 @@ run_test("message_id_change", () => {
         id: 401,
     };
     message_store.add_message_metadata(message);
-
-    set_global("pointer", {
-        furthest_read: 401,
-        set_furthest_read(value) {
-            this.furthest_read = value;
-        },
-    });
-
-    set_global("home_msg_list", {});
 
     const opts = {
         old_id: 401,
