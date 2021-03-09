@@ -24,6 +24,7 @@ export function set_messages_read_in_narrow(value) {
     messages_read_in_narrow = value;
 }
 
+export const unread_mentions_counter = new Set();
 const unread_messages = new Set();
 
 class Bucketer {
@@ -183,7 +184,7 @@ class UnreadPMCounter {
         return util.sorted_ids(ids);
     }
 }
-export const unread_pm_counter = new UnreadPMCounter();
+const unread_pm_counter = new UnreadPMCounter();
 
 function make_per_stream_bucketer() {
     return new Bucketer({
@@ -369,8 +370,7 @@ class UnreadTopicCounter {
         return id_set.size !== 0;
     }
 }
-export const unread_topic_counter = new UnreadTopicCounter();
-export const unread_mentions_counter = new Set();
+const unread_topic_counter = new UnreadTopicCounter();
 
 export function message_unread(message) {
     if (message === undefined) {

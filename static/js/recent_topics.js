@@ -221,7 +221,7 @@ function format_topic(topic_data) {
     const topic_muted = Boolean(muting.is_topic_muted(stream_id, topic));
     const stream_muted = stream_data.is_muted(stream_id);
     const muted = topic_muted || stream_muted;
-    const unread_count = unread.unread_topic_counter.get(stream_id, topic);
+    const unread_count = unread.num_unread_for_topic(stream_id, topic);
 
     // Display in most recent sender first order
     const all_senders = recent_senders.get_topic_recent_senders(stream_id, topic);
@@ -299,7 +299,7 @@ export function filters_should_hide_topic(topic_data) {
     }
 
     if (filters.has("unread")) {
-        const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
+        const unreadCount = unread.num_unread_for_topic(msg.stream_id, msg.topic);
         if (unreadCount === 0) {
             return true;
         }
