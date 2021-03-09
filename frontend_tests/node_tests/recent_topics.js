@@ -135,14 +135,12 @@ mock_module("top_left_corner", {
     narrow_to_recent_topics: noop,
 });
 mock_module("unread", {
-    unread_topic_counter: {
-        get: (stream_id, topic) => {
-            if (stream_id === 1 && topic === "topic-1") {
-                // Only stream1, topic-1 is read.
-                return 0;
-            }
-            return 1;
-        },
+    num_unread_for_topic: (stream_id, topic) => {
+        if (stream_id === 1 && topic === "topic-1") {
+            // Only stream1, topic-1 is read.
+            return 0;
+        }
+        return 1;
     },
 });
 
