@@ -354,8 +354,12 @@ def do_setup_virtualenv(venv_path: str, requirements_file: str) -> None:
     try:
         install_venv_deps(pip, requirements_file)
     except subprocess.CalledProcessError:
-        # Might be a failure due to network connection issues. Retrying...
-        print(WARNING + "`pip install` failed; retrying..." + ENDC)
-        install_venv_deps(pip, requirements_file)
+        try:
+            # Might be a failure due to network connection issues. Retrying...
+            print(WARNING + "`pip install` failed; retrying..." + ENDC)
+            install_venv_deps(pip, requirements_file)
+        except BaseException as e:
+            # Suppress exception chaining
+            raise e from None
 
     run_as_root(["chmod", "-R", "a+rX", venv_path])

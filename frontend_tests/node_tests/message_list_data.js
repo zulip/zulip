@@ -5,18 +5,15 @@ const {strict: assert} = require("assert");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const muting = zrequire("muting");
-zrequire("unread");
-
-zrequire("Filter", "js/filter");
-const {MessageListData} = zrequire("MessageListData", "js/message_list_data");
-
 set_global("page_params", {});
 
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     return f();
 });
+
+const muting = zrequire("muting");
+const {MessageListData} = zrequire("../js/message_list_data");
 
 function make_msg(msg_id) {
     return {

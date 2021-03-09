@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -eu
 
-version=3.2.1
+version=3.2.2
 binary="shfmt_v${version}_linux_amd64"
-sha256=43439b996942b53dfafa9b6ff084f394555d049c98fb7ec37978f7668b43e1be
+sha256=3a32a69286a19491a81fcd854154f0d886c379ff28d99e32d5594490b8bbef4b
 
 check_version() {
     out="$(shfmt --version 2>/dev/null)" && [ "$out" = "v$version" ]

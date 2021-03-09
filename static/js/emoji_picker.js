@@ -1,12 +1,17 @@
-"use strict";
+import emoji_codes from "../generated/emoji/emoji_codes.json";
+import * as emoji from "../shared/js/emoji";
+import * as typeahead from "../shared/js/typeahead";
+import render_emoji_popover from "../templates/emoji_popover.hbs";
+import render_emoji_popover_content from "../templates/emoji_popover_content.hbs";
+import render_emoji_popover_search_results from "../templates/emoji_popover_search_results.hbs";
+import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 
-const emoji_codes = require("../generated/emoji/emoji_codes.json");
-const emoji = require("../shared/js/emoji");
-const typeahead = require("../shared/js/typeahead");
-const render_emoji_popover = require("../templates/emoji_popover.hbs");
-const render_emoji_popover_content = require("../templates/emoji_popover_content.hbs");
-const render_emoji_popover_search_results = require("../templates/emoji_popover_search_results.hbs");
-const render_emoji_showcase = require("../templates/emoji_showcase.hbs");
+import * as compose_ui from "./compose_ui";
+import * as message_store from "./message_store";
+import * as popovers from "./popovers";
+import * as reactions from "./reactions";
+import * as rows from "./rows";
+import * as ui from "./ui";
 
 // Emoji picker is of fixed width and height. Update these
 // whenever these values are changed in `reactions.css`.
@@ -16,7 +21,7 @@ const APPROX_WIDTH = 255;
 // The functionalities for reacting to a message with an emoji
 // and composing a message with an emoji share a single widget,
 // implemented as the emoji_popover.
-exports.complete_emoji_catalog = [];
+export let complete_emoji_catalog = [];
 
 let current_message_emoji_popover_elem;
 let emoji_catalog_last_coordinates = {
@@ -48,14 +53,14 @@ function get_total_sections() {
     if (search_is_active) {
         return 1;
     }
-    return exports.complete_emoji_catalog.length;
+    return complete_emoji_catalog.length;
 }
 
 function get_max_index(section) {
     if (search_is_active) {
         return search_results.length;
     } else if (section >= 0 && section < get_total_sections()) {
-        return exports.complete_emoji_catalog[section].emojis.length;
+        return complete_emoji_catalog[section].emojis.length;
     }
     return undefined;
 }
@@ -102,7 +107,7 @@ function show_emoji_catalog() {
     search_is_active = false;
 }
 
-exports.rebuild_catalog = function () {
+export function rebuild_catalog() {
     const realm_emojis = emoji.active_realm_emojis;
 
     const catalog = new Map();
@@ -140,12 +145,12 @@ exports.rebuild_catalog = function () {
     catalog.set("Popular", popular);
 
     const categories = EMOJI_CATEGORIES.filter((category) => catalog.has(category.name));
-    exports.complete_emoji_catalog = categories.map((category) => ({
+    complete_emoji_catalog = categories.map((category) => ({
         name: category.name,
         icon: category.icon,
         emojis: catalog.get(category.name),
     }));
-};
+}
 
 const generate_emoji_picker_content = function (id) {
     let emojis_used = [];
@@ -159,7 +164,7 @@ const generate_emoji_picker_content = function (id) {
 
     return render_emoji_popover_content({
         message_id: id,
-        emoji_categories: exports.complete_emoji_catalog,
+        emoji_categories: complete_emoji_catalog,
     });
 };
 
@@ -173,20 +178,20 @@ function refill_section_head_offsets(popover) {
     });
 }
 
-exports.reactions_popped = function () {
+export function reactions_popped() {
     return current_message_emoji_popover_elem !== undefined;
-};
+}
 
-exports.hide_emoji_popover = function () {
+export function hide_emoji_popover() {
     $(".has_popover").removeClass("has_popover has_emoji_popover");
-    if (exports.reactions_popped()) {
+    if (reactions_popped()) {
         const orig_title = current_message_emoji_popover_elem.data("original-title");
         current_message_emoji_popover_elem.popover("destroy");
         current_message_emoji_popover_elem.prop("title", orig_title);
         current_message_emoji_popover_elem.removeClass("reaction_button_visible");
         current_message_emoji_popover_elem = undefined;
     }
-};
+}
 
 function get_selected_emoji() {
     return $(".emoji-popover-emoji:focus")[0];
@@ -207,7 +212,7 @@ function filter_emojis() {
     const message_id = $(".emoji-search-results-container").data("message-id");
     const search_results_visible = $(".emoji-search-results-container").is(":visible");
     if (query !== "") {
-        const categories = exports.complete_emoji_catalog;
+        const categories = complete_emoji_catalog;
         const search_terms = query.split(" ");
         search_results.length = 0;
 
@@ -254,7 +259,7 @@ function toggle_reaction(emoji_name, event) {
     reactions.toggle_emoji_reaction(message_id, emoji_name, event);
 
     if (event === undefined || !event.shiftKey) {
-        exports.hide_emoji_popover();
+        hide_emoji_popover();
     }
 
     $(event.target).closest(".reaction").toggleClass("reacted");
@@ -401,13 +406,13 @@ function change_focus_to_filter() {
     reset_emoji_showcase();
 }
 
-exports.navigate = function (event_name, e) {
+export function navigate(event_name, e) {
     if (
         event_name === "toggle_reactions_popover" &&
-        exports.reactions_popped() &&
+        reactions_popped() &&
         (search_is_active === false || search_results.length === 0)
     ) {
-        exports.hide_emoji_popover();
+        hide_emoji_popover();
         return true;
     }
 
@@ -507,7 +512,7 @@ exports.navigate = function (event_name, e) {
         return maybe_change_focused_emoji($emoji_map, next_coord.section, next_coord.index);
     }
     return false;
-};
+}
 
 function process_keypress(e) {
     const is_filter_focused = $(".emoji-popover-filter").is(":focus");
@@ -541,7 +546,7 @@ function process_keypress(e) {
     }
 }
 
-exports.emoji_select_tab = function (elt) {
+export function emoji_select_tab(elt) {
     const scrolltop = elt.scrollTop();
     const scrollheight = elt.prop("scrollHeight");
     const elt_height = elt.height();
@@ -566,13 +571,13 @@ exports.emoji_select_tab = function (elt) {
             "active",
         );
     }
-};
+}
 
 function register_popover_events(popover) {
     const $emoji_map = popover.find(".emoji-popover-emoji-map");
 
     ui.get_scroll_element($emoji_map).on("scroll", () => {
-        exports.emoji_select_tab(ui.get_scroll_element($emoji_map));
+        emoji_select_tab(ui.get_scroll_element($emoji_map));
     });
 
     $(".emoji-popover-filter").on("input", filter_emojis);
@@ -589,7 +594,7 @@ function register_popover_events(popover) {
     });
 }
 
-exports.build_emoji_popover = function (elt, id) {
+export function build_emoji_popover(elt, id) {
     const template_args = {
         class: "emoji-info-popover",
     };
@@ -635,9 +640,9 @@ exports.build_emoji_popover = function (elt, id) {
 
     elt.ready(() => refill_section_head_offsets(popover));
     register_popover_events(popover);
-};
+}
 
-exports.toggle_emoji_popover = function (element, id) {
+export function toggle_emoji_popover(element, id) {
     const last_popover_elem = current_message_emoji_popover_elem;
     popovers.hide_all();
     if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
@@ -655,12 +660,12 @@ exports.toggle_emoji_popover = function (element, id) {
     if (elt.data("popover") === undefined) {
         // Keep the element over which the popover is based off visible.
         elt.addClass("reaction_button_visible");
-        exports.build_emoji_popover(elt, id);
+        build_emoji_popover(elt, id);
     }
     reset_emoji_showcase();
-};
+}
 
-exports.register_click_handlers = function () {
+export function register_click_handlers() {
     $(document).on("click", ".emoji-popover-emoji.reaction", function (e) {
         // When an emoji is clicked in the popover,
         // if the user has reacted to this message with this emoji
@@ -685,7 +690,7 @@ exports.register_click_handlers = function () {
             compose_ui.insert_syntax_and_focus(emoji_text);
         }
         e.stopPropagation();
-        exports.hide_emoji_popover();
+        hide_emoji_popover();
     });
 
     $("body").on("click", "#emoji_map", function (e) {
@@ -701,14 +706,14 @@ exports.register_click_handlers = function () {
         } else {
             edit_message_id = null;
         }
-        exports.toggle_emoji_popover(this);
+        toggle_emoji_popover(this);
     });
 
     $("#main_div").on("click", ".reaction_button", function (e) {
         e.stopPropagation();
 
         const message_id = rows.get_message_id(this);
-        exports.toggle_emoji_popover(this, message_id);
+        toggle_emoji_popover(this, message_id);
     });
 
     $("#main_div").on("mouseenter", ".reaction_button", (e) => {
@@ -741,7 +746,7 @@ exports.register_click_handlers = function () {
         // element is not present, we use the message's
         // .fa-chevron-down element as the base for the popover.
         const elem = $(".selected_message .actions_hover")[0];
-        exports.toggle_emoji_popover(elem, message_id);
+        toggle_emoji_popover(elem, message_id);
     });
 
     $("body").on("click", ".emoji-popover-tab-item", function (e) {
@@ -779,10 +784,8 @@ exports.register_click_handlers = function () {
             true,
         );
     });
-};
+}
 
-exports.initialize = function () {
-    exports.rebuild_catalog();
-};
-
-window.emoji_picker = exports;
+export function initialize() {
+    rebuild_catalog();
+}

@@ -23,6 +23,26 @@ Lastly, ensuring the your PR passes CI and is organized into coherent
 commits would help save reviewers time, which could otherwise be used
 to dive right into reviewing the PR's core functionality.
 
+### Guidelines for responding to a review feedback
+
+Posting a note after you updated the PR is especially beneficial for folks like
+Tim, who manage their code review queue via GitHub notifications. Simply pushing
+an update without notifying about it on GitHub indicates to the reviewer the
+contributor hasn't yet resolved that feedback, and they might miss out on doing
+any follow-up reviews.
+
+The best way to address feedback posted on your PR is to reply individually to
+the respective inline review comments. Adding a note in the comments on how
+you addressed the feedback helps the reviewers know what to look for in a
+follow-up review, much more than you posting a text saying "Updated!". Also,
+do communicate if you notice any potential issues when addressing feedback,
+rather than doing a suggested change blindly.
+
+If you think any suggestion left on the PR requires a more complex discussion, it
+can be helpful to have the discussion on a topic in the Zulip development community
+server. In case you do that, make sure to post a short comment on the GitHub PR
+linking to the conversation so they're findable from each other.
+
 ## Principles of code review
 
 ### Anyone can review

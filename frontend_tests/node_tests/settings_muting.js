@@ -2,15 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-zrequire("timerender");
+const muting_ui = mock_module("muting_ui");
+
 const settings_muting = zrequire("settings_muting");
 const stream_data = zrequire("stream_data");
 const muting = zrequire("muting");
-const muting_ui = set_global("muting_ui", {});
 
 const noop = () => {};
 

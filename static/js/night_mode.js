@@ -1,15 +1,11 @@
-"use strict";
-
-exports.enable = function () {
+export function enable() {
     $("body").removeClass("color-scheme-automatic").addClass("night-mode");
-};
+}
 
-exports.disable = function () {
+export function disable() {
     $("body").removeClass("color-scheme-automatic").removeClass("night-mode");
-};
+}
 
-exports.default_preference_checker = function () {
+export function default_preference_checker() {
     $("body").removeClass("night-mode").addClass("color-scheme-automatic");
-};
-
-window.night_mode = exports;
+}

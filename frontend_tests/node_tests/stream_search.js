@@ -2,23 +2,25 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+// This tests the stream searching functionality which currently
 // lives in stream_list.js.
-
-const stream_list = zrequire("stream_list");
 
 const noop = () => {};
 
-set_global("resize", {
+mock_module("resize", {
     resize_page_components: noop,
+
     resize_stream_filters_container: noop,
 });
 
-const popovers = set_global("popovers", {});
-const stream_popover = set_global("stream_popover", {});
+const popovers = mock_module("popovers");
+const stream_popover = mock_module("stream_popover");
+
+const stream_list = zrequire("stream_list");
 
 function expand_sidebar() {
     $(".app-main .column-left").addClass("expanded");
@@ -27,14 +29,14 @@ function expand_sidebar() {
 function make_cursor_helper() {
     const events = [];
 
-    stream_list.stream_cursor = {
+    stream_list.__Rewire__("stream_cursor", {
         reset: () => {
             events.push("reset");
         },
         clear: () => {
             events.push("clear");
         },
-    };
+    });
 
     return {
         events,
@@ -60,7 +62,7 @@ function clear_search_input() {
     stream_list.clear_search({stopPropagation: noop});
 }
 
-run_test("basics", () => {
+run_test("basics", (override) => {
     let cursor_helper;
     const input = $(".stream-list-filter");
     const section = $(".stream_search_section");
@@ -94,9 +96,9 @@ run_test("basics", () => {
 
     function verify_list_updated(f) {
         let updated;
-        stream_list.update_streams_sidebar = () => {
+        override(stream_list, "update_streams_sidebar", () => {
             updated = true;
-        };
+        });
 
         f();
         assert(updated);

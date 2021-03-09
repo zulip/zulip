@@ -5,10 +5,10 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+const page_params = set_global("page_params", {});
+
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
-
-const page_params = set_global("page_params", {});
 
 /*
     Some methods in settings_data are fairly

@@ -1,10 +1,16 @@
-"use strict";
+import render_admin_tab from "../templates/admin_tab.hbs";
+import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
-const render_admin_tab = require("../templates/admin_tab.hbs");
-const render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
-
-const settings_config = require("./settings_config");
-const settings_data = require("./settings_data");
+import * as overlays from "./overlays";
+import * as settings from "./settings";
+import * as settings_bots from "./settings_bots";
+import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
+import * as settings_emoji from "./settings_emoji";
+import * as settings_org from "./settings_org";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_sections from "./settings_sections";
+import * as settings_toggle from "./settings_toggle";
 
 const admin_settings_label = {
     // Organization settings
@@ -42,7 +48,7 @@ function insert_tip_box() {
         .prepend(tip_box);
 }
 
-exports.build_page = function () {
+export function build_page() {
     const options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
@@ -135,16 +141,14 @@ exports.build_page = function () {
     $("#id_realm_default_twenty_four_hour_time").val(
         JSON.stringify(page_params.realm_default_twenty_four_hour_time),
     );
-};
+}
 
-exports.launch = function (section) {
+export function launch(section) {
     settings.build_page();
-    exports.build_page();
+    build_page();
     settings_sections.reset_sections();
 
     overlays.open_settings();
     settings_panel_menu.org_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("organization");
-};
-
-window.admin = exports;
+}

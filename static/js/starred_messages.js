@@ -1,53 +1,43 @@
-"use strict";
+import * as top_left_corner from "./top_left_corner";
 
-exports.starred_ids = new Set();
+export const starred_ids = new Set();
 
-exports.initialize = function () {
-    exports.starred_ids.clear();
+export function initialize() {
+    starred_ids.clear();
 
     for (const id of page_params.starred_messages) {
-        exports.starred_ids.add(id);
+        starred_ids.add(id);
     }
 
-    exports.rerender_ui();
-};
+    rerender_ui();
+}
 
-exports.add = function (ids) {
+export function add(ids) {
     for (const id of ids) {
-        exports.starred_ids.add(id);
+        starred_ids.add(id);
     }
 
-    exports.rerender_ui();
-};
+    rerender_ui();
+}
 
-exports.remove = function (ids) {
+export function remove(ids) {
     for (const id of ids) {
-        exports.starred_ids.delete(id);
+        starred_ids.delete(id);
     }
 
-    exports.rerender_ui();
-};
+    rerender_ui();
+}
 
-exports.get_count = function () {
-    return exports.starred_ids.size;
-};
+export function get_count() {
+    return starred_ids.size;
+}
 
-exports.get_starred_msg_ids = function () {
-    return Array.from(exports.starred_ids);
-};
+export function get_starred_msg_ids() {
+    return Array.from(starred_ids);
+}
 
-exports.get_topic_starred_msg_ids = function (topic_name, stream_id) {
-    return Array.from(exports.starred_ids).filter((id) => {
-        const message = message_store.get(id);
-        return (
-            message.stream_id === stream_id &&
-            message.topic.toLowerCase() === topic_name.toLowerCase()
-        );
-    });
-};
-
-exports.rerender_ui = function () {
-    let count = exports.get_count();
+export function rerender_ui() {
+    let count = get_count();
 
     if (!page_params.starred_message_counts) {
         // This essentially hides the count
@@ -55,6 +45,4 @@ exports.rerender_ui = function () {
     }
 
     top_left_corner.update_starred_count(count);
-};
-
-window.starred_messages = exports;
+}

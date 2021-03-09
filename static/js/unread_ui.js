@@ -1,4 +1,10 @@
-"use strict";
+import * as activity from "./activity";
+import * as notifications from "./notifications";
+import * as pm_list from "./pm_list";
+import * as stream_list from "./stream_list";
+import * as top_left_corner from "./top_left_corner";
+import * as topic_list from "./topic_list";
+import * as unread from "./unread";
 
 let last_mention_count = 0;
 
@@ -15,14 +21,14 @@ function do_new_messages_animation(li) {
     setTimeout(end_animation, 6000);
 }
 
-exports.animate_mention_changes = function (li, new_mention_count) {
+export function animate_mention_changes(li, new_mention_count) {
     if (new_mention_count > last_mention_count) {
         do_new_messages_animation(li);
     }
     last_mention_count = new_mention_count;
-};
+}
 
-exports.set_count_toggle_button = function (elem, count) {
+export function set_count_toggle_button(elem, count) {
     if (count === 0) {
         if (elem.is(":animated")) {
             return elem.stop(true, true).hide();
@@ -34,9 +40,9 @@ exports.set_count_toggle_button = function (elem, count) {
     }
     elem.show(500);
     return elem.text("1k+");
-};
+}
 
-exports.update_unread_counts = function () {
+export function update_unread_counts() {
     // Pure computation:
     const res = unread.get_counts();
 
@@ -51,10 +57,10 @@ exports.update_unread_counts = function () {
     const notifiable_unread_count = unread.calculate_notifiable_count(res);
     notifications.update_unread_counts(notifiable_unread_count, res.private_message_count);
 
-    exports.set_count_toggle_button($("#streamlist-toggle-unreadcount"), res.home_unread_messages);
-};
+    set_count_toggle_button($("#streamlist-toggle-unreadcount"), res.home_unread_messages);
+}
 
-exports.should_display_bankruptcy_banner = function () {
+export function should_display_bankruptcy_banner() {
     // Until we've handled possibly declaring bankruptcy, don't show
     // unread counts since they only consider messages that are loaded
     // client side and may be different from the numbers reported by
@@ -75,10 +81,8 @@ exports.should_display_bankruptcy_banner = function () {
     }
 
     return false;
-};
+}
 
-exports.initialize = function () {
-    exports.update_unread_counts();
-};
-
-window.unread_ui = exports;
+export function initialize() {
+    update_unread_counts();
+}

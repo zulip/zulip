@@ -14,13 +14,10 @@ const page_params = set_global("page_params", {
 });
 
 const color_data = zrequire("color_data");
-zrequire("hash_util");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
 const stream_color = zrequire("stream_color");
 const stream_data = zrequire("stream_data");
-zrequire("Filter", "js/filter");
-zrequire("MessageListView", "js/message_list_view");
 const message_list = zrequire("message_list");
 const settings_config = zrequire("settings_config");
 
@@ -635,7 +632,7 @@ run_test("canonicalized_name", () => {
     assert.deepStrictEqual(stream_data.canonicalized_name("Stream_Bar"), "stream_bar");
 });
 
-run_test("create_sub", () => {
+run_test("create_sub", (override) => {
     stream_data.clear_subscriptions();
     const india = {
         stream_id: 102,
@@ -655,7 +652,7 @@ run_test("create_sub", () => {
         color: "#76ce90",
     };
 
-    color_data.pick_color = () => "#bd86e5";
+    override(color_data, "pick_color", () => "#bd86e5");
 
     const india_sub = stream_data.create_sub_from_server_data(india);
     assert(india_sub);

@@ -1,4 +1,7 @@
+import * as hash_util from "./hash_util";
 import * as people from "./people";
+import * as stream_data from "./stream_data";
+import * as user_groups from "./user_groups";
 
 /*
     This config is in a separate file for partly

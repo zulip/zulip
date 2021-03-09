@@ -4,11 +4,16 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const reload = set_global("reload", {});
-zrequire("reload_state");
+const reload = mock_module("reload");
+
+set_global("setTimeout", (f, delay) => {
+    assert.equal(delay, 0);
+    f();
+});
+
 const channel = zrequire("channel");
 
 const default_stub_xhr = "default-stub-xhr";
@@ -260,11 +265,6 @@ run_test("retry", () => {
         },
 
         check_ajax_options(options) {
-            set_global("setTimeout", (f, delay) => {
-                assert.equal(delay, 0);
-                f();
-            });
-
             blueslip.expect("log", "Retrying idempotent[object Object]");
             test_with_mock_ajax({
                 run_code() {
@@ -280,6 +280,7 @@ run_test("retry", () => {
 });
 
 run_test("too_many_pending", () => {
+    channel.clear_for_tests();
     $.ajax = () => {
         const xhr = "stub";
         return xhr;
@@ -290,9 +291,10 @@ run_test("too_many_pending", () => {
         "The length of pending_requests is over 50. " +
             "Most likely they are not being correctly removed.",
     );
-    _.times(50, () => {
+    _.times(51, () => {
         channel.post({});
     });
+    channel.clear_for_tests();
 });
 
 run_test("xhr_error_message", () => {

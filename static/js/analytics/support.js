@@ -1,3 +1,5 @@
+import * as common from "../common";
+
 $(() => {
     $("body").on("click", ".scrub-realm-button", function (e) {
         e.preventDefault();
@@ -18,4 +20,3 @@ $(() => {
         common.copy_data_attribute_value($(this), "copytext");
     });
 });
-export {};

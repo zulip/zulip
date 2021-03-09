@@ -445,8 +445,6 @@ class WorkerTest(ZulipTestCase):
             dict(prereg_id=prereg_alice.id, referrer_id=inviter.id, email_body=None),
             # Nonexistent prereg_id, as if the invitation was deleted
             dict(prereg_id=-1, referrer_id=inviter.id, email_body=None),
-            # Form with `email` is from versions up to Zulip 1.7.1
-            dict(email=self.nonreg_email("bob"), referrer_id=inviter.id, email_body=None),
         ]
         for element in data:
             fake_client.enqueue("invites", element)
@@ -458,7 +456,7 @@ class WorkerTest(ZulipTestCase):
                 "zerver.worker.queue_processors.send_future_email"
             ) as send_mock:
                 worker.start()
-                self.assertEqual(send_mock.call_count, 2)
+                self.assertEqual(send_mock.call_count, 1)
 
     def test_error_handling(self) -> None:
         processed = []

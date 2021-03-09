@@ -1,6 +1,17 @@
-"use strict";
-
-const peer_data = require("./peer_data");
+import * as color_data from "./color_data";
+import * as message_list from "./message_list";
+import * as message_util from "./message_util";
+import * as message_view_header from "./message_view_header";
+import * as narrow_state from "./narrow_state";
+import * as overlays from "./overlays";
+import * as peer_data from "./peer_data";
+import * as recent_topics from "./recent_topics";
+import * as settings_notifications from "./settings_notifications";
+import * as stream_color from "./stream_color";
+import * as stream_data from "./stream_data";
+import * as stream_list from "./stream_list";
+import * as stream_muting from "./stream_muting";
+import * as subs from "./subs";
 
 // In theory, this function should apply the account-level defaults,
 // however, they are only called after a manual override, so
@@ -12,7 +23,7 @@ function update_stream_setting(sub, value, setting) {
     sub[setting] = value;
 }
 
-exports.update_property = function (stream_id, property, value, other_values) {
+export function update_property(stream_id, property, value, other_values) {
     const sub = stream_data.get_sub_by_id(stream_id);
     if (sub === undefined) {
         // This isn't a stream we know about, so ignore it.
@@ -71,12 +82,12 @@ exports.update_property = function (stream_id, property, value, other_values) {
                 value,
             });
     }
-};
+}
 
 // Add yourself to a stream we already know about client-side.
 // It's likely we should be passing in the full sub object from the caller/backend,
 // but for now we just pass in the subscribers and color (things likely to be different).
-exports.mark_subscribed = function (sub, subscribers, color) {
+export function mark_subscribed(sub, subscribers, color) {
     if (sub === undefined) {
         blueslip.error("Undefined sub passed to mark_subscribed");
         return;
@@ -120,9 +131,9 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     message_util.do_unread_count_updates(message_list.all.all_messages());
 
     stream_list.add_sidebar_row(sub);
-};
+}
 
-exports.mark_unsubscribed = function (sub) {
+export function mark_unsubscribed(sub) {
     if (sub === undefined) {
         // We don't know about this stream
         return;
@@ -144,9 +155,9 @@ exports.mark_unsubscribed = function (sub) {
     }
 
     stream_list.remove_sidebar_row(sub.stream_id);
-};
+}
 
-exports.remove_deactivated_user_from_all_streams = function (user_id) {
+export function remove_deactivated_user_from_all_streams(user_id) {
     const all_subs = stream_data.get_unsorted_subs();
 
     for (const sub of all_subs) {
@@ -155,6 +166,4 @@ exports.remove_deactivated_user_from_all_streams = function (user_id) {
             subs.update_subscribers_ui(sub);
         }
     }
-};
-
-window.stream_events = exports;
+}

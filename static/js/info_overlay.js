@@ -1,12 +1,16 @@
-"use strict";
-
-const components = require("./components");
+import * as common from "./common";
+import * as components from "./components";
+import * as hashchange from "./hashchange";
+import * as keydown_util from "./keydown_util";
+import * as overlays from "./overlays";
+import * as popovers from "./popovers";
+import * as ui from "./ui";
 
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
-exports.toggler = undefined;
+export let toggler;
 
-exports.set_up_toggler = function () {
+export function set_up_toggler() {
     const opts = {
         selected: 0,
         child_wants_focus: true,
@@ -22,8 +26,8 @@ exports.set_up_toggler = function () {
         },
     };
 
-    exports.toggler = components.toggle(opts);
-    const elem = exports.toggler.get();
+    toggler = components.toggle(opts);
+    const elem = toggler.get();
     elem.addClass("large allow-overflow");
 
     const modals = opts.values.map((item) => {
@@ -37,8 +41,8 @@ exports.set_up_toggler = function () {
         keydown_util.handle({
             elem: modal,
             handlers: {
-                left_arrow: exports.toggler.maybe_go_left,
-                right_arrow: exports.toggler.maybe_go_right,
+                left_arrow: toggler.maybe_go_left,
+                right_arrow: toggler.maybe_go_right,
             },
         });
     }
@@ -47,11 +51,11 @@ exports.set_up_toggler = function () {
 
     common.adjust_mac_shortcuts(".hotkeys_table .hotkey kbd");
     common.adjust_mac_shortcuts("#markdown-instructions kbd");
-};
+}
 
-exports.show = function (target) {
-    if (!exports.toggler) {
-        exports.set_up_toggler();
+export function show(target) {
+    if (!toggler) {
+        set_up_toggler();
     }
 
     const overlay = $(".informational-overlays");
@@ -67,18 +71,16 @@ exports.show = function (target) {
     }
 
     if (target) {
-        exports.toggler.goto(target);
+        toggler.goto(target);
     }
-};
+}
 
-exports.maybe_show_keyboard_shortcuts = function () {
+export function maybe_show_keyboard_shortcuts() {
     if (overlays.is_active()) {
         return;
     }
     if (popovers.any_active()) {
         return;
     }
-    exports.show("keyboard-shortcuts");
-};
-
-window.info_overlay = exports;
+    show("keyboard-shortcuts");
+}

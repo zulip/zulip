@@ -1,3 +1,5 @@
+import * as muting_ui from "./muting_ui";
+
 export let loaded = false;
 
 export function set_up() {

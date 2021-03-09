@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -18,51 +18,52 @@ const typing_person1 = events.typing_person1;
 
 set_global("setTimeout", (func) => func());
 
-const activity = set_global("activity", {});
-const alert_words_ui = set_global("alert_words_ui", {});
-const attachments_ui = set_global("attachments_ui", {});
-const bot_data = set_global("bot_data", {});
-set_global("compose", {});
-const composebox_typeahead = set_global("composebox_typeahead", {});
+const activity = mock_module("activity");
+const alert_words_ui = mock_module("alert_words_ui");
+const attachments_ui = mock_module("attachments_ui");
+const bot_data = mock_module("bot_data");
+const composebox_typeahead = mock_module("composebox_typeahead");
+const emoji_picker = mock_module("emoji_picker");
+const hotspots = mock_module("hotspots");
+const markdown = mock_module("markdown");
+const message_edit = mock_module("message_edit");
+const message_events = mock_module("message_events");
+const message_list = mock_module("message_list");
+const muting_ui = mock_module("muting_ui");
+const night_mode = mock_module("night_mode");
+const notifications = mock_module("notifications");
+const reactions = mock_module("reactions");
+const realm_icon = mock_module("realm_icon");
+const realm_logo = mock_module("realm_logo");
+const reload = mock_module("reload");
+const scroll_bar = mock_module("scroll_bar");
+const settings_account = mock_module("settings_account");
+const settings_bots = mock_module("settings_bots");
+const settings_display = mock_module("settings_display");
+const settings_emoji = mock_module("settings_emoji");
+const settings_exports = mock_module("settings_exports");
+const settings_invites = mock_module("settings_invites");
+const settings_linkifiers = mock_module("settings_linkifiers");
+const settings_notifications = mock_module("settings_notifications");
+const settings_org = mock_module("settings_org");
+const settings_profile_fields = mock_module("settings_profile_fields");
+const settings_streams = mock_module("settings_streams");
+const settings_user_groups = mock_module("settings_user_groups");
+const settings_users = mock_module("settings_users");
+const stream_data = mock_module("stream_data");
+const stream_events = mock_module("stream_events");
+const submessage = mock_module("submessage");
+const typing_events = mock_module("typing_events");
+const ui = mock_module("ui");
+const unread_ops = mock_module("unread_ops");
+const user_events = mock_module("user_events");
+const user_groups = mock_module("user_groups");
+mock_module("compose");
 set_global("current_msg_list", {});
-const emoji_picker = set_global("emoji_picker", {});
 set_global("home_msg_list", {});
-const hotspots = set_global("hotspots", {});
-const markdown = set_global("markdown", {});
-const message_edit = set_global("message_edit", {});
-const message_events = set_global("message_events", {});
-const message_list = set_global("message_list", {});
-const muting_ui = set_global("muting_ui", {});
-const night_mode = set_global("night_mode", {});
-const notifications = set_global("notifications", {});
-const reactions = set_global("reactions", {});
-const realm_icon = set_global("realm_icon", {});
-const realm_logo = set_global("realm_logo", {});
-const reload = set_global("reload", {});
-const scroll_bar = set_global("scroll_bar", {});
-const settings_account = set_global("settings_account", {});
-const settings_bots = set_global("settings_bots", {});
-const settings_display = set_global("settings_display", {});
-const settings_emoji = set_global("settings_emoji", {});
-const settings_exports = set_global("settings_exports", {});
-const settings_invites = set_global("settings_invites", {});
-const settings_linkifiers = set_global("settings_linkifiers", {});
-const settings_notifications = set_global("settings_notifications", {});
-const settings_org = set_global("settings_org", {});
-const settings_profile_fields = set_global("settings_profile_fields", {});
-const settings_streams = set_global("settings_streams", {});
-const settings_user_groups = set_global("settings_user_groups", {});
-const settings_users = set_global("settings_users", {});
-const stream_data = set_global("stream_data", {});
-const stream_events = set_global("stream_events", {});
-const submessage = set_global("submessage", {});
-const typing_events = set_global("typing_events", {});
-const ui = set_global("ui", {});
-const unread_ops = set_global("unread_ops", {});
-const user_events = set_global("user_events", {});
-const user_groups = set_global("user_groups", {});
 
 // page_params is highly coupled to dispatching now
+
 const page_params = set_global("page_params", {
     test_suite: false,
     is_admin: true,
@@ -71,19 +72,16 @@ const page_params = set_global("page_params", {
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
-zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list = zrequire("stream_list");
-zrequire("message_flags");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const starred_messages = zrequire("starred_messages");
 const user_status = zrequire("user_status");
 
-const emoji = zrequire("emoji", "shared/js/emoji");
+const emoji = zrequire("../shared/js/emoji");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
-zrequire("panels");
 
 function dispatch(ev) {
     server_events_dispatch.dispatch_normal_event(ev);
@@ -95,7 +93,7 @@ people.add_active_user(test_user);
 message_store.add_message_metadata(test_message);
 
 const realm_emoji = {};
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 
 emoji.initialize({realm_emoji, emoji_codes});
 

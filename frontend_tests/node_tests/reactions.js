@@ -3,79 +3,12 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("document", "document-stub");
-
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-const emoji = zrequire("emoji", "shared/js/emoji");
-
-const people = zrequire("people");
-const reactions = zrequire("reactions");
-
 const alice_user_id = 5;
-set_global("page_params", {
-    user_id: alice_user_id,
-});
-
-const emoji_params = {
-    realm_emoji: {
-        991: {
-            id: "991",
-            name: "realm_emoji",
-            source_url: "/url/for/991",
-            deactivated: false,
-        },
-        992: {
-            id: "992",
-            name: "inactive_realm_emoji",
-            source_url: "/url/for/992",
-            deactivated: true,
-        },
-        zulip: {
-            id: "zulip",
-            name: "zulip",
-            source_url: "/url/for/zulip",
-            deactivated: false,
-        },
-    },
-    emoji_codes,
-};
-
-emoji.initialize(emoji_params);
-
-const channel = set_global("channel", {});
-const emoji_picker = set_global("emoji_picker", {
-    hide_emoji_popover() {},
-});
-
-const alice = {
-    email: "alice@example.com",
-    user_id: alice_user_id,
-    full_name: "Alice",
-};
-const bob = {
-    email: "bob@example.com",
-    user_id: 6,
-    full_name: "Bob van Roberts",
-};
-const cali = {
-    email: "cali@example.com",
-    user_id: 7,
-    full_name: "Cali",
-};
-const alexus = {
-    email: "alexus@example.com",
-    user_id: 8,
-    full_name: "Alexus",
-};
-people.add_active_user(alice);
-people.add_active_user(bob);
-people.add_active_user(cali);
-people.add_active_user(alexus);
 
 const message = {
     id: 1001,
@@ -108,7 +41,11 @@ const message = {
     ],
 };
 
-const message_store = set_global("message_store", {
+const channel = mock_module("channel");
+const emoji_picker = mock_module("emoji_picker", {
+    hide_emoji_popover() {},
+});
+const message_store = mock_module("message_store", {
     get(message_id) {
         assert.equal(message_id, 1001);
         return message;
@@ -126,6 +63,66 @@ set_global("current_msg_list", {
         return 42;
     },
 });
+set_global("document", "document-stub");
+set_global("page_params", {
+    user_id: alice_user_id,
+});
+
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji = zrequire("../shared/js/emoji");
+const people = zrequire("people");
+const reactions = zrequire("reactions");
+
+const emoji_params = {
+    realm_emoji: {
+        991: {
+            id: "991",
+            name: "realm_emoji",
+            source_url: "/url/for/991",
+            deactivated: false,
+        },
+        992: {
+            id: "992",
+            name: "inactive_realm_emoji",
+            source_url: "/url/for/992",
+            deactivated: true,
+        },
+        zulip: {
+            id: "zulip",
+            name: "zulip",
+            source_url: "/url/for/zulip",
+            deactivated: false,
+        },
+    },
+    emoji_codes,
+};
+
+emoji.initialize(emoji_params);
+
+const alice = {
+    email: "alice@example.com",
+    user_id: alice_user_id,
+    full_name: "Alice",
+};
+const bob = {
+    email: "bob@example.com",
+    user_id: 6,
+    full_name: "Bob van Roberts",
+};
+const cali = {
+    email: "cali@example.com",
+    user_id: 7,
+    full_name: "Cali",
+};
+const alexus = {
+    email: "alexus@example.com",
+    user_id: 8,
+    full_name: "Alexus",
+};
+people.add_active_user(alice);
+people.add_active_user(bob);
+people.add_active_user(cali);
+people.add_active_user(alexus);
 
 run_test("open_reactions_popover (sent by me)", () => {
     current_msg_list.selected_message = () => ({sent_by_me: true});

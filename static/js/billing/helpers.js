@@ -1,6 +1,6 @@
-"use strict";
+import * as loading from "../loading";
 
-exports.create_ajax_request = function (
+export function create_ajax_request(
     url,
     form_name,
     stripe_token = null,
@@ -64,9 +64,9 @@ exports.create_ajax_request = function (
             $(free_trial_alert_message).show();
         },
     });
-};
+}
 
-exports.format_money = function (cents) {
+export function format_money(cents) {
     // allow for small floating point errors
     cents = Math.ceil(cents - 0.001);
     let precision;
@@ -77,13 +77,13 @@ exports.format_money = function (cents) {
     }
     // TODO: Add commas for thousands, millions, etc.
     return (cents / 100).toFixed(precision);
-};
+}
 
-exports.update_charged_amount = function (prices, schedule) {
-    $("#charged_amount").text(exports.format_money(page_params.seat_count * prices[schedule]));
-};
+export function update_charged_amount(prices, schedule) {
+    $("#charged_amount").text(format_money(page_params.seat_count * prices[schedule]));
+}
 
-exports.update_discount_details = function (organization_type) {
+export function update_discount_details(organization_type) {
     const discount_details = {
         open_source: "Open source projects are eligible for fully sponsored (free) Zulip Standard.",
         research:
@@ -94,9 +94,9 @@ exports.update_discount_details = function (organization_type) {
         other: "Your organization might be eligible for a discount or sponsorship.",
     };
     $("#sponsorship-discount-details").text(discount_details[organization_type]);
-};
+}
 
-exports.show_license_section = function (license) {
+export function show_license_section(license) {
     $("#license-automatic-section").hide();
     $("#license-manual-section").hide();
 
@@ -107,7 +107,7 @@ exports.show_license_section = function (license) {
     $(section_id).show();
     const input_id = `#${CSS.escape(license)}_license_count`;
     $(input_id).prop("disabled", false);
-};
+}
 
 let current_page;
 
@@ -116,7 +116,7 @@ function handle_hashchange() {
     $("html").scrollTop(0);
 }
 
-exports.set_tab = function (page) {
+export function set_tab(page) {
     const hash = location.hash;
     if (hash) {
         $(`#${CSS.escape(page)}-tabs.nav a[href="${CSS.escape(hash)}"]`).tab("show");
@@ -129,10 +129,8 @@ exports.set_tab = function (page) {
 
     current_page = page;
     window.addEventListener("hashchange", handle_hashchange);
-};
+}
 
-exports.is_valid_input = function (elem) {
+export function is_valid_input(elem) {
     return elem[0].checkValidity();
-};
-
-window.helpers = exports;
+}

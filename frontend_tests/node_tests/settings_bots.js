@@ -2,9 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -29,17 +27,14 @@ const bot_data_params = {
     ],
 };
 
-const avatar = set_global("avatar", {});
-
-const bot_data = zrequire("bot_data");
-
+const avatar = mock_module("avatar");
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
 }
 
-const settings_bots = rewiremock.proxy(() => zrequire("settings_bots"), {
-    clipboard: ClipboardJS,
-});
+const bot_data = zrequire("bot_data");
+const settings_bots = zrequire("settings_bots");
+settings_bots.__Rewire__("ClipboardJS", ClipboardJS);
 
 bot_data.initialize(bot_data_params);
 

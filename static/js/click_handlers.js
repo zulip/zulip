@@ -1,17 +1,43 @@
-"use strict";
-
-const _ = require("lodash");
-const WinChan = require("winchan");
+import _ from "lodash";
+import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
-const render_buddy_list_tooltip = require("../templates/buddy_list_tooltip.hbs");
-const render_buddy_list_tooltip_content = require("../templates/buddy_list_tooltip_content.hbs");
+import render_buddy_list_tooltip from "../templates/buddy_list_tooltip.hbs";
+import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
-const message_edit_history = require("./message_edit_history");
-const settings_panel_menu = require("./settings_panel_menu");
-const user_status_ui = require("./user_status_ui");
-const util = require("./util");
+import * as activity from "./activity";
+import * as buddy_data from "./buddy_data";
+import * as channel from "./channel";
+import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
+import * as compose_state from "./compose_state";
+import * as emoji_picker from "./emoji_picker";
+import * as hash_util from "./hash_util";
+import * as hashchange from "./hashchange";
+import * as hotspots from "./hotspots";
+import * as message_edit from "./message_edit";
+import * as message_edit_history from "./message_edit_history";
+import * as message_flags from "./message_flags";
+import * as message_store from "./message_store";
+import * as muting_ui from "./muting_ui";
+import * as narrow from "./narrow";
+import * as notifications from "./notifications";
+import * as overlays from "./overlays";
+import * as popovers from "./popovers";
+import * as reactions from "./reactions";
+import * as recent_topics from "./recent_topics";
+import * as rows from "./rows";
+import * as server_events from "./server_events";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_toggle from "./settings_toggle";
+import * as stream_edit from "./stream_edit";
+import * as stream_list from "./stream_list";
+import * as stream_popover from "./stream_popover";
+import * as ui_util from "./ui_util";
+import * as unread_ops from "./unread_ops";
+import * as user_status_ui from "./user_status_ui";
+import * as util from "./util";
 
 function convert_enter_to_click(e) {
     const key = e.which;
@@ -21,7 +47,7 @@ function convert_enter_to_click(e) {
     }
 }
 
-exports.initialize = function () {
+export function initialize() {
     // MESSAGE CLICKING
 
     function initialize_long_tap() {
@@ -984,6 +1010,4 @@ exports.initialize = function () {
     $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
     });
-};
-
-window.click_handlers = exports;
+}

@@ -461,6 +461,11 @@ li,
     margin-right: -32px;
     margin-top: -1px;
     padding: 8px 3px 0 13px;
+
+    /* This property nullifies the box-shadow rendered by .btn class */
+    &:active {
+        box-shadow: none;
+    }
 }
 
 #clipboard_image {
@@ -531,6 +536,23 @@ strong {
         background-color: hsla(0, 0%, 7%, 0.8);
         padding: 3px 5px;
     }
+
+    /*
+    Since hover and click are activated together on touchscreen
+    devices, the hover state persists until the next click, creating
+    awkward UI where the tooltip sticks around forever :(.
+
+    To resolve this, we just hide the tooltip for touch-events on
+    touch-enabled devices resolving the above problem.  This means
+    that tooltips will never appear on touchscreen devices, but that's
+    probably a reasoanble tradeoff here.
+
+    Source: https://drafts.csswg.org/mediaqueries-4/#mf-interaction
+    */
+
+    @media (hover: none) {
+        visibility: hidden !important;
+    }
 }
 
 .buddy_list_tooltip_content {
@@ -598,6 +620,19 @@ strong {
                 background-repeat: repeat-x;
                 filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
             }
+            /* styles defined for user_circle here only deal with positioning of user_presence_circle
+            in typeahead list in order to ensure they are renderred correctly in in all screen sizes.
+            Most of the style rules related to color, gradient etc. which are generally common throughout
+            the app are defined in user_circles.css and are not overridden here. */
+            .user_circle {
+                width: 8px;
+                height: 8px;
+                margin: 0 5px 0 -6px;
+                position: relative;
+                top: 6px;
+                right: 7px;
+                display: inline-block;
+            }
         }
     }
 
@@ -613,6 +648,10 @@ strong {
         background-repeat: repeat-x;
         outline: 0;
         filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
+
+        .user_circle_empty {
+            border-color: hsl(0, 0%, 25%);
+        }
     }
 
     .active > a:hover {
@@ -2004,7 +2043,7 @@ div.focused_table {
     height: 21px;
     width: 21px;
     position: relative;
-    margin-top: -7px;
+    margin-top: -4px;
     vertical-align: middle;
     top: 2px;
     right: 8px;
@@ -2013,6 +2052,11 @@ div.focused_table {
     /* For FontAwesome icons used in place of images for some users. */
     font-size: 19px;
     text-align: center;
+
+    &.fa-group {
+        margin-left: 9px;
+        top: 3px;
+    }
 }
 
 nav {

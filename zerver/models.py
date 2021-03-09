@@ -1336,7 +1336,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return f"<UserProfile: {self.email} {self.realm}>"
 
     @property
-    def is_new_member(self) -> bool:
+    def is_provisional_member(self) -> bool:
+        if self.is_moderator:
+            return False
         diff = (timezone_now() - self.date_joined).days
         if diff < self.realm.waiting_period_threshold:
             return True
@@ -1378,6 +1380,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             # We need to be careful to not accidentally change
             # ROLE_REALM_ADMINISTRATOR to ROLE_MEMBER here.
             self.role = UserProfile.ROLE_MEMBER
+
+    @property
+    def is_moderator(self) -> bool:
+        return self.role == UserProfile.ROLE_MODERATOR
 
     @property
     def is_incoming_webhook(self) -> bool:
@@ -1433,7 +1439,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         if policy_value == Realm.POLICY_MEMBERS_ONLY:
             return True
-        return not self.is_new_member
+        return not self.is_provisional_member
 
     def can_create_streams(self) -> bool:
         return self.has_permission("create_stream_policy")
@@ -2817,6 +2823,17 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
 
 
 class UserActivity(models.Model):
+    """Data table recording the last time each user hit Zulip endpoints
+    via which Clients; unlike UserPresence, these data are not exposed
+    to users via the Zulip API.
+
+    Useful for debugging as well as to answer analytics questions like
+    "How many users have accessed the Zulip mobile app in the last
+    month?" or "Which users/organizations have recently used API
+    endpoint X that is about to be desupported" for communications
+    and database migration purposes.
+    """
+
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     client: Client = models.ForeignKey(Client, on_delete=CASCADE)
@@ -2840,6 +2857,10 @@ class UserActivityInterval(models.Model):
 
 class UserPresence(models.Model):
     """A record from the last time we heard from a given user on a given client.
+
+    NOTE: Users can disable updates to this table (see UserProfile.presence_enabled),
+    so this cannot be used to determine if a user was recently active on Zulip.
+    The UserActivity table is recommended for that purpose.
 
     This is a tricky subsystem, because it is highly optimized.  See the docs:
       https://zulip.readthedocs.io/en/latest/subsystems/presence.html

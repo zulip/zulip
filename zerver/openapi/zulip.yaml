@@ -580,10 +580,6 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the stream whose subscription details have changed.
-                                name:
-                                  type: string
-                                  description: |
-                                    The name of the stream whose subscription details have changed.
                                 property:
                                   type: string
                                   description: |
@@ -601,14 +597,6 @@ paths:
                                     - type: integer
                                     - type: boolean
                                     - type: string
-                                email:
-                                  type: string
-                                  deprecated: true
-                                  description: |
-                                    The display email for the current user.
-
-                                    **Deprecated** and to be removed as it
-                                    serves no purpose to include this field here.
                               additionalProperties: false
                               example:
                                 {
@@ -616,9 +604,7 @@ paths:
                                   "type": "subscription",
                                   "property": "pin_to_top",
                                   "value": true,
-                                  "email": "user10@zulip.testserver",
                                   "stream_id": 11,
-                                  "name": "test_stream",
                                   "id": 0,
                                 }
                             - type: object
@@ -9782,8 +9768,11 @@ components:
         subject:
           type: string
           description: |
-            The `topic` of the message (only present for stream
-            messages).  The field name is a legacy holdover from when topics were
+            The `topic` of the message.  Currently always `""` for private messages,
+            though this could change if Zulip adds support for topics in private
+            message conversations.
+
+            The field name is a legacy holdover from when topics were
             called "subjects" and will eventually change.
         topic_links:
           type: array

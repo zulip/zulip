@@ -1,16 +1,24 @@
-"use strict";
+import * as hashchange from "./hashchange";
+import * as keydown_util from "./keydown_util";
+import * as popovers from "./popovers";
+import * as settings from "./settings";
+import * as settings_sections from "./settings_sections";
+import * as ui from "./ui";
 
-exports.mobile_deactivate_section = function () {
+export let normal_settings;
+export let org_settings;
+
+export function mobile_deactivate_section() {
     const $settings_overlay_container = $("#settings_overlay_container");
     $settings_overlay_container.find(".right").removeClass("show");
     $settings_overlay_container.find(".settings-header.mobile").removeClass("slide-left");
-};
+}
 
 function two_column_mode() {
     return $("#settings_overlay_container").css("--single-column") === undefined;
 }
 
-class SettingsPanelMenu {
+export class SettingsPanelMenu {
     constructor(opts) {
         this.main_elem = opts.main_elem;
         this.hash_prefix = opts.hash_prefix;
@@ -93,7 +101,7 @@ class SettingsPanelMenu {
             } else {
                 // In single column mode we close the active section
                 // so that you always start at the settings list.
-                exports.mobile_deactivate_section();
+                mobile_deactivate_section();
                 return;
             }
         }
@@ -128,32 +136,29 @@ class SettingsPanelMenu {
         return panel;
     }
 }
-exports.SettingsPanelMenu = SettingsPanelMenu;
 
-exports.initialize = function () {
-    exports.normal_settings = new SettingsPanelMenu({
+export function initialize() {
+    normal_settings = new SettingsPanelMenu({
         main_elem: $(".normal-settings-list"),
         hash_prefix: "settings/",
     });
-    exports.org_settings = new SettingsPanelMenu({
+    org_settings = new SettingsPanelMenu({
         main_elem: $(".org-settings-list"),
         hash_prefix: "organization/",
     });
-};
+}
 
-exports.show_normal_settings = function () {
-    exports.org_settings.hide();
-    exports.normal_settings.show();
-};
+export function show_normal_settings() {
+    org_settings.hide();
+    normal_settings.show();
+}
 
-exports.show_org_settings = function () {
-    exports.normal_settings.hide();
-    exports.org_settings.show();
-};
+export function show_org_settings() {
+    normal_settings.hide();
+    org_settings.show();
+}
 
-exports.set_key_handlers = function (toggler) {
-    exports.normal_settings.set_key_handlers(toggler);
-    exports.org_settings.set_key_handlers(toggler);
-};
-
-window.settings_panel_menu = exports;
+export function set_key_handlers(toggler) {
+    normal_settings.set_key_handlers(toggler);
+    org_settings.set_key_handlers(toggler);
+}

@@ -1,6 +1,8 @@
-"use strict";
+import * as channel from "./channel";
+import * as settings_account from "./settings_account";
+import * as upload_widget from "./upload_widget";
 
-exports.build_bot_create_widget = function () {
+export function build_bot_create_widget() {
     // We have to do strange gyrations with the file input to clear it,
     // where we replace it wholesale, so we generalize the file input with
     // a callback function.
@@ -20,9 +22,9 @@ exports.build_bot_create_widget = function () {
         clear_button,
         upload_button,
     );
-};
+}
 
-exports.build_bot_edit_widget = function (target) {
+export function build_bot_edit_widget(target) {
     const get_file_input = function () {
         return target.find(".edit_bot_avatar_file_input");
     };
@@ -39,9 +41,9 @@ exports.build_bot_edit_widget = function (target) {
         clear_button,
         upload_button,
     );
-};
+}
 
-exports.build_user_avatar_widget = function (upload_function) {
+export function build_user_avatar_widget(upload_function) {
     const get_file_input = function () {
         return $("#user-avatar-upload-widget .image_file_input").expectOne();
     };
@@ -80,6 +82,4 @@ exports.build_user_avatar_widget = function (upload_function) {
     }
 
     return undefined;
-};
-
-window.avatar = exports;
+}

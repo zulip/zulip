@@ -192,7 +192,10 @@ def main() -> None:
     os.environ.pop("http_proxy", "")
     os.environ.pop("https_proxy", "")
 
-    from tools.lib.test_script import assert_provisioning_status_ok
+    from tools.lib.test_script import (
+        add_provision_check_override_param,
+        assert_provisioning_status_ok,
+    )
     from zerver.lib.test_fixtures import (
         remove_test_run_directories,
         update_test_databases_if_required,
@@ -239,7 +242,7 @@ def main() -> None:
         "tests in. Default is the number of logical CPUs",
     )
     parser.add_argument("--profile", action="store_true", help="Profile test runtime.")
-    parser.add_argument("--force", action="store_true", help="Run tests despite possible problems.")
+    add_provision_check_override_param(parser)
     parser.add_argument(
         "--no-shallow",
         action="store_true",
@@ -365,7 +368,7 @@ def main() -> None:
             full_suite = False
         os.environ["GENERATE_STRIPE_FIXTURES"] = "1"
 
-    assert_provisioning_status_ok(options.force)
+    assert_provisioning_status_ok(options.skip_provision_check)
 
     if options.coverage:
         import coverage

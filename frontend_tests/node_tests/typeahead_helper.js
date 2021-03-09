@@ -19,10 +19,13 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 zrequire("narrow");
+zrequire("user_status");
+zrequire("presence");
+zrequire("buddy_data");
 zrequire("hash_util");
 
-const emoji = zrequire("emoji", "shared/js/emoji");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
+const emoji = zrequire("../shared/js/emoji");
+const pygments_data = zrequire("../generated/pygments_data.json");
 const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
@@ -41,7 +44,7 @@ stream_data.create_streams([
     {name: "Linux", subscribed: true, color: "red", stream_id: 2},
 ]);
 
-run_test("sort_streams", () => {
+run_test("sort_streams", (override) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -80,7 +83,7 @@ run_test("sort_streams", () => {
         },
     ];
 
-    stream_data.is_active = (sub) => sub.name !== "dead";
+    override(stream_data, "is_active", (sub) => sub.name !== "dead");
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first

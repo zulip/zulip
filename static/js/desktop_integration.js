@@ -1,3 +1,5 @@
+import * as hashchange from "./hashchange";
+
 if (window.electron_bridge !== undefined) {
     window.electron_bridge.on_event("logout", () => {
         $("#logout_form").trigger("submit");
@@ -11,5 +13,3 @@ if (window.electron_bridge !== undefined) {
         hashchange.go_to_location("settings/notifications");
     });
 }
-
-export {};

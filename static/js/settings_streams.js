@@ -1,16 +1,22 @@
-"use strict";
+import render_admin_default_streams_list from "../templates/admin_default_streams_list.hbs";
 
-const render_admin_default_streams_list = require("../templates/admin_default_streams_list.hbs");
+import * as channel from "./channel";
+import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
+import * as stream_data from "./stream_data";
+import * as typeahead_helper from "./typeahead_helper";
+import * as ui from "./ui";
+import * as ui_report from "./ui_report";
 
 const meta = {
     loaded: false,
 };
 
-exports.reset = function () {
+export function reset() {
     meta.loaded = false;
-};
+}
 
-exports.maybe_disable_widgets = function () {
+export function maybe_disable_widgets() {
     if (page_params.is_admin) {
         return;
     }
@@ -18,9 +24,9 @@ exports.maybe_disable_widgets = function () {
     $(".organization-box [data-name='default-streams-list']")
         .find("input:not(.search), button, select")
         .prop("disabled", true);
-};
+}
 
-exports.build_default_stream_table = function () {
+export function build_default_stream_table() {
     const table = $("#admin_default_streams_table").expectOne();
 
     const stream_ids = stream_data.get_default_stream_ids();
@@ -49,14 +55,14 @@ exports.build_default_stream_table = function () {
     });
 
     loading.destroy_indicator($("#admin_page_default_streams_loading_indicator"));
-};
+}
 
-exports.update_default_streams_table = function () {
+export function update_default_streams_table() {
     if (/#*organization/.test(window.location.hash) || /#*settings/.test(window.location.hash)) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
-        exports.build_default_stream_table();
+        build_default_stream_table();
     }
-};
+}
 
 function make_stream_default(stream_id) {
     const data = {
@@ -79,7 +85,7 @@ function make_stream_default(stream_id) {
     });
 }
 
-exports.delete_default_stream = function (stream_id, default_stream_row, alert_element) {
+export function delete_default_stream(stream_id, default_stream_row, alert_element) {
     channel.del({
         url: "/json/default_streams?" + $.param({stream_id}),
         error(xhr) {
@@ -89,17 +95,17 @@ exports.delete_default_stream = function (stream_id, default_stream_row, alert_e
             default_stream_row.remove();
         },
     });
-};
+}
 
-exports.set_up = function () {
-    exports.build_page();
-    exports.maybe_disable_widgets();
-};
+export function set_up() {
+    build_page();
+    maybe_disable_widgets();
+}
 
-exports.build_page = function () {
+export function build_page() {
     meta.loaded = true;
 
-    exports.update_default_streams_table();
+    update_default_streams_table();
 
     $(".create_default_stream").on("keypress", (e) => {
         if (e.which === 13) {
@@ -134,8 +140,6 @@ exports.build_page = function () {
     $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
         const row = $(this).closest(".default_stream_row");
         const stream_id = Number.parseInt(row.attr("data-stream-id"), 10);
-        exports.delete_default_stream(stream_id, row, $(e.target));
+        delete_default_stream(stream_id, row, $(e.target));
     });
-};
-
-window.settings_streams = exports;
+}

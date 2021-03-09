@@ -10,6 +10,7 @@
 /var/log/zulip/message_retention.log
 /var/log/zulip/scheduled_message_deliverer.log
 /var/log/zulip/send_email.log
+/var/log/zulip/smokescreen.log
 /var/log/zulip/slow_queries.log
 /var/log/zulip/soft_deactivation.log
 /var/log/zulip/sync_ldap_user_data.log

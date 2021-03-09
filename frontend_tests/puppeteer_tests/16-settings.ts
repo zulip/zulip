@@ -27,7 +27,7 @@ async function open_settings(page: Page): Promise<void> {
     await page.click(settings_selector);
 
     await page.waitForSelector("#settings_content .account-settings-form", {visible: true});
-    const page_url = page.url();
+    const page_url = await common.page_url_with_fragment(page);
     assert(page_url.includes("/#settings/"), `Page url: ${page_url} does not contain /#settings/`);
 }
 

@@ -1,10 +1,11 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import render_hotspot_icon from "../templates/hotspot_icon.hbs";
+import render_hotspot_overlay from "../templates/hotspot_overlay.hbs";
+import render_intro_reply_hotspot from "../templates/intro_reply_hotspot.hbs";
 
-const render_hotspot_icon = require("../templates/hotspot_icon.hbs");
-const render_hotspot_overlay = require("../templates/hotspot_overlay.hbs");
-const render_intro_reply_hotspot = require("../templates/intro_reply_hotspot.hbs");
+import * as channel from "./channel";
+import * as popovers from "./popovers";
 
 // popover orientations
 const TOP = "top";
@@ -64,7 +65,7 @@ const HOTSPOT_LOCATIONS = new Map([
 // popover illustration url(s)
 const WHALE = "/static/images/hotspots/whale.svg";
 
-exports.post_hotspot_as_read = function (hotspot_name) {
+export function post_hotspot_as_read(hotspot_name) {
     channel.post({
         url: "/json/users/me/hotspots",
         data: {hotspot: JSON.stringify(hotspot_name)},
@@ -72,7 +73,7 @@ exports.post_hotspot_as_read = function (hotspot_name) {
             blueslip.error(err.responseText);
         },
     });
-};
+}
 
 function place_icon(hotspot) {
     const element = $(hotspot.location.element);
@@ -247,11 +248,11 @@ function insert_hotspot_into_DOM(hotspot) {
     }, hotspot.delay * 1000);
 }
 
-exports.is_open = function () {
+export function is_open() {
     return $(".hotspot.overlay").hasClass("show");
-};
+}
 
-exports.close_hotspot_icon = function (elem) {
+export function close_hotspot_icon(elem) {
     $(elem).animate(
         {opacity: 0},
         {
@@ -261,7 +262,7 @@ exports.close_hotspot_icon = function (elem) {
             }.bind(elem),
         },
     );
-};
+}
 
 function close_read_hotspots(new_hotspots) {
     const unwanted_hotspots = _.difference(
@@ -270,20 +271,18 @@ function close_read_hotspots(new_hotspots) {
     );
 
     for (const hotspot_name of unwanted_hotspots) {
-        exports.close_hotspot_icon($(`#hotspot_${CSS.escape(hotspot_name)}_icon`));
+        close_hotspot_icon($(`#hotspot_${CSS.escape(hotspot_name)}_icon`));
     }
 }
 
-exports.load_new = function (new_hotspots) {
+export function load_new(new_hotspots) {
     close_read_hotspots(new_hotspots);
     for (const hotspot of new_hotspots) {
         hotspot.location = HOTSPOT_LOCATIONS.get(hotspot.name);
         insert_hotspot_into_DOM(hotspot);
     }
-};
+}
 
-exports.initialize = function () {
-    exports.load_new(page_params.hotspots);
-};
-
-window.hotspots = exports;
+export function initialize() {
+    load_new(page_params.hotspots);
+}

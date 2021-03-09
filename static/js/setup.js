@@ -1,3 +1,4 @@
+import * as loading from "./loading";
 import * as util from "./util";
 
 // Miscellaneous early setup.
@@ -66,10 +67,6 @@ $(() => {
                 blueslip.error("Expected one element in jQuery set, " + this.length + " found");
             }
             return this;
-        };
-
-        $.fn.within = function (sel) {
-            return $(this).is(sel) || $(this).closest(sel).length;
         };
     }
 });

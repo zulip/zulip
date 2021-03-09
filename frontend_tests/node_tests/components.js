@@ -7,7 +7,6 @@ const _ = require("lodash");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-zrequire("keydown_util");
 const components = zrequire("components");
 
 const noop = () => {};

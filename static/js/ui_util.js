@@ -1,14 +1,15 @@
-"use strict";
+import * as stream_color from "./stream_color";
+import * as stream_data from "./stream_data";
 
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.
 
-exports.change_tab_to = function (tabname) {
+export function change_tab_to(tabname) {
     $(`#gear-menu a[href="${CSS.escape(tabname)}"]`).tab("show");
-};
+}
 
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
-exports.place_caret_at_end = function (el) {
+export function place_caret_at_end(el) {
     el.focus();
 
     if (typeof window.getSelection !== "undefined" && typeof document.createRange !== "undefined") {
@@ -24,12 +25,12 @@ exports.place_caret_at_end = function (el) {
         textRange.collapse(false);
         textRange.select();
     }
-};
+}
 
-exports.blur_active_element = function () {
+export function blur_active_element() {
     // this blurs anything that may perhaps be actively focused on.
     document.activeElement.blur();
-};
+}
 
 function update_lock_icon_for_stream(stream_name) {
     const icon = $("#compose-lock-icon");
@@ -47,7 +48,7 @@ function update_lock_icon_for_stream(stream_name) {
 // color look like the stream being used.
 // (In particular, if there's a color associated with it,
 //  have that color be reflected here too.)
-exports.decorate_stream_bar = function (stream_name, element, is_compose) {
+export function decorate_stream_bar(stream_name, element, is_compose) {
     if (stream_name === undefined) {
         return;
     }
@@ -59,6 +60,4 @@ exports.decorate_stream_bar = function (stream_name, element, is_compose) {
         .css("background-color", color)
         .removeClass(stream_color.color_classes)
         .addClass(stream_color.get_color_class(color));
-};
-
-window.ui_util = exports;
+}

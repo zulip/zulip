@@ -1,7 +1,7 @@
 import orjson
 
 from zerver.lib.actions import do_create_user, do_mark_hotspot_as_read
-from zerver.lib.hotspots import ALL_HOTSPOTS, get_next_hotspots
+from zerver.lib.hotspots import ALL_HOTSPOTS, INTRO_HOTSPOTS, get_next_hotspots
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserHotspot, UserProfile, get_realm
 
@@ -27,9 +27,9 @@ class TestGetNextHotspots(ZulipTestCase):
         self.assertEqual(len(hotspots), 1)
         self.assertEqual(hotspots[0]["name"], "intro_streams")
 
-    def test_all_done(self) -> None:
+    def test_all_intro_hotspots_done(self) -> None:
         self.assertNotEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
-        for hotspot in ALL_HOTSPOTS:
+        for hotspot in INTRO_HOTSPOTS:
             do_mark_hotspot_as_read(self.user, hotspot)
         self.assertEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
         self.assertEqual(get_next_hotspots(self.user), [])

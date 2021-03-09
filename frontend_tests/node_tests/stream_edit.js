@@ -3,44 +3,42 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 stub_templates(() => noop);
 
-set_global("channel", {});
-set_global("hashchange", {update_browser_history: noop});
-set_global("hash_util", {
-    stream_edit_uri: noop,
-    by_stream_uri: noop,
-});
-set_global("ListWidget", {
-    create: () => ({init: noop}),
-});
 const page_params = set_global("page_params", {});
-set_global("settings_notifications", {
-    get_notifications_table_row_data: noop,
-});
-set_global("stream_color", {
-    set_colorpicker_color: noop,
-});
-const typeahead_helper = set_global("typeahead_helper", {});
-const ui = set_global("ui", {
+const typeahead_helper = mock_module("typeahead_helper");
+const ui = mock_module("ui", {
     get_scroll_element: noop,
 });
 
-zrequire("input_pill");
+mock_module("hash_util", {
+    stream_edit_uri: noop,
+    by_stream_uri: noop,
+});
+mock_module("hashchange", {update_browser_history: noop});
+mock_module("list_widget", {
+    create: () => ({init: noop}),
+});
+mock_module("settings_notifications", {
+    get_notifications_table_row_data: noop,
+});
+mock_module("stream_color", {
+    set_colorpicker_color: noop,
+});
+
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("subs");
-const stream_edit = zrequire("stream_edit");
 const stream_data = zrequire("stream_data");
+const stream_edit = zrequire("stream_edit");
 const stream_pill = zrequire("stream_pill");
 const user_pill = zrequire("user_pill");
 
-stream_edit.sort_but_pin_current_user_on_top = noop;
+stream_edit.__Rewire__("sort_but_pin_current_user_on_top", noop);
 
 const jill = {
     email: "jill@zulip.com",
@@ -97,7 +95,7 @@ function test_ui(label, f) {
     });
 }
 
-test_ui("subscriber_pills", () => {
+test_ui("subscriber_pills", (override) => {
     const subscriptions_table_selector = "#subscriptions_table";
     const input_field_stub = $.create(".input");
 
@@ -131,11 +129,11 @@ test_ui("subscriber_pills", () => {
     let expected_user_ids = [];
     let input_typeahead_called = false;
     let add_subscribers_request = false;
-    stream_edit.invite_user_to_stream = (user_ids, sub) => {
+    override(stream_edit, "invite_user_to_stream", (user_ids, sub) => {
         assert.equal(sub.stream_id, denmark.stream_id);
         assert.deepEqual(user_ids.sort(), expected_user_ids.sort());
         add_subscribers_request = true;
-    };
+    });
 
     input_field_stub.typeahead = (config) => {
         assert.equal(config.items, 5);
@@ -246,7 +244,7 @@ test_ui("subscriber_pills", () => {
 
     // Only Denmark stream pill is created and a
     // request is sent to add all it's subscribers.
-    user_pill.get_user_ids = () => [];
+    override(user_pill, "get_user_ids", () => []);
     expected_user_ids = potential_denmark_stream_subscribers;
     add_subscribers_handler(event);
 
@@ -258,14 +256,14 @@ test_ui("subscriber_pills", () => {
 
     // No request is sent if we try to subscribe ourselves
     // only and are already subscribed to the stream.
-    user_pill.get_user_ids = () => [me.user_id];
+    override(user_pill, "get_user_ids", () => [me.user_id]);
     add_subscribers_handler(event);
     assert(!add_subscribers_request);
 
     // Denmark stream pill and fred and mark user pills are created.
     // But only one request for mark is sent even though a mark user
     // pill is created and mark is also a subscriber of Denmark stream.
-    user_pill.get_user_ids = () => [mark.user_id, fred.user_id];
+    override(user_pill, "get_user_ids", () => [mark.user_id, fred.user_id]);
     stream_pill.get_user_ids = () => peer_data.get_subscribers(denmark.stream_id);
     expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);

@@ -4,34 +4,29 @@ const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const local_message = set_global("local_message", {});
-const markdown = set_global("markdown", {});
+const local_message = mock_module("local_message");
+const markdown = mock_module("markdown");
 const page_params = set_global("page_params", {});
-
-const fake_now = 555;
-MockDate.set(new Date(fake_now * 1000));
-
-const echo = zrequire("echo");
-const people = zrequire("people");
 
 let disparities = [];
 let messages_to_rerender = [];
 
-set_global("ui", {
+mock_module("ui", {
     show_failed_message_success: () => {},
 });
 
-set_global("sent_messages", {
+mock_module("sent_messages", {
     mark_disparity: (local_id) => {
         disparities.push(local_id);
     },
 });
 
-set_global("message_store", {
+mock_module("message_store", {
     get: () => ({failed_request: true}),
+
     update_booleans: () => {},
 });
 
@@ -43,9 +38,11 @@ set_global("home_msg_list", {
     },
 });
 
-set_global("message_list", {});
-
+mock_module("message_list");
 set_global("current_msg_list", "");
+
+const echo = zrequire("echo");
+const people = zrequire("people");
 
 run_test("process_from_server for un-echoed messages", () => {
     const waiting_for_ack = new Map();
@@ -174,6 +171,9 @@ run_test("build_display_recipient", () => {
 });
 
 run_test("insert_local_message streams", (override) => {
+    const fake_now = 555;
+    MockDate.set(new Date(fake_now * 1000));
+
     const local_id_float = 101;
 
     let apply_markdown_called = false;

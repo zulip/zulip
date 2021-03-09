@@ -2,41 +2,22 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-zrequire("hash_util");
-zrequire("narrow");
-zrequire("narrow_state");
-const people = zrequire("people");
-zrequire("presence");
-zrequire("buddy_data");
-const user_status = zrequire("user_status");
-const message_edit = zrequire("message_edit");
-
 const noop = function () {};
 
-set_global("current_msg_list", {});
-set_global("page_params", {
-    is_admin: false,
-    realm_email_address_visibility: 3,
-    custom_profile_fields: [],
-});
-const rows = set_global("rows", {});
-
-set_global("message_viewport", {
-    height: () => 500,
-});
-
-set_global("emoji_picker", {
+const rows = mock_module("rows");
+const stream_data = mock_module("stream_data");
+mock_module("emoji_picker", {
     hide_emoji_popover: noop,
 });
-
-set_global("stream_popover", {
+mock_module("message_viewport", {
+    height: () => 500,
+});
+mock_module("stream_popover", {
     hide_stream_popover: noop,
     hide_topic_popover: noop,
     hide_all_messages_popover: noop,
@@ -44,18 +25,19 @@ set_global("stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
-const stream_data = set_global("stream_data", {});
+set_global("current_msg_list", {});
+set_global("page_params", {
+    is_admin: false,
+    realm_email_address_visibility: 3,
+    custom_profile_fields: [],
+});
 
-const ClipboardJS = noop;
-
-function import_popovers() {
-    return rewiremock.proxy(() => zrequire("popovers"), {
-        clipboard: ClipboardJS,
-    });
-}
+const people = zrequire("people");
+const user_status = zrequire("user_status");
+const message_edit = zrequire("message_edit");
 
 // Bypass some scary code that runs when we import the module.
-const popovers = with_field($.fn, "popover", noop, import_popovers);
+const popovers = with_field($.fn, "popover", noop, () => zrequire("popovers"));
 
 const alice = {
     email: "alice@example.com",
@@ -110,6 +92,7 @@ function make_image_stubber() {
 
 function test_ui(label, f) {
     run_test(label, (override) => {
+        override(popovers, "clipboard_enable", noop);
         popovers.register_click_handlers();
         f(override);
     });
@@ -238,7 +221,7 @@ test_ui("actions_popover", (override) => {
         return message;
     };
 
-    message_edit.get_editability = () => 4;
+    override(message_edit, "get_editability", () => 4);
 
     stream_data.id_to_slug = (stream_id) => {
         assert.equal(stream_id, 123);

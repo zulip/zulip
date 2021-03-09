@@ -1,7 +1,14 @@
-"use strict";
-
-const people = require("./people");
-const pm_conversations = require("./pm_conversations");
+import * as buddy_data from "./buddy_data";
+import * as hash_util from "./hash_util";
+import * as narrow_state from "./narrow_state";
+import * as people from "./people";
+import * as pm_conversations from "./pm_conversations";
+import * as pm_list_dom from "./pm_list_dom";
+import * as stream_popover from "./stream_popover";
+import * as ui from "./ui";
+import * as unread from "./unread";
+import * as unread_ui from "./unread_ui";
+import * as vdom from "./vdom";
 
 let prior_dom;
 let private_messages_open = false;
@@ -34,13 +41,13 @@ function remove_expanded_private_messages() {
     ui.get_content_element($("#private-container")).empty();
 }
 
-exports.close = function () {
+export function close() {
     private_messages_open = false;
     prior_dom = undefined;
     remove_expanded_private_messages();
-};
+}
 
-exports.get_active_user_ids_string = function () {
+export function get_active_user_ids_string() {
     const filter = narrow_state.filter();
 
     if (!filter) {
@@ -54,12 +61,12 @@ exports.get_active_user_ids_string = function () {
     }
 
     return people.emails_strings_to_user_ids_string(emails);
-};
+}
 
-exports._get_convos = function () {
+export function _get_convos() {
     const private_messages = pm_conversations.recent.get();
     const display_messages = [];
-    const active_user_ids_string = exports.get_active_user_ids_string();
+    const active_user_ids_string = get_active_user_ids_string();
 
     for (const private_message_obj of private_messages) {
         const user_ids_string = private_message_obj.user_ids_string;
@@ -103,22 +110,22 @@ exports._get_convos = function () {
     }
 
     return display_messages;
-};
+}
 
-exports._build_private_messages_list = function () {
-    const convos = exports._get_convos();
+export function _build_private_messages_list() {
+    const convos = _get_convos();
     const dom_ast = pm_list_dom.pm_ul(convos);
     return dom_ast;
-};
+}
 
-exports.update_private_messages = function () {
+export function update_private_messages() {
     if (!narrow_state.active()) {
         return;
     }
 
     if (private_messages_open) {
         const container = ui.get_content_element($("#private-container"));
-        const new_dom = exports._build_private_messages_list();
+        const new_dom = _build_private_messages_list();
 
         function replace_content(html) {
             container.html(html);
@@ -131,9 +138,9 @@ exports.update_private_messages = function () {
         vdom.update(replace_content, find, new_dom, prior_dom);
         prior_dom = new_dom;
     }
-};
+}
 
-exports.is_all_privates = function () {
+export function is_all_privates() {
     const filter = narrow_state.filter();
 
     if (!filter) {
@@ -141,26 +148,24 @@ exports.is_all_privates = function () {
     }
 
     return filter.operands("is").includes("private");
-};
+}
 
-exports.expand = function () {
+export function expand() {
     private_messages_open = true;
     stream_popover.hide_topic_popover();
-    exports.update_private_messages();
-    if (exports.is_all_privates()) {
+    update_private_messages();
+    if (is_all_privates()) {
         $(".top_left_private_messages").addClass("active-filter");
     }
-};
+}
 
-exports.update_dom_with_unread_counts = function (counts) {
-    exports.update_private_messages();
+export function update_dom_with_unread_counts(counts) {
+    update_private_messages();
     set_count(counts.private_message_count);
     unread_ui.set_count_toggle_button(
         $("#userlist-toggle-unreadcount"),
         counts.private_message_count,
     );
-};
+}
 
-exports.initialize = function () {};
-
-window.pm_list = exports;
+export function initialize() {}

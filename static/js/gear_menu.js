@@ -1,4 +1,6 @@
-"use strict";
+import * as hashchange from "./hashchange";
+import * as message_viewport from "./message_viewport";
+import * as navigate from "./navigate";
 
 /*
 For various historical reasons there isn't one
@@ -76,17 +78,17 @@ the selector and then calls hash_change.go_to_location.
 // when we switch back.)
 const scroll_positions = new Map();
 
-exports.update_org_settings_menu_item = function () {
+export function update_org_settings_menu_item() {
     const item = $(".admin-menu-item").expectOne();
     if (page_params.is_admin) {
         item.find("span").text(i18n.t("Manage organization"));
     } else {
         item.find("span").text(i18n.t("Organization settings"));
     }
-};
+}
 
-exports.initialize = function () {
-    exports.update_org_settings_menu_item();
+export function initialize() {
+    update_org_settings_menu_item();
 
     $('#gear-menu a[data-toggle="tab"]').on("show", (e) => {
         // Save the position of our old tab away, before we switch
@@ -119,22 +121,20 @@ exports.initialize = function () {
 
     // The admin and settings pages are generated client-side through
     // templates.
-};
+}
 
-exports.open = function () {
+export function open() {
     $("#settings-dropdown").trigger("click");
     // there are invisible li tabs, which should not be clicked.
     $("#gear-menu").find("li:not(.invisible) a").eq(0).trigger("focus");
-};
+}
 
-exports.is_open = function () {
+export function is_open() {
     return $(".dropdown").hasClass("open");
-};
+}
 
-exports.close = function () {
-    if (exports.is_open()) {
+export function close() {
+    if (is_open()) {
         $(".dropdown").removeClass("open");
     }
-};
-
-window.gear_menu = exports;
+}

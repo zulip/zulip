@@ -10,6 +10,7 @@ Subsystems documentation
    html-css
    events-system
    sending-messages
+   notifications
    queuing
    custom-apps
    pointer

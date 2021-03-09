@@ -397,6 +397,9 @@ function make_new_elem(selector, opts) {
             shown = show;
             return self;
         },
+        tooltip() {
+            return self;
+        },
         trigger(ev) {
             event_store.trigger(self, ev);
             return self;
