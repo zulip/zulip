@@ -966,7 +966,9 @@ exports.initialize = function () {
         $(".right").removeClass("show");
         $(".subscriptions-header").removeClass("slide-left");
     });
-
+    $("#subscriptions_table").on("click", ".exit", () => {
+        $(".colorpicker").spectrum("hide");
+    });
     (function defocus_sub_settings() {
         const sel = ".search-container, .streams-list, .subscriptions-header";
 
