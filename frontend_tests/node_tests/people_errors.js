@@ -22,12 +22,12 @@ people.init();
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-run_test("report_late_add", () => {
+run_test("report_late_add", (override) => {
     blueslip.expect("error", "Added user late: user_id=55 email=foo@example.com");
     people.report_late_add(55, "foo@example.com");
 
     blueslip.expect("log", "Added user late: user_id=55 email=foo@example.com");
-    reload_state.is_in_progress = () => true;
+    override(reload_state, "is_in_progress", () => true);
     people.report_late_add(55, "foo@example.com");
 });
 
