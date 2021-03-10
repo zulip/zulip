@@ -75,10 +75,14 @@ Dependencies:
 * [Pygments (optional)](http://pygments.org)
 
 """
+import base64
 import re
+import zlib
 from typing import Any, Iterable, List, Mapping, MutableSequence, Optional, Sequence
 
 import lxml.html
+import requests
+from django.conf import settings
 from django.utils.html import escape
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -103,7 +107,7 @@ FENCE_RE = re.compile(
     (
         \\{?\\.?
         (?P<lang>
-            [a-zA-Z0-9_+-./#]*
+            [a-zA-Z0-9_+-./# a-zA-Z0-9_+-./#]*
         ) # "py" or "javascript"
         \\}?
     ) # language, like ".py" or "{javascript}"
@@ -189,6 +193,33 @@ def generic_handler(
         return TexHandler(processor, output, fence)
     elif lang == "spoiler":
         return SpoilerHandler(processor, output, fence, header)
+    elif lang in (
+        "kroki " + s
+        for s in [
+            "blockdiag",
+            "seqdiag",
+            "nwdiag",
+            "actdiag",
+            "mermaid",
+            "plantuml",
+            "svgbob",
+            "packetdiag",
+            "rackdiag",
+            "graphviz",
+            "erd",
+            "excalidraw",
+            "vega",
+            "vegalite",
+            "ditaa",
+            "nomnoml",
+            "bpmn",
+            "bytefield",
+            "wavedrom",
+            "c4plantuml",
+            "umlet",
+        ]
+    ):
+        return KrokiHandler(processor, output, fence, lang)
     else:
         return CodeHandler(processor, output, fence, lang, run_content_validators)
 
@@ -213,6 +244,39 @@ def check_for_new_fence(
         processor.push(handler)
     else:
         output.append(line)
+
+
+class KrokiHandler(BaseHandler):
+    def __init__(
+        self,
+        processor: Any,
+        output: MutableSequence[str],
+        fence: str,
+        lang: str,
+    ) -> None:
+        self.processor = processor
+        self.output = output
+        self.fence = fence
+        self.lang = lang
+        self.lines: List[str] = []
+
+    def handle_line(self, line: str) -> None:
+        self.lines.append(line)
+
+    def done(self) -> None:
+        text = "\n".join(self.lines)
+        processed_lines = text.rstrip()[:-3].rstrip()
+
+        encoded_diagram = base64.urlsafe_b64encode(
+            zlib.compress(bytes(processed_lines, "utf-8"), 9)
+        ).decode("utf-8")
+
+        kroki_url = settings.KROKI_RENDERING_URL.format(
+            self.lang.replace("kroki ", ""), encoded_diagram
+        )
+        final_text = self.processor.placeholder(requests.get(kroki_url).text)
+        self.output.append(final_text)
+        self.processor.pop()
 
 
 class OuterHandler(BaseHandler):

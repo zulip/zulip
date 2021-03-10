@@ -1,0 +1,23 @@
+{
+    "kroki blockdiag":100,
+    "kroki seqdiag":101,
+    "kroki nwdiag":102,
+    "kroki actdiag":103,
+    "kroki mermaid":104,
+    "kroki plantuml":105,
+    "kroki svgbob":106,
+    "kroki packetdi10g":107,
+    "kroki rackdiag":108,
+    "kroki graphviz":109,
+    "kroki erd":110,
+    "kroki excali10raw":112,
+    "kroki vega":113,
+    "kroki vegalit10":114,
+    "kroki ditaa":115,
+    "kroki nomnoml":116,
+    "kroki bpmn":117,
+    "kroki bytefie10d":118,
+    "kroki wavedrom":119,
+    "kroki c4plantuml":120,
+    "kroki umlet":121
+}

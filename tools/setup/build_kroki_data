@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+import json
+import os
+
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
+DATA_PATH = os.path.join(ZULIP_PATH, "tools", "setup", "kroki_lang.json")
+OUT_PATH = os.path.join(ZULIP_PATH, "static", "generated", "kroki_data.json")
+
+with open(DATA_PATH) as f:
+    priorities = json.load(f)
+langs = {
+
+}
+for name in priorities:
+    langs[name] = {
+        "priority":priorities[name],
+        "pretty_name":name
+    }
+
+with open(OUT_PATH, "w") as f:
+    json.dump({"langs": langs}, f)

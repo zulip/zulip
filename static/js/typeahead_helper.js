@@ -2,6 +2,7 @@ import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
 import pygments_data from "../generated/pygments_data.json";
+import kroki_data from "../generated/kroki_data.json";
 import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
@@ -22,6 +23,7 @@ export function get_cleaned_pm_recipients(query_string) {
     recipients = recipients.filter((elem) => elem.match(/\S/));
     return recipients;
 }
+const merged_data = _.merge(pygments_data,kroki_data);
 
 export function build_highlight_regex(query) {
     const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
@@ -273,7 +275,7 @@ export function sort_people_for_relevance(objs, current_stream_name, current_top
 }
 
 export function compare_by_popularity(lang_a, lang_b) {
-    const diff = pygments_data.langs[lang_b].priority - pygments_data.langs[lang_a].priority;
+    const diff = merged_data.langs[lang_b].priority - merged_data.langs[lang_a].priority;
     if (diff !== 0) {
         return diff;
     }

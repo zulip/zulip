@@ -4,6 +4,7 @@ import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import _ from "lodash";
 
 import pygments_data from "../generated/pygments_data.json";
+import kroki_data from "../generated/kroki_data.json";
 import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 
@@ -614,7 +615,8 @@ export function get_candidates(query) {
         }
         this.completing = "syntax";
         this.token = current_token;
-        return Object.keys(pygments_data.langs);
+        let x = _.merge(Object.keys(pygments_data.langs),Object.keys(kroki_data.langs))
+        return x
     }
 
     // Only start the emoji autocompleter if : is directly after one

@@ -230,7 +230,7 @@ def main(options: argparse.Namespace) -> int:
     # which we install via npm; thus this step is after installing npm
     # packages.
     run(["tools/setup/emoji/build_emoji"])
-
+    run(["tools/setup/build_kroki_data"])
     # copy over static files from the zulip_bots package
     generate_zulip_bots_static_files()
 

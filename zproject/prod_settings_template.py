@@ -678,3 +678,8 @@ CAMO_URI = "/external_content/"
 
 ## Similarly if you want to set a Privacy Policy.
 # PRIVACY_POLICY = '/etc/zulip/privacy.md'
+
+# Kroki instance URL that is called whenever user wants to render
+# diagrams using textual descriptions
+
+KROKI_RENDERING_URL = "https://kroki.io/{}/svg/{}"
