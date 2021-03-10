@@ -4,16 +4,15 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-const reload = mock_module("reload");
 
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     f();
 });
 
+const reload_state = zrequire("reload_state");
 const channel = zrequire("channel");
 
 const default_stub_xhr = "default-stub-xhr";
@@ -220,19 +219,13 @@ run_test("reload_on_403_error", () => {
         },
 
         check_ajax_options(options) {
-            let reload_initiated;
-            reload.initiate = (options) => {
-                reload_initiated = true;
-                assert.deepEqual(options, {
-                    immediate: true,
-                    save_pointer: true,
-                    save_narrow: true,
-                    save_compose: true,
-                });
-            };
+            let handler_called = false;
+            reload_state.set_csrf_failed_handler(() => {
+                handler_called = true;
+            });
 
             options.simulate_error();
-            assert(reload_initiated);
+            assert(handler_called);
         },
     });
 });

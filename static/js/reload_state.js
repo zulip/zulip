@@ -9,6 +9,7 @@
 
 let reload_in_progress = false;
 let reload_pending = false;
+export let csrf_failed_handler;
 
 export function is_pending() {
     return reload_pending;
@@ -27,4 +28,8 @@ export function set_state_to_pending() {
 
 export function set_state_to_in_progress() {
     reload_in_progress = true;
+}
+
+export function set_csrf_failed_handler(handler) {
+    csrf_failed_handler = handler;
 }

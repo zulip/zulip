@@ -341,3 +341,12 @@ window.addEventListener("beforeunload", () => {
     blueslip.log("Setting reload_in_progress in beforeunload handler");
     reload_state.set_state_to_in_progress();
 });
+
+reload_state.set_csrf_failed_handler(() => {
+    initiate({
+        immediate: true,
+        save_pointer: true,
+        save_narrow: true,
+        save_compose: true,
+    });
+});
