@@ -70,6 +70,22 @@ exports.mock_module = (short_fn, obj) => {
     return obj;
 };
 
+exports.unmock_module = (short_fn) => {
+    const base_path = path.resolve("./static/js");
+    const long_fn = path.join(base_path, short_fn);
+
+    if (!module_mocks.has(long_fn)) {
+        throw new Error(`Cannot unmock ${long_fn}, which was not mocked`);
+    }
+
+    if (!used_module_mocks.has(long_fn)) {
+        throw new Error(`You asked to mock ${long_fn} but we never saw it during compilation.`);
+    }
+
+    module_mocks.delete(long_fn);
+    used_module_mocks.delete(long_fn);
+};
+
 exports.set_global = function (name, val) {
     if (val === null) {
         throw new Error(`
@@ -113,10 +129,7 @@ exports.finish = function () {
 
     for (const fn of module_mocks.keys()) {
         if (!used_module_mocks.has(fn)) {
-            throw new Error(`
-                You asked to mock ${fn} but we never
-                saw it during compilation.
-            `);
+            throw new Error(`You asked to mock ${fn} but we never saw it during compilation.`);
         }
     }
 
