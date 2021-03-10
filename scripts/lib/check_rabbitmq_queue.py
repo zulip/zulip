@@ -49,6 +49,7 @@ MAX_SECONDS_TO_CLEAR: defaultdict[str, int] = defaultdict(
     digest_emails=1200,
     missedmessage_mobile_notifications=120,
     embed_links=60,
+    email_senders=240,
 )
 CRITICAL_SECONDS_TO_CLEAR: defaultdict[str, int] = defaultdict(
     lambda: 60,
@@ -56,6 +57,7 @@ CRITICAL_SECONDS_TO_CLEAR: defaultdict[str, int] = defaultdict(
     missedmessage_mobile_notifications=180,
     digest_emails=1800,
     embed_links=90,
+    email_senders=300,
 )
 
 
