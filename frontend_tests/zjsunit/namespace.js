@@ -8,15 +8,15 @@ let old_globals = {};
 
 let actual_load;
 let objs_installed;
-let mock_paths = {};
+const module_mocks = new Map();
 let mocked_paths;
 let mock_names;
 
 function load(request, parent, isMain) {
     const long_fn = path.resolve(path.join(path.dirname(parent.filename), request));
-    if (mock_paths[long_fn]) {
+    if (module_mocks.has(long_fn)) {
         mocked_paths.add(long_fn);
-        return mock_paths[long_fn];
+        return module_mocks.get(long_fn);
     }
 
     return actual_load(request, parent, isMain);
@@ -30,7 +30,7 @@ exports.start = () => {
     Module._load = load;
 
     objs_installed = false;
-    mock_paths = {};
+    module_mocks.clear();
     mocked_paths = new Set();
     mock_names = new Set();
 };
@@ -68,7 +68,7 @@ exports.mock_module = (short_fn, obj) => {
     const long_fn = path.join(base_path, short_fn);
 
     obj.__esModule = true;
-    mock_paths[long_fn] = obj;
+    module_mocks.set(long_fn, obj);
     mock_names.add(short_fn);
     return obj;
 };
@@ -114,7 +114,7 @@ exports.finish = function () {
     Module._load = actual_load;
     actual_load = undefined;
 
-    for (const fn of Object.keys(mock_paths)) {
+    for (const fn of module_mocks.keys()) {
         if (!mocked_paths.has(fn)) {
             throw new Error(`
                 You asked to mock ${fn} but we never
