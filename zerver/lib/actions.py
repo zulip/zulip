@@ -4385,6 +4385,7 @@ def do_change_stream_message_retention_days(
 def do_create_realm(
     string_id: str,
     name: str,
+    *,
     emails_restricted_to_domains: Optional[bool] = None,
     date_created: Optional[datetime.datetime] = None,
 ) -> Realm:

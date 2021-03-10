@@ -5348,7 +5348,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         )
 
     def test_user_in_multiple_realms(self) -> None:
-        test_realm = do_create_realm("test", "test", False)
+        test_realm = do_create_realm("test", "test", emails_restricted_to_domains=False)
         hamlet = self.example_user("hamlet")
         email = hamlet.delivery_email
         hamlet2 = do_create_user(email, None, test_realm, hamlet.full_name, acting_user=None)
