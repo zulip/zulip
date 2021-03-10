@@ -80,7 +80,6 @@ export function render_person(person) {
     if (person.special_item_text) {
         return render_typeahead_item({
             primary: person.special_item_text,
-            user_circle_class,
             is_person: true,
         });
     }
