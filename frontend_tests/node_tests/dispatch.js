@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -59,6 +59,9 @@ const unread_ops = mock_module("unread_ops");
 const user_events = mock_module("user_events");
 const user_groups = mock_module("user_groups");
 mock_module("compose");
+
+const electron_bridge = set_global("electron_bridge", {});
+
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
 
@@ -264,6 +267,17 @@ run_test("realm settings", (override) => {
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(notifications, "redraw_title", noop);
 
+    function test_electron_dispatch(event, fake_send_event) {
+        let called = false;
+
+        with_field(electron_bridge, "send_event", fake_send_event, () => {
+            dispatch(event);
+            called = true;
+        });
+
+        assert(called);
+    }
+
     // realm
     function test_realm_boolean(event, parameter_name) {
         page_params[parameter_name] = true;
@@ -308,20 +322,12 @@ run_test("realm settings", (override) => {
     test_realm_boolean(event, "realm_invite_required");
 
     event = event_fixtures.realm__update__name;
-    dispatch(event);
-    assert_same(page_params.realm_name, "new_realm_name");
 
-    let called = false;
-    set_global("electron_bridge", {
-        send_event: (key, val) => {
-            assert_same(key, "realm_name");
-            assert_same(val, "new_realm_name");
-            called = true;
-        },
+    test_electron_dispatch(event, (key, val) => {
+        assert_same(key, "realm_name");
+        assert_same(val, "new_realm_name");
     });
-
-    dispatch(event);
-    assert_same(called, true);
+    assert_same(page_params.realm_name, "new_realm_name");
 
     event = event_fixtures.realm__update__emails_restricted_to_domains;
     test_realm_boolean(event, "realm_emails_restricted_to_domains");
@@ -363,18 +369,11 @@ run_test("realm settings", (override) => {
     event = event_fixtures.realm__update_dict__icon;
     override(realm_icon, "rerender", noop);
 
-    called = false;
-    set_global("electron_bridge", {
-        send_event: (key, val) => {
-            assert_same(key, "realm_icon_url");
-            assert_same(val, "icon.png");
-            called = true;
-        },
+    test_electron_dispatch(event, (key, val) => {
+        assert_same(key, "realm_icon_url");
+        assert_same(val, "icon.png");
     });
 
-    dispatch(event);
-
-    assert_same(called, true);
     assert_same(page_params.realm_icon_url, "icon.png");
     assert_same(page_params.realm_icon_source, "U");
 
