@@ -562,16 +562,18 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
     """ Return a `<code>` element containing the matching text. """
 
-    def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[None, Element], int, int]:
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         # Let upstream's implementation do its job as it is, we'll
         # just replace the text to not strip the group because it
         # makes it impossible to put leading/trailing whitespace in
         # an inline code block.
-        el, start, end = super().handleMatch(m, data)
-        if m.group(3):
+        el, start, end = ret = super().handleMatch(m, data)
+        if el is not None and m.group(3):
             # upstream's code here is: m.group(3).strip() rather than m.group(3).
             el.text = markdown.util.AtomicString(markdown.util.code_escape(m.group(3)))
-        return el, start, end
+        return ret
 
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
@@ -2002,11 +2004,17 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
 
         return el
 
-    def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[None, Element], int, int]:
-        el, match_start, index = super().handleMatch(m, data)
-        if el is not None:
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+        ret = super().handleMatch(m, data)
+        if ret[0] is not None:
+            el: Optional[Element]
+            el, match_start, index = ret
             el = self.zulip_specific_link_changes(el)
-        return el, match_start, index
+            if el is not None:
+                return el, match_start, index
+        return None, None, None
 
 
 def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
