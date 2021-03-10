@@ -868,7 +868,7 @@ run_test("initialize", (override) => {
         fake_this = {completing: "mention", token: "hamletcharacters"};
         actual_value = options.highlighter.call(fake_this, hamletcharacters);
         expected_value =
-            '        <i class="typeahead-image icon fa fa-group" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
+            '        <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
         assert.equal(actual_value, expected_value);
 
         // matching
