@@ -7,7 +7,6 @@ const new_globals = new Set();
 let old_globals = {};
 
 let actual_load;
-let objs_installed;
 const module_mocks = new Map();
 const used_module_mocks = new Set();
 
@@ -28,7 +27,6 @@ exports.start = () => {
     actual_load = Module._load;
     Module._load = load;
 
-    objs_installed = false;
     module_mocks.clear();
     used_module_mocks.clear();
 };
@@ -48,20 +46,15 @@ exports.mock_module = (short_fn, obj) => {
             We just assume the file is under static/js.
         `);
     }
-    if (objs_installed) {
-        throw new Error(`
-            It is too late to install this mock.  Consider instead:
-
-                foo.__Rewire__("${short_fn}", ...)
-
-            Or call this earlier.
-        `);
-    }
 
     const filename = require.resolve(`../../static/js/${short_fn}`);
 
     if (module_mocks.has(filename)) {
         throw new Error(`You already set up a mock for ${filename}`);
+    }
+
+    if (filename in require.cache) {
+        throw new Error(`It is too late to mock ${filename}; call this earlier.`);
     }
 
     obj.__esModule = true;
@@ -102,7 +95,6 @@ exports.set_global = function (name, val) {
 };
 
 exports.zrequire = function (short_fn) {
-    objs_installed = true;
     return require(`../../static/js/${short_fn}`);
 };
 
