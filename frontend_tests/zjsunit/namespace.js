@@ -1,17 +1,34 @@
 "use strict";
 
-const actual_load = require("module")._load;
+const Module = require("module");
 const path = require("path");
 
 const new_globals = new Set();
 let old_globals = {};
 
+let actual_load;
 let objs_installed;
 let mock_paths = {};
 let mocked_paths;
 let mock_names;
 
+function load(request, parent, isMain) {
+    const long_fn = path.resolve(path.join(path.dirname(parent.filename), request));
+    if (mock_paths[long_fn]) {
+        mocked_paths.add(long_fn);
+        return mock_paths[long_fn];
+    }
+
+    return actual_load(request, parent, isMain);
+}
+
 exports.start = () => {
+    if (actual_load !== undefined) {
+        throw new Error("namespace.start was called twice in a row.");
+    }
+    actual_load = Module._load;
+    Module._load = load;
+
     objs_installed = false;
     mock_paths = {};
     mocked_paths = new Set();
@@ -75,18 +92,6 @@ exports.set_global = function (name, val) {
 
 exports.zrequire = function (fn) {
     objs_installed = true;
-
-    // Because we do lazy compilation, we don't reset the
-    // _load hook until our test runners calls `finish()`.
-    require("module")._load = (request, parent, isMain) => {
-        const long_fn = path.resolve(path.join(path.dirname(parent.filename), request));
-        if (mock_paths[long_fn]) {
-            mocked_paths.add(long_fn);
-            return mock_paths[long_fn];
-        }
-
-        return actual_load(request, parent, isMain);
-    };
     const full_path = path.resolve(path.join("static/js", fn));
     return require(full_path);
 };
@@ -103,6 +108,12 @@ exports.finish = function () {
         running to do things like detecting pointless mocks
         and resetting our _load hook.
     */
+    if (actual_load === undefined) {
+        throw new Error("namespace.finish was called without namespace.start.");
+    }
+    Module._load = actual_load;
+    actual_load = undefined;
+
     for (const fn of Object.keys(mock_paths)) {
         if (!mocked_paths.has(fn)) {
             throw new Error(`
@@ -112,7 +123,6 @@ exports.finish = function () {
         }
     }
 
-    require("module")._load = actual_load;
     for (const path of Object.keys(require.cache)) {
         if (path.startsWith(staticPath) && !path.startsWith(templatesPath)) {
             delete require.cache[path];
