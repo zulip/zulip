@@ -37,6 +37,8 @@ page_params.custom_profile_field_types = {
     },
 };
 
+mock_esm("sortablejs", {Sortable: {create: () => {}}});
+
 const settings_profile_fields = zrequire("settings_profile_fields");
 
 function test_populate(opts) {
@@ -74,8 +76,7 @@ function test_populate(opts) {
     assert.equal(num_appends, fields_data.length);
 }
 
-run_test("populate_profile_fields", (override) => {
-    override(settings_profile_fields, "create_sortable", () => {});
+run_test("populate_profile_fields", () => {
     const fields_data = [
         {
             type: SHORT_TEXT_ID,
