@@ -111,6 +111,22 @@ run_test("triage", () => {
             rest: [alice, alicia, steve, stephanie],
         },
     );
+
+    assert.deepEqual(
+        typeahead.triage(" ", names, (r) => r.name),
+        {
+            matches: [],
+            rest: [alice, alicia, joan, jo, steve, stephanie],
+        },
+    );
+
+    assert.deepEqual(
+        typeahead.triage(";", names, (r) => r.name),
+        {
+            matches: [],
+            rest: [alice, alicia, joan, jo, steve, stephanie],
+        },
+    );
 });
 
 run_test("sort_emojis th", () => {

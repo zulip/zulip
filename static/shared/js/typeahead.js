@@ -129,7 +129,7 @@ export function triage(query, objs, get_item) {
     const beginswithCaseSensitive = [];
     const beginswithCaseInsensitive = [];
     const noMatch = [];
-    const lowerQuery = query.toLowerCase();
+    const lowerQuery = query ? query.toLowerCase() : "";
 
     for (const obj of objs) {
         const item = get_item(obj);
