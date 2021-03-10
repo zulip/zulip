@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -15,28 +15,28 @@ set_global("document", {
     to_$: () => $("document-stub"),
 });
 
-const channel = mock_module("channel");
-const compose_fade = mock_module("compose_fade", {
+const channel = mock_esm("../../static/js/channel");
+const compose_fade = mock_esm("../../static/js/compose_fade", {
     clear_compose: noop,
 });
-const compose_pm_pill = mock_module("compose_pm_pill");
-const hash_util = mock_module("hash_util");
-const narrow_state = mock_module("narrow_state", {
+const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
+const hash_util = mock_esm("../../static/js/hash_util");
+const narrow_state = mock_esm("../../static/js/narrow_state", {
     set_compose_defaults: noop,
 });
-mock_module("notifications", {
+mock_esm("../../static/js/notifications", {
     clear_compose_notifications: noop,
 });
-mock_module("reload_state", {
+mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
 });
-mock_module("drafts", {
+mock_esm("../../static/js/drafts", {
     update_draft: noop,
 });
-mock_module("common", {
+mock_esm("../../static/js/common", {
     status_classes: "status_classes",
 });
-mock_module("unread_ops", {
+mock_esm("../../static/js/unread_ops", {
     notify_server_message_read: noop,
 });
 set_global("current_msg_list", {

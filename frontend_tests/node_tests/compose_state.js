@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const compose_pm_pill = mock_module("compose_pm_pill");
+const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 
 const compose_state = zrequire("compose_state");
 

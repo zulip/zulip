@@ -6,7 +6,7 @@ const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -17,7 +17,7 @@ set_global("DOMParser", new JSDOM().window.DOMParser);
 let compose_actions_start_checked;
 let compose_actions_expected_opts;
 
-mock_module("compose_actions", {
+mock_esm("../../static/js/compose_actions", {
     update_placeholder_text: noop,
 
     start(msg_type, opts) {
@@ -27,7 +27,7 @@ mock_module("compose_actions", {
     },
 });
 
-const server_events = mock_module("server_events");
+const server_events = mock_esm("../../static/js/server_events");
 const _navigator = {
     platform: "",
 };
@@ -41,30 +41,30 @@ const _document = {
 };
 
 set_global("document", _document);
-const channel = mock_module("channel");
-const loading = mock_module("loading");
-const local_message = mock_module("local_message");
-const markdown = mock_module("markdown");
+const channel = mock_esm("../../static/js/channel");
+const loading = mock_esm("../../static/js/loading");
+const local_message = mock_esm("../../static/js/local_message");
+const markdown = mock_esm("../../static/js/markdown");
 const page_params = set_global("page_params", {});
-const reminder = mock_module("reminder", {
+const reminder = mock_esm("../../static/js/reminder", {
     is_deferred_delivery: noop,
 });
-const resize = mock_module("resize");
-const sent_messages = mock_module("sent_messages", {
+const resize = mock_esm("../../static/js/resize");
+const sent_messages = mock_esm("../../static/js/sent_messages", {
     start_tracking_message: noop,
 });
-const stream_edit = mock_module("stream_edit");
-const subs = mock_module("subs");
-const transmit = mock_module("transmit");
-const ui_util = mock_module("ui_util");
-mock_module("drafts", {
+const stream_edit = mock_esm("../../static/js/stream_edit");
+const subs = mock_esm("../../static/js/subs");
+const transmit = mock_esm("../../static/js/transmit");
+const ui_util = mock_esm("../../static/js/ui_util");
+mock_esm("../../static/js/drafts", {
     delete_draft_after_send: noop,
 });
-mock_module("notifications", {
+mock_esm("../../static/js/notifications", {
     notify_above_composebox: noop,
     clear_compose_notifications: noop,
 });
-mock_module("rendered_markdown", {
+mock_esm("../../static/js/rendered_markdown", {
     update_elements: () => {},
 });
 set_global("navigator", _navigator);

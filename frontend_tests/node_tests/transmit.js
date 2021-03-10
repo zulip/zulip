@@ -2,16 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const noop = () => {};
 
 const page_params = set_global("page_params", {});
-const channel = mock_module("channel");
-const reload = mock_module("reload");
-const reload_state = mock_module("reload_state");
-const sent_messages = mock_module("sent_messages", {
+const channel = mock_esm("../../static/js/channel");
+const reload = mock_esm("../../static/js/reload");
+const reload_state = mock_esm("../../static/js/reload_state");
+const sent_messages = mock_esm("../../static/js/sent_messages", {
     start_tracking_message: noop,
     report_server_ack: noop,
 });

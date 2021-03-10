@@ -4,27 +4,27 @@ const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const local_message = mock_module("local_message");
-const markdown = mock_module("markdown");
+const local_message = mock_esm("../../static/js/local_message");
+const markdown = mock_esm("../../static/js/markdown");
 const page_params = set_global("page_params", {});
 
 let disparities = [];
 let messages_to_rerender = [];
 
-mock_module("ui", {
+mock_esm("../../static/js/ui", {
     show_failed_message_success: () => {},
 });
 
-mock_module("sent_messages", {
+mock_esm("../../static/js/sent_messages", {
     mark_disparity: (local_id) => {
         disparities.push(local_id);
     },
 });
 
-mock_module("message_store", {
+mock_esm("../../static/js/message_store", {
     get: () => ({failed_request: true}),
 
     update_booleans: () => {},
@@ -38,7 +38,7 @@ set_global("home_msg_list", {
     },
 });
 
-mock_module("message_list");
+mock_esm("../../static/js/message_list");
 set_global("current_msg_list", "");
 
 const echo = zrequire("echo");

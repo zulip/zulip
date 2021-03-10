@@ -2,12 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-mock_module("list_widget", {
+mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
 });
 const {DropdownListWidget: dropdown_list_widget} = zrequire("dropdown_list_widget");

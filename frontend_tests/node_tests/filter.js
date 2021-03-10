@@ -2,11 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const message_store = mock_module("message_store");
+const message_store = mock_esm("../../static/js/message_store");
 const page_params = set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");

@@ -2,26 +2,26 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-const channel = mock_module("channel");
-const compose = mock_module("compose", {
+const channel = mock_esm("../../static/js/channel");
+const compose = mock_esm("../../static/js/compose", {
     finish: noop,
 });
-const message_store = mock_module("message_store", {
+const message_store = mock_esm("../../static/js/message_store", {
     user_ids: () => [],
 });
-const stream_topic_history = mock_module("stream_topic_history");
+const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
 
 const page_params = set_global("page_params", {});
 
 let autosize_called;
 
-mock_module("compose_ui", {
+mock_esm("../../static/js/compose_ui", {
     autosize_textarea() {
         autosize_called = true;
     },

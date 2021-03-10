@@ -2,17 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const condense = mock_module("condense");
-const message_edit = mock_module("message_edit");
-const message_list = mock_module("message_list");
-const notifications = mock_module("notifications");
+const condense = mock_esm("../../static/js/condense");
+const message_edit = mock_esm("../../static/js/message_edit");
+const message_list = mock_esm("../../static/js/message_list");
+const notifications = mock_esm("../../static/js/notifications");
 const page_params = set_global("page_params", {});
-const pm_list = mock_module("pm_list");
-const stream_list = mock_module("stream_list");
-const unread_ui = mock_module("unread_ui");
+const pm_list = mock_esm("../../static/js/pm_list");
+const stream_list = mock_esm("../../static/js/stream_list");
+const unread_ui = mock_esm("../../static/js/unread_ui");
 set_global("current_msg_list", {});
 
 const people = zrequire("people");

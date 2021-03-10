@@ -3,11 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const channel = mock_module("channel");
+const channel = mock_esm("../../static/js/channel");
 
 const alert_words = zrequire("alert_words");
 const alert_words_ui = zrequire("alert_words_ui");

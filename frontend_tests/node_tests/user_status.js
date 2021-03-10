@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = mock_module("channel");
+const channel = mock_esm("../../static/js/channel");
 const user_status = zrequire("user_status");
 
 function initialize() {

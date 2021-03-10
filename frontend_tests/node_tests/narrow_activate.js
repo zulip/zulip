@@ -2,33 +2,33 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-mock_module("resize", {
+mock_esm("../../static/js/resize", {
     resize_stream_filters_container: () => {},
 });
 
-const channel = mock_module("channel");
-const compose = mock_module("compose");
-const compose_actions = mock_module("compose_actions");
-const hashchange = mock_module("hashchange");
-const message_fetch = mock_module("message_fetch");
-const message_list = mock_module("message_list", {
+const channel = mock_esm("../../static/js/channel");
+const compose = mock_esm("../../static/js/compose");
+const compose_actions = mock_esm("../../static/js/compose_actions");
+const hashchange = mock_esm("../../static/js/hashchange");
+const message_fetch = mock_esm("../../static/js/message_fetch");
+const message_list = mock_esm("../../static/js/message_list", {
     set_narrowed(value) {
         message_list.narrowed = value;
     },
 });
-const message_scroll = mock_module("message_scroll");
-const message_view_header = mock_module("message_view_header");
-const notifications = mock_module("notifications");
-const search = mock_module("search");
-const stream_list = mock_module("stream_list");
-const top_left_corner = mock_module("top_left_corner");
-const typing_events = mock_module("typing_events");
-const ui_util = mock_module("ui_util");
-const unread_ops = mock_module("unread_ops");
-mock_module("recent_topics", {
+const message_scroll = mock_esm("../../static/js/message_scroll");
+const message_view_header = mock_esm("../../static/js/message_view_header");
+const notifications = mock_esm("../../static/js/notifications");
+const search = mock_esm("../../static/js/search");
+const stream_list = mock_esm("../../static/js/stream_list");
+const top_left_corner = mock_esm("../../static/js/top_left_corner");
+const typing_events = mock_esm("../../static/js/typing_events");
+const ui_util = mock_esm("../../static/js/ui_util");
+const unread_ops = mock_esm("../../static/js/unread_ops");
+mock_esm("../../static/js/recent_topics", {
     hide: () => {},
     is_visible: () => {},
 });
@@ -44,7 +44,7 @@ set_global("setTimeout", (f, t) => {
     f();
 });
 
-mock_module("muting", {
+mock_esm("../../static/js/muting", {
     is_topic_muted: () => false,
 });
 

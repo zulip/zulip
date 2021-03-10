@@ -2,13 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = mock_module("channel");
-const ui = mock_module("ui");
+const channel = mock_esm("../../static/js/channel");
+const ui = mock_esm("../../static/js/ui");
 
-mock_module("starred_messages", {
+mock_esm("../../static/js/starred_messages", {
     add: () => {},
 
     remove: () => {},

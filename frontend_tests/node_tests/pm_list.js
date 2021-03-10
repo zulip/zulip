@@ -2,22 +2,22 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const narrow_state = mock_module("narrow_state");
-const pm_list_dom = mock_module("pm_list_dom");
-const unread = mock_module("unread");
-const unread_ui = mock_module("unread_ui");
-const vdom = mock_module("vdom", {
+const narrow_state = mock_esm("../../static/js/narrow_state");
+const pm_list_dom = mock_esm("../../static/js/pm_list_dom");
+const unread = mock_esm("../../static/js/unread");
+const unread_ui = mock_esm("../../static/js/unread_ui");
+const vdom = mock_esm("../../static/js/vdom", {
     render: () => "fake-dom-for-pm-list",
 });
 
-mock_module("stream_popover", {
+mock_esm("../../static/js/stream_popover", {
     hide_topic_popover() {},
 });
-mock_module("ui", {
+mock_esm("../../static/js/ui", {
     get_content_element: (element) => element,
 });
 

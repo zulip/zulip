@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("document", "document-stub");
@@ -16,7 +16,7 @@ const page_params = set_global("page_params", {
 });
 set_global("home_msg_list", "stub");
 // timerender calls setInterval when imported
-mock_module("timerender", {
+mock_esm("../../static/js/timerender", {
     render_date(time1, time2) {
         if (time2 === undefined) {
             return [{outerHTML: String(time1.getTime())}];
@@ -31,7 +31,7 @@ mock_module("timerender", {
     },
 });
 
-mock_module("rows", {
+mock_esm("../../static/js/rows", {
     get_table() {
         return {
             children() {
