@@ -9,7 +9,13 @@
 // become clear as you keep reading.
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {
+    mock_module,
+    set_global,
+    unmock_module,
+    with_field,
+    zrequire,
+} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -581,6 +587,7 @@ run_test("explore make_stub", (override) => {
 
 */
 
+unmock_module("unread_ops");
 unread_ops = zrequire("unread_ops");
 
 run_test("unread_ops", (override) => {
@@ -679,6 +686,7 @@ run_test("unread_ops", (override) => {
 
 */
 
+unmock_module("stream_list");
 stream_list = zrequire("stream_list");
 
 const social_stream = {
