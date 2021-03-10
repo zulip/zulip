@@ -26,9 +26,6 @@ exports.start = () => {
     }
     actual_load = Module._load;
     Module._load = load;
-
-    module_mocks.clear();
-    used_module_mocks.clear();
 };
 
 exports.mock_module = (short_fn, obj) => {
@@ -123,6 +120,8 @@ exports.finish = function () {
             );
         }
     }
+    module_mocks.clear();
+    used_module_mocks.clear();
 
     for (const path of Object.keys(require.cache)) {
         if (path.startsWith(staticPath) && !path.startsWith(templatesPath)) {
