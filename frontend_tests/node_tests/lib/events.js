@@ -610,6 +610,20 @@ exports.fixtures = {
         user: test_user.email,
     },
 
+    update_display_settings__default_view_all_messages: {
+        type: "update_display_settings",
+        setting_name: "default_view",
+        setting: 1,
+        user: test_user.email,
+    },
+
+    update_display_settings__default_view_recent_topics: {
+        type: "update_display_settings",
+        setting_name: "default_view",
+        setting: "recent_topics",
+        user: test_user.email,
+    },
+
     update_display_settings__demote_inactive_streams: {
         type: "update_display_settings",
         setting_name: "demote_inactive_streams",

@@ -305,7 +305,7 @@ export function process_escape_key(e) {
         return true;
     }
 
-    hashchange.go_to_location("");
+    hashchange.show_default_view();
     return true;
 }
 
@@ -770,7 +770,7 @@ export function process_hotkey(e, hotkey) {
             narrow.narrow_to_next_pm_string();
             return true;
         case "open_recent_topics":
-            hashchange.go_to_location("#");
+            hashchange.go_to_location("#recent_topics");
             return true;
         case "all_messages":
             hashchange.go_to_location("#all_messages");

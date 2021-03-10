@@ -14,6 +14,7 @@
 * [Review your settings](/help/review-your-settings)
 * [Change your profile picture](/help/change-your-profile-picture)
 * [Change your language](/help/change-your-language)
+* [Change default view](/help/change-default-view)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Switching between organizations](/help/switching-between-organizations)

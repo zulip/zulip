@@ -41,6 +41,9 @@ below, and add more to your repertoire as needed.
 
 * **Toggle keyboard shortcuts view**: `?`
 
+* **Go to default view**: Press `Esc` or `Ctrl + [` until you are in
+  the [default view](/help/change-default-view).
+
 ## Navigation
 
 * **Search messages**: `/` or `Ctrl+k`
@@ -139,9 +142,9 @@ title="thumbs up"/>**: `+`
 
 ## Recent topics
 
-* **View recent topics**: `t` or `Esc` or `Ctrl` + `[`
+* **View recent topics**: `t`
 * **Search recent topics**: `t`
-* **Escape from recent topics search**: `esc` or arrow keys
+* **Escape from recent topics search**: `Esc` or arrow keys
 * **Navigate recent topics**: Use arrow keys or vim keys (`j`, `k`, `l`, `h`).
 
 Use `Enter` to engage with elements.

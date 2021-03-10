@@ -336,6 +336,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         test_changes: Dict[str, Any] = dict(
             default_language="de",
+            default_view="all_messages",
             emojiset="google",
             timezone="US/Mountain",
             demote_inactive_streams=2,

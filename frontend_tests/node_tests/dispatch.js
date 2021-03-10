@@ -677,6 +677,20 @@ run_test("update_display_settings", (override) => {
     }
 
     {
+        event = event_fixtures.update_display_settings__default_view_recent_topics;
+        page_params.default_view = "all_messages";
+        dispatch(event);
+        assert(page_params.default_view, "recent_topics");
+    }
+
+    {
+        event = event_fixtures.update_display_settings__default_view_all_messages;
+        page_params.default_view = "recent_topics";
+        dispatch(event);
+        assert(page_params.default_view, "all_messages");
+    }
+
+    {
         const stub = make_stub();
         event = event_fixtures.update_display_settings__color_scheme_automatic;
         page_params.color_scheme = 2;

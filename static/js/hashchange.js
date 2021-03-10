@@ -59,7 +59,7 @@ function maybe_hide_recent_topics() {
 }
 
 export function in_recent_topics_hash() {
-    return ["recent_topics", "#", ""].includes(window.location.hash);
+    return ["#recent_topics"].includes(window.location.hash);
 }
 
 export function changehash(newhash) {
@@ -114,6 +114,10 @@ function is_overlay_hash(hash) {
     return overlay_list.includes(main_hash);
 }
 
+export function show_default_view() {
+    window.location.hash = page_params.default_view;
+}
+
 // Returns true if this function performed a narrow
 function do_hashchange_normal(from_reload) {
     message_viewport.stop_auto_scrolling();
@@ -130,8 +134,7 @@ function do_hashchange_normal(from_reload) {
             if (operators === undefined) {
                 // If the narrow URL didn't parse, clear
                 // window.location.hash and send them to the home tab
-                set_hash("#all_messages");
-                activate_home_tab();
+                show_default_view();
                 return false;
             }
             const narrow_opts = {
@@ -152,6 +155,8 @@ function do_hashchange_normal(from_reload) {
         }
         case "":
         case "#":
+            show_default_view();
+            break;
         case "#recent_topics":
             recent_topics.show();
             break;
@@ -176,6 +181,9 @@ function do_hashchange_overlay(old_hash) {
     if (old_hash === undefined) {
         // User directly requested to open an overlay.
         // We need to show recent topics in the background.
+        // Even though recent topics may not be the default view
+        // here, we show it because we need to show a view in
+        // background and recent topics seems preferrable for that.
         recent_topics.show();
     }
     const base = hash_util.get_hash_category(window.location.hash);

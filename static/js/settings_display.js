@@ -42,6 +42,8 @@ export function set_up() {
 
     $("#color_scheme").val(page_params.color_scheme);
 
+    $("#default_view").val(page_params.default_view);
+
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
     $(`.emojiset_choice[value="${CSS.escape(page_params.emojiset)}"]`).prop("checked", true);
@@ -106,6 +108,11 @@ export function set_up() {
 
     $("#color_scheme").on("change", function () {
         const data = {color_scheme: this.value};
+        change_display_setting(data, "#display-settings-status");
+    });
+
+    $("#default_view").on("change", function () {
+        const data = {default_view: JSON.stringify(this.value)};
         change_display_setting(data, "#display-settings-status");
     });
 
@@ -179,6 +186,7 @@ export function update_page() {
     $("#translate_emoticons").prop("checked", page_params.translate_emoticons);
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
     $("#color_scheme").val(JSON.stringify(page_params.color_scheme));
+    $("#default_view").val(page_params.default_view);
 
     // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function

@@ -6725,6 +6725,15 @@ paths:
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user has chosen for the layout width to be fluid.
+                      default_view:
+                        type: string
+                        description: |
+                          Present if `update_display_settings` is present in `fetch_event_types`.
+
+                          The [default view](/help/change-default-view) in Zulip, represented
+                          as the URL suffix after `#` to be rendered when Zulip loads.
+
+                          Currently supported values are `all_messages` and `recent_topics`.
                       high_contrast_mode:
                         type: boolean
                         description: |
