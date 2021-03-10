@@ -9,12 +9,12 @@ let old_globals = {};
 let actual_load;
 let objs_installed;
 const module_mocks = new Map();
-let mocked_paths;
+const used_module_mocks = new Set();
 
 function load(request, parent, isMain) {
     const long_fn = path.resolve(path.join(path.dirname(parent.filename), request));
     if (module_mocks.has(long_fn)) {
-        mocked_paths.add(long_fn);
+        used_module_mocks.add(long_fn);
         return module_mocks.get(long_fn);
     }
 
@@ -30,7 +30,7 @@ exports.start = () => {
 
     objs_installed = false;
     module_mocks.clear();
-    mocked_paths = new Set();
+    used_module_mocks.clear();
 };
 
 exports.mock_module = (short_fn, obj) => {
@@ -112,7 +112,7 @@ exports.finish = function () {
     actual_load = undefined;
 
     for (const fn of module_mocks.keys()) {
-        if (!mocked_paths.has(fn)) {
+        if (!used_module_mocks.has(fn)) {
             throw new Error(`
                 You asked to mock ${fn} but we never
                 saw it during compilation.
