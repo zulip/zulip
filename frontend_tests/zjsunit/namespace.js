@@ -12,10 +12,10 @@ const module_mocks = new Map();
 const used_module_mocks = new Set();
 
 function load(request, parent, isMain) {
-    const long_fn = path.resolve(path.join(path.dirname(parent.filename), request));
-    if (module_mocks.has(long_fn)) {
-        used_module_mocks.add(long_fn);
-        return module_mocks.get(long_fn);
+    const filename = Module._resolveFilename(request, parent, isMain);
+    if (module_mocks.has(filename)) {
+        used_module_mocks.add(filename);
+        return module_mocks.get(filename);
     }
 
     return actual_load(request, parent, isMain);
@@ -58,32 +58,30 @@ exports.mock_module = (short_fn, obj) => {
         `);
     }
 
-    const base_path = path.resolve("./static/js");
-    const long_fn = path.join(base_path, short_fn);
+    const filename = require.resolve(`../../static/js/${short_fn}`);
 
-    if (module_mocks.has(long_fn)) {
-        throw new Error(`You already set up a mock for ${long_fn}`);
+    if (module_mocks.has(filename)) {
+        throw new Error(`You already set up a mock for ${filename}`);
     }
 
     obj.__esModule = true;
-    module_mocks.set(long_fn, obj);
+    module_mocks.set(filename, obj);
     return obj;
 };
 
 exports.unmock_module = (short_fn) => {
-    const base_path = path.resolve("./static/js");
-    const long_fn = path.join(base_path, short_fn);
+    const filename = require.resolve(`../../static/js/${short_fn}`);
 
-    if (!module_mocks.has(long_fn)) {
-        throw new Error(`Cannot unmock ${long_fn}, which was not mocked`);
+    if (!module_mocks.has(filename)) {
+        throw new Error(`Cannot unmock ${filename}, which was not mocked`);
     }
 
-    if (!used_module_mocks.has(long_fn)) {
-        throw new Error(`You asked to mock ${long_fn} but we never saw it during compilation.`);
+    if (!used_module_mocks.has(filename)) {
+        throw new Error(`You asked to mock ${filename} but we never saw it during compilation.`);
     }
 
-    module_mocks.delete(long_fn);
-    used_module_mocks.delete(long_fn);
+    module_mocks.delete(filename);
+    used_module_mocks.delete(filename);
 };
 
 exports.set_global = function (name, val) {
@@ -103,10 +101,9 @@ exports.set_global = function (name, val) {
     return val;
 };
 
-exports.zrequire = function (fn) {
+exports.zrequire = function (short_fn) {
     objs_installed = true;
-    const full_path = path.resolve(path.join("static/js", fn));
-    return require(full_path);
+    return require(`../../static/js/${short_fn}`);
 };
 
 const staticPath = path.resolve(__dirname, "../../static") + path.sep;
@@ -127,9 +124,11 @@ exports.finish = function () {
     Module._load = actual_load;
     actual_load = undefined;
 
-    for (const fn of module_mocks.keys()) {
-        if (!used_module_mocks.has(fn)) {
-            throw new Error(`You asked to mock ${fn} but we never saw it during compilation.`);
+    for (const filename of module_mocks.keys()) {
+        if (!used_module_mocks.has(filename)) {
+            throw new Error(
+                `You asked to mock ${filename} but we never saw it during compilation.`,
+            );
         }
     }
 
