@@ -105,6 +105,7 @@ function assert_same(actual, expected) {
 }
 
 run_test("alert_words", (override) => {
+    alert_words.initialize({alert_words: []});
     assert(!alert_words.has_alert_word("fire"));
     assert(!alert_words.has_alert_word("lunch"));
 
@@ -194,6 +195,7 @@ run_test("default_streams", (override) => {
 });
 
 run_test("hotspots", (override) => {
+    page_params.hotspots = [];
     const event = event_fixtures.hotspots;
     override(hotspots, "load_new", noop);
     dispatch(event);
@@ -467,6 +469,7 @@ run_test("realm_emoji", (override) => {
     }
 
     // Make sure we start with nothing...
+    emoji.update_emojis([]);
     assert.equal(emoji.get_realm_emoji_url("spain"), undefined);
 
     dispatch(event);
@@ -568,6 +571,9 @@ run_test("submessage", (override) => {
 // For subscriptions, see dispatch_subs.js
 
 run_test("typing", (override) => {
+    // Simulate that we are not typing.
+    page_params.user_id = typing_person1.user_id + 1;
+
     let event = event_fixtures.typing__start;
     {
         const stub = make_stub();
@@ -588,9 +594,10 @@ run_test("typing", (override) => {
         assert_same(args.event.sender.user_id, typing_person1.user_id);
     }
 
+    // Get line coverage--we ignore our own typing events.
     page_params.user_id = typing_person1.user_id;
     event = event_fixtures.typing__start;
-    dispatch(event); // get line coverage
+    dispatch(event);
 });
 
 run_test("update_display_settings", (override) => {
