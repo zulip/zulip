@@ -2053,7 +2053,8 @@ div.focused_table {
     font-size: 19px;
     text-align: center;
 
-    &.fa-group {
+    &.fa-group,
+    &.fa-bullhorn {
         margin-left: 9px;
         top: 3px;
     }
