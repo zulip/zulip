@@ -10,7 +10,6 @@ let actual_load;
 let objs_installed;
 const module_mocks = new Map();
 let mocked_paths;
-let mock_names;
 
 function load(request, parent, isMain) {
     const long_fn = path.resolve(path.join(path.dirname(parent.filename), request));
@@ -32,7 +31,6 @@ exports.start = () => {
     objs_installed = false;
     module_mocks.clear();
     mocked_paths = new Set();
-    mock_names = new Set();
 };
 
 exports.mock_module = (short_fn, obj) => {
@@ -42,10 +40,6 @@ exports.mock_module = (short_fn, obj) => {
 
     if (typeof obj !== "object") {
         throw new TypeError("We expect you to stub with an object.");
-    }
-
-    if (mock_names.has(short_fn)) {
-        throw new Error(`You already set up a mock for ${short_fn}`);
     }
 
     if (short_fn.startsWith("/") || short_fn.includes(".")) {
@@ -67,9 +61,12 @@ exports.mock_module = (short_fn, obj) => {
     const base_path = path.resolve("./static/js");
     const long_fn = path.join(base_path, short_fn);
 
+    if (module_mocks.has(long_fn)) {
+        throw new Error(`You already set up a mock for ${long_fn}`);
+    }
+
     obj.__esModule = true;
     module_mocks.set(long_fn, obj);
-    mock_names.add(short_fn);
     return obj;
 };
 
