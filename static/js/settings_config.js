@@ -28,6 +28,17 @@ export const demote_inactive_streams_values = {
     },
 };
 
+export const default_view_values = {
+    recent_topics: {
+        code: "recent_topics",
+        description: i18n.t("Recent topics"),
+    },
+    all_messages: {
+        code: "all_messages",
+        description: i18n.t("All messages"),
+    },
+};
+
 export const color_scheme_values = {
     automatic: {
         code: 1,

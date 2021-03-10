@@ -1183,6 +1183,7 @@ class UserProfileTest(ZulipTestCase):
         hamlet.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
 
         cordelia.default_language = "de"
+        cordelia.default_view = "all_messages"
         cordelia.emojiset = "twitter"
         cordelia.timezone = "America/Phoenix"
         cordelia.color_scheme = UserProfile.COLOR_SCHEME_NIGHT

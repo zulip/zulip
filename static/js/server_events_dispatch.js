@@ -445,6 +445,7 @@ export function dispatch_normal_event(event) {
             const user_display_settings = [
                 "color_scheme",
                 "default_language",
+                "default_view",
                 "demote_inactive_streams",
                 "dense_mode",
                 "emojiset",

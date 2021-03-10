@@ -564,10 +564,13 @@ export function change_focused_element(e, input_key) {
         }
 
         switch (input_key) {
+            //  Allow broswer to handle all
+            //  character keypresses.
             case "vim_left":
             case "vim_right":
             case "vim_down":
             case "vim_up":
+            case "open_recent_topics":
                 return false;
             case "shift_tab":
                 current_focus_elem = filter_buttons().last();
