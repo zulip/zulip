@@ -25,5 +25,7 @@ class zulip_ops::ksplice_uptrack {
         File['/etc/uptrack/uptrack.conf'],
       ],
     }
+  } else {
+    warning('No ksplice uptrack key is configured; ksplice is not installed!')
   }
 }
