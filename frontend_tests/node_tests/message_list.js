@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -13,7 +13,7 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = function () {};
 
-mock_module("filter", {
+mock_esm("../../static/js/filter", {
     Filter: noop,
 });
 set_global("document", {
@@ -24,8 +24,8 @@ set_global("document", {
     },
 });
 
-const narrow_state = mock_module("narrow_state");
-const stream_data = mock_module("stream_data");
+const narrow_state = mock_esm("../../static/js/narrow_state");
+const stream_data = mock_esm("../../static/js/stream_data");
 
 const muting = zrequire("muting");
 const {MessageList} = zrequire("message_list");

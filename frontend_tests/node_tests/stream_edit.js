@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -11,23 +11,23 @@ const noop = () => {};
 stub_templates(() => noop);
 
 const page_params = set_global("page_params", {});
-const typeahead_helper = mock_module("typeahead_helper");
-const ui = mock_module("ui", {
+const typeahead_helper = mock_esm("../../static/js/typeahead_helper");
+const ui = mock_esm("../../static/js/ui", {
     get_scroll_element: noop,
 });
 
-mock_module("hash_util", {
+mock_esm("../../static/js/hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });
-mock_module("hashchange", {update_browser_history: noop});
-mock_module("list_widget", {
+mock_esm("../../static/js/hashchange", {update_browser_history: noop});
+mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
 });
-mock_module("settings_notifications", {
+mock_esm("../../static/js/settings_notifications", {
     get_notifications_table_row_data: noop,
 });
-mock_module("stream_color", {
+mock_esm("../../static/js/stream_color", {
     set_colorpicker_color: noop,
 });
 

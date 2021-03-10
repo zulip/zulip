@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-mock_module("message_scroll", {
+mock_esm("../../static/js/message_scroll", {
     hide_loading_older: () => {},
 
     show_loading_older: () => {},

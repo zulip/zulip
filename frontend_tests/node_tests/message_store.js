@@ -2,17 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
 const noop = () => {};
 
-mock_module("stream_topic_history", {
+mock_esm("../../static/js/stream_topic_history", {
     add_message: noop,
 });
 
-mock_module("recent_senders", {
+mock_esm("../../static/js/recent_senders", {
     process_message_for_senders: noop,
 });
 

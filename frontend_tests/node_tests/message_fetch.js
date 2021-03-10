@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -15,28 +15,28 @@ const noop = () => {};
 function MessageListView() {
     return {};
 }
-mock_module("message_list_view", {
+mock_esm("../../static/js/message_list_view", {
     MessageListView,
 });
 
-mock_module("recent_topics", {
+mock_esm("../../static/js/recent_topics", {
     process_messages: noop,
 });
 // Still required for page_params.initial_pointer
 set_global("page_params", {});
-mock_module("ui_report", {
+mock_esm("../../static/js/ui_report", {
     hide_error: noop,
 });
 
-const channel = mock_module("channel");
-const message_store = mock_module("message_store");
-const message_util = mock_module("message_util");
-const pm_list = mock_module("pm_list");
-const server_events = mock_module("server_events");
-const stream_list = mock_module("stream_list", {
+const channel = mock_esm("../../static/js/channel");
+const message_store = mock_esm("../../static/js/message_store");
+const message_util = mock_esm("../../static/js/message_util");
+const pm_list = mock_esm("../../static/js/pm_list");
+const server_events = mock_esm("../../static/js/server_events");
+const stream_list = mock_esm("../../static/js/stream_list", {
     maybe_scroll_narrow_into_view: () => {},
 });
-mock_module("message_scroll", {
+mock_esm("../../static/js/message_scroll", {
     show_loading_older: noop,
     hide_loading_older: noop,
     show_loading_newer: noop,

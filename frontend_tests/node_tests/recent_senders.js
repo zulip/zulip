@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let next_id = 0;
@@ -23,14 +23,14 @@ function make_stream_message({stream_id, topic, sender_id}) {
     return message;
 }
 
-const message_list = mock_module("message_list", {
+const message_list = mock_esm("../../static/js/message_list", {
     all: {
         all_messages() {
             return Array.from(messages.values());
         },
     },
 });
-mock_module("message_store", {
+mock_esm("../../static/js/message_store", {
     get: (message_id) => messages.get(message_id),
 });
 

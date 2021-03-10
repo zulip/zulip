@@ -2,12 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = mock_module("channel");
-const message_store = mock_module("message_store");
-const widgetize = mock_module("widgetize");
+const channel = mock_esm("../../static/js/channel");
+const message_store = mock_esm("../../static/js/message_store");
+const widgetize = mock_esm("../../static/js/widgetize");
 
 const submessage = zrequire("submessage");
 

@@ -2,11 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_store = mock_module("message_store");
-mock_module("muting", {
+const message_store = mock_esm("../../static/js/message_store");
+mock_esm("../../static/js/muting", {
     is_topic_muted: () => false,
 });
 set_global("page_params", {});

@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const reload_state = mock_module("reload_state", {
+const reload_state = mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
 });
 

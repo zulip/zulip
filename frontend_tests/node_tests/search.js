@@ -2,24 +2,24 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-const narrow = mock_module("narrow");
-const narrow_state = mock_module("narrow_state", {
+const narrow = mock_esm("../../static/js/narrow");
+const narrow_state = mock_esm("../../static/js/narrow_state", {
     filter: () => false,
 });
-const search_suggestion = mock_module("search_suggestion");
+const search_suggestion = mock_esm("../../static/js/search_suggestion");
 
-mock_module("search_pill_widget", {
+mock_esm("../../static/js/search_pill_widget", {
     widget: {
         getByID: () => true,
     },
 });
-mock_module("ui_util", {
+mock_esm("../../static/js/ui_util", {
     change_tab_to: noop,
     place_caret_at_end: noop,
 });

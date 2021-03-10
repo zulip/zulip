@@ -3,6 +3,8 @@
 const Module = require("module");
 const path = require("path");
 
+const callsites = require("callsites");
+
 const new_globals = new Set();
 let old_globals = {};
 
@@ -28,23 +30,16 @@ exports.start = () => {
     Module._load = load;
 };
 
-exports.mock_module = (short_fn, obj) => {
-    if (obj === undefined) {
-        obj = {};
-    }
-
+exports.mock_esm = (request, obj = {}) => {
     if (typeof obj !== "object") {
-        throw new TypeError("We expect you to stub with an object.");
+        throw new TypeError("An ES module must be mocked with an object");
     }
 
-    if (short_fn.startsWith("/") || short_fn.includes(".")) {
-        throw new Error(`
-            There is no need for a path like ${short_fn}.
-            We just assume the file is under static/js.
-        `);
-    }
-
-    const filename = require.resolve(`../../static/js/${short_fn}`);
+    const filename = Module._resolveFilename(
+        request,
+        require.cache[callsites()[1].getFileName()],
+        false,
+    );
 
     if (module_mocks.has(filename)) {
         throw new Error(`You already set up a mock for ${filename}`);
@@ -59,8 +54,12 @@ exports.mock_module = (short_fn, obj) => {
     return obj;
 };
 
-exports.unmock_module = (short_fn) => {
-    const filename = require.resolve(`../../static/js/${short_fn}`);
+exports.unmock_module = (request) => {
+    const filename = Module._resolveFilename(
+        request,
+        require.cache[callsites()[1].getFileName()],
+        false,
+    );
 
     if (!module_mocks.has(filename)) {
         throw new Error(`Cannot unmock ${filename}, which was not mocked`);

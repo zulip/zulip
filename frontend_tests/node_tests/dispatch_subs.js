@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -11,15 +11,15 @@ const events = require("./lib/events");
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
-const compose_fade = mock_module("compose_fade");
-const narrow_state = mock_module("narrow_state");
-const overlays = mock_module("overlays");
+const compose_fade = mock_esm("../../static/js/compose_fade");
+const narrow_state = mock_esm("../../static/js/narrow_state");
+const overlays = mock_esm("../../static/js/overlays");
 const page_params = set_global("page_params", {});
-const settings_org = mock_module("settings_org");
-const settings_streams = mock_module("settings_streams");
-const stream_events = mock_module("stream_events");
-const stream_list = mock_module("stream_list");
-const subs = mock_module("subs");
+const settings_org = mock_esm("../../static/js/settings_org");
+const settings_streams = mock_esm("../../static/js/settings_streams");
+const stream_events = mock_esm("../../static/js/stream_events");
+const stream_list = mock_esm("../../static/js/stream_list");
+const subs = mock_esm("../../static/js/subs");
 set_global("current_msg_list", {});
 
 const peer_data = zrequire("peer_data");

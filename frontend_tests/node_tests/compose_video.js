@@ -2,16 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const events = require("./lib/events");
 
-const channel = mock_module("channel");
+const channel = mock_esm("../../static/js/channel");
 const page_params = set_global("page_params", {});
-const upload = mock_module("upload");
-mock_module("resize", {
+const upload = mock_esm("../../static/js/upload");
+mock_esm("../../static/js/resize", {
     watch_manual_resize() {},
 });
 set_global("csrf_token", "fake-csrf-token");

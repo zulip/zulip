@@ -4,14 +4,14 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let page_params = set_global("page_params", {
     realm_push_notifications_enabled: false,
 });
 
-const message_store = mock_module("message_store", {
+const message_store = mock_esm("../../static/js/message_store", {
     get() {},
 });
 const muting = zrequire("muting");
