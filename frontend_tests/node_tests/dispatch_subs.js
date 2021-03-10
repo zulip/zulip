@@ -42,9 +42,8 @@ people.initialize_current_user(me.user_id);
 const dispatch = server_events_dispatch.dispatch_normal_event;
 
 function test(label, f) {
-    stream_data.clear_subscriptions();
-
     run_test(label, (override) => {
+        stream_data.clear_subscriptions();
         f(override);
     });
 }
