@@ -115,6 +115,15 @@
             }
         },
         {
+            "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
+            "globals": {
+                "$": false,
+                "current_msg_list": false,
+                "page_params": false,
+                "zulip_test": false
+            }
+        },
+        {
             "files": ["static/js/**"],
             "globals": {
                 "$": false,
@@ -161,7 +170,8 @@
                 "@typescript-eslint/prefer-regexp-exec": "error",
                 "@typescript-eslint/prefer-string-starts-ends-with": "error",
                 "@typescript-eslint/promise-function-async": "error",
-                "@typescript-eslint/unified-signatures": "error"
+                "@typescript-eslint/unified-signatures": "error",
+                "no-undef": "error"
             }
         },
         {
