@@ -1408,7 +1408,7 @@ class TestContentTypeUnspecifiedCharset(ZulipTestCase):
         process_message(incoming_message)
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "Email fixture 1.txt body")
+        self.assertNotEqual(message.content, "Email fixture 1.txt body")
 
 
 class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
