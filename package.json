@@ -36,6 +36,7 @@
     "flatpickr": "^4.5.7",
     "font-awesome": "^4.7.0",
     "font-subset-loader2": "^1.1.7",
+    "fuse.js": "^6.4.6",
     "ga-gtag": "^1.0.1",
     "handlebars": "^4.7.2",
     "handlebars-loader": "^1.7.1",
