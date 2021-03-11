@@ -300,7 +300,7 @@ async function test_upload_realm_icon_image(page: Page): Promise<void> {
         visible: true,
     });
     await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
-        visible: false,
+        hidden: true,
     });
     await page.waitForSelector(
         '#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]',
@@ -312,7 +312,7 @@ async function delete_realm_icon(page: Page): Promise<void> {
     await page.click("li[data-section='organization-profile']");
     await page.click("#realm-icon-upload-widget .image-delete-button");
 
-    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: false});
+    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 }
 
 async function test_organization_profile(page: Page): Promise<void> {
@@ -320,13 +320,13 @@ async function test_organization_profile(page: Page): Promise<void> {
     const gravatar_selctor =
         '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
     await page.waitForSelector(gravatar_selctor, {visible: true});
-    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: false});
+    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 
     await test_upload_realm_icon_image(page);
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: true});
 
     await delete_realm_icon(page);
-    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: false});
+    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
     await page.waitForSelector(gravatar_selctor, {visible: true});
 }
 
@@ -337,7 +337,7 @@ async function submit_default_user_settings(page: Page): Promise<void> {
     );
     await page.click("#org-submit-user-defaults");
     const saved_status = '#org-submit-user-defaults[data-status="saved"]';
-    await page.waitForSelector(saved_status, {visible: false});
+    await page.waitForSelector(saved_status, {hidden: true});
 }
 
 async function test_change_organization_default_language(page: Page): Promise<void> {
