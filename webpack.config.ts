@@ -273,6 +273,13 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
             stats: "errors-only",
             noInfo: true,
         },
+        watchOptions: {
+            ignored: [
+                // Prevent Emacs file locks from crashing webpack-dev-server
+                // https://github.com/webpack/webpack-dev-server/issues/2821
+                "**/.#*",
+            ],
+        },
     };
 
     const serverConfig: webpack.Configuration = {
