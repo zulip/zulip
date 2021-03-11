@@ -608,6 +608,11 @@ function make_zjquery() {
 
 const $ = new Proxy(make_zjquery(), {
     set(obj, prop, value) {
+        if (obj[prop] && obj[prop]._patched_with_override) {
+            obj[prop] = value;
+            return true;
+        }
+
         if (value._patched_with_override) {
             obj[prop] = value;
             return true;
