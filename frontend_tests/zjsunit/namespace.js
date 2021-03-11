@@ -38,6 +38,35 @@ exports.start = () => {
     Module._load = load;
 };
 
+// We provide `mock_cjs` for mocking a CommonJS module, and `mock_esm` for
+// mocking an ES6 module.
+//
+// A CommonJS module:
+// - loads other modules using `require()`,
+// - assigns its public contents to the `exports` object or `module.exports`,
+// - consists of a single JavaScript value, typically an object or function,
+// - when imported by an ES6 module:
+//   * is shallow-copied to a collection of immutable bindings, if it's an
+//     object,
+//   * is converted to a single default binding, if not.
+//
+// An ES6 module:
+// - loads other modules using `import`,
+// - declares its public contents using `export` statements,
+// - consists of a collection of live bindings that may be mutated from inside
+//   but not outside the module,
+// - may have a default binding (that's just syntactic sugar for a binding
+//   named `default`),
+// - when required by a CommonJS module, always appears as an object.
+//
+// Most of our own modules are ES6 modules.
+//
+// For a third party module available in both formats that might present two
+// incompatible APIs (especially if the CommonJS module is a function),
+// Webpack will prefer the ES6 module if its availability is indicated by the
+// "module" field of package.json, while Node.js will not; we need to mock the
+// format preferred by Webpack.
+
 exports.mock_cjs = (request, obj) => {
     const filename = Module._resolveFilename(
         request,
