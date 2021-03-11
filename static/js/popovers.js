@@ -1328,7 +1328,6 @@ export function register_click_handlers() {
   
     clipboard_enable(".copy_mention_syntax");
 
-
     $("body").on("click", ".copy_mention_syntax", (e) => {
         hide_all();
         e.stopPropagation();
