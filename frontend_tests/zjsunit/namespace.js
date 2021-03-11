@@ -197,17 +197,10 @@ exports.with_overrides = function (test_function) {
 
         unused_funcs.get(obj).set(func_name, true);
 
-        let old_f =
+        const old_f =
             "__esModule" in obj && "__Rewire__" in obj && !(func_name in obj)
                 ? obj.__GetDependency__(func_name)
                 : obj[func_name];
-        if (old_f === undefined) {
-            // Create a dummy function so that we can
-            // attach _patched_with_override to it.
-            old_f = () => {
-                throw new Error(`There is no ${func_name}() field for this object.`);
-            };
-        }
 
         const new_f = function (...args) {
             unused_funcs.get(obj).delete(func_name);
@@ -227,9 +220,7 @@ exports.with_overrides = function (test_function) {
         } else {
             obj[func_name] = new_f;
             restore_callbacks.push(() => {
-                old_f._patched_with_override = true;
                 obj[func_name] = old_f;
-                delete old_f._patched_with_override;
             });
         }
     };
