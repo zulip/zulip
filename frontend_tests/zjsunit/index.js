@@ -12,8 +12,7 @@ const stub_i18n = require("./i18n");
 const namespace = require("./namespace");
 const test = require("./test");
 const {make_zblueslip} = require("./zblueslip");
-
-global.$ = require("./zjquery");
+const zjquery = require("./zjquery");
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
@@ -71,7 +70,7 @@ function short_tb(tb) {
 }
 
 function run_one_module(file) {
-    global.$.clear_all_elements();
+    zjquery.clear_all_elements();
     console.info("running test " + path.basename(file, ".js"));
     test.set_current_file_name(file);
     require(file);

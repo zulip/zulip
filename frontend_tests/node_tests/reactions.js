@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -37,6 +37,7 @@ const sample_message = {
     ],
 };
 
+mock_cjs("jquery", $);
 const channel = mock_esm("../../static/js/channel");
 const emoji_picker = mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover() {},

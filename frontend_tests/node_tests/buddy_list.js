@@ -4,9 +4,11 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+
+mock_cjs("jquery", $);
 
 mock_esm("../../static/js/padded_widget", {
     update_padding: () => {},

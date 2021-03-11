@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as typing_status from "../shared/js/typing_status";
 
 import * as channel from "./channel";

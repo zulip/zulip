@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as settings_account from "./settings_account";

@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import generated_emoji_codes from "../generated/emoji/emoji_codes.json";

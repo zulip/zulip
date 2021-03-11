@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -36,6 +36,7 @@ const topic8 = "topic-8";
 const topic9 = "topic-9";
 const topic10 = "topic-10";
 
+mock_cjs("jquery", $);
 const message_list = mock_esm("../../static/js/message_list", {
     all: {
         all_messages() {

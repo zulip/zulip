@@ -2,8 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
@@ -16,6 +17,7 @@ set_global("document", {
 });
 set_global("addEventListener", noop);
 
+mock_cjs("jquery", $);
 const channel = mock_esm("../../static/js/channel");
 mock_esm("../../static/js/reload_state", {
     is_in_progress() {

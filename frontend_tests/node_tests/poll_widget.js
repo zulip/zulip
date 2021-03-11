@@ -3,9 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+
+mock_cjs("jquery", $);
 
 const poll_widget = zrequire("poll_widget");
 

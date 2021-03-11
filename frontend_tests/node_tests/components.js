@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let keydown_f;
@@ -117,7 +117,7 @@ const switcher = (function () {
     return self;
 })();
 
-set_global("$", (sel, attributes) => {
+mock_cjs("jquery", (sel, attributes) => {
     if (sel.stub) {
         // The component often redundantly re-wraps objects.
         return sel;

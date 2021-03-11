@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";

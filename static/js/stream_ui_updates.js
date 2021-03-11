@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_subscription_type from "../templates/subscription_type.hbs";
 
 import * as ListWidget from "./list_widget";

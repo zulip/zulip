@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as compose_pm_pill from "./compose_pm_pill";
 
 let message_type = false; // 'stream', 'private', or false-y

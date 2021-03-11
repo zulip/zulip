@@ -1,6 +1,7 @@
 import autosize from "autosize";
 import {formatISO} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
+import $ from "jquery";
 import _ from "lodash";
 
 import pygments_data from "../generated/pygments_data.json";

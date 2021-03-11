@@ -1,4 +1,5 @@
 import {format, isSameDay} from "date-fns";
+import $ from "jquery";
 
 import render_message_edit_history from "../templates/message_edit_history.hbs";
 

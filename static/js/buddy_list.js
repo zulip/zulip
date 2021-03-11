@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_user_presence_row from "../templates/user_presence_row.hbs";
 import render_user_presence_rows from "../templates/user_presence_rows.hbs";
 

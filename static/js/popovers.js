@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import {parseISO, formatISO, add, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
+import $ from "jquery";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
 import render_mobile_message_buttons_popover from "../templates/mobile_message_buttons_popover.hbs";

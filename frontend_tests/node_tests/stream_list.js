@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -16,6 +16,7 @@ const page_params = set_global("page_params", {
 
 const noop = () => {};
 
+mock_cjs("jquery", $);
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const topic_list = mock_esm("../../static/js/topic_list");
 mock_esm("../../static/js/keydown_util", {

@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -12,6 +12,7 @@ set_global("page_params", {
 
 const noop = () => {};
 
+mock_cjs("jquery", $);
 const narrow = mock_esm("../../static/js/narrow");
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const search_suggestion = mock_esm("../../static/js/search_suggestion");

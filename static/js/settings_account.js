@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";

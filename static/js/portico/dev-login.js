@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 $(() => {
     // This code will be executed when the user visits /login and
     // dev_login.html is rendered.
@@ -11,4 +13,3 @@ $(() => {
         });
     }
 });
-export {};
