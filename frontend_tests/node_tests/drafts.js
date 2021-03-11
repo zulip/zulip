@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_esm, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -24,6 +24,7 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
+mock_cjs("jquery", $);
 const compose_state = mock_esm("../../static/js/compose_state");
 mock_esm("../../static/js/markdown", {
     apply_markdown: noop,

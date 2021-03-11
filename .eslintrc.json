@@ -126,13 +126,11 @@
         {
             "files": ["static/js/**"],
             "globals": {
-                "$": false,
                 "blueslip": false,
                 "csrf_token": false,
                 "current_msg_list": true,
                 "home_msg_list": false,
                 "i18n": false,
-                "jQuery": false,
                 "page_params": false,
                 "StripeCheckout": false,
                 "zxcvbn": false

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_markdown_help from "../templates/markdown_help.hbs";
 
 import * as common from "./common";

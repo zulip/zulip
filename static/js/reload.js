@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as activity from "./activity";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";

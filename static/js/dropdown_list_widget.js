@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_dropdown_list from "../templates/settings/dropdown_list.hbs";
 
 import * as ListWidget from "./list_widget";
@@ -111,7 +113,7 @@ export const DropdownListWidget = function (opts) {
                 return;
             }
             e.preventDefault();
-            const custom_event = new jQuery.Event("keydown.dropdown.data-api", {
+            const custom_event = new $.Event("keydown.dropdown.data-api", {
                 keyCode: e.keyCode,
                 which: e.keyCode,
             });

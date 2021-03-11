@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as components from "./components";
 import * as settings_panel_menu from "./settings_panel_menu";
 

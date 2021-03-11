@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as channel from "../channel";
 // Main JavaScript file for the integrations development panel at
 // /devtools/integrations.

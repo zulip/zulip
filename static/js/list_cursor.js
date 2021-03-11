@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as scroll_util from "./scroll_util";
 
 export class ListCursor {

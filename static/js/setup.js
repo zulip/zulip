@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as loading from "./loading";
 import * as util from "./util";
 

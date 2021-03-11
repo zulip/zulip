@@ -2,9 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
+mock_cjs("jquery", $);
 const message_live_update = mock_esm("../../static/js/message_live_update");
 const settings_account = mock_esm("../../static/js/settings_account", {
     update_email() {},

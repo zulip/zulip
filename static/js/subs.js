@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import render_subscription from "../templates/subscription.hbs";

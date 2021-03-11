@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as common from "../common";
 
 $(() => {

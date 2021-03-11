@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";

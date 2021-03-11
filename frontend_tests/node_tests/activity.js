@@ -2,10 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+mock_cjs("jquery", $);
 const window_stub = $.create("window-stub");
 set_global("to_$", () => window_stub);
 $(window).idle = () => {};

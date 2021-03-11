@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import render_admin_user_group_list from "../templates/admin_user_group_list.hbs";

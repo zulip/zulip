@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_muted_topic_ui_row from "../templates/muted_topic_ui_row.hbs";
 import render_topic_muted from "../templates/topic_muted.hbs";
 

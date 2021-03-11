@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {
+    mock_cjs,
     mock_esm,
     set_global,
     with_field,
@@ -11,6 +12,7 @@ const {
 } = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 // Important note on these tests:
 
@@ -39,6 +41,7 @@ const page_params = set_global("page_params", {});
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
 
+mock_cjs("jquery", $);
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const condense = mock_esm("../../static/js/condense");
 const drafts = mock_esm("../../static/js/drafts");

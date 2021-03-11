@@ -1,4 +1,5 @@
 import {isSameDay} from "date-fns";
+import $ from "jquery";
 import _ from "lodash";
 
 import render_bookend from "../templates/bookend.hbs";
@@ -518,7 +519,7 @@ export class MessageListView {
     _post_process($message_rows) {
         // $message_rows wraps one or more message rows
 
-        if ($message_rows.constructor !== jQuery) {
+        if (!($message_rows instanceof $)) {
             // An assertion check that we're calling this properly
             blueslip.error("programming error--pass in jQuery objects");
         }

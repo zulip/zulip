@@ -2,6 +2,8 @@
 // server_events.js simple while breaking some circular
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
+import $ from "jquery";
+
 import * as activity from "./activity";
 import * as compose from "./compose";
 import * as gear_menu from "./gear_menu";

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as loading from "../loading";
 
 export function create_ajax_request(

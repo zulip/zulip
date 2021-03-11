@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -13,6 +13,7 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = function () {};
 
+mock_cjs("jquery", $);
 mock_esm("../../static/js/filter", {
     Filter: noop,
 });

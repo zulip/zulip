@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 function collapse_spoiler(spoiler) {
     const spoiler_height = spoiler.height();
 

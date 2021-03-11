@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("setTimeout", (f, delay) => {
@@ -17,7 +17,7 @@ const channel = zrequire("channel");
 
 const default_stub_xhr = "default-stub-xhr";
 
-const $ = set_global("$", {});
+const $ = mock_cjs("jquery", {});
 
 function test_with_mock_ajax(test_params) {
     const {xhr = default_stub_xhr, run_code, check_ajax_options} = test_params;

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as emoji from "../shared/js/emoji";
 
 import * as activity from "./activity";

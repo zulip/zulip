@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as channel from "./channel";
 import * as emojisets from "./emojisets";
 import * as loading from "./loading";

@@ -1,3 +1,4 @@
+import $ from "jquery";
 import {Sortable} from "sortablejs";
 
 import render_admin_profile_field_list from "../templates/admin_profile_field_list.hbs";

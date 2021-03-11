@@ -8,6 +8,8 @@
 // in order to be able to report exceptions that occur during their
 // execution.
 
+const $ = require("jquery");
+
 const blueslip_stacktrace = require("./blueslip_stacktrace");
 const ui_report = require("./ui_report");
 
@@ -266,7 +268,7 @@ exports.measure_time = function (label, f) {
 // with other developers before using it in a user-facing context
 // because it is not XSS-safe.
 exports.preview_node = function (node) {
-    if (node.constructor === jQuery) {
+    if (node instanceof $) {
         node = node[0];
     }
 

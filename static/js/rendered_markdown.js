@@ -1,5 +1,6 @@
 import ClipboardJS from "clipboard";
 import {parseISO, isValid} from "date-fns";
+import $ from "jquery";
 
 import copy_code_button from "../templates/copy_code_button.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";

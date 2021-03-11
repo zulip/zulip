@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import emoji_codes from "../generated/emoji/emoji_codes.json";
 import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";

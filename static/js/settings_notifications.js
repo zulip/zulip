@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
 import * as channel from "./channel";

@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import {buddy_list} from "./buddy_list";

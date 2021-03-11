@@ -9,14 +9,23 @@
 // become clear as you keep reading.
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, unmock_module, with_field, zrequire} = require("../zjsunit/namespace");
+const {
+    mock_cjs,
+    mock_esm,
+    set_global,
+    unmock_module,
+    with_field,
+    zrequire,
+} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 // Some quick housekeeping:  Let's clear page_params, which is a data
 // structure that the server sends down to us when the app starts.  We
 // prefer to test with a clean slate.
 
+mock_cjs("jquery", $);
 const activity = mock_esm("../../static/js/activity");
 const channel = mock_esm("../../static/js/channel");
 const home_msg_list = set_global("home_msg_list", {});
@@ -673,11 +682,6 @@ run_test("unread_ops", (override) => {
 
       stream_list.update_streams_sidebar
 
-    To make this test work, we will create a somewhat elaborate
-    function that fills in for jQuery (https://jquery.com/), so that
-    one boundary of our tests is how stream_list.js calls into
-    stream_list to manipulate DOM.
-
 */
 
 unmock_module("../../static/js/stream_list");
@@ -690,44 +694,11 @@ const social_stream = {
     subscribed: true,
 };
 
-function jquery_elem() {
-    // We create basic stubs for jQuery elements, so they
-    // just work.  We can extend these in cases where we want
-    // more detailed testing.
-    const elem = {};
-
-    elem.expectOne = () => elem;
-    elem.removeClass = () => elem;
-    elem.empty = () => elem;
-
-    return elem;
-}
-
 function make_jquery_helper() {
-    const stream_list_filter = jquery_elem();
-    stream_list_filter.val = () => "";
-
-    const stream_filters = jquery_elem();
-
     let appended_data;
-    stream_filters.append = (data) => {
+    $("#stream_filters").append = (data) => {
         appended_data = data;
     };
-
-    function fake_jquery(selector) {
-        switch (selector) {
-            case ".stream-list-filter":
-                return stream_list_filter;
-            case "ul#stream_filters li":
-                return jquery_elem();
-            case "#stream_filters":
-                return stream_filters;
-            default:
-                throw new Error("unknown selector: " + selector);
-        }
-    }
-
-    set_global("$", fake_jquery);
 
     return {
         verify_actions: () => {

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as google_analytics from "./google-analytics";
 import {detect_user_os} from "./tabbed-instructions";
 import render_tabs from "./team";

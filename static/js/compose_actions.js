@@ -1,4 +1,5 @@
 import autosize from "autosize";
+import $ from "jquery";
 
 import * as fenced_code from "../shared/js/fenced_code";
 

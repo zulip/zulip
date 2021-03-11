@@ -1,5 +1,6 @@
 import {subDays} from "date-fns";
 import Handlebars from "handlebars/runtime";
+import $ from "jquery";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import {media_breakpoints} from "./css_variables";
 import * as message_scroll from "./message_scroll";
 import * as rows from "./rows";

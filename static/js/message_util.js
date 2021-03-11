@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as loading from "./loading";
 import * as message_list from "./message_list";
 import * as message_store from "./message_store";

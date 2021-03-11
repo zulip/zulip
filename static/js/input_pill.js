@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as ui_util from "./ui_util";

@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import render_hotspot_icon from "../templates/hotspot_icon.hbs";

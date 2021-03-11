@@ -2,11 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 set_global("Image", class Image {});
+mock_cjs("jquery", $);
 mock_esm("../../static/js/overlays", {
     close_overlay: () => {},
 

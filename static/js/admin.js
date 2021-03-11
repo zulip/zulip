@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_admin_tab from "../templates/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 

@@ -2,10 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+mock_cjs("jquery", $);
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const people = zrequire("people");
 

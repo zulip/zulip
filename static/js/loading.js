@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_loader from "../templates/loader.hbs";
 
 export function make_indicator(outer_container, opts) {

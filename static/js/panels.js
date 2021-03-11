@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import * as unread_ops from "./unread_ops";

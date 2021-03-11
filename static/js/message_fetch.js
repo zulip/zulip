@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as channel from "./channel";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";

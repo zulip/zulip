@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_confirm_dialog from "../templates/confirm_dialog.hbs";
 
 import * as overlays from "./overlays";

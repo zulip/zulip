@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as loading from "./loading";
 import * as ui_report from "./ui_report";
 

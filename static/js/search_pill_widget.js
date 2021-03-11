@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as hashchange from "./hashchange";
 import * as search_pill from "./search_pill";
 

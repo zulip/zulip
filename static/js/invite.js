@@ -1,5 +1,6 @@
 import autosize from "autosize";
 import ClipboardJS from "clipboard";
+import $ from "jquery";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";

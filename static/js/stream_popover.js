@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_delete_topic_modal from "../templates/delete_topic_modal.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";

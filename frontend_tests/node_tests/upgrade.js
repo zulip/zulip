@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -24,6 +24,8 @@ set_global("page_params", {
     seat_count: 8,
     percent_off: 20,
 });
+
+mock_cjs("jquery", $);
 
 const helpers = zrequire("../js/billing/helpers");
 

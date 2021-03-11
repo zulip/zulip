@@ -1,6 +1,7 @@
 import Uppy from "@uppy/core";
 import ProgressBar from "@uppy/progress-bar";
 import XHRUpload from "@uppy/xhr-upload";
+import $ from "jquery";
 
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";

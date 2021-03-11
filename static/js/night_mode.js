@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 export function enable() {
     $("body").removeClass("color-scheme-automatic").addClass("night-mode");
 }

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as channel from "../channel";
 
 $(() => {

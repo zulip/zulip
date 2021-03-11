@@ -1,4 +1,5 @@
 import ClipboardJS from "clipboard";
+import $ from "jquery";
 
 import render_message_edit_form from "../templates/message_edit_form.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import timezones from "../generated/timezones.json";
 import render_settings_tab from "../templates/settings_tab.hbs";
 

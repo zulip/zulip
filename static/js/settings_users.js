@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_admin_bot_form from "../templates/admin_bot_form.hbs";
 import render_admin_human_form from "../templates/admin_human_form.hbs";
 import render_admin_user_list from "../templates/admin_user_list.hbs";

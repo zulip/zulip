@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as stream_popover from "./stream_popover";

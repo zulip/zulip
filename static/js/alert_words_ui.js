@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_alert_word_settings_item from "../templates/settings/alert_word_settings_item.hbs";
 
 import * as alert_words from "./alert_words";

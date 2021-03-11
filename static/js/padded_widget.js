@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 export function update_padding(opts) {
     const content = $(opts.content_sel);
     const padding = $(opts.padding_sel);

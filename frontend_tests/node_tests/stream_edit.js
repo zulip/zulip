@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -11,6 +11,7 @@ const noop = () => {};
 stub_templates(() => noop);
 
 const page_params = set_global("page_params", {});
+mock_cjs("jquery", $);
 const typeahead_helper = mock_esm("../../static/js/typeahead_helper");
 const ui = mock_esm("../../static/js/ui", {
     get_scroll_element: noop,

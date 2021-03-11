@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as channel from "./channel";
 import * as settings_config from "./settings_config";
 import * as upload_widget from "./upload_widget";

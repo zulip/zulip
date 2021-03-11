@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_typing_notifications from "../templates/typing_notifications.hbs";
 
 import * as narrow_state from "./narrow_state";

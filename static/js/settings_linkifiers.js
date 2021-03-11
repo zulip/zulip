@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_admin_filter_list from "../templates/admin_filter_list.hbs";
 
 import * as channel from "./channel";

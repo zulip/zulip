@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import render_compose_notification from "../templates/compose_notification.hbs";

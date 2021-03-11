@@ -1,3 +1,4 @@
+import $ from "jquery";
 import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";

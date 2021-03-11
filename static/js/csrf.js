@@ -1,5 +1,7 @@
 "use strict";
 
+const $ = require("jquery");
+
 let csrf_token;
 $(() => {
     // This requires that we used Jinja2's {% csrf_input %} somewhere on the page.

@@ -2,8 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 // Dependencies
 
@@ -23,6 +24,8 @@ const _navigator = {
     userAgent: "Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36",
 };
 set_global("navigator", _navigator);
+
+mock_cjs("jquery", $);
 
 const muting = zrequire("muting");
 const stream_data = zrequire("stream_data");

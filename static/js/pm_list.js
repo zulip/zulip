@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as buddy_data from "./buddy_data";
 import * as hash_util from "./hash_util";
 import * as narrow_state from "./narrow_state";

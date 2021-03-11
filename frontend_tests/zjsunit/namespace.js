@@ -12,11 +12,19 @@ let actual_load;
 const module_mocks = new Map();
 const used_module_mocks = new Set();
 
+const jquery_path = require.resolve("jquery");
+const real_jquery_path = require.resolve("../zjsunit/real_jquery.js");
+
 function load(request, parent, isMain) {
     const filename = Module._resolveFilename(request, parent, isMain);
     if (module_mocks.has(filename)) {
         used_module_mocks.add(filename);
         return module_mocks.get(filename);
+    }
+    if (filename === jquery_path && parent.filename !== real_jquery_path) {
+        // jQuery exposes an incompatible API to Node vs. browser, so
+        // this wouldn't work.
+        throw new Error("This test will need jquery mocked using zjquery or real_jquery");
     }
 
     return actual_load(request, parent, isMain);

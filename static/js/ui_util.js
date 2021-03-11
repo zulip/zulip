@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 
