@@ -298,9 +298,9 @@ def filter_footer(text: str) -> str:
     if len(possible_footers) != 1:
         # Be conservative and don't try to scrub content if there
         # isn't a trivial footer structure.
-        return text
+        return ""
 
-    return text.split("--")[0].strip()
+    return text.partition("--")[0].strip()
 
 
 def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
