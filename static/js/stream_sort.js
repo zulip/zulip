@@ -1,3 +1,5 @@
+import {default as Fuse} from "fuse.js";
+
 import * as stream_data from "./stream_data";
 import * as util from "./util";
 
@@ -15,32 +17,18 @@ export function get_streams() {
     return sorted_streams;
 }
 
-function compare_function(a, b) {
-    const stream_a = stream_data.get_sub_by_id(a);
-    const stream_b = stream_data.get_sub_by_id(b);
-
-    const stream_name_a = stream_a ? stream_a.name : "";
-    const stream_name_b = stream_b ? stream_b.name : "";
-
-    return util.strcmp(stream_name_a, stream_name_b);
-}
-
 function filter_streams_by_search(streams, search_term) {
     if (search_term === "") {
         return streams;
     }
 
-    let search_terms = search_term.toLowerCase().split(",");
-    search_terms = search_terms.map((s) => s.trim());
-
-    const filtered_streams = streams.filter((stream) =>
-        search_terms.some((search_term) => {
-            const lower_stream_name = stream_data.get_sub_by_id(stream).name.toLowerCase();
-            const cands = lower_stream_name.split(" ");
-            cands.push(lower_stream_name);
-            return cands.some((name) => name.startsWith(search_term));
-        }),
-    );
+    const fuzzySearchOptions = {threshold: 0.5};
+    const filtered_streams = new Fuse(
+        streams.map((stream) => stream_data.get_sub_by_id(stream).name.toLowerCase()),
+        fuzzySearchOptions,
+    )
+        .search(search_term.trim())
+        .map((value) => streams[value.refIndex]);
 
     return filtered_streams;
 }
@@ -71,10 +59,6 @@ export function sort_groups(streams, search_term) {
             dormant_streams.push(stream);
         }
     }
-
-    pinned_streams.sort(compare_function);
-    normal_streams.sort(compare_function);
-    dormant_streams.sort(compare_function);
 
     const same_as_before =
         previous_pinned !== undefined &&

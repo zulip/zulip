@@ -284,8 +284,9 @@ async function test_search_venice(page: Page): Promise<void> {
             .trigger("click");
     });
 
-    await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
-    await page.waitForSelector(await get_stream_li(page, "Verona"), {hidden: true});
+    await page.waitForSelector(await get_stream_li(page, "Rome"), {hidden: true});
+    await page.waitForSelector(await get_stream_li(page, "Denmark"), {visible: true});
+    await page.waitForSelector(await get_stream_li(page, "Verona"), {visible: true});
     await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_stream", {
         visible: true,
     });

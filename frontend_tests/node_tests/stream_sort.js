@@ -61,22 +61,22 @@ run_test("basics", (override) => {
     // Test sorting into categories/alphabetized
     let sorted = sort_groups("");
     assert.deepEqual(sorted.pinned_streams, [scalene.stream_id]);
-    assert.deepEqual(sorted.normal_streams, [clarinet.stream_id, fast_tortoise.stream_id]);
+    assert.deepEqual(sorted.normal_streams, [fast_tortoise.stream_id, clarinet.stream_id]);
     assert.deepEqual(sorted.dormant_streams, [pneumonia.stream_id]);
 
     // Test cursor helpers.
     assert.equal(stream_sort.first_stream_id(), scalene.stream_id);
 
     assert.equal(stream_sort.prev_stream_id(scalene.stream_id), undefined);
-    assert.equal(stream_sort.prev_stream_id(clarinet.stream_id), scalene.stream_id);
+    assert.equal(stream_sort.prev_stream_id(fast_tortoise.stream_id), scalene.stream_id);
 
-    assert.equal(stream_sort.next_stream_id(fast_tortoise.stream_id), pneumonia.stream_id);
+    assert.equal(stream_sort.next_stream_id(clarinet.stream_id), pneumonia.stream_id);
     assert.equal(stream_sort.next_stream_id(pneumonia.stream_id), undefined);
 
     // Test filtering
     sorted = sort_groups("s");
     assert.deepEqual(sorted.pinned_streams, [scalene.stream_id]);
-    assert.deepEqual(sorted.normal_streams, []);
+    assert.deepEqual(sorted.normal_streams, [fast_tortoise.stream_id]);
     assert.deepEqual(sorted.dormant_streams, []);
 
     assert.equal(stream_sort.prev_stream_id(clarinet.stream_id), undefined);
