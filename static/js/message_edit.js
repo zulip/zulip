@@ -594,7 +594,7 @@ export function end_message_row_edit(row) {
 
         compose.abort_video_callbacks(message.id);
     }
-    if (row.find(".condensed").length !== 0) {
+    if (row.find(".condensed").length !== 0 || row.find(".collapsed").length !== 0) {
         condense.show_message_expander(row);
     } else {
         condense.show_message_condenser(row);

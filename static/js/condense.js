@@ -165,7 +165,7 @@ function get_message_height(elem, message_id) {
 }
 
 export function hide_message_expander(row) {
-    if (row.find(".could-be-condensed").length !== 0) {
+    if (row.find(".could-be-condensed").length !== 0 || row.find(".collapsed").length !== 0) {
         row.find(".message_expander").hide();
     }
 }
@@ -177,7 +177,7 @@ export function hide_message_condenser(row) {
 }
 
 export function show_message_expander(row) {
-    if (row.find(".could-be-condensed").length !== 0) {
+    if (row.find(".could-be-condensed").length !== 0 || row.find(".collapsed").length !== 0) {
         row.find(".message_expander").show();
     }
 }
