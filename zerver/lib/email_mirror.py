@@ -294,7 +294,7 @@ def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> Op
 
 def filter_footer(text: str) -> str:
     # Try to filter out obvious footers.
-    possible_footers = [line for line in text.split("\n") if line.strip() == "--"]
+    possible_footers = [line for line in text.split("\n") if "--" in line.strip()]
     if len(possible_footers) != 1:
         # Be conservative and don't try to scrub content if there
         # isn't a trivial footer structure.

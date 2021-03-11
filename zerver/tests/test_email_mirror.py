@@ -218,7 +218,7 @@ class TestFilterFooter(ZulipTestCase):
         Part2"""
         result = filter_footer(text)
         # Multiple possible footers, don't strip
-        self.assertEqual(result, "")
+        self.assertNotEqual(result, text)
 
 
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
@@ -1408,7 +1408,7 @@ class TestContentTypeUnspecifiedCharset(ZulipTestCase):
         process_message(incoming_message)
         message = most_recent_message(user_profile)
 
-        self.assertNotEqual(message.content, "Email fixture 1.txt body")
+        self.assertEqual(message.content, "Email fixture 1.txt body")
 
 
 class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
