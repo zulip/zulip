@@ -298,7 +298,7 @@ def filter_footer(text: str) -> str:
     if len(possible_footers) != 1:
         # Be conservative and don't try to scrub content if there
         # isn't a trivial footer structure.
-        return "(No email body)"
+        return text
 
     return text.partition("--")[0].strip()
 
