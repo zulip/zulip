@@ -28,15 +28,20 @@ class TestGetNextHotspots(ZulipTestCase):
         self.assertEqual(hotspots[0]["name"], "intro_streams")
 
     def test_all_intro_hotspots_done(self) -> None:
-        self.assertNotEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
-        for hotspot in INTRO_HOTSPOTS:
-            do_mark_hotspot_as_read(self.user, hotspot)
-        self.assertEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
-        self.assertEqual(get_next_hotspots(self.user), [])
+        with self.settings(TUTORIAL_ENABLED=True):
+            self.assertNotEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
+            for hotspot in INTRO_HOTSPOTS:
+                do_mark_hotspot_as_read(self.user, hotspot)
+            self.assertEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
+            self.assertEqual(get_next_hotspots(self.user), [])
 
     def test_send_all(self) -> None:
         with self.settings(DEVELOPMENT=True, ALWAYS_SEND_ALL_HOTSPOTS=True):
             self.assertEqual(len(ALL_HOTSPOTS), len(get_next_hotspots(self.user)))
+
+    def test_tutorial_disabled(self) -> None:
+        with self.settings(TUTORIAL_ENABLED=False):
+            self.assertEqual(get_next_hotspots(self.user), [])
 
 
 class TestHotspots(ZulipTestCase):

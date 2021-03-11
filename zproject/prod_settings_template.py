@@ -672,6 +672,9 @@ ENABLE_GRAVATAR = True
 ## to '' will disable the Camo integration.
 CAMO_URI = "/external_content/"
 
+## Controls the tutorial popups for new users.
+# TUTORIAL_ENABLED = True
+
 ## Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
 

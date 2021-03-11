@@ -190,6 +190,10 @@ TWO_FACTOR_AUTHENTICATION_ENABLED = False
 # in development mode.
 ALWAYS_SEND_ALL_HOTSPOTS = False
 
+# The new user tutorial is enabled by default, but can be disabled for
+# self-hosters who want to disable the tutorial entirely on their system.
+TUTORIAL_ENABLED = True
+
 # In-development search pills feature.
 SEARCH_PILLS_ENABLED = False
 
