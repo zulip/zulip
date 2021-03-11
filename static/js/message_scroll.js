@@ -1,6 +1,14 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import * as floating_recipient_bar from "./floating_recipient_bar";
+import * as hash_util from "./hash_util";
+import * as loading from "./loading";
+import * as message_fetch from "./message_fetch";
+import * as message_viewport from "./message_viewport";
+import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
+import * as recent_topics from "./recent_topics";
+import * as unread_ops from "./unread_ops";
 
 let actively_scrolling = false;
 
@@ -8,65 +16,67 @@ let actively_scrolling = false;
 // code, not the user, and thus should avoid moving the selected
 // message.
 let update_selection_on_next_scroll = true;
-exports.suppress_selection_update_on_next_scroll = function () {
+
+export function suppress_selection_update_on_next_scroll() {
     update_selection_on_next_scroll = false;
-};
+}
 
 let loading_older_messages_indicator_showing = false;
 let loading_newer_messages_indicator_showing = false;
-exports.show_loading_older = function () {
+
+export function show_loading_older() {
     if (!loading_older_messages_indicator_showing) {
         loading.make_indicator($("#loading_older_messages_indicator"), {abs_positioned: true});
         loading_older_messages_indicator_showing = true;
         floating_recipient_bar.hide();
     }
-};
+}
 
-exports.hide_loading_older = function () {
+export function hide_loading_older() {
     if (loading_older_messages_indicator_showing) {
         loading.destroy_indicator($("#loading_older_messages_indicator"));
         loading_older_messages_indicator_showing = false;
     }
-};
+}
 
-exports.show_loading_newer = function () {
+export function show_loading_newer() {
     if (!loading_newer_messages_indicator_showing) {
         $(".bottom-messages-logo").show();
         loading.make_indicator($("#loading_newer_messages_indicator"), {abs_positioned: true});
         loading_newer_messages_indicator_showing = true;
         floating_recipient_bar.hide();
     }
-};
+}
 
-exports.hide_loading_newer = function () {
+export function hide_loading_newer() {
     if (loading_newer_messages_indicator_showing) {
         $(".bottom-messages-logo").hide();
         loading.destroy_indicator($("#loading_newer_messages_indicator"));
         loading_newer_messages_indicator_showing = false;
     }
-};
+}
 
-exports.hide_indicators = function () {
-    exports.hide_loading_older();
-    exports.hide_loading_newer();
-};
+export function hide_indicators() {
+    hide_loading_older();
+    hide_loading_newer();
+}
 
-exports.show_history_limit_notice = function () {
+export function show_history_limit_notice() {
     $(".top-messages-logo").hide();
     $(".history-limited-box").show();
     narrow.hide_empty_narrow_message();
-};
+}
 
-exports.hide_history_limit_notice = function () {
+export function hide_history_limit_notice() {
     $(".top-messages-logo").show();
     $(".history-limited-box").hide();
-};
+}
 
-exports.hide_end_of_results_notice = function () {
+export function hide_end_of_results_notice() {
     $(".all-messages-search-caution").hide();
-};
+}
 
-exports.show_end_of_results_notice = function () {
+export function show_end_of_results_notice() {
     $(".all-messages-search-caution").show();
     // Set the link to point to this search with streams:public added.
     // It's a bit hacky to use the href, but
@@ -74,9 +84,9 @@ exports.show_end_of_results_notice = function () {
     // wasn't already present.
     const update_hash = hash_util.search_public_streams_notice_url();
     $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
-};
+}
 
-exports.update_top_of_narrow_notices = function (msg_list) {
+export function update_top_of_narrow_notices(msg_list) {
     // Assumes that the current state is all notices hidden (i.e. this
     // will not hide a notice that should not be there)
     if (msg_list !== current_msg_list) {
@@ -100,25 +110,25 @@ exports.update_top_of_narrow_notices = function (msg_list) {
             !filter.includes_full_stream_history() &&
             !filter.is_personal_filter()
         ) {
-            exports.show_end_of_results_notice();
+            show_end_of_results_notice();
         }
     }
 
     if (msg_list.data.fetch_status.history_limited()) {
-        exports.show_history_limit_notice();
+        show_history_limit_notice();
     }
-};
+}
 
-exports.hide_top_of_narrow_notices = function () {
-    exports.hide_end_of_results_notice();
-    exports.hide_history_limit_notice();
-};
+export function hide_top_of_narrow_notices() {
+    hide_end_of_results_notice();
+    hide_history_limit_notice();
+}
 
-exports.is_actively_scrolling = function () {
+export function is_actively_scrolling() {
     return actively_scrolling;
-};
+}
 
-exports.scroll_finished = function () {
+export function scroll_finished() {
     actively_scrolling = false;
 
     if (!$("#message_feed_container").hasClass("active")) {
@@ -150,16 +160,16 @@ exports.scroll_finished = function () {
     // unread_ops.process_visible will update necessary
     // data structures and DOM elements.
     setTimeout(unread_ops.process_visible, 0);
-};
+}
 
 let scroll_timer;
 function scroll_finish() {
     actively_scrolling = true;
     clearTimeout(scroll_timer);
-    scroll_timer = setTimeout(exports.scroll_finished, 100);
+    scroll_timer = setTimeout(scroll_finished, 100);
 }
 
-exports.initialize = function () {
+export function initialize() {
     message_viewport.message_pane.on(
         "scroll",
         _.throttle(() => {
@@ -187,6 +197,4 @@ exports.initialize = function () {
             }
         }
     });
-};
-
-window.message_scroll = exports;
+}

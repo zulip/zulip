@@ -2,6 +2,7 @@ import glob
 import os
 import subprocess
 import sys
+from argparse import ArgumentParser
 from distutils.version import LooseVersion
 from typing import Iterable, List, Optional, Tuple
 
@@ -79,13 +80,26 @@ def get_provisioning_status() -> Tuple[bool, Optional[str]]:
     return False, preamble(version) + NEED_TO_UPGRADE
 
 
-def assert_provisioning_status_ok(force: bool) -> None:
-    if not force:
+def assert_provisioning_status_ok(skip_provision_check: bool) -> None:
+    if not skip_provision_check:
         ok, msg = get_provisioning_status()
         if not ok:
             print(msg)
-            print("If you really know what you are doing, use --force to run anyway.")
+            print(
+                "If you really know what you are doing, use --skip-provision-check to run anyway."
+            )
             sys.exit(1)
+
+
+def add_provision_check_override_param(parser: ArgumentParser) -> None:
+    """
+    Registers --skip-provision-check argument to be used with various commands/tests in our tools.
+    """
+    parser.add_argument(
+        "--skip-provision-check",
+        action="store_true",
+        help="Skip check that provision has been run; useful to save time if you know the dependency changes are not relevant to this command and will not cause it to fail",
+    )
 
 
 def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:

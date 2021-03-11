@@ -2,26 +2,26 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-const stream_topic_history = set_global("stream_topic_history", {});
-
-const message_store = set_global("message_store", {
-    user_ids: () => [],
-});
-
-const page_params = set_global("page_params", {});
-const channel = set_global("channel", {});
-const compose = set_global("compose", {
+const channel = mock_module("channel");
+const compose = mock_module("compose", {
     finish: noop,
 });
+const message_store = mock_module("message_store", {
+    user_ids: () => [],
+});
+const stream_topic_history = mock_module("stream_topic_history");
+
+const page_params = set_global("page_params", {});
 
 let autosize_called;
-set_global("compose_ui", {
+
+mock_module("compose_ui", {
     autosize_textarea() {
         autosize_called = true;
     },
@@ -34,9 +34,13 @@ set_global("setTimeout", (f, time) => {
 });
 set_global("document", "document-stub");
 
-const emoji = zrequire("emoji", "shared/js/emoji");
-const typeahead = zrequire("typeahead", "shared/js/typeahead");
+const emoji = zrequire("../shared/js/emoji");
+const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
+zrequire("user_status");
+zrequire("presence");
+zrequire("buddy_data");
+zrequire("pm_conversations");
 zrequire("templates");
 const typeahead_helper = zrequire("typeahead_helper");
 const people = zrequire("people");
@@ -45,21 +49,19 @@ const stream_data = zrequire("stream_data");
 const user_pill = zrequire("user_pill");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const composebox_typeahead = zrequire("composebox_typeahead");
-zrequire("recent_senders");
-zrequire("settings_org");
 const settings_config = zrequire("settings_config");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
+const pygments_data = zrequire("../generated/pygments_data.json");
 
 // To be eliminated in next commit:
-stream_data.update_calculated_fields = () => {};
-stream_data.set_filter_out_inactives = () => false;
+stream_data.__Rewire__("update_calculated_fields", () => {});
+stream_data.__Rewire__("set_filter_out_inactives", () => false);
 
 const ct = composebox_typeahead;
 
 // Use a slightly larger value than what's user-facing
 // to facilitate testing different combinations of
 // broadcast-mentions/persons/groups.
-ct.max_num_items = 15;
+ct.__Rewire__("max_num_items", 15);
 
 const mention_all = ct.broadcast_mentions()[0];
 assert.equal(mention_all.email, "all");
@@ -549,7 +551,7 @@ function sorted_names_from(subs) {
     return subs.map((sub) => sub.name).sort();
 }
 
-run_test("initialize", () => {
+run_test("initialize", (override) => {
     let expected_value;
 
     let stream_typeahead_called = false;
@@ -657,7 +659,7 @@ run_test("initialize", () => {
     let pm_recipient_typeahead_called = false;
     $("#private_message_recipient").typeahead = (options) => {
         let inserted_users = [];
-        user_pill.get_user_ids = () => inserted_users;
+        override(user_pill, "get_user_ids", () => inserted_users);
 
         // This should match the users added at the beginning of this test file.
         let actual_value = options.source("");
@@ -684,17 +686,17 @@ run_test("initialize", () => {
         // corresponding parts in bold.
         options.query = "oth";
         actual_value = options.highlighter(othello);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
         assert.equal(actual_value, expected_value);
 
         options.query = "Lear";
         actual_value = options.highlighter(cordelia);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
         assert.equal(actual_value, expected_value);
 
         options.query = "othello@zulip.com, co";
         actual_value = options.highlighter(cordelia);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
         assert.equal(actual_value, expected_value);
 
         function matcher(query, person) {
@@ -786,9 +788,9 @@ run_test("initialize", () => {
         };
 
         let appended_name;
-        compose_pm_pill.set_from_typeahead = (item) => {
+        override(compose_pm_pill, "set_from_typeahead", (item) => {
             appended_name = item.full_name;
-        };
+        });
 
         // options.updater()
         options.query = "othello";
@@ -808,15 +810,15 @@ run_test("initialize", () => {
 
         let appended_names = [];
 
-        compose_pm_pill.set_from_typeahead = (item) => {
+        override(compose_pm_pill, "set_from_typeahead", (item) => {
             appended_names.push(item.full_name);
-        };
+        });
 
         let cleared = false;
         function fake_clear() {
             cleared = true;
         }
-        compose_pm_pill.widget = {clear_text: fake_clear};
+        compose_pm_pill.__Rewire__("widget", {clear_text: fake_clear});
 
         options.query = "hamletchar";
         options.updater(hamletcharacters, event);
@@ -860,7 +862,7 @@ run_test("initialize", () => {
         // content_highlighter.
         fake_this = {completing: "mention", token: "othello"};
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
         assert.equal(actual_value, expected_value);
 
         fake_this = {completing: "mention", token: "hamletcharacters"};
@@ -952,13 +954,13 @@ run_test("initialize", () => {
             subscribed: false,
         };
         // Subscribed stream is active
-        stream_data.is_active = () => false;
+        override(stream_data, "is_active", () => false);
         fake_this = {completing: "stream", token: "s"};
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);
         // Subscribed stream is inactive
-        stream_data.is_active = () => true;
+        override(stream_data, "is_active", () => true);
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);
@@ -1117,7 +1119,7 @@ run_test("initialize", () => {
     assert(compose_textarea_typeahead_called);
 });
 
-run_test("begins_typeahead", () => {
+run_test("begins_typeahead", (override) => {
     const begin_typehead_this = {
         options: {
             completions: {
@@ -1135,7 +1137,7 @@ run_test("begins_typeahead", () => {
 
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
-        ct.split_at_cursor = () => [input, rest];
+        override(ct, "split_at_cursor", () => [input, rest]);
         const values = ct.get_candidates.call(begin_typehead_this, input);
         return values;
     }
@@ -1352,29 +1354,29 @@ run_test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
 });
 
-run_test("content_highlighter", () => {
+run_test("content_highlighter", (override) => {
     let fake_this = {completing: "emoji"};
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯"};
     let th_render_typeahead_item_called = false;
-    typeahead_helper.render_emoji = (item) => {
+    override(typeahead_helper, "render_emoji", (item) => {
         assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, emoji);
 
     fake_this = {completing: "mention"};
     let th_render_person_called = false;
-    typeahead_helper.render_person = (person) => {
+    override(typeahead_helper, "render_person", (person) => {
         assert.deepEqual(person, othello);
         th_render_person_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, othello);
 
     let th_render_user_group_called = false;
-    typeahead_helper.render_user_group = (user_group) => {
+    override(typeahead_helper, "render_user_group", (user_group) => {
         assert.deepEqual(user_group, backend);
         th_render_user_group_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, backend);
 
     // We don't have any fancy rendering for slash commands yet.
@@ -1383,28 +1385,28 @@ run_test("content_highlighter", () => {
     const me_slash = {
         text: "/me is excited (Display action text)",
     };
-    typeahead_helper.render_typeahead_item = (item) => {
+    override(typeahead_helper, "render_typeahead_item", (item) => {
         assert.deepEqual(item, {
             primary: "/me is excited (Display action text)",
         });
         th_render_slash_command_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, me_slash);
 
     fake_this = {completing: "stream"};
     let th_render_stream_called = false;
-    typeahead_helper.render_stream = (stream) => {
+    override(typeahead_helper, "render_stream", (stream) => {
         assert.deepEqual(stream, denmark_stream);
         th_render_stream_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, denmark_stream);
 
     fake_this = {completing: "syntax"};
     th_render_typeahead_item_called = false;
-    typeahead_helper.render_typeahead_item = (item) => {
+    override(typeahead_helper, "render_typeahead_item", (item) => {
         assert.deepEqual(item, {primary: "py"});
         th_render_typeahead_item_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, "py");
 
     fake_this = {completing: "something-else"};
@@ -1514,8 +1516,7 @@ run_test("typeahead_results", () => {
 run_test("message people", () => {
     let results;
 
-    compose_state.stream_name = () => undefined;
-    ct.max_num_items = 2;
+    ct.__Rewire__("max_num_items", 2);
 
     /*
         We will simulate that we talk to Hal and Harry,

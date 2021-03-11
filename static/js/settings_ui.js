@@ -1,3 +1,6 @@
+import * as loading from "./loading";
+import * as ui_report from "./ui_report";
+
 export function display_checkmark($elem) {
     const check_mark = document.createElement("img");
     check_mark.src = "/static/images/checkbox-green.svg";

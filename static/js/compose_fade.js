@@ -1,18 +1,22 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
-
-const people = require("./people");
-const util = require("./util");
+import {buddy_list} from "./buddy_list";
+import * as compose_state from "./compose_state";
+import * as floating_recipient_bar from "./floating_recipient_bar";
+import * as message_viewport from "./message_viewport";
+import * as people from "./people";
+import * as rows from "./rows";
+import * as stream_data from "./stream_data";
+import * as util from "./util";
 
 let focused_recipient;
 let normal_display = false;
 
-exports.should_fade_message = function (message) {
+export function should_fade_message(message) {
     return !util.same_recipient(focused_recipient, message);
-};
+}
 
-exports.set_focused_recipient = function (msg_type) {
+export function set_focused_recipient(msg_type) {
     if (msg_type === undefined) {
         focused_recipient = undefined;
     }
@@ -38,7 +42,7 @@ exports.set_focused_recipient = function (msg_type) {
         focused_recipient.reply_to = reply_to;
         focused_recipient.to_user_ids = people.reply_to_to_user_ids_string(reply_to);
     }
-};
+}
 
 function display_messages_normally() {
     const table = rows.get_table(current_msg_list.table_name);
@@ -69,7 +73,7 @@ function fade_messages() {
     for (i = 0; i < visible_groups.length; i += 1) {
         first_row = rows.first_message_in_group(visible_groups[i]);
         first_message = current_msg_list.get(rows.id(first_row));
-        should_fade_group = exports.should_fade_message(first_message);
+        should_fade_group = should_fade_message(first_message);
 
         change_fade_state($(visible_groups[i]), should_fade_group);
     }
@@ -93,9 +97,7 @@ function fade_messages() {
             // sorted as it would be displayed in the message view
             for (i = 0; i < all_groups.length; i += 1) {
                 const group_elt = $(all_groups[i]);
-                should_fade_group = exports.should_fade_message(
-                    rows.recipient_from_group(group_elt),
-                );
+                should_fade_group = should_fade_message(rows.recipient_from_group(group_elt));
                 change_fade_state(group_elt, should_fade_group);
             }
 
@@ -107,7 +109,7 @@ function fade_messages() {
     );
 }
 
-exports.would_receive_message = function (user_id) {
+export function would_receive_message(user_id) {
     if (focused_recipient.type === "stream") {
         const sub = stream_data.get_sub_by_id(focused_recipient.stream_id);
         if (!sub) {
@@ -122,7 +124,7 @@ exports.would_receive_message = function (user_id) {
 
     // PM, so check if the given email is in the recipients list.
     return util.is_pm_recipient(user_id, focused_recipient);
-};
+}
 
 const user_fade_config = {
     get_user_id(li) {
@@ -138,7 +140,7 @@ const user_fade_config = {
 
 function update_user_row_when_fading(li, conf) {
     const user_id = conf.get_user_id(li);
-    const would_receive = exports.would_receive_message(user_id);
+    const would_receive = would_receive_message(user_id);
 
     if (would_receive || people.is_my_user_id(user_id)) {
         conf.unfade(li);
@@ -202,43 +204,43 @@ function do_update_all() {
 // This one only updates the users, not both, like update_faded_messages.
 // This is for when new presence information comes in, redrawing the presence
 // list.
-exports.update_faded_users = function () {
+export function update_faded_users() {
     const user_items = buddy_list.get_items();
 
-    exports.update_user_info(user_items, user_fade_config);
-};
+    update_user_info(user_items, user_fade_config);
+}
 
-exports.update_user_info = function (items, conf) {
+export function update_user_info(items, conf) {
     if (want_normal_display()) {
         display_users_normally(items, conf);
     } else {
         fade_users(items, conf);
     }
-};
+}
 
 // This gets called on keyup events, hence the throttling.
-exports.update_all = _.debounce(do_update_all, 50);
+export const update_all = _.debounce(do_update_all, 50);
 
-exports.start_compose = function (msg_type) {
-    exports.set_focused_recipient(msg_type);
+export function start_compose(msg_type) {
+    set_focused_recipient(msg_type);
     do_update_all();
-};
+}
 
-exports.clear_compose = function () {
+export function clear_compose() {
     focused_recipient = undefined;
     display_messages_normally();
-    exports.update_faded_users();
-};
+    update_faded_users();
+}
 
-exports.update_message_list = function () {
+export function update_message_list() {
     if (want_normal_display()) {
         display_messages_normally();
     } else {
         fade_messages();
     }
-};
+}
 
-exports.update_rendered_message_groups = function (message_groups, get_element) {
+export function update_rendered_message_groups(message_groups, get_element) {
     if (want_normal_display()) {
         return;
     }
@@ -249,9 +251,7 @@ exports.update_rendered_message_groups = function (message_groups, get_element) 
     for (const message_group of message_groups) {
         const elt = get_element(message_group);
         const first_message = message_group.message_containers[0].msg;
-        const should_fade = exports.should_fade_message(first_message);
+        const should_fade = should_fade_message(first_message);
         change_fade_state(elt, should_fade);
     }
-};
-
-window.compose_fade = exports;
+}

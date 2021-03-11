@@ -94,6 +94,8 @@ run_test("notifications", () => {
 });
 
 run_test("munging", () => {
+    alert_words.initialize(params);
+
     let saved_content = regular_message.content;
     alert_words.process_message(regular_message);
     assert.equal(saved_content, regular_message.content);
@@ -102,52 +104,52 @@ run_test("munging", () => {
     alert_words.process_message(alertwordboundary_message);
     assert.equal(alertwordboundary_message.content, saved_content);
 
-    alert_words.process_message(other_message);
-    assert.equal(
-        other_message.content,
+    function assert_transform(message, expected_new_content) {
+        const msg = {...message};
+        alert_words.process_message(msg);
+        assert.equal(msg.content, expected_new_content);
+    }
+
+    assert_transform(
+        other_message,
         "<p>another <span class='alert-word'>alertone</span> message</p>",
     );
-    alert_words.process_message(caps_message);
-    assert.equal(
-        caps_message.content,
+
+    assert_transform(
+        caps_message,
         "<p>another <span class='alert-word'>ALERTtwo</span> message</p>",
     );
 
-    alert_words.process_message(multialert_message);
-    assert.equal(
-        multialert_message.content,
+    assert_transform(
+        multialert_message,
         "<p>another alertthreemessage <span class='alert-word'>alertone</span> and then <span class='alert-word'>alerttwo</span></p>",
     );
 
-    alert_words.process_message(unsafe_word_message);
-    assert.equal(
-        unsafe_word_message.content,
+    assert_transform(
+        unsafe_word_message,
         "<p>gotta <span class='alert-word'>al*rt.*s</span> all</p>",
     );
 
-    alert_words.process_message(alert_in_url_message);
-    assert.equal(alert_in_url_message.content, "<p>http://www.google.com/alertone/me</p>");
+    assert_transform(alert_in_url_message, "<p>http://www.google.com/alertone/me</p>");
 
-    alert_words.process_message(question_word_message);
-    assert.equal(
-        question_word_message.content,
+    assert_transform(
+        question_word_message,
         "<p>still <span class='alert-word'>alertone</span>? me</p>",
     );
 
-    alert_words.process_message(alert_domain_message);
-    assert.equal(
-        alert_domain_message.content,
+    assert_transform(
+        alert_domain_message,
         '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.<span class=\'alert-word\'>alerttwo</span>.us/foo/bar</a></p>',
     );
 
-    alert_words.process_message(message_with_emoji);
-    assert.equal(
-        message_with_emoji.content,
+    assert_transform(
+        message_with_emoji,
         '<p>I <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title="heart"> <span class=\'alert-word\'>emoji</span>!</p>',
     );
 });
 
 run_test("basic get/set operations", () => {
+    alert_words.initialize({alert_words: []});
     assert(!alert_words.has_alert_word("breakfast"));
     assert(!alert_words.has_alert_word("lunch"));
     alert_words.set_words(["breakfast", "lunch"]);

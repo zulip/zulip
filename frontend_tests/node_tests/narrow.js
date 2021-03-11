@@ -2,26 +2,22 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 set_global("page_params", {
     stop_words: ["what", "about"],
 });
-set_global("resize", {
-    resize_page_components: () => {},
-    resize_stream_filters_container: () => {},
-});
 
+const stream_topic_history = mock_module("stream_topic_history");
 const hash_util = zrequire("hash_util");
-zrequire("hashchange");
+
 const compose_state = zrequire("compose_state");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-const stream_topic_history = set_global("stream_topic_history", {});
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 const narrow = zrequire("narrow");
 
 function set_filter(operators) {

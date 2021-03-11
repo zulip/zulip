@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
@@ -32,9 +30,7 @@ const ui = zrequire("ui");
 const spoilers = zrequire("spoilers");
 spoilers.hide_spoilers_in_notification = () => {};
 
-const notifications = rewiremock.proxy(() => zrequire("notifications"), {
-    "../../static/js/favicon": {},
-});
+const notifications = zrequire("notifications");
 
 // Not muted streams
 const general = {

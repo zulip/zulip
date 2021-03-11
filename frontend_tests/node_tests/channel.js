@@ -7,14 +7,12 @@ const _ = require("lodash");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const reload = set_global("reload", {});
-
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     f();
 });
 
-zrequire("reload_state");
+const reload_state = zrequire("reload_state");
 const channel = zrequire("channel");
 
 const default_stub_xhr = "default-stub-xhr";
@@ -221,19 +219,13 @@ run_test("reload_on_403_error", () => {
         },
 
         check_ajax_options(options) {
-            let reload_initiated;
-            reload.initiate = (options) => {
-                reload_initiated = true;
-                assert.deepEqual(options, {
-                    immediate: true,
-                    save_pointer: true,
-                    save_narrow: true,
-                    save_compose: true,
-                });
-            };
+            let handler_called = false;
+            reload_state.set_csrf_failed_handler(() => {
+                handler_called = true;
+            });
 
             options.simulate_error();
-            assert(reload_initiated);
+            assert(handler_called);
         },
     });
 });
@@ -281,6 +273,7 @@ run_test("retry", () => {
 });
 
 run_test("too_many_pending", () => {
+    channel.clear_for_tests();
     $.ajax = () => {
         const xhr = "stub";
         return xhr;
@@ -291,9 +284,10 @@ run_test("too_many_pending", () => {
         "The length of pending_requests is over 50. " +
             "Most likely they are not being correctly removed.",
     );
-    _.times(50, () => {
+    _.times(51, () => {
         channel.post({});
     });
+    channel.clear_for_tests();
 });
 
 run_test("xhr_error_message", () => {

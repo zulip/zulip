@@ -2,18 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-const _ListWidget = {
+mock_module("list_widget", {
     create: () => ({init: noop}),
-};
-set_global("ListWidget", _ListWidget);
-
-const dropdown_list_widget = zrequire("dropdown_list_widget");
-zrequire("scroll_util");
+});
+const {DropdownListWidget: dropdown_list_widget} = zrequire("dropdown_list_widget");
 
 const setup_zjquery_data = (name) => {
     const input_group = $(".input_group");

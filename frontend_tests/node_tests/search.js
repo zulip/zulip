@@ -2,35 +2,36 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("page_params", {
-    search_pills_enabled: true,
-});
-
 const noop = () => {};
 
-const narrow_state = set_global("narrow_state", {filter: () => false});
-const search_suggestion = set_global("search_suggestion", {});
-set_global("ui_util", {
-    change_tab_to: noop,
-    place_caret_at_end: noop,
+const narrow = mock_module("narrow");
+const narrow_state = mock_module("narrow_state", {
+    filter: () => false,
 });
-const narrow = set_global("narrow", {});
-set_global("search_pill_widget", {
+const search_suggestion = mock_module("search_suggestion");
+
+mock_module("search_pill_widget", {
     widget: {
         getByID: () => true,
     },
 });
+mock_module("ui_util", {
+    change_tab_to: noop,
+    place_caret_at_end: noop,
+});
 
+set_global("page_params", {
+    search_pills_enabled: true,
+});
 set_global("setTimeout", (func) => func());
 
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
-const Filter = zrequire("Filter", "js/filter");
-zrequire("message_view_header");
+const {Filter} = zrequire("../js/filter");
 
 run_test("clear_search_form", () => {
     $("#search_query").val("noise");
@@ -186,7 +187,7 @@ run_test("initialize", () => {
             assert(!is_blurred);
             assert(is_append_search_string_called);
 
-            search.is_using_input_method = true;
+            search.__Rewire__("is_using_input_method", true);
             _setup("stream:Verona");
 
             assert.equal(opts.updater("stream:Verona"), "stream:Verona");
@@ -213,7 +214,7 @@ run_test("initialize", () => {
     searchbox.trigger("focusout");
     assert.deepEqual(searchbox.css(), {"box-shadow": "unset"});
 
-    search.is_using_input_method = false;
+    search.__Rewire__("is_using_input_method", false);
     searchbox_form.trigger("compositionend");
     assert(search.is_using_input_method);
 
@@ -294,7 +295,7 @@ run_test("initialize", () => {
     assert(is_blurred);
 
     _setup("ver");
-    search.is_using_input_method = true;
+    search.__Rewire__("is_using_input_method", true);
     searchbox_form.trigger(ev);
     // No change on Enter keyup event when using input tool
     assert(!is_blurred);

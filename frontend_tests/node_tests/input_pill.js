@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -11,7 +11,7 @@ set_global("document", {});
 const noop = () => {};
 const example_img_link = "http://example.com/example.png";
 
-set_global("ui_util", {
+mock_module("ui_util", {
     place_caret_at_end: noop,
 });
 
@@ -27,10 +27,10 @@ run_test("set_up_ids", () => {
     // just get coverage on a simple one-liner:
     input_pill.random_id();
 
-    input_pill.random_id = () => {
+    input_pill.__Rewire__("random_id", () => {
         id_seq += 1;
         return "some_id" + id_seq;
-    };
+    });
 });
 
 function pill_html(value, data_id, img_src) {
@@ -562,7 +562,7 @@ run_test("misc things", () => {
     container_click_handler.call(this_, {target: this_});
 });
 
-run_test("clear", () => {
+run_test("appendValue/clear", () => {
     const pill_input = $.create("pill_input");
     const container = $.create("container");
     container.set_find_results(".input", pill_input);
@@ -578,6 +578,11 @@ run_test("clear", () => {
 
     const widget = input_pill.create(config);
 
+    // First test some early-exit code.
+    widget.appendValue("");
+    assert.deepEqual(widget._get_pills_for_testing(), []);
+
+    // Now set up real data.
     widget.appendValue("red,yellow,blue");
 
     const pills = widget._get_pills_for_testing();

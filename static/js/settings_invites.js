@@ -1,19 +1,22 @@
-"use strict";
+import render_admin_invites_list from "../templates/admin_invites_list.hbs";
+import render_settings_revoke_invite_modal from "../templates/settings/revoke_invite_modal.hbs";
 
-const render_admin_invites_list = require("../templates/admin_invites_list.hbs");
-const render_settings_revoke_invite_modal = require("../templates/settings/revoke_invite_modal.hbs");
-
-const people = require("./people");
-const settings_config = require("./settings_config");
-const util = require("./util");
+import * as channel from "./channel";
+import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
+import * as people from "./people";
+import * as settings_config from "./settings_config";
+import * as timerender from "./timerender";
+import * as ui_report from "./ui_report";
+import * as util from "./util";
 
 const meta = {
     loaded: false,
 };
 
-exports.reset = function () {
+export function reset() {
     meta.loaded = false;
-};
+}
 
 function failed_listing_invites(xhr) {
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
@@ -116,7 +119,7 @@ function do_revoke_invite() {
     });
 }
 
-exports.set_up = function (initialize_event_handlers) {
+export function set_up(initialize_event_handlers) {
     meta.loaded = true;
     if (typeof initialize_event_handlers === "undefined") {
         initialize_event_handlers = true;
@@ -131,13 +134,13 @@ exports.set_up = function (initialize_event_handlers) {
         idempotent: true,
         timeout: 10 * 1000,
         success(data) {
-            exports.on_load_success(data, initialize_event_handlers);
+            on_load_success(data, initialize_event_handlers);
         },
         error: failed_listing_invites,
     });
-};
+}
 
-exports.on_load_success = function (invites_data, initialize_event_handlers) {
+export function on_load_success(invites_data, initialize_event_handlers) {
     meta.loaded = true;
     populate_invites(invites_data);
     if (!initialize_event_handlers) {
@@ -215,6 +218,4 @@ exports.on_load_success = function (invites_data, initialize_event_handlers) {
             },
         });
     });
-};
-
-window.settings_invites = exports;
+}

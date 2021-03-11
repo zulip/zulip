@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -15,54 +15,45 @@ set_global("document", {
     to_$: () => $("document-stub"),
 });
 
-const compose_pm_pill = set_global("compose_pm_pill", {});
-
-const hash_util = set_global("hash_util", {});
-
-set_global("reload_state", {
-    is_in_progress: () => false,
-});
-
-set_global("notifications", {
-    clear_compose_notifications: noop,
-});
-
-const compose_fade = set_global("compose_fade", {
+const channel = mock_module("channel");
+const compose_fade = mock_module("compose_fade", {
     clear_compose: noop,
 });
-
-set_global("drafts", {
-    update_draft: noop,
-});
-
-const narrow_state = set_global("narrow_state", {
+const compose_pm_pill = mock_module("compose_pm_pill");
+const hash_util = mock_module("hash_util");
+const narrow_state = mock_module("narrow_state", {
     set_compose_defaults: noop,
 });
-
-set_global("unread_ops", {
-    notify_server_message_read: noop,
+mock_module("notifications", {
+    clear_compose_notifications: noop,
 });
-
-set_global("common", {
+mock_module("reload_state", {
+    is_in_progress: () => false,
+});
+mock_module("drafts", {
+    update_draft: noop,
+});
+mock_module("common", {
     status_classes: "status_classes",
 });
-
+mock_module("unread_ops", {
+    notify_server_message_read: noop,
+});
 set_global("current_msg_list", {
     can_mark_messages_read() {
         return true;
     },
 });
 
-const channel = set_global("channel", {});
-
 const people = zrequire("people");
+
 const compose_ui = zrequire("compose_ui");
 const compose = zrequire("compose");
 const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
 const stream_data = zrequire("stream_data");
 
-compose_actions.update_placeholder_text = noop;
+compose_actions.__Rewire__("update_placeholder_text", noop);
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
@@ -71,18 +62,21 @@ const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
 
-compose_state.private_message_recipient = (function () {
-    let recipient;
+compose_state.__Rewire__(
+    "private_message_recipient",
+    (function () {
+        let recipient;
 
-    return function (arg) {
-        if (arg === undefined) {
-            return recipient;
-        }
+        return function (arg) {
+            if (arg === undefined) {
+                return recipient;
+            }
 
-        recipient = arg;
-        return undefined;
-    };
-})();
+            recipient = arg;
+            return undefined;
+        };
+    })(),
+);
 
 function stub_selected_message(msg) {
     current_msg_list.selected_message = () => msg;
@@ -109,12 +103,12 @@ run_test("initial_state", () => {
 });
 
 run_test("start", (override) => {
-    compose_actions.autosize_message_content = noop;
-    compose_actions.expand_compose_box = noop;
-    compose_actions.set_focus = noop;
-    compose_actions.complete_starting_tasks = noop;
-    compose_actions.blur_compose_inputs = noop;
-    compose_actions.clear_textarea = noop;
+    compose_actions.__Rewire__("autosize_message_content", noop);
+    compose_actions.__Rewire__("expand_compose_box", noop);
+    compose_actions.__Rewire__("set_focus", noop);
+    compose_actions.__Rewire__("complete_starting_tasks", noop);
+    compose_actions.__Rewire__("blur_compose_inputs", noop);
+    compose_actions.__Rewire__("clear_textarea", noop);
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -204,9 +198,9 @@ run_test("start", (override) => {
     };
 
     let abort_xhr_called = false;
-    compose.abort_xhr = () => {
+    override(compose, "abort_xhr", () => {
         abort_xhr_called = true;
-    };
+    });
 
     $("#compose-textarea").set_height(50);
 
@@ -324,9 +318,9 @@ run_test("quote_and_reply", (override) => {
 
     current_msg_list.selected_id = () => 100;
 
-    compose_ui.insert_syntax_and_focus = (syntax) => {
+    override(compose_ui, "insert_syntax_and_focus", (syntax) => {
         assert.equal(syntax, "[Quoting…]\n");
-    };
+    });
 
     const opts = {
         reply_type: "personal",
@@ -352,11 +346,9 @@ run_test("quote_and_reply", (override) => {
         raw_content: "Testing.",
     };
 
-    set_global("channel", {
-        get() {
-            assert.fail("channel.get should not be used if raw_content is present");
-        },
-    });
+    channel.get = () => {
+        assert.fail("channel.get should not be used if raw_content is present");
+    };
 
     replaced = false;
     quote_and_reply(opts);
@@ -396,18 +388,18 @@ run_test("get_focus_area", () => {
     );
 });
 
-run_test("focus_in_empty_compose", () => {
+run_test("focus_in_empty_compose", (override) => {
     $("#compose-textarea").is = (attr) => {
         assert.equal(attr, ":focus");
         return $("#compose-textarea").is_focused;
     };
 
-    compose_state.composing = () => true;
+    override(compose_state, "composing", () => true);
     $("#compose-textarea").val("");
     $("#compose-textarea").trigger("focus");
     assert(compose_state.focus_in_empty_compose());
 
-    compose_state.composing = () => false;
+    override(compose_state, "composing", () => false);
     assert(!compose_state.focus_in_empty_compose());
 
     $("#compose-textarea").val("foo");
@@ -428,18 +420,18 @@ run_test("on_narrow", (override) => {
     override(compose_state, "has_message_content", () => has_message_content);
 
     let cancel_called = false;
-    compose_actions.cancel = () => {
+    override(compose_actions, "cancel", () => {
         cancel_called = true;
-    };
+    });
     compose_actions.on_narrow({
         force_close: true,
     });
     assert(cancel_called);
 
     let on_topic_narrow_called = false;
-    compose_actions.on_topic_narrow = () => {
+    override(compose_actions, "on_topic_narrow", () => {
         on_topic_narrow_called = true;
-    };
+    });
     narrowed_by_topic_reply = true;
     compose_actions.on_narrow({
         force_close: false,
@@ -459,9 +451,9 @@ run_test("on_narrow", (override) => {
 
     has_message_content = false;
     let start_called = false;
-    compose_actions.start = () => {
+    override(compose_actions, "start", () => {
         start_called = true;
-    };
+    });
     narrowed_by_pm_reply = true;
     compose_actions.on_narrow({
         force_close: false,

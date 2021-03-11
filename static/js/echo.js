@@ -1,5 +1,21 @@
 import * as alert_words from "./alert_words";
+import * as compose from "./compose";
+import * as local_message from "./local_message";
+import * as markdown from "./markdown";
+import * as message_list from "./message_list";
+import * as message_store from "./message_store";
+import * as narrow_state from "./narrow_state";
+import * as notifications from "./notifications";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
+import * as popovers from "./popovers";
+import * as recent_topics from "./recent_topics";
+import * as rows from "./rows";
+import * as sent_messages from "./sent_messages";
+import * as stream_list from "./stream_list";
+import * as stream_topic_history from "./stream_topic_history";
+import * as transmit from "./transmit";
+import * as ui from "./ui";
 import * as util from "./util";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html

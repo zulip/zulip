@@ -1,11 +1,27 @@
-"use strict";
+import render_recent_topic_row from "../templates/recent_topic_row.hbs";
+import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
+import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 
-const render_recent_topic_row = require("../templates/recent_topic_row.hbs");
-const render_recent_topics_filters = require("../templates/recent_topics_filters.hbs");
-const render_recent_topics_body = require("../templates/recent_topics_table.hbs");
-
-const {localstorage} = require("./localstorage");
-const people = require("./people");
+import * as compose_actions from "./compose_actions";
+import * as drafts from "./drafts";
+import * as hash_util from "./hash_util";
+import * as ListWidget from "./list_widget";
+import {localstorage} from "./localstorage";
+import * as message_store from "./message_store";
+import * as message_util from "./message_util";
+import * as message_view_header from "./message_view_header";
+import * as muting from "./muting";
+import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
+import * as navigate from "./navigate";
+import * as panels from "./panels";
+import * as people from "./people";
+import * as recent_senders from "./recent_senders";
+import * as stream_data from "./stream_data";
+import * as stream_list from "./stream_list";
+import * as timerender from "./timerender";
+import * as top_left_corner from "./top_left_corner";
+import * as unread from "./unread";
 
 const topics = new Map(); // Key is stream-id:topic.
 let topics_widget;
@@ -40,22 +56,27 @@ const ls_key = "recent_topic_filters";
 const ls = localstorage();
 
 let filters = new Set();
-exports.save_filters = function () {
+
+export function clear_for_tests() {
+    filters.clear();
+    topics.clear();
+    topics_widget = undefined;
+}
+
+export function save_filters() {
     ls.set(ls_key, Array.from(filters));
-};
+}
 
-exports.load_filters = function () {
+export function load_filters() {
     filters = new Set(ls.get(ls_key));
-};
+}
 
-function set_default_focus() {
+export function set_default_focus() {
     // If at any point we are confused about the currently
     // focused element, we switch focus to search.
     current_focus_elem = $("#recent_topics_search");
     current_focus_elem.trigger("focus");
 }
-
-exports.set_default_focus = set_default_focus;
 
 function set_table_focus(row, col) {
     const topic_rows = $("#recent_topics_table table tbody tr");
@@ -110,7 +131,7 @@ function get_topic_key(stream_id, topic) {
     return stream_id + ":" + topic.toLowerCase();
 }
 
-exports.process_messages = function (messages) {
+export function process_messages(messages) {
     // FIX: Currently, we do a complete_rerender every time
     // we process a new message.
     // While this is inexpensive and handles all the cases itself,
@@ -118,12 +139,12 @@ exports.process_messages = function (messages) {
     // the UI will be returned to the beginning of the list on every
     // update.
     for (const msg of messages) {
-        exports.process_message(msg);
+        process_message(msg);
     }
-    exports.complete_rerender();
-};
+    complete_rerender();
+}
 
-exports.process_message = function (msg) {
+export function process_message(msg) {
     if (msg.type !== "stream") {
         return false;
     }
@@ -152,9 +173,9 @@ exports.process_message = function (msg) {
     // to topic info fetched from backend, which is currently not a thing.
     topic_data.participated = is_ours || topic_data.participated;
     return true;
-};
+}
 
-exports.reify_message_id_if_available = function (opts) {
+export function reify_message_id_if_available(opts) {
     // We don't need to reify the message_id of the topic
     // if a new message arrives in the topic from another user,
     // since it replaces the last_msg_id of the topic which
@@ -166,7 +187,7 @@ exports.reify_message_id_if_available = function (opts) {
         }
     }
     return false;
-};
+}
 
 function get_sorted_topics() {
     // Sort all recent topics by last message time.
@@ -175,9 +196,9 @@ function get_sorted_topics() {
     );
 }
 
-exports.get = function () {
+export function get() {
     return get_sorted_topics();
-};
+}
 
 function format_topic(topic_data) {
     const last_msg = message_store.get(topic_data.last_msg_id);
@@ -200,7 +221,7 @@ function format_topic(topic_data) {
     const topic_muted = Boolean(muting.is_topic_muted(stream_id, topic));
     const stream_muted = stream_data.is_muted(stream_id);
     const muted = topic_muted || stream_muted;
-    const unread_count = unread.unread_topic_counter.get(stream_id, topic);
+    const unread_count = unread.num_unread_for_topic(stream_id, topic);
 
     // Display in most recent sender first order
     const all_senders = recent_senders.get_topic_recent_senders(stream_id, topic);
@@ -236,39 +257,39 @@ function get_topic_row(topic_data) {
     return $(`#${CSS.escape("recent_topic:" + topic_key)}`);
 }
 
-exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_stream_id) {
+export function process_topic_edit(old_stream_id, old_topic, new_topic, new_stream_id) {
     // See `recent_senders.process_topic_edit` for
     // logic behind this and important notes on use of this function.
     topics.delete(get_topic_key(old_stream_id, old_topic));
 
     const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
-    exports.process_messages(old_topic_msgs);
+    process_messages(old_topic_msgs);
 
     new_stream_id = new_stream_id || old_stream_id;
     const new_topic_msgs = message_util.get_messages_in_topic(new_stream_id, new_topic);
-    exports.process_messages(new_topic_msgs);
-};
+    process_messages(new_topic_msgs);
+}
 
-exports.topic_in_search_results = function (keyword, stream, topic) {
+export function topic_in_search_results(keyword, stream, topic) {
     if (keyword === "") {
         return true;
     }
     const text = (stream + " " + topic).toLowerCase();
     const search_words = keyword.toLowerCase().split(/\s+/);
     return search_words.every((word) => text.includes(word));
-};
+}
 
-exports.update_topics_of_deleted_message_ids = function (message_ids) {
+export function update_topics_of_deleted_message_ids(message_ids) {
     const topics_to_rerender = message_util.get_topics_for_message_ids(message_ids);
 
     for (const [stream_id, topic] of topics_to_rerender.values()) {
         topics.delete(get_topic_key(stream_id, topic));
         const msgs = message_util.get_messages_in_topic(stream_id, topic);
-        exports.process_messages(msgs);
+        process_messages(msgs);
     }
-};
+}
 
-exports.filters_should_hide_topic = function (topic_data) {
+export function filters_should_hide_topic(topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
     const sub = stream_data.get_sub_by_id(msg.stream_id);
 
@@ -278,7 +299,7 @@ exports.filters_should_hide_topic = function (topic_data) {
     }
 
     if (filters.has("unread")) {
-        const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
+        const unreadCount = unread.num_unread_for_topic(msg.stream_id, msg.topic);
         if (unreadCount === 0) {
             return true;
         }
@@ -297,15 +318,15 @@ exports.filters_should_hide_topic = function (topic_data) {
     }
 
     const search_keyword = $("#recent_topics_search").val();
-    if (!recent_topics.topic_in_search_results(search_keyword, msg.stream, msg.topic)) {
+    if (!topic_in_search_results(search_keyword, msg.stream, msg.topic)) {
         return true;
     }
 
     return false;
-};
+}
 
-exports.inplace_rerender = function (topic_key) {
-    if (!exports.is_visible()) {
+export function inplace_rerender(topic_key) {
+    if (!is_visible()) {
         return false;
     }
     if (!topics.has(topic_key)) {
@@ -316,16 +337,16 @@ exports.inplace_rerender = function (topic_key) {
     topics_widget.render_item(topic_data);
     const topic_row = get_topic_row(topic_data);
 
-    if (exports.filters_should_hide_topic(topic_data)) {
+    if (filters_should_hide_topic(topic_data)) {
         topic_row.hide();
     } else {
         topic_row.show();
     }
     revive_current_focus();
     return true;
-};
+}
 
-exports.update_topic_is_muted = function (stream_id, topic) {
+export function update_topic_is_muted(stream_id, topic) {
     const key = get_topic_key(stream_id, topic);
     if (!topics.has(key)) {
         // we receive mute request for a topic we are
@@ -333,16 +354,16 @@ exports.update_topic_is_muted = function (stream_id, topic) {
         return false;
     }
 
-    exports.inplace_rerender(key);
+    inplace_rerender(key);
     return true;
-};
+}
 
-exports.update_topic_unread_count = function (message) {
+export function update_topic_unread_count(message) {
     const topic_key = get_topic_key(message.stream_id, message.topic);
-    exports.inplace_rerender(topic_key);
-};
+    inplace_rerender(topic_key);
+}
 
-exports.set_filter = function (filter) {
+export function set_filter(filter) {
     // This function updates the `filters` variable
     // after user clicks on one of the filter buttons
     // based on `btn-recent-selected` class and current
@@ -364,13 +385,13 @@ exports.set_filter = function (filter) {
         filters.add(filter);
     }
 
-    exports.save_filters();
-};
+    save_filters();
+}
 
 function show_selected_filters() {
     // Add `btn-selected-filter` to the buttons to show
     // which filters are applied.
-    exports.load_filters();
+    load_filters();
     if (filters.size === 0) {
         $("#recent_topics_filter_buttons")
             .find('[data-filter="all"]')
@@ -384,7 +405,7 @@ function show_selected_filters() {
     }
 }
 
-exports.update_filters_view = function () {
+export function update_filters_view() {
     const rendered_filters = render_recent_topics_filters({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
@@ -394,7 +415,7 @@ exports.update_filters_view = function () {
     show_selected_filters();
 
     topics_widget.hard_redraw();
-};
+}
 
 function stream_sort(a, b) {
     const a_stream = message_store.get(a.last_msg_id).stream;
@@ -418,8 +439,8 @@ function topic_sort(a, b) {
     return -1;
 }
 
-exports.complete_rerender = function () {
-    if (!exports.is_visible()) {
+export function complete_rerender() {
+    if (!is_visible()) {
         return;
     }
     // Prepare header
@@ -435,7 +456,7 @@ exports.complete_rerender = function () {
     // Show topics list
     const container = $("#recent_topics_table table tbody");
     container.empty();
-    const mapped_topic_values = Array.from(exports.get().values()).map((value) => value);
+    const mapped_topic_values = Array.from(get().values()).map((value) => value);
 
     topics_widget = ListWidget.create(container, mapped_topic_values, {
         name: "recent_topics_table",
@@ -447,7 +468,7 @@ exports.complete_rerender = function () {
             // We use update_filters_view & filters_should_hide_topic to do all the
             // filtering for us, which is called using click_handlers.
             predicate(topic_data) {
-                return !exports.filters_should_hide_topic(topic_data);
+                return !filters_should_hide_topic(topic_data);
             },
         },
         sort_fields: {
@@ -458,13 +479,13 @@ exports.complete_rerender = function () {
         simplebar_container: $("#recent_topics_table .table_fix_head"),
         callback_after_render: revive_current_focus,
     });
-};
+}
 
-exports.is_visible = function () {
+export function is_visible() {
     return $("#recent_topics_view").is(":visible");
-};
+}
 
-exports.show = function () {
+export function show() {
     // Hide selected elements in the left sidebar.
     top_left_corner.narrow_to_recent_topics();
     stream_list.handle_narrow_deactivated();
@@ -484,19 +505,18 @@ exports.show = function () {
     // with no compose box.
     compose_actions.cancel();
 
-    narrow.narrow_title = "Recent topics";
-    narrow_state.set_current_filter(undefined);
-    notifications.redraw_title();
+    narrow_state.reset_current_filter();
+    narrow.set_narrow_title("Recent topics");
     message_view_header.render_title_area();
 
-    exports.complete_rerender();
-};
+    complete_rerender();
+}
 
 function filter_buttons() {
     return $("#recent_filters_group").children();
 }
 
-exports.hide = function () {
+export function hide() {
     $("#message_feed_container").show();
     $("#recent_topics_view").hide();
     // On firefox (and flaky on other browsers), focus
@@ -521,9 +541,9 @@ exports.hide = function () {
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.
     navigate.plan_scroll_to_selected();
-};
+}
 
-exports.change_focused_element = function (e, input_key) {
+export function change_focused_element(e, input_key) {
     // Called from hotkeys.js; like all logic in that module,
     // returning true will cause the caller to do
     // preventDefault/stopPropagation; false will let the browser
@@ -648,6 +668,4 @@ exports.change_focused_element = function (e, input_key) {
     }
 
     return false;
-};
-
-window.recent_topics = exports;
+}

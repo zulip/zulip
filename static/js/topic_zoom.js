@@ -1,3 +1,7 @@
+import * as popovers from "./popovers";
+import * as stream_list from "./stream_list";
+import * as topic_list from "./topic_list";
+
 let zoomed_in = false;
 
 export function is_zoomed_in() {

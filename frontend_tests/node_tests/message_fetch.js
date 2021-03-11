@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -15,37 +15,39 @@ const noop = () => {};
 function MessageListView() {
     return {};
 }
-set_global("MessageListView", MessageListView);
+mock_module("message_list_view", {
+    MessageListView,
+});
 
-set_global("recent_topics", {
+mock_module("recent_topics", {
     process_messages: noop,
 });
 // Still required for page_params.initial_pointer
 set_global("page_params", {});
-set_global("ui_report", {
+mock_module("ui_report", {
     hide_error: noop,
 });
 
-const channel = set_global("channel", {});
-set_global("document", "document-stub");
-set_global("message_scroll", {
+const channel = mock_module("channel");
+const message_store = mock_module("message_store");
+const message_util = mock_module("message_util");
+const pm_list = mock_module("pm_list");
+const server_events = mock_module("server_events");
+const stream_list = mock_module("stream_list", {
+    maybe_scroll_narrow_into_view: () => {},
+});
+mock_module("message_scroll", {
     show_loading_older: noop,
     hide_loading_older: noop,
     show_loading_newer: noop,
     hide_loading_newer: noop,
     update_top_of_narrow_notices: () => {},
 });
-const message_util = set_global("message_util", {});
-const message_store = set_global("message_store", {});
-const narrow_state = set_global("narrow_state", {});
-const pm_list = set_global("pm_list", {});
-const server_events = set_global("server_events", {});
-const stream_list = set_global("stream_list", {
-    maybe_scroll_narrow_into_view: () => {},
-});
+set_global("document", "document-stub");
 
 const message_fetch = zrequire("message_fetch");
-const Filter = zrequire("Filter", "js/filter");
+
+const {Filter} = zrequire("../js/filter");
 const message_list = zrequire("message_list");
 const people = zrequire("people");
 
@@ -82,7 +84,7 @@ function make_all_list() {
 function reset_lists() {
     set_global("home_msg_list", make_home_msg_list());
     set_global("current_msg_list", home_msg_list);
-    message_list.all = make_all_list();
+    message_list.__Rewire__("all", make_all_list());
     stub_message_view(home_msg_list);
     stub_message_view(message_list.all);
 }
@@ -300,8 +302,6 @@ function simulate_narrow() {
         predicate: () => () => false,
         public_operators: () => [{operator: "pm-with", operand: alice.email}],
     };
-
-    narrow_state.active = () => true;
 
     const msg_list = new message_list.MessageList({
         table_name: "zfilt",

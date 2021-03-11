@@ -2,9 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
@@ -17,7 +16,12 @@ set_global("document", {
 });
 set_global("addEventListener", noop);
 
-const channel = set_global("channel", {});
+const channel = mock_module("channel");
+mock_module("reload_state", {
+    is_in_progress() {
+        return false;
+    },
+});
 set_global("home_msg_list", {
     select_id: noop,
     selected_id() {
@@ -25,16 +29,11 @@ set_global("home_msg_list", {
     },
 });
 set_global("page_params", {test_suite: false});
-set_global("reload_state", {
-    is_in_progress() {
-        return false;
-    },
-});
 
 // we also directly write to pointer
 set_global("pointer", {});
 
-set_global("ui_report", {
+mock_module("ui_report", {
     hide_error() {
         return false;
     },
@@ -43,20 +42,26 @@ set_global("ui_report", {
     },
 });
 
-// Turn off $.now so we can import server_events.
-set_global("$", {
-    now() {},
+mock_module("stream_events", {
+    update_property() {
+        throw new Error("subs update error");
+    },
 });
 
-zrequire("message_store");
-const server_events = zrequire("server_events");
-zrequire("sent_messages");
+const message_events = mock_module("message_events", {
+    insert_new_messages() {
+        throw new Error("insert error");
+    },
+    update_messages() {
+        throw new Error("update error");
+    },
+});
 
-set_global("$", $);
+const server_events = zrequire("server_events");
 
 server_events.home_view_loaded();
 
-run_test("message_event", () => {
+run_test("message_event", (override) => {
     const event = {
         type: "message",
         message: {
@@ -66,11 +71,9 @@ run_test("message_event", () => {
     };
 
     let inserted;
-    set_global("message_events", {
-        insert_new_messages(messages) {
-            assert.equal(messages[0].content, event.message.content);
-            inserted = true;
-        },
+    override(message_events, "insert_new_messages", (messages) => {
+        assert.equal(messages[0].content, event.message.content);
+        inserted = true;
     });
 
     server_events._get_events_success([event]);
@@ -81,19 +84,6 @@ run_test("message_event", () => {
 
 const setup = () => {
     server_events.home_view_loaded();
-    set_global("message_events", {
-        insert_new_messages() {
-            throw new Error("insert error");
-        },
-        update_messages() {
-            throw new Error("update error");
-        },
-    });
-    set_global("stream_events", {
-        update_property() {
-            throw new Error("subs update error");
-        },
-    });
 };
 
 run_test("event_dispatch_error", () => {

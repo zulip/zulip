@@ -14,6 +14,7 @@ type Message = Record<string, string | boolean> & {recipient?: string; content: 
 class CommonUtils {
     browser: Browser | null = null;
     screenshot_id = 0;
+    is_firefox = process.env.PUPPETEER_PRODUCT === "firefox";
     realm_url = "http://zulip.zulipdev.com:9981/";
     pm_recipient = {
         async set(page: Page, recipient: string): Promise<void> {
@@ -38,10 +39,9 @@ class CommonUtils {
         },
 
         async expect(page: Page, expected: string): Promise<void> {
-            const actual_recipients = await page.evaluate(() => {
-                const compose_state = window.require("./static/js/compose_state");
-                return compose_state.private_message_recipient();
-            });
+            const actual_recipients = await page.evaluate(() =>
+                zulip_test.private_message_recipient(),
+            );
             assert.equal(actual_recipients, expected);
         },
     };
@@ -66,7 +66,10 @@ class CommonUtils {
                     "--no-sandbox",
                     "--disable-setuid-sandbox",
                 ],
-                defaultViewport: {width: 1280, height: 1024},
+                // TODO: Change defaultViewport to 1280x1024 when puppeteer fixes the window size issue with firefox.
+                // Here is link to the issue that is tracking the above problem https://github.com/puppeteer/puppeteer/issues/6442.
+                // @ts-expect-error: Because of https://github.com/puppeteer/puppeteer/issues/6885
+                defaultViewport: null,
                 headless: true,
             });
         }
@@ -89,6 +92,16 @@ class CommonUtils {
         await page.screenshot({
             path: screenshot_path,
         });
+    }
+
+    async page_url_with_fragment(page: Page): Promise<string> {
+        // `page.url()` does not include the url fragment when running
+        // Puppeteer with Firefox: https://github.com/puppeteer/puppeteer/issues/6787.
+        //
+        // This function hacks around that issue; once it's fixed in
+        // puppeteer upstream, we can delete this function and return
+        // its callers to using `page.url()`
+        return await page.evaluate("location.href");
     }
 
     /**
@@ -182,20 +195,17 @@ class CommonUtils {
     }
 
     async get_stream_id(page: Page, stream_name: string): Promise<number> {
-        return await page.evaluate((stream_name: string) => {
-            const stream_data = window.require("./static/js/stream_data");
-            return stream_data.get_stream_id(stream_name);
-        }, stream_name);
+        return await page.evaluate(
+            (stream_name: string) => zulip_test.get_stream_id(stream_name),
+            stream_name,
+        );
     }
 
     async get_user_id_from_name(page: Page, name: string): Promise<number> {
         if (this.fullname[name] !== undefined) {
             name = this.fullname[name];
         }
-        return await page.evaluate((name: string) => {
-            const people = window.require("./static/js/people");
-            return people.get_user_id_from_name(name);
-        }, name);
+        return await page.evaluate((name: string) => zulip_test.get_user_id_from_name(name), name);
     }
 
     async get_internal_email_from_name(page: Page, name: string): Promise<string> {
@@ -203,9 +213,8 @@ class CommonUtils {
             name = this.fullname[name];
         }
         return await page.evaluate((fullname: string) => {
-            const people = window.require("./static/js/people");
-            const user_id = people.get_user_id_from_name(fullname);
-            return people.get_by_user_id(user_id).email;
+            const user_id = zulip_test.get_user_id_from_name(fullname);
+            return zulip_test.get_person_by_user_id(user_id).email;
         }, name);
     }
 
@@ -293,7 +302,6 @@ class CommonUtils {
                     - does it look to have been
                       re-rendered based on server info?
             */
-                const rows = window.require("./static/js/rows");
                 const last_msg = current_msg_list.last();
                 if (last_msg === undefined) {
                     return false;
@@ -307,8 +315,8 @@ class CommonUtils {
                     return false;
                 }
 
-                const row = rows.last_visible();
-                if (rows.id(row) !== last_msg.id) {
+                const row = zulip_test.last_visible_row();
+                if (zulip_test.row_id(row) !== last_msg.id) {
                     return false;
                 }
 
@@ -366,17 +374,14 @@ class CommonUtils {
         await page.click("#compose-send-button");
 
         // Sending should clear compose box content.
-        this.assert_compose_box_content(page, "");
+        await this.assert_compose_box_content(page, "");
 
         if (!outside_view) {
             await this.wait_for_fully_processed_message(page, params.content);
         }
 
         // Close the compose box after sending the message.
-        await page.evaluate(() => {
-            const compose_actions = window.require("./static/js/compose_actions");
-            compose_actions.cancel();
-        });
+        await page.evaluate(() => zulip_test.cancel_compose());
         // Make sure the compose box is closed.
         await page.waitForSelector("#compose-textarea", {hidden: true});
     }
@@ -449,7 +454,7 @@ class CommonUtils {
         await page.click(organization_settings);
         await page.waitForSelector("#settings_overlay_container.show", {visible: true});
 
-        const url = page.url();
+        const url = await this.page_url_with_fragment(page);
         assert(/^http:\/\/[^/]+\/#organization/.test(url), "Unexpected manage organization URL");
 
         const organization_settings_data_section = "li[data-section='organization-settings']";

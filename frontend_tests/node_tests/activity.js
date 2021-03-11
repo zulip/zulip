@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -23,69 +23,47 @@ const _document = {
     },
 };
 
-const channel = {};
+const compose_state = mock_module("compose_state");
+const channel = mock_module("channel");
 
-const _ui = {
-    get_content_element: (element) => element,
-};
-
-const _keydown_util = {
+mock_module("padded_widget", {
+    update_padding: () => {},
+});
+mock_module("keydown_util", {
     handle: (opts) => {
         filter_key_handlers = opts.handlers;
     },
-};
-
-const compose_state = {};
-
-const _scroll_util = {
-    scroll_element_into_container: () => {},
-};
-
-const _pm_list = {
+});
+mock_module("pm_list", {
     update_private_messages: () => {},
-};
-
-const _popovers = {
+});
+mock_module("popovers", {
     hide_all_except_sidebars() {},
     hide_all() {},
     show_userlist_sidebar() {},
-};
-
-const _stream_popover = {
-    show_streamlist_sidebar() {},
-};
-
-const _resize = {
+});
+mock_module("resize", {
     resize_sidebars: () => {},
     resize_page_components: () => {},
-};
-
-set_global("padded_widget", {
-    update_padding: () => {},
 });
-set_global("channel", channel);
-set_global("compose_state", compose_state);
-set_global("document", _document);
-set_global("keydown_util", _keydown_util);
-set_global("pm_list", _pm_list);
-set_global("popovers", _popovers);
-set_global("resize", _resize);
-set_global("scroll_util", _scroll_util);
-set_global("stream_popover", _stream_popover);
-set_global("ui", _ui);
-set_global("server_events", {
+mock_module("scroll_util", {
+    scroll_element_into_container: () => {},
+});
+mock_module("server_events", {
     check_for_unsuspend() {},
 });
+mock_module("stream_popover", {
+    show_streamlist_sidebar() {},
+});
+set_global("document", _document);
 
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
-zrequire("unread");
-zrequire("hash_util");
 const narrow = zrequire("narrow");
 const presence = zrequire("presence");
 const people = zrequire("people");
 const buddy_data = zrequire("buddy_data");
-const buddy_list = zrequire("buddy_list");
+const {buddy_list} = zrequire("buddy_list");
 const user_status = zrequire("user_status");
 const activity = zrequire("activity");
 
@@ -141,7 +119,7 @@ presence_info.set(alice.user_id, {status: "inactive"});
 presence_info.set(fred.user_id, {status: "active"});
 presence_info.set(jill.user_id, {status: "active"});
 
-presence.presence_info = presence_info;
+presence.__Rewire__("presence_info", presence_info);
 
 // Simulate a small window by having the
 // fill_screen_with_content render the entire
@@ -216,7 +194,7 @@ run_test("huddle_data.process_loaded_messages", () => {
     assert.deepEqual(huddle_data.get_huddles(), [user_ids_string2, user_ids_string1]);
 });
 
-presence.presence_info = new Map();
+presence.__Rewire__("presence_info", new Map());
 presence.presence_info.set(alice.user_id, {status: activity.IDLE});
 presence.presence_info.set(fred.user_id, {status: activity.ACTIVE});
 presence.presence_info.set(jill.user_id, {status: activity.ACTIVE});
@@ -396,7 +374,7 @@ test_ui("handlers", (override) => {
     })();
 });
 
-presence.presence_info = new Map();
+presence.__Rewire__("presence_info", new Map());
 presence.presence_info.set(alice.user_id, {status: activity.ACTIVE});
 presence.presence_info.set(fred.user_id, {status: activity.ACTIVE});
 presence.presence_info.set(jill.user_id, {status: activity.ACTIVE});
@@ -624,7 +602,7 @@ test_ui("searching", () => {
     assert.equal(activity.searching(), false);
 });
 
-test_ui("update_presence_info", () => {
+test_ui("update_presence_info", (override) => {
     page_params.realm_presence_disabled = false;
 
     const server_time = 500;
@@ -635,7 +613,7 @@ test_ui("update_presence_info", () => {
         },
     };
 
-    buddy_data.matches_filter = () => true;
+    override(buddy_data, "matches_filter", () => true);
 
     const alice_li = $.create("alice stub");
     buddy_list_add(alice.user_id, alice_li);
@@ -679,7 +657,7 @@ test_ui("initialize", (override) => {
         scroll_handler_started = true;
     };
 
-    activity.client_is_active = false;
+    activity.__Rewire__("client_is_active", false);
 
     $(window).off("focus");
     activity.initialize();
@@ -724,25 +702,25 @@ run_test("away_status", () => {
 });
 
 test_ui("electron_bridge", () => {
-    activity.client_is_active = false;
+    activity.__Rewire__("client_is_active", false);
     window.electron_bridge = undefined;
     assert.equal(activity.compute_active_status(), activity.IDLE);
 
-    activity.client_is_active = true;
+    activity.__Rewire__("client_is_active", true);
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
 
     window.electron_bridge = {
         get_idle_on_system: () => true,
     };
     assert.equal(activity.compute_active_status(), activity.IDLE);
-    activity.client_is_active = false;
+    activity.__Rewire__("client_is_active", false);
     assert.equal(activity.compute_active_status(), activity.IDLE);
 
     window.electron_bridge = {
         get_idle_on_system: () => false,
     };
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
-    activity.client_is_active = true;
+    activity.__Rewire__("client_is_active", true);
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
 });
 

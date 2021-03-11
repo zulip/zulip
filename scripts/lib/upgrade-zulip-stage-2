@@ -27,7 +27,6 @@ os.environ["LANGUAGE"] = "en_US.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.lib.zulip_tools import (
-    DEPLOYMENTS_DIR,
     assert_running_as_root,
     get_config,
     get_config_file,
@@ -227,10 +226,7 @@ elif args.from_git:
     # update-prod-static with the Git upgrade process.  But it'll fail
     # safely; this seems like a worthwhile tradeoff to minimize downtime.
     logging.info("Building static assets...")
-    subprocess.check_call(
-        ["./tools/update-prod-static", "--prev-deploy=" + os.path.join(DEPLOYMENTS_DIR, "current")],
-        preexec_fn=su_to_zulip,
-    )
+    subprocess.check_call(["./tools/update-prod-static"], preexec_fn=su_to_zulip)
     logging.info("Caching Zulip Git version...")
     subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 else:

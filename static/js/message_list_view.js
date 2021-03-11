@@ -1,16 +1,31 @@
-"use strict";
+import {isSameDay} from "date-fns";
+import _ from "lodash";
 
-const {isSameDay} = require("date-fns");
-const _ = require("lodash");
+import render_bookend from "../templates/bookend.hbs";
+import render_message_group from "../templates/message_group.hbs";
+import render_recipient_row from "../templates/recipient_row.hbs";
+import render_single_message from "../templates/single_message.hbs";
 
-const render_bookend = require("../templates/bookend.hbs");
-const render_message_group = require("../templates/message_group.hbs");
-const render_recipient_row = require("../templates/recipient_row.hbs");
-const render_single_message = require("../templates/single_message.hbs");
-
-const people = require("./people");
-const rendered_markdown = require("./rendered_markdown");
-const util = require("./util");
+import * as activity from "./activity";
+import * as compose from "./compose";
+import * as compose_fade from "./compose_fade";
+import * as condense from "./condense";
+import * as hash_util from "./hash_util";
+import * as message_edit from "./message_edit";
+import * as message_store from "./message_store";
+import * as message_viewport from "./message_viewport";
+import * as narrow_state from "./narrow_state";
+import * as people from "./people";
+import * as popovers from "./popovers";
+import * as reactions from "./reactions";
+import * as recent_topics from "./recent_topics";
+import * as rendered_markdown from "./rendered_markdown";
+import * as rows from "./rows";
+import * as stream_color from "./stream_color";
+import * as stream_data from "./stream_data";
+import * as submessage from "./submessage";
+import * as timerender from "./timerender";
+import * as util from "./util";
 
 function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
@@ -148,7 +163,7 @@ function populate_group_from_message_container(group, message_container) {
     render_group_display_date(group, message_container);
 }
 
-class MessageListView {
+export class MessageListView {
     constructor(list, table_name, collapse_messages) {
         this.list = list;
         this.collapse_messages = collapse_messages;
@@ -614,10 +629,7 @@ class MessageListView {
             }
         };
 
-        // This function processes messages into chunks with separators between them,
-        // and templates them to be inserted as table rows into the DOM.
-
-        if (message_containers.length === 0 || this.table_name === undefined) {
+        if (message_containers.length === 0) {
             return undefined;
         }
 
@@ -1289,6 +1301,3 @@ class MessageListView {
         }
     }
 }
-
-module.exports = MessageListView;
-window.MessageListView = MessageListView;

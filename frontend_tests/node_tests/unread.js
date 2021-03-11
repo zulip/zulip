@@ -4,24 +4,25 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let page_params = set_global("page_params", {
     realm_push_notifications_enabled: false,
 });
 
-set_global("narrow_state", {});
+const message_store = mock_module("message_store", {
+    get() {},
+});
+const muting = zrequire("muting");
+
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
-const message_store = set_global("message_store", {});
 
-const muting = zrequire("muting");
+const {FoldDict} = zrequire("fold_dict");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
-zrequire("settings_notifications");
-const {FoldDict} = zrequire("fold_dict");
 
 const me = {
     email: "me@example.com",
@@ -65,19 +66,27 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
     assert.deepEqual(notifiable_counts, 0);
 }
 
-run_test("empty_counts_while_narrowed", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        unread.declare_bankruptcy();
+        muting.set_muted_topics([]);
+        f(override);
+    });
+}
+
+test("empty_counts_while_narrowed", () => {
     const counts = unread.get_counts();
     assert_zero_counts(counts);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-run_test("empty_counts_while_home", () => {
+test("empty_counts_while_home", () => {
     const counts = unread.get_counts();
     assert_zero_counts(counts);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-run_test("changing_topics", () => {
+test("changing_topics", (override) => {
     // Summary: change the topic of a message from 'lunch'
     // to 'dinner' using update_unread_topics().
     let count = unread.num_unread_for_topic(social.stream_id, "lunch");
@@ -181,7 +190,7 @@ run_test("changing_topics", () => {
     message_dict.set(other_message.id, other_message);
     message_dict.set(sticky_message.id, sticky_message);
 
-    message_store.get = (msg_id) => message_dict.get(msg_id);
+    override(message_store, "get", (msg_id) => message_dict.get(msg_id));
 
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, "sticky");
@@ -214,9 +223,7 @@ run_test("changing_topics", () => {
     unread.update_unread_topics(sticky_message, {});
 });
 
-run_test("muting", () => {
-    unread.declare_bankruptcy();
-
+test("muting", () => {
     const stream_id = social.stream_id;
     const unknown_stream_id = 555;
 
@@ -250,19 +257,17 @@ run_test("muting", () => {
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
 });
 
-run_test("num_unread_for_topic", () => {
+test("num_unread_for_topic", (override) => {
     // Test the num_unread_for_topic() function using many
     // messages.
-    unread.declare_bankruptcy();
-
     const stream_id = 301;
 
-    stream_data.get_sub_by_id = (arg) => {
+    override(stream_data, "get_sub_by_id", (arg) => {
         if (arg === stream_id) {
             return {name: "Some Stream"};
         }
         throw new Error(`Unknown stream ${arg}`);
-    };
+    });
 
     let count = unread.num_unread_for_topic(stream_id, "lunch");
     assert.equal(count, 0);
@@ -325,15 +330,15 @@ run_test("num_unread_for_topic", () => {
     assert.deepEqual(msg_ids, []);
 });
 
-run_test("home_messages", () => {
-    stream_data.is_subscribed = () => true;
-    stream_data.is_muted = () => false;
+test("home_messages", (override) => {
+    override(stream_data, "is_subscribed", () => true);
+    override(stream_data, "is_muted", () => false);
 
     const stream_id = 401;
 
-    stream_data.get_sub_by_id = () => ({
+    override(stream_data, "get_sub_by_id", () => ({
         name: "whatever",
-    });
+    }));
 
     const message = {
         id: 15,
@@ -364,13 +369,13 @@ run_test("home_messages", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 
     // Now unsubscribe all our streams.
-    stream_data.is_subscribed = () => false;
+    override(stream_data, "is_subscribed", () => false);
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-run_test("phantom_messages", () => {
+test("phantom_messages", () => {
     const message = {
         id: 999,
         type: "stream",
@@ -378,15 +383,13 @@ run_test("phantom_messages", () => {
         topic: "phantom",
     };
 
-    stream_data.get_sub_by_id = () => {};
-
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-run_test("private_messages", () => {
+test("private_messages", () => {
     let counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
 
@@ -417,7 +420,7 @@ run_test("private_messages", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-run_test("private_messages", () => {
+test("private_messages", () => {
     const alice = {
         email: "alice@example.com",
         user_id: 101,
@@ -471,7 +474,7 @@ run_test("private_messages", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-run_test("mentions", () => {
+test("mentions", () => {
     let counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
     assert.deepEqual(unread.get_msg_ids_for_mentions(), []);
@@ -549,7 +552,7 @@ run_test("mentions", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-run_test("mention updates", () => {
+test("mention updates", () => {
     const message = {
         id: 17,
         unread: false,
@@ -580,13 +583,13 @@ run_test("mention updates", () => {
     test_counted(true);
 });
 
-run_test("starring", () => {
+test("starring", () => {
     // We don't need any setup here, because we just hard code
     // this to [] in the code.
     assert.deepEqual(unread.get_msg_ids_for_starred(), []);
 });
 
-run_test("declare_bankruptcy", () => {
+test("declare_bankruptcy", () => {
     const message = {
         id: 16,
         type: "whatever",
@@ -604,14 +607,14 @@ run_test("declare_bankruptcy", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-run_test("message_unread", () => {
+test("message_unread", () => {
     // Test some code that might be overly defensive, for line coverage sake.
     assert(!unread.message_unread(undefined));
     assert(unread.message_unread({unread: true}));
     assert(!unread.message_unread({unread: false}));
 });
 
-run_test("server_counts", () => {
+test("server_counts", () => {
     // note that user_id 30 is "me"
 
     page_params.unread_msgs = {
@@ -637,7 +640,6 @@ run_test("server_counts", () => {
         mentions: [31, 34, 40, 41],
     };
 
-    unread.declare_bankruptcy();
     unread.initialize();
 
     assert.equal(unread.num_unread_for_person("101"), 6);
@@ -660,9 +662,7 @@ run_test("server_counts", () => {
     assert.equal(unread.num_unread_for_person("4,6,101"), 1);
 });
 
-run_test("empty_cases", () => {
-    unread.declare_bankruptcy();
-
+test("empty_cases", () => {
     const stream_id = 999;
     let msg_ids = unread.get_msg_ids_for_topic(stream_id, "LuNcH");
     assert.deepEqual(msg_ids, []);
@@ -678,9 +678,7 @@ run_test("empty_cases", () => {
     assert.deepEqual(missing_topics, []);
 });
 
-run_test("errors", () => {
-    unread.declare_bankruptcy();
-
+test("errors", () => {
     // Test unknown message leads to zero count
     const message = {
         id: 9,

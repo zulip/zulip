@@ -2,11 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("rtl", {
+mock_module("rtl", {
     get_direction: () => "ltr",
 });
 const page_params = set_global("page_params", {emojiset: "apple"});
@@ -15,7 +15,6 @@ const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
-zrequire("timerender");
 
 const iago = {
     email: "iago@zulip.com",

@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -16,24 +16,20 @@ const page_params = set_global("page_params", {
 
 const noop = () => {};
 
-const topic_list = set_global("topic_list", {});
-set_global("overlays", {});
-set_global("popovers", {});
-
-set_global("keydown_util", {
+const narrow_state = mock_module("narrow_state");
+const topic_list = mock_module("topic_list");
+mock_module("keydown_util", {
     handle: noop,
 });
+mock_module("ui", {get_scroll_element: (element) => element});
 
-zrequire("unread_ui");
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 const stream_sort = zrequire("stream_sort");
 const stream_color = zrequire("stream_color");
-zrequire("hash_util");
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const scroll_util = zrequire("scroll_util");
 const stream_list = zrequire("stream_list");
-zrequire("ui");
 
 stream_color.initialize();
 
@@ -168,11 +164,11 @@ test_ui("create_sidebar_row", (override) => {
     assert(!social_li.hasClass("out_of_home_view"));
 
     const row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.is_active = () => true;
+    override(stream_data, "is_active", () => true);
     row.update_whether_active();
     assert(!social_li.hasClass("inactive_stream"));
 
-    stream_data.is_active = () => false;
+    override(stream_data, "is_active", () => false);
     row.update_whether_active();
     assert(social_li.hasClass("inactive_stream"));
 
@@ -198,16 +194,16 @@ test_ui("pinned_streams_never_inactive", (override) => {
     const social_sidebar = $("<social sidebar row>");
     let stream_id = social.stream_id;
     let row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.is_active = () => false;
+    override(stream_data, "is_active", () => false);
 
     stream_list.build_stream_list();
     assert(social_sidebar.hasClass("inactive_stream"));
 
-    stream_data.is_active = () => true;
+    override(stream_data, "is_active", () => true);
     row.update_whether_active();
     assert(!social_sidebar.hasClass("inactive_stream"));
 
-    stream_data.is_active = () => false;
+    override(stream_data, "is_active", () => false);
     row.update_whether_active();
     assert(social_sidebar.hasClass("inactive_stream"));
 
@@ -215,7 +211,7 @@ test_ui("pinned_streams_never_inactive", (override) => {
     const devel_sidebar = $("<devel sidebar row>");
     stream_id = devel.stream_id;
     row = stream_list.stream_sidebar.get_row(stream_id);
-    stream_data.is_active = () => false;
+    override(stream_data, "is_active", () => false);
 
     stream_list.build_stream_list();
     assert(!devel_sidebar.hasClass("inactive_stream"));
@@ -375,26 +371,14 @@ test_ui("zoom_in_and_zoom_out", () => {
     assert($("#streams_list").hasClass("zoom-out"));
 });
 
-let narrow_state;
 test_ui("narrowing", () => {
     initialize_stream_data();
-
-    narrow_state = set_global("narrow_state", {
-        stream() {
-            return "devel";
-        },
-        topic: noop,
-    });
 
     topic_list.close = noop;
     topic_list.rebuild = noop;
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
-    scroll_util.scroll_element_into_container = noop;
-
-    set_global("ui", {
-        get_scroll_element: (element) => element,
-    });
+    scroll_util.__Rewire__("scroll_element_into_container", noop);
 
     assert(!$("<devel sidebar row html>").hasClass("active-filter"));
 
@@ -454,13 +438,13 @@ test_ui("focus_user_filter", () => {
     click_handler(e);
 });
 
-test_ui("sort_streams", () => {
+test_ui("sort_streams", (override) => {
     // Get coverage on early-exit.
     stream_list.build_stream_list();
 
     initialize_stream_data();
 
-    stream_data.is_active = (sub) => sub.name !== "cars";
+    override(stream_data, "is_active", (sub) => sub.name !== "cars");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -504,7 +488,7 @@ test_ui("sort_streams", () => {
     assert(!stream_list.stream_sidebar.has_row_for(stream_id));
 });
 
-test_ui("separators_only_pinned_and_dormant", () => {
+test_ui("separators_only_pinned_and_dormant", (override) => {
     // Test only pinned and dormant streams
 
     // Get coverage on early-exit.
@@ -538,7 +522,7 @@ test_ui("separators_only_pinned_and_dormant", () => {
     };
     add_row(DenmarkSub);
 
-    stream_data.is_active = (sub) => sub.name !== "Denmark";
+    override(stream_data, "is_active", (sub) => sub.name !== "Denmark");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -650,7 +634,7 @@ test_ui("update_count_in_dom", () => {
 
 narrow_state.active = () => false;
 
-test_ui("rename_stream", () => {
+test_ui("rename_stream", (override) => {
     initialize_stream_data();
 
     const sub = stream_data.get_sub_by_name("devel");
@@ -678,16 +662,16 @@ test_ui("rename_stream", () => {
     });
 
     let count_updated;
-    stream_list.update_count_in_dom = (li) => {
+    override(stream_list, "update_count_in_dom", (li) => {
         assert.equal(li, li_stub);
         count_updated = true;
-    };
+    });
 
     stream_list.rename_stream(sub);
     assert(count_updated);
 });
 
-test_ui("refresh_pin", () => {
+test_ui("refresh_pin", (override) => {
     initialize_stream_data();
 
     const sub = {
@@ -709,14 +693,14 @@ test_ui("refresh_pin", () => {
 
     stub_templates(() => ({to_$: () => li_stub}));
 
-    stream_list.update_count_in_dom = noop;
+    stream_list.__Rewire__("update_count_in_dom", noop);
     $("#stream_filters").append = noop;
 
     let scrolled;
-    stream_list.scroll_stream_into_view = (li) => {
+    override(stream_list, "scroll_stream_into_view", (li) => {
         assert.equal(li, li_stub);
         scrolled = true;
-    };
+    });
 
     stream_list.refresh_pinned_or_unpinned_stream(pinned_sub);
     assert(scrolled);
@@ -727,14 +711,14 @@ test_ui("create_initial_sidebar_rows", () => {
 
     const html_dict = new Map();
 
-    stream_list.stream_sidebar = {
+    stream_list.__Rewire__("stream_sidebar", {
         has_row_for: () => false,
         set_row(stream_id, widget) {
             html_dict.set(stream_id, widget.get_li().html());
         },
-    };
+    });
 
-    stream_list.update_count_in_dom = noop;
+    stream_list.__Rewire__("update_count_in_dom", noop);
 
     stub_templates((template_name, data) => {
         assert.equal(template_name, "stream_sidebar_row");

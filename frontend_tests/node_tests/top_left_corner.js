@@ -2,32 +2,30 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-set_global("resize", {
+mock_module("resize", {
     resize_stream_filters_container: () => {},
 });
-const Filter = zrequire("Filter", "js/filter");
-zrequire("unread_ui");
+const {Filter} = zrequire("../js/filter");
 const people = zrequire("people");
 
+const pm_list = zrequire("pm_list");
 const top_left_corner = zrequire("top_left_corner");
 
-run_test("narrowing", () => {
+run_test("narrowing", (override) => {
     // activating narrow
 
     let pm_expanded;
     let pm_closed;
 
-    set_global("pm_list", {
-        close() {
-            pm_closed = true;
-        },
-        expand() {
-            pm_expanded = true;
-        },
+    override(pm_list, "close", () => {
+        pm_closed = true;
+    });
+    override(pm_list, "expand", () => {
+        pm_expanded = true;
     });
 
     assert(!pm_expanded);

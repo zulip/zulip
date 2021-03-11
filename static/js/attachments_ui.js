@@ -1,12 +1,17 @@
-"use strict";
+import render_settings_upload_space_stats from "../templates/settings/upload_space_stats.hbs";
+import render_uploaded_files_list from "../templates/uploaded_files_list.hbs";
 
-const render_settings_upload_space_stats = require("../templates/settings/upload_space_stats.hbs");
-const render_uploaded_files_list = require("../templates/uploaded_files_list.hbs");
+import * as channel from "./channel";
+import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
+import * as timerender from "./timerender";
+import * as ui from "./ui";
+import * as ui_report from "./ui_report";
 
 let attachments;
 let upload_space_used;
 
-exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
+export function bytes_to_size(bytes, kb_with_1024_bytes) {
     if (kb_with_1024_bytes === undefined) {
         kb_with_1024_bytes = false;
     }
@@ -21,14 +26,14 @@ exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
         size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
     }
     return size + " " + sizes[i];
-};
+}
 
-exports.percentage_used_space = function (uploads_size) {
+export function percentage_used_space(uploads_size) {
     if (page_params.realm_upload_quota === null) {
         return null;
     }
     return ((100 * uploads_size) / page_params.realm_upload_quota).toFixed(1);
-};
+}
 
 function set_upload_space_stats() {
     if (page_params.realm_upload_quota === null) {
@@ -36,8 +41,8 @@ function set_upload_space_stats() {
     }
     const args = {
         show_upgrade_message: page_params.realm_plan_type === 2,
-        percent_used: exports.percentage_used_space(upload_space_used),
-        upload_quota: exports.bytes_to_size(page_params.realm_upload_quota, true),
+        percent_used: percentage_used_space(upload_space_used),
+        upload_quota: bytes_to_size(page_params.realm_upload_quota, true),
     };
     const rendered_upload_stats_html = render_settings_upload_space_stats(args);
     $("#attachment-stats-holder").html(rendered_upload_stats_html);
@@ -112,11 +117,11 @@ function format_attachment_data(new_attachments) {
     for (const attachment of new_attachments) {
         const time = new Date(attachment.create_time);
         attachment.create_time_str = timerender.render_now(time).time_str;
-        attachment.size_str = exports.bytes_to_size(attachment.size);
+        attachment.size_str = bytes_to_size(attachment.size);
     }
 }
 
-exports.update_attachments = function (event) {
+export function update_attachments(event) {
     if (attachments === undefined) {
         // If we haven't fetched attachment data yet, there's nothing to do.
         return;
@@ -132,9 +137,9 @@ exports.update_attachments = function (event) {
     // TODO: This is inefficient and we should be able to do some sort
     // of incremental ListWidget update instead.
     render_attachments_ui();
-};
+}
 
-exports.set_up_attachments = function () {
+export function set_up_attachments() {
     // The settings page must be rendered before this function gets called.
 
     const status = $("#delete-upload-status");
@@ -159,6 +164,4 @@ exports.set_up_attachments = function () {
             ui_report.error(i18n.t("Failed"), xhr, status);
         },
     });
-};
-
-window.attachments_ui = exports;
+}

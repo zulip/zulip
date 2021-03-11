@@ -1,7 +1,18 @@
-"use strict";
-
-const huddle_data = require("./huddle_data");
-const people = require("./people");
+import * as channel from "./channel";
+import {Filter} from "./filter";
+import * as huddle_data from "./huddle_data";
+import * as message_list from "./message_list";
+import * as message_scroll from "./message_scroll";
+import * as message_store from "./message_store";
+import * as message_util from "./message_util";
+import * as narrow from "./narrow";
+import * as people from "./people";
+import * as pm_list from "./pm_list";
+import * as recent_topics from "./recent_topics";
+import * as server_events from "./server_events";
+import * as stream_data from "./stream_data";
+import * as stream_list from "./stream_list";
+import * as ui_report from "./ui_report";
 
 const consts = {
     backfill_idle_time: 10 * 1000,
@@ -120,7 +131,7 @@ function get_messages_success(data, opts) {
         // The server occasionally returns no data during a
         // restart.  Ignore those responses and try again
         setTimeout(() => {
-            exports.load_messages(opts);
+            load_messages(opts);
         }, 0);
         return;
     }
@@ -170,7 +181,7 @@ function handle_operators_supporting_id_based_api(data) {
     return data;
 }
 
-exports.load_messages = function (opts) {
+export function load_messages(opts) {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -261,25 +272,25 @@ exports.load_messages = function (opts) {
             // We might want to be more clever here
             $("#connection-error").addClass("show");
             setTimeout(() => {
-                exports.load_messages(opts);
+                load_messages(opts);
             }, consts.error_retry_time);
         },
     });
-};
+}
 
-exports.load_messages_for_narrow = function (opts) {
+export function load_messages_for_narrow(opts) {
     const msg_list = message_list.narrowed;
 
-    exports.load_messages({
+    load_messages({
         anchor: opts.anchor,
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list,
         cont: opts.cont,
     });
-};
+}
 
-exports.get_backfill_anchor = function (msg_list) {
+export function get_backfill_anchor(msg_list) {
     if (msg_list === home_msg_list) {
         msg_list = message_list.all;
     }
@@ -292,9 +303,9 @@ exports.get_backfill_anchor = function (msg_list) {
     // msg_list is empty, which is an impossible
     // case, raise a fatal error.
     throw new Error("There are no message available to backfill.");
-};
+}
 
-exports.get_frontfill_anchor = function (msg_list) {
+export function get_frontfill_anchor(msg_list) {
     if (msg_list === home_msg_list) {
         msg_list = message_list.all;
     }
@@ -311,9 +322,9 @@ exports.get_frontfill_anchor = function (msg_list) {
     // fetch more data, and if user is, then the available data is wrong
     // and we raise a fatal error.
     throw new Error("There are no message available to frontfill.");
-};
+}
 
-exports.maybe_load_older_messages = function (opts) {
+export function maybe_load_older_messages(opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
     // than what the browsers originally fetched.
@@ -324,17 +335,17 @@ exports.maybe_load_older_messages = function (opts) {
         return;
     }
 
-    exports.do_backfill({
+    do_backfill({
         msg_list,
         num_before: consts.backward_batch_size,
     });
-};
+}
 
-exports.do_backfill = function (opts) {
+export function do_backfill(opts) {
     const msg_list = opts.msg_list;
-    const anchor = exports.get_backfill_anchor(msg_list);
+    const anchor = get_backfill_anchor(msg_list);
 
-    exports.load_messages({
+    load_messages({
         anchor,
         num_before: opts.num_before,
         num_after: 0,
@@ -345,9 +356,9 @@ exports.do_backfill = function (opts) {
             }
         },
     });
-};
+}
 
-exports.maybe_load_newer_messages = function (opts) {
+export function maybe_load_newer_messages(opts) {
     // This function gets called when you scroll to the bottom
     // of your window, and you want to get messages newer
     // than what the browsers originally fetched.
@@ -359,37 +370,37 @@ exports.maybe_load_newer_messages = function (opts) {
         return;
     }
 
-    const anchor = exports.get_frontfill_anchor(msg_list);
+    const anchor = get_frontfill_anchor(msg_list);
 
     function load_more(data, args) {
         if (args.fetch_again && args.msg_list === current_msg_list) {
-            exports.maybe_load_newer_messages({msg_list: current_msg_list});
+            maybe_load_newer_messages({msg_list: current_msg_list});
         }
     }
 
-    exports.load_messages({
+    load_messages({
         anchor,
         num_before: 0,
         num_after: consts.forward_batch_size,
         msg_list,
         cont: load_more,
     });
-};
+}
 
-exports.start_backfilling_messages = function () {
+export function start_backfilling_messages() {
     // backfill more messages after the user is idle
     $(document).idle({
         idle: consts.backfill_idle_time,
         onIdle() {
-            exports.do_backfill({
+            do_backfill({
                 num_before: consts.backfill_batch_size,
                 msg_list: home_msg_list,
             });
         },
     });
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     // get the initial message list
     function load_more(data) {
         // If we haven't selected a message in the home view yet, and
@@ -407,7 +418,7 @@ exports.initialize = function () {
 
         if (data.found_newest) {
             server_events.home_view_loaded();
-            exports.start_backfilling_messages();
+            start_backfilling_messages();
             return;
         }
 
@@ -416,7 +427,7 @@ exports.initialize = function () {
         const messages = data.messages;
         const latest_id = messages[messages.length - 1].id;
 
-        exports.load_messages({
+        load_messages({
             anchor: latest_id,
             num_before: 0,
             num_after: consts.catch_up_batch_size,
@@ -435,7 +446,7 @@ exports.initialize = function () {
         // the user's unmuted history as our anchor.
         anchor = "first_unread";
     }
-    exports.load_messages({
+    load_messages({
         anchor,
         num_before: consts.num_before_home_anchor,
         num_after: consts.num_after_home_anchor,
@@ -468,12 +479,10 @@ exports.initialize = function () {
         filter: new Filter([{operator: "in", operand: "home"}]),
         excludes_muted_topics: true,
     });
-    exports.load_messages({
+    load_messages({
         anchor: "newest",
         num_before: consts.recent_topics_initial_fetch_size,
         num_after: 0,
         msg_list: recent_topics_message_list,
     });
-};
-
-window.message_fetch = exports;
+}

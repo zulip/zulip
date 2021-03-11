@@ -13,7 +13,6 @@ const {run_test} = require("../zjsunit/test");
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("hash_util");
 const stream_data = zrequire("stream_data");
 
 set_global("page_params", {
@@ -45,22 +44,27 @@ const george = {
     user_id: 103,
 };
 
-people.add_active_user(fred);
-people.add_active_user(gail);
-people.add_active_user(george);
-people.add_active_user(me);
-people.initialize_current_user(me.user_id);
-
-const devel = {name: "devel", subscribed: false, stream_id: 1};
-const rome = {name: "Rome", subscribed: true, stream_id: 1001};
-stream_data.add_sub(devel);
-stream_data.add_sub(rome);
-
 function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);
 }
 
-run_test("unsubscribe", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        peer_data.clear_for_testing();
+        stream_data.clear_subscriptions();
+
+        people.init();
+        people.add_active_user(me);
+        people.initialize_current_user(me.user_id);
+
+        f(override);
+    });
+}
+
+test("unsubscribe", () => {
+    const devel = {name: "devel", subscribed: false, stream_id: 1};
+    stream_data.add_sub(devel);
+
     // verify clean slate
     assert(!stream_data.is_subscribed("devel"));
 
@@ -83,8 +87,13 @@ run_test("unsubscribe", () => {
     assert(!sub.subscribed);
 });
 
-run_test("subscribers", () => {
-    const sub = rome;
+test("subscribers", () => {
+    const sub = {name: "Rome", subscribed: true, stream_id: 1001};
+    stream_data.add_sub(sub);
+
+    people.add_active_user(fred);
+    people.add_active_user(gail);
+    people.add_active_user(george);
 
     // verify setup
     assert(stream_data.is_subscribed(sub.name));
@@ -202,7 +211,11 @@ run_test("subscribers", () => {
     blueslip.reset();
 });
 
-run_test("get_subscriber_count", () => {
+test("get_subscriber_count", () => {
+    people.add_active_user(fred);
+    people.add_active_user(gail);
+    people.add_active_user(george);
+
     const india = {
         stream_id: 102,
         name: "India",
@@ -225,7 +238,7 @@ run_test("get_subscriber_count", () => {
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 1);
 });
 
-run_test("is_subscriber_subset", () => {
+test("is_subscriber_subset", () => {
     function make_sub(stream_id, user_ids) {
         const sub = {
             stream_id,

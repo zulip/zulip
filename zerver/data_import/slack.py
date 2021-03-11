@@ -1349,7 +1349,9 @@ def check_token_access(token: str) -> None:
     if token.startswith("xoxp-"):
         logging.info("This is a Slack user token, which grants all rights the user has!")
     elif token.startswith("xoxb-"):
-        data = requests.get("https://slack.com/api/team.info", {"token": token})
+        data = requests.get(
+            "https://slack.com/api/team.info", headers={"Authorization": "Bearer {}".format(token)}
+        )
         has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
         required_scopes = set(["emoji:read", "users:read", "users:read.email", "team:read"])
         missing_scopes = required_scopes - has_scopes
@@ -1366,7 +1368,10 @@ def check_token_access(token: str) -> None:
 def get_slack_api_data(slack_api_url: str, get_param: str, **kwargs: Any) -> Any:
     if not kwargs.get("token"):
         raise AssertionError("Slack token missing in kwargs")
-    data = requests.get(slack_api_url, kwargs)
+    token = kwargs.pop("token")
+    data = requests.get(
+        slack_api_url, headers={"Authorization": "Bearer {}".format(token)}, **kwargs
+    )
 
     if data.status_code == requests.codes.ok:
         result = data.json()

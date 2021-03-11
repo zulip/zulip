@@ -2,17 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_store = set_global("message_store", {});
-set_global("page_params", {});
-
-set_global("muting", {
+const message_store = mock_module("message_store");
+mock_module("muting", {
     is_topic_muted: () => false,
 });
+set_global("page_params", {});
 
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
@@ -43,6 +42,9 @@ function candidate_ids() {
 }
 
 run_test("get_unread_ids", () => {
+    unread.declare_bankruptcy();
+    narrow_state.reset_current_filter();
+
     let unread_ids;
     let terms;
 
@@ -195,12 +197,12 @@ run_test("get_unread_ids", () => {
     });
 });
 
-run_test("defensive code", () => {
+run_test("defensive code", (override) => {
     // Test defensive code.  We actually avoid calling
     // _possible_unread_message_ids for any case where we
     // couldn't compute the unread message ids, but that
     // invariant is hard to future-proof.
-    narrow_state._possible_unread_message_ids = () => undefined;
+    override(narrow_state, "_possible_unread_message_ids", () => undefined);
     const terms = [{operator: "some-unhandled-case", operand: "whatever"}];
     set_filter(terms);
     assert_unread_info({

@@ -2,11 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const ui_report = set_global("ui_report", {
+const ui_report = mock_module("ui_report", {
     displayed_error: false,
+
     error: () => {
         ui_report.displayed_error = true;
     },
@@ -20,7 +21,7 @@ set_global("location", {
 const hash_util = zrequire("hash_util");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 const narrow_state = zrequire("narrow_state");
 
 const hamlet = {

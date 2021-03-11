@@ -3697,11 +3697,9 @@ def do_change_subscription_property(
     event = dict(
         type="subscription",
         op="update",
-        email=user_profile.email,
         property=event_property_name,
         value=event_value,
         stream_id=stream.id,
-        name=stream.name,
     )
     send_event(user_profile.realm, event, [user_profile.id])
 

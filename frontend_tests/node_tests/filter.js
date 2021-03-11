@@ -2,18 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const message_store = set_global("message_store", {});
+const message_store = mock_module("message_store");
 const page_params = set_global("page_params", {});
 
-zrequire("unread");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
-zrequire("message_util", "js/message_util");
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 
 const me = {
     email: "me@example.com",
@@ -436,20 +434,24 @@ run_test("new_style_operators", () => {
 });
 
 run_test("public_operators", () => {
+    stream_data.clear_subscriptions();
     let operators = [
-        {operator: "stream", operand: "foo"},
+        {operator: "stream", operand: "some_stream"},
         {operator: "in", operand: "all"},
         {operator: "topic", operand: "bar"},
     ];
 
     let filter = new Filter(operators);
-    assert_same_operators(filter.public_operators(), operators);
+    with_field(page_params, "narrow_stream", undefined, () => {
+        assert_same_operators(filter.public_operators(), operators);
+    });
     assert(filter.can_bucket_by("stream"));
 
-    page_params.narrow_stream = "default";
     operators = [{operator: "stream", operand: "default"}];
     filter = new Filter(operators);
-    assert_same_operators(filter.public_operators(), []);
+    with_field(page_params, "narrow_stream", "default", () => {
+        assert_same_operators(filter.public_operators(), []);
+    });
 });
 
 run_test("redundancies", () => {
@@ -602,8 +604,10 @@ run_test("predicate_basics", () => {
     predicate = get_predicate([["in", "home"]]);
     assert(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
     assert(predicate({type: "private"}));
-    page_params.narrow_stream = "kiosk";
-    assert(predicate({stream: "kiosk"}));
+
+    with_field(page_params, "narrow_stream", "kiosk", () => {
+        assert(predicate({stream: "kiosk"}));
+    });
 
     predicate = get_predicate([["near", 5]]);
     assert(predicate({}));
@@ -777,9 +781,7 @@ run_test("negated_predicates", () => {
     assert(predicate({}));
 });
 
-run_test("mit_exceptions", () => {
-    page_params.realm_is_zephyr_mirror_realm = true;
-
+function test_mit_exceptions() {
     let predicate = get_predicate([
         ["stream", "Foo"],
         ["topic", "personal"],
@@ -812,6 +814,12 @@ run_test("mit_exceptions", () => {
     ];
     predicate = new Filter(terms).predicate();
     assert(!predicate({type: "stream", stream: "foo", topic: "bar"}));
+}
+
+run_test("mit_exceptions", () => {
+    with_field(page_params, "realm_is_zephyr_mirror_realm", true, () => {
+        test_mit_exceptions();
+    });
 });
 
 run_test("predicate_edge_cases", () => {
@@ -834,14 +842,16 @@ run_test("predicate_edge_cases", () => {
     assert(predicate({}));
 
     // Exercise caching feature.
+    const stream_id = 101;
+    make_sub("Off topic", stream_id);
     const terms = [
-        {operator: "stream", operand: "Foo"},
-        {operator: "topic", operand: "bar"},
+        {operator: "stream", operand: "Off topic"},
+        {operator: "topic", operand: "Mars"},
     ];
     const filter = new Filter(terms);
     filter.predicate();
     predicate = filter.predicate(); // get cached version
-    assert(predicate({type: "stream", stream: "foo", topic: "bar"}));
+    assert(predicate({type: "stream", stream_id, topic: "Mars"}));
 });
 
 run_test("parse", () => {
@@ -1545,10 +1555,10 @@ run_test("navbar_helpers", () => {
     assert.equal(filter.generate_redirect_url(), default_redirect.redirect_url);
 });
 
-run_test("error_cases", () => {
+run_test("error_cases", (override) => {
     // This test just gives us 100% line coverage on defensive code that
     // should not be reached unless we break other code.
-    people.pm_with_user_ids = () => {};
+    override(people, "pm_with_user_ids", () => {});
 
     const predicate = get_predicate([["pm-with", "Joe@example.com"]]);
     assert(!predicate({type: "private"}));

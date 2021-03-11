@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -25,11 +23,6 @@ const _FormData = function () {
     return form_data;
 };
 
-const _loading = {
-    make_indicator: noop,
-    destroy_indicator: noop,
-};
-
 const page_params = set_global("page_params", {
     is_admin: false,
     realm_domains: [
@@ -39,8 +32,7 @@ const page_params = set_global("page_params", {
     realm_authentication_methods: {},
 });
 
-const realm_icon = set_global("realm_icon", {});
-const channel = set_global("channel", {});
+const realm_icon = mock_module("realm_icon");
 
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
@@ -50,9 +42,17 @@ stub_templates((name, data) => {
     throw new Error(`Unknown template ${name}`);
 });
 
-const overlays = set_global("overlays", {});
+const channel = mock_module("channel");
+const overlays = mock_module("overlays");
 
-const _ui_report = {
+mock_module("list_widget", {
+    create: () => ({init: noop}),
+});
+mock_module("loading", {
+    make_indicator: noop,
+    destroy_indicator: noop,
+});
+mock_module("ui_report", {
     success(msg, elem) {
         elem.val(msg);
     },
@@ -60,32 +60,16 @@ const _ui_report = {
     error(msg, xhr, elem) {
         elem.val(msg);
     },
-};
-
-const _realm_logo = {
-    build_realm_logo_widget: noop,
-};
-
-const _ListWidget = {
-    create: () => ({init: noop}),
-};
+});
 
 set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 set_global("jQuery", _jQuery);
-set_global("loading", _loading);
-set_global("realm_logo", _realm_logo);
-set_global("ui_report", _ui_report);
-set_global("ListWidget", _ListWidget);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
 const stream_data = zrequire("stream_data");
-const settings_account = rewiremock.proxy(() => zrequire("settings_account"), {
-    // Setup is only imported to set the
-    // setup.password_change_in_progress flag.
-    "../../static/js/setup": {},
-});
+const settings_account = zrequire("settings_account");
 const settings_org = zrequire("settings_org");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
@@ -726,9 +710,9 @@ function test_discard_changes_button(discard_changes) {
     $("#org-discard-msg-editing").closest = () => discard_button_parent;
 
     const stubbed_function = settings_org.change_save_button_state;
-    settings_org.change_save_button_state = (save_button_controls, state) => {
+    settings_org.__Rewire__("change_save_button_state", (save_button_controls, state) => {
         assert.equal(state, "discarded");
-    };
+    });
 
     discard_changes(ev);
 
@@ -739,7 +723,7 @@ function test_discard_changes_button(discard_changes) {
     assert.equal(msg_delete_limit_setting.val(), "upto_two_min");
     assert.equal(message_content_delete_limit_minutes.val(), "2");
 
-    settings_org.change_save_button_state = stubbed_function;
+    settings_org.__Rewire__("change_save_button_state", stubbed_function);
 }
 
 run_test("set_up", (override) => {
@@ -764,11 +748,10 @@ run_test("set_up", (override) => {
         upload_realm_logo_or_icon = f;
     };
 
-    const dropdown_list_widget_backup = dropdown_list_widget;
-    window.dropdown_list_widget = () => ({
+    override(dropdown_list_widget, "DropdownListWidget", () => ({
         render: noop,
         update: noop,
-    });
+    }));
     $("#id_realm_message_content_edit_limit_minutes").set_parent(
         $.create("<stub edit limit parent>"),
     );
@@ -820,8 +803,6 @@ run_test("set_up", (override) => {
             ".subsection-header .subsection-changes-discard .button",
         ),
     );
-
-    window.dropdown_list_widget = dropdown_list_widget_backup;
 });
 
 run_test("test get_organization_settings_options", () => {
@@ -995,10 +976,10 @@ run_test("misc", () => {
     settings_account.update_email_change_display();
     assert(!$("#change_email .button").prop("disabled"));
 
-    stream_data.get_streams_for_settings_page = () => [
+    stream_data.__Rewire__("get_streams_for_settings_page", () => [
         {name: "some_stream", stream_id: 75},
         {name: "some_stream", stream_id: 42},
-    ];
+    ]);
 
     // Set stubs for dropdown_list_widget:
     const widget_settings = [
@@ -1027,10 +1008,10 @@ run_test("misc", () => {
     let setting_name = "realm_notifications_stream_id";
     let elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     elem.closest = () => stub_notification_disable_parent;
-    stream_data.get_sub_by_id = (stream_id) => {
+    stream_data.__Rewire__("get_sub_by_id", (stream_id) => {
         assert.equal(stream_id, 42);
         return {name: "some_stream"};
-    };
+    });
     settings_org.notifications_stream_widget.render(42);
     assert.equal(elem.text(), "#some_stream");
     assert(!elem.hasClass("text-warning"));
@@ -1042,10 +1023,10 @@ run_test("misc", () => {
     setting_name = "realm_signup_notifications_stream_id";
     elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     elem.closest = () => stub_notification_disable_parent;
-    stream_data.get_sub_by_id = (stream_id) => {
+    stream_data.__Rewire__("get_sub_by_id", (stream_id) => {
         assert.equal(stream_id, 75);
         return {name: "some_stream"};
-    };
+    });
     settings_org.signup_notifications_stream_widget.render(75);
     assert.equal(elem.text(), "#some_stream");
     assert(!elem.hasClass("text-warning"));

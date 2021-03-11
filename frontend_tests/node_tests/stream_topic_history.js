@@ -2,11 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = set_global("channel", {});
-const message_list = set_global("message_list", {});
+const channel = mock_module("channel");
+const message_list = mock_module("message_list");
+const message_util = mock_module("message_util");
 
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
@@ -56,10 +57,8 @@ run_test("basics", () => {
     assert.deepEqual(history, ["Topic1", "topic2"]);
     assert.deepEqual(max_message_id, 104);
 
-    set_global("message_util", {
-        get_messages_in_topic: () => [{id: 101}, {id: 102}],
-        get_max_message_id_in_stream: () => 103,
-    });
+    message_util.get_messages_in_topic = () => [{id: 101}, {id: 102}];
+    message_util.get_max_message_id_in_stream = () => 103;
     // Removing the last msg in topic1 changes the order
     stream_topic_history.remove_messages({
         stream_id,
@@ -73,10 +72,7 @@ run_test("basics", () => {
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(max_message_id, 103);
 
-    set_global("message_util", {
-        get_messages_in_topic: () => [{id: 102}],
-        get_max_message_id_in_stream: () => 103,
-    });
+    message_util.get_messages_in_topic = () => [{id: 102}];
     // Removing first topic1 message has no effect.
     stream_topic_history.remove_messages({
         stream_id,

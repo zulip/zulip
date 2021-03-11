@@ -1,8 +1,8 @@
-"use strict";
+import render_dropdown_list from "../templates/settings/dropdown_list.hbs";
 
-const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
+import * as ListWidget from "./list_widget";
 
-const DropdownListWidget = function (opts) {
+export const DropdownListWidget = function (opts) {
     const init = () => {
         // Run basic sanity checks on opts, and set up sane defaults.
         opts = {
@@ -141,6 +141,3 @@ const DropdownListWidget = function (opts) {
         update,
     };
 };
-
-module.exports = DropdownListWidget;
-window.dropdown_list_widget = DropdownListWidget;

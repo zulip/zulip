@@ -1,9 +1,8 @@
-"use strict";
+import render_typing_notifications from "../templates/typing_notifications.hbs";
 
-const render_typing_notifications = require("../templates/typing_notifications.hbs");
-
-const people = require("./people");
-const typing_data = require("./typing_data");
+import * as narrow_state from "./narrow_state";
+import * as people from "./people";
+import * as typing_data from "./typing_data";
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
@@ -45,7 +44,7 @@ function get_users_typing_for_narrow() {
     return typing_data.get_all_typists();
 }
 
-exports.render_notifications_for_narrow = function () {
+export function render_notifications_for_narrow() {
     const user_ids = get_users_typing_for_narrow();
     const users_typing = user_ids.map((user_id) => people.get_by_user_id(user_id));
     if (users_typing.length === 0) {
@@ -54,9 +53,9 @@ exports.render_notifications_for_narrow = function () {
         $("#typing_notifications").html(render_typing_notifications({users: users_typing}));
         $("#typing_notifications").show();
     }
-};
+}
 
-exports.hide_notification = function (event) {
+export function hide_notification(event) {
     const recipients = event.recipients.map((user) => user.user_id);
     recipients.sort();
 
@@ -65,11 +64,11 @@ exports.hide_notification = function (event) {
     const removed = typing_data.remove_typist(recipients, event.sender.user_id);
 
     if (removed) {
-        exports.render_notifications_for_narrow();
+        render_notifications_for_narrow();
     }
-};
+}
 
-exports.display_notification = function (event) {
+export function display_notification(event) {
     const recipients = event.recipients.map((user) => user.user_id);
     recipients.sort();
 
@@ -78,10 +77,9 @@ exports.display_notification = function (event) {
 
     typing_data.add_typist(recipients, sender_id);
 
-    exports.render_notifications_for_narrow();
+    render_notifications_for_narrow();
 
     typing_data.kickstart_inbound_timer(recipients, TYPING_STARTED_EXPIRY_PERIOD, () => {
-        exports.hide_notification(event);
+        hide_notification(event);
     });
-};
-window.typing_events = exports;
+}

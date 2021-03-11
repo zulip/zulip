@@ -9,7 +9,13 @@
 // become clear as you keep reading.
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {
+    mock_module,
+    set_global,
+    unmock_module,
+    with_field,
+    zrequire,
+} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -17,26 +23,28 @@ const {run_test} = require("../zjsunit/test");
 // structure that the server sends down to us when the app starts.  We
 // prefer to test with a clean slate.
 
+const activity = mock_module("activity");
+const channel = mock_module("channel");
+const home_msg_list = set_global("home_msg_list", {});
+const message_list = mock_module("message_list");
+const message_live_update = mock_module("message_live_update");
+const message_util = mock_module("message_util");
+const message_viewport = mock_module("message_viewport");
+const notifications = mock_module("notifications");
+const overlays = mock_module("overlays");
+const pm_list = mock_module("pm_list");
+const resize = mock_module("resize");
+const settings_users = mock_module("settings_users");
+const topic_list = mock_module("topic_list");
+const unread_ui = mock_module("unread_ui");
+
+let stream_list = mock_module("stream_list");
+let unread_ops = mock_module("unread_ops");
+
 set_global("page_params", {});
 
-const activity = set_global("activity", {});
-const message_live_update = set_global("message_live_update", {});
-const pm_list = set_global("pm_list", {});
-const settings_users = set_global("settings_users", {});
-const home_msg_list = set_global("home_msg_list", {});
-const message_list = set_global("message_list", {});
-const message_util = set_global("message_util", {});
-const notifications = set_global("notifications", {});
-const overlays = set_global("overlays", {});
-const resize = set_global("resize", {});
-let stream_list = set_global("stream_list", {});
-let unread_ops = set_global("unread_ops", {});
-const unread_ui = set_global("unread_ui", {});
-const channel = set_global("channel", {});
-const message_viewport = set_global("message_viewport", {});
-const topic_list = set_global("topic_list", {});
-
 // Let's start with testing a function from util.js.
+
 //
 // We will use our special zrequire helper to import the
 // code from util. We use zrequire instead of require,
@@ -128,8 +136,6 @@ const messages = {
 // We are going to test a core module called messages_store.js next.
 // This is an example of a deep unit test, where our dependencies
 // are easy to test.  Start by requiring the dependencies:
-zrequire("recent_senders");
-zrequire("localstorage");
 const unread = zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
 const recent_topics = zrequire("recent_topics");
@@ -179,7 +185,7 @@ run_test("unread", () => {
 
 // We use the second argument of zrequire to find the location of the
 // Filter class.
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
 
 run_test("filter", () => {
     const filter_terms = [
@@ -359,8 +365,6 @@ run_test("add_user_event", () => {
 
 const noop = () => {};
 
-zrequire("user_events");
-
 run_test("update_user_event", (override) => {
     const new_bob = {
         email: "bob@example.com",
@@ -441,7 +445,7 @@ run_test("insert_message", (override) => {
     override(pm_list, "update_private_messages", noop);
 
     const helper = test_helper();
-    set_global((recent_topics.is_visible = () => false));
+    recent_topics.is_visible = () => false;
 
     const new_message = {
         sender_id: isaac.user_id,
@@ -583,8 +587,7 @@ run_test("explore make_stub", (override) => {
 
 */
 
-zrequire("message_flags");
-
+unmock_module("unread_ops");
 unread_ops = zrequire("unread_ops");
 
 run_test("unread_ops", (override) => {
@@ -683,6 +686,7 @@ run_test("unread_ops", (override) => {
 
 */
 
+unmock_module("stream_list");
 stream_list = zrequire("stream_list");
 
 const social_stream = {

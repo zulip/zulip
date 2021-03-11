@@ -1,8 +1,7 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
-
-const people = require("./people");
+import * as people from "./people";
+import * as settings_bots from "./settings_bots";
 
 const bots = new Map();
 
@@ -28,31 +27,31 @@ const send_change_event = _.debounce(() => {
     settings_bots.render_bots();
 }, 50);
 
-exports.all_user_ids = function () {
+export function all_user_ids() {
     return Array.from(bots.keys());
-};
+}
 
-exports.add = function (bot) {
+export function add(bot) {
     const clean_bot = _.pick(bot, bot_fields);
     bots.set(bot.user_id, clean_bot);
     const clean_services = bot.services.map((service) => _.pick(service, services_fields));
     services.set(bot.user_id, clean_services);
 
     send_change_event();
-};
+}
 
-exports.deactivate = function (bot_id) {
+export function deactivate(bot_id) {
     bots.get(bot_id).is_active = false;
     send_change_event();
-};
+}
 
-exports.del = function (bot_id) {
+export function del(bot_id) {
     bots.delete(bot_id);
     services.delete(bot_id);
     send_change_event();
-};
+}
 
-exports.update = function (bot_id, bot_update) {
+export function update(bot_id, bot_update) {
     const bot = bots.get(bot_id);
     Object.assign(bot, _.pick(bot_update, bot_fields));
 
@@ -63,9 +62,9 @@ exports.update = function (bot_id, bot_update) {
     }
 
     send_change_event();
-};
+}
 
-exports.get_all_bots_for_current_user = function () {
+export function get_all_bots_for_current_user() {
     const ret = [];
     for (const bot of bots.values()) {
         if (people.is_my_user_id(bot.owner_id)) {
@@ -73,9 +72,9 @@ exports.get_all_bots_for_current_user = function () {
         }
     }
     return ret;
-};
+}
 
-exports.get_editable = function () {
+export function get_editable() {
     const ret = [];
     for (const bot of bots.values()) {
         if (bot.is_active && people.is_my_user_id(bot.owner_id)) {
@@ -83,20 +82,18 @@ exports.get_editable = function () {
         }
     }
     return ret;
-};
+}
 
-exports.get = function (bot_id) {
+export function get(bot_id) {
     return bots.get(bot_id);
-};
+}
 
-exports.get_services = function (bot_id) {
+export function get_services(bot_id) {
     return services.get(bot_id);
-};
+}
 
-exports.initialize = function (params) {
+export function initialize(params) {
     for (const bot of params.realm_bots) {
-        exports.add(bot);
+        add(bot);
     }
-};
-
-window.bot_data = exports;
+}

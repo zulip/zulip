@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -12,18 +12,22 @@ set_global("page_params", {
 
 const noop = () => {};
 
-const narrow_state = set_global("narrow_state", {});
-const search_suggestion = set_global("search_suggestion", {});
-set_global("ui_util", {
+const narrow = mock_module("narrow");
+const narrow_state = mock_module("narrow_state");
+const search_suggestion = mock_module("search_suggestion");
+mock_module("ui_util", {
     change_tab_to: noop,
 });
-const narrow = set_global("narrow", {});
-const Filter = set_global("Filter", {});
+
+const Filter = {};
+
+mock_module("filter", {
+    Filter,
+});
 
 set_global("setTimeout", (func) => func());
 
 const search = zrequire("search");
-zrequire("message_view_header");
 
 run_test("update_button_visibility", () => {
     const search_query = $("#search_query");
@@ -151,7 +155,7 @@ run_test("initialize", () => {
             assert.equal(opts.updater("stream:Verona"), "stream:Verona");
             assert(is_blurred);
 
-            search.is_using_input_method = true;
+            search.__Rewire__("is_using_input_method", true);
             _setup("stream:Verona");
             assert.equal(opts.updater("stream:Verona"), "stream:Verona");
             assert(!is_blurred);
@@ -171,7 +175,7 @@ run_test("initialize", () => {
     search_query_box.trigger("blur");
     assert.equal(search_query_box.val(), "test string");
 
-    search.is_using_input_method = false;
+    search.__Rewire__("is_using_input_method", false);
     searchbox_form.trigger("compositionend");
     assert(search.is_using_input_method);
 
@@ -251,7 +255,7 @@ run_test("initialize", () => {
     assert(is_blurred);
 
     _setup("ver");
-    search.is_using_input_method = true;
+    search.__Rewire__("is_using_input_method", true);
     searchbox_form.trigger(ev);
     // No change on Enter keyup event when using input tool
     assert(!is_blurred);

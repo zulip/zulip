@@ -2,25 +2,25 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 set_global("Image", class Image {});
-set_global("overlays", {
+mock_module("overlays", {
     close_overlay: () => {},
+
     close_active: () => {},
     open_overlay: () => {},
 });
-set_global("popovers", {
+mock_module("popovers", {
     hide_all: () => {},
 });
 
+const message_store = mock_module("message_store");
 const rows = zrequire("rows");
-const lightbox = zrequire("lightbox");
-const message_store = set_global("message_store", {});
 
-rows.is_draft_row = () => false;
+const lightbox = zrequire("lightbox");
 
 run_test("pan_and_zoom", (override) => {
     const img = $.create("img-stub");

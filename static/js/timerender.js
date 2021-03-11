@@ -1,14 +1,13 @@
-"use strict";
-
-const {
+import {
     differenceInMinutes,
     differenceInCalendarDays,
     format,
     formatISO,
+    isEqual,
     isValid,
     parseISO,
     startOfToday,
-} = require("date-fns");
+} from "date-fns";
 
 let next_timerender_id = 0;
 
@@ -20,7 +19,7 @@ let next_timerender_id = 0;
 //      needs_update:    a boolean for if it will need to be updated when the
 //                       day changes
 // }
-exports.render_now = function (time, today = new Date()) {
+export function render_now(time, today = new Date()) {
     let time_str = "";
     let needs_update = false;
     // render formal time to be used as title attr tooltip
@@ -58,10 +57,10 @@ exports.render_now = function (time, today = new Date()) {
         formal_time_str,
         needs_update,
     };
-};
+}
 
 // Current date is passed as an argument for unit testing
-exports.last_seen_status_from_date = function (last_active_date, current_date = new Date()) {
+export function last_seen_status_from_date(last_active_date, current_date = new Date()) {
     const minutes = differenceInMinutes(current_date, last_active_date);
     if (minutes <= 2) {
         return i18n.t("Just now");
@@ -99,7 +98,7 @@ exports.last_seen_status_from_date = function (last_active_date, current_date = 
     return i18n.t("__last_active_date__", {
         last_active_date: format(last_active_date, "MMM\u00A0dd,\u00A0yyyy"),
     });
-};
+}
 
 // List of the dates that need to be updated when the day changes.
 // Each timestamp is represented as a list of length 2:
@@ -109,9 +108,10 @@ let update_list = [];
 // The time at the beginning of the day, when the timestamps were updated.
 // Represented as a Date with hour, minute, second, millisecond 0.
 let last_update;
-exports.initialize = function () {
+
+export function initialize() {
     last_update = startOfToday();
-};
+}
 
 // time_above is an optional argument, to support dates that look like:
 // --- ▲ Yesterday ▲ ------ ▼ Today ▼ ---
@@ -147,13 +147,13 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-exports.render_date = function (time, time_above, today) {
+export function render_date(time, time_above, today) {
     const className = "timerender" + next_timerender_id;
     next_timerender_id += 1;
-    const rendered_time = exports.render_now(time, today);
+    const rendered_time = render_now(time, today);
     let node = $("<span />").attr("class", className);
     if (time_above !== undefined) {
-        const rendered_time_above = exports.render_now(time_above, today);
+        const rendered_time_above = render_now(time_above, today);
         node = render_date_span(node, rendered_time, rendered_time_above);
     } else {
         node = render_date_span(node, rendered_time);
@@ -165,10 +165,10 @@ exports.render_date = function (time, time_above, today) {
         time_above,
     });
     return node;
-};
+}
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
-exports.render_markdown_timestamp = function (time, text) {
+export function render_markdown_timestamp(time, text) {
     const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm a";
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
     const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
@@ -176,13 +176,13 @@ exports.render_markdown_timestamp = function (time, text) {
         text: timestring,
         title: titlestring,
     };
-};
+}
 
 // This isn't expected to be called externally except manually for
 // testing purposes.
-exports.update_timestamps = function () {
+export function update_timestamps() {
     const today = startOfToday();
-    if (today !== last_update) {
+    if (!isEqual(today, last_update)) {
         const to_process = update_list;
         update_list = [];
 
@@ -192,40 +192,36 @@ exports.update_timestamps = function () {
             // The element might not exist any more (because it
             // was in the zfilt table, or because we added
             // messages above it and re-collapsed).
-            if (elements !== null) {
+            if (elements.length > 0) {
+                const time = entry.time;
+                const time_above = entry.time_above;
+                const rendered_time = render_now(time, today);
+                const rendered_time_above = time_above ? render_now(time_above, today) : undefined;
                 for (const element of elements) {
-                    const time = entry.time;
-                    const time_above = entry.time_above;
-                    const rendered_time = exports.render_now(time, today);
-                    if (time_above) {
-                        const rendered_time_above = exports.render_now(time_above, today);
-                        render_date_span($(element), rendered_time, rendered_time_above);
-                    } else {
-                        render_date_span($(element), rendered_time);
-                    }
-                    maybe_add_update_list_entry({
-                        needs_update: rendered_time.needs_update,
-                        className,
-                        time,
-                        time_above,
-                    });
+                    render_date_span($(element), rendered_time, rendered_time_above);
                 }
+                maybe_add_update_list_entry({
+                    needs_update: rendered_time.needs_update,
+                    className,
+                    time,
+                    time_above,
+                });
             }
         }
 
         last_update = today;
     }
-};
+}
 
-setInterval(exports.update_timestamps, 60 * 1000);
+setInterval(update_timestamps, 60 * 1000);
 
 // Transform a Unix timestamp into a ISO 8601 formatted date string.
 //   Example: 1978-10-31T13:37:42Z
-exports.get_full_time = function (timestamp) {
+export function get_full_time(timestamp) {
     return formatISO(timestamp * 1000);
-};
+}
 
-exports.get_timestamp_for_flatpickr = (timestring) => {
+export function get_timestamp_for_flatpickr(timestring) {
     let timestamp;
     try {
         // If there's already a valid time in the compose box,
@@ -238,18 +234,18 @@ exports.get_timestamp_for_flatpickr = (timestring) => {
         }
     }
     return timestamp;
-};
+}
 
-exports.stringify_time = function (time) {
+export function stringify_time(time) {
     if (page_params.twenty_four_hour_time) {
         return format(time, "HH:mm");
     }
     return format(time, "h:mm a");
-};
+}
 
 // this is for rendering absolute time based off the preferences for twenty-four
 // hour time in the format of "%mmm %d, %h:%m %p".
-exports.absolute_time = (function () {
+export const absolute_time = (function () {
     const MONTHS = [
         "Jan",
         "Feb",
@@ -302,7 +298,7 @@ exports.absolute_time = (function () {
     };
 })();
 
-exports.get_full_datetime = function (time) {
+export function get_full_datetime(time) {
     // Convert to number of hours ahead/behind UTC.
     // The sign of getTimezoneOffset() is reversed wrt
     // the conventional meaning of UTC+n / UTC-n
@@ -311,23 +307,21 @@ exports.get_full_datetime = function (time) {
         date: time.toLocaleDateString(),
         time: time.toLocaleTimeString() + " (UTC" + (tz_offset < 0 ? "" : "+") + tz_offset + ")",
     };
-};
+}
 
 // Date.toLocaleDateString and Date.toLocaleTimeString are
 // expensive, so we delay running the following code until we need
 // the full date and time strings.
-exports.set_full_datetime = function timerender_set_full_datetime(message, time_elem) {
+export const set_full_datetime = function timerender_set_full_datetime(message, time_elem) {
     if (message.full_date_str !== undefined) {
         return;
     }
 
     const time = new Date(message.timestamp * 1000);
-    const full_datetime = exports.get_full_datetime(time);
+    const full_datetime = get_full_datetime(time);
 
     message.full_date_str = full_datetime.date;
     message.full_time_str = full_datetime.time;
 
     time_elem.attr("title", message.full_date_str + " " + message.full_time_str);
 };
-
-window.timerender = exports;

@@ -2,46 +2,45 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-const _settings_notifications = {
-    update_page: () => {},
-};
-set_global("settings_notifications", _settings_notifications);
-
-const color_data = set_global("color_data", {});
-set_global("current_msg_list", {});
-const message_util = set_global("message_util", {});
-const stream_color = set_global("stream_color", {});
-const stream_list = set_global("stream_list", {});
-const stream_muting = set_global("stream_muting", {});
-let subs = set_global("subs", {});
-set_global("recent_topics", {
-    complete_rerender: () => {},
+const color_data = mock_module("color_data");
+const message_util = mock_module("message_util");
+const stream_color = mock_module("stream_color");
+const stream_list = mock_module("stream_list");
+const stream_muting = mock_module("stream_muting");
+const subs = mock_module("subs", {
+    update_settings_for_subscribed: noop,
 });
 
-set_global("message_list", {
+mock_module("message_list", {
     all: {
         all_messages() {
             return ["msg"];
         },
     },
 });
+mock_module("recent_topics", {
+    complete_rerender: () => {},
+});
+mock_module("settings_notifications", {
+    update_page: () => {},
+});
+set_global("current_msg_list", {});
 
-subs = set_global("subs", {update_settings_for_subscribed: noop});
-set_global("overlays", {streams_open: () => true});
+mock_module("overlays", {streams_open: () => true});
 
+const {Filter} = zrequire("../js/filter");
+const message_view_header = zrequire("message_view_header");
+const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
-const Filter = zrequire("Filter", "js/filter");
-const narrow_state = zrequire("narrow_state");
-const message_view_header = zrequire("message_view_header");
 
 const george = {
     email: "george@zulip.com",

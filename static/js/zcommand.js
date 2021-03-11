@@ -1,6 +1,11 @@
 import marked from "../third/marked/lib/marked";
 
+import * as channel from "./channel";
+import * as common from "./common";
 import * as feedback_widget from "./feedback_widget";
+import * as hashchange from "./hashchange";
+import * as night_mode from "./night_mode";
+import * as scroll_bar from "./scroll_bar";
 
 /*
 

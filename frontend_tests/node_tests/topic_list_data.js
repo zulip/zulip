@@ -4,25 +4,22 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const narrow_state = set_global("narrow_state", {
-    topic() {},
-});
-set_global("unread", {});
-const muting = set_global("muting", {
+const muting = mock_module("muting", {
     is_topic_muted() {
         return false;
     },
 });
-set_global("message_list", {});
+const narrow_state = mock_module("narrow_state", {
+    topic() {},
+});
 
-zrequire("hash_util");
 const stream_data = zrequire("stream_data");
-const unread = zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");
+const unread = zrequire("unread");
 
 const general = {
     stream_id: 556,

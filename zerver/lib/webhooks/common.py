@@ -182,4 +182,4 @@ def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
         seconds = milliseconds / 1000
         return timestamp_to_datetime(seconds)
     except (ValueError, TypeError):
-        raise JsonableError(_("The {} webhook expects time in milleseconds.").format(webhook))
+        raise JsonableError(_("The {} webhook expects time in milliseconds.").format(webhook))

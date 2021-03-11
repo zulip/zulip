@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -24,15 +24,14 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
-set_global("compose", {});
-const compose_state = set_global("compose_state", {});
-set_global("stream_data", {
+const compose_state = mock_module("compose_state");
+mock_module("markdown", {
+    apply_markdown: noop,
+});
+mock_module("stream_data", {
     get_color() {
         return "#FFFFFF";
     },
-});
-set_global("markdown", {
-    apply_markdown: noop,
 });
 set_global("page_params", {
     twenty_four_hour_time: false,
@@ -41,7 +40,6 @@ set_global("page_params", {
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const timerender = zrequire("timerender");
-zrequire("stream_color");
 
 const legacy_draft = {
     stream: "stream",
@@ -160,13 +158,13 @@ run_test("snapshot_message", (override) => {
     assert.equal(drafts.snapshot_message(), undefined);
 });
 
-run_test("initialize", () => {
+run_test("initialize", (override) => {
     window.addEventListener = (event_name, f) => {
         assert.equal(event_name, "beforeunload");
         let called = false;
-        drafts.update_draft = () => {
+        override(drafts, "update_draft", () => {
             called = true;
-        };
+        });
         f();
         assert(called);
     };
@@ -285,7 +283,7 @@ run_test("format_drafts", (override) => {
     assert.deepEqual(draft_model.get(), data);
 
     const stub_render_now = timerender.render_now;
-    timerender.render_now = (time) => stub_render_now(time, new Date(1549958107000));
+    override(timerender, "render_now", (time) => stub_render_now(time, new Date(1549958107000)));
 
     stub_templates((template_name, data) => {
         assert.equal(template_name, "draft_table_body");
@@ -295,9 +293,9 @@ run_test("format_drafts", (override) => {
     });
 
     override(drafts, "open_overlay", noop);
-    drafts.set_initial_element = noop;
+    drafts.__Rewire__("set_initial_element", noop);
 
     $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();
-    timerender.render_now = stub_render_now;
+    timerender.__Rewire__("render_now", stub_render_now);
 });

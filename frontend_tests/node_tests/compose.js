@@ -4,22 +4,30 @@ const {strict: assert} = require("assert");
 
 const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
-const rewiremock = require("rewiremock/node");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-
-const events = require("./lib/events");
 
 const noop = () => {};
 
 set_global("DOMParser", new JSDOM().window.DOMParser);
-set_global("compose_actions", {
+
+let compose_actions_start_checked;
+let compose_actions_expected_opts;
+
+mock_module("compose_actions", {
     update_placeholder_text: noop,
+
+    start(msg_type, opts) {
+        assert.equal(msg_type, "stream");
+        assert.deepEqual(opts, compose_actions_expected_opts);
+        compose_actions_start_checked = true;
+    },
 });
 
+const server_events = mock_module("server_events");
 const _navigator = {
     platform: "",
 };
@@ -32,40 +40,37 @@ const _document = {
     to_$: () => $("document-stub"),
 };
 
-const _drafts = {
-    delete_draft_after_send: noop,
-};
-
-const sent_messages = {
+set_global("document", _document);
+const channel = mock_module("channel");
+const loading = mock_module("loading");
+const local_message = mock_module("local_message");
+const markdown = mock_module("markdown");
+const page_params = set_global("page_params", {});
+const reminder = mock_module("reminder", {
+    is_deferred_delivery: noop,
+});
+const resize = mock_module("resize");
+const sent_messages = mock_module("sent_messages", {
     start_tracking_message: noop,
-};
-const _notifications = {
+});
+const stream_edit = mock_module("stream_edit");
+const subs = mock_module("subs");
+const transmit = mock_module("transmit");
+const ui_util = mock_module("ui_util");
+mock_module("drafts", {
+    delete_draft_after_send: noop,
+});
+mock_module("notifications", {
     notify_above_composebox: noop,
     clear_compose_notifications: noop,
-};
-const reminder = {
-    is_deferred_delivery: noop,
-};
-
-set_global("document", _document);
-set_global("drafts", _drafts);
+});
+mock_module("rendered_markdown", {
+    update_elements: () => {},
+});
 set_global("navigator", _navigator);
-set_global("notifications", _notifications);
-set_global("reminder", reminder);
-set_global("sent_messages", sent_messages);
-
-const local_message = set_global("local_message", {});
-const transmit = set_global("transmit", {});
-const channel = set_global("channel", {});
-const stream_edit = set_global("stream_edit", {});
-const markdown = set_global("markdown", {});
-const loading = set_global("loading", {});
-const page_params = set_global("page_params", {});
-const resize = set_global("resize", {});
-const subs = set_global("subs", {});
-const ui_util = set_global("ui_util", {});
 
 // Setting these up so that we can test that links to uploads within messages are
+
 // automatically converted to server relative links.
 document.location.protocol = "https:";
 document.location.host = "foo.com";
@@ -73,39 +78,20 @@ document.location.host = "foo.com";
 const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));
 
-const compose_ui = zrequire("compose_ui");
+const compose_fade = zrequire("compose_fade");
 const peer_data = zrequire("peer_data");
 const util = zrequire("util");
 const rtl = zrequire("rtl");
-zrequire("common");
 const stream_data = zrequire("stream_data");
 const compose_state = zrequire("compose_state");
 const people = zrequire("people");
-zrequire("input_pill");
-zrequire("user_pill");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const echo = zrequire("echo");
-const compose = rewiremock.proxy(() => zrequire("compose"), {
-    "../../static/js/rendered_markdown": {
-        update_elements: () => {},
-    },
-});
+const compose = zrequire("compose");
 const upload = zrequire("upload");
-const server_events_dispatch = zrequire("server_events_dispatch");
 const settings_config = zrequire("settings_config");
 
 people.small_avatar_url_for_person = () => "http://example.com/example.png";
-
-function stub_out_video_calls() {
-    const elem = $("#below-compose-content .video_link");
-    elem.toggle = (show) => {
-        if (show) {
-            elem.show();
-        } else {
-            elem.hide();
-        }
-    };
-}
 
 function reset_jquery() {
     // Avoid leaks.
@@ -377,7 +363,7 @@ test_ui("test_wildcard_mention_allowed", () => {
     assert(!compose.wildcard_mention_allowed());
 });
 
-test_ui("validate_stream_message", () => {
+test_ui("validate_stream_message", (override) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -408,7 +394,7 @@ test_ui("validate_stream_message", () => {
         compose_content = data;
     };
 
-    compose.wildcard_mention_allowed = () => true;
+    override(compose, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
     assert(!compose.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -416,7 +402,7 @@ test_ui("validate_stream_message", () => {
     assert.equal(compose_content, "compose_all_everyone_stub");
     assert($("#compose-all-everyone").visible());
 
-    compose.wildcard_mention_allowed = () => false;
+    override(compose, "wildcard_mention_allowed", () => false);
     assert(!compose.validate());
     assert.equal(
         $("#compose-error-msg").html(),
@@ -487,17 +473,17 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
     page_params.is_guest = false;
 });
 
-test_ui("markdown_rtl", () => {
+test_ui("markdown_rtl", (override) => {
     const textarea = $("#compose-textarea");
 
     const event = {
         keyCode: 65, // A
     };
 
-    rtl.get_direction = (text) => {
+    override(rtl, "get_direction", (text) => {
         assert.equal(text, " foo");
         return "rtl";
-    };
+    });
 
     assert.equal(textarea.hasClass("rtl"), false);
 
@@ -506,10 +492,6 @@ test_ui("markdown_rtl", () => {
 
     assert.equal(textarea.hasClass("rtl"), true);
 });
-
-// This is important for subsequent tests--put
-// us back to the "normal" ltr case.
-rtl.get_direction = () => "ltr";
 
 test_ui("markdown_ltr", () => {
     const textarea = $("#compose-textarea");
@@ -710,7 +692,7 @@ test_ui("send_message_success", () => {
     assert(reify_message_id_checked);
 });
 
-test_ui("send_message", () => {
+test_ui("send_message", (override) => {
     // This is the common setup stuff for all of the four tests.
     let stub_state;
     function initialize_state_stub_dict() {
@@ -724,10 +706,9 @@ test_ui("send_message", () => {
     set_global("setTimeout", (func) => {
         func();
     });
-    set_global("server_events", {
-        assert_get_events_running() {
-            stub_state.get_events_running_called += 1;
-        },
+
+    override(server_events, "assert_get_events_running", () => {
+        stub_state.get_events_running_called += 1;
     });
 
     // Tests start here.
@@ -736,7 +717,7 @@ test_ui("send_message", () => {
         compose_state.topic("");
         compose_state.set_message_type("private");
         page_params.user_id = 101;
-        compose_state.private_message_recipient = () => "alice@example.com";
+        override(compose_state, "private_message_recipient", () => "alice@example.com");
 
         const server_message_id = 127;
         local_message.insert_message = (message) => {
@@ -862,7 +843,7 @@ test_ui("send_message", () => {
     })();
 });
 
-test_ui("enter_with_preview_open", () => {
+test_ui("enter_with_preview_open", (override) => {
     // Test sending a message with content.
     compose_state.set_message_type("stream");
     $("#compose-textarea").val("message me");
@@ -872,9 +853,9 @@ test_ui("enter_with_preview_open", () => {
     $("#markdown_preview").hide();
     page_params.enter_sends = true;
     let send_message_called = false;
-    compose.send_message = () => {
+    override(compose, "send_message", () => {
         send_message_called = true;
-    };
+    });
     compose.enter_with_preview_open();
     assert($("#compose-textarea").visible());
     assert(!$("#undo_markdown_preview").visible());
@@ -899,7 +880,7 @@ test_ui("enter_with_preview_open", () => {
     assert.equal($("#compose-error-msg").html(), i18n.t("You have nothing to send!"));
 });
 
-test_ui("finish", () => {
+test_ui("finish", (override) => {
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
@@ -923,16 +904,16 @@ test_ui("finish", () => {
         $("#markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("private");
-        compose_state.private_message_recipient = () => "bob@example.com";
+        override(compose_state, "private_message_recipient", () => "bob@example.com");
 
         let compose_finished_event_checked = false;
         $(document).on("compose_finished.zulip", () => {
             compose_finished_event_checked = true;
         });
         let send_message_called = false;
-        compose.send_message = () => {
+        override(compose, "send_message", () => {
             send_message_called = true;
-        };
+        });
         assert(compose.finish());
         assert($("#compose-textarea").visible());
         assert(!$("#undo_markdown_preview").visible());
@@ -1016,10 +997,12 @@ test_ui("warn_if_private_stream_is_linked", () => {
     }
 });
 
-test_ui("initialize", () => {
+test_ui("initialize", (override) => {
     // In this test we mostly do the setup stuff in addition to testing the
     // normal workflow of the function. All the tests for the on functions are
     // done in subsequent tests directly below this test.
+
+    override(compose, "compute_show_video_chat_button", () => false);
 
     let resize_watch_manual_resize_checked = false;
     resize.watch_manual_resize = (elem) => {
@@ -1040,7 +1023,7 @@ test_ui("initialize", () => {
 
     let setup_upload_called = false;
     let uppy_cancel_all_called = false;
-    upload.setup_upload = (config) => {
+    override(upload, "setup_upload", (config) => {
         assert.equal(config.mode, "compose");
         setup_upload_called = true;
         return {
@@ -1048,31 +1031,8 @@ test_ui("initialize", () => {
                 uppy_cancel_all_called = true;
             },
         };
-    };
+    });
 
-    page_params.realm_available_video_chat_providers = {
-        disabled: {
-            id: 0,
-            name: "disabled",
-        },
-        jitsi_meet: {
-            id: 1,
-            name: "Jitsi Meet",
-        },
-        zoom: {
-            id: 3,
-            name: "Zoom",
-        },
-        big_blue_button: {
-            id: 4,
-            name: "Big Blue Button",
-        },
-    };
-
-    page_params.realm_video_chat_provider =
-        page_params.realm_available_video_chat_providers.disabled.id;
-
-    stub_out_video_calls();
     compose.initialize();
 
     assert(resize_watch_manual_resize_checked);
@@ -1080,25 +1040,15 @@ test_ui("initialize", () => {
     assert(!$("#compose #attach_files").hasClass("notdisplayed"));
     assert(setup_upload_called);
 
-    let compose_actions_start_checked;
-
     function set_up_compose_start_mock(expected_opts) {
         compose_actions_start_checked = false;
-
-        set_global("compose_actions", {
-            start(msg_type, opts) {
-                assert.equal(msg_type, "stream");
-                assert.deepEqual(opts, expected_opts);
-                compose_actions_start_checked = true;
-            },
-        });
+        compose_actions_expected_opts = expected_opts;
     }
 
     (function test_page_params_narrow_path() {
         page_params.narrow = true;
 
         reset_jquery();
-        stub_out_video_calls();
         set_up_compose_start_mock({});
 
         compose.initialize();
@@ -1110,7 +1060,6 @@ test_ui("initialize", () => {
         page_params.narrow_topic = "testing";
 
         reset_jquery();
-        stub_out_video_calls();
         set_up_compose_start_mock({topic: "testing"});
 
         compose.initialize();
@@ -1122,7 +1071,6 @@ test_ui("initialize", () => {
         $("#compose-send-button").prop("disabled", true);
 
         reset_jquery();
-        stub_out_video_calls();
         compose.initialize();
 
         compose.abort_xhr();
@@ -1132,7 +1080,7 @@ test_ui("initialize", () => {
     })();
 });
 
-test_ui("update_fade", () => {
+test_ui("update_fade", (override) => {
     const selector =
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
     const keyup_handler_func = $(selector).get_on_handler("keyup");
@@ -1140,14 +1088,13 @@ test_ui("update_fade", () => {
     let set_focused_recipient_checked = false;
     let update_all_called = false;
 
-    set_global("compose_fade", {
-        set_focused_recipient(msg_type) {
-            assert.equal(msg_type, "private");
-            set_focused_recipient_checked = true;
-        },
-        update_all() {
-            update_all_called = true;
-        },
+    override(compose_fade, "set_focused_recipient", (msg_type) => {
+        assert.equal(msg_type, "private");
+        set_focused_recipient_checked = true;
+    });
+
+    override(compose_fade, "update_all", () => {
+        update_all_called = true;
     });
 
     compose_state.set_message_type(false);
@@ -1161,7 +1108,7 @@ test_ui("update_fade", () => {
     assert(update_all_called);
 });
 
-test_ui("trigger_submit_compose_form", () => {
+test_ui("trigger_submit_compose_form", (override) => {
     let prevent_default_checked = false;
     let compose_finish_checked = false;
     const e = {
@@ -1169,9 +1116,9 @@ test_ui("trigger_submit_compose_form", () => {
             prevent_default_checked = true;
         },
     };
-    compose.finish = () => {
+    override(compose, "finish", () => {
         compose_finish_checked = true;
-    };
+    });
 
     const submit_handler = $("#compose form").get_on_handler("submit");
 
@@ -1216,7 +1163,7 @@ test_ui("needs_subscribe_warning", () => {
     assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
-test_ui("warn_if_mentioning_unsubscribed_user", () => {
+test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
     let mentioned = {
         email: "foo@bar.com",
     };
@@ -1260,12 +1207,12 @@ test_ui("warn_if_mentioning_unsubscribed_user", () => {
     const checks = [
         (function () {
             let called;
-            compose.needs_subscribe_warning = (user_id, stream_id) => {
+            override(compose, "needs_subscribe_warning", (user_id, stream_id) => {
                 called = true;
                 assert.equal(user_id, 34);
                 assert.equal(stream_id, 111);
                 return true;
-            };
+            });
             return function () {
                 assert(called);
             };
@@ -1340,7 +1287,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", () => {
     assert(looked_for_existing);
 });
 
-test_ui("on_events", () => {
+test_ui("on_events", (override) => {
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
         const container = $.create("fake " + container_sel);
         let container_removed = false;
@@ -1384,9 +1331,9 @@ test_ui("on_events", () => {
         $("#compose-send-status").show();
 
         let compose_finish_checked = false;
-        compose.finish = () => {
+        override(compose, "finish", () => {
             compose_finish_checked = true;
-        };
+        });
 
         handler(helper.event);
 
@@ -1543,148 +1490,6 @@ test_ui("on_events", () => {
         assert(compose_file_input_clicked);
     })();
 
-    (function test_no_provider_video_link_compose_clicked() {
-        let called = false;
-
-        const textarea = $.create("target-stub");
-
-        const ev = {
-            preventDefault: noop,
-            target: {
-                to_$: () => textarea,
-            },
-        };
-
-        compose_ui.insert_syntax_and_focus = () => {
-            called = true;
-        };
-
-        const handler = $("body").get_on_handler("click", ".video_link");
-        $("#compose-textarea").val("");
-
-        handler(ev);
-        assert(!called);
-    })();
-
-    (function test_jitsi_video_link_compose_clicked() {
-        let syntax_to_insert;
-        let called = false;
-
-        const textarea = $.create("jitsi-target-stub");
-
-        const ev = {
-            preventDefault: noop,
-            target: {
-                to_$: () => textarea,
-            },
-        };
-
-        compose_ui.insert_syntax_and_focus = (syntax) => {
-            syntax_to_insert = syntax;
-            called = true;
-        };
-
-        const handler = $("body").get_on_handler("click", ".video_link");
-        $("#compose-textarea").val("");
-
-        page_params.realm_video_chat_provider =
-            page_params.realm_available_video_chat_providers.jitsi_meet.id;
-
-        page_params.jitsi_server_url = null;
-        handler(ev);
-        assert(!called);
-
-        page_params.jitsi_server_url = "https://meet.jit.si";
-        handler(ev);
-        // video link ids consist of 15 random digits
-        const video_link_regex = /\[translated: Click to join video call]\(https:\/\/meet.jit.si\/\d{15}\)/;
-        assert(called);
-        assert.match(syntax_to_insert, video_link_regex);
-    })();
-
-    (function test_zoom_video_link_compose_clicked() {
-        let syntax_to_insert;
-        let called = false;
-
-        const textarea = $.create("zoom-target-stub");
-
-        const ev = {
-            preventDefault: noop,
-            target: {
-                to_$: () => textarea,
-            },
-        };
-
-        compose_ui.insert_syntax_and_focus = (syntax) => {
-            syntax_to_insert = syntax;
-            called = true;
-        };
-
-        const handler = $("body").get_on_handler("click", ".video_link");
-        $("#compose-textarea").val("");
-
-        page_params.realm_video_chat_provider =
-            page_params.realm_available_video_chat_providers.zoom.id;
-        page_params.has_zoom_token = false;
-
-        window.open = (url) => {
-            assert(url.endsWith("/calls/zoom/register"));
-
-            // The event here has value=true.  We keep it in events.js to
-            // allow our tooling to verify its schema.
-            server_events_dispatch.dispatch_normal_event(events.fixtures.has_zoom_token);
-        };
-
-        channel.post = (payload) => {
-            assert.equal(payload.url, "/json/calls/zoom/create");
-            payload.success({url: "example.zoom.com"});
-            return {abort: () => {}};
-        };
-
-        handler(ev);
-        const video_link_regex = /\[translated: Click to join video call]\(example\.zoom\.com\)/;
-        assert(called);
-        assert.match(syntax_to_insert, video_link_regex);
-    })();
-
-    (function test_bbb_video_link_compose_clicked() {
-        let syntax_to_insert;
-        let called = false;
-
-        const textarea = $.create("bbb-target-stub");
-
-        const ev = {
-            preventDefault: noop,
-            target: {
-                to_$: () => textarea,
-            },
-        };
-
-        compose_ui.insert_syntax_and_focus = (syntax) => {
-            syntax_to_insert = syntax;
-            called = true;
-        };
-
-        const handler = $("body").get_on_handler("click", ".video_link");
-        $("#compose-textarea").val("");
-
-        page_params.realm_video_chat_provider =
-            page_params.realm_available_video_chat_providers.big_blue_button.id;
-
-        channel.get = (options) => {
-            assert(options.url === "/json/calls/bigbluebutton/create");
-            options.success({
-                url:
-                    "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22",
-            });
-        };
-
-        handler(ev);
-        const video_link_regex = /\[translated: Click to join video call]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
-        assert(called);
-        assert.match(syntax_to_insert, video_link_regex);
-    })();
-
     (function test_markdown_preview_compose_clicked() {
         // Tests setup
         function setup_visibilities() {
@@ -1824,7 +1629,7 @@ test_ui("on_events", () => {
     })();
 });
 
-test_ui("create_message_object", () => {
+test_ui("create_message_object", (override) => {
     const sub = {
         stream_id: 101,
         name: "social",
@@ -1836,7 +1641,7 @@ test_ui("create_message_object", () => {
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");
 
-    compose_state.get_message_type = () => "stream";
+    override(compose_state, "get_message_type", () => "stream");
 
     let message = compose.create_message_object();
     assert.equal(message.to, sub.stream_id);
@@ -1851,8 +1656,11 @@ test_ui("create_message_object", () => {
     assert.equal(message.topic, "lunch");
     assert.equal(message.content, "burrito");
 
-    compose_state.get_message_type = () => "private";
-    compose_state.private_message_recipient = () => "alice@example.com, bob@example.com";
+    override(compose_state, "get_message_type", () => "private");
+    compose_state.__Rewire__(
+        "private_message_recipient",
+        () => "alice@example.com, bob@example.com",
+    );
 
     message = compose.create_message_object();
     assert.deepEqual(message.to, [alice.user_id, bob.user_id]);
@@ -1892,32 +1700,6 @@ test_ui("narrow_button_titles", () => {
     compose.update_closed_compose_buttons_for_stream();
     assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New topic"));
     assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
-});
-
-test_ui("test_video_chat_button_toggle", () => {
-    reset_jquery();
-    stub_out_video_calls();
-
-    page_params.realm_video_chat_provider =
-        page_params.realm_available_video_chat_providers.disabled.id;
-    compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), false);
-
-    reset_jquery();
-    stub_out_video_calls();
-    page_params.realm_video_chat_provider =
-        page_params.realm_available_video_chat_providers.jitsi_meet.id;
-    page_params.jitsi_server_url = null;
-    compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), false);
-
-    reset_jquery();
-    stub_out_video_calls();
-    page_params.realm_video_chat_provider =
-        page_params.realm_available_video_chat_providers.jitsi_meet.id;
-    page_params.jitsi_server_url = "https://meet.jit.si";
-    compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), true);
 });
 
 MockDate.reset();

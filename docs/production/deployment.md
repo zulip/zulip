@@ -186,28 +186,40 @@ behind reverse proxies.
 ## Using an outgoing HTTP proxy
 
 Zulip supports routing all of its outgoing HTTP and HTTPS traffic
-through an HTTP `CONNECT` proxy, such as [smokescreen][smokescreen];
+through an HTTP `CONNECT` proxy, such as [`smokescreen`][smokescreen];
 this includes outgoing webhooks, image and website previews, and
 mobile push notifications.  You may wish to enable this feature to
-provide a consistent egress point, or enforce access control on URLs.
+provide a consistent egress point, or enforce access control on URLs
+to prevent [SSRF][ssrf] against internal resources.
 
-To enable an outgoing HTTP proxy:
+To use `smokescreen`:
+
+1. Add `, zulip::profile::smokescreen` to the list of `puppet_classes`
+   in `/etc/zulip/zulip.conf`.  A typical value after this change is:
+    ```
+    puppet_classes = zulip::profile::standalone, zulip::profile::smokescreen
+    ```
 
 1. Add the following block to `/etc/zulip/zulip.conf`, substituting in
    your proxy's hostname/IP and port:
 
     ```
     [http_proxy]
-    host = 192.168.0.1
+    host = 127.0.0.1
     port = 4750
     ```
 
 1. As root, run
    `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
-   will reconfigure services to use the outgoing proxy, and restart
-   Zulip.
+   will compile and install `smokescreen`, reconfigure services to use
+   it, and restart Zulip.
+
+If you would like to use an already-installed HTTP proxy, omit the
+first step, and adjust the IP address and port in the second step
+accordingly.
 
 [smokescreen]: https://github.com/stripe/smokescreen
+[ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 
 ## Putting the Zulip application behind a reverse proxy
 

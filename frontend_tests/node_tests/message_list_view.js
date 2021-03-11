@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("document", "document-stub");
@@ -15,9 +15,8 @@ const page_params = set_global("page_params", {
     twenty_four_hour_time: false,
 });
 set_global("home_msg_list", "stub");
-set_global("unread", {message_unread() {}});
 // timerender calls setInterval when imported
-set_global("timerender", {
+mock_module("timerender", {
     render_date(time1, time2) {
         if (time2 === undefined) {
             return [{outerHTML: String(time1.getTime())}];
@@ -32,7 +31,7 @@ set_global("timerender", {
     },
 });
 
-set_global("rows", {
+mock_module("rows", {
     get_table() {
         return {
             children() {
@@ -44,8 +43,8 @@ set_global("rows", {
     },
 });
 
-const Filter = zrequire("Filter", "js/filter");
-const MessageListView = zrequire("MessageListView", "js/message_list_view");
+const {Filter} = zrequire("../js/filter");
+const {MessageListView} = zrequire("../js/message_list_view");
 const message_list = zrequire("message_list");
 
 let next_timestamp = 1500000000;

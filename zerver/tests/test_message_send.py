@@ -241,7 +241,7 @@ class MessagePOSTTest(ZulipTestCase):
         do_set_realm_property(admin_profile.realm, "waiting_period_threshold", 10)
         admin_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
         admin_profile.save()
-        self.assertTrue(admin_profile.is_new_member)
+        self.assertTrue(admin_profile.is_provisional_member)
         self.assertTrue(admin_profile.is_realm_admin)
 
         stream_name = "Verona"
@@ -263,7 +263,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         non_admin_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
         non_admin_profile.save()
-        self.assertTrue(non_admin_profile.is_new_member)
+        self.assertTrue(non_admin_profile.is_provisional_member)
         self.assertFalse(non_admin_profile.is_realm_admin)
 
         # Non admins and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
@@ -282,7 +282,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         non_admin_profile.date_joined = timezone_now() - datetime.timedelta(days=11)
         non_admin_profile.save()
-        self.assertFalse(non_admin_profile.is_new_member)
+        self.assertFalse(non_admin_profile.is_provisional_member)
 
         self._send_and_verify_message(non_admin_profile, stream_name)
         # We again set bot owner here, as date_joined of non_admin_profile is changed.
@@ -303,6 +303,24 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             bot_without_owner, stream_name, "New members cannot send to this stream."
         )
+
+        moderator_profile = self.example_user("shiva")
+        moderator_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
+        moderator_profile.save()
+        self.assertTrue(moderator_profile.is_moderator)
+        self.assertFalse(moderator_profile.is_provisional_member)
+
+        # Moderators and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS
+        # streams, even if the admin is a new user
+        self._send_and_verify_message(moderator_profile, stream_name)
+        moderator_owned_bot = self.create_test_bot(
+            short_name="whatever3",
+            full_name="whatever3",
+            user_profile=moderator_profile,
+        )
+        moderator_owned_bot.date_joined = timezone_now() - datetime.timedelta(days=11)
+        moderator_owned_bot.save()
+        self._send_and_verify_message(moderator_owned_bot, stream_name)
 
         # Cross realm bots should be allowed
         notification_bot = get_system_bot("notification-bot@zulip.com")
@@ -1600,12 +1618,14 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         polonius = self.example_user("polonius")
+        shiva = self.example_user("shiva")
         realm = cordelia.realm
 
         stream_name = "test_stream"
         self.subscribe(cordelia, stream_name)
         self.subscribe(iago, stream_name)
         self.subscribe(polonius, stream_name)
+        self.subscribe(shiva, stream_name)
 
         do_set_realm_property(
             realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_EVERYONE
@@ -1626,12 +1646,15 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(realm, "waiting_period_threshold", 10)
         iago.date_joined = timezone_now()
         iago.save()
+        shiva.date_joined = timezone_now()
+        shiva.save()
         cordelia.date_joined = timezone_now()
         cordelia.save()
         self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
         self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
-        # Administrators can use wildcard mentions even if they are new.
+        # Administrators and moderators can use wildcard mentions even if they are new.
         self.send_and_verify_wildcard_mention_message("iago")
+        self.send_and_verify_wildcard_mention_message("shiva")
 
         cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
         cordelia.save()
