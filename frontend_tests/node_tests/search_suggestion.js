@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {
@@ -754,8 +754,6 @@ run_test("stream_completion", (override) => {
 });
 
 function people_suggestion_setup() {
-    narrow_state.__Rewire__("stream", noop);
-
     const ted = {
         email: "ted@zulip.com",
         user_id: 201,
@@ -780,8 +778,10 @@ function people_suggestion_setup() {
     stream_topic_history.reset();
 }
 
-run_test("people_suggestions", () => {
+run_test("people_suggestions", (override) => {
+    override(narrow_state, "stream", noop);
     people_suggestion_setup();
+
     let query = "te";
     let suggestions = get_suggestions("", query);
     let expected = [
@@ -842,13 +842,17 @@ run_test("people_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("people_suggestion (Admin only email visibility)", () => {
+run_test("people_suggestion (Admin only email visibility)", (override) => {
     /* Suggestions when realm_email_address_visibility is set to admin
     only */
+    override(narrow_state, "stream", noop);
     people_suggestion_setup();
+
     const query = "te";
-    page_params.is_admin = false;
-    const suggestions = get_suggestions("", query);
+    const suggestions = with_field(page_params, "is_admin", false, () =>
+        get_suggestions("", query),
+    );
+
     const expected = [
         "te",
         "sender:bob@zulip.com",
