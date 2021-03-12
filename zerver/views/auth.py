@@ -305,7 +305,7 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile, otp: st
     iv = secrets.token_bytes(12)
     desktop_data = (iv + AESGCM(key).encrypt(iv, token.encode(), b"")).hex()
     context = {
-        "desktop_data": desktop_data,
+        "redirect_data": desktop_data,
         "browser_url": reverse("login_page", kwargs={"template_name": "zerver/login.html"}),
         "realm_icon_url": realm_icon_url(user_profile.realm),
     }
