@@ -651,6 +651,8 @@ run_test("message_flags", () => {
 });
 
 run_test("backend_only_realm_filters", () => {
+    markdown.update_realm_filter_rules(page_params.realm_filters);
+
     const backend_only_realm_filters = [
         "Here is the PR-#123.",
         "Function abc() was introduced in (PR)#123.",
